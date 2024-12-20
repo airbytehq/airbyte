@@ -6,6 +6,7 @@
 import warnings
 
 import pytest
+
 from metadata_service import docker_hub
 
 

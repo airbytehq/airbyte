@@ -17,6 +17,7 @@ from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
 from orchestrator.ops.slack import send_slack_message
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
+
 GROUP_NAME = "github"
 TOOLING_TEAM_SLACK_TEAM_ID = "S077R8636CV"
 # We give 6 hours for the metadata to be updated
@@ -123,7 +124,8 @@ def entry_should_be_on_gcs(metadata_entry: LatestMetadataEntry) -> bool:
     """
     if metadata_entry.metadata_definition.data.supportLevel == "archived":
         return False
-    if getattr(metadata_entry.metadata_definition.data.releases, "isReleaseCandidate", False):
+    # TODO: We should improve this logic to be able to detect missing metadata files for release candidates.
+    if "-rc" in metadata_entry.metadata_definition.data.dockerImageTag:
         return False
     if entry_is_younger_than_grace_period(metadata_entry):
         return False

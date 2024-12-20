@@ -27,16 +27,16 @@ class DiscoverOperation(
             val namespaces: List<String?> =
                 listOf<String?>(null) + metadataQuerier.streamNamespaces()
             for (namespace in namespaces) {
-                for (name in metadataQuerier.streamNames(namespace)) {
-                    val fields: List<Field> = metadataQuerier.fields(name, namespace)
+                for (streamID in metadataQuerier.streamNames(namespace)) {
+                    val fields: List<Field> = metadataQuerier.fields(streamID)
                     if (fields.isEmpty()) {
                         log.info {
-                            "Ignoring stream '$name' in '${namespace ?: ""}' because no fields were discovered."
+                            "Ignoring stream '${streamID.name}' in '${namespace ?: ""}' because no fields were discovered."
                         }
                         continue
                     }
-                    val primaryKey: List<List<String>> = metadataQuerier.primaryKey(name, namespace)
-                    val discoveredStream = DiscoveredStream(name, namespace, fields, primaryKey)
+                    val primaryKey: List<List<String>> = metadataQuerier.primaryKey(streamID)
+                    val discoveredStream = DiscoveredStream(streamID, fields, primaryKey)
                     val airbyteStream: AirbyteStream =
                         if (config.global) {
                             airbyteStreamFactory.createGlobal(discoveredStream)

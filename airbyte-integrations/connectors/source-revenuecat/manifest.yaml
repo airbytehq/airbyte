@@ -1,0 +1,1303 @@
+version: 5.7.3
+
+type: DeclarativeSource
+
+description: >-
+  RevenueCat is a powerful and reliable in-app purchase server that makes it
+  easy to build, analyze, and grow your subscriber base whether you're just
+  starting out or already have millions of customers.
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+
+definitions:
+  streams:
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    apps:
+      type: DeclarativeStream
+      name: apps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/apps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/apps"
+    metrics_overview:
+      type: DeclarativeStream
+      name: metrics_overview
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/metrics/overview
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - metrics
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/metrics_overview"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_seen_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    customers_subscriptions:
+      type: DeclarativeStream
+      name: customers_subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/customers/{{
+            stream_partition['customer_id'] }}/subscriptions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: starts_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_subscriptions"
+    customers_purchases:
+      type: DeclarativeStream
+      name: customers_purchases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/customers/{{
+            stream_partition['customer_id'] }}/purchases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: purchased_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_purchases"
+    customers_active_entitlements:
+      type: DeclarativeStream
+      name: customers_active_entitlements
+      primary_key:
+        - entitlement_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/customers/{{
+            stream_partition['customer_id'] }}/active_entitlements
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: expires_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{ stream_partition['customer_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_active_entitlements"
+    customers_aliases:
+      type: DeclarativeStream
+      name: customers_aliases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/customers/{{
+            stream_partition['customer_id'] }}/aliases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{ stream_partition['customer_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_aliases"
+    customers_invoices:
+      type: DeclarativeStream
+      name: customers_invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/customers/{{
+            stream_partition['customer_id'] }}/invoices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: customer_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: issued_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{ stream_partition['customer_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers_invoices"
+    entitlements:
+      type: DeclarativeStream
+      name: entitlements
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/entitlements
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/entitlements"
+    entitlements_products:
+      type: DeclarativeStream
+      name: entitlements_products
+      primary_key:
+        - id
+        - entitlement_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/entitlements/{{
+            stream_partition['entitlement_id'] }}/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: entitlement_id
+                stream:
+                  $ref: "#/definitions/streams/entitlements"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - entitlement_id
+              value: "{{ stream_partition['entitlement_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/entitlements_products"
+    offerings:
+      type: DeclarativeStream
+      name: offerings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/offerings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/offerings"
+    offerings_packages:
+      type: DeclarativeStream
+      name: offerings_packages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/offerings/{{
+            stream_partition['offering_id'] }}/packages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: offering_id
+                stream:
+                  $ref: "#/definitions/streams/offerings"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - offering_id
+              value: "{{ stream_partition['offering_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/offerings_packages"
+    offerings_packages_products:
+      type: DeclarativeStream
+      name: offerings_packages_products
+      primary_key:
+        - id
+        - package_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /projects/{{ stream_partition['project_id'] }}/packages/{{
+            stream_partition['package_id'] }}/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: package_id
+                stream:
+                  $ref: "#/definitions/streams/offerings_packages"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['product']['id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - package_id
+              value: "{{ stream_partition['package_id'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - created_at
+              value: "{{ record['product']['created_at'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/offerings_packages_products"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.revenuecat.com/v2
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/apps"
+  - $ref: "#/definitions/streams/metrics_overview"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/customers_subscriptions"
+  - $ref: "#/definitions/streams/customers_purchases"
+  - $ref: "#/definitions/streams/customers_active_entitlements"
+  - $ref: "#/definitions/streams/customers_aliases"
+  - $ref: "#/definitions/streams/customers_invoices"
+  - $ref: "#/definitions/streams/entitlements"
+  - $ref: "#/definitions/streams/entitlements_products"
+  - $ref: "#/definitions/streams/offerings"
+  - $ref: "#/definitions/streams/offerings_packages"
+  - $ref: "#/definitions/streams/offerings_packages_products"
+  - $ref: "#/definitions/streams/products"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: API key or access token
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    projects: true
+    apps: true
+    metrics_overview: true
+    customers: true
+    customers_subscriptions: true
+    customers_purchases: true
+    customers_active_entitlements: true
+    customers_aliases: true
+    customers_invoices: true
+    entitlements: true
+    entitlements_products: true
+    offerings: true
+    offerings_packages: true
+    offerings_packages_products: true
+    products: true
+  testedStreams:
+    projects:
+      hasRecords: true
+      streamHash: 2bd3fcdb0255d070ff134d5423e58ce40239f947
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    apps:
+      hasRecords: true
+      streamHash: e2b9e64f3103fea5dc2d44e4b4c1a23f869d7775
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    metrics_overview:
+      hasRecords: true
+      streamHash: 1e53e978d2fd6a0b8f4c165bd07076a73e7ccd80
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      hasRecords: true
+      streamHash: 1601b5146d0fcd4e78d95354b3e95dd031add529
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers_subscriptions:
+      streamHash: null
+    customers_purchases:
+      streamHash: null
+    customers_active_entitlements:
+      streamHash: null
+    customers_aliases:
+      streamHash: null
+    customers_invoices:
+      streamHash: null
+    entitlements:
+      hasRecords: true
+      streamHash: e05f4edb4215ff5895b27f8e58b0ba5a8ea1b554
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    entitlements_products:
+      hasRecords: true
+      streamHash: a58a0f7d3d9564532dadcefc1654b22eed4b68e4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    offerings:
+      hasRecords: true
+      streamHash: 6d7ca8392c10e551d85a5386046781ecb7bb67c8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    offerings_packages:
+      hasRecords: true
+      streamHash: bb489b2cc36623e2c35ff6b93ba91905b5a85932
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    offerings_packages_products:
+      hasRecords: true
+      streamHash: 092393ccefb7a0ea0e52da8480beca15fdbdf7d1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: 9a27b05bf048e5d8d909e82e5674c66c61855e08
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://www.revenuecat.com/docs/api-v2
+    openapiSpecUrl: https://www.revenuecat.com/docs/redocusaurus/plugin-redoc-0.yaml
+
+schemas:
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: number
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  apps:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      play_store:
+        type:
+          - object
+          - "null"
+        properties:
+          package_name:
+            type:
+              - string
+              - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  metrics_overview:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      unit:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      first_seen_at:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      last_seen_at:
+        type: number
+      object:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - last_seen_at
+  customers_subscriptions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  customers_purchases:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  customers_active_entitlements:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  customers_aliases:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  customers_invoices:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  entitlements:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: number
+      display_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lookup_key:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  entitlements_products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      display_name:
+        type:
+          - string
+          - "null"
+      entitlement_id:
+        type: string
+      id:
+        type: string
+      object:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      store_identifier:
+        type:
+          - string
+          - "null"
+      subscription:
+        type:
+          - object
+          - "null"
+        properties: {}
+    required:
+      - id
+      - entitlement_id
+      - created_at
+  offerings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: number
+      display_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_current:
+        type:
+          - boolean
+          - "null"
+      lookup_key:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  offerings_packages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: number
+      display_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lookup_key:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      offering_id:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  offerings_packages_products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: number
+      eligibility_criteria:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      package_id:
+        type: string
+      product:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          store_identifier:
+            type:
+              - string
+              - "null"
+          subscription:
+            type:
+              - object
+              - "null"
+            properties: {}
+      project_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - package_id
+      - created_at
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      display_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      object:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      store_identifier:
+        type:
+          - string
+          - "null"
+      subscription:
+        type:
+          - object
+          - "null"
+        properties: {}
+    required:
+      - id
+      - created_at

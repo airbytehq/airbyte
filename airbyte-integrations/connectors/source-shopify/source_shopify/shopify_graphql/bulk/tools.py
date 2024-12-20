@@ -11,6 +11,7 @@ import pendulum as pdm
 
 from .exceptions import ShopifyBulkExceptions
 
+
 # default end line tag
 END_OF_FILE: str = "<end_of_file>"
 BULK_PARENT_KEY: str = "__parentId"
@@ -63,7 +64,11 @@ class BulkTools:
             return url
 
     @staticmethod
-    def from_iso8601_to_rfc3339(record: Mapping[str, Any], field: str) -> Mapping[str, Any]:
+    def _datetime_str_to_rfc3339(value: str) -> str:
+        return pdm.parse(value).to_rfc3339_string()
+
+    @staticmethod
+    def from_iso8601_to_rfc3339(record: Mapping[str, Any], field: str) -> Optional[str]:
         """
         Converts date-time as follows:
             Input: "2023-01-01T15:00:00Z"
@@ -73,7 +78,7 @@ class BulkTools:
         # some fields that expected to be resolved as ids, might not be populated for the particular `RECORD`,
         # we should return `None` to make the field `null` in the output as the result of the transformation.
         target_value = record.get(field)
-        return pdm.parse(target_value).to_rfc3339_string() if target_value else record.get(field)
+        return BulkTools._datetime_str_to_rfc3339(target_value) if target_value else record.get(field)
 
     def fields_names_to_snake_case(self, dict_input: Optional[Mapping[str, Any]] = None) -> Optional[MutableMapping[str, Any]]:
         # transforming record field names from camel to snake case, leaving the `__parent_id` relation in place

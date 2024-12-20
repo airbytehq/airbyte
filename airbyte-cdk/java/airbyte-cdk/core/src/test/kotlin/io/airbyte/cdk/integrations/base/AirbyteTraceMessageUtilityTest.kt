@@ -48,8 +48,18 @@ class AirbyteTraceMessageUtilityTest {
             Mockito.mock(RuntimeException::class.java),
             "this is a config error"
         )
-        val outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8))
-        assertJsonNodeIsTraceMessage(outJson)
+        val outCt = outContent.toString(StandardCharsets.UTF_8)
+        var outJson: JsonNode? = null
+        // because we are running tests in parallel, it's possible that another test is writing to
+        // stdout while we run this test, in which case we'd see their messages.
+        // we filter through the messages to find an error (hopefully hours)
+        for (line in outCt.split('\n')) {
+            if (line.contains("\"error\"")) {
+                outJson = Jsons.deserialize(line)
+                break
+            }
+        }
+        assertJsonNodeIsTraceMessage(outJson!!)
         Assertions.assertEquals("config_error", outJson["trace"]["error"]["failure_type"].asText())
     }
 

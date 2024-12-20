@@ -12,6 +12,7 @@ import requests
 import toml
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from jinja2 import Environment, PackageLoader, select_autoescape
+
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
@@ -158,9 +159,11 @@ class PoetryInit(Step):
 
     async def get_dependencies(self, connector_container: dagger.Container, groups: Optional[List[str]] = None) -> set[str]:
         package = "." if not groups else f'.[{",".join(groups)}]'
-        connector_container = await connector_container.with_exec(["pip", "install", package])
+        connector_container = await connector_container.with_exec(["pip", "install", package], use_entrypoint=True)
 
-        pip_install_dry_run_output = await connector_container.with_exec(["pip", "install", package, "--dry-run"]).stdout()
+        pip_install_dry_run_output = await connector_container.with_exec(
+            ["pip", "install", package, "--dry-run"], use_entrypoint=True
+        ).stdout()
 
         non_transitive_deps = []
         for line in pip_install_dry_run_output.splitlines():
@@ -175,8 +178,9 @@ class PoetryInit(Step):
             self.context,
             base_container,
             str(self.context.connector.code_directory),
+            "airbyte",
         )
-        with_egg_info = await connector_container.with_exec(["python", "setup.py", "egg_info"])
+        with_egg_info = await connector_container.with_exec(["python", "setup.py", "egg_info"], use_entrypoint=True)
 
         egg_info_dir = with_egg_info.directory(f"{self.package_name}.egg-info")
         egg_info_files = {file_path: await egg_info_dir.file(file_path).contents() for file_path in await egg_info_dir.entries()}
@@ -187,7 +191,7 @@ class PoetryInit(Step):
         latest_pip_freeze = (
             await self.context.dagger_client.container(platform=LOCAL_BUILD_PLATFORM)
             .from_(f"{self.context.connector.metadata['dockerRepository']}:latest")
-            .with_exec(["pip", "freeze"], skip_entrypoint=True)
+            .with_exec(["pip", "freeze"])
             .stdout()
         )
         latest_dependencies = {
@@ -214,7 +218,7 @@ class PoetryInit(Step):
         toml_string = toml.dumps(pyproject)
         try:
             with_poetry_lock = await connector_container.with_new_file("pyproject.toml", contents=toml_string).with_exec(
-                ["poetry", "install"]
+                ["poetry", "install"], use_entrypoint=True
             )
         except dagger.ExecError as e:
             return StepResult(
@@ -225,7 +229,7 @@ class PoetryInit(Step):
 
         dir = with_poetry_lock
         if self.new_version:
-            dir = await dir.with_exec(["poetry", "version", self.new_version])
+            dir = await dir.with_exec(["poetry", "version", self.new_version], use_entrypoint=True)
 
         await dir.file("pyproject.toml").export(f"{self.context.connector.code_directory}/pyproject.toml")
         self.logger.info(f"Generated pyproject.toml for {self.context.connector.technical_name}")
@@ -315,10 +319,10 @@ class RegressionTest(Step):
             )
 
         try:
-            await new_connector_container.with_exec(["spec"])
+            await new_connector_container.with_exec(["spec"], use_entrypoint=True)
             await new_connector_container.with_mounted_file(
                 "pyproject.toml", (await self.context.get_connector_dir(include=["pyproject.toml"])).file("pyproject.toml")
-            ).with_exec(["poetry", "run", self.context.connector.technical_name, "spec"], skip_entrypoint=True)
+            ).with_exec(["poetry", "run", self.context.connector.technical_name, "spec"])
         except dagger.ExecError as e:
             return StepResult(
                 step=self,
@@ -336,10 +340,10 @@ class RegressionTest(Step):
         previous_pip_freeze = (
             await self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM)
             .from_(f'{self.context.connector.metadata["dockerRepository"]}:latest')
-            .with_exec(["pip", "freeze"], skip_entrypoint=True)
+            .with_exec(["pip", "freeze"])
             .stdout()
         ).splitlines()
-        current_pip_freeze = (await new_connector_container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()).splitlines()
+        current_pip_freeze = (await new_connector_container.with_exec(["pip", "freeze"]).stdout()).splitlines()
         main_dependencies_names = []
         for dep in original_main_dependencies:
             match = re.match(PACKAGE_NAME_PATTERN, dep)

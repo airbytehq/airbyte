@@ -577,7 +577,7 @@ class BigQuerySqlGeneratorIntegrationTest :
         fun toJsonRecords(result: TableResult): List<JsonNode> {
             return result
                 .streamAll()
-                .map { row: FieldValueList -> toJson(result.schema, row) }
+                .map { row: FieldValueList -> toJson(result.schema!!, row) }
                 .toList()
         }
 

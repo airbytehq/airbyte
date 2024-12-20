@@ -8,37 +8,32 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
+import io.airbyte.cdk.integrations.destination.async.model.AirbyteRecordMessageFile
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
+import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.resources.MoreResources
-import io.airbyte.protocol.models.v0.AirbyteCatalog
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import io.airbyte.protocol.models.v0.AirbyteTraceMessage
-import io.airbyte.protocol.models.v0.CatalogHelpers
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.v0.DestinationSyncMode
-import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.airbyte.protocol.models.v0.SyncMode
+import io.airbyte.protocol.models.v0.*
 import io.airbyte.workers.exception.TestHarnessException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.time.Instant
 import java.util.*
+import kotlin.test.assertContains
 import org.apache.commons.lang3.RandomStringUtils
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import org.junit.Assert.fail
 import org.junit.jupiter.api.Assumptions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -151,7 +146,7 @@ protected constructor(
             String.format(
                 "%s_test_%s",
                 outputFormat.name.lowercase(),
-                RandomStringUtils.randomAlphanumeric(5),
+                RandomStringUtils.insecure().nextAlphanumeric(5),
             )
         (configJson as ObjectNode)
             .put("s3_bucket_path", testBucketPath)
@@ -269,7 +264,10 @@ protected constructor(
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
                     AirbyteStateMessage()
-                        .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))),
+                        .withGlobal(
+                            AirbyteGlobalState()
+                                .withSharedState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                        )
                 ),
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.TRACE)
@@ -294,6 +292,67 @@ protected constructor(
             .trim()
             .lines()
             .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
+    }
+
+    @Test
+    fun testStreamWithNoColumns() {
+        val namespace = "nsp" + RandomStringUtils.randomAlphanumeric(5)
+        val streamName = "str" + RandomStringUtils.randomAlphanumeric(5)
+        val config = getConfig()
+
+        val streamSchema = JsonNodeFactory.instance.objectNode()
+        streamSchema.set<JsonNode>("properties", JsonNodeFactory.instance.objectNode())
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+                            .withGenerationId(0)
+                            .withMinimumGenerationId(0)
+                            .withSyncId(0)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(namespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(streamSchema),
+                            ),
+                    ),
+                )
+        val recordMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withStream(catalog.streams[0].stream.name)
+                        .withNamespace(catalog.streams[0].stream.namespace)
+                        .withEmittedAt(Instant.now().toEpochMilli())
+                        .withData(
+                            JsonNodeFactory.instance.objectNode(),
+                        )
+                )
+        val streamCompleteMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.TRACE)
+                .withTrace(
+                    AirbyteTraceMessage()
+                        .withStreamStatus(
+                            AirbyteStreamStatusTraceMessage()
+                                .withStatus(
+                                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                                )
+                                .withStreamDescriptor(
+                                    StreamDescriptor().withNamespace(namespace).withName(streamName)
+                                )
+                        )
+                )
+        runSyncAndVerifyStateOutput(
+            config,
+            listOf(recordMessage, streamCompleteMessage),
+            catalog,
+            false
+        )
     }
 
     /**
@@ -432,7 +491,7 @@ protected constructor(
      * both syncs are preserved.
      */
     @Test
-    fun testOverwriteSyncFailedResumedGeneration() {
+    open fun testOverwriteSyncFailedResumedGeneration() {
         assumeTrue(
             implementsOverwrite(),
             "Destination's spec.json does not support overwrite sync mode."
@@ -466,7 +525,7 @@ protected constructor(
 
     /** Test runs 2 failed syncs and verifies the previous sync objects are not cleaned up. */
     @Test
-    fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {
+    open fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {
         assumeTrue(
             implementsOverwrite(),
             "Destination's spec.json does not support overwrite sync mode."
@@ -527,7 +586,7 @@ protected constructor(
      * unrelated catalog sync data is untouched too.
      */
     @Test
-    fun testOverwriteSyncWithGenerationId() {
+    open fun testOverwriteSyncWithGenerationId() {
         assumeTrue(
             implementsOverwrite(),
             "Destination's spec.json does not support overwrite sync mode."
@@ -677,6 +736,77 @@ protected constructor(
             firstSyncMessages + secondSyncMessages,
             defaultSchema
         )
+    }
+
+    @Test
+    open fun testFakeFileTransfer() {
+        val streamSchema = JsonNodeFactory.instance.objectNode()
+        streamSchema.set<JsonNode>("properties", JsonNodeFactory.instance.objectNode())
+        val streamName = "str" + RandomStringUtils.randomAlphanumeric(5)
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+                            .withGenerationId(0)
+                            .withMinimumGenerationId(0)
+                            .withSyncId(0)
+                            .withStream(
+                                AirbyteStream().withName(streamName).withJsonSchema(streamSchema)
+                            ),
+                    ),
+                )
+
+        val recordMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withStream(streamName)
+                        .withEmittedAt(Instant.now().toEpochMilli())
+                        .withData(ObjectMapper().readTree("{}"))
+                        .withAdditionalProperty(
+                            "file",
+                            AirbyteRecordMessageFile(
+                                fileUrl =
+                                    "${EnvVariableFeatureFlags.DEFAULT_AIRBYTE_STAGING_DIRECTORY}/fakeFile",
+                                bytes = 182776,
+                                fileRelativePath = "fakeFile",
+                                modified = 123456L,
+                                sourceFileUrl =
+                                    "//sftp-testing-for-file-transfer/sftp-folder/simpsons_locations.csv",
+                            )
+                        )
+                )
+        val streamCompleteMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.TRACE)
+                .withTrace(
+                    AirbyteTraceMessage()
+                        .withStreamStatus(
+                            AirbyteStreamStatusTraceMessage()
+                                .withStatus(
+                                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                                )
+                                .withStreamDescriptor(StreamDescriptor().withName(streamName))
+                        )
+                )
+        try {
+            val destinationOutput =
+                runSync(
+                    config = getConfig(),
+                    messages = listOf(recordMessage, streamCompleteMessage),
+                    catalog = catalog,
+                    runNormalization = false,
+                    imageName = imageName,
+                    additionalEnvs = mapOf("USE_FILE_TRANSFER" to "true"),
+                )
+            fail("sync should have failed. Instead got output $destinationOutput")
+        } catch (e: TestHarnessException) {
+            assertContains(e.outputMessages!![0].trace.error.internalMessage, "File does not exist")
+        }
     }
 
     companion object {

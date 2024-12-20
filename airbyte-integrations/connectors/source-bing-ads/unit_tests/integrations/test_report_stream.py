@@ -4,11 +4,12 @@ from pathlib import Path
 from typing import Any, Optional
 
 import pendulum
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker
 from base_test import BaseTest
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from config_builder import ConfigBuilder
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.mock_http import HttpMocker
 
 
 class TestReportStream(BaseTest):
@@ -70,7 +71,7 @@ class TestSuiteReportStream(TestReportStream):
         self.auth_client(http_mocker)
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
-        assert dict(output.most_recent_state.stream_state) == self.first_read_state
+        assert output.most_recent_state.stream_state.__dict__ == self.first_read_state
 
     @HttpMocker()
     def test_incremental_read_with_state_returns_records(self, http_mocker: HttpMocker):
@@ -84,11 +85,11 @@ class TestSuiteReportStream(TestReportStream):
         else:
             assert len(output.records) == self.second_read_records_number
 
-        actual_cursor = dict(output.most_recent_state.stream_state).get(self.account_id)
+        actual_cursor = output.most_recent_state.stream_state.__dict__.get(self.account_id)
         expected_cursor = self.second_read_state.get(self.account_id)
         assert actual_cursor == expected_cursor
 
-        provided_state = state[0].stream.stream_state.dict()[self.account_id][self.cursor_field]
+        provided_state = state[0].stream.stream_state.__dict__[self.account_id][self.cursor_field]
         # gets ReportDownloadParams object
         request_start_date = service_call_mock.call_args.args[0].report_request.Time.CustomDateRangeStart
         year = request_start_date.Year

@@ -1,0 +1,1575 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://piwik.pro/
+
+  API Docs: https://developers.piwik.pro/en/latest/platform/getting_started.html
+
+  Auth Page:
+  https://developers.piwik.pro/en/latest/platform/getting_started.html#generate-api-credentials
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/v2
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    users-me:
+      type: DeclarativeStream
+      name: users-me
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/v2/me
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users-me"
+    user-groups:
+      type: DeclarativeStream
+      name: user-groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: user-groups/v1
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user-groups"
+    tracker_settings:
+      type: DeclarativeStream
+      name: tracker_settings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tracker/v2/settings/app/global
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tracker_settings"
+    modules:
+      type: DeclarativeStream
+      name: modules
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: modules/v1
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/modules"
+    meta-sites:
+      type: DeclarativeStream
+      name: meta-sites
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta-sites/v1
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/meta-sites"
+    meta-sites_apps:
+      type: DeclarativeStream
+      name: meta-sites_apps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta-sites/v1/{{ stream_partition.meta_site_id }}/apps
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: meta_site_id
+              stream:
+                $ref: "#/definitions/streams/meta-sites"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/meta-sites_apps"
+    meta-sites_apps-with-meta-sites:
+      type: DeclarativeStream
+      name: meta-sites_apps-with-meta-sites
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta-sites/v1/apps-with-meta-sites
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/meta-sites_apps-with-meta-sites"
+    container-settings_settings:
+      type: DeclarativeStream
+      name: container-settings_settings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: container-settings/v1/app/{{ stream_partition.app_id }}/settings
+          http_method: GET
+          request_headers:
+            Content-Type: application/vnd.api+json
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: app_id
+              stream:
+                $ref: "#/definitions/streams/apps"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/container-settings_settings"
+    apps:
+      type: DeclarativeStream
+      name: apps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: apps/v2
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/apps"
+    audit-log_entries:
+      type: DeclarativeStream
+      name: audit-log_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: audit-log/v1/entries
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audit-log_entries"
+    apps_details:
+      type: DeclarativeStream
+      name: apps_details
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: apps/v2/{{ stream_partition.app_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: app_id
+              stream:
+                $ref: "#/definitions/streams/apps"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/apps_details"
+    access-control_actions:
+      type: DeclarativeStream
+      name: access-control_actions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: access-control/v2/global/actions
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/access-control_actions"
+    access-control_meta-site_permission_user:
+      type: DeclarativeStream
+      name: access-control_meta-site_permission_user
+      primary_key:
+        - uid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            access-control/v2/meta-site/{{ stream_partition.meta_site_id
+            }}/permission/user
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: meta_site_id
+              stream:
+                $ref: "#/definitions/streams/meta-sites"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/access-control_meta-site_permission_user"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['organization_id'] }}.piwik.pro/api/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: '{{ config["client_id"] }}'
+      grant_type: client_credentials
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_request_body: {}
+      token_refresh_endpoint: https://{{ config['organization_id'] }}.piwik.pro/auth/token
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/users-me"
+  - $ref: "#/definitions/streams/user-groups"
+  - $ref: "#/definitions/streams/tracker_settings"
+  - $ref: "#/definitions/streams/modules"
+  - $ref: "#/definitions/streams/meta-sites"
+  - $ref: "#/definitions/streams/meta-sites_apps"
+  - $ref: "#/definitions/streams/meta-sites_apps-with-meta-sites"
+  - $ref: "#/definitions/streams/container-settings_settings"
+  - $ref: "#/definitions/streams/apps"
+  - $ref: "#/definitions/streams/audit-log_entries"
+  - $ref: "#/definitions/streams/apps_details"
+  - $ref: "#/definitions/streams/access-control_actions"
+  - $ref: "#/definitions/streams/access-control_meta-site_permission_user"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - organization_id
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      organization_id:
+        type: string
+        description: The organization id appearing at URL of your piwik website
+        order: 2
+        title: Organization ID
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    users-me: true
+    user-groups: true
+    tracker_settings: true
+    modules: true
+    meta-sites: true
+    meta-sites_apps: true
+    meta-sites_apps-with-meta-sites: true
+    container-settings_settings: true
+    apps: true
+    audit-log_entries: true
+    apps_details: true
+    access-control_actions: true
+    access-control_meta-site_permission_user: true
+  testedStreams:
+    users:
+      hasRecords: true
+      streamHash: 47d0ca8b90620c9f80b4252ce9064596db60e666
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users-me:
+      hasRecords: true
+      streamHash: 38c81b919a9a6d063dff822b55170364c51c49d6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user-groups:
+      hasRecords: true
+      streamHash: 0e3f0e06ed901c38917c3b499f9b4660aa4531ef
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tracker_settings:
+      hasRecords: true
+      streamHash: a29c6d379be8c8116e32fc530a4455c742222bbf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    modules:
+      hasRecords: true
+      streamHash: 12d1db48eede9667c670318e5a39839c68c54b71
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    meta-sites:
+      hasRecords: true
+      streamHash: 95b4bf03a28e59f6ac62c4a3256d9d4b52d02a62
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    meta-sites_apps:
+      hasRecords: true
+      streamHash: 87fbc42a83aa30594f1e35cb59ef6b82beb0539e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    meta-sites_apps-with-meta-sites:
+      hasRecords: true
+      streamHash: 591c378ed73cfebc80080cad9906d93c55d80479
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    container-settings_settings:
+      hasRecords: true
+      streamHash: 709c60c2f087a0826a952427211a16ac1b92582d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    apps:
+      hasRecords: true
+      streamHash: 623aea8cd5cdcf97d11eda90f65f82357a26376c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    audit-log_entries:
+      hasRecords: true
+      streamHash: d5fc025bedc55e2d09930a70e0fad919fae1df41
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    apps_details:
+      hasRecords: true
+      streamHash: 5ddadf2f2e2c9e68bf6475d7eea912fbc9968f69
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    access-control_actions:
+      hasRecords: true
+      streamHash: 607ddcc661e2bef437574969143ae944c1ac81f8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    access-control_meta-site_permission_user:
+      streamHash: 427b9a8a683c89cc3b3120366caedbbf64e7e3b1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: >-
+      https://developers.piwik.pro/en/latest/platform/getting_started.html#generate-api-credentials
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          addedAt:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          organization:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  users-me:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          addedAt:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          organization:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  user-groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  tracker_settings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          anonymize_visitor_geolocation_level:
+            type:
+              - string
+              - "null"
+          anonymize_visitor_ip_level:
+            type:
+              - number
+              - "null"
+          campaign_content_params:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          campaign_id_params:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          campaign_keyword_params:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          campaign_medium_params:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          campaign_name_params:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          campaign_source_params:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          create_new_visit_when_campaign_changes:
+            type:
+              - boolean
+              - "null"
+          create_new_visit_when_website_referrer_changes:
+            type:
+              - boolean
+              - "null"
+          enable_fingerprinting_across_websites:
+            type:
+              - boolean
+              - "null"
+          exclude_crawlers:
+            type:
+              - boolean
+              - "null"
+          exclude_unknown_urls:
+            type:
+              - boolean
+              - "null"
+          excluded_ips:
+            type:
+              - array
+              - "null"
+          excluded_user_agents:
+            type:
+              - array
+              - "null"
+          fingerprint_based_on_anonymized_ip:
+            type:
+              - boolean
+              - "null"
+          keep_url_fragment:
+            type:
+              - boolean
+              - "null"
+          session_limit_exceeded_action:
+            type:
+              - string
+              - "null"
+          session_max_duration_seconds:
+            type:
+              - number
+              - "null"
+          session_max_event_count:
+            type:
+              - number
+              - "null"
+          set_ip_tracking:
+            type:
+              - boolean
+              - "null"
+          site_search_category_params:
+            type:
+              - array
+              - "null"
+          site_search_query_params:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          strip_site_search_query_parameters:
+            type:
+              - boolean
+              - "null"
+          tracking_fingerprint_disabled:
+            type:
+              - boolean
+              - "null"
+          trust_visitors_cookies:
+            type:
+              - boolean
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          url_query_parameter_to_exclude_from_url:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          use_anonymous_session_hash:
+            type:
+              - boolean
+              - "null"
+          use_session_hash:
+            type:
+              - boolean
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  modules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+    required:
+      - id
+  meta-sites:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  meta-sites_apps:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          cnil:
+            type:
+              - boolean
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  meta-sites_apps-with-meta-sites:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  container-settings_settings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          is_custom:
+            type:
+              - boolean
+              - "null"
+          value:
+            type:
+              - object
+              - "null"
+            properties:
+              is_enabled:
+                type:
+                  - boolean
+                  - "null"
+              thresholds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+      id:
+        type:
+          - string
+          - "null"
+  apps:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          addedAt:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  audit-log_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          version:
+            type:
+              - number
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          author_email:
+            type:
+              - string
+              - "null"
+          author_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          ip:
+            type:
+              - string
+              - "null"
+          payload:
+            type:
+              - object
+              - "null"
+            properties:
+              client_id:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+          subject_id:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  apps_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          addedAt:
+            type:
+              - string
+              - "null"
+          appType:
+            type:
+              - string
+              - "null"
+          cnil:
+            type:
+              - boolean
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          delay:
+            type:
+              - number
+              - "null"
+          eCommerceTracking:
+            type:
+              - boolean
+              - "null"
+          excludeUnknownUrls:
+            type:
+              - boolean
+              - "null"
+          excludedIps:
+            type:
+              - array
+              - "null"
+          excludedUrlParams:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          excludedUserAgents:
+            type:
+              - array
+              - "null"
+          gdpr:
+            type:
+              - boolean
+              - "null"
+          gdprDataAnonymization:
+            type:
+              - boolean
+              - "null"
+          gdprDataAnonymizationMode:
+            type:
+              - string
+              - "null"
+          gdprLocationRecognition:
+            type:
+              - boolean
+              - "null"
+          gdprUserModeEnabled:
+            type:
+              - boolean
+              - "null"
+          keepUrlFragment:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          organization:
+            type:
+              - string
+              - "null"
+          privacyCookieDomains:
+            type:
+              - array
+              - "null"
+          privacyCookieDomainsEnabled:
+            type:
+              - boolean
+              - "null"
+          privacyCookieExpirationPeriod:
+            type:
+              - number
+              - "null"
+          privacyUseCookies:
+            type:
+              - boolean
+              - "null"
+          privacyUseFingerprinting:
+            type:
+              - boolean
+              - "null"
+          realTimeDashboards:
+            type:
+              - boolean
+              - "null"
+          sessionIdStrictPrivacyMode:
+            type:
+              - boolean
+              - "null"
+          sharepointIntegration:
+            type:
+              - boolean
+              - "null"
+          siteSearchCategoryParams:
+            type:
+              - array
+              - "null"
+          siteSearchQueryParams:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          siteSearchTracking:
+            type:
+              - boolean
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          urls:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+    required:
+      - id
+  access-control_actions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+    required:
+      - id
+  access-control_meta-site_permission_user:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          group_permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              group_names:
+                type:
+                  - array
+                  - "null"
+              permission:
+                type:
+                  - string
+                  - "null"
+          permission:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      uid:
+        type: string
+    required:
+      - uid

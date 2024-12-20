@@ -3,15 +3,14 @@ package io.airbyte.cdk.check
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
-import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
-import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -19,8 +18,8 @@ import jakarta.inject.Singleton
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "check")
 @Requires(env = ["source"])
-class CheckOperation<T : ConfigurationJsonObjectBase>(
-    val configJsonObjectSupplier: ConfigurationJsonObjectSupplier<T>,
+class CheckOperation<T : ConfigurationSpecification>(
+    val configJsonObjectSupplier: ConfigurationSpecificationSupplier<T>,
     val configFactory: SourceConfigurationFactory<T, out SourceConfiguration>,
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
     val outputConsumer: OutputConsumer,
@@ -42,16 +41,10 @@ class CheckOperation<T : ConfigurationJsonObjectBase>(
             }
         } catch (e: Exception) {
             log.debug(e) { "Exception while checking config." }
-            val errorTraceMessage: AirbyteErrorTraceMessage = exceptionHandler.handle(e)
-            errorTraceMessage.failureType = AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR
+            val (errorTraceMessage, connectionStatusMessage) =
+                exceptionHandler.handleCheckFailure(e)
             outputConsumer.accept(errorTraceMessage)
-            val connectionStatusMessage: String =
-                String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, errorTraceMessage.message)
-            outputConsumer.accept(
-                AirbyteConnectionStatus()
-                    .withMessage(connectionStatusMessage)
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED),
-            )
+            outputConsumer.accept(connectionStatusMessage)
             log.info { "Config check failed." }
             return
         }
@@ -71,17 +64,19 @@ class CheckOperation<T : ConfigurationJsonObjectBase>(
         var n = 0
         val namespaces: List<String?> = listOf<String?>(null) + metadataQuerier.streamNamespaces()
         for (namespace in namespaces) {
-            for (name in metadataQuerier.streamNames(namespace)) {
+            for (streamID in metadataQuerier.streamNames(namespace)) {
                 try {
-                    metadataQuerier.fields(name, namespace)
+                    metadataQuerier.fields(streamID)
                 } catch (e: Exception) {
                     log.info(e) {
-                        "Query failed on stream '$name' in '${namespace ?: ""}': ${e.message}"
+                        "Query failed on stream '${streamID.name}' in '${namespace ?: ""}': ${e.message}"
                     }
                     n++
                     continue
                 }
-                log.info { "Query successful on stream '$name' in '${namespace ?: ""}'." }
+                log.info {
+                    "Query successful on stream '${streamID.name}' in '${namespace ?: ""}'."
+                }
                 return
             }
         }

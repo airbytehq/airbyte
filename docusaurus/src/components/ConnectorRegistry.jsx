@@ -1,11 +1,10 @@
-import React from "react";
-import { useEffect, useState } from "react";
-import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
-import styles from "./ConnectorRegistry.module.css";
+import Tabs from "@theme/Tabs";
+import React, { useEffect, useState } from "react";
 import { REGISTRY_URL } from "../connector_registry";
+import styles from "./ConnectorRegistry.module.css";
 
-const iconStyle = { maxWidth: 25 };
+const iconStyle = { maxWidth: 25, maxHeight: 25 };
 
 async function fetchCatalog(url, setter) {
   const response = await fetch(url);
@@ -57,8 +56,11 @@ function ConnectorTable({ connectors, connectorSupportLevel }) {
                 <td>
                   <div className={styles.connectorName}>
                     {connector.iconUrl_oss && (
-                      <img src={connector.iconUrl_oss} style={iconStyle} />
+                      <div className={styles.connectorIconBackground}>
+                        <img src={connector.iconUrl_oss} style={iconStyle} />
+                      </div>
                     )}
+
                     <a href={docsLink}>{connector.name_oss}</a>
                   </div>
                 </td>

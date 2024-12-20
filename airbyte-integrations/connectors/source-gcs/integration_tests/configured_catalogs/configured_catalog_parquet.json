@@ -1,0 +1,95 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test_parquet",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "_ab_source_file_last_modified": {
+              "type": "string"
+            },
+            "_ab_source_file_url": {
+              "type": "string"
+            },
+            "MinTemp": {
+              "type": ["null", "number"]
+            },
+            "MaxTemp": {
+              "type": ["null", "number"]
+            },
+            "Rainfall": {
+              "type": ["null", "number"]
+            },
+            "Evaporation": {
+              "type": ["null", "number"]
+            },
+            "Sunshine": {
+              "type": ["null", "string"]
+            },
+            "WindGustDir": {
+              "type": ["null", "string"]
+            },
+            "WindGustSpeed": {
+              "type": ["null", "string"]
+            },
+            "WindDir9am": {
+              "type": ["null", "string"]
+            },
+            "WindDir3pm": {
+              "type": ["null", "string"]
+            },
+            "WindSpeed9am": {
+              "type": ["null", "string"]
+            },
+            "WindSpeed3pm": {
+              "type": ["null", "integer"]
+            },
+            "Humidity9am": {
+              "type": ["null", "integer"]
+            },
+            "Humidity3pm": {
+              "type": ["null", "integer"]
+            },
+            "Pressure9am": {
+              "type": ["null", "number"]
+            },
+            "Pressure3pm": {
+              "type": ["null", "number"]
+            },
+            "Cloud9am": {
+              "type": ["null", "integer"]
+            },
+            "Cloud3pm": {
+              "type": ["null", "integer"]
+            },
+            "Temp9am": {
+              "type": ["null", "number"]
+            },
+            "Temp3pm": {
+              "type": ["null", "number"]
+            },
+            "RainToday": {
+              "type": ["null", "string"]
+            },
+            "RISK_MM": {
+              "type": ["null", "number"]
+            },
+            "RainTomorrow": {
+              "type": ["null", "string"]
+            },
+            "weather.parquet?alt": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_source_file_last_modified"],
+        "is_resumable": true
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

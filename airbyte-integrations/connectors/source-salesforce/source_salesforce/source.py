@@ -8,11 +8,24 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import isodate
 import pendulum
+from dateutil.relativedelta import relativedelta
+from pendulum.parsing.exceptions import ParserError
+from requests import codes, exceptions  # type: ignore[import]
+
 from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Level, SyncMode
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    FailureType,
+    Level,
+    SyncMode,
+)
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
@@ -21,10 +34,6 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import FailureType
-from dateutil.relativedelta import relativedelta
-from pendulum.parsing.exceptions import ParserError
-from requests import codes, exceptions  # type: ignore[import]
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import (
@@ -37,6 +46,7 @@ from .streams import (
     RestSalesforceStream,
     RestSalesforceSubStream,
 )
+
 
 _DEFAULT_CONCURRENCY = 10
 _MAX_CONCURRENCY = 10
@@ -66,6 +76,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         super().__init__(concurrent_source)
         self.catalog = catalog
         self.state = state
+        self._job_tracker = JobTracker(limit=5)
 
     @staticmethod
     def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:
@@ -134,8 +145,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             raise Exception(f"Stream {stream_name} cannot be processed by REST or BULK API.")
         return full_refresh, incremental
 
-    @classmethod
-    def prepare_stream(cls, stream_name: str, json_schema, sobject_options, sf_object, authenticator, config):
+    def prepare_stream(self, stream_name: str, json_schema, sobject_options, sf_object, authenticator, config):
         """Choose proper stream class: syncMode(full_refresh/incremental), API type(Rest/Bulk), SubStream"""
         pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
         stream_kwargs = {
@@ -146,10 +156,12 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             "sf_api": sf_object,
             "authenticator": authenticator,
             "start_date": config.get("start_date"),
+            "job_tracker": self._job_tracker,
+            "message_repository": self.message_repository,
         }
 
-        api_type = cls._get_api_type(stream_name, json_schema, config.get("force_use_bulk_api", False))
-        full_refresh, incremental = cls._get_stream_type(stream_name, api_type)
+        api_type = self._get_api_type(stream_name, json_schema, config.get("force_use_bulk_api", False))
+        full_refresh, incremental = self._get_stream_type(stream_name, api_type)
         if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
             stream_class = incremental
             stream_kwargs["replication_key"] = replication_key
@@ -170,7 +182,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         schemas = sf_object.generate_schemas(stream_objects)
         default_args = [sf_object, authenticator, config]
         streams = []
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self.state)
+        state_manager = ConnectorStateManager(state=self.state)
         for stream_name, sobject_options in stream_objects.items():
             json_schema = schemas.get(stream_name, {})
 

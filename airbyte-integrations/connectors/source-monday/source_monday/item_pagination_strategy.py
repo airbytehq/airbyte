@@ -6,6 +6,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 
+
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #

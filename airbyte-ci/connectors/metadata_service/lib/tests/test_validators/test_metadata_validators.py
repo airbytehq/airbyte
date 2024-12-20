@@ -1,24 +1,76 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-
 import pytest
 import requests
 import semver
 import yaml
+
+from metadata_service.docker_hub import get_latest_version_on_dockerhub
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.validators import metadata_validator
 
 
 @pytest.fixture
 def metadata_definition():
-    metadata_file_url = (
-        "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors/source-faker/metadata.yaml"
+    return ConnectorMetadataDefinitionV0.parse_obj(
+        {
+            "data": {
+                "ab_internal": {"ql": 300, "sl": 100},
+                "allowedHosts": {"hosts": []},
+                "connectorBuildOptions": {
+                    "baseImage": "docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916"
+                },
+                "connectorSubtype": "api",
+                "connectorType": "source",
+                "definitionId": "dfd88b22-b603-4c3d-aad7-3701784586b1",
+                "dockerImageTag": "6.2.18-rc.1",
+                "dockerRepository": "airbyte/source-faker",
+                "documentationUrl": "https://docs.airbyte.com/integrations/sources/faker",
+                "githubIssueLabel": "source-faker",
+                "icon": "faker.svg",
+                "license": "MIT",
+                "name": "Sample Data (Faker)",
+                "registryOverrides": {"cloud": {"enabled": True}, "oss": {"enabled": True}},
+                "releaseStage": "beta",
+                "releases": {
+                    "rolloutConfiguration": {"enableProgressiveRollout": True},
+                    "breakingChanges": {
+                        "4.0.0": {"message": "This is a breaking change message", "upgradeDeadline": "2023-07-19"},
+                        "5.0.0": {
+                            "message": "ID and products.year fields are changing to be integers instead of floats.",
+                            "upgradeDeadline": "2023-08-31",
+                        },
+                        "6.0.0": {"message": "Declare 'id' columns as primary keys.", "upgradeDeadline": "2024-04-01"},
+                    },
+                },
+                "remoteRegistries": {"pypi": {"enabled": True, "packageName": "airbyte-source-faker"}},
+                "resourceRequirements": {
+                    "jobSpecific": [{"jobType": "sync", "resourceRequirements": {"cpu_limit": "4.0", "cpu_request": "1.0"}}]
+                },
+                "suggestedStreams": {"streams": ["users", "products", "purchases"]},
+                "supportLevel": "community",
+                "tags": ["language:python", "cdk:python"],
+                "connectorTestSuitesOptions": [
+                    {
+                        "suite": "liveTests",
+                        "testConnections": [{"name": "faker_config_dev_null", "id": "73abc3a9-3fea-4e7c-b58d-2c8236464a95"}],
+                    },
+                    {"suite": "unitTests"},
+                    {
+                        "suite": "acceptanceTests",
+                        "testSecrets": [
+                            {
+                                "name": "SECRET_SOURCE-FAKER_CREDS",
+                                "fileName": "config.json",
+                                "secretStore": {"type": "GSM", "alias": "airbyte-connector-testing-secret-store"},
+                            }
+                        ],
+                    },
+                ],
+            },
+            "metadataSpecVersion": "1.0",
+        }
     )
-    response = requests.get(metadata_file_url)
-    response.raise_for_status()
-
-    metadata_yaml_dict = yaml.safe_load(response.text)
-    return ConnectorMetadataDefinitionV0.parse_obj(metadata_yaml_dict)
 
 
 @pytest.mark.parametrize(
@@ -82,7 +134,8 @@ def test_validation_pass_on_docker_image_tag_increment(metadata_definition, incr
     assert error_message is None
 
 
-def test_validation_pass_on_same_docker_image_tag(metadata_definition):
+def test_validation_pass_on_same_docker_image_tag(mocker, metadata_definition):
+    mocker.patch.object(metadata_validator, "get_latest_version_on_dockerhub", return_value=metadata_definition.data.dockerImageTag)
     success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     assert success
     assert error_message is None

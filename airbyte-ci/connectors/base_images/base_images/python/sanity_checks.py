@@ -3,6 +3,7 @@
 #
 
 import dagger
+
 from base_images import errors
 from base_images import sanity_checks as base_sanity_checks
 
@@ -18,7 +19,7 @@ async def check_python_version(container: dagger.Container, expected_python_vers
         errors.SanityCheckError: Raised if the python --version command could not be executed or if the outputted version is not the expected one.
     """
     try:
-        python_version_output: str = await container.with_exec(["python", "--version"], skip_entrypoint=True).stdout()
+        python_version_output: str = await container.with_exec(["python", "--version"]).stdout()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
     if python_version_output != f"Python {expected_python_version}\n":
@@ -36,7 +37,7 @@ async def check_pip_version(container: dagger.Container, expected_pip_version: s
         errors.SanityCheckError: Raised if the pip --version command could not be executed or if the outputted version is not the expected one.
     """
     try:
-        pip_version_output: str = await container.with_exec(["pip", "--version"], skip_entrypoint=True).stdout()
+        pip_version_output: str = await container.with_exec(["pip", "--version"]).stdout()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
     if not pip_version_output.startswith(f"pip {expected_pip_version}"):
@@ -54,7 +55,7 @@ async def check_poetry_version(container: dagger.Container, expected_poetry_vers
         errors.SanityCheckError: Raised if the poetry --version command could not be executed or if the outputted version is not the expected one.
     """
     try:
-        poetry_version_output: str = await container.with_exec(["poetry", "--version"], skip_entrypoint=True).stdout()
+        poetry_version_output: str = await container.with_exec(["poetry", "--version"]).stdout()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
     if not poetry_version_output.startswith(f"Poetry (version {expected_poetry_version}"):
@@ -95,11 +96,10 @@ async def check_nltk_data(python_image_container: dagger.Container):
     Raises:
         errors.SanityCheckError: Raised if the nltk data is not available.
     """
-    with_nltk = await python_image_container.with_exec(["pip", "install", "nltk==3.8.1"], skip_entrypoint=True)
+    with_nltk = await python_image_container.with_exec(["pip", "install", "nltk==3.8.1"])
     try:
         await with_nltk.with_exec(
-            ["python", "-c", 'import nltk;nltk.data.find("taggers/averaged_perceptron_tagger");nltk.data.find("tokenizers/punkt")'],
-            skip_entrypoint=True,
+            ["python", "-c", 'import nltk;nltk.data.find("taggers/averaged_perceptron_tagger");nltk.data.find("tokenizers/punkt")']
         )
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
@@ -116,7 +116,7 @@ async def check_tesseract_version(python_image_container: dagger.Container, tess
         errors.SanityCheckError: Raised if the tesseract --version command could not be executed or if the outputted version is not the expected one.
     """
     try:
-        tesseract_version_output = await python_image_container.with_exec(["tesseract", "--version"], skip_entrypoint=True).stdout()
+        tesseract_version_output = await python_image_container.with_exec(["tesseract", "--version"]).stdout()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
     if not tesseract_version_output.startswith(f"tesseract {tesseract_version}"):
@@ -135,7 +135,7 @@ async def check_poppler_utils_version(python_image_container: dagger.Container, 
         errors.SanityCheckError: Raised if the pdftotext -v command could not be executed or if the outputted version is not the expected one.
     """
     try:
-        pdf_to_text_version_output = await python_image_container.with_exec(["pdftotext", "-v"], skip_entrypoint=True).stderr()
+        pdf_to_text_version_output = await python_image_container.with_exec(["pdftotext", "-v"]).stderr()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
 

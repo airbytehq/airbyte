@@ -115,7 +115,7 @@ constructor(
         val result = executeQuery(bigQuery, getQueryConfig(sql, params))
 
         if (result.getLeft() != null) {
-            val fieldList = result.getLeft()!!.getQueryResults().schema.fields
+            val fieldList = result.getLeft()!!.getQueryResults().schema!!.fields
             return Streams.stream(result.getLeft()!!.getQueryResults().iterateAll()).map {
                 fieldValues: FieldValueList ->
                 sourceOperations!!.rowToJson(BigQueryResultSet(fieldValues, fieldList))

@@ -1,0 +1,2027 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  BugSnag is an error monitoring and reporting software with best-in-class
+  functionality for mobile apps.
+
+check:
+  type: CheckStream
+  stream_names:
+    - organizations
+
+definitions:
+  streams:
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/organizations
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
+            stop_condition: >-
+              {{ not headers.get("Link", {}) or 'rel="next"' not in
+              headers.get("Link", {}) }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizations/{{ stream_partition['organization_id'] }}/projects
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
+            stop_condition: >-
+              {{ not headers.get("Link", {}) or 'rel="next"' not in
+              headers.get("Link", {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization_id
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    saved_searches:
+      type: DeclarativeStream
+      name: saved_searches
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/saved_searches
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/saved_searches"
+    saved_searches_usage_summary:
+      type: DeclarativeStream
+      name: saved_searches_usage_summary
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /saved_searches/{{ stream_partition['search_id'] }}/usage_summary
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: search_id
+              stream:
+                $ref: "#/definitions/streams/saved_searches"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - search_id
+              value: "{{ stream_partition['search_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/saved_searches_usage_summary"
+    errors:
+      type: DeclarativeStream
+      name: errors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/errors
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
+            stop_condition: >-
+              {{ not headers.get("Link", {}) or 'rel="next"' not in
+              headers.get("Link", {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_seen
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/errors"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/events
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+            full_reports: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
+            stop_condition: >-
+              {{ not headers.get("Link", {}) or 'rel="next"' not in
+              headers.get("Link", {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: received_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    pivots:
+      type: DeclarativeStream
+      name: pivots
+      primary_key:
+        - event_field_display_id
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/pivots
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pivots"
+    supported_integrations:
+      type: DeclarativeStream
+      name: supported_integrations
+      primary_key:
+        - key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /integrations
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/supported_integrations"
+    collaborators:
+      type: DeclarativeStream
+      name: collaborators
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /organizations/{{ stream_partition['organization_id']
+            }}/collaborators
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization_id
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['organization_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/collaborators"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizations/{{ stream_partition['organization_id'] }}/teams
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
+            stop_condition: >-
+              {{ not headers.get("Link", {}) or 'rel="next"' not in
+              headers.get("Link", {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization_id
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - organization_id
+              value: "{{ stream_partition['organization_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    event_fields:
+      type: DeclarativeStream
+      name: event_fields
+      primary_key:
+        - display_id
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/event_fields
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event_fields"
+    releases:
+      type: DeclarativeStream
+      name: releases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/releases
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: '{{ headers.get("Link", {}).split(";")[0][1:-1] }}'
+            stop_condition: >-
+              {{ not headers.get("Link", {}) or 'rel="next"' not in
+              headers.get("Link", {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: release_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/releases"
+    trace_fields:
+      type: DeclarativeStream
+      name: trace_fields
+      primary_key:
+        - display_id
+        - project_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_partition['project_id'] }}/trace_fields
+          http_method: GET
+          request_headers:
+            X-Version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: "{{ stream_partition['project_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/trace_fields"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.bugsnag.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: token {{ config['auth_token'] }}
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/saved_searches"
+  - $ref: "#/definitions/streams/saved_searches_usage_summary"
+  - $ref: "#/definitions/streams/errors"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/pivots"
+  - $ref: "#/definitions/streams/supported_integrations"
+  - $ref: "#/definitions/streams/collaborators"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/event_fields"
+  - $ref: "#/definitions/streams/releases"
+  - $ref: "#/definitions/streams/trace_fields"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - auth_token
+      - start_date
+    properties:
+      auth_token:
+        type: string
+        description: >-
+          Personal auth token for accessing the Bugsnag API. Generate it in the
+          My Account section of Bugsnag settings.
+        name: auth_token
+        order: 0
+        title: Auth Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    organizations: true
+    projects: true
+    saved_searches: true
+    saved_searches_usage_summary: true
+    errors: true
+    events: true
+    pivots: true
+    supported_integrations: true
+    collaborators: true
+    teams: true
+    event_fields: true
+    releases: true
+    trace_fields: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    organizations:
+      streamHash: 72eb1335ef5801558faf2d6ceca2866cdcef2463
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    projects:
+      streamHash: 568b386c39449d1c873d453e1794bb3ed9a3f5f1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    saved_searches:
+      streamHash: c81e208e720b9b2c71686ac69dd4ae75c6b3bf98
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    saved_searches_usage_summary:
+      streamHash: 7a33c6fbf435959b004d3942294f27bdf68810f0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    errors:
+      streamHash: 209441bfff6b233572fe00c08425720fa977e11a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: 27c77ce85c241558096ff1d97e1f48a23c470990
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pivots:
+      streamHash: fb8aa7094693b129f3f3ee7a06eb1ebd8ca3f259
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    supported_integrations:
+      streamHash: e0fcfb42a689af7d34a57ccc2809d640a2a8c2a9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    collaborators:
+      streamHash: 2e0895430fe1abdb5377cddb2fd48236bab982e4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: 830d78bba9bf15e48ef4564316fada88e0166bfb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    event_fields:
+      streamHash: ce629db7d982a685f86a77917498ea0143834cc2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    releases:
+      streamHash: 3d9ccdcb9f903feedd07af9ed44453e877b3ea94
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    trace_fields:
+      streamHash: e51516995ce0e3ad86e67f041ca3c641ddfe2f16
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://bugsnagapiv2.docs.apiary.io/
+
+schemas:
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      api_key:
+        type:
+          - string
+          - "null"
+      auto_upgrade:
+        type:
+          - boolean
+          - "null"
+      billing_emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      can_start_pro_trial:
+        type:
+          - boolean
+          - "null"
+      collaborators_url:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      pro_trial_feature:
+        type:
+          - boolean
+          - "null"
+      projects_url:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      upgrade_url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      api_key:
+        type:
+          - string
+          - "null"
+      collaborators_count:
+        type:
+          - number
+          - "null"
+      created_at:
+        type: string
+      custom_event_fields_used:
+        type:
+          - number
+          - "null"
+      default_performance_percentile:
+        type:
+          - string
+          - "null"
+      discarded_app_versions:
+        type:
+          - array
+          - "null"
+      discarded_errors:
+        type:
+          - array
+          - "null"
+      errors_url:
+        type:
+          - string
+          - "null"
+      events_url:
+        type:
+          - string
+          - "null"
+      for_review_error_count:
+        type:
+          - number
+          - "null"
+      global_grouping:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      html_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_full_view:
+        type:
+          - boolean
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      location_grouping:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      open_error_count:
+        type:
+          - number
+          - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
+      performance_display_type:
+        type:
+          - string
+          - "null"
+      release_stages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      resolve_on_deploy:
+        type:
+          - boolean
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      teams_count:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  saved_searches:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      additional_filtersets:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      filters:
+        type:
+          - object
+          - "null"
+      fixed_error_inclusion:
+        type:
+          - string
+          - "null"
+      for_review_error_inclusion:
+        type:
+          - string
+          - "null"
+      has_assigned_to:
+        type:
+          - boolean
+          - "null"
+      has_assigned_to_me:
+        type:
+          - boolean
+          - "null"
+      has_created_issue_filter:
+        type:
+          - boolean
+          - "null"
+      has_status_filter:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      ignored_error_inclusion:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      new_error_inclusion:
+        type:
+          - string
+          - "null"
+      open_error_inclusion:
+        type:
+          - string
+          - "null"
+      project_default:
+        type:
+          - boolean
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      shared:
+        type:
+          - boolean
+          - "null"
+      snoozed_error_inclusion:
+        type:
+          - string
+          - "null"
+      sort:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  saved_searches_usage_summary:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      collaborator_email_notifications_count:
+        type:
+          - number
+          - "null"
+      current_user_using_for_email_notification:
+        type:
+          - boolean
+          - "null"
+      project_notifications_count:
+        type:
+          - number
+          - "null"
+      search_id:
+        type:
+          - string
+          - "null"
+  errors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      comment_count:
+        type:
+          - number
+          - "null"
+      context:
+        type:
+          - string
+          - "null"
+      discarded:
+        type:
+          - boolean
+          - "null"
+      error_class:
+        type:
+          - string
+          - "null"
+      events:
+        type:
+          - number
+          - "null"
+      events_url:
+        type:
+          - string
+          - "null"
+      first_seen:
+        type:
+          - string
+          - "null"
+      first_seen_unfiltered:
+        type:
+          - string
+          - "null"
+      grouping_fields:
+        type:
+          - object
+          - "null"
+        properties:
+          errorClass:
+            type:
+              - string
+              - "null"
+          file:
+            type:
+              - string
+              - "null"
+          lineNumber:
+            type:
+              - string
+              - "null"
+          method:
+            type:
+              - string
+              - "null"
+      grouping_reason:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_seen:
+        type: string
+      last_seen_unfiltered:
+        type:
+          - string
+          - "null"
+      linked_issues:
+        type:
+          - array
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
+      missing_dsyms:
+        type:
+          - array
+          - "null"
+      original_severity:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      project_url:
+        type:
+          - string
+          - "null"
+      release_stages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      severity:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      unthrottled_occurrence_count:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      users:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - last_seen
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app:
+        type:
+          - object
+          - "null"
+        properties:
+          releaseStage:
+            type:
+              - string
+              - "null"
+      context:
+        type:
+          - string
+          - "null"
+      error_id:
+        type:
+          - string
+          - "null"
+      exceptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            errorClass:
+              type:
+                - string
+                - "null"
+            message:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      is_full_report:
+        type:
+          - boolean
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      project_url:
+        type:
+          - string
+          - "null"
+      received_at:
+        type: string
+      severity:
+        type:
+          - string
+          - "null"
+      unhandled:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - received_at
+  pivots:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      cardinality:
+        type:
+          - number
+          - "null"
+      event_field_display_id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      project_id:
+        type: string
+      summary:
+        type:
+          - object
+          - "null"
+        properties:
+          list:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                events:
+                  type:
+                    - number
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          no_value:
+            type:
+              - number
+              - "null"
+          other:
+            type:
+              - number
+              - "null"
+    required:
+      - event_field_display_id
+      - project_id
+  supported_integrations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      actions:
+        type:
+          - object
+          - "null"
+        properties:
+          create:
+            type:
+              - string
+              - "null"
+          new:
+            type:
+              - string
+              - "null"
+          object:
+            type:
+              - string
+              - "null"
+          view:
+            type:
+              - string
+              - "null"
+      created_entity_name:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            allowed_values:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            default_value:
+              type:
+                - boolean
+                - string
+                - "null"
+            deprecated:
+              type:
+                - boolean
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            link:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            optional:
+              type:
+                - boolean
+                - "null"
+            pattern:
+              type:
+                - string
+                - "null"
+      icon_url:
+        type:
+          - string
+          - "null"
+      issue_automation_options:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            automation_style:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+            error_fixed:
+              type:
+                - object
+                - "null"
+              properties:
+                configurable:
+                  type:
+                    - boolean
+                    - "null"
+                default_option:
+                  type:
+                    - string
+                    - "null"
+                multiple_states:
+                  type:
+                    - boolean
+                    - "null"
+                options:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+            error_new:
+              type:
+                - object
+                - "null"
+              properties:
+                configurable:
+                  type:
+                    - boolean
+                    - "null"
+            error_reopened:
+              type:
+                - object
+                - "null"
+              properties:
+                configurable:
+                  type:
+                    - boolean
+                    - "null"
+                default_option:
+                  type:
+                    - string
+                    - "null"
+                multiple_states:
+                  type:
+                    - boolean
+                    - "null"
+                options:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+            issue_resolved:
+              type:
+                - object
+                - "null"
+              properties:
+                configurable:
+                  type:
+                    - boolean
+                    - "null"
+                default_options:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                multiple_states:
+                  type:
+                    - boolean
+                    - "null"
+                options:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+            issue_unresolved:
+              type:
+                - object
+                - "null"
+              properties:
+                configurable:
+                  type:
+                    - boolean
+                    - "null"
+                default_options:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                multiple_states:
+                  type:
+                    - boolean
+                    - "null"
+                options:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+      key:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      two_way_sync:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - key
+  collaborators:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      heroku:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      is_admin:
+        type:
+          - boolean
+          - "null"
+      last_request_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      paid_for:
+        type:
+          - boolean
+          - "null"
+      password_updated_on:
+        type:
+          - string
+          - "null"
+      pending_invitation:
+        type:
+          - boolean
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      project_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      project_roles:
+        type:
+          - object
+          - "null"
+        properties:
+          670ef21b5f83760017ecb244:
+            type:
+              - string
+              - "null"
+          670ef41d5f83760014eca33c:
+            type:
+              - string
+              - "null"
+      recovery_codes_remaining:
+        type:
+          - number
+          - "null"
+      show_time_in_utc:
+        type:
+          - boolean
+          - "null"
+      team_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      two_factor_enabled:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      collaborator_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      organization_id:
+        type:
+          - string
+          - "null"
+      project_count:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  event_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      custom:
+        type:
+          - boolean
+          - "null"
+      display_id:
+        type: string
+      filter_options:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          aliases:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          hint_text:
+            type:
+              - string
+              - "null"
+          hint_url:
+            type:
+              - string
+              - "null"
+          match_types:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          name:
+            type:
+              - string
+              - "null"
+          values:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      path:
+        type:
+          - string
+          - "null"
+      pivot_options:
+        type:
+          - object
+          - "null"
+        properties:
+          aggregates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          average:
+            type:
+              - boolean
+              - "null"
+          cardinality:
+            type:
+              - boolean
+              - "null"
+          child_values:
+            type:
+              - boolean
+              - "null"
+          fields:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          filterable:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          summary:
+            type:
+              - boolean
+              - "null"
+          values:
+            type:
+              - boolean
+              - "null"
+      project_id:
+        type: string
+    required:
+      - display_id
+      - project_id
+  releases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+      app_bundle_version:
+        type:
+          - string
+          - "null"
+      app_version:
+        type:
+          - string
+          - "null"
+      app_version_code:
+        type:
+          - string
+          - "null"
+      build_label:
+        type:
+          - string
+          - "null"
+      build_tool:
+        type:
+          - string
+          - "null"
+      builder_name:
+        type:
+          - string
+          - "null"
+      errors_introduced_count:
+        type:
+          - number
+          - "null"
+      errors_seen_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      project_id:
+        type:
+          - string
+          - "null"
+      release_group_id:
+        type:
+          - string
+          - "null"
+      release_source:
+        type:
+          - string
+          - "null"
+      release_stage:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      release_time:
+        type: string
+    required:
+      - id
+      - release_time
+  trace_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      auto_complete:
+        type:
+          - boolean
+          - "null"
+      display_id:
+        type: string
+      filter_options:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          match_types:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          name:
+            type:
+              - string
+              - "null"
+          searchable:
+            type:
+              - boolean
+              - "null"
+          values:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      project_id:
+        type: string
+    required:
+      - display_id
+      - project_id

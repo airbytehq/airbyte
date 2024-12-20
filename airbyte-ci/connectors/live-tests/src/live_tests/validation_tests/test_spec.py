@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Set, Tuple
 
@@ -8,6 +9,7 @@ import dpath.util
 import jsonschema
 import pytest
 from airbyte_protocol.models import ConnectorSpecification
+
 from live_tests.commons.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_paths_in_connector_config
 from live_tests.commons.models import ExecutionResult, SecretDict
 from live_tests.utils import fail_test_on_failing_execution_results, find_all_values_for_key_in_schema, get_test_logger

@@ -1,0 +1,5741 @@
+version: 5.11.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - company
+
+definitions:
+  streams:
+    clients:
+      type: DeclarativeStream
+      name: clients
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /clients
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - clients
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clients"
+    company:
+      type: DeclarativeStream
+      name: company
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /company
+          http_method: GET
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    estimate_item_categories:
+      type: DeclarativeStream
+      name: estimate_item_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /estimate_item_categories
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - estimate_item_categories
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/estimate_item_categories"
+    estimates:
+      type: DeclarativeStream
+      name: estimates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /estimates
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - estimates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/estimates"
+    expense_categories:
+      type: DeclarativeStream
+      name: expense_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /expense_categories
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - expense_categories
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expense_categories"
+    expenses:
+      type: DeclarativeStream
+      name: expenses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /expenses
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - expenses
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expenses"
+    invoice_item_categories:
+      type: DeclarativeStream
+      name: invoice_item_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoice_item_categories
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - invoice_item_categories
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoice_item_categories"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - invoices
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - projects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /roles
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - roles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    task_assignments:
+      type: DeclarativeStream
+      name: task_assignments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /task_assignments
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - task_assignments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/task_assignments"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tasks
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    time_entries:
+      type: DeclarativeStream
+      name: time_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /time_entries
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - time_entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_entries"
+    user_assignments:
+      type: DeclarativeStream
+      name: user_assignments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user_assignments
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - user_assignments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_assignments"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    expenses_categories:
+      type: DeclarativeStream
+      name: expenses_categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/expenses/categories
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: to
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P365D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - from
+              value: "\"{{ stream_partition.start_time }}\""
+        - type: AddFields
+          fields:
+            - path:
+                - to
+              value: "\"{{ stream_partition.end_time }}\""
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expenses_categories"
+    expenses_clients:
+      type: DeclarativeStream
+      name: expenses_clients
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/expenses/clients
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: to
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P365D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - from
+              value: "\"{{ stream_partition.start_time }}\""
+        - type: AddFields
+          fields:
+            - path:
+                - to
+              value: "\"{{ stream_partition.end_time }}\""
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expenses_clients"
+    expenses_projects:
+      type: DeclarativeStream
+      name: expenses_projects
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/expenses/projects
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: to
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P365D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - from
+              value: "\"{{ stream_partition.start_time }}\""
+        - type: AddFields
+          fields:
+            - path:
+                - to
+              value: "\"{{ stream_partition.end_time }}\""
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expenses_projects"
+    expenses_team:
+      type: DeclarativeStream
+      name: expenses_team
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/expenses/team
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: to
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P365D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - from
+              value: "\"{{ stream_partition.start_time }}\""
+        - type: AddFields
+          fields:
+            - path:
+                - to
+              value: "\"{{ stream_partition.end_time }}\""
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/expenses_team"
+    project_budget:
+      type: DeclarativeStream
+      name: project_budget
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/project_budget
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_budget"
+    time_clients:
+      type: DeclarativeStream
+      name: time_clients
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/time/clients
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: to
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P365D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - from
+              value: "\"{{ stream_partition.start_time }}\""
+        - type: AddFields
+          fields:
+            - path:
+                - to
+              value: "\"{{ stream_partition.end_time }}\""
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_clients"
+    time_projects:
+      type: DeclarativeStream
+      name: time_projects
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/time/projects
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: to
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P365D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - from
+              value: "\"{{ stream_partition.start_time }}\""
+        - type: AddFields
+          fields:
+            - path:
+                - to
+              value: "\"{{ stream_partition.end_time }}\""
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_projects"
+    time_tasks:
+      type: DeclarativeStream
+      name: time_tasks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/time/tasks
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: to
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P365D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - from
+              value: "\"{{ stream_partition.start_time }}\""
+        - type: AddFields
+          fields:
+            - path:
+                - to
+              value: "\"{{ stream_partition.end_time }}\""
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_tasks"
+    time_team:
+      type: DeclarativeStream
+      name: time_team
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/time/team
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: to
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P365D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - from
+              value: "\"{{ stream_partition.start_time }}\""
+        - type: AddFields
+          fields:
+            - path:
+                - to
+              value: "\"{{ stream_partition.end_time }}\""
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_team"
+    uninvoiced:
+      type: DeclarativeStream
+      name: uninvoiced
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/uninvoiced
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: to
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P365D
+        cursor_granularity: P1D
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - from
+              value: "\"{{ stream_partition.start_time }}\""
+        - type: AddFields
+          fields:
+            - path:
+                - to
+              value: "\"{{ stream_partition.end_time }}\""
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/uninvoiced"
+    estimate_messages:
+      type: DeclarativeStream
+      name: estimate_messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /estimates/{{stream_partition.id}}/messages
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - estimate_messages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/estimates"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - parent_id
+              value: "{{stream_partition.id}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/estimate_messages"
+    invoice_messages:
+      type: DeclarativeStream
+      name: invoice_messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/{{stream_partition.id}}/messages
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - invoice_messages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/invoices"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - parent_id
+              value: "{{stream_partition.id}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoice_messages"
+    invoice_payments:
+      type: DeclarativeStream
+      name: invoice_payments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices/{{stream_partition.id}}/payments
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - invoice_payments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/invoices"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - parent_id
+              value: "{{stream_partition.id}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoice_payments"
+    project_assignments:
+      type: DeclarativeStream
+      name: project_assignments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/{{stream_partition.id}}/project_assignments
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - project_assignments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/users"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"replication_start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - parent_id
+              value: "{{stream_partition.id}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_assignments"
+    billable_rates:
+      type: DeclarativeStream
+      name: billable_rates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/{{stream_partition['id']}}/billable_rates
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - billable_rates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - parent_id
+              value: "{{stream_partition.id}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/billable_rates"
+    cost_rates:
+      type: DeclarativeStream
+      name: cost_rates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/{{stream_partition.id}}/cost_rates
+          http_method: GET
+          request_parameters:
+            per_page: "50"
+          request_headers:
+            Harvest-Account-Id: "{{ config['account_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 401
+                    error_message: Please ensure your credentials are valid.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: >-
+                      This is most likely due to insufficient permissions on the
+                      credentials in use.
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: >-
+                      Please ensure that your account ID is properly set. If it
+                      is the case and you are still seeing this error, please
+                      contact Airbyte support.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - cost_rates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - parent_id
+              value: "{{stream_partition.id}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cost_rates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.harvestapp.com/v2/
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticators:
+        Token:
+          type: BearerAuthenticator
+          api_token: "{{ config['credentials']['api_token'] }}"
+        Client:
+          type: OAuthAuthenticator
+          client_id: "{{ config['credentials']['client_id'] }}"
+          grant_type: refresh_token
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+          refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+
+streams:
+  - $ref: "#/definitions/streams/clients"
+  - $ref: "#/definitions/streams/company"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/estimate_item_categories"
+  - $ref: "#/definitions/streams/estimates"
+  - $ref: "#/definitions/streams/expense_categories"
+  - $ref: "#/definitions/streams/expenses"
+  - $ref: "#/definitions/streams/invoice_item_categories"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/task_assignments"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/time_entries"
+  - $ref: "#/definitions/streams/user_assignments"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/expenses_categories"
+  - $ref: "#/definitions/streams/expenses_clients"
+  - $ref: "#/definitions/streams/expenses_projects"
+  - $ref: "#/definitions/streams/expenses_team"
+  - $ref: "#/definitions/streams/project_budget"
+  - $ref: "#/definitions/streams/time_clients"
+  - $ref: "#/definitions/streams/time_projects"
+  - $ref: "#/definitions/streams/time_tasks"
+  - $ref: "#/definitions/streams/time_team"
+  - $ref: "#/definitions/streams/uninvoiced"
+  - $ref: "#/definitions/streams/estimate_messages"
+  - $ref: "#/definitions/streams/invoice_messages"
+  - $ref: "#/definitions/streams/invoice_payments"
+  - $ref: "#/definitions/streams/project_assignments"
+  - $ref: "#/definitions/streams/billable_rates"
+  - $ref: "#/definitions/streams/cost_rates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - account_id
+      - replication_start_date
+    properties:
+      account_id:
+        type: string
+        description: >-
+          Harvest account ID. Required for all Harvest requests in pair with
+          Personal Access Token
+        order: 0
+        title: Account ID
+        airbyte_secret: true
+      replication_start_date:
+        type: string
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated.
+        order: 1
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2017-01-25T00:00:00Z"
+      replication_end_date:
+        type: string
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data after
+          this date will not be replicated.
+        order: 2
+        title: End Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2017-01-25T00:00:00Z"
+        airbyte_hidden: true
+      credentials:
+        type: object
+        description: Choose how to authenticate to Harvest.
+        oneOf:
+          - type: object
+            title: Authenticate via Harvest (OAuth)
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: Client
+                order: 0
+              client_id:
+                type: string
+                description: The Client ID of your Harvest developer application.
+                title: Client ID
+              client_secret:
+                type: string
+                description: The Client Secret of your Harvest developer application.
+                title: Client Secret
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                description: Refresh Token to renew the expired Access Token.
+                title: Refresh Token
+                airbyte_secret: true
+            additionalProperties: true
+          - type: object
+            title: Authenticate with Personal Access Token
+            required:
+              - api_token
+            properties:
+              api_token:
+                type: string
+                description: >-
+                  Log into Harvest and then create new <a
+                  href="https://id.getharvest.com/developers"> personal access
+                  token</a>.
+                title: Personal Access Token
+                airbyte_secret: true
+              auth_type:
+                type: string
+                const: Token
+                order: 0
+            additionalProperties: true
+        order: 3
+        title: Authentication mechanism
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    clients: true
+    company: true
+    contacts: true
+    estimate_item_categories: true
+    estimates: true
+    expense_categories: true
+    expenses: true
+    invoice_item_categories: true
+    invoices: true
+    projects: true
+    roles: true
+    task_assignments: false
+    tasks: true
+    time_entries: true
+    user_assignments: true
+    users: true
+    expenses_categories: true
+    expenses_clients: true
+    expenses_projects: true
+    expenses_team: true
+    project_budget: true
+    time_clients: true
+    time_projects: true
+    time_tasks: true
+    time_team: true
+    uninvoiced: true
+    estimate_messages: true
+    invoice_messages: true
+    invoice_payments: true
+    project_assignments: true
+    billable_rates: true
+    cost_rates: true
+  yamlComponents:
+    streams:
+      clients:
+        - errorHandler
+      contacts:
+        - errorHandler
+      estimate_item_categories:
+        - errorHandler
+      estimates:
+        - errorHandler
+      expense_categories:
+        - errorHandler
+      expenses:
+        - errorHandler
+      invoice_item_categories:
+        - errorHandler
+      invoices:
+        - errorHandler
+      projects:
+        - errorHandler
+      roles:
+        - errorHandler
+      task_assignments:
+        - errorHandler
+      tasks:
+        - errorHandler
+      time_entries:
+        - errorHandler
+      user_assignments:
+        - errorHandler
+      users:
+        - errorHandler
+      expenses_categories:
+        - errorHandler
+      expenses_clients:
+        - errorHandler
+      expenses_projects:
+        - errorHandler
+      expenses_team:
+        - errorHandler
+      project_budget:
+        - errorHandler
+      time_clients:
+        - errorHandler
+      time_projects:
+        - errorHandler
+      time_tasks:
+        - errorHandler
+      time_team:
+        - errorHandler
+      uninvoiced:
+        - errorHandler
+      estimate_messages:
+        - errorHandler
+      invoice_messages:
+        - errorHandler
+      invoice_payments:
+        - errorHandler
+      project_assignments:
+        - errorHandler
+      billable_rates:
+        - errorHandler
+      cost_rates:
+        - errorHandler
+    global:
+      - authenticator
+  testedStreams:
+    clients:
+      streamHash: d8cdaf88743431e6801dc200b825b6782e9605fc
+    company:
+      streamHash: 325af6ff2e0552d3886de054a2e8e08741852d13
+    contacts:
+      streamHash: 460078560a6001d88c2a23272b714f61216c2b7d
+    estimate_item_categories:
+      streamHash: 06c8c133acf78e0483e62e7bd65e97abc93e075d
+    estimates:
+      streamHash: 1507b989e277d64bb259d3038fd3d4830ae2ca49
+    expense_categories:
+      streamHash: add93bd75365c43dde1724861f65c53d0d82ea2e
+    expenses:
+      streamHash: 7e2b841580128b8ca3fc2b4e9296993cba366cf6
+    invoice_item_categories:
+      streamHash: 14725d0427e26ce35803a0b81e612874b15efc58
+    invoices:
+      streamHash: 6b774bfe7b4be9d0ec330eb61883b2a917df4190
+    projects:
+      streamHash: f140b764c5712b325e0398d50d7cbb7e5c5a2b22
+    roles:
+      streamHash: 26be31d04bffbacc601e85046a4accd0cf9cf37e
+    task_assignments:
+      streamHash: 56de2110fd110723cb28f21452fce7e8cfe6ff72
+    tasks:
+      streamHash: 0b5f2a6617271dc2788d0797f5eae99f6ae9c676
+    time_entries:
+      streamHash: a739c04ee5636e21be16c6780a0a44144d48765f
+    user_assignments:
+      streamHash: 071df4020a4e86042537aca5c83e3568a9741995
+    users:
+      streamHash: d2dbbb89b201e0ec44516e7611acbbbd1ca28c5f
+    expenses_categories:
+      streamHash: 5ddb6bbbfee7a39b8d744db1d134c5ebeab3f2e7
+    expenses_clients:
+      streamHash: d9e94401d2285d9458cd6bd4bcd69f2afdaabb5c
+    expenses_projects:
+      streamHash: cacaff590966970fb603a92a9cd924e2657b4e48
+    expenses_team:
+      streamHash: 23745b850e9efca2a96555b3c85f486ab74b5e49
+    project_budget:
+      streamHash: 4a1b588ca4fc2572aeed358d279b24b71ea63aa9
+    time_clients:
+      streamHash: e598bd5763ec7eaae357564cd163299649d7ec83
+    time_projects:
+      streamHash: b54310cc4a4c966f9a92c51ae5386d72f94e8ed7
+    time_tasks:
+      streamHash: f4568a104accd94bb4b0a1f7a7bc19df52291439
+    time_team:
+      streamHash: 3e0a61862dd6d0af0f5d13fd2f93331e86b3417c
+    uninvoiced:
+      streamHash: ec3cee771ba8d252b1c124f6b5915f6a1889f0e6
+    estimate_messages:
+      streamHash: 79928af30431f4925a1e11897674dcdb1bad8f7a
+    invoice_messages:
+      streamHash: 157ca8bb671c6b81ec7e9e356df356fcb867773f
+    invoice_payments:
+      streamHash: 915604f1f279b7317f8a078ecc8b3ae22d18c79f
+    project_assignments:
+      streamHash: f78913890dcddfcf824f3b30a2c0f2c32af49bf3
+    billable_rates:
+      streamHash: 38a21d690af221346e778d17fdd50235c66aed44
+    cost_rates:
+      streamHash: 2b5d8b57636cd60bd055a3dbfe194d32b3264c28
+  assist: {}
+
+schemas:
+  clients:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - "null"
+          - string
+        description: The client's postal address.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the client record was created.
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency used by the client.
+      id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the client.
+      is_active:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the client is currently active or not.
+      name:
+        type:
+          - "null"
+          - string
+        description: The client's name.
+      statement_key:
+        type:
+          - "null"
+          - string
+        description: Key used for client's statements or invoices.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the client record was last updated.
+        format: date-time
+  company:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      approval_required:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if approval is required for certain actions.
+      base_uri:
+        type:
+          - "null"
+          - string
+        description: The base URI used in constructing URLs for this company.
+      clock:
+        type:
+          - "null"
+          - string
+        description: The clock configuration for time tracking.
+      color_scheme:
+        type:
+          - "null"
+          - string
+        description: The color scheme used in the user interface.
+      decimal_symbol:
+        type:
+          - "null"
+          - string
+        description: >-
+          The symbol used to separate the integer part from the fractional part
+          of a number.
+      estimate_feature:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the estimate feature is enabled for this company.
+      expense_feature:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the expense feature is enabled for this company.
+      full_domain:
+        type:
+          - "null"
+          - string
+        description: The full domain name associated with this company.
+      invoice_feature:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the invoice feature is enabled for this company.
+      is_active:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the company is currently active.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the company.
+      plan_type:
+        type:
+          - "null"
+          - string
+        description: The type of plan subscribed by the company.
+      thousands_separator:
+        type:
+          - "null"
+          - string
+        description: The symbol used to separate thousands in a number.
+      time_format:
+        type:
+          - "null"
+          - string
+        description: The format used to display time.
+      wants_timestamp_timers:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the company wants timestamp timers displayed.
+      week_start_day:
+        type:
+          - "null"
+          - string
+        description: The day considered the start of the week for this company.
+      weekly_capacity:
+        type:
+          - "null"
+          - integer
+        description: The weekly capacity setting for this company.
+  contacts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      client:
+        type:
+          - "null"
+          - object
+        description: Details of the client associated with the contact
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: Unique identifier for the client
+          name:
+            type:
+              - "null"
+              - string
+            description: Name of the client
+      created_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp of when the contact was created
+        format: date-time
+      email:
+        type:
+          - "null"
+          - string
+        description: Email address of the contact
+      fax:
+        type:
+          - "null"
+          - string
+        description: Fax number of the contact
+      first_name:
+        type:
+          - "null"
+          - string
+        description: First name of the contact
+      id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the contact
+      last_name:
+        type:
+          - "null"
+          - string
+        description: Last name of the contact
+      phone_mobile:
+        type:
+          - "null"
+          - string
+        description: Mobile phone number of the contact
+      phone_office:
+        type:
+          - "null"
+          - string
+        description: Office phone number of the contact
+      title:
+        type:
+          - "null"
+          - string
+        description: Job title of the contact
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp of when the contact was last updated
+        format: date-time
+  estimate_item_categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the estimate item category was created.
+        format: date-time
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for the estimate item category.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the estimate item category.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the estimate item category was last updated.
+        format: date-time
+  estimates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      accepted_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the estimates was accepted.
+      amount:
+        type:
+          - "null"
+          - number
+        description: The total amount of the estimate.
+      client:
+        type:
+          - "null"
+          - object
+        description: Details about the client associated with the estimates
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the client.
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the client.
+      client_key:
+        type:
+          - "null"
+          - string
+        description: The key associated with the client.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the estimates was created.
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - object
+        description: Information about the creator of the estimates
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the user who created the estimate.
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the user who created the estimate.
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency used for the estimate.
+      declined_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the estimates was declined.
+      discount:
+        type:
+          - "null"
+          - number
+        description: The discount percentage applied to the estimate.
+      discount_amount:
+        type:
+          - "null"
+          - number
+        description: The total discount amount applied to the estimate.
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the estimate.
+      issue_date:
+        type:
+          - "null"
+          - string
+        description: The date when the estimate was issued.
+        format: date
+      line_items:
+        type:
+          - "null"
+          - array
+        description: The list of line items included in the estimate.
+      notes:
+        type:
+          - "null"
+          - string
+        description: Any additional notes or comments related to the estimate.
+      number:
+        type:
+          - "null"
+          - string
+        description: The unique number assigned to the estimate.
+      purchase_order:
+        type:
+          - "null"
+          - string
+        description: The purchase order associated with the estimate.
+      sent_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the estimate was sent.
+        format: date-time
+      state:
+        type:
+          - "null"
+          - string
+        description: The current state of the estimate (e.g., pending, accepted, declined).
+      subject:
+        type:
+          - "null"
+          - string
+        description: The subject or description of the estimate.
+      tax:
+        type:
+          - "null"
+          - number
+        description: The tax rate applied to the estimate.
+      tax2:
+        type:
+          - "null"
+          - number
+        description: An additional tax rate applied to the estimate.
+      tax2_amount:
+        type:
+          - "null"
+          - number
+        description: The total amount of the additional tax applied to the estimate.
+      tax_amount:
+        type:
+          - "null"
+          - number
+        description: The total amount of tax applied to the estimate.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the estimate was last updated.
+        format: date-time
+  expense_categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the expense category was created.
+        format: date-time
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for the expense category.
+      is_active:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the expense category is currently active or not.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the expense category.
+      unit_name:
+        type:
+          - "null"
+          - string
+        description: The unit of measurement for the expense category.
+      unit_price:
+        type:
+          - "null"
+          - number
+        description: The price per unit of the expense category.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the expense category was last updated.
+        format: date-time
+  expenses:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the expense is billable to the client
+      client:
+        type:
+          - "null"
+          - object
+        description: Details of the client associated with the expense
+        properties:
+          currency:
+            type:
+              - "null"
+              - string
+            description: Currency used for the client's transactions
+          id:
+            type:
+              - "null"
+              - integer
+            description: Unique identifier for the client
+          name:
+            type:
+              - "null"
+              - string
+            description: Name of the client associated with the expense
+      created_at:
+        type:
+          - "null"
+          - string
+        description: Date and time when the expense was created
+        format: date-time
+      expense_category:
+        type:
+          - "null"
+          - object
+        description: Information about the category of the expense
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: Unique identifier for the expense category
+          name:
+            type:
+              - "null"
+              - string
+            description: Name of the expense category
+          unit_name:
+            type:
+              - "null"
+              - string
+            description: Name of the unit (if applicable)
+          unit_price:
+            type:
+              - "null"
+              - number
+            description: Price per unit (if applicable)
+      id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the expense entry
+      invoice:
+        type:
+          - "null"
+          - object
+        description: Details of the invoice related to the expense
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: Unique identifier for the invoice associated with the expense
+          number:
+            type:
+              - "null"
+              - string
+            description: Invoice number related to the expense
+      is_billed:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the expense has been billed to the client
+      is_closed:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the expense entry is closed
+      is_locked:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the expense entry is locked
+      locked_reason:
+        type:
+          - "null"
+          - string
+        description: Reason for locking the expense entry
+      notes:
+        type:
+          - "null"
+          - string
+        description: Additional notes or comments for the expense entry
+      project:
+        type:
+          - "null"
+          - object
+        description: Information about the project for which the expense was made
+        properties:
+          code:
+            type:
+              - "null"
+              - string
+            description: Code associated with the project
+          id:
+            type:
+              - "null"
+              - integer
+            description: Unique identifier for the project
+          name:
+            type:
+              - "null"
+              - string
+            description: Name of the project associated with the expense
+      receipt:
+        type:
+          - "null"
+          - object
+        description: Details of the receipt attached to the expense
+        properties:
+          content_type:
+            type:
+              - "null"
+              - string
+            description: MIME type of the receipt content
+          file_name:
+            type:
+              - "null"
+              - string
+            description: Name of the receipt file
+          file_size:
+            type:
+              - "null"
+              - integer
+            description: Size of the receipt file
+          url:
+            type:
+              - "null"
+              - string
+            description: URL path to access the receipt file
+      spent_date:
+        type:
+          - "null"
+          - string
+        description: Date when the expense was incurred
+        format: date
+      total_cost:
+        type:
+          - "null"
+          - number
+        description: Total cost of the expense entry
+      units:
+        type:
+          - "null"
+          - number
+        description: Number of units (if applicable)
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: Date and time of the last update to the expense entry
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        description: Information about the user who incurred the expense
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: Unique identifier for the user
+          name:
+            type:
+              - "null"
+              - string
+            description: Name of the user who incurred the expense
+      user_assignment:
+        type:
+          - "null"
+          - object
+        description: Details of the assignment or task associated with the expense
+        properties:
+          budget:
+            type:
+              - "null"
+              - number
+            description: Budget allocated for the user assignment
+          created_at:
+            type:
+              - "null"
+              - string
+            description: Date and time when the user assignment was created
+            format: date-time
+          hourly_rate:
+            type:
+              - "null"
+              - number
+            description: Hourly rate set for the user assignment
+          id:
+            type:
+              - "null"
+              - integer
+            description: Unique identifier for the user assignment
+          is_active:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the user assignment is active
+          is_project_manager:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the user is a project manager
+          updated_at:
+            type:
+              - "null"
+              - string
+            description: Date and time of the last update to the user assignment
+            format: date-time
+          use_default_rates:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if default rates are used for the user assignment
+  invoice_item_categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the invoice item category was created.
+        format: date-time
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for the invoice item category.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the invoice item category.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the invoice item category was last updated.
+        format: date-time
+      use_as_expense:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the category is used as an expense type.
+      use_as_service:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the category is used as a service type.
+  invoices:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - "null"
+          - number
+        description: The total amount of the invoice
+      client:
+        type:
+          - "null"
+          - object
+        description: Details of the client associated with the invoice
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the client
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the client
+      client_key:
+        type:
+          - "null"
+          - string
+        description: Key associated with the client
+      closed_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp when the invoice was closed
+      created_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp when the invoice was created
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - object
+        description: Information about the creator of the invoice
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the creator
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the creator
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency used for the invoice
+      discount:
+        type:
+          - "null"
+          - number
+        description: Discount percentage applied to the invoice
+      discount_amount:
+        type:
+          - "null"
+          - number
+        description: The total discount amount applied
+      due_amount:
+        type:
+          - "null"
+          - number
+        description: The remaining amount that is due
+      due_date:
+        type:
+          - "null"
+          - string
+        description: Due date for the invoice payment
+      estimate:
+        type:
+          - "null"
+          - string
+        description: Whether the invoice is an estimate
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the invoice
+      issue_date:
+        type:
+          - "null"
+          - string
+        description: Date when the invoice was issued
+      line_items:
+        type:
+          - "null"
+          - array
+        description: >-
+          List of line items containing the services/products included in the
+          invoice
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            description:
+              type:
+                - "null"
+                - string
+              description: Description of the line item
+            amount:
+              type:
+                - "null"
+                - number
+              description: The amount per line item
+            id:
+              type:
+                - "null"
+                - integer
+              description: The unique identifier of the line item
+            kind:
+              type:
+                - "null"
+                - string
+              description: Type of line item
+            project:
+              type:
+                - "null"
+                - object
+              description: Details of the project related to the line item
+              properties:
+                code:
+                  type:
+                    - "null"
+                    - string
+                  description: Project code of the line item
+                id:
+                  type:
+                    - integer
+                    - "null"
+                  description: The unique identifier of the project
+                name:
+                  type:
+                    - "null"
+                    - string
+                  description: Name of the project
+            quantity:
+              type:
+                - "null"
+                - number
+              description: Quantity of the line item
+            taxed:
+              type:
+                - "null"
+                - boolean
+              description: Whether the line item is taxed
+            taxed2:
+              type:
+                - "null"
+                - boolean
+              description: Whether the line item is taxed at a different rate
+            unit_price:
+              type:
+                - "null"
+                - number
+              description: Unit price of the line item
+      notes:
+        type:
+          - "null"
+          - string
+        description: Additional notes related to the invoice
+      number:
+        type:
+          - "null"
+          - string
+        description: Invoice number
+      paid_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp when the invoice was paid
+      paid_date:
+        type:
+          - "null"
+          - string
+        description: Date when the invoice was paid
+      payment_options:
+        type:
+          - "null"
+          - array
+        description: Payment options available for the invoice
+      payment_term:
+        type:
+          - "null"
+          - string
+        description: Payment terms associated with the invoice
+      period_end:
+        type:
+          - "null"
+          - string
+        description: End date of the period covered by the invoice
+      period_start:
+        type:
+          - "null"
+          - string
+        description: Start date of the period covered by the invoice
+      purchase_order:
+        type:
+          - "null"
+          - string
+        description: Purchase order related to the invoice
+      recurring_invoice_id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier of the recurring invoice
+      retainer:
+        type:
+          - "null"
+          - string
+        description: Whether the invoice is for a retainer
+      sent_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp when the invoice was sent
+        format: date-time
+      state:
+        type:
+          - "null"
+          - string
+        description: Current state of the invoice
+      subject:
+        type:
+          - "null"
+          - string
+        description: Subject of the invoice
+      tax:
+        type:
+          - "null"
+          - number
+        description: Tax amount applied
+      tax2:
+        type:
+          - "null"
+          - number
+        description: Additional tax amount applied at a different rate
+      tax2_amount:
+        type:
+          - "null"
+          - number
+        description: Total amount of tax2 applied
+      tax_amount:
+        type:
+          - "null"
+          - number
+        description: Total amount of tax applied
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp when the invoice was last updated
+        format: date-time
+  projects:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      bill_by:
+        type:
+          - "null"
+          - string
+        description: Indicates how the project is billed, e.g., hourly, fixed fee, etc.
+      budget:
+        type:
+          - "null"
+          - number
+        description: The allocated budget for the project.
+      budget_by:
+        type:
+          - "null"
+          - string
+        description: Specifies how the budget is managed, e.g., total, task, person, etc.
+      budget_is_monthly:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the budget is monthly.
+      client:
+        type:
+          - "null"
+          - object
+        description: Details of the client associated with the project.
+        properties:
+          currency:
+            type:
+              - "null"
+              - string
+            description: The currency used for the project.
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the client.
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the client associated with the project.
+      code:
+        type:
+          - "null"
+          - string
+        description: A unique identifier or code for the project.
+      cost_budget:
+        type:
+          - "null"
+          - number
+        description: The total cost budget for the project.
+      cost_budget_include_expenses:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether expenses are included in the cost budget.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the project was created.
+        format: date-time
+      ends_on:
+        type:
+          - "null"
+          - string
+        description: The end date of the project.
+      fee:
+        type:
+          - "null"
+          - number
+        description: The fee associated with the project.
+      hourly_rate:
+        type:
+          - "null"
+          - number
+        description: The hourly rate for the project.
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the project.
+      is_active:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the project is currently active.
+      is_billable:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the project is billable.
+      is_fixed_fee:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the project has a fixed fee.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name or title of the project.
+      notes:
+        type:
+          - "null"
+          - string
+        description: Any additional notes or comments related to the project.
+      notify_when_over_budget:
+        type:
+          - "null"
+          - boolean
+        description: >-
+          Indicates whether notifications are sent when the project goes over
+          budget.
+      over_budget_notification_date:
+        type:
+          - "null"
+          - string
+        description: The date for sending notifications when the project goes over budget.
+        format: date
+      over_budget_notification_percentage:
+        type:
+          - "null"
+          - number
+        description: The percentage threshold for over-budget notifications.
+      show_budget_to_all:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the budget is visible to all project members.
+      starts_on:
+        type:
+          - "null"
+          - string
+        description: The start date of the project.
+        format: date
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the project was last updated.
+        format: date-time
+  roles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the role was created
+        format: date-time
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for the role
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the role
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the role was last updated
+        format: date-time
+      user_ids:
+        type:
+          - "null"
+          - array
+        description: An array of user IDs associated with the role
+        items:
+          type: integer
+          description: The unique identifier for a user assigned to this role
+  task_assignments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the task assignment is billable or not
+      budget:
+        type:
+          - "null"
+          - string
+        description: The budget allocated for this task assignment
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the task assignment was created
+        format: date-time
+      hourly_rate:
+        type:
+          - "null"
+          - number
+        description: The hourly rate for this task assignment
+      id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the task assignment
+      is_active:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the task assignment is currently active
+      project:
+        type:
+          - "null"
+          - object
+        description: Details about the project the task assignment is associated with.
+        properties:
+          code:
+            type:
+              - "null"
+              - string
+            description: The code assigned to the project
+          id:
+            type:
+              - "null"
+              - integer
+            description: Unique identifier for the project
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the project
+      task:
+        type:
+          - "null"
+          - object
+        description: Information related to the task assigned.
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: Unique identifier for the task
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the task
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the task assignment was last updated
+        format: date-time
+  tasks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_by_default:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the task is billable by default for the project.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp for when the task was created.
+        format: date-time
+      default_hourly_rate:
+        type:
+          - "null"
+          - number
+        description: Default hourly rate set for the task.
+      id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the task.
+      is_active:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the task is active or not.
+      is_default:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the task is the default task for the project.
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the task.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: Timestamp for when the task was last updated.
+        format: date-time
+  time_entries:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the time entry is billable or not.
+      billable_rate:
+        type:
+          - "null"
+          - number
+        description: The rate at which the time entry is billable.
+      budgeted:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the time entry is within the budget.
+      client:
+        type:
+          - "null"
+          - object
+        description: The client associated with the time entry
+        properties:
+          currency:
+            type:
+              - "null"
+              - string
+            description: The currency used by the client.
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the client.
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the client.
+      cost_rate:
+        type:
+          - "null"
+          - number
+        description: The cost rate associated with the time entry.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the time entry was created.
+        format: date-time
+      ended_time:
+        type:
+          - "null"
+          - string
+        description: The time when the time entry ended.
+      external_reference:
+        type:
+          - "null"
+          - string
+        description: An external reference linked to the time entry.
+      hours:
+        type:
+          - "null"
+          - number
+        description: The total hours logged in the time entry.
+      hours_without_timer:
+        type:
+          - "null"
+          - number
+        description: Hours logged without using a timer.
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the time entry.
+      invoice:
+        type:
+          - "null"
+          - object
+        description: The invoice related to the time entry
+        properties:
+          id:
+            type: integer
+            description: The unique identifier of the associated invoice.
+          number:
+            type: string
+            description: The invoice number associated with the time entry.
+      is_billed:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the time entry has been billed.
+      is_closed:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the time entry is closed.
+      is_locked:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the time entry is locked.
+      is_running:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the time entry is currently running.
+      locked_reason:
+        type:
+          - "null"
+          - string
+        description: The reason why the time entry is locked.
+      notes:
+        type:
+          - "null"
+          - string
+        description: Any additional notes associated with the time entry.
+      project:
+        type:
+          - "null"
+          - object
+        description: The project where the time entry was tracked
+        properties:
+          code:
+            type:
+              - "null"
+              - string
+            description: The project code associated with the time entry.
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the project.
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the project.
+      rounded_hours:
+        type:
+          - "null"
+          - number
+        description: The total hours rounded to a specific precision.
+      spent_date:
+        type:
+          - "null"
+          - string
+        description: The date when the time was spent.
+        format: date
+      started_time:
+        type:
+          - "null"
+          - string
+        description: The time when the time entry started.
+      task:
+        type:
+          - "null"
+          - object
+        description: The task performed during the time entry
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the task.
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the task.
+      task_assignment:
+        type:
+          - "null"
+          - object
+        description: The task assignment details for the time entry
+        properties:
+          billable:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the task assignment is billable.
+          budget:
+            type:
+              - "null"
+              - number
+            description: The budget associated with the task assignment.
+          created_at:
+            type:
+              - "null"
+              - string
+            description: The date and time when the task assignment was created.
+            format: date-time
+          hourly_rate:
+            type:
+              - "null"
+              - number
+            description: The hourly rate associated with the task assignment.
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the task assignment.
+          is_active:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the task assignment is active.
+          updated_at:
+            type:
+              - "null"
+              - string
+            description: The date and time when the task assignment was last updated.
+            format: date-time
+      timer_started_at:
+        type:
+          - "null"
+          - string
+        description: The time when the timer for the time entry was started.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the time entry was last updated.
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        description: The user who created the time entry
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the user.
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the user.
+      user_assignment:
+        type:
+          - "null"
+          - object
+        description: The user assignment details for the time entry
+        properties:
+          budget:
+            type:
+              - "null"
+              - number
+            description: The budget associated with the user assignment.
+          created_at:
+            type:
+              - "null"
+              - string
+            description: The date and time when the user assignment was created.
+            format: date-time
+          hourly_rate:
+            type:
+              - "null"
+              - number
+            description: The hourly rate associated with the user assignment.
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the user assignment.
+          is_active:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the user assignment is active.
+          is_project_manager:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the user is a project manager.
+          updated_at:
+            type:
+              - "null"
+              - string
+            description: The date and time when the user assignment was last updated.
+            format: date-time
+  user_assignments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      budget:
+        type:
+          - "null"
+          - number
+        description: The budget allocated for the assignment
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the assignment was created
+        format: date-time
+      hourly_rate:
+        type:
+          - "null"
+          - number
+        description: The hourly rate for the assignment
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for the assignment
+      is_active:
+        type:
+          - "null"
+          - boolean
+        description: Flag indicating if the assignment is currently active
+      is_project_manager:
+        type:
+          - "null"
+          - boolean
+        description: Flag indicating if the user is a project manager for the assignment
+      project:
+        type:
+          - "null"
+          - object
+        description: Details of the project the user is assigned to.
+        properties:
+          code:
+            type:
+              - "null"
+              - string
+            description: The project code associated with the assignment
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the project
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the project associated with the assignment
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the assignment was last updated
+        format: date-time
+      use_default_rates:
+        type:
+          - "null"
+          - boolean
+        description: Flag indicating if default rates are used for the assignment
+      user:
+        type:
+          - "null"
+          - object
+        description: Details of the user assignment.
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the user assigned to the project
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the user assigned to the project
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      avatar_url:
+        type:
+          - "null"
+          - string
+        description: URL of the user's avatar image.
+      calendar_integration_enabled:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if calendar integration is enabled for the user.
+      calendar_integration_source:
+        type:
+          - "null"
+          - string
+        description: Source of calendar integration for the user.
+      can_create_invoices:
+        type:
+          - "null"
+          - boolean
+        description: Shows if the user can create invoices.
+      can_create_projects:
+        type:
+          - "null"
+          - boolean
+        description: Shows if the user can create projects.
+      can_see_rates:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the user can see rates.
+      cost_rate:
+        type:
+          - "null"
+          - number
+        description: The cost rate associated with the user.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: Date and time when the user was created.
+        format: date-time
+      default_hourly_rate:
+        type:
+          - "null"
+          - number
+        description: User's default hourly rate for billing.
+      email:
+        type:
+          - "null"
+          - string
+        description: User's email address.
+      first_name:
+        type:
+          - "null"
+          - string
+        description: User's first name.
+      has_access_to_all_future_projects:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the user has access to all future projects.
+      id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the user.
+      is_active:
+        type:
+          - "null"
+          - boolean
+        description: Shows if the user is currently active.
+      is_admin:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the user is an admin.
+      is_contractor:
+        type:
+          - "null"
+          - boolean
+        description: Shows if the user is a contractor.
+      is_project_manager:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the user is a project manager.
+      last_name:
+        type:
+          - "null"
+          - string
+        description: User's last name.
+      roles:
+        type:
+          - "null"
+          - array
+        description: List of roles associated with the user.
+        items:
+          type: string
+      telephone:
+        type:
+          - "null"
+          - string
+        description: User's telephone number.
+      timezone:
+        type:
+          - "null"
+          - string
+        description: User's timezone.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: Date and time when the user record was last updated.
+        format: date-time
+      weekly_capacity:
+        type:
+          - "null"
+          - integer
+        description: User's weekly capacity for work.
+  expenses_categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_amount:
+        type:
+          - "null"
+          - number
+        description: The amount that can be billed to a client for this expense category
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency in which the expenses are incurred
+      expense_category_id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the expense category
+      expense_category_name:
+        type:
+          - "null"
+          - string
+        description: Name of the expense category
+      from:
+        type:
+          - "null"
+          - string
+        description: Start date for the expenses
+      to:
+        type:
+          - "null"
+          - string
+        description: End date for the expenses
+      total_amount:
+        type:
+          - "null"
+          - number
+        description: Total amount spent on this expense category
+  expenses_clients:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_amount:
+        type:
+          - "null"
+          - number
+        description: The amount billed to the client for the expenses.
+      client_id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the client.
+      client_name:
+        type:
+          - "null"
+          - string
+        description: The name of the client associated with the expenses.
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency in which the expenses are recorded.
+      from:
+        type:
+          - "null"
+          - string
+        description: The start date of the expense period.
+      to:
+        type:
+          - "null"
+          - string
+        description: The end date of the expense period.
+      total_amount:
+        type:
+          - "null"
+          - number
+        description: >-
+          The total amount of expenses including billable and non-billable
+          expenses.
+  expenses_projects:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_amount:
+        type:
+          - "null"
+          - number
+        description: The amount of expenses that are billable to the client
+      client_id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the client associated with the project
+      client_name:
+        type:
+          - "null"
+          - string
+        description: The name of the client associated with the project
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency in which the expenses are recorded
+      from:
+        type:
+          - "null"
+          - string
+        description: The starting date of the expense record period
+      project_id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the project
+      project_name:
+        type:
+          - "null"
+          - string
+        description: The name of the project
+      to:
+        type:
+          - "null"
+          - string
+        description: The ending date of the expense record period
+      total_amount:
+        type:
+          - "null"
+          - number
+        description: The total amount of expenses incurred for the project
+  expenses_team:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_amount:
+        type:
+          - "null"
+          - number
+        description: The amount that can be billed for the expense
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency in which the expense is incurred
+      from:
+        type:
+          - "null"
+          - string
+        description: The start date of the expense
+      is_contractor:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the user is a contractor
+      to:
+        type:
+          - "null"
+          - string
+        description: The end date of the expense
+      total_amount:
+        type:
+          - "null"
+          - number
+        description: The total amount of the expense
+      user_id:
+        type:
+          - "null"
+          - integer
+        description: The ID of the user associated with the expense
+      user_name:
+        type:
+          - "null"
+          - string
+        description: The name of the user associated with the expense
+  project_budget:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      budget:
+        type:
+          - "null"
+          - number
+        description: Total budget allocated for the project
+      budget_by:
+        type:
+          - "null"
+          - string
+        description: Person or entity responsible for the budget
+      budget_is_monthly:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the budget is calculated on a monthly basis
+      budget_remaining:
+        type:
+          - "null"
+          - number
+        description: Remaining budget amount available for the project
+      budget_spent:
+        type:
+          - "null"
+          - number
+        description: Total amount spent from the budget
+      client_id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the client associated with the project
+      client_name:
+        type:
+          - "null"
+          - string
+        description: Name of the client associated with the project
+      from:
+        type:
+          - "null"
+          - string
+        description: Start date of the budget period
+      is_active:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the project is currently active
+      project_id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the project
+      project_name:
+        type:
+          - "null"
+          - string
+        description: Name of the project
+      to:
+        type:
+          - "null"
+          - string
+        description: End date of the budget period
+  time_clients:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_amount:
+        type:
+          - "null"
+          - number
+        description: >-
+          The amount that can be billed for the client's hours worked within the
+          specified timeframe.
+      billable_hours:
+        type:
+          - "null"
+          - number
+        description: >-
+          The total number of billable hours worked for the client within the
+          specified timeframe.
+      client_id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the client associated with the time entries.
+      client_name:
+        type:
+          - "null"
+          - string
+        description: The name of the client for whom the time entries were recorded.
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency used for billing the client's time entries.
+      from:
+        type:
+          - "null"
+          - string
+        description: >-
+          The start date and time of the timeframe for which the time entries
+          are being fetched.
+      to:
+        type:
+          - "null"
+          - string
+        description: >-
+          The end date and time of the timeframe for which the time entries are
+          being fetched.
+      total_hours:
+        type:
+          - "null"
+          - number
+        description: >-
+          The total number of hours worked for the client within the specified
+          timeframe, including both billable and non-billable hours.
+  time_projects:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_amount:
+        type:
+          - "null"
+          - number
+        description: >-
+          The total amount that can be billed for this project in the given
+          currency.
+      billable_hours:
+        type:
+          - "null"
+          - number
+        description: The number of billable hours spent on this project.
+      client_id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for the client associated with this project.
+      client_name:
+        type:
+          - "null"
+          - string
+        description: The name of the client associated with this project.
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency in which the billable amount is specified.
+      from:
+        type:
+          - "null"
+          - string
+        description: The start date for the project time frame.
+      project_id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for the project.
+      project_name:
+        type:
+          - "null"
+          - string
+        description: The name of the project.
+      to:
+        type:
+          - "null"
+          - string
+        description: The end date for the project time frame.
+      total_hours:
+        type:
+          - "null"
+          - number
+        description: The total number of hours spent on this project.
+  time_tasks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_amount:
+        type:
+          - "null"
+          - number
+        description: The amount that can be billed for this time task
+      billable_hours:
+        type:
+          - "null"
+          - number
+        description: The number of hours that can be billed for this time task
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency in which the billable amount is calculated
+      from:
+        type:
+          - "null"
+          - string
+        description: The starting time of the time task
+      task_id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for the task associated with this time entry
+      task_name:
+        type:
+          - "null"
+          - string
+        description: The name of the task associated with this time entry
+      to:
+        type:
+          - "null"
+          - string
+        description: The ending time of the time task
+      total_hours:
+        type:
+          - "null"
+          - number
+        description: The total number of hours spent on this time task
+  time_team:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable_amount:
+        type:
+          - "null"
+          - number
+        description: The amount that can be billed for the time period
+      billable_hours:
+        type:
+          - "null"
+          - number
+        description: The number of hours that can be billed for the time period
+      currency:
+        type:
+          - "null"
+          - string
+        description: The currency used for billing
+      from:
+        type:
+          - "null"
+          - string
+        description: The start date and time of the time period
+      is_contractor:
+        type:
+          - "null"
+          - boolean
+        description: Flag indicating if the user is a contractor
+      to:
+        type:
+          - "null"
+          - string
+        description: The end date and time of the time period
+      total_hours:
+        type:
+          - "null"
+          - number
+        description: The total number of hours worked for the time period
+      user_id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the user
+      user_name:
+        type:
+          - "null"
+          - string
+        description: The name of the user
+  uninvoiced:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      client_id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the client
+      client_name:
+        type:
+          - "null"
+          - string
+        description: Name of the client
+      currency:
+        type:
+          - "null"
+          - string
+        description: Currency used for the transaction
+      from:
+        type:
+          - "null"
+          - string
+        description: Start date for the data range
+      project_id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the project
+      project_name:
+        type:
+          - "null"
+          - string
+        description: Name of the project
+      to:
+        type:
+          - "null"
+          - string
+        description: End date for the data range
+      total_hours:
+        type:
+          - "null"
+          - number
+        description: Total hours tracked for the project within the data range
+      uninvoiced_amount:
+        type:
+          - "null"
+          - number
+        description: Total amount yet to be invoiced for the project within the data range
+      uninvoiced_expenses:
+        type:
+          - "null"
+          - number
+        description: >-
+          Total expenses yet to be invoiced for the project within the data
+          range
+      uninvoiced_hours:
+        type:
+          - "null"
+          - number
+        description: Total hours yet to be invoiced for the project within the data range
+  estimate_messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      body:
+        type:
+          - "null"
+          - string
+        description: The main content of the message.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the message was created.
+        format: date-time
+      event_type:
+        type:
+          - "null"
+          - string
+        description: The type of event associated with the message.
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for the message.
+      parent_id:
+        type: integer
+        description: The identifier of the parent message, if this is a reply.
+      recipients:
+        type:
+          - "null"
+          - array
+        description: Details of the recipients of the message.
+        items:
+          type: object
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+              description: The email address of a recipient.
+            name:
+              type:
+                - string
+                - "null"
+              description: The name of a recipient.
+      send_me_a_copy:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the sender requested a copy of the message.
+      sent_by:
+        type:
+          - "null"
+          - string
+        description: The name of the user who sent the message.
+      sent_by_email:
+        type:
+          - "null"
+          - string
+        description: The email address of the user who sent the message.
+      sent_from:
+        type:
+          - "null"
+          - string
+        description: The name displayed as the sender.
+      sent_from_email:
+        type:
+          - "null"
+          - string
+        description: The email address displayed as the sender.
+      subject:
+        type:
+          - "null"
+          - string
+        description: The subject or title of the message.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the message was last updated.
+        format: date-time
+  invoice_messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      attach_pdf:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if a PDF file is attached to the message.
+      body:
+        type:
+          - "null"
+          - string
+        description: The content of the invoice message.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the message was created.
+        format: date-time
+      event_type:
+        type:
+          - "null"
+          - string
+        description: The type of event associated with the message.
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the invoice message.
+      include_link_to_client_invoice:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if a link to the client invoice is included.
+      parent_id:
+        type: integer
+        description: The ID of the parent message if it's a reply or related message.
+      recipients:
+        type:
+          - "null"
+          - array
+        description: List of recipients for the message.
+        items:
+          type: object
+          properties:
+            email:
+              type: string
+              description: Email address of the recipient.
+            name:
+              type: string
+              description: Name of the recipient.
+      reminder:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the message is a reminder.
+      send_me_a_copy:
+        type:
+          - "null"
+          - boolean
+        description: Option to send a copy of the message to the sender.
+      send_reminder_on:
+        type:
+          - "null"
+          - string
+        description: The date to send a reminder for the message.
+      sent_by:
+        type:
+          - "null"
+          - string
+        description: The sender of the message.
+      sent_by_email:
+        type:
+          - "null"
+          - string
+        description: Email address of the sender.
+      sent_from:
+        type:
+          - "null"
+          - string
+        description: The display name of the sender.
+      sent_from_email:
+        type:
+          - "null"
+          - string
+        description: Email address used to send the message.
+      subject:
+        type:
+          - "null"
+          - string
+        description: The subject of the invoice message.
+      thank_you:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the message is a thank you message.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the message was last updated.
+        format: date-time
+  invoice_payments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - "null"
+          - number
+        description: The amount of the invoice payment.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The timestamp when the invoice payment was created.
+        format: date-time
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the invoice payment.
+      notes:
+        type:
+          - "null"
+          - string
+        description: Any additional notes or comments related to the invoice payment.
+      paid_at:
+        type:
+          - "null"
+          - string
+        description: The timestamp when the invoice payment was paid.
+        format: date-time
+      paid_date:
+        type:
+          - "null"
+          - string
+        description: The date when the invoice payment was paid.
+        format: date
+      parent_id:
+        type: integer
+        description: The ID of the parent invoice associated with this payment.
+      payment_gateway:
+        type:
+          - "null"
+          - object
+        description: Information about the payment gateway used for the transaction.
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the payment gateway.
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the payment gateway.
+      recorded_by:
+        type:
+          - "null"
+          - string
+        description: The user who recorded this invoice payment.
+      recorded_by_email:
+        type:
+          - "null"
+          - string
+        description: The email address of the user who recorded this invoice payment.
+      transaction_id:
+        type:
+          - "null"
+          - string
+        description: The transaction ID associated with the invoice payment.
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The timestamp when the invoice payment was last updated.
+        format: date-time
+  project_assignments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      budget:
+        type:
+          - "null"
+          - number
+        description: The budget allocated for this project assignment
+      client:
+        type:
+          - "null"
+          - object
+        description: Client information for the project assignment
+        properties:
+          currency:
+            type:
+              - "null"
+              - string
+            description: The currency used by the client
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the client
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the client
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the project assignment was created
+        format: date-time
+      hourly_rate:
+        type:
+          - "null"
+          - number
+        description: The hourly rate for this project assignment
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier of the project assignment
+      is_active:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the project assignment is currently active
+      is_project_manager:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the user is assigned as a project manager
+      parent_id:
+        type: integer
+        description: >-
+          The parent project assignment ID if this assignment is a
+          sub-assignment
+      project:
+        type:
+          - "null"
+          - object
+        description: Project information for the assignment
+        properties:
+          code:
+            type:
+              - "null"
+              - string
+            description: The code associated with the project
+          id:
+            type:
+              - "null"
+              - integer
+            description: The unique identifier of the project
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the project
+      task_assignments:
+        type:
+          - "null"
+          - array
+        description: List of task assignments for the project
+        items:
+          type: object
+          properties:
+            billable:
+              type:
+                - "null"
+                - boolean
+              description: Indicates whether the task is billable
+            budget:
+              type:
+                - "null"
+                - number
+              description: The budget allocated for this task assignment
+            created_at:
+              type:
+                - string
+                - "null"
+              description: The date and time when the task assignment was created
+            hourly_rate:
+              type:
+                - "null"
+                - number
+              description: The hourly rate for this task assignment
+            id:
+              type:
+                - "null"
+                - integer
+              description: The unique identifier of the task assignment
+            is_active:
+              type:
+                - "null"
+                - boolean
+              description: Indicates whether the task assignment is currently active
+            task:
+              type:
+                - object
+                - "null"
+              description: Information about a specific task assigned
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                  description: The unique identifier of the task
+                name:
+                  type:
+                    - "null"
+                    - string
+                  description: The name of the task
+            updated_at:
+              type:
+                - "null"
+                - string
+              description: The date and time when the task assignment was last updated
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the project assignment was last updated
+        format: date-time
+      use_default_rates:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether default rates are used for this project assignment
+  billable_rates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - "null"
+          - number
+        description: The billable amount associated with this rate.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when this rate was created.
+        format: date-time
+      end_date:
+        type:
+          - "null"
+          - string
+        description: The end date for this billable rate period.
+        format: date
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for this billable rate.
+      parent_id:
+        type: integer
+        description: The identifier of the parent resource associated with this rate.
+      start_date:
+        type:
+          - "null"
+          - string
+        description: The start date for this billable rate period.
+        format: date
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when this rate was last updated.
+        format: date-time
+  cost_rates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - "null"
+          - number
+        description: The cost rate amount associated with this data entry.
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The timestamp indicating when this cost rate entry was created.
+        format: date-time
+      end_date:
+        type:
+          - "null"
+          - string
+        description: >-
+          The end date for which the cost rate is valid. Only applicable for
+          intervals.
+        format: date
+      id:
+        type:
+          - "null"
+          - integer
+        description: The unique identifier for this cost rate entry.
+      parent_id:
+        type: integer
+        description: The parent identifier if this cost rate is a child entry.
+      start_date:
+        type:
+          - "null"
+          - string
+        description: >-
+          The start date from which the cost rate is valid. Only applicable for
+          intervals.
+        format: date
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The timestamp for the last update made to this cost rate entry.
+        format: date-time

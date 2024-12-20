@@ -15,6 +15,8 @@ import pytest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
 from connection_retriever.retrieval import ConnectionNotFoundError, NotPermittedError, get_current_docker_image_tag  # type: ignore
+from rich.prompt import Confirm, Prompt
+
 from live_tests import stash_keys
 from live_tests.commons.connection_objects_retrieval import ConnectionObject, InvalidConnectionError, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner, Proxy
@@ -35,7 +37,6 @@ from live_tests.commons.segment_tracking import track_usage
 from live_tests.commons.utils import build_connection_url, clean_up_artifacts
 from live_tests.report import Report, ReportState
 from live_tests.utils import get_catalog, get_spec
-from rich.prompt import Confirm, Prompt
 
 if TYPE_CHECKING:
     from _pytest.config import Config
@@ -316,7 +317,7 @@ def prompt_for_read_with_or_without_state() -> bool:
     📖 Do you want to run the read command with or without state?
     1. Run the read command with state
     2. Run the read command without state
-                              
+
     We recommend reading with state to properly test incremental sync.
     But if the target version introduces a breaking change in the state, you might want to run without state.
     """

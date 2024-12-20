@@ -4,10 +4,10 @@
 package io.airbyte.validation.json
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.networknt.schema.SchemaLocation
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.json.Jsons
 import java.io.IOException
-import java.net.URI
 import java.net.URISyntaxException
 import java.nio.file.Files
 import org.junit.jupiter.api.Assertions
@@ -110,7 +110,9 @@ internal class JsonSchemaValidatorTest {
                 )
                 .toFile()
         val jsonSchemaValidator =
-            JsonSchemaValidator(URI("file://" + schemaFile.parentFile.absolutePath + "/foo.json"))
+            JsonSchemaValidator(
+                SchemaLocation.of("file://" + schemaFile.parentFile.absolutePath + "/foo.json")
+            )
 
         val validationResult =
             jsonSchemaValidator.validate(

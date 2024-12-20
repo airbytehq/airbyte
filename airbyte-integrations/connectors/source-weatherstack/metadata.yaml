@@ -14,7 +14,7 @@ data:
       packageName: airbyte-source-weatherstack
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
@@ -35,16 +35,17 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
-    - suite: unitTests
-      # Disabling acceptance tests for now
-      # No / Low airbyte cloud usage
-      # - suite: acceptanceTests
-      #   testSecrets:
-      #     - name: SECRET_SOURCE-WEATHERSTACK__CREDS
-      #       fileName: config.json
-      #       secretStore:
-      #         type: GSM
-      #         alias: airbyte-connector-testing-secret-store
+    - suite:
+        unitTests
+        # Disabling acceptance tests for now
+        # No / Low airbyte cloud usage
+        # - suite: acceptanceTests
+        #   testSecrets:
+        #     - name: SECRET_SOURCE-WEATHERSTACK__CREDS
+        #       fileName: config.json
+        #       secretStore:
+        #         type: GSM
+        #         alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
 metadataSpecVersion: "1.0"

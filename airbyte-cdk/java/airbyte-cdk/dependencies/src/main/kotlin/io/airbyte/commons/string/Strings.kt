@@ -16,7 +16,9 @@ object Strings {
     fun addRandomSuffix(base: String, separator: String, suffixLength: Int): String {
         return base +
             separator +
-            RandomStringUtils.randomAlphabetic(suffixLength).lowercase(Locale.getDefault())
+            RandomStringUtils.insecure()
+                .nextAlphanumeric(suffixLength)
+                .lowercase(Locale.getDefault())
     }
 
     @JvmStatic

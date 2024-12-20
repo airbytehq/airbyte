@@ -25,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class IcebergCatalogConfigFactory {
 
-  public IcebergCatalogConfig fromJsonNodeConfig(@Nonnull final JsonNode config) {
+  public static IcebergCatalogConfig fromJsonNodeConfig(@Nonnull final JsonNode config) {
     // storage config
     final JsonNode storageConfigJson = config.get(ICEBERG_STORAGE_CONFIG_KEY);
     StorageConfig storageConfig = genStorageConfig(storageConfigJson);
@@ -47,21 +47,17 @@ public class IcebergCatalogConfigFactory {
     return icebergCatalogConfig;
   }
 
-  private StorageConfig genStorageConfig(JsonNode storageConfigJson) {
+  private static StorageConfig genStorageConfig(JsonNode storageConfigJson) {
     String storageTypeStr = storageConfigJson.get(ICEBERG_STORAGE_TYPE_CONFIG_KEY).asText();
     if (storageTypeStr == null) {
       throw new IllegalArgumentException(ICEBERG_STORAGE_TYPE_CONFIG_KEY + " cannot be null");
     }
     StorageType storageType = StorageType.valueOf(storageTypeStr.toUpperCase());
-    switch (storageType) {
-      case S3:
-        return S3Config.fromDestinationConfig(storageConfigJson);
-      case MANAGED:
-        return ServerManagedStorageConfig.fromDestinationConfig(storageConfigJson);
-      case HDFS:
-      default:
-        throw new RuntimeException("Unexpected storage config: " + storageTypeStr);
-    }
+    return switch (storageType) {
+      case S3 -> S3Config.fromDestinationConfig(storageConfigJson);
+      case MANAGED -> ServerManagedStorageConfig.fromDestinationConfig(storageConfigJson);
+      default -> throw new RuntimeException("Unexpected storage config: " + storageTypeStr);
+    };
   }
 
   @NotNull
@@ -77,7 +73,7 @@ public class IcebergCatalogConfigFactory {
       case HADOOP -> new HadoopCatalogConfig(catalogConfigJson);
       case JDBC -> new JdbcCatalogConfig(catalogConfigJson);
       case REST -> new RESTCatalogConfig(catalogConfigJson);
-      default -> throw new RuntimeException("Unexpected catalog config: " + catalogTypeStr);
+      case GLUE -> new GlueCatalogConfig();
     };
   }
 

@@ -1,8 +1,10 @@
 # Stripe Migration Guide
 
-## Upgrading to 5.6.0
+###  Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
+
+We bumped this in a minor version because we didn't want to pause all connection, but still want to document the process of moving to this latest version.
 
 ### Summary of changes:
 

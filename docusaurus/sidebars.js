@@ -85,8 +85,7 @@ function getDestinationConnectors() {
 function getEnterpriseConnectors() {
   return getFilenamesInDir(
     "integrations/enterprise-connectors/",
-    enterpriseConnectorDocs,
-    ["readme"]
+    enterpriseConnectorDocs, ["readme"]
   );
 }
 
@@ -222,6 +221,7 @@ const buildAConnector = {
         "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/connector-builder-compatibility",
         "connector-development/connector-builder-ui/tutorial",
+        "connector-development/connector-builder-ui/ai-assist",
         {
           type: "category",
           label: "Concepts",
@@ -341,6 +341,7 @@ const buildAConnector = {
       ],
     },
     "connector-development/connector-specification-reference",
+    "connector-development/writing-connector-docs",
     "connector-development/schema-reference",
     "connector-development/connector-metadata-file",
     "connector-development/best-practices",
@@ -451,6 +452,18 @@ const deployAirbyte = {
       label: "Creating a Secret",
       id: "deploying-airbyte/creating-secrets",
     },
+    {
+      type: "doc",
+      id: "deploying-airbyte/troubleshoot-deploy",
+    },
+    {
+      type: "doc",
+      id: "deploying-airbyte/migrating-from-docker-compose",
+    },
+    {
+      type: "doc",
+      id: "deploying-airbyte/abctl-ec2",
+    },
   ],
 };
 
@@ -513,12 +526,12 @@ module.exports = {
     },
     {
       type: "doc",
-      id: "using-airbyte/core-concepts/readme",
+      label: "Quickstart",
+      id: "using-airbyte/getting-started/oss-quickstart",
     },
     {
       type: "doc",
-      label: "Quickstart",
-      id: "using-airbyte/getting-started/oss-quickstart",
+      id: "using-airbyte/core-concepts/readme",
     },
     {
       type: "category",
@@ -714,6 +727,10 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/v-1.3",
+        "release_notes/v-1.2",
+        "release_notes/v-1.1",
+        "release_notes/v-1.0",
         "release_notes/aug_2024",
         "release_notes/july_2024",
         "release_notes/june_2024",

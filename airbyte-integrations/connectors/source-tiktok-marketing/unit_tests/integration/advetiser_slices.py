@@ -5,6 +5,7 @@ import json
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
+
 ADVERTISERS_FILE = "advertisers"
 
 

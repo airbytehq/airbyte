@@ -79,6 +79,13 @@ Once you've configured Firebase Realtime Database as a source, delete the Servic
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.28 | 2024-12-14 | [49186](https://github.com/airbytehq/airbyte/pull/49186) | Update dependencies |
+| 0.1.27 | 2024-11-25 | [48653](https://github.com/airbytehq/airbyte/pull/48653) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.26 | 2024-11-04 | [47041](https://github.com/airbytehq/airbyte/pull/47041) | Update dependencies |
+| 0.1.25 | 2024-10-12 | [46799](https://github.com/airbytehq/airbyte/pull/46799) | Update dependencies |
+| 0.1.24 | 2024-10-05 | [46457](https://github.com/airbytehq/airbyte/pull/46457) | Update dependencies |
+| 0.1.23 | 2024-09-28 | [46135](https://github.com/airbytehq/airbyte/pull/46135) | Update dependencies |
+| 0.1.22 | 2024-09-21 | [45804](https://github.com/airbytehq/airbyte/pull/45804) | Update dependencies |
 | 0.1.21 | 2024-09-14 | [45505](https://github.com/airbytehq/airbyte/pull/45505) | Update dependencies |
 | 0.1.20 | 2024-09-07 | [45272](https://github.com/airbytehq/airbyte/pull/45272) | Update dependencies |
 | 0.1.19 | 2024-08-31 | [45055](https://github.com/airbytehq/airbyte/pull/45055) | Update dependencies |

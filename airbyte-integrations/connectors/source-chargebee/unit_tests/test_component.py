@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import pytest
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from source_chargebee.components import CustomFieldTransformation, IncrementalSingleSliceCursor
+
+from airbyte_cdk.sources.types import Record, StreamSlice
 
 
 @pytest.mark.parametrize(
@@ -26,11 +27,12 @@ def test_field_transformation(record, expected_record):
     transformed_record = transformer.transform(record)
     assert transformed_record == expected_record
 
+
 @pytest.mark.parametrize(
     "record_data, expected",
     [
         ({"pk": 1, "name": "example", "updated_at": 1662459011}, True),
-    ]
+    ],
 )
 def test_slicer(record_data, expected):
     date_time_dict = {"updated_at": 1662459010}
@@ -50,23 +52,16 @@ def test_slicer(record_data, expected):
 @pytest.mark.parametrize(
     "first_record, second_record, expected",
     [
-        ({"pk": 1, "name": "example", "updated_at": 1662459010},
-        {"pk": 2, "name": "example2", "updated_at": 1662460000},
-        True),
-        ({"pk": 1, "name": "example", "updated_at": 1662459010},
-        {"pk": 2, "name": "example2", "updated_at": 1662440000},
-        False),
-        ({"pk": 1, "name": "example", "updated_at": 1662459010},
-        {"pk": 2, "name": "example2"},
-        False),
-        ({"pk": 1, "name": "example"},
-        {"pk": 2, "name": "example2", "updated_at": 1662459010},
-        True),
-    ]
+        ({"pk": 1, "name": "example", "updated_at": 1662459010}, {"pk": 2, "name": "example2", "updated_at": 1662460000}, True),
+        ({"pk": 1, "name": "example", "updated_at": 1662459010}, {"pk": 2, "name": "example2", "updated_at": 1662440000}, False),
+        ({"pk": 1, "name": "example", "updated_at": 1662459010}, {"pk": 2, "name": "example2"}, False),
+        ({"pk": 1, "name": "example"}, {"pk": 2, "name": "example2", "updated_at": 1662459010}, True),
+    ],
 )
 def test_is_greater_than_or_equal(first_record, second_record, expected):
     slicer = IncrementalSingleSliceCursor(config={}, parameters={}, cursor_field="updated_at")
     assert slicer.is_greater_than_or_equal(second_record, first_record) == expected
+
 
 def test_set_initial_state():
     cursor_field = "updated_at"
@@ -75,17 +70,18 @@ def test_set_initial_state():
     slicer.set_initial_state(stream_state={cursor_field: cursor_value})
     assert slicer._state[cursor_field] == cursor_value
 
+
 @pytest.mark.parametrize(
     "record, expected",
     [
-        ({"pk": 1, "name": "example", "updated_at": 1662459010},
-        True),
-    ]
+        ({"pk": 1, "name": "example", "updated_at": 1662459010}, True),
+    ],
 )
 def test_should_be_synced(record, expected):
     cursor_field = "updated_at"
     slicer = IncrementalSingleSliceCursor(config={}, parameters={}, cursor_field=cursor_field)
     assert slicer.should_be_synced(record) == expected
+
 
 def test_stream_slices():
     slicer = IncrementalSingleSliceCursor(config={}, parameters={}, cursor_field="updated_at")
