@@ -87,7 +87,6 @@ class MySqlSourceConfigurationTest {
 
         val cdcCursor = config.incrementalConfiguration as CdcIncrementalConfiguration
 
-        Assertions.assertEquals(cdcCursor.initialWaitDuration, Duration.ofSeconds(301))
         Assertions.assertEquals(cdcCursor.initialLoadTimeout, Duration.ofHours(9))
         Assertions.assertEquals(
             cdcCursor.invalidCdcCursorPositionBehavior,

@@ -56,12 +56,12 @@ object MySqlSourceDatatypeTestOperations :
     override fun streamConfigSpec(
         container: MySQLContainer<*>
     ): MySqlSourceConfigurationSpecification =
-        MySqlContainerFactory.config(container).also { it.setMethodValue(UserDefinedCursor) }
+        MySqlContainerFactory.config(container).also { it.setIncrementalValue(UserDefinedCursor) }
 
     override fun globalConfigSpec(
         container: MySQLContainer<*>
     ): MySqlSourceConfigurationSpecification =
-        MySqlContainerFactory.config(container).also { it.setMethodValue(CdcCursor()) }
+        MySqlContainerFactory.config(container).also { it.setIncrementalValue(Cdc()) }
 
     override val configFactory: MySqlSourceConfigurationFactory = MySqlSourceConfigurationFactory()
 

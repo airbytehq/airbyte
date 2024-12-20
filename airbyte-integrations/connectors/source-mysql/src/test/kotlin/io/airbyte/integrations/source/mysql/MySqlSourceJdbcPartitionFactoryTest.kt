@@ -117,9 +117,9 @@ class MySqlSourceJdbcPartitionFactoryTest {
                     database = "localhost"
                 }
             if (global) {
-                configSpec.setMethodValue(CdcCursor())
+                configSpec.setIncrementalValue(Cdc())
             } else {
-                configSpec.setMethodValue(UserDefinedCursor)
+                configSpec.setIncrementalValue(UserDefinedCursor)
             }
             val configFactory = MySqlSourceConfigurationFactory()
             val configuration = configFactory.make(configSpec)
