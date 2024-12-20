@@ -28,15 +28,8 @@ jobs:
     - name: Build Shopify Source Docker Image
       run: |
         cd airbyte-integrations/connectors/source-shopify
+        pwd & ls -la
         airbyte-ci connectors --name=source-shopify build
-
-    - name: Tag Docker image
-      run: |
-        docker tag source-shopify blotout/shopify-source:latest
-    
-    - name: Tag list images
-      run: |
-          docker images     
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
@@ -44,6 +37,15 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Push Docker image to Docker Hub
+    - name: Tag Docker image
       run: |
-        docker push blotout/shopify-source:v1-latest
+        docker images
+        #docker tag source-shopify blotout/shopify-source:latest
+    
+    # - name: Tag list images
+    #   run: |
+    #       docker images     
+
+    # - name: Push Docker image to Docker Hub
+    #   run: |
+    #     docker push blotout/shopify-source:v1-latest
