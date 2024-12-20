@@ -23,7 +23,6 @@ object MockDestinationBackend {
         getFile(filename).addAll(records)
     }
 
-    @Synchronized
     fun upsert(
         filename: String,
         primaryKey: List<List<String>>,

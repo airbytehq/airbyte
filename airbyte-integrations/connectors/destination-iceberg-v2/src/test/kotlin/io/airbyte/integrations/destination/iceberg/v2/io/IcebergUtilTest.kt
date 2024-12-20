@@ -22,10 +22,11 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
 import io.mockk.every
 import io.mockk.mockk
@@ -188,7 +189,7 @@ internal class IcebergUtilTest {
                         linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
                     ),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = DestinationRecord.Meta(),
+                meta = Meta(),
                 serialized = "{\"id\":42, \"name\":\"John Doe\"}"
             )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
@@ -240,7 +241,7 @@ internal class IcebergUtilTest {
                         )
                     ),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = DestinationRecord.Meta(),
+                meta = Meta(),
                 serialized = "{\"id\":42, \"name\":\"John Doe\"}"
             )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
@@ -288,7 +289,7 @@ internal class IcebergUtilTest {
                         linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
                     ),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = DestinationRecord.Meta(),
+                meta = Meta(),
                 serialized = "{\"id\":42, \"name\":\"John Doe\"}"
             )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)

@@ -9,10 +9,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.json.AirbyteValueToJson
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
+import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -47,48 +46,26 @@ sealed interface DestinationRecordDomainMessage : DestinationStreamAffinedMessag
 
 sealed interface DestinationFileDomainMessage : DestinationStreamAffinedMessage
 
-data class DestinationRecord(
-    override val stream: DestinationStream.Descriptor,
-    val data: AirbyteValue,
-    val emittedAtMs: Long,
-    val meta: Meta?,
-    val serialized: String,
-) : DestinationRecordDomainMessage {
-    /** Convenience constructor, primarily intended for use in tests. */
-    constructor(
-        namespace: String?,
-        name: String,
-        data: String,
-        emittedAtMs: Long,
-        changes: MutableList<Change> = mutableListOf(),
-    ) : this(
-        stream = DestinationStream.Descriptor(namespace, name),
-        data = JsonToAirbyteValue().convert(data.deserializeToNode(), ObjectTypeWithoutSchema),
-        emittedAtMs = emittedAtMs,
-        meta = Meta(changes),
-        serialized = "",
-    )
-
-    data class Meta(val changes: List<Change> = mutableListOf()) {
-        companion object {
-            const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
-            const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
-            const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
-            const val COLUMN_NAME_AB_GENERATION_ID: String = "_airbyte_generation_id"
-            const val COLUMN_NAME_DATA: String = "_airbyte_data"
-            val COLUMN_NAMES =
-                setOf(
-                    COLUMN_NAME_AB_RAW_ID,
-                    COLUMN_NAME_AB_EXTRACTED_AT,
-                    COLUMN_NAME_AB_META,
-                    COLUMN_NAME_AB_GENERATION_ID,
-                )
-        }
-
-        fun asProtocolObject(): AirbyteRecordMessageMeta =
-            AirbyteRecordMessageMeta()
-                .withChanges(changes.map { change -> change.asProtocolObject() })
+data class Meta(
+    val changes: List<Change> = mutableListOf(),
+) {
+    companion object {
+        const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
+        const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
+        const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
+        const val COLUMN_NAME_AB_GENERATION_ID: String = "_airbyte_generation_id"
+        const val COLUMN_NAME_DATA: String = "_airbyte_data"
+        val COLUMN_NAMES =
+            setOf(
+                COLUMN_NAME_AB_RAW_ID,
+                COLUMN_NAME_AB_EXTRACTED_AT,
+                COLUMN_NAME_AB_META,
+                COLUMN_NAME_AB_GENERATION_ID,
+            )
     }
+
+    fun asProtocolObject(): AirbyteRecordMessageMeta =
+        AirbyteRecordMessageMeta().withChanges(changes.map { change -> change.asProtocolObject() })
 
     data class Change(
         val field: String,
@@ -100,7 +77,15 @@ data class DestinationRecord(
         fun asProtocolObject(): AirbyteRecordMessageMetaChange =
             AirbyteRecordMessageMetaChange().withField(field).withChange(change).withReason(reason)
     }
+}
 
+data class DestinationRecord(
+    override val stream: DestinationStream.Descriptor,
+    val data: AirbyteValue,
+    val emittedAtMs: Long,
+    val meta: Meta?,
+    val serialized: String,
+) : DestinationStreamAffinedMessage {
     override fun asProtocolMessage(): AirbyteMessage =
         AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
@@ -109,10 +94,10 @@ data class DestinationRecord(
                     .withStream(stream.name)
                     .withNamespace(stream.namespace)
                     .withEmittedAt(emittedAtMs)
-                    .withData(AirbyteValueToJson().convert(data))
+                    .withData(data.toJson())
                     .also {
                         if (meta != null) {
-                            it.meta = meta.asProtocolObject()
+                            it.withMeta(meta.asProtocolObject())
                         }
                     }
             )
@@ -415,12 +400,12 @@ class DestinationMessageFactory(
                                 ?: ObjectValue(linkedMapOf()),
                         emittedAtMs = message.record.emittedAt,
                         meta =
-                            DestinationRecord.Meta(
+                            Meta(
                                 changes =
                                     message.record.meta
                                         ?.changes
                                         ?.map {
-                                            DestinationRecord.Change(
+                                            Meta.Change(
                                                 field = it.field,
                                                 change = it.change,
                                                 reason = it.reason,
