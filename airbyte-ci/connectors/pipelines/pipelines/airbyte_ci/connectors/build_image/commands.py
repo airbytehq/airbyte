@@ -6,6 +6,7 @@ from typing import List
 
 import asyncclick as click
 import dagger
+
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -60,6 +61,7 @@ async def build(ctx: click.Context, use_host_gradle_dist_tar: bool, build_archit
             ci_context=ctx.obj.get("ci_context"),
             ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
             use_local_cdk=ctx.obj.get("use_local_cdk"),
+            use_cdk_ref=ctx.obj.get("use_cdk_ref"),
             enable_report_auto_open=ctx.obj.get("enable_report_auto_open"),
             use_host_gradle_dist_tar=use_host_gradle_dist_tar,
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),

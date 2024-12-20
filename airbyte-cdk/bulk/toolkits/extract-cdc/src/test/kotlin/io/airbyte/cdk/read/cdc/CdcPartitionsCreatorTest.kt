@@ -58,6 +58,7 @@ class CdcPartitionsCreatorTest {
 
     val global = Global(listOf(stream))
 
+    val lowerBoundReference = AtomicReference<CreatorPosition>(null)
     val upperBoundReference = AtomicReference<CreatorPosition>(null)
 
     val creator: CdcPartitionsCreator<CreatorPosition>
@@ -68,6 +69,7 @@ class CdcPartitionsCreatorTest {
                 globalFeedBootstrap,
                 creatorOps,
                 readerOps,
+                lowerBoundReference,
                 upperBoundReference,
             )
 

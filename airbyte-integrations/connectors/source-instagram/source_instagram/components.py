@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any, Dict, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.declarative.types import Config
 from source_instagram import SourceInstagram
 
 from .common import remove_params_from_url
+
 
 GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
 

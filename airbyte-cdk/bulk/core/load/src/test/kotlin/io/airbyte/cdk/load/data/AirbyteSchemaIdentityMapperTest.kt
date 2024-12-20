@@ -19,9 +19,8 @@ class AirbyteSchemaIdentityMapperTest {
                 .with(IntegerType)
                 .with(BooleanType)
                 .with(NumberType)
-                .with(NullType)
                 .with(ArrayType(FieldType(StringType, true)))
-                .with(UnionType(listOf(StringType, IntegerType, NullType)))
+                .with(UnionType.of(StringType, IntegerType))
                 .withRecord()
                 .with(TimeTypeWithTimezone)
                 .with(TimeTypeWithoutTimezone)
@@ -33,7 +32,6 @@ class AirbyteSchemaIdentityMapperTest {
                 .with(ArrayTypeWithoutSchema)
                 .endRecord()
                 .endRecord()
-                .with(NullType)
                 .build()
 
         val mapper = object : AirbyteSchemaIdentityMapper {}

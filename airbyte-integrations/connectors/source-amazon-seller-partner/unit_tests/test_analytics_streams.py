@@ -7,8 +7,9 @@ from unittest.mock import patch
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_amazon_seller_partner.streams import AnalyticsStream, IncrementalAnalyticsStream
+
+from airbyte_cdk.models import SyncMode
 
 
 class SomeAnalyticsStream(AnalyticsStream):
@@ -141,6 +142,7 @@ class TestIncrementalAnalyticsStream:
     def test_stream_slices(self, report_init_kwargs, start_date, end_date, stream_state, fixed_period_in_days, expected_slices):
         report_init_kwargs["replication_start_date"] = start_date
         report_init_kwargs["replication_end_date"] = end_date
+        report_init_kwargs["period_in_days"] = 365
         stream = SomeIncrementalAnalyticsStream(**report_init_kwargs)
         stream.fixed_period_in_days = fixed_period_in_days
         with patch("pendulum.now", return_value=pendulum.parse("2023-09-09T00:00:00Z")):

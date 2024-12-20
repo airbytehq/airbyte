@@ -10,6 +10,7 @@ from typing import Dict, Optional, Set
 import rich
 from connection_retriever import ConnectionObject, retrieve_objects  # type: ignore
 from connection_retriever.errors import NotPermittedError  # type: ignore
+
 from live_tests.commons.models import ConnectionSubset
 from live_tests.commons.utils import build_connection_url
 
