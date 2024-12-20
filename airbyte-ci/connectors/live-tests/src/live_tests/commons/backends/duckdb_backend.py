@@ -41,7 +41,7 @@ class DuckDbBackend(FileBackend):
 
     @staticmethod
     def sanitize_table_name(table_name: str) -> str:
-        sanitized = table_name.replace(" ", "_")
+        sanitized = str(table_name).replace(" ", "_")
         sanitized = re.sub(r"[^\w\s]", "", sanitized)
         if sanitized and sanitized[0].isdigit():
             sanitized = "_" + sanitized
