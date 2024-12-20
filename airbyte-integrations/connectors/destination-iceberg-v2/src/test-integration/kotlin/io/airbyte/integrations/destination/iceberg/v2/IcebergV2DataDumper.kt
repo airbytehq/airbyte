@@ -8,7 +8,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
@@ -53,7 +53,7 @@ object IcebergV2DataDumper : DestinationDataDumper {
 
     private fun getMetaData(record: Record): OutputRecord.Meta {
         val airbyteMeta =
-            record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_META) as? Record
+            record.getField(Meta.COLUMN_NAME_AB_META) as? Record
                 ?: throw IllegalStateException("Received no metadata in the record.")
 
         val syncId = airbyteMeta.getField("sync_id") as? Long
@@ -73,7 +73,7 @@ object IcebergV2DataDumper : DestinationDataDumper {
                     AirbyteRecordMessageMetaChange.Reason.fromValue(
                         change.getField("reason") as String
                     )
-                DestinationRecord.Change(field, changeValue, reason)
+                Meta.Change(field, changeValue, reason)
             }
 
         return OutputRecord.Meta(syncId = syncId, changes = metaChanges)
@@ -100,20 +100,13 @@ object IcebergV2DataDumper : DestinationDataDumper {
                 outputRecords.add(
                     OutputRecord(
                         rawId =
-                            UUID.fromString(
-                                record
-                                    .getField(DestinationRecord.Meta.COLUMN_NAME_AB_RAW_ID)
-                                    .toString()
-                            ),
+                            UUID.fromString(record.getField(Meta.COLUMN_NAME_AB_RAW_ID).toString()),
                         extractedAt =
                             Instant.ofEpochMilli(
-                                record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT)
-                                    as Long
+                                record.getField(Meta.COLUMN_NAME_AB_EXTRACTED_AT) as Long
                             ),
                         loadedAt = null,
-                        generationId =
-                            record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID)
-                                as Long,
+                        generationId = record.getField(Meta.COLUMN_NAME_AB_GENERATION_ID) as Long,
                         data = getCastedData(schema, record),
                         airbyteMeta = getMetaData(record)
                     )

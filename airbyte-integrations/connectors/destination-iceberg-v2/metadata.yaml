@@ -16,7 +16,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: 37a928c1-2d5c-431a-a97d-ae236bd1ea0c
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/destination-iceberg-v2
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   githubIssueLabel: destination-iceberg-v2
