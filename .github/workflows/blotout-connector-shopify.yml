@@ -1,9 +1,9 @@
-name: Build and Push Shopify Source Docker Image
+name: Blotout Build and Push Shopify Source Docker Image
 
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build_and_push:
