@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.file.s3.S3Object
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.file.Paths
 import kotlinx.coroutines.flow.toList
@@ -37,18 +38,19 @@ class S3V2Checker<T : OutputStream>(private val timeProvider: TimeProvider) :
             var s3Object: S3Object? = null
             val compressor = config.objectStorageCompressionConfiguration.compressor
             try {
-                s3Object =
-                    s3Client.streamingUpload(key, streamProcessor = compressor) {
-                        it.write("""{"data": 1}""")
-                    }
-                val results = s3Client.list(path.toString()).toList()
+                val upload = s3Client.startStreamingUpload(key)
+                val byteStream = ByteArrayOutputStream()
+                compressor.wrapper(byteStream).use { it.write("""{"data": 1}""") }
+                upload.uploadPart(byteStream.toByteArray(), 1)
+                s3Object = upload.complete()
+                val results = s3Client.list(path).toList()
                 if (results.isEmpty() || results.find { it.key == key } == null) {
                     throw IllegalStateException("Failed to write to S3 bucket")
                 }
                 log.info { "Successfully wrote test file: $results" }
             } finally {
                 s3Object?.also { s3Client.delete(it) }
-                val results = s3Client.list(path.toString()).toList()
+                val results = s3Client.list(path).toList()
                 log.info { "Successfully removed test tile: $results" }
             }
         }

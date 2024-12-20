@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Optional
 import pytest
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
 from deepdiff import DeepDiff  # type: ignore
+
 from live_tests.commons.models import ExecutionResult
 from live_tests.utils import fail_test_on_failing_execution_results, get_and_write_diff, get_test_logger, write_string_to_test_artifact
 

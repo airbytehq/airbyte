@@ -5,9 +5,11 @@
 """
 Module exposing the format commands.
 """
+
 from __future__ import annotations
 
 import asyncclick as click
+
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context

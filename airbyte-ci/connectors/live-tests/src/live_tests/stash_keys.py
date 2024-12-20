@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List
 
 import pytest
+
 from live_tests.commons.evaluation_modes import TestEvaluationMode
 from live_tests.commons.models import ConnectionObjects, ConnectionSubset
 from live_tests.report import PrivateDetailsReport, TestReport

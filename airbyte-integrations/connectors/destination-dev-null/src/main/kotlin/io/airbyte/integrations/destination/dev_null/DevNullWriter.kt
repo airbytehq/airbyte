@@ -69,7 +69,8 @@ class LoggingStreamLoader(override val stream: DestinationStream, loggingConfig:
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        totalSizeBytes: Long,
+        endOfStream: Boolean,
     ): Batch {
         log.info { "Processing record batch with logging" }
 
@@ -100,7 +101,8 @@ class LoggingStreamLoader(override val stream: DestinationStream, loggingConfig:
 class SilentStreamLoader(override val stream: DestinationStream) : StreamLoader {
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        totalSizeBytes: Long,
+        endOfStream: Boolean
     ): Batch {
         return SimpleBatch(state = Batch.State.COMPLETE)
     }
@@ -122,7 +124,8 @@ class ThrottledStreamLoader(
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        totalSizeBytes: Long,
+        endOfStream: Boolean
     ): Batch {
         log.info { "Processing record batch with delay of $millisPerRecord per record" }
 
@@ -151,7 +154,8 @@ class FailingStreamLoader(override val stream: DestinationStream, private val nu
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        totalSizeBytes: Long,
+        endOfStream: Boolean
     ): Batch {
         log.info { "Processing record batch with failure after $numMessages messages" }
 

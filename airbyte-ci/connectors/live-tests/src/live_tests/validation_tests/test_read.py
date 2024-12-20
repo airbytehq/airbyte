@@ -16,6 +16,7 @@ from airbyte_protocol.models import (
     AirbyteStreamStatusTraceMessage,
     ConfiguredAirbyteCatalog,
 )
+
 from live_tests.commons.json_schema_helper import conforms_to_schema
 from live_tests.commons.models import ExecutionResult
 from live_tests.utils import fail_test_on_failing_execution_results, get_test_logger

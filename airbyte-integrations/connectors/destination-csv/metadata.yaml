@@ -1,9 +1,18 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: file
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
   connectorType: destination
   definitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/destination-csv
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/csv
   githubIssueLabel: destination-csv
   icon: file-csv.svg
   license: MIT
@@ -14,14 +23,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/csv
+  supportLevel: community
   tags:
     - language:java
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
 metadataSpecVersion: "1.0"

@@ -10,10 +10,11 @@ from typing import Dict, List, Optional, Set, Tuple
 import rich
 from connection_retriever import ConnectionObject, retrieve_objects  # type: ignore
 from connection_retriever.retrieval import TestingCandidate, retrieve_testing_candidates
+from pydantic import ValidationError
+
 from live_tests.commons import hacks
 from live_tests.commons.models import ConnectionSubset
 from live_tests.commons.utils import build_connection_url
-from pydantic import ValidationError
 
 from .models import AirbyteCatalog, Command, ConfiguredAirbyteCatalog, ConnectionObjects, SecretDict
 
@@ -161,7 +162,6 @@ def get_connection_objects(
 
     else:
         if auto_select_connections:
-
             connection_objects = _get_connection_objects_from_retrieved_objects(
                 requested_objects,
                 retrieval_reason=retrieval_reason,
@@ -270,7 +270,6 @@ def _get_connection_objects_from_retrieved_objects(
 
     all_connection_objects = []
     for candidate, streams_to_test in candidates_and_streams_to_test:
-
         retrieved_objects = retrieve_objects(
             requested_objects,
             retrieval_reason=retrieval_reason,

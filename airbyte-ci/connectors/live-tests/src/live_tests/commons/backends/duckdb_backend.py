@@ -9,6 +9,7 @@ from typing import Optional
 
 import duckdb
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
+
 from live_tests.commons.backends.file_backend import FileBackend
 
 

@@ -17,6 +17,8 @@ import pytest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
 from connection_retriever.retrieval import ConnectionNotFoundError, get_current_docker_image_tag  # type: ignore
+from rich.prompt import Confirm, Prompt
+
 from live_tests import stash_keys
 from live_tests.commons.connection_objects_retrieval import ConnectionObject, InvalidConnectionError, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner, Proxy
@@ -37,7 +39,6 @@ from live_tests.commons.segment_tracking import track_usage
 from live_tests.commons.utils import clean_up_artifacts
 from live_tests.report import PrivateDetailsReport, ReportState, TestReport
 from live_tests.utils import get_catalog, get_spec
-from rich.prompt import Confirm, Prompt
 
 if TYPE_CHECKING:
     from _pytest.config import Config
@@ -538,7 +539,6 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
     if control_or_target not in ["control", "target"]:
         raise ValueError("control_or_target should be either 'control' or 'target'")
     if command not in [Command.SPEC, Command.CHECK, Command.DISCOVER, Command.READ, Command.READ_WITH_STATE]:
-
         raise ValueError("command should be either 'spec', 'check', 'discover', 'read' or 'read_with_state'")
 
     if control_or_target == "control":

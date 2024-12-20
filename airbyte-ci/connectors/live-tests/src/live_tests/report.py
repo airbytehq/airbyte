@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Optional
 import requests
 import yaml
 from jinja2 import Environment, PackageLoader, select_autoescape
+
 from live_tests import stash_keys
 from live_tests.commons.models import Command, ConnectionObjects
 from live_tests.consts import MAX_LINES_IN_REPORT
@@ -25,6 +26,7 @@ if TYPE_CHECKING:
     import pytest
     from _pytest.config import Config
     from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteStream, SyncMode, Type  # type: ignore
+
     from live_tests.commons.models import ExecutionResult
 
 
@@ -231,7 +233,6 @@ class TestReport(BaseReport):
         ]
 
     def get_stream_coverage_metrics(self) -> dict[str, str]:
-
         configured_catalog_stream_count = len(self.get_configured_streams())
         catalog_stream_count = len(self.all_streams)
         coverage = configured_catalog_stream_count / catalog_stream_count if catalog_stream_count > 0 else 0
@@ -349,14 +350,14 @@ class TestReport(BaseReport):
                 }
                 if command in self.control_execution_results_per_command:
                     for control_result in self.control_execution_results_per_command[command]:
-                        message_count_per_type_and_command[message_type][command][
-                            "control"
-                        ] += control_result.get_message_count_per_type().get(message_type, 0)
+                        message_count_per_type_and_command[message_type][command]["control"] += (
+                            control_result.get_message_count_per_type().get(message_type, 0)
+                        )
                 if command in self.target_execution_results_per_command:
                     for target_result in self.target_execution_results_per_command[command]:
-                        message_count_per_type_and_command[message_type][command][
-                            "target"
-                        ] += target_result.get_message_count_per_type().get(message_type, 0)
+                        message_count_per_type_and_command[message_type][command]["target"] += (
+                            target_result.get_message_count_per_type().get(message_type, 0)
+                        )
 
                 message_count_per_type_and_command[message_type][command]["difference"] = (
                     message_count_per_type_and_command[message_type][command]["target"]
