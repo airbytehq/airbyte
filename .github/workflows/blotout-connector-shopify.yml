@@ -18,13 +18,12 @@ jobs:
 
     - name: Install airbyte-ci
       run: |
-        curl -fsSL https://github.com/airbytehq/airbyte-ci/releases/latest/download/airbyte-ci-linux-amd64 -o /usr/local/bin/airbyte-ci
-        chmod +x /usr/local/bin/airbyte-ci
-
-    - name: Install Docker
-      run: |
-        sudo apt-get update 
-        sudo apt-get install -y docker.io
+            make tools.airbyte-ci.install
+            make tools.airbyte-ci.check
+    # - name: Install Docker
+    #   run: |
+    #     sudo apt-get update 
+    #     sudo apt-get install -y docker.io
 
     - name: Build Shopify Source Docker Image
       run: |
