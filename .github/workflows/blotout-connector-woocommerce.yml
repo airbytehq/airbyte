@@ -1,4 +1,4 @@
-name: Blotout Build and Push Woocommerce Source Docker Image
+name: Blotout Woocommerce Build and Push  Source Docker Image
 
 on:
   push:

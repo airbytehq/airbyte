@@ -1,4 +1,4 @@
-name: Blotout Build and Push Shopify Source Docker Image
+name: Blotout Shopify Build and Push Shopify Source Docker Image
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     paths:
         - 'airbyte-integrations/connectors/source-shopify/**'  # Trigger only on changes within this directory
   workflow_dispatch:  # Manually triggerable from GitHub UI
-  
+
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
