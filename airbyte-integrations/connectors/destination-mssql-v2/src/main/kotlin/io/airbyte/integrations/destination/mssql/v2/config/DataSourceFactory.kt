@@ -28,34 +28,27 @@ class DataSourceFactory {
 }
 
 fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
-    val connectionStringArray =
-        mutableListOf(
-            "jdbc:sqlserver://${host}:${port}",
-            "databaseName=${database}",
-        )
+    val connectionString = StringBuilder().apply {
+        append("jdbc:sqlserver://${host}:${port};databaseName=${database}")
 
-    when (sslMethod) {
-        is EncryptedVerify -> {
-            connectionStringArray.add("encrypt=true")
-            sslMethod.trustStoreName?.let { connectionStringArray.add("trustStoreName=$it") }
-            sslMethod.trustStorePassword?.let {
-                connectionStringArray.add("trustStorePassword=$it")
+        when (sslMethod) {
+            is EncryptedVerify -> {
+                append(";encrypt=true")
+                sslMethod.trustStoreName?.let { append(";trustStoreName=$it") }
+                sslMethod.trustStorePassword?.let { append(";trustStorePassword=$it") }
+                sslMethod.hostNameInCertificate?.let { append(";hostNameInCertificate=$it") }
             }
-            sslMethod.hostNameInCertificate?.let {
-                connectionStringArray.add("hostNameInCertificate=$it")
+            is EncryptedTrust -> {
+                append(";encrypt=true;trustServerCertificate=true")
             }
+            is Unencrypted -> {}
         }
-        is EncryptedTrust -> {
-            connectionStringArray.add("encrypt=true")
-            connectionStringArray.add("trustServerCertificate=true")
-        }
-        is Unencrypted -> {}
-    }
 
-    jdbcUrlParams?.let { connectionStringArray.add(it) }
+        jdbcUrlParams?.let { append(";$it") }
+    }.toString()
 
     return SQLServerDataSource().also {
-        it.url = connectionStringArray.joinToString(";")
+        it.url = connectionString
         it.user = user
         password?.let(it::setPassword)
     }
