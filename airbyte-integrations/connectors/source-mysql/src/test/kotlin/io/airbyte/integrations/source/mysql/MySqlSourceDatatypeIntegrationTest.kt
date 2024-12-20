@@ -170,11 +170,13 @@ object MySqlSourceDatatypeTestOperations :
             "'2022-01-01'" to """"2022-01-01"""",
             "'0600-12-02'" to """"0600-12-02"""",
             "'1752-09-09'" to """"1752-09-09"""",
+            "NULL" to """"2020-03-30""""
         )
 
     val timeValues =
         mapOf(
             "'14:30:00'" to """"14:30:00.000000"""",
+            "NULL" to """"10:30:00.000000"""",
         )
 
     val dateTimeValues =
@@ -182,6 +184,7 @@ object MySqlSourceDatatypeTestOperations :
             "'2024-09-13 14:30:00'" to """"2024-09-13T14:30:00.000000"""",
             "'2024-09-13T14:40:00+00:00'" to """"2024-09-13T14:40:00.000000"""",
             "'1752-09-01 14:30:00'" to """"1752-09-01T14:30:00.000000"""",
+            "NULL" to """"2020-03-30T10:30:00.000000"""",
         )
 
     val timestampValues =
@@ -189,12 +192,14 @@ object MySqlSourceDatatypeTestOperations :
             "'2024-09-12 14:30:00'" to """"2024-09-12T14:30:00.000000Z"""",
             "CONVERT_TZ('2024-09-12 14:30:00', 'America/Los_Angeles', 'UTC')" to
                 """"2024-09-12T21:30:00.000000Z"""",
+            "NULL" to """"2020-03-30T10:30:00.000000Z"""",
         )
 
     val booleanValues =
         mapOf(
             "TRUE" to "true",
             "FALSE" to "false",
+            "NULL" to "null",
         )
 
     val enumValues =
@@ -321,19 +326,23 @@ object MySqlSourceDatatypeTestOperations :
                     intValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlSourceDatatypeTestCase("DATE", dateValues, LeafAirbyteSchemaType.DATE),
                 MySqlSourceDatatypeTestCase(
-                    "TIMESTAMP",
+                    "DATE NOT NULL DEFAULT '2020-03-30'",
+                    dateValues,
+                    LeafAirbyteSchemaType.DATE,
+                ),
+                MySqlSourceDatatypeTestCase(
+                    "TIMESTAMP NOT NULL DEFAULT '2020-03-30 10:30:00'",
                     timestampValues,
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
                 ),
                 MySqlSourceDatatypeTestCase(
-                    "DATETIME",
+                    "DATETIME(3) NOT NULL DEFAULT '2020-03-30 10:30:00'",
                     dateTimeValues,
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                 ),
                 MySqlSourceDatatypeTestCase(
-                    "TIME",
+                    "TIME NOT NULL DEFAULT '10:30:00'",
                     timeValues,
                     LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                 ),
@@ -404,5 +413,12 @@ data class MySqlSourceDatatypeTestCase(
             )
 
     val dml: List<String>
-        get() = sqlToAirbyte.keys.map { "INSERT INTO $id ($fieldName) VALUES ($it)" }
+        get() =
+            sqlToAirbyte.keys.map {
+                if (it == "NULL") {
+                    "INSERT INTO $id VALUES ()"
+                } else {
+                    "INSERT INTO $id ($fieldName) VALUES ($it)"
+                }
+            }
 }

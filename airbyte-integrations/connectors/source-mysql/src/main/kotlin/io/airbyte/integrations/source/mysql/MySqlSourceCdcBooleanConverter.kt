@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.read.cdc.Converted
 import io.airbyte.cdk.read.cdc.NoConversion
+import io.airbyte.cdk.read.cdc.NullFallThrough
 import io.airbyte.cdk.read.cdc.PartialConverter
 import io.airbyte.cdk.read.cdc.RelationalColumnCustomConverter
 import org.apache.kafka.connect.data.SchemaBuilder
@@ -13,26 +14,9 @@ import org.apache.kafka.connect.data.SchemaBuilder
 class MySqlSourceCdcBooleanConverter : RelationalColumnCustomConverter {
 
     override val debeziumPropertiesKey: String = "boolean"
-    override val handlers: List<RelationalColumnCustomConverter.Handler> =
-        listOf(booleanHandler, tinyint1Handler)
+    override val handlers: List<RelationalColumnCustomConverter.Handler> = listOf(tinyint1Handler)
 
     companion object {
-        val booleanHandler =
-            RelationalColumnCustomConverter.Handler(
-                predicate = { it.typeName().startsWith("BOOL", ignoreCase = true) },
-                outputSchema = SchemaBuilder.bool(),
-                partialConverters =
-                    listOf(
-                        PartialConverter {
-                            when (it) {
-                                null -> Converted(false)
-                                is Boolean -> Converted(it)
-                                else -> NoConversion
-                            }
-                        }
-                    )
-            )
-
         val tinyint1Handler =
             RelationalColumnCustomConverter.Handler(
                 predicate = {
@@ -43,13 +27,8 @@ class MySqlSourceCdcBooleanConverter : RelationalColumnCustomConverter {
                 outputSchema = SchemaBuilder.bool(),
                 partialConverters =
                     listOf(
-                        PartialConverter {
-                            when (it) {
-                                null -> Converted(false)
-                                is Number -> Converted(it != 0)
-                                else -> NoConversion
-                            }
-                        }
+                        NullFallThrough,
+                        PartialConverter { if (it is Number) Converted(it != 0) else NoConversion }
                     )
             )
     }
