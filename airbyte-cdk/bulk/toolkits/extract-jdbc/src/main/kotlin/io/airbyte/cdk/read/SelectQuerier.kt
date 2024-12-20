@@ -107,11 +107,11 @@ class JdbcSelectQuerier(
         }
 
         /** Initializes a connection and readies the resultset. */
-        open fun initQueryExecution() {
+        fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
             stmt = conn!!.prepareStatement(q.sql)
-            parameters.fetchSize?.let { fetchSize: Int ->
-                log.info { "Setting fetchSize to $fetchSize." }
+            parameters.statementFetchSize?.let { fetchSize: Int ->
+                log.info { "Setting Statement fetchSize to $fetchSize." }
                 stmt!!.fetchSize = fetchSize
             }
             var paramIdx = 1
@@ -121,6 +121,10 @@ class JdbcSelectQuerier(
                 paramIdx++
             }
             rs = stmt!!.executeQuery()
+            parameters.resultSetFetchSize?.let { fetchSize: Int ->
+                log.info { "Setting ResultSet fetchSize to $fetchSize." }
+                rs!!.fetchSize = fetchSize
+            }
         }
 
         override fun hasNext(): Boolean {
