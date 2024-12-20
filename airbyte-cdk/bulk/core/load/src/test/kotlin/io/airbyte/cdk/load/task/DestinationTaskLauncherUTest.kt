@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationStreamEvent
+import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.state.Reserved
@@ -18,9 +19,9 @@ import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
+import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
-import io.airbyte.cdk.load.task.implementor.ProcessFileTask
 import io.airbyte.cdk.load.task.implementor.ProcessFileTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
@@ -80,6 +81,7 @@ class DestinationTaskLauncherUTest {
         mockk(relaxed = true)
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>> =
         mockk(relaxed = true)
+    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage> = mockk(relaxed = true)
     private fun getDefaultDestinationTaskLauncher(
         useFileTranfer: Boolean
     ): DefaultDestinationTaskLauncher {
@@ -107,6 +109,7 @@ class DestinationTaskLauncherUTest {
             inputFlow,
             recordQueueSupplier,
             checkpointQueue,
+            fileTransferQueue,
         )
     }
 
@@ -142,21 +145,6 @@ class DestinationTaskLauncherUTest {
         destinationTaskLauncher.run()
 
         coVerify { spillToDiskTaskFactory.make(any(), any()) }
-    }
-
-    class MockedTaskWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
-        override suspend fun execute() {}
-    }
-
-    @Test
-    fun `test handle file`() = runTest {
-        val processFileTask = mockk<ProcessFileTask>(relaxed = true)
-        every { processFileTaskFactory.make(any(), any(), any(), any()) } returns processFileTask
-
-        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
-        destinationTaskLauncher.handleFile(mockk(), mockk(), 1L)
-
-        coVerify { taskScopeProvider.launch(match { it.innerTask is ProcessFileTask }) }
     }
 
     @Test

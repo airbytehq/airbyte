@@ -37,8 +37,8 @@ import java.io.OutputStream
 import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
-    fun accept(record: DestinationRecord)
-    fun flush()
+    abstract fun accept(record: DestinationRecord)
+    abstract fun flush()
 }
 
 @Singleton
@@ -51,6 +51,8 @@ class ObjectStorageFormattingWriterFactory(
         outputStream: OutputStream
     ): ObjectStorageFormattingWriter {
         val flatten = formatConfigProvider.objectStorageFormatConfiguration.rootLevelFlattening
+        // TODO: FileWriter
+
         return when (formatConfigProvider.objectStorageFormatConfiguration) {
             is JsonFormatConfiguration -> JsonFormattingWriter(stream, outputStream, flatten)
             is AvroFormatConfiguration ->
@@ -100,7 +102,7 @@ class CSVFormattingWriter(
     private val stream: DestinationStream,
     outputStream: OutputStream,
     private val rootLevelFlattening: Boolean
-) : ObjectStorageFormattingWriter {
+) : ObjectStorageFormattingWriter() {
 
     private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
