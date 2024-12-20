@@ -5,7 +5,6 @@ products: all
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRobot } from '@fortawesome/free-solid-svg-icons'
 
 # Airbyte Academy
 
