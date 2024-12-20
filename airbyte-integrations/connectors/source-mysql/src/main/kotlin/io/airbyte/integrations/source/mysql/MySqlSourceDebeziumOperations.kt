@@ -7,8 +7,10 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.TextCodec
@@ -39,6 +41,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
@@ -72,6 +75,22 @@ class MySqlSourceDebeziumOperations(
         val isDelete: Boolean = after.isNull
         // Use either `before` or `after` as the record data, depending on the nature of the change.
         val data: ObjectNode = (if (isDelete) before else after) as ObjectNode
+        // Turn string representations of numbers into BigDecimals.
+        for (field in stream.schema) {
+            when (field.type.airbyteSchemaType) {
+                LeafAirbyteSchemaType.INTEGER,
+                LeafAirbyteSchemaType.NUMBER -> {
+                    val textNode: TextNode = data[field.id] as? TextNode ?: continue
+                    val bigDecimal = BigDecimal(textNode.textValue()).stripTrailingZeros()
+                    data.put(field.id, bigDecimal)
+                }
+                LeafAirbyteSchemaType.JSONB -> {
+                    val textNode: TextNode = data[field.id] as? TextNode ?: continue
+                    data.set<JsonNode>(field.id, Jsons.readTree(textNode.textValue()))
+                }
+                else -> continue
+            }
+        }
         // Set _ab_cdc_updated_at and _ab_cdc_deleted_at meta-field values.
         val transactionMillis: Long = source["ts_ms"].asLong()
         val transactionOffsetDateTime: OffsetDateTime =
@@ -377,6 +396,10 @@ class MySqlSourceDebeziumOperations(
                 // This to make sure that binary data represented as a base64-encoded String.
                 // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
                 .with("binary.handling.mode", "base64")
+                // This is to make sure that numbers are represented as strings.
+                .with("decimal.handling.mode", "string")
+                // This is to make sure that temporal data is represented without loss of precision.
+                .with("time.precision.mode", "adaptive_time_microseconds")
                 // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
                 .with("snapshot.mode", "when_needed")
                 // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-locking-mode
@@ -399,13 +422,11 @@ class MySqlSourceDebeziumOperations(
                 .withDatabase("include.list", databaseName)
                 .withOffset()
                 .withSchemaHistory()
-                .with("converters", "datetime,numeric,boolean")
-                .with(
-                    "datetime.type",
-                    MySqlSourceCdcTemporalConverter::class.java.getName(),
+                .withConverters(
+                    MySqlSourceCdcBooleanConverter::class,
+                    MySqlSourceCdcTemporalConverter::class
                 )
-                .with("numeric.type", MySqlSourceCdcNumericConverter::class.java.getName())
-                .with("boolean.type", MySqlSourceCdcBooleanConverter::class.java.getName())
+
         val serverTimezone: String? =
             (configuration.incrementalConfiguration as CdcIncrementalConfiguration).serverTimezone
         if (!serverTimezone.isNullOrBlank()) {
