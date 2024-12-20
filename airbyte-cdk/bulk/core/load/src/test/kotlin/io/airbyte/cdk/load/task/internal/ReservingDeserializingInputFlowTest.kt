@@ -6,11 +6,13 @@ package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordSerialized
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
 import java.io.ByteArrayInputStream
@@ -55,19 +57,20 @@ class ReservingDeserializingInputFlowTest {
         coEvery { config.estimatedRecordMemoryOverheadRatio } returns RATIO
         coEvery { deserializer.deserialize(any()) } answers
             {
-                DestinationRecordAirbyteValue(
+                DestinationRecord(
                     stream,
-                    NullValue,
-                    0L,
-                    null,
+                    AirbyteMessage(),
                     firstArg<String>().reversed() + "!",
+                    ObjectTypeWithoutSchema
                 )
             }
-        val inputs = inputFlow.toList().map { it.first to it.second.value }
+        val inputs =
+            inputFlow.toList().map {
+                it.first to (it.second.value as DestinationRecord).asRecordSerialized()
+            }
         val expectedOutputs =
             records.map {
-                it.length.toLong() to
-                    DestinationRecordAirbyteValue(stream, NullValue, 0L, null, it.reversed() + "!")
+                it.length.toLong() to DestinationRecordSerialized(stream, it.reversed() + "!")
             }
         assert(inputs == expectedOutputs)
     }

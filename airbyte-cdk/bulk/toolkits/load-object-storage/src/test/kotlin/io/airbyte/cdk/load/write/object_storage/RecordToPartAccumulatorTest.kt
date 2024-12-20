@@ -46,7 +46,6 @@ class RecordToPartAccumulatorTest {
             ObjectValue(linkedMapOf()),
             0L,
             null,
-            ""
         )
 
     private fun makeRecords(n: Int): Iterator<DestinationRecordAirbyteValue> =
