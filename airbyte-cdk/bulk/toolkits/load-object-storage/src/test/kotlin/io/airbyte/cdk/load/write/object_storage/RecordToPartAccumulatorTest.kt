@@ -137,7 +137,6 @@ class RecordToPartAccumulatorTest {
         // should be second part and final (and not empty)
         when (val batch = acc.processRecords(makeRecords(1), 0L, false) as ObjectStorageBatch) {
             is LoadablePart -> {
-                println(batch.part.bytes.contentToString())
                 assert(batch.part.bytes.contentEquals(makeBytes(1)))
                 assert(batch.part.partIndex == 2)
                 assert(batch.part.fileNumber == 111L)
