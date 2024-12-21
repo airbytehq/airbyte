@@ -73,6 +73,7 @@ value class NumberValue(val value: BigDecimal) : AirbyteValue, Comparable<Number
 
 @JvmInline
 value class DateValue(val value: LocalDate) : AirbyteValue, Comparable<DateValue> {
+    constructor(date: String) : this(LocalDate.parse(date))
     override fun compareTo(other: DateValue): Int = value.compareTo(other.value)
 }
 
@@ -86,18 +87,21 @@ value class TimestampWithTimezoneValue(val value: OffsetDateTime) :
 @JvmInline
 value class TimestampWithoutTimezoneValue(val value: LocalDateTime) :
     AirbyteValue, Comparable<TimestampWithoutTimezoneValue> {
+    constructor(timestamp: String) : this(LocalDateTime.parse(timestamp))
     override fun compareTo(other: TimestampWithoutTimezoneValue): Int = value.compareTo(other.value)
 }
 
 @JvmInline
 value class TimeWithTimezoneValue(val value: OffsetTime) :
     AirbyteValue, Comparable<TimeWithTimezoneValue> {
+    constructor(time: String) : this(OffsetTime.parse(time))
     override fun compareTo(other: TimeWithTimezoneValue): Int = value.compareTo(other.value)
 }
 
 @JvmInline
 value class TimeWithoutTimezoneValue(val value: LocalTime) :
     AirbyteValue, Comparable<TimeWithoutTimezoneValue> {
+    constructor(time: String) : this(LocalTime.parse(time))
     override fun compareTo(other: TimeWithoutTimezoneValue): Int = value.compareTo(other.value)
 }
 
