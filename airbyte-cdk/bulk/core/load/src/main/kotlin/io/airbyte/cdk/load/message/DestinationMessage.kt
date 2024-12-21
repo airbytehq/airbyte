@@ -238,12 +238,14 @@ sealed interface CheckpointMessage : DestinationMessage {
     data class Stats(val recordCount: Long)
     data class Checkpoint(
         val stream: DestinationStream.Descriptor,
-        val state: JsonNode,
+        val state: JsonNode?,
     ) {
         fun asProtocolObject(): AirbyteStreamState =
-            AirbyteStreamState()
-                .withStreamDescriptor(stream.asProtocolObject())
-                .withStreamState(state)
+            AirbyteStreamState().withStreamDescriptor(stream.asProtocolObject()).also {
+                if (state != null) {
+                    it.streamState = state
+                }
+            }
     }
 
     val sourceStats: Stats?
@@ -503,7 +505,7 @@ class DestinationMessageFactory(
         val descriptor = streamState.streamDescriptor
         return Checkpoint(
             stream = DestinationStream.Descriptor(descriptor.namespace, descriptor.name),
-            state = streamState.streamState
+            state = runCatching { streamState.streamState }.getOrNull()
         )
     }
 }
