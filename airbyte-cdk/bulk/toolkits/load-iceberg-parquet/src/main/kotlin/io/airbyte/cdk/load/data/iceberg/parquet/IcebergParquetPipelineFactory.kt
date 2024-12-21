@@ -6,11 +6,13 @@ package io.airbyte.cdk.load.data.iceberg.parquet
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteSchemaNoopMapper
+import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.AirbyteValueNoopMapper
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.MapperPipelineFactory
 import io.airbyte.cdk.load.data.MergeUnions
 import io.airbyte.cdk.load.data.NullOutOfRangeIntegers
+import io.airbyte.cdk.load.data.SchemalessTypesToStringType
 import io.airbyte.cdk.load.data.SchemalessValuesToJsonString
 import io.airbyte.cdk.load.data.UnionTypeToDisjointRecord
 import io.airbyte.cdk.load.data.UnionValueToDisjointRecord
@@ -20,10 +22,10 @@ class IcebergParquetPipelineFactory : MapperPipelineFactory {
         MapperPipeline(
             stream.schema,
             listOf(
-                // TODO not sure why base parquet was doing this as a noop
-                SchemalessTypesToStringType() to SchemalessValuesToJsonString(),
-                AirbyteSchemaNoopMapper() to NullOutOfRangeIntegers(),
+                SchemalessTypesToStringType to SchemalessValuesToJsonString(),
                 MergeUnions() to AirbyteValueNoopMapper(),
+                AirbyteSchemaNoopMapper() to AirbyteValueDeepCoercingMapper(),
+                AirbyteSchemaNoopMapper() to NullOutOfRangeIntegers(),
                 UnionTypeToDisjointRecord() to UnionValueToDisjointRecord(),
             ),
         )

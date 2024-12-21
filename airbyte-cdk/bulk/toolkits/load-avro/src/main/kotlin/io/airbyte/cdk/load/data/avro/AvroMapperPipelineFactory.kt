@@ -6,11 +6,13 @@ package io.airbyte.cdk.load.data.avro
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteSchemaNoopMapper
+import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.AirbyteValueNoopMapper
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.MapperPipelineFactory
 import io.airbyte.cdk.load.data.MergeUnions
 import io.airbyte.cdk.load.data.NullOutOfRangeIntegers
+import io.airbyte.cdk.load.data.SchemalessTypesToStringType
 import io.airbyte.cdk.load.data.SchemalessValuesToJsonString
 import io.airbyte.cdk.load.data.TimeStringToInteger
 
@@ -19,10 +21,11 @@ class AvroMapperPipelineFactory : MapperPipelineFactory {
         MapperPipeline(
             stream.schema,
             listOf(
-                AirbyteSchemaNoopMapper() to SchemalessValuesToJsonString(),
+                SchemalessTypesToStringType to SchemalessValuesToJsonString(),
+                MergeUnions() to AirbyteValueNoopMapper(),
+                AirbyteSchemaNoopMapper() to AirbyteValueDeepCoercingMapper(),
                 AirbyteSchemaNoopMapper() to NullOutOfRangeIntegers(),
                 AirbyteSchemaNoopMapper() to TimeStringToInteger(),
-                MergeUnions() to AirbyteValueNoopMapper(),
             ),
         )
 }

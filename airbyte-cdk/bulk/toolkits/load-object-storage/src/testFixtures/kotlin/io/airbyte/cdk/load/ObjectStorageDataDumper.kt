@@ -114,7 +114,7 @@ class ObjectStorageDataDumper(
                     .map { line ->
                         line
                             .deserializeToNode()
-                            .toAirbyteValue(stream.schema.withAirbyteMeta(wasFlattened))
+                            .toAirbyteValue()
                             .maybeUnflatten(wasFlattened)
                             .toOutputRecord()
                     }
