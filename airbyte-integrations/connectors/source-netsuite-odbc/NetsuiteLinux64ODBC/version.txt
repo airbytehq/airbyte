@@ -1,0 +1,1 @@
+SuiteAnalytics Connect Linux ODBC Driver version 8.10.147.0

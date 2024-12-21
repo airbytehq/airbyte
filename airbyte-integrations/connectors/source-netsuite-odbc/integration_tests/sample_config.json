@@ -1,0 +1,10 @@
+{
+  "service_host": "XXXXXXX-sb1.connect.api.netsuite.com",
+  "service_port": "1708",
+  "account_id": "XXXXXXX_SB1",
+  "consumer_key": "zkHpSWbgVjaTa21KZlUIaviO74g3nTz7hlOtVqyxfz2TpdsW7Tlt9iNfoHPWPZq7",
+  "consumer_secret": "dqUi0PSpB6z8FcRhDyz0ImhiGobWkrL7sPjS1OaIfg4HCDjXEXFybXgufa6rtPLz",
+  "token_key": "qb7K6D4ccr5t3NTDsVpoorxYK3Vrh9m2rMTlnFJdIky2heiXlFTUvKGE01iQSRrx",
+  "token_secret": "cZonPqqMr0CqH8NRUwK4IcHq082rJHRZE5W039hn1VEUw8XMiEOgkfWYjFaP2QVf",
+  "role_id": "57"
+}
