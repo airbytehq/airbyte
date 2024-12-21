@@ -26,7 +26,7 @@ class IcebergV2Specification :
     S3BucketSpecification,
     IcebergCatalogSpecifications {
 
-    @get:JsonSchemaTitle("AWS Access Key")
+    @get:JsonSchemaTitle("AWS Access Key ID")
     @get:JsonPropertyDescription(
         "The AWS Access Key ID with permissions for S3 and Glue operations."
     )

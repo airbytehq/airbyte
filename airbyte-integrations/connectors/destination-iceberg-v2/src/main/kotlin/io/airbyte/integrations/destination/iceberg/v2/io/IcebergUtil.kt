@@ -7,7 +7,9 @@ package io.airbyte.integrations.destination.iceberg.v2.io
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.command.iceberg.parquet.CatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.NullValue
@@ -23,12 +25,11 @@ import io.airbyte.integrations.destination.iceberg.v2.SECRET_ACCESS_KEY
 import io.airbyte.integrations.destination.iceberg.v2.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.time.Duration
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.CatalogProperties.URI
-import org.apache.iceberg.CatalogProperties.WAREHOUSE_LOCATION
 import org.apache.iceberg.CatalogUtil
-import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_GLUE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE
 import org.apache.iceberg.FileFormat
@@ -36,6 +37,7 @@ import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
+import org.apache.iceberg.aws.AssumeRoleAwsClientFactory
 import org.apache.iceberg.aws.AwsClientProperties
 import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.aws.s3.S3FileIO
@@ -50,6 +52,10 @@ import software.amazon.awssdk.services.glue.model.ConcurrentModificationExceptio
 private val logger = KotlinLogging.logger {}
 
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
+
+const val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
+const val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
+const val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
 
 /** Collection of Iceberg related utilities. */
 @Singleton
@@ -186,78 +192,125 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     fun toCatalogProperties(config: IcebergV2Configuration): Map<String, String> {
         val icebergCatalogConfig = config.icebergCatalogConfiguration
         val catalogConfig = icebergCatalogConfig.catalogConfiguration
-        val awsAccessKeyId =
-            requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
-                "AWS Access Key ID cannot be null"
-            }
-        val awsSecretAccessKey =
-            requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
-                "AWS Secret Access Key cannot be null"
-            }
+        val region = config.s3BucketConfiguration.s3BucketRegion.region
 
-        // Common S3/Iceberg properties shared across all catalog types.
-        // The S3 endpoint is optional; if provided, it will be included.
-        val s3CommonProperties =
-            mutableMapOf<String, String>(
-                    CatalogProperties.FILE_IO_IMPL to S3FileIO::class.java.name,
-                    S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
-                    S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
-                    // Required for MinIO or other S3-compatible stores using path-style access.
-                    S3FileIOProperties.PATH_STYLE_ACCESS to "true"
-                )
-                .apply {
-                    config.s3BucketConfiguration.s3Endpoint?.let { endpoint ->
-                        this[S3FileIOProperties.ENDPOINT] = endpoint
-                    }
-                }
+        // Build base S3 properties
+        val s3Properties = buildS3Properties(config, icebergCatalogConfig)
+
+        // Set AWS region as system property
+        System.setProperty("aws.region", region)
 
         return when (catalogConfig) {
-            is NessieCatalogConfiguration -> {
-                // Nessie relies on the AWS region being set as a system property.
-                System.setProperty("aws.region", config.s3BucketConfiguration.s3BucketRegion.region)
-
-                val nessieProperties =
-                    mutableMapOf(
-                        ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
-                        URI to catalogConfig.serverUri,
-                        NessieConfigConstants.CONF_NESSIE_REF to
-                            icebergCatalogConfig.mainBranchName,
-                        WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
-                    )
-
-                // Add optional Nessie auth token if provided.
-                catalogConfig.accessToken?.let { token ->
-                    nessieProperties[NessieConfigConstants.CONF_NESSIE_AUTH_TYPE] = "BEARER"
-                    nessieProperties[NessieConfigConstants.CONF_NESSIE_AUTH_TOKEN] = token
-                }
-
-                nessieProperties + s3CommonProperties
-            }
-            is GlueCatalogConfiguration -> {
-                val clientCredentialsProviderPrefix =
-                    AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER + "."
-
-                val glueProperties =
-                    mapOf(
-                        ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_GLUE,
-                        WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
-                        AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId,
-                        AwsClientProperties.CLIENT_REGION to
-                            config.s3BucketConfiguration.s3BucketRegion.region,
-                        AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
-                            GlueCredentialsProvider::class.java.name,
-                        "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
-                        "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to
-                            awsSecretAccessKey
-                    )
-
-                glueProperties + s3CommonProperties
-            }
-            else ->
-                throw IllegalArgumentException(
-                    "Unknown catalog type: ${catalogConfig::class.java.name}"
-                )
+            is NessieCatalogConfiguration -> buildNessieProperties(config, catalogConfig, s3Properties)
+            is GlueCatalogConfiguration -> buildGlueProperties(config, catalogConfig, icebergCatalogConfig)
+            else -> throw IllegalArgumentException(
+                "Unsupported catalog type: ${catalogConfig::class.java.name}"
+            )
         }
+    }
+
+    private fun buildS3Properties(
+        config: IcebergV2Configuration,
+        icebergCatalogConfig: IcebergCatalogConfiguration
+    ): Map<String, String> {
+        return buildMap {
+            put(CatalogProperties.FILE_IO_IMPL, S3FileIO::class.java.name)
+            put(S3FileIOProperties.PATH_STYLE_ACCESS, "true")
+            put(CatalogProperties.WAREHOUSE_LOCATION, icebergCatalogConfig.warehouseLocation)
+
+            // Add optional S3 endpoint if provided
+            config.s3BucketConfiguration.s3Endpoint?.let { endpoint ->
+                put(S3FileIOProperties.ENDPOINT, endpoint)
+            }
+        }
+    }
+
+    private fun buildNessieProperties(
+        config: IcebergV2Configuration,
+        catalogConfig: NessieCatalogConfiguration,
+        s3Properties: Map<String, String>
+    ): Map<String, String> {
+        val awsAccessKeyId = requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
+            "AWS Access Key ID is required for Nessie configuration"
+        }
+        val awsSecretAccessKey = requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
+            "AWS Secret Access Key is required for Nessie configuration"
+        }
+
+        val nessieProperties = buildMap {
+            put(CatalogUtil.ICEBERG_CATALOG_TYPE, ICEBERG_CATALOG_TYPE_NESSIE)
+            put(URI, catalogConfig.serverUri)
+            put(NessieConfigConstants.CONF_NESSIE_REF, config.icebergCatalogConfiguration.mainBranchName)
+            put(S3FileIOProperties.ACCESS_KEY_ID, awsAccessKeyId)
+            put(S3FileIOProperties.SECRET_ACCESS_KEY, awsSecretAccessKey)
+
+            // Add optional Nessie authentication if provided
+            catalogConfig.accessToken?.let { token ->
+                put(NessieConfigConstants.CONF_NESSIE_AUTH_TYPE, "BEARER")
+                put(NessieConfigConstants.CONF_NESSIE_AUTH_TOKEN, token)
+            }
+        }
+
+        return nessieProperties + s3Properties
+    }
+
+    private fun buildGlueProperties(
+        config: IcebergV2Configuration,
+        catalogConfig: GlueCatalogConfiguration,
+        icebergCatalogConfig: IcebergCatalogConfiguration
+    ): Map<String, String> {
+        val baseGlueProperties = mapOf(
+            CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_GLUE,
+            CatalogProperties.WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
+            AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId
+        )
+
+        val clientProperties = if (catalogConfig.roleArn != null) {
+            buildRoleBasedClientProperties(catalogConfig.roleArn!!, config)
+        } else {
+            buildKeyBasedClientProperties(config)
+        }
+
+        return baseGlueProperties + clientProperties
+    }
+
+    private fun buildRoleBasedClientProperties(
+        roleArn: String,
+        config: IcebergV2Configuration
+    ): Map<String, String> {
+        val externalId = System.getenv(EXTERNAL_ID)
+        val awsAccessKeyId = System.getenv(AWS_ACCESS_KEY_ID)
+        val awsSecretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY)
+        val region = config.s3BucketConfiguration.s3BucketRegion.region
+
+        return mapOf(
+            AwsProperties.REST_ACCESS_KEY_ID to awsAccessKeyId,
+            AwsProperties.REST_SECRET_ACCESS_KEY to awsSecretAccessKey,
+            AwsProperties.CLIENT_FACTORY to AssumeRoleAwsClientFactory::class.java.name,
+            AwsProperties.CLIENT_ASSUME_ROLE_ARN to roleArn,
+            AwsProperties.CLIENT_ASSUME_ROLE_REGION to region,
+            AwsProperties.CLIENT_ASSUME_ROLE_TIMEOUT_SEC to Duration.ofHours(1).toSeconds().toString(),
+            AwsProperties.CLIENT_ASSUME_ROLE_EXTERNAL_ID to externalId
+        )
+    }
+
+    private fun buildKeyBasedClientProperties(config: IcebergV2Configuration): Map<String, String> {
+        val awsAccessKeyId = requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
+            "AWS Access Key ID is required for key-based authentication"
+        }
+        val awsSecretAccessKey = requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
+            "AWS Secret Access Key is required for key-based authentication"
+        }
+        val clientCredentialsProviderPrefix = "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}."
+
+        return mapOf(
+            S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
+            S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
+            AwsClientProperties.CLIENT_REGION to config.s3BucketConfiguration.s3BucketRegion.region,
+            AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to GlueCredentialsProvider::class.java.name,
+            "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
+            "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to awsSecretAccessKey
+        )
     }
 
     fun toIcebergSchema(stream: DestinationStream, pipeline: MapperPipeline): Schema {
