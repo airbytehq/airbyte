@@ -60,7 +60,14 @@ class AirbyteTypeToAvroSchema {
             is IntegerType -> SchemaBuilder.builder().longType()
             is NumberType -> SchemaBuilder.builder().doubleType()
             is StringType -> SchemaBuilder.builder().stringType()
-            is UnknownType,
+            is UnknownType -> {
+                // Special case, allow null types
+                if (airbyteSchema.schema.get("type").asText() == "null") {
+                    SchemaBuilder.builder().nullType()
+                } else {
+                    throw IllegalArgumentException("Unknown type: $airbyteSchema")
+                }
+            }
             is ObjectTypeWithEmptySchema,
             is ObjectTypeWithoutSchema,
             is ArrayTypeWithoutSchema -> SchemaBuilder.builder().stringType()
@@ -88,7 +95,13 @@ class AirbyteTypeToAvroSchema {
     ): Schema =
         if (airbyteSchema.nullable && avroSchema.type != Schema.Type.UNION) {
             SchemaBuilder.unionOf().nullType().and().type(avroSchema).endUnion()
-        } else if (airbyteSchema.nullable && avroSchema.type == Schema.Type.UNION) {
+        } else if (
+            airbyteSchema.nullable &&
+                avroSchema.type == Schema.Type.UNION
+                // UnknownType is itself a null, so nullability is moot
+                &&
+                airbyteSchema.type !is UnknownType
+        ) {
             avroSchema.types
                 .fold(SchemaBuilder.unionOf().nullType()) { acc, type -> acc.and().type(type) }
                 .endUnion()

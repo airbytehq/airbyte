@@ -4,8 +4,10 @@
 
 package io.airbyte.cdk.load.data
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.test.util.Root
+import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import io.airbyte.cdk.load.test.util.ValueTestBuilder
 import io.airbyte.cdk.load.util.deserializeToNode
 import org.junit.jupiter.api.Assertions
@@ -14,6 +16,23 @@ import org.junit.jupiter.api.Test
 class SchemalessTypesToJsonStringTest {
     private val addressJson =
         """{"address":{"street":"123 Main St","city":"San Francisco","state":"CA"}}"""
+
+    @Test
+    fun testBasicTypeBehavior() {
+        val (inputSchema, expectedOutput) =
+            SchemaRecordBuilder<Root>()
+                .with(UnknownType(JsonNodeFactory.instance.objectNode().put("type", "null")))
+                .with(
+                    UnknownType(
+                        JsonNodeFactory.instance.objectNode().put("type", "made_up_or_typo")
+                    ),
+                    ObjectTypeWithoutSchema
+                )
+                .build()
+        SeparateNullUnknownFromSchemalessTypes().map(inputSchema).let {
+            Assertions.assertEquals(expectedOutput, it)
+        }
+    }
 
     @Test
     fun testBasicValueBehavior() {

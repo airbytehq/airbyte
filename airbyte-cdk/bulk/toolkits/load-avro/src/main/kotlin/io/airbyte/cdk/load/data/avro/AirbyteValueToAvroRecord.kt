@@ -77,8 +77,10 @@ class AirbyteValueToAvroRecord {
             NumberType -> return (airbyteValue as NumberValue).value.toDouble()
             StringType -> return (airbyteValue as StringValue).value
 
+            // Upstream all unknown types other than {"type": "null"} are converted to Schemaless
+            is UnknownType -> return null
+
             // Converted to strings upstream
-            is UnknownType,
             ObjectTypeWithEmptySchema,
             ObjectTypeWithoutSchema,
             ArrayTypeWithoutSchema -> return (airbyteValue as StringValue).value

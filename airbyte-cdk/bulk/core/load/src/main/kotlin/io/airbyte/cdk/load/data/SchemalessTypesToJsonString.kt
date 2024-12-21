@@ -7,6 +7,35 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.util.serializeToString
 
+/**
+ * Intended for Avro and Parquet Conversions and similar use cases.
+ *
+ * The contract is to serialize the values of schemaless and unknown types to a json string.
+ *
+ * Because there is no JsonBlob `AirbyteType`, we leave the types as-is and just serialize them. It
+ * is expected that the serializer will know to expect strings for each type.
+ *
+ * This means there's no need for a type mapper, unless you also want to support some subset of the
+ * Unknown types.
+ *
+ * For example, [SeparateNullUnknownFromSchemalessTypes] is used to add support for `{ "type":
+ * "null" }` This is achieved by shunting all other unknowns into the sentinel type
+ * [ObjectTypeWithoutSchema]. (Ie, the serializer will still expect strings, but can now treat
+ * `Unknown` as a null type.
+ */
+class SeparateNullUnknownFromSchemalessTypes : AirbyteSchemaIdentityMapper {
+    override fun mapUnknown(schema: UnknownType) =
+        if (
+            schema.schema.isObject &&
+                schema.schema.get("type").isTextual &&
+                schema.schema.get("type").textValue() == "null"
+        ) {
+            schema
+        } else {
+            ObjectTypeWithoutSchema
+        }
+}
+
 class SchemalessValuesToJsonString : AirbyteValueIdentityMapper() {
     override fun mapObjectWithoutSchema(
         value: AirbyteValue,

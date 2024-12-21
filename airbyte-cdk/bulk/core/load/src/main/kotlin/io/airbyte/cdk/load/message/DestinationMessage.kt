@@ -392,24 +392,30 @@ class DestinationMessageFactory(
                         name = message.record.stream,
                     )
                 if (fileTransferEnabled) {
-                    @Suppress("UNCHECKED_CAST")
-                    val fileMessage =
-                        message.record.additionalProperties["file"] as Map<String, Any>
+                    try {
+                        @Suppress("UNCHECKED_CAST")
+                        val fileMessage =
+                            message.record.additionalProperties["file"] as Map<String, Any>
 
-                    DestinationFile(
-                        stream = stream.descriptor,
-                        emittedAtMs = message.record.emittedAt,
-                        serialized = serialized,
-                        fileMessage =
-                            DestinationFile.AirbyteRecordMessageFile(
-                                fileUrl = fileMessage["file_url"] as String?,
-                                bytes = toLong(fileMessage["bytes"], "message.record.bytes"),
-                                fileRelativePath = fileMessage["file_relative_path"] as String?,
-                                modified =
-                                    toLong(fileMessage["modified"], "message.record.modified"),
-                                sourceFileUrl = fileMessage["source_file_url"] as String?
-                            )
-                    )
+                        DestinationFile(
+                            stream = stream.descriptor,
+                            emittedAtMs = message.record.emittedAt,
+                            serialized = serialized,
+                            fileMessage =
+                                DestinationFile.AirbyteRecordMessageFile(
+                                    fileUrl = fileMessage["file_url"] as String?,
+                                    bytes = toLong(fileMessage["bytes"], "message.record.bytes"),
+                                    fileRelativePath = fileMessage["file_relative_path"] as String?,
+                                    modified =
+                                        toLong(fileMessage["modified"], "message.record.modified"),
+                                    sourceFileUrl = fileMessage["source_file_url"] as String?
+                                )
+                        )
+                    } catch (e: Exception) {
+                        throw IllegalArgumentException(
+                            "Failed to construct file message: ${e.message}"
+                        )
+                    }
                 } else {
                     DestinationRecord(stream.descriptor, message, serialized, stream.schema)
                 }

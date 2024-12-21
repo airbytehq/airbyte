@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.MapperPipelineFactory
 import io.airbyte.cdk.load.data.MergeUnions
 import io.airbyte.cdk.load.data.NullOutOfRangeIntegers
 import io.airbyte.cdk.load.data.SchemalessValuesToJsonString
+import io.airbyte.cdk.load.data.SeparateNullUnknownFromSchemalessTypes
 import io.airbyte.cdk.load.data.TimeStringToInteger
 
 class AvroMapperPipelineFactory : MapperPipelineFactory {
@@ -19,7 +20,7 @@ class AvroMapperPipelineFactory : MapperPipelineFactory {
         MapperPipeline(
             stream.schema,
             listOf(
-                AirbyteSchemaNoopMapper() to SchemalessValuesToJsonString(),
+                SeparateNullUnknownFromSchemalessTypes() to SchemalessValuesToJsonString(),
                 AirbyteSchemaNoopMapper() to NullOutOfRangeIntegers(),
                 AirbyteSchemaNoopMapper() to TimeStringToInteger(),
                 MergeUnions() to AirbyteValueNoopMapper(),
