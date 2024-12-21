@@ -48,9 +48,6 @@ class ObjectStorageDataDumper(
     private val formatConfig: ObjectStorageFormatConfiguration,
     private val compressionConfig: ObjectStorageCompressionConfiguration<*>? = null
 ) {
-    private val avroMapperPipeline = AvroMapperPipelineFactory().create(stream)
-    private val parquetMapperPipeline = ParquetMapperPipelineFactory().create(stream)
-
     fun dump(): List<OutputRecord> {
         // Note: this is implicitly a test of the `streamConstant` final directory
         // and the path matcher, so a failure here might imply a bug in the metadata-based
@@ -131,6 +128,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
+                val avroMapperPipeline = AvroMapperPipelineFactory().create(stream)
                 val finalSchema = avroMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
                 inputStream.toAvroReader(finalSchema.toAvroSchema(stream.descriptor)).use { reader
                     ->
@@ -145,6 +143,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is ParquetFormatConfiguration -> {
+                val parquetMapperPipeline = ParquetMapperPipelineFactory().create(stream)
                 val finalSchema = parquetMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
                 inputStream.toParquetReader(finalSchema.toAvroSchema(stream.descriptor)).use {
                     reader ->
