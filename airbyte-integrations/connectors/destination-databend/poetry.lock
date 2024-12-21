@@ -53,19 +53,19 @@ pydantic = ">=1.9.2,<2.0.0"
 
 [[package]]
 name = "attrs"
-version = "24.2.0"
+version = "24.3.0"
 description = "Classes Without Boilerplate"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
-    {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
+    {file = "attrs-24.3.0-py3-none-any.whl", hash = "sha256:ac96cd038792094f438ad1f6ff80837353805ac950cd2aa0e0625ef19850c308"},
+    {file = "attrs-24.3.0.tar.gz", hash = "sha256:8f5c07333d543103541ba7be0e2ce16eeee8130cb0b3f9238ab904ce1e85baff"},
 ]
 
 [package.extras]
 benchmark = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-codspeed", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 cov = ["cloudpickle", "coverage[toml] (>=5.3)", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-dev = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
+dev = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pre-commit-uv", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 docs = ["cogapp", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
 tests = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
@@ -267,16 +267,16 @@ files = [
 
 [[package]]
 name = "databend-driver"
-version = "0.24.4"
+version = "0.24.5"
 description = "Databend Driver Python Binding"
 optional = false
 python-versions = "<3.14,>=3.7"
 files = [
-    {file = "databend_driver-0.24.4-cp37-abi3-macosx_10_12_x86_64.whl", hash = "sha256:8b78dc4650715e232349bcae3a3e96ef65ee8b3b8b64d57728a5342a8ee90e98"},
-    {file = "databend_driver-0.24.4-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:e61d3e0a023a5f8f38a851482c241b74ce9327f56681b4f657762a41145e6bb8"},
-    {file = "databend_driver-0.24.4-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e552d026c91637cd30794f920f3355c223c443fe1d0f1ff90ea196cb664cec50"},
-    {file = "databend_driver-0.24.4-cp37-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:fe9cd8363a78474beabdca15eae4803b9bb04cb5bd997307d90ecd280d2f4a4e"},
-    {file = "databend_driver-0.24.4-cp37-abi3-win_amd64.whl", hash = "sha256:9a07be6485529fb5d808f21fbda5fd1f561342bdf2f19ab690fe6522467151f6"},
+    {file = "databend_driver-0.24.5-cp37-abi3-macosx_10_12_x86_64.whl", hash = "sha256:218470df6baf01d6fa285018bae1f25eab73d564ca8716e0e87e257ea72807b0"},
+    {file = "databend_driver-0.24.5-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:914310a262c9ceda272d14f028943b4c9e13a973111277130dbdc739c4be03f9"},
+    {file = "databend_driver-0.24.5-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b5b85d68c036f5c4438e9bf5237818a8e98a16d9a0589f1f3495175994ea7d58"},
+    {file = "databend_driver-0.24.5-cp37-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:74a1536036161d5703cc8402da288272720da109bb343d70f37f30b64aab0297"},
+    {file = "databend_driver-0.24.5-cp37-abi3-win_amd64.whl", hash = "sha256:ff7e3dee3f5ee9c925678edeb4c819372582006a5ace4770b77598bce17500ed"},
 ]
 
 [package.extras]
