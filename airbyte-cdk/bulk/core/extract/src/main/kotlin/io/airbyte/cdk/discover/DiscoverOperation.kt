@@ -45,6 +45,7 @@ class DiscoverOperation(
                         }
                     airbyteStreams.add(airbyteStream)
                 }
+
             }
         }
         outputConsumer.accept(AirbyteCatalog().withStreams(airbyteStreams))
