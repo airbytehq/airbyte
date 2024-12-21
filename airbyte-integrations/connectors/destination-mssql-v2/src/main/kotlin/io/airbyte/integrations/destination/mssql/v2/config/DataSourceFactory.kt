@@ -6,12 +6,14 @@ package io.airbyte.integrations.destination.mssql.v2.config
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource
 import com.zaxxer.hikari.HikariDataSource
+import io.micronaut.context.ApplicationContext
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import javax.sql.DataSource
 
 @Factory
 class DataSourceFactory {
+
     @Singleton
     fun dataSource(config: MSSQLConfiguration): DataSource {
         val sqlServerDataSource = config.toSQLServerDataSource()
@@ -28,35 +30,38 @@ class DataSourceFactory {
 }
 
 fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
-    val connectionStringArray =
-        mutableListOf(
-            "jdbc:sqlserver://${host}:${port}",
-            "databaseName=${database}",
-        )
+    val connectionString = StringBuilder().apply {
+        append("jdbc:sqlserver://${host}:${port};databaseName=${database}")
 
-    when (sslMethod) {
-        is EncryptedVerify -> {
-            connectionStringArray.add("encrypt=true")
-            sslMethod.trustStoreName?.let { connectionStringArray.add("trustStoreName=$it") }
-            sslMethod.trustStorePassword?.let {
-                connectionStringArray.add("trustStorePassword=$it")
+        when (sslMethod) {
+            is EncryptedVerify -> {
+                append(";encrypt=true")
+                sslMethod.trustStoreName?.let { append(";trustStoreName=$it") }
+                sslMethod.trustStorePassword?.let { append(";trustStorePassword=$it") }
+                sslMethod.hostNameInCertificate?.let { append(";hostNameInCertificate=$it") }
             }
-            sslMethod.hostNameInCertificate?.let {
-                connectionStringArray.add("hostNameInCertificate=$it")
+            is EncryptedTrust -> {
+                append(";encrypt=true;trustServerCertificate=true")
+            }
+            is Unencrypted -> {
+                append(";encrypt=false")
             }
         }
-        is EncryptedTrust -> {
-            connectionStringArray.add("encrypt=true")
-            connectionStringArray.add("trustServerCertificate=true")
-        }
-        is Unencrypted -> {}
-    }
 
-    jdbcUrlParams?.let { connectionStringArray.add(it) }
+        jdbcUrlParams?.let { append(";$it") }
+    }.toString()
 
     return SQLServerDataSource().also {
-        it.url = connectionStringArray.joinToString(";")
+        it.url = connectionString
         it.user = user
         password?.let(it::setPassword)
     }
+}
+
+// Indirection to abstract the fact that we are leveraging micronaut to manage the datasource
+// and avoid clients interacting directly with the application context to retrieve a datasource.
+@Singleton
+class MSSQLDataSourceFactory(private val applicationContext: ApplicationContext) {
+    fun getDataSource(config: MSSQLConfiguration): DataSource =
+        applicationContext.createBean(DataSource::class.java, config)
 }

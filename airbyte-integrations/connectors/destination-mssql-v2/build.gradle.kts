@@ -22,7 +22,7 @@ application {
     //applicationDefaultJvmArgs = listOf("-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0", "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "java.base/sun.security.action=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
-val junitVersion = "5.11.3"
+val junitVersion = "5.11.4"
 
 configurations.configureEach {
     // Exclude additional SLF4J providers from all classpaths
