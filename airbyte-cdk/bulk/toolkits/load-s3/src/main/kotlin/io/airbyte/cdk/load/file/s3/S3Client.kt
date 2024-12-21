@@ -207,7 +207,6 @@ class S3ClientFactory(
     @Singleton
     @Secondary
     fun make(): S3Client {
-
         val credsProvider: CredentialsProvider =
             if (keyConfig.awsAccessKeyConfiguration.accessKeyId != null) {
                 StaticCredentialsProvider {
@@ -240,7 +239,12 @@ class S3ClientFactory(
             aws.sdk.kotlin.services.s3.S3Client {
                 region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
                 credentialsProvider = credsProvider
-                endpointUrl = bucketConfig.s3BucketConfiguration.s3Endpoint?.let { Url.parse(it) }
+                endpointUrl =
+                    bucketConfig.s3BucketConfiguration.s3Endpoint?.let {
+                        if (it.isNotBlank()) {
+                            Url.parse(it)
+                        } else null
+                    }
             }
 
         return S3Client(

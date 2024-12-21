@@ -28,12 +28,7 @@ class JsonSchemaToAirbyteType {
                     "array" -> fromArray(schema)
                     "object" -> fromObject(schema)
                     "null" -> null
-                    else ->
-                        throw IllegalArgumentException(
-                            "Unknown type: ${
-                                schema.get("type").asText()
-                            }"
-                        )
+                    else -> UnknownType(schema)
                 }
             } else if (schemaType.isArray) {
                 // {"type": [...], ...}
@@ -92,12 +87,7 @@ class JsonSchemaToAirbyteType {
                     TimestampTypeWithTimezone
                 }
             null -> StringType
-            else ->
-                throw IllegalArgumentException(
-                    "Unknown string format: ${
-                        schema.get("format").asText()
-                    }"
-                )
+            else -> UnknownType(schema)
         }
 
     private fun fromNumber(schema: ObjectNode): AirbyteType =

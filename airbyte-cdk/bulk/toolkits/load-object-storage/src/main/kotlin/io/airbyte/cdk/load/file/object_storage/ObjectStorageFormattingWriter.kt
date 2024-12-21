@@ -34,6 +34,7 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.OutputStream
+import java.util.concurrent.atomic.AtomicLong
 import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
@@ -207,16 +208,22 @@ class BufferedFormattingWriter<T : OutputStream>(
     private val streamProcessor: StreamProcessor<T>,
     private val wrappingBuffer: T
 ) : ObjectStorageFormattingWriter {
+    // Guard against empty files (ie, the writer starts with a header.)
+    private val rowsAdded = AtomicLong(0)
     val bufferSize: Int
-        get() = buffer.size()
+        get() =
+            if (rowsAdded.get() == 0L) {
+                0
+            } else buffer.size()
 
     override fun accept(record: DestinationRecordAirbyteValue) {
         writer.accept(record)
+        rowsAdded.incrementAndGet()
     }
 
     fun takeBytes(): ByteArray? {
         wrappingBuffer.flush()
-        if (buffer.size() == 0) {
+        if (bufferSize == 0) {
             return null
         }
 
@@ -229,7 +236,7 @@ class BufferedFormattingWriter<T : OutputStream>(
         writer.flush()
         writer.close()
         streamProcessor.partFinisher.invoke(wrappingBuffer)
-        return if (buffer.size() > 0) {
+        return if (bufferSize > 0) {
             buffer.toByteArray()
         } else {
             null
