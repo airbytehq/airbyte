@@ -26,18 +26,26 @@ interface Sized {
  */
 sealed class DestinationStreamEvent : Sized
 
+/** Contains a record to be aggregated and processed. */
 data class StreamRecordEvent(
     val index: Long,
     override val sizeBytes: Long,
-    val record: DestinationRecord
+    val payload: DestinationRecordSerialized
 ) : DestinationStreamEvent()
 
-data class StreamCompleteEvent(
+/**
+ * Indicates the stream is in a terminal (complete or incomplete) state as signalled by upstream.
+ */
+data class StreamEndEvent(
     val index: Long,
 ) : DestinationStreamEvent() {
     override val sizeBytes: Long = 0L
 }
 
+/**
+ * Emitted to trigger evaluation of the conditional flush logic of a stream. The consumer may or may
+ * not decide to flush.
+ */
 data class StreamFlushEvent(
     val tickedAtMs: Long,
 ) : DestinationStreamEvent() {

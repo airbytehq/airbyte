@@ -36,8 +36,10 @@ import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecord.Change
+import io.airbyte.cdk.load.message.InputFile
+import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.message.InputStreamCheckpoint
+import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -112,6 +114,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val stringifySchemalessObjects: Boolean,
     val promoteUnionToObject: Boolean,
     val preserveUndeclaredFields: Boolean,
+    val supportFileTransfer: Boolean,
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
      * example:
@@ -143,7 +146,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 configContents,
                 stream,
                 listOf(
-                    DestinationRecord(
+                    InputRecord(
                         namespace = randomizedNamespace,
                         name = "test_stream",
                         data = """{"id": 5678, "undeclared": "asdf"}""",
@@ -159,7 +162,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                 )
                             )
                     ),
-                    StreamCheckpoint(
+                    InputStreamCheckpoint(
                         streamName = "test_stream",
                         streamNamespace = randomizedNamespace,
                         blob = """{"foo": "bar"}""",
@@ -231,6 +234,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testBasicWriteFile() {
+        assumeTrue(supportFileTransfer)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream_file"),
@@ -254,13 +258,12 @@ abstract class BasicFunctionalityIntegrationTest(
                 configContents,
                 stream,
                 listOf(
-                    DestinationFile(
+                    InputFile(
                         stream = stream.descriptor,
                         emittedAtMs = 1234,
-                        serialized = "",
                         fileMessage = fileMessage,
                     ),
-                    StreamCheckpoint(
+                    InputStreamCheckpoint(
                         streamName = stream.descriptor.name,
                         streamNamespace = stream.descriptor.namespace,
                         blob = """{"foo": "bar"}""",
@@ -314,7 +317,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     configContents,
                     stream,
                     listOf(
-                        DestinationRecord(
+                        InputRecord(
                             namespace = randomizedNamespace,
                             name = "test_stream",
                             data = """{"id": 12}""",
@@ -400,13 +403,13 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             ),
             listOf(
-                DestinationRecord(
+                InputRecord(
                     namespace = stream1.descriptor.namespace,
                     name = stream1.descriptor.name,
                     data = """{"id": 1234}""",
                     emittedAtMs = 1234,
                 ),
-                DestinationRecord(
+                InputRecord(
                     namespace = stream2.descriptor.namespace,
                     name = stream2.descriptor.name,
                     data = """{"id": 5678}""",
@@ -500,7 +503,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // The id field is always 42, and the string fields are always "foo\nbar".
         val messages =
             catalog.streams.map { stream ->
-                DestinationRecord(
+                InputRecord(
                     stream.descriptor,
                     ObjectValue(
                         (stream.schema as ObjectType)
@@ -558,7 +561,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "name": "first_value"}""",
@@ -571,7 +574,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             finalStream,
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "name": "second_value"}""",
@@ -609,7 +612,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testInterruptedTruncateWithPriorData() {
         assumeTrue(verifyDataWriting)
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
@@ -778,7 +781,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testInterruptedTruncateWithoutPriorData() {
         assumeTrue(verifyDataWriting)
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
@@ -899,7 +902,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun resumeAfterCancelledTruncate() {
         assumeTrue(verifyDataWriting)
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
@@ -1098,7 +1101,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             makeStream(syncId = 42),
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "name": "first_value"}""",
@@ -1111,11 +1114,11 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             finalStream,
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "name": "second_value"}""",
-                    emittedAtMs = 1234,
+                    emittedAtMs = 5678L,
                 )
             )
         )
@@ -1129,7 +1132,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
-                    extractedAt = 1234,
+                    extractedAt = 5678,
                     generationId = 0,
                     data = mapOf("id" to 42, "name" to "second_value"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
@@ -1167,7 +1170,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType)
             ),
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "to_drop": "val1", "to_change": 42}""",
@@ -1184,7 +1187,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             finalStream,
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
@@ -1246,7 +1249,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = syncId,
             )
         fun makeRecord(data: String, extractedAt: Long) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 data,
@@ -1391,7 +1394,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         fun makeRecord(cursorName: String) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 data = """{"id": 1, "$cursorName": 1, "name": "foo_$cursorName"}""",
@@ -1451,7 +1454,7 @@ abstract class BasicFunctionalityIntegrationTest(
             }
         val messages =
             (0..manyStreamCount).map { i ->
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream_$i",
                     """{"id": 1, "name": "foo_$i"}""",
@@ -1505,7 +1508,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         fun makeRecord(data: String) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 data,
@@ -1807,7 +1810,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             stream,
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """
@@ -1822,7 +1825,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
                 ),
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """
@@ -1837,7 +1840,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         }""".trimIndent(),
                     emittedAtMs = 1602637589200,
                 ),
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """
@@ -2064,7 +2067,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             stream,
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """
@@ -2078,7 +2081,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
                 ),
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """
@@ -2092,7 +2095,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         }""".trimIndent(),
                     emittedAtMs = 1602637589200,
                 ),
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """

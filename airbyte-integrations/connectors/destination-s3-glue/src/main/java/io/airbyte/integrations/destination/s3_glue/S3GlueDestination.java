@@ -72,7 +72,7 @@ public class S3GlueDestination extends BaseS3Destination {
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog configuredCatalog,
                                             Consumer<AirbyteMessage> outputRecordCollector) {
-    final S3DestinationConfig s3Config = getConfigFactory().getS3DestinationConfig(config, storageProvider(), System.getenv());
+    final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());
     final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
     final NamingConventionTransformer nameTransformer = new S3NameTransformer();
     return new S3GlueConsumerFactory().create(
@@ -81,7 +81,7 @@ public class S3GlueDestination extends BaseS3Destination {
         // TODO (itaseski) add Glue name transformer
         new GlueOperations(glueConfig.getAWSGlueInstance()),
         nameTransformer,
-        SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new, true),
+        SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
         s3Config,
         glueConfig,
         configuredCatalog);

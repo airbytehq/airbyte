@@ -8,7 +8,8 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
-import io.airbyte.cdk.load.command.iceberg.parquet.NessieServerConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.data.FieldType
@@ -18,10 +19,10 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
 import io.mockk.every
@@ -104,15 +105,16 @@ internal class IcebergV2WriterTest {
             every { s3BucketName } returns "bucket"
             every { s3Endpoint } returns "http://localhost:8080"
         }
-        val nessieConfiguration: NessieServerConfiguration = mockk {
-            every { accessToken } returns "access-token"
+
+        val icebergCatalogConfig: IcebergCatalogConfiguration = mockk {
             every { mainBranchName } returns "main"
-            every { serverUri } returns "http://localhost:8080/api/v1"
             every { warehouseLocation } returns "s3://bucket/"
+            every { catalogConfiguration } returns
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
         }
         val icebergConfiguration: IcebergV2Configuration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
-            every { nessieServerConfiguration } returns nessieConfiguration
+            every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
         }
         val catalog: Catalog = mockk()
@@ -169,15 +171,15 @@ internal class IcebergV2WriterTest {
             every { s3BucketName } returns "bucket"
             every { s3Endpoint } returns "http://localhost:8080"
         }
-        val nessieConfiguration: NessieServerConfiguration = mockk {
-            every { accessToken } returns "access-token"
+        val icebergCatalogConfig: IcebergCatalogConfiguration = mockk {
             every { mainBranchName } returns "main"
-            every { serverUri } returns "http://localhost:8080/api/v1"
             every { warehouseLocation } returns "s3://bucket/"
+            every { catalogConfiguration } returns
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
         }
         val icebergConfiguration: IcebergV2Configuration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
-            every { nessieServerConfiguration } returns nessieConfiguration
+            every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
         }
         val catalog: Catalog = mockk()
@@ -276,15 +278,15 @@ internal class IcebergV2WriterTest {
             every { s3BucketName } returns "bucket"
             every { s3Endpoint } returns "http://localhost:8080"
         }
-        val nessieConfiguration: NessieServerConfiguration = mockk {
-            every { accessToken } returns "access-token"
+        val icebergCatalogConfig: IcebergCatalogConfiguration = mockk {
             every { mainBranchName } returns "main"
-            every { serverUri } returns "http://localhost:8080/api/v1"
             every { warehouseLocation } returns "s3://bucket/"
+            every { catalogConfiguration } returns
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
         }
         val icebergConfiguration: IcebergV2Configuration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
-            every { nessieServerConfiguration } returns nessieConfiguration
+            every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
         }
         val catalog: Catalog = mockk()

@@ -9,6 +9,7 @@ from typing import Any, List, Mapping
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -99,7 +100,6 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
     @property
     def token(self) -> str:
-
         token = self.current_active_token
         return f"{self._auth_method} {token}"
 
@@ -123,13 +123,15 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         )
         token_info = self._tokens[token]
         remaining_info_core = rate_limit_info.get("core")
-        token_info.count_rest, token_info.reset_at_rest = remaining_info_core.get("remaining"), pendulum.from_timestamp(
-            remaining_info_core.get("reset")
+        token_info.count_rest, token_info.reset_at_rest = (
+            remaining_info_core.get("remaining"),
+            pendulum.from_timestamp(remaining_info_core.get("reset")),
         )
 
         remaining_info_graphql = rate_limit_info.get("graphql")
-        token_info.count_graphql, token_info.reset_at_graphql = remaining_info_graphql.get("remaining"), pendulum.from_timestamp(
-            remaining_info_graphql.get("reset")
+        token_info.count_graphql, token_info.reset_at_graphql = (
+            remaining_info_graphql.get("remaining"),
+            pendulum.from_timestamp(remaining_info_graphql.get("reset")),
         )
 
     def check_all_tokens(self):

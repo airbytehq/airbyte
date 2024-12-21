@@ -9,9 +9,9 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
-import io.airbyte.cdk.load.state.StreamIncompleteResult
+import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableCleaner
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
@@ -32,8 +32,9 @@ class IcebergStreamLoader(
     private val log = KotlinLogging.logger {}
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        records: Iterator<DestinationRecordAirbyteValue>,
+        totalSizeBytes: Long,
+        endOfStream: Boolean
     ): Batch {
         icebergTableWriterFactory
             .create(
@@ -74,7 +75,7 @@ class IcebergStreamLoader(
         throw NotImplementedError("Destination Iceberg does not support universal file transfer.")
     }
 
-    override suspend fun close(streamFailure: StreamIncompleteResult?) {
+    override suspend fun close(streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
