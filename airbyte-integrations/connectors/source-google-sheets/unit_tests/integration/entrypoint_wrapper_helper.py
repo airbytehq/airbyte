@@ -1,11 +1,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from airbyte_cdk.test.entrypoint_wrapper import read, EntrypointOutput, make_file, _run_command
 import tempfile
 from pathlib import Path
-from typing import Any,  Mapping
+from typing import Any, Mapping
 
 from airbyte_cdk.sources import Source
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, _run_command, make_file, read
 
 
 def check(

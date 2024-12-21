@@ -3,26 +3,39 @@
 
 import json
 from copy import deepcopy
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 from unittest import TestCase
 from unittest.mock import patch  # patch("time.sleep")
-from unittest.mock import Mock
+from unittest.mock import ANY, Mock
 
 import pytest
-from airbyte_cdk.models import Status, SyncMode, ConfiguredAirbyteCatalog, AirbyteMessage, Type, AirbyteConnectionStatus, AirbyteLogMessage, Level
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteErrorTraceMessage,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteTraceMessage,
+    ConfiguredAirbyteCatalog,
+    FailureType,
+    Level,
+    Status,
+    SyncMode,
+    TraceType,
+    Type,
+)
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read, EntrypointOutput
-from airbyte_cdk.test.mock_http import HttpResponse
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+
+# from .custom_http_mocker import CustomHttpMocker as HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_sheets import SourceGoogleSheets
 
-# from .custom_http_mocker import CustomHttpMocker as HttpMocker
-from airbyte_cdk.test.mock_http import HttpMocker
-from .request_builder import AuthBuilder, RequestBuilder
-from .test_credentials import oauth_credentials, service_account_credentials, service_account_info, AUTH_BODY
 from .entrypoint_wrapper_helper import check
+from .request_builder import AuthBuilder, RequestBuilder
+from .test_credentials import AUTH_BODY, oauth_credentials, service_account_credentials, service_account_info
 
 _SPREADSHEET_ID = "a_spreadsheet_id"
 
@@ -74,7 +87,7 @@ class GoogleSheetSourceTest(TestCase):
         )
 
     @staticmethod
-    def get_streams(http_mocker: HttpMocker, streams_response_file: Optional[str]=None, meta_response_code: Optional[int]=200):
+    def get_spreadsheet_info_and_sheets(http_mocker: HttpMocker, streams_response_file: Optional[str]=None, meta_response_code: Optional[int]=200):
         """"
         Mock request to https://sheets.googleapis.com/v4/spreadsheets/<spreed_sheet_id>?includeGridData=false&alt=json in order
         to obtain sheets (streams) from the spreed_sheet_id provided.
@@ -102,7 +115,7 @@ class GoogleSheetSourceTest(TestCase):
             )
 
     @staticmethod
-    def get_schema(http_mocker: HttpMocker, headers_response_file: str, headers_response_code: int=200, stream_name: Optional[str]=_STREAM_NAME, data_initial_range_response_file: Optional[str]=None, data_initial_response_code: Optional[int]=200):
+    def get_sheet_first_row(http_mocker: HttpMocker, headers_response_file: str, headers_response_code: int=200, stream_name: Optional[str]=_STREAM_NAME, data_initial_range_response_file: Optional[str]=None, data_initial_response_code: Optional[int]=200):
         """"
         Mock request to 'https://sheets.googleapis.com/v4/spreadsheets/<spreadsheet>?includeGridData=true&ranges=<sheet>!1:1&alt=json'
         to obtain headers data (keys) used for stream schema from the spreadsheet + sheet provided.
@@ -181,8 +194,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_given_spreadsheet_when_check_then_status_is_succeeded(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "check_succeeded_meta")
-        GoogleSheetSourceTest.get_schema(http_mocker, "check_succeeded_range")
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "check_succeeded_meta")
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "check_succeeded_range")
 
         output = self._check(self._config, expecting_exception=False)
         expected_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Check succeeded"))
@@ -223,61 +236,111 @@ class GoogleSheetSourceTest(TestCase):
             AuthBuilder.get_token_endpoint().with_body(AUTH_BODY).build(),
             HttpResponse(json.dumps(find_template("auth_invalid_client", __file__)), 401)
         )
-        # with pytest.raises(AirbyteTracedException) as exc_info:
-        # self._source.check(Mock(), self._config)
-        # todo: check error handlers for auth error
         output = self._check(self._config, expecting_exception=True)
-        assert output
-        # assert str(exc_info.value) == (
-        #     "Access to the spreadsheet expired or was revoked. Re-authenticate to restore access."
-        # )
+        trace_message = AirbyteTraceMessage(
+            type=TraceType.ERROR,
+            emitted_at=ANY,
+            error=AirbyteErrorTraceMessage(
+                message="Something went wrong in the connector. See the logs for more details.",
+                internal_message='401 Client Error: None for url: https://www.googleapis.com/oauth2/v4/token',
+                failure_type=FailureType.system_error,
+                stack_trace=ANY,
+            ),
+        )
+        expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
+        assert output.errors[-1] == expected_message
 
     @HttpMocker()
     def test_invalid_link_error_message_when_check(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "invalid_link", 404)
-
-        with pytest.raises(AirbyteTracedException) as exc_info:
-            self._source.check(Mock(), self._config)
-        assert str(exc_info.value) == (
-            "Config error: The spreadsheet link is not valid. Enter the URL of the Google spreadsheet you want to sync."
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_link", 404)
+        output = self._check(self._config, expecting_exception=True)
+        trace_message = AirbyteTraceMessage(
+            type=TraceType.ERROR,
+            emitted_at=ANY,
+            error=AirbyteErrorTraceMessage(
+                message="The spreadsheet link is not valid. Enter the URL of the Google spreadsheet you want to sync.",
+                internal_message=ANY,
+                failure_type=FailureType.system_error,
+                stack_trace=ANY,
+            ),
         )
+        expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
+        assert output.errors[-1] == expected_message
 
     def test_check_invalid_creds_json_file(self) -> None:
-        connection_status = self._source.check(Mock(), "")
-        assert "Please use valid credentials json file" in connection_status.message
-        assert connection_status.status == Status.FAILED
+        invalid_creds_json_file = {}
+        output = self._check(invalid_creds_json_file, expecting_exception=True)
+        msg = AirbyteConnectionStatus(status=Status.FAILED, message="Config validation error: 'spreadsheet_id' is a required property")
+        expected_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=msg)
+        assert output._messages[-1] == expected_message
 
     @HttpMocker()
     def test_check_access_expired(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "invalid_permissions", 403)
-        with pytest.raises(AirbyteTracedException) as exc_info:
-            self._source.check(Mock(), self._config)
-        assert str(exc_info.value) == (
-            "Config error: "
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_permissions", 403)
+        error_message = (
+            "The authenticated Google Sheets user does not have permissions to view the "
+            f"spreadsheet with id {_SPREADSHEET_ID}. Please ensure the authenticated user has access"
+            " to the Spreadsheet and reauthenticate. If the issue persists, contact support. "
+            "The caller does not have right permissions."
         )
+        output = self._check(self._config, expecting_exception=True)
+        trace_message = AirbyteTraceMessage(
+            type=TraceType.ERROR,
+            emitted_at=ANY,
+            error=AirbyteErrorTraceMessage(
+                message=error_message,
+                internal_message=ANY,
+                failure_type=FailureType.config_error,
+                stack_trace=ANY,
+            ),
+        )
+        expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
+        assert output.errors[-1] == expected_message
 
     @HttpMocker()
     def test_check_expected_to_read_data_from_1_sheet(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "check_succeeded_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "check_wrong_range", 200)
-
-        connection_status = self._source.check(Mock(), self._config)
-        assert connection_status.status == Status.FAILED
-        assert connection_status.message == f'Unable to read the schema of sheet a_stream_name. Error: Unexpected return result: Sheet {_STREAM_NAME} was expected to contain data on exactly 1 sheet. '
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "check_succeeded_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "check_wrong_range", 200)
+        error_message =  f'Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet.'
+        output = self._check(self._config, expecting_exception=True)
+        trace_message = AirbyteTraceMessage(
+            type=TraceType.ERROR,
+            emitted_at=ANY,
+            error=AirbyteErrorTraceMessage(
+                message=error_message,
+                internal_message=ANY,
+                failure_type=FailureType.system_error,
+                stack_trace=ANY,
+            ),
+        )
+        expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
+        assert output.errors[-1] == expected_message
 
     @HttpMocker()
     def test_check_duplicated_headers(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "check_succeeded_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "check_duplicate_headers", 200)
+        # With headers, we refer to properties that will be used for schema
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "check_succeeded_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "check_duplicate_headers", 200)
 
-        connection_status = self._source.check(Mock(), self._config)
-        assert connection_status.status == Status.FAILED
-        assert connection_status.message == f"The following duplicate headers were found in the following sheets. Please fix them to continue: [sheet:{_STREAM_NAME}, headers:['header1']]"
+        error_message =  f"The following duplicate headers were found in the sheet. Please fix them to continue: ['header1']"
+        output = self._check(self._config, expecting_exception=True)
+        trace_message = AirbyteTraceMessage(
+            type=TraceType.ERROR,
+            emitted_at=ANY,
+            error=AirbyteErrorTraceMessage(
+                message=error_message,
+                internal_message=ANY,
+                failure_type=FailureType.system_error,
+                stack_trace=ANY,
+            ),
+        )
+        expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
+        assert output.errors[-1] == expected_message
 
     @HttpMocker()
     def test_given_grid_sheet_type_with_at_least_one_row_when_discover_then_return_stream(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "only_headers_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "only_headers_range", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "only_headers_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "only_headers_range", 200)
 
         discovered_catalog = self._source.discover(Mock(), self._config)
         assert len(discovered_catalog.streams) == 1
@@ -292,10 +355,10 @@ class GoogleSheetSourceTest(TestCase):
             _B_STREAM_NAME: {'email': {'type': 'string'}, 'name': {'type': 'string'}},
             _C_STREAM_NAME: {'address': {'type': 'string'}}
         }
-        GoogleSheetSourceTest.get_streams(http_mocker, "multiple_streams_schemas_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_STREAM_NAME}_range", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_B_STREAM_NAME}_range", 200, _B_STREAM_NAME)
-        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_C_STREAM_NAME}_range", 200, _C_STREAM_NAME)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "multiple_streams_schemas_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"multiple_streams_schemas_{_STREAM_NAME}_range", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"multiple_streams_schemas_{_B_STREAM_NAME}_range", 200, _B_STREAM_NAME)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"multiple_streams_schemas_{_C_STREAM_NAME}_range", 200, _C_STREAM_NAME)
 
         discovered_catalog = self._source.discover(Mock(), self._config)
         assert len(discovered_catalog.streams) == 3
@@ -304,8 +367,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_with_names_conversion(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "only_headers_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "names_conversion_range", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "only_headers_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "names_conversion_range", 200)
 
         self._config["names_conversion"] = True
 
@@ -316,7 +379,7 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_could_not_run_discover(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "internal_server_error", 500)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "internal_server_error", 500)
 
         with pytest.raises(Exception) as exc_info, patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 3):
             self._source.discover(Mock(), self._config)
@@ -340,7 +403,7 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_404_error(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "invalid_link", 404)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_link", 404)
 
         with pytest.raises(AirbyteTracedException) as exc_info:
 
@@ -353,7 +416,7 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_403_error(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "invalid_permissions", 403)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_permissions", 403)
 
         with pytest.raises(AirbyteTracedException) as exc_info:
 
@@ -368,22 +431,22 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_given_grid_sheet_type_without_rows_when_discover_then_ignore_stream(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "no_rows_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "no_rows_range", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "no_rows_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "no_rows_range", 200)
 
         discovered_catalog = self._source.discover(Mock(), self._config)
         assert len(discovered_catalog.streams) == 0
 
     @HttpMocker()
     def test_given_not_grid_sheet_type_when_discover_then_ignore_stream(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "non_grid_sheet_meta", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "non_grid_sheet_meta", 200)
         discovered_catalog = self._source.discover(Mock(), self._config)
         assert len(discovered_catalog.streams) == 0
 
     @HttpMocker()
     def test_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta")
-        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range")
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta")
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range")
         GoogleSheetSourceTest.get_stream_data(http_mocker, "read_records_range_with_dimensions")
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
@@ -393,11 +456,11 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_when_read_multiple_streams_return_records(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "multiple_streams_schemas_meta", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "multiple_streams_schemas_meta", 200)
 
-        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_STREAM_NAME}_range", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_B_STREAM_NAME}_range", 200, _B_STREAM_NAME)
-        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_C_STREAM_NAME}_range", 200, _C_STREAM_NAME)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"multiple_streams_schemas_{_STREAM_NAME}_range", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"multiple_streams_schemas_{_B_STREAM_NAME}_range", 200, _B_STREAM_NAME)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"multiple_streams_schemas_{_C_STREAM_NAME}_range", 200, _C_STREAM_NAME)
 
         GoogleSheetSourceTest.get_stream_data(http_mocker, f"multiple_streams_schemas_{_STREAM_NAME}_range_2")
         GoogleSheetSourceTest.get_stream_data(http_mocker, f"multiple_streams_schemas_{_B_STREAM_NAME}_range_2", stream_name=_B_STREAM_NAME)
@@ -435,8 +498,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_when_read_then_status_and_state_messages_emitted(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta_2", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range_2", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta_2", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range_2", 200)
         GoogleSheetSourceTest.get_stream_data(http_mocker, "read_records_range_with_dimensions_2")
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
@@ -453,8 +516,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_read_429_error(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
         GoogleSheetSourceTest.get_stream_data(http_mocker, "rate_limit_error", 429)
 
         configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
@@ -469,8 +532,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_read_403_error(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
         GoogleSheetSourceTest.get_stream_data(http_mocker, "invalid_permissions", 403)
 
         configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
@@ -484,8 +547,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_read_500_error(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
         GoogleSheetSourceTest.get_stream_data(http_mocker, "internal_server_error", 500)
 
         configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
@@ -500,8 +563,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_read_empty_sheet(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range_empty", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range_empty", 200)
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
@@ -513,8 +576,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_read_expected_data_on_1_sheet(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta", 200)
-        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range_with_unexpected_extra_sheet", 200)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range_with_unexpected_extra_sheet", 200)
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
