@@ -60,7 +60,7 @@ class AirbyteTypeToAvroSchema {
             is IntegerType -> SchemaBuilder.builder().longType()
             is NumberType -> SchemaBuilder.builder().doubleType()
             is StringType -> SchemaBuilder.builder().stringType()
-            is UnknownType,
+            is UnknownType -> throw IllegalArgumentException("Unknown type: $airbyteSchema")
             is ObjectTypeWithEmptySchema,
             is ObjectTypeWithoutSchema,
             is ArrayTypeWithoutSchema -> SchemaBuilder.builder().stringType()
