@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
 import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
@@ -71,12 +71,12 @@ class DefaultInputConsumerTask(
         val manager = syncManager.getStreamManager(stream)
         val recordQueue = recordQueueSupplier.get(stream)
         when (val message = reserved.value) {
-            is DestinationRecordAirbyteValue -> {
+            is DestinationRecord -> {
                 val wrapped =
                     StreamRecordEvent(
                         index = manager.countRecordIn(),
                         sizeBytes = sizeBytes,
-                        payload = message
+                        payload = message.asRecordSerialized()
                     )
                 recordQueue.publish(reserved.replace(wrapped))
             }

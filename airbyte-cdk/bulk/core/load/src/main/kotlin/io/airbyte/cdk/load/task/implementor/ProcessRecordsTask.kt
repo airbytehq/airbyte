@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
@@ -130,7 +131,7 @@ class DefaultProcessRecordsTask(
             .takeWhile {
                 it !is DestinationRecordStreamComplete && it !is DestinationRecordStreamIncomplete
             }
-            .map { it as DestinationRecordAirbyteValue }
+            .map { (it as DestinationRecord).asRecordMarshaledToAirbyteValue() }
             .iterator()
     }
 }

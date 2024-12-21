@@ -8,10 +8,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
-import io.airbyte.cdk.load.data.json.toJson
+import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -79,31 +78,45 @@ data class Meta(
     }
 }
 
-sealed interface DestinationRecord : DestinationRecordDomainMessage
-
-data class DestinationRecordAirbyteValue(
+data class DestinationRecord(
     override val stream: DestinationStream.Descriptor,
+    val message: AirbyteMessage,
+    val serialized: String,
+    val schema: AirbyteType
+) : DestinationRecordDomainMessage {
+    override fun asProtocolMessage(): AirbyteMessage = message
+
+    fun asRecordSerialized(): DestinationRecordSerialized =
+        DestinationRecordSerialized(stream, serialized)
+    fun asRecordMarshaledToAirbyteValue(): DestinationRecordAirbyteValue {
+        return DestinationRecordAirbyteValue(
+            stream,
+            message.record.data.toAirbyteValue(schema),
+            message.record.emittedAt,
+            Meta(
+                message.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
+                    ?: emptyList()
+            )
+        )
+    }
+}
+
+/**
+ * Represents a record already in its serialized state. The intended use is for conveying records
+ * from stdin to the spill file, where reserialization is not necessary.
+ */
+data class DestinationRecordSerialized(
+    val stream: DestinationStream.Descriptor,
+    val serialized: String
+)
+
+/** Represents a record both deserialized AND marshaled to airbyte value. The marshaling */
+data class DestinationRecordAirbyteValue(
+    val stream: DestinationStream.Descriptor,
     val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
-    val serialized: String,
-) : DestinationRecord {
-    override fun asProtocolMessage(): AirbyteMessage =
-        AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(
-                AirbyteRecordMessage()
-                    .withStream(stream.name)
-                    .withNamespace(stream.namespace)
-                    .withEmittedAt(emittedAtMs)
-                    .withData(data.toJson())
-                    .also {
-                        if (meta != null) {
-                            it.withMeta(meta.asProtocolObject())
-                        }
-                    }
-            )
-}
+)
 
 data class DestinationFile(
     override val stream: DestinationStream.Descriptor,
@@ -398,31 +411,7 @@ class DestinationMessageFactory(
                             )
                     )
                 } else {
-                    DestinationRecordAirbyteValue(
-                        stream = stream.descriptor,
-                        data =
-                            message.record.data?.let {
-                                JsonToAirbyteValue().convert(it, stream.schema)
-                            }
-                                ?: ObjectValue(linkedMapOf()),
-                        emittedAtMs = message.record.emittedAt,
-                        meta =
-                            Meta(
-                                changes =
-                                    message.record.meta
-                                        ?.changes
-                                        ?.map {
-                                            Meta.Change(
-                                                field = it.field,
-                                                change = it.change,
-                                                reason = it.reason,
-                                            )
-                                        }
-                                        ?.toMutableList()
-                                        ?: mutableListOf()
-                            ),
-                        serialized = serialized
-                    )
+                    DestinationRecord(stream.descriptor, message, serialized, stream.schema)
                 }
             }
             AirbyteMessage.Type.TRACE -> {

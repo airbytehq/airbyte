@@ -4,12 +4,14 @@
 
 package io.airbyte.cdk.load.task.implementor
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MultiProducerChannel
@@ -21,6 +23,8 @@ import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifySequence
@@ -61,12 +65,21 @@ class ProcessRecordsTaskTest {
         deserializer = mockk(relaxed = true)
         coEvery { deserializer.deserialize(any()) } answers
             {
-                DestinationRecordAirbyteValue(
+                DestinationRecord(
                     stream = MockDestinationCatalogFactory.stream1.descriptor,
-                    data = IntegerValue(firstArg<String>().toLong()),
-                    emittedAtMs = 0L,
-                    meta = null,
-                    serialized = firstArg<String>()
+                    message =
+                        AirbyteMessage()
+                            .withRecord(
+                                AirbyteRecordMessage()
+                                    .withEmittedAt(0L)
+                                    .withData(
+                                        JsonNodeFactory.instance.numberNode(
+                                            firstArg<String>().toLong()
+                                        )
+                                    )
+                            ),
+                    serialized = "ignored",
+                    schema = io.airbyte.cdk.load.data.IntegerType
                 )
             }
         processRecordsTaskFactory =
@@ -147,8 +160,10 @@ class ProcessRecordsTaskTest {
                 it.batch.groupId == groupId &&
                 it.batch.state == state &&
                 it.batch is MockBatch &&
-                (it.batch as MockBatch).records.map { record -> record.serialized }.toSet() ==
-                    serializedRecords.toSet()
+                (it.batch as MockBatch)
+                    .records
+                    .map { record -> (record.data as IntegerValue).value.toString() }
+                    .toSet() == serializedRecords.toSet()
         }
 
         // Verify the batch was *handled* 3 times but *published* ONLY when it is not complete AND

@@ -205,7 +205,6 @@ internal class IcebergUtilTest {
                     ),
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
-                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
             )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
         val columns =
@@ -257,7 +256,6 @@ internal class IcebergUtilTest {
                     ),
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
-                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
             )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
         val columns =
@@ -305,7 +303,6 @@ internal class IcebergUtilTest {
                     ),
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
-                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
             )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
         val columns =
