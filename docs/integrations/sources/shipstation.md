@@ -26,8 +26,8 @@ Copy your key and secret and paste them into the respective fields.
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `password` | `string` | Password.  |  |
-| `username` | `string` | Username.  |  |
+| `username` | `string` | API Key.  |  |
+| `password` | `string` | API Secret.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
