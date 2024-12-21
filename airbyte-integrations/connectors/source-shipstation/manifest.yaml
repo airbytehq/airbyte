@@ -1,0 +1,1621 @@
+version: 6.5.2
+
+type: DeclarativeSource
+
+description: >
+  This page contains the setup guide and reference information for Shipstation
+  source connector.
+
+
+  Documentation reference:
+
+  Visit https://www.shipstation.com/docs/api/ for API documentation
+
+
+  Authentication setup
+
+
+  To get your API key and secret in ShipStation:
+
+
+  ↳ Go to Account Settings.
+
+
+  ↳ Select Account from the side navigation, then choose API Settings.
+
+
+  ↳ Click "Generate New API Keys" if no key and secret are listed yet.
+
+
+  ** IMPORTANT **
+
+  ↳If you've already generated your API keys, the existing API keys will be
+  displayed here and the button will read Regenerate API Keys.
+
+
+  If you already have API keys, do NOT generate new ones. Instead, copy your
+  existing key and secret.
+
+
+  Copy your key and secret and paste them into the respective fields.
+
+check:
+  type: CheckStream
+  stream_names:
+    - carriers
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+          request_parameters:
+            showInactive: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - userId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 500
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: orders
+          http_method: GET
+          request_parameters:
+            sortBy: CreateDate
+            sortDir: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - orders
+      primary_key:
+        - orderId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    stores:
+      type: DeclarativeStream
+      name: stores
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stores
+          http_method: GET
+          request_parameters:
+            showInactive: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - storeId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stores"
+    carriers:
+      type: DeclarativeStream
+      name: carriers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: carriers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - shippingProviderId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/carriers"
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 500
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products
+          http_method: GET
+          request_parameters:
+            sortBy: CreateDate
+            sortDir: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - products
+      primary_key:
+        - productId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: webhooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - webhooks
+      primary_key:
+        - WebHookID
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 500
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: customers
+          http_method: GET
+          request_parameters:
+            sortBy: CreateDate
+            sortDir: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - customers
+      primary_key:
+        - customerId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    shipments:
+      type: DeclarativeStream
+      name: shipments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 500
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: shipments
+          http_method: GET
+          request_parameters:
+            sortBy: CreateDate
+            sortDir: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - shipments
+      primary_key:
+        - shipmentId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shipments"
+    warehouses:
+      type: DeclarativeStream
+      name: warehouses
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: warehouses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - warehouseId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/warehouses"
+    fulfillments:
+      type: DeclarativeStream
+      name: fulfillments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 500
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fulfillments
+          http_method: GET
+          request_parameters:
+            sortBy: CreateDate
+            sortDir: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - fulfillments
+      primary_key:
+        - fulfillmentId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fulfillments"
+    marketplaces:
+      type: DeclarativeStream
+      name: marketplaces
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stores/marketplaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - name
+        - marketplaceId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/marketplaces"
+  base_requester:
+    type: HttpRequester
+    url_base: https://ssapi.shipstation.com/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/carriers"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/fulfillments"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/shipments"
+  - $ref: "#/definitions/streams/marketplaces"
+  - $ref: "#/definitions/streams/stores"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/warehouses"
+  - $ref: "#/definitions/streams/webhooks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      username:
+        type: string
+        order: 0
+        title: Username
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    users:
+      hasRecords: true
+      streamHash: 540b75b8772f77bee87fc03c27df87537e4b3f47
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    orders:
+      hasRecords: true
+      streamHash: 3adbe3ee45da8c8700cea208472e17db81bbee00
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stores:
+      hasRecords: true
+      streamHash: 2d9578ddd41be28bb1ecddb8f01cdcbb22883224
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    carriers:
+      hasRecords: true
+      streamHash: e365e82d0239da73f190b402ee7cfe13f8fe58ef
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: d6f4c42c64de31036fd0b00e7071d5692957681a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    webhooks:
+      hasRecords: true
+      streamHash: 815e1dc0e79c1e285234c61a28c06942700c8c42
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      hasRecords: true
+      streamHash: e8cbba0585b48a12cabb6313cdfd050fef6c4c51
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    shipments:
+      hasRecords: true
+      streamHash: 627deb767611e61857e3123c4493fdfc0da3c950
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    warehouses:
+      hasRecords: true
+      streamHash: 547e90797b9e2c7a9be2ea9192fa332d025e2193
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    fulfillments:
+      hasRecords: true
+      streamHash: b68f160d28ffc12b752300c1feccdd7a2e8b66f4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    marketplaces:
+      hasRecords: true
+      streamHash: 060465f8f4ec23444675c486fd49a4a1b65280ac
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    users: true
+    orders: true
+    stores: true
+    carriers: true
+    products: true
+    webhooks: true
+    customers: true
+    shipments: true
+    warehouses: true
+    fulfillments: true
+    marketplaces: true
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - userId
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      userId:
+        type: string
+      userName:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - orderId
+    properties:
+      gift:
+        type:
+          - boolean
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            sku:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - array
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            productId:
+              type:
+                - number
+                - "null"
+            unitPrice:
+              type:
+                - number
+                - "null"
+            adjustment:
+              type:
+                - boolean
+                - "null"
+            createDate:
+              type:
+                - string
+                - "null"
+            modifyDate:
+              type:
+                - string
+                - "null"
+            orderItemId:
+              type:
+                - number
+                - "null"
+      billTo:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          street1:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+      shipTo:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          street1:
+            type:
+              - string
+              - "null"
+          street2:
+            type:
+              - string
+              - "null"
+          street3:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          residential:
+            type:
+              - boolean
+              - "null"
+          addressVerified:
+            type:
+              - string
+              - "null"
+      weight:
+        type:
+          - object
+          - "null"
+        properties:
+          units:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+          WeightUnits:
+            type:
+              - number
+              - "null"
+      orderId:
+        type: number
+      orderKey:
+        type:
+          - string
+          - "null"
+      shipDate:
+        type:
+          - string
+          - "null"
+      orderDate:
+        type:
+          - string
+          - "null"
+      taxAmount:
+        type:
+          - number
+          - "null"
+      amountPaid:
+        type:
+          - number
+          - "null"
+      createDate:
+        type:
+          - string
+          - "null"
+      customerId:
+        type:
+          - number
+          - "null"
+      dimensions:
+        type:
+          - object
+          - "null"
+        properties:
+          units:
+            type:
+              - string
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+          height:
+            type:
+              - number
+              - "null"
+          length:
+            type:
+              - number
+              - "null"
+      modifyDate:
+        type:
+          - string
+          - "null"
+      orderTotal:
+        type:
+          - number
+          - "null"
+      shipByDate:
+        type:
+          - string
+          - "null"
+      carrierCode:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type:
+          - string
+          - "null"
+      orderStatus:
+        type:
+          - string
+          - "null"
+      packageCode:
+        type:
+          - string
+          - "null"
+      paymentDate:
+        type:
+          - string
+          - "null"
+      serviceCode:
+        type:
+          - string
+          - "null"
+      confirmation:
+        type:
+          - string
+          - "null"
+      customerEmail:
+        type:
+          - string
+          - "null"
+      shippingAmount:
+        type:
+          - number
+          - "null"
+      advancedOptions:
+        type:
+          - object
+          - "null"
+        properties:
+          storeId:
+            type:
+              - number
+              - "null"
+          mergedIds:
+            type:
+              - array
+              - "null"
+          billToParty:
+            type:
+              - string
+              - "null"
+          warehouseId:
+            type:
+              - number
+              - "null"
+          mergedOrSplit:
+            type:
+              - boolean
+              - "null"
+          nonMachinable:
+            type:
+              - boolean
+              - "null"
+          containsAlcohol:
+            type:
+              - boolean
+              - "null"
+          saturdayDelivery:
+            type:
+              - boolean
+              - "null"
+          billToCountryCode:
+            type:
+              - string
+              - "null"
+          billToMyOtherAccount:
+            type:
+              - number
+              - "null"
+      customerUsername:
+        type:
+          - string
+          - "null"
+      insuranceOptions:
+        type:
+          - object
+          - "null"
+        properties:
+          provider:
+            type:
+              - string
+              - "null"
+          insuredValue:
+            type:
+              - number
+              - "null"
+          insureShipment:
+            type:
+              - boolean
+              - "null"
+      externallyFulfilled:
+        type:
+          - boolean
+          - "null"
+      internationalOptions:
+        type:
+          - object
+          - "null"
+        properties:
+          contents:
+            type:
+              - string
+              - "null"
+          nonDelivery:
+            type:
+              - string
+              - "null"
+          customsItems:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+                quantity:
+                  type:
+                    - number
+                    - "null"
+                customsItemId:
+                  type:
+                    - number
+                    - "null"
+                countryOfOrigin:
+                  type:
+                    - string
+                    - "null"
+                harmonizedTariffCode:
+                  type:
+                    - string
+                    - "null"
+      externallyFulfilledBy:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  stores:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - storeId
+    properties:
+      phone:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      storeId:
+        type: number
+      website:
+        type:
+          - string
+          - "null"
+      storeName:
+        type:
+          - string
+          - "null"
+      createDate:
+        type:
+          - string
+          - "null"
+      modifyDate:
+        type:
+          - string
+          - "null"
+      accountName:
+        type:
+          - string
+          - "null"
+      autoRefresh:
+        type:
+          - boolean
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      publicEmail:
+        type:
+          - string
+          - "null"
+      refreshDate:
+        type:
+          - string
+          - "null"
+      marketplaceId:
+        type:
+          - number
+          - "null"
+      integrationUrl:
+        type:
+          - string
+          - "null"
+      statusMappings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            statusKey:
+              type:
+                - string
+                - "null"
+            orderStatus:
+              type:
+                - string
+                - "null"
+      marketplaceName:
+        type:
+          - string
+          - "null"
+      lastRefreshAttempt:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  carriers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - shippingProviderId
+    properties:
+      code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      primary:
+        type:
+          - boolean
+          - "null"
+      nickname:
+        type:
+          - string
+          - "null"
+      accountNumber:
+        type:
+          - string
+          - "null"
+      shippingProviderId:
+        type: number
+      requiresFundedAccount:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - productId
+    properties:
+      sku:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      productId:
+        type: number
+      createDate:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - WebHookID
+    properties:
+      Url:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Active:
+        type:
+          - boolean
+          - "null"
+      HookType:
+        type:
+          - string
+          - "null"
+      SellerID:
+        type:
+          - number
+          - "null"
+      WebHookID:
+        type: number
+      WebhookLogs:
+        type:
+          - array
+          - "null"
+      MessageFormat:
+        type:
+          - string
+          - "null"
+      IsLabelAPIHook:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - customerId
+    properties:
+      city:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      street1:
+        type:
+          - string
+          - "null"
+      street2:
+        type:
+          - string
+          - "null"
+      createDate:
+        type:
+          - string
+          - "null"
+      customerId:
+        type: number
+      modifyDate:
+        type:
+          - string
+          - "null"
+      postalCode:
+        type:
+          - string
+          - "null"
+      countryCode:
+        type:
+          - string
+          - "null"
+      addressVerified:
+        type:
+          - string
+          - "null"
+      marketplaceUsernames:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            username:
+              type:
+                - string
+                - "null"
+            createDate:
+              type:
+                - string
+                - "null"
+            customerId:
+              type:
+                - number
+                - "null"
+            modifyDate:
+              type:
+                - string
+                - "null"
+            marketplace:
+              type:
+                - string
+                - "null"
+            marketplaceId:
+              type:
+                - number
+                - "null"
+            customerUserId:
+              type:
+                - number
+                - "null"
+    additionalProperties: true
+  shipments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - shipmentId
+    properties:
+      shipTo:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          street1:
+            type:
+              - string
+              - "null"
+          street2:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      voided:
+        type:
+          - boolean
+          - "null"
+      weight:
+        type:
+          - object
+          - "null"
+        properties:
+          units:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+          WeightUnits:
+            type:
+              - number
+              - "null"
+      orderId:
+        type:
+          - number
+          - "null"
+      orderKey:
+        type:
+          - string
+          - "null"
+      shipDate:
+        type:
+          - string
+          - "null"
+      voidDate:
+        type:
+          - string
+          - "null"
+      createDate:
+        type:
+          - string
+          - "null"
+      dimensions:
+        type:
+          - object
+          - "null"
+        properties:
+          units:
+            type:
+              - string
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+          height:
+            type:
+              - number
+              - "null"
+          length:
+            type:
+              - number
+              - "null"
+      shipmentId:
+        type: number
+      batchNumber:
+        type:
+          - string
+          - "null"
+      carrierCode:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type:
+          - string
+          - "null"
+      packageCode:
+        type:
+          - string
+          - "null"
+      serviceCode:
+        type:
+          - string
+          - "null"
+      warehouseId:
+        type:
+          - number
+          - "null"
+      confirmation:
+        type:
+          - string
+          - "null"
+      shipmentCost:
+        type:
+          - number
+          - "null"
+      customerEmail:
+        type:
+          - string
+          - "null"
+      insuranceCost:
+        type:
+          - number
+          - "null"
+      isReturnLabel:
+        type:
+          - boolean
+          - "null"
+      trackingNumber:
+        type:
+          - string
+          - "null"
+      advancedOptions:
+        type:
+          - object
+          - "null"
+        properties:
+          storeId:
+            type:
+              - number
+              - "null"
+      insuranceOptions:
+        type:
+          - object
+          - "null"
+        properties:
+          insuredValue:
+            type:
+              - number
+              - "null"
+          insureShipment:
+            type:
+              - boolean
+              - "null"
+      marketplaceNotified:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  warehouses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - warehouseId
+    properties:
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      createDate:
+        type:
+          - string
+          - "null"
+      warehouseId:
+        type: number
+      originAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          street1:
+            type:
+              - string
+              - "null"
+          street2:
+            type:
+              - string
+              - "null"
+          street3:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          residential:
+            type:
+              - boolean
+              - "null"
+      returnAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          street1:
+            type:
+              - string
+              - "null"
+          street2:
+            type:
+              - string
+              - "null"
+          street3:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+      warehouseName:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  fulfillments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - fulfillmentId
+    properties:
+      shipTo:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          street1:
+            type:
+              - string
+              - "null"
+          street2:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      voided:
+        type:
+          - boolean
+          - "null"
+      orderId:
+        type:
+          - number
+          - "null"
+      shipDate:
+        type:
+          - string
+          - "null"
+      createDate:
+        type:
+          - string
+          - "null"
+      carrierCode:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type:
+          - string
+          - "null"
+      customerEmail:
+        type:
+          - string
+          - "null"
+      fulfillmentId:
+        type: number
+      voidRequested:
+        type:
+          - boolean
+          - "null"
+      fulfillmentFee:
+        type:
+          - number
+          - "null"
+      trackingNumber:
+        type:
+          - string
+          - "null"
+      marketplaceNotified:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  marketplaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - name
+      - marketplaceId
+    properties:
+      name:
+        type: string
+      canRefresh:
+        type:
+          - boolean
+          - "null"
+      marketplaceId:
+        type: number
+      canConfirmShipments:
+        type:
+          - boolean
+          - "null"
+      supportsCustomMappings:
+        type:
+          - boolean
+          - "null"
+      supportsCustomStatuses:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
