@@ -2,14 +2,14 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.8
   dockerRepository: airbyte/source-coingecko-coins
   githubIssueLabel: source-coingecko-coins
   icon: coingeckocoins.svg
   license: MIT
   name: CoinGecko Coins
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.11.1@sha256:0d0f562a70c0ed19ab605f0c83802a2e052712587692e2f3a1cc794fe7cd7007
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.3@sha256:9214270d83304213977c08e91fd9c55a98819543dbbf0df25a4356299af4f3ab
   remoteRegistries:
     pypi:
       enabled: false
