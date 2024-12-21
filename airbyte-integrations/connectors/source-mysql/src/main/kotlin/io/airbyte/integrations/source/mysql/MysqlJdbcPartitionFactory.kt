@@ -25,6 +25,7 @@ import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -33,6 +34,8 @@ import java.time.temporal.ChronoField
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
+
+private val log = KotlinLogging.logger {}
 
 @Primary
 @Singleton
@@ -155,6 +158,11 @@ class MysqlJdbcPartitionFactory(
      * ```
      */
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
+        val retVal = createInternal(streamFeedBootstrap)
+        log.info { "SGX retVal=$retVal" }
+        return retVal
+    }
+    fun createInternal(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
 
@@ -338,12 +346,14 @@ class MysqlJdbcPartitionFactory(
                                     .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
                                     .optionalEnd()
                                     .toFormatter()
-
+                            val parsedDate =  LocalDateTime.parse(stateValue, formatter)
+                            val dateAsString = parsedDate.format(LocalDateTimeCodec.formatter)
+                            log.info{"SGX stateValue=$stateValue, parsedDate=$parsedDate, dateAsString=$dateAsString"}
                             Jsons.textNode(
-                                LocalDateTime.parse(stateValue, formatter)
-                                    .format(LocalDateTimeCodec.formatter)
+                                dateAsString
                             )
-                        } catch (_: RuntimeException) {
+                        } catch (e: RuntimeException) {
+                            log.info{"SGX cought exception $e"}
                             // Resolve to use the new format.
                             Jsons.valueToTree<JsonNode>(stateValue)
                         }

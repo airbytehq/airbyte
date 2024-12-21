@@ -1,0 +1,9 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-mssql:dev
+tests:
+  spec:
+    - spec_path: "src/test-integration/resources/expected_spec.json"
+      config_path: "src/test-integration/resources/dummy_config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.4.25"

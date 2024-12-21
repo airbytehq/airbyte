@@ -1,0 +1,1174 @@
+{
+  "streams": [
+    {
+      "fields": [
+        {
+          "name": "column_id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "masking_function",
+          "type": "STRING"
+        },
+        {
+          "name": "column_name",
+          "type": "STRING"
+        },
+        {
+          "name": "is_computed",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "column_type",
+          "type": "STRING"
+        },
+        {
+          "name": "object_id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "column_ordinal",
+          "type": "INTEGER"
+        }
+      ],
+      "stream": {
+        "name": "captured_columns",
+        "namespace": "cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "column_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "object_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "column_name": {
+              "type": "string"
+            },
+            "column_type": {
+              "type": "string"
+            },
+            "is_computed": {
+              "type": "boolean"
+            },
+            "column_ordinal": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "masking_function": {
+              "type": "string"
+            }
+          }
+        },
+        "is_resumable": true,
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["object_id"], ["column_ordinal"]]
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [["object_id"], ["column_ordinal"]],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "partition_switch",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "has_drop_pending",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "supports_net_changes",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "version",
+          "type": "INTEGER"
+        },
+        {
+          "name": "object_id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "role_name",
+          "type": "STRING"
+        },
+        {
+          "name": "start_lsn",
+          "type": "STRING"
+        },
+        {
+          "name": "filegroup_name",
+          "type": "STRING"
+        },
+        {
+          "name": "source_object_id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "end_lsn",
+          "type": "STRING"
+        },
+        {
+          "name": "create_date",
+          "type": "TIMESTAMP_WITHOUT_TIMEZONE"
+        },
+        {
+          "name": "index_name",
+          "type": "STRING"
+        },
+        {
+          "name": "capture_instance",
+          "type": "STRING"
+        }
+      ],
+      "stream": {
+        "name": "change_tables",
+        "namespace": "cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "end_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "version": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "object_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "role_name": {
+              "type": "string"
+            },
+            "start_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "index_name": {
+              "type": "string"
+            },
+            "create_date": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "filegroup_name": {
+              "type": "string"
+            },
+            "capture_instance": {
+              "type": "string"
+            },
+            "has_drop_pending": {
+              "type": "boolean"
+            },
+            "partition_switch": {
+              "type": "boolean"
+            },
+            "source_object_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "supports_net_changes": {
+              "type": "boolean"
+            }
+          }
+        },
+        "is_resumable": true,
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["object_id"]]
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [["object_id"]],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "bin",
+          "type": "STRING"
+        },
+        {
+          "name": "id",
+          "type": "STRING"
+        }
+      ],
+      "stream": {
+        "name": "data_type",
+        "namespace": "cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "bin": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": []
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "__$seqval",
+          "type": "STRING"
+        },
+        {
+          "name": "__$command_id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "bin",
+          "type": "STRING"
+        },
+        {
+          "name": "__$end_lsn",
+          "type": "STRING"
+        },
+        {
+          "name": "__$update_mask",
+          "type": "STRING"
+        },
+        {
+          "name": "__$operation",
+          "type": "INTEGER"
+        },
+        {
+          "name": "id",
+          "type": "STRING"
+        },
+        {
+          "name": "__$start_lsn",
+          "type": "STRING"
+        }
+      ],
+      "stream": {
+        "name": "dbo_NewTable_CT",
+        "namespace": "cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "bin": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "__$seqval": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "__$end_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "__$operation": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "__$start_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "__$command_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "__$update_mask": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": []
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "__$seqval",
+          "type": "STRING"
+        },
+        {
+          "name": "__$command_id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "FirstName",
+          "type": "STRING"
+        },
+        {
+          "name": "__$end_lsn",
+          "type": "STRING"
+        },
+        {
+          "name": "__$update_mask",
+          "type": "STRING"
+        },
+        {
+          "name": "__$operation",
+          "type": "INTEGER"
+        },
+        {
+          "name": "ID",
+          "type": "INTEGER"
+        },
+        {
+          "name": "LastName",
+          "type": "STRING"
+        },
+        {
+          "name": "Age",
+          "type": "INTEGER"
+        },
+        {
+          "name": "__$start_lsn",
+          "type": "STRING"
+        }
+      ],
+      "stream": {
+        "name": "dbo_Persons_CT",
+        "namespace": "cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "ID": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "Age": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "LastName": {
+              "type": "string"
+            },
+            "FirstName": {
+              "type": "string"
+            },
+            "__$seqval": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "__$end_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "__$operation": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "__$start_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "__$command_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "__$update_mask": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": []
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "__$seqval",
+          "type": "STRING"
+        },
+        {
+          "name": "__$command_id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "__$end_lsn",
+          "type": "STRING"
+        },
+        {
+          "name": "__$update_mask",
+          "type": "STRING"
+        },
+        {
+          "name": "__$operation",
+          "type": "INTEGER"
+        },
+        {
+          "name": "id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "test_column",
+          "type": "STRING"
+        },
+        {
+          "name": "__$start_lsn",
+          "type": "STRING"
+        }
+      ],
+      "stream": {
+        "name": "dbo_dbo_1_datetimeoffset_CT",
+        "namespace": "cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "__$seqval": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "__$end_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "test_column": {
+              "type": "string"
+            },
+            "__$operation": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "__$start_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "__$command_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "__$update_mask": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": []
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "ddl_time",
+          "type": "TIMESTAMP_WITHOUT_TIMEZONE"
+        },
+        {
+          "name": "ddl_command",
+          "type": "STRING"
+        },
+        {
+          "name": "source_object_id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "required_column_update",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "ddl_lsn",
+          "type": "STRING"
+        },
+        {
+          "name": "object_id",
+          "type": "INTEGER"
+        }
+      ],
+      "stream": {
+        "name": "ddl_history",
+        "namespace": "cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "ddl_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "ddl_time": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "object_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "ddl_command": {
+              "type": "string"
+            },
+            "source_object_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "required_column_update": {
+              "type": "boolean"
+            }
+          }
+        },
+        "is_resumable": true,
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["object_id"], ["ddl_lsn"]]
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [["object_id"], ["ddl_lsn"]],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "column_id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "index_ordinal",
+          "type": "INTEGER"
+        },
+        {
+          "name": "column_name",
+          "type": "STRING"
+        },
+        {
+          "name": "object_id",
+          "type": "INTEGER"
+        }
+      ],
+      "stream": {
+        "name": "index_columns",
+        "namespace": "cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "column_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "object_id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "column_name": {
+              "type": "string"
+            },
+            "index_ordinal": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "is_resumable": true,
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [
+          ["object_id"],
+          ["index_ordinal"],
+          ["column_id"]
+        ]
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [["object_id"], ["index_ordinal"], ["column_id"]],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "start_lsn",
+          "type": "STRING"
+        },
+        {
+          "name": "tran_begin_time",
+          "type": "TIMESTAMP_WITHOUT_TIMEZONE"
+        },
+        {
+          "name": "tran_id",
+          "type": "STRING"
+        },
+        {
+          "name": "tran_end_time",
+          "type": "TIMESTAMP_WITHOUT_TIMEZONE"
+        },
+        {
+          "name": "tran_begin_lsn",
+          "type": "STRING"
+        }
+      ],
+      "stream": {
+        "name": "lsn_time_mapping",
+        "namespace": "cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "tran_id": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "start_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "tran_end_time": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "tran_begin_lsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "tran_begin_time": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            }
+          }
+        },
+        "is_resumable": true,
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["start_lsn"]]
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [["start_lsn"]],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "bin",
+          "type": "STRING"
+        },
+        {
+          "name": "id",
+          "type": "STRING"
+        },
+        {
+          "name": "pmid",
+          "type": "INTEGER"
+        }
+      ],
+      "stream": {
+        "name": "NewTable",
+        "namespace": "dbo",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "bin": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "pmid": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "is_resumable": true,
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["pmid"]]
+      },
+      "mappers": [],
+      "sync_mode": "incremental",
+      "primary_key": [["pmid"]],
+      "cursor_field": ["pmid"],
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "fields": [
+        {
+          "name": "FirstName",
+          "type": "STRING"
+        },
+        {
+          "name": "ID",
+          "type": "INTEGER"
+        },
+        {
+          "name": "LastName",
+          "type": "STRING"
+        },
+        {
+          "name": "Age",
+          "type": "INTEGER"
+        }
+      ],
+      "stream": {
+        "name": "Persons",
+        "namespace": "dbo",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "ID": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "Age": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "LastName": {
+              "type": "string"
+            },
+            "FirstName": {
+              "type": "string"
+            }
+          }
+        },
+        "is_resumable": true,
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["ID"]]
+      },
+      "mappers": [],
+      "sync_mode": "incremental",
+      "primary_key": [["ID"]],
+      "cursor_field": ["ID"],
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "fields": [
+        {
+          "name": "d1",
+          "type": "TIMESTAMP_WITHOUT_TIMEZONE"
+        },
+        {
+          "name": "d2",
+          "type": "STRING"
+        },
+        {
+          "name": "d3",
+          "type": "STRING"
+        }
+      ],
+      "stream": {
+        "name": "datetime",
+        "namespace": "dbo",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "d1": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "d2": {
+              "type": "string"
+            },
+            "d3": {
+              "type": "string"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": []
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "datetime",
+          "type": "TIMESTAMP_WITHOUT_TIMEZONE"
+        },
+        {
+          "name": "id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "ts_time",
+          "type": "STRING"
+        },
+        {
+          "name": "test_column",
+          "type": "STRING"
+        }
+      ],
+      "stream": {
+        "name": "dbo_1_datetimeoffset",
+        "namespace": "dbo",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "ts_time": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "datetime": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "test_column": {
+              "type": "string"
+            }
+          }
+        },
+        "is_resumable": true,
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "mappers": [],
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["id"],
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "fields": [
+        {
+          "name": "tabid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "startlsn",
+          "type": "STRING"
+        },
+        {
+          "name": "endlsn",
+          "type": "STRING"
+        },
+        {
+          "name": "typeid",
+          "type": "INTEGER"
+        }
+      ],
+      "stream": {
+        "name": "systranschemas",
+        "namespace": "dbo",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "tabid": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "endlsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "typeid": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "startlsn": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": []
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "occupation",
+          "type": "STRING"
+        },
+        {
+          "name": "gender",
+          "type": "STRING"
+        },
+        {
+          "name": "academic_degree",
+          "type": "STRING"
+        },
+        {
+          "name": "weight",
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "type": "STRING"
+        },
+        {
+          "name": "language",
+          "type": "STRING"
+        },
+        {
+          "name": "telephone",
+          "type": "STRING"
+        },
+        {
+          "name": "title",
+          "type": "STRING"
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP_WITHOUT_TIMEZONE"
+        },
+        {
+          "name": "nationality",
+          "type": "STRING"
+        },
+        {
+          "name": "blood_type",
+          "type": "STRING"
+        },
+        {
+          "name": "name",
+          "type": "STRING"
+        },
+        {
+          "name": "id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "age",
+          "type": "INTEGER"
+        },
+        {
+          "name": "email",
+          "type": "STRING"
+        },
+        {
+          "name": "height",
+          "type": "NUMBER"
+        }
+      ],
+      "stream": {
+        "name": "users",
+        "namespace": "dbo",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "age": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "gender": {
+              "type": "string"
+            },
+            "height": {
+              "type": "number"
+            },
+            "weight": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "language": {
+              "type": "string"
+            },
+            "telephone": {
+              "type": "string"
+            },
+            "blood_type": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "occupation": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "nationality": {
+              "type": "string"
+            },
+            "academic_degree": {
+              "type": "string"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": []
+      },
+      "mappers": [],
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["academic_degree"],
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "fields": [
+        {
+          "name": "born",
+          "type": "STRING"
+        },
+        {
+          "name": "name",
+          "type": "STRING"
+        },
+        {
+          "name": "id",
+          "type": "INTEGER"
+        }
+      ],
+      "stream": {
+        "name": "id_name_born",
+        "namespace": "no_cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "born": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "is_resumable": true,
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["id"]]
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "fields": [
+        {
+          "name": "born",
+          "type": "STRING"
+        },
+        {
+          "name": "name",
+          "type": "STRING"
+        }
+      ],
+      "stream": {
+        "name": "name_born",
+        "namespace": "no_cdc",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "born": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": []
+      },
+      "mappers": [],
+      "sync_mode": "full_refresh",
+      "primary_key": [],
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

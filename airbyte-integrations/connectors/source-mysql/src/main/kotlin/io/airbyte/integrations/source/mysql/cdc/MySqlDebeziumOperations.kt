@@ -211,7 +211,7 @@ class MySqlDebeziumOperations(
         return MySqlPosition(file.toString(), pos)
     }
 
-    override fun synthesize(): DebeziumInput {
+    override fun synthesize(streams: List<Stream>): DebeziumInput {
         val (mySqlPosition: MySqlPosition, gtidSet: String?) = queryPositionAndGtids()
         val topicPrefixName: String = DebeziumPropertiesBuilder.sanitizeTopicPrefix(databaseName)
         val timestamp: Instant = Instant.now()
@@ -316,11 +316,11 @@ class MySqlDebeziumOperations(
             if (cdcValidationResult == CdcStateValidateResult.INVALID_RESET) {
                 throw OffsetInvalidNeedsResyncIllegalStateException()
             }
-            return synthesize()
+            return synthesize(streams)
         }
 
         val properties: Map<String, String> =
-            DebeziumPropertiesBuilder().with(commonProperties).withStreams(streams).buildMap()
+            DebeziumPropertiesBuilder().with(commonProperties).buildMap()
         return DebeziumInput(properties, debeziumState, isSynthetic = false)
     }
 

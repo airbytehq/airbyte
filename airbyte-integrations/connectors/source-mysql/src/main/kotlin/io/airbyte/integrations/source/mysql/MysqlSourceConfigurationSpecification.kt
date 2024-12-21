@@ -98,7 +98,7 @@ class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("ssl_mode")
     @JsonSchemaTitle("Encryption")
     @JsonPropertyDescription(
-        "The encryption method with is used when communicating with the database.",
+        "The encryption method which is used when communicating with the database.",
     )
     @JsonSchemaInject(json = """{"order":8}""")
     fun getEncryptionValue(): Encryption? = encryptionJson ?: encryption.asEncryption()
@@ -321,7 +321,7 @@ data object UserDefinedCursor : CursorMethodConfiguration
 @JsonSchemaDescription(
     "<i>Recommended</i> - " +
         "Incrementally reads new inserts, updates, and deletes using Mysql's <a href=" +
-        "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
+        "\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
 class CdcCursor : CursorMethodConfiguration {
