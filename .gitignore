@@ -14,6 +14,9 @@ out
 **/gmon.out
 static_checker_reports/
 
+# jenv version mgmt artifacts
+.java-version
+
 # Logs
 acceptance_tests_logs/
 airbyte_ci_logs/
