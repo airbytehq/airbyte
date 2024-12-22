@@ -1,0 +1,83 @@
+{
+  "version": "0.1.0",
+  "type": "CONFIGURED_CATALOG",
+  "catalog": {
+    "streams": [
+      {
+        "name": "users",
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          ["id"]
+        ],
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The unique identifier of the user."
+            },
+            "displayName": {
+              "type": "string",
+              "description": "The display name of the user."
+            },
+            "userPrincipalName": {
+              "type": "string",
+              "description": "The user principal name (UPN) of the user."
+            },
+            "mail": {
+              "type": "string",
+              "description": "The email address of the user."
+            },
+            "department": {
+              "type": "string",
+              "description": "The department of the user."
+            },
+            "jobTitle": {
+              "type": "string",
+              "description": "The job title of the user."
+            },
+            "mobilePhone": {
+              "type": "string",
+              "description": "The mobile phone number of the user."
+            },
+            "officeLocation": {
+              "type": "string",
+              "description": "The office location of the user."
+            },
+            "employeeId": {
+              "type": "string",
+              "description": "The employee ID of the user."
+            },
+            "accountEnabled": {
+              "type": "boolean",
+              "description": "Indicates whether the user account is enabled."
+            },
+            "userType": {
+              "type": "string",
+              "description": "The user type, such as 'Member' or 'Guest'."
+            },
+            "createdDateTime": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time the user was created."
+            },
+            "lastPasswordChangeDateTime": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date and time the user's password was last changed."
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "createdDateTime"
+        ]
+      }
+    ]
+  }
+}

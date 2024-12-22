@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The unique identifier of the authentication method."
+    },
+    "displayName": {
+      "type": "string",
+      "description": "The display name of the authentication method."
+    },
+    "authenticationMethod": {
+      "type": "string",
+      "description": "The type of authentication method, such as 'password', 'phoneNumber', 'email', etc."
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time the authentication method was created."
+    },
+    "lastModifiedDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time the authentication method was last modified."
+    },
+    "isUsableForSignIn": {
+      "type": "boolean",
+      "description": "Indicates whether the authentication method can be used for sign-in."
+    },
+    "phoneNumber": {
+      "type": "string",
+      "description": "The phone number associated with the authentication method, if applicable."
+    },
+    "emailAddress": {
+      "type": "string",
+      "description": "The email address associated with the authentication method, if applicable."
+    },
+    "alternateEmailAddress": {
+      "type": "string",
+      "description": "The alternate email address associated with the authentication method, if applicable."
+    },
+    "passwordProfile": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "description": "The password associated with the authentication method."
+        },
+        "forceChangePasswordNextSignIn": {
+          "type": "boolean",
+          "description": "Indicates whether the user must change their password on the next sign-in."
+        },
+        "forceChangePasswordNextSignInWithMfa": {
+          "type": "boolean",
+          "description": "Indicates whether the user must change their password on the next sign-in with multi-factor authentication."
+        }
+      },
+      "description": "The password profile associated with the authentication method."
+    }
+  }
+}

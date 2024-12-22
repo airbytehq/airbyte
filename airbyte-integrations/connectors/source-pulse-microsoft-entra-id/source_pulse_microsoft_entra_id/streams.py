@@ -149,7 +149,17 @@ class ParentChildStream(MicrosoftGraphStream, ABC):
 
 class Users(MicrosoftGraphStream):
     def path(self, **kwargs) -> str:
-        return "users/delta?$select=businessPhones,displayName,givenName,jobTitle,mail,mobilePhone,officeLocation,preferredLanguage,surname,userPrincipalName,id,userType"
+        return ("users/delta?$select=accountEnabled,ageGroup,assignedLicenses,assignedPlans,authorizationInfo,"
+                "businessPhones,city,companyName,consentProvidedForMinor,country,createdDateTime,creationType,"
+                "customSecurityAttributes,department,displayName,employeeHireDate,employeeId,employeeLeaveDateTime,"
+                "employeeOrgData,employeeType,externalUserState,externalUserStateChangeDateTime,faxNumber,givenName,"
+                "identities,imAddresses,isManagementRestricted,isResourceAccount,jobTitle,lastPasswordChangeDateTime,"
+                "legalAgeGroupClassification,licenseAssignmentStates,mail,mailNickname,mobilePhone,officeLocation,"
+                "onPremisesDistinguishedName,onPremisesDomainName,onPremisesExtensionAttributes,onPremisesImmutableId,"
+                "onPremisesLastSyncDateTime,onPremisesProvisioningErrors,onPremisesSamAccountName,onPremisesSecurityIdentifier,"
+                "onPremisesSyncEnabled,onPremisesUserPrincipalName,otherMails,passwordPolicies,passwordProfile,postalCode,"
+                "preferredDataLocation,preferredLanguage,provisionedPlans,proxyAddresses,securityIdentifier,serviceProvisioningErrors,"
+                "showInAddressList,signInSessionsValidFromDateTime,state,streetAddress,surname,usageLocation,userPrincipalName,userType")
 
 
 class Groups(MicrosoftGraphStream):
@@ -414,6 +424,22 @@ class UserMembershipInGroupsAndDirectory(ParentChildStream, TransformationMixin)
             return f"users/{self.none_existing_id}/transitiveMemberOf"
         parent_id = stream_slice["parent_id"]
         return f"users/{parent_id}/transitiveMemberOf"
+
+    def transform_record(self, record: MutableMapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+        if stream_slice and "parent_id" in stream_slice:
+            record["userId"] = stream_slice["parent_id"]
+        return record
+
+
+class UserAuthMethods(ParentChildStream, TransformationMixin):
+    parent_stream_class = Users
+    parent_id_field = "id"
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        if not stream_slice or "parent_id" not in stream_slice:
+            return f"users/{self.none_existing_id}/authentication/methods"
+        parent_id = stream_slice["parent_id"]
+        return f"users/{parent_id}/authentication/methods"
 
     def transform_record(self, record: MutableMapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
         if stream_slice and "parent_id" in stream_slice:

@@ -38,5 +38,6 @@ class SourcePulseMicrosoftEntraId(AbstractSource):
             ApplicationOwners(config),
             Catalogs(config),
             DirectoryRolesPermissions(config),
-            UserMembershipInGroupsAndDirectory(config)
+            UserMembershipInGroupsAndDirectory(config),
+            UserAuthMethods(config),
         ]

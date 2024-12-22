@@ -1,70 +1,511 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "additionalProperties": true,
-  "properties": {
-    "businessPhones": {
-      "items": {
-        "type": [
-          "string",
-          "null"
-        ]
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "accountEnabled" : {
+      "type" : "boolean",
+      "description" : "Indicates whether the user account is enabled."
+    },
+    "ageGroup" : {
+      "type" : "string",
+      "description" : "The age group of the user."
+    },
+    "assignedLicenses" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "disabledPlans" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "skuId" : {
+            "type" : "string"
+          }
+        }
       },
-      "type": [
-        "array",
-        "null"
-      ]
+      "description" : "The licenses that are assigned to the user."
     },
-    "displayName": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "assignedPlans" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "assignedTimestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "capabilityStatus" : {
+            "type" : "string"
+          },
+          "service" : {
+            "type" : "string"
+          },
+          "servicePlanId" : {
+            "type" : "string"
+          },
+          "skuId" : {
+            "type" : "string"
+          },
+          "userPrincipalName" : {
+            "type" : "string"
+          }
+        }
+      },
+      "description" : "The plans that are assigned to the user."
     },
-    "givenName": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "authorizationInfo" : {
+      "type" : "object",
+      "properties" : {
+        "permissionClassificationDetails" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "permissionClassification" : {
+                "type" : "string"
+              },
+              "permissionGrants" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "object",
+                  "properties" : {
+                    "granted" : {
+                      "type" : "boolean"
+                    },
+                    "grantor" : {
+                      "type" : "string"
+                    },
+                    "permissionType" : {
+                      "type" : "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "description" : "The authorization information for the user."
     },
-    "id": {
-      "type": "string"
+    "businessPhones" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      },
+      "description" : "The business phone numbers for the user."
     },
-    "jobTitle": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "city" : {
+      "type" : "string",
+      "description" : "The city in which the user is located."
     },
-    "mail": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "companyName" : {
+      "type" : "string",
+      "description" : "The name of the company associated with the user."
     },
-    "preferredLanguage": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "consentProvidedForMinor" : {
+      "type" : "string",
+      "description" : "The consent provided by parental or other consent for the user to use the service."
     },
-    "surname": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "country" : {
+      "type" : "string",
+      "description" : "The country/region in which the user is located."
     },
-    "userPrincipalName": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "createdDateTime" : {
+      "type" : "string",
+      "format" : "date-time",
+      "description" : "The date and time the user was created."
     },
-    "userType": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "creationType" : {
+      "type" : "string",
+      "description" : "Indicates whether the user account was created as a regular school or work account (null), an external account (Invitation), a local account for an Azure Active Directory B2C tenant (LocalAccount) or a legacy account (Legacy)."
+    },
+    "customSecurityAttributes" : {
+      "type" : "object",
+      "description" : "Any custom security attributes that have been applied to the user."
+    },
+    "department" : {
+      "type" : "string",
+      "description" : "The name of the department in which the user works."
+    },
+    "displayName" : {
+      "type" : "string",
+      "description" : "The display name of the user."
+    },
+    "employeeHireDate" : {
+      "type" : "string",
+      "format" : "date-time",
+      "description" : "The date and time when the user was hired."
+    },
+    "employeeId" : {
+      "type" : "string",
+      "description" : "The employee ID assigned to the user."
+    },
+    "employeeLeaveDateTime" : {
+      "type" : "string",
+      "format" : "date-time",
+      "description" : "The date and time when the user left the organization."
+    },
+    "employeeOrgData" : {
+      "type" : "object",
+      "properties" : {
+        "costCenter" : {
+          "type" : "string"
+        },
+        "division" : {
+          "type" : "string"
+        },
+        "employeeType" : {
+          "type" : "string"
+        },
+        "organization" : {
+          "type" : "string"
+        },
+        "title" : {
+          "type" : "string"
+        }
+      },
+      "description" : "Represents the organizational data associated with a user."
+    },
+    "employeeType" : {
+      "type" : "string",
+      "description" : "Describes the type of employee. For example, Employee, Contractor, Consultant, or Vendor."
+    },
+    "externalUserState" : {
+      "type" : "string",
+      "description" : "For an external user invited to the tenant, this property represents the invited user's invitation status. For example, PendingAcceptance, Accepted, Rejected. For a member user, the property is null."
+    },
+    "externalUserStateChangeDateTime" : {
+      "type" : "string",
+      "format" : "date-time",
+      "description" : "The timestamp when the externalUserState property value changed. For example, when the invitation was sent, accepted, or rejected."
+    },
+    "faxNumber" : {
+      "type" : "string",
+      "description" : "The fax number of the user."
+    },
+    "givenName" : {
+      "type" : "string",
+      "description" : "The given name (first name) of the user."
+    },
+    "identities" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "signInType" : {
+            "type" : "string"
+          },
+          "issuer" : {
+            "type" : "string"
+          },
+          "issuerAssignedId" : {
+            "type" : "string"
+          }
+        }
+      },
+      "description" : "Represents the identities of the user."
+    },
+    "imAddresses" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      },
+      "description" : "The instant messaging (IM) addresses for the user."
+    },
+    "isManagementRestricted" : {
+      "type" : "boolean",
+      "description" : "Indicates whether the user's account is restricted from management by global administrators."
+    },
+    "isResourceAccount" : {
+      "type" : "boolean",
+      "description" : "Indicates whether the user is a resource account."
+    },
+    "jobTitle" : {
+      "type" : "string",
+      "description" : "The user's job title."
+    },
+    "lastPasswordChangeDateTime" : {
+      "type" : "string",
+      "format" : "date-time",
+      "description" : "The time when the user's password was last changed. The date and time information uses ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 would look like this: '2014-01-01T00:00:00Z'."
+    },
+    "legalAgeGroupClassification" : {
+      "type" : "string",
+      "description" : "Represents the legal age group of the user. The possible values are: null, MinorWithOutParentalConsent, MinorWithParentalConsent, Adult."
+    },
+    "licenseAssignmentStates" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "assignedByGroup" : {
+            "type" : "boolean"
+          },
+          "state" : {
+            "type" : "string"
+          },
+          "targetGroup" : {
+            "type" : "string"
+          }
+        }
+      },
+      "description" : "Represents the license assignment states for this user."
+    },
+    "mail" : {
+      "type" : "string",
+      "description" : "The SMTP address for the user, for example, 'jeff@contoso.onmicrosoft.com'."
+    },
+    "mailNickname" : {
+      "type" : "string",
+      "description" : "The mail alias for the user."
+    },
+    "mobilePhone" : {
+      "type" : "string",
+      "description" : "The primary mobile phone number for the user."
+    },
+    "officeLocation" : {
+      "type" : "string",
+      "description" : "The office location in the user's place of business."
+    },
+    "onPremisesDistinguishedName" : {
+      "type" : "string",
+      "description" : "Contains the on-premises Active Directory distinguished name or DN. The property is only populated for customers who are synchronizing their on-premises Active Directory with Azure Active Directory via Azure AD Connect."
+    },
+    "onPremisesDomainName" : {
+      "type" : "string",
+      "description" : "Contains the on-premises domainFQDN, also called dnsDomainName synchronized from the on-premises directory. The property is only populated for customers who are synchronizing their on-premises Active Directory with Azure Active Directory via Azure AD Connect."
+    },
+    "onPremisesExtensionAttributes" : {
+      "type" : "object",
+      "properties" : {
+        "extensionAttribute1" : {
+          "type" : "string"
+        },
+        "extensionAttribute2" : {
+          "type" : "string"
+        },
+        "extensionAttribute3" : {
+          "type" : "string"
+        },
+        "extensionAttribute4" : {
+          "type" : "string"
+        },
+        "extensionAttribute5" : {
+          "type" : "string"
+        },
+        "extensionAttribute6" : {
+          "type" : "string"
+        },
+        "extensionAttribute7" : {
+          "type" : "string"
+        },
+        "extensionAttribute8" : {
+          "type" : "string"
+        },
+        "extensionAttribute9" : {
+          "type" : "string"
+        },
+        "extensionAttribute10" : {
+          "type" : "string"
+        },
+        "extensionAttribute11" : {
+          "type" : "string"
+        },
+        "extensionAttribute12" : {
+          "type" : "string"
+        },
+        "extensionAttribute13" : {
+          "type" : "string"
+        },
+        "extensionAttribute14" : {
+          "type" : "string"
+        },
+        "extensionAttribute15" : {
+          "type" : "string"
+        }
+      },
+      "description" : "Contains extension attributes for the user from the on-premises directory. The property is only populated for customers who are synchronizing their on-premises directory with Azure Active Directory via Azure AD Connect."
+    },
+    "onPremisesImmutableId" : {
+      "type" : "string",
+      "description" : "This property is used to associate an on-premises Active Directory user account with their Azure Active Directory user object. This property must be specified when creating a new user account in Azure Active Directory. Once it is assigned, it cannot be updated."
+    },
+    "onPremisesLastSyncDateTime" : {
+      "type" : "string",
+      "format" : "date-time",
+      "description" : "Indicates the last time at which the object was synchronized from the on-premises directory using Azure AD Connect. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 would look like this: '2014-01-01T00:00:00Z'."
+    },
+    "onPremisesProvisioningErrors" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : "string"
+          },
+          "propertyCausingError" : {
+            "type" : "string"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "operation" : {
+            "type" : "string"
+          }
+        }
+      },
+      "description" : "Errors when using Microsoft synchronization product during provisioning."
+    },
+    "onPremisesSamAccountName" : {
+      "type" : "string",
+      "description" : "Contains the on-premises SAM account name synchronized from the on-premises directory. The property is only populated for customers who are synchronizing their on-premises Active Directory with Azure Active Directory via Azure AD Connect."
+    },
+    "onPremisesSecurityIdentifier" : {
+      "type" : "string",
+      "description" : "Contains the on-premises security identifier (SID) for the user that was synchronized from the on-premises directory. The property is only populated for customers who are synchronizing their on-premises Active Directory with Azure Active Directory via Azure AD Connect."
+    },
+    "onPremisesSyncEnabled" : {
+      "type" : "boolean",
+      "description" : "True if the object is synchronized from an on-premises directory; false if the object originated in Azure AD."
+    },
+    "onPremisesUserPrincipalName" : {
+      "type" : "string",
+      "description" : "The on-premises user principal name (UPN) synchronized from the on-premises directory. The property is only populated for customers who are synchronizing their on-premises Active Directory with Azure Active Directory via Azure AD Connect."
+    },
+    "otherMails" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      },
+      "description" : "A list of additional email addresses for the user; for example: ['bob@contoso.com', 'bob@company.com']."
+    },
+    "passwordPolicies" : {
+      "type" : "string",
+      "description" : "Specifies password policies for the user."
+    },
+    "passwordProfile" : {
+      "type" : "object",
+      "properties" : {
+        "password" : {
+          "type" : "string"
+        },
+        "forceChangePasswordNextSignIn" : {
+          "type" : "boolean"
+        },
+        "forceChangePasswordNextSignInWithMfa" : {
+          "type" : "boolean"
+        }
+      },
+      "description" : "Represents a user's password profile."
+    },
+    "postalCode" : {
+      "type" : "string",
+      "description" : "The postal code for the user's postal address."
+    },
+    "preferredDataLocation" : {
+      "type" : "string",
+      "description" : "The preferred data location for the user."
+    },
+    "preferredLanguage" : {
+      "type" : "string",
+      "description" : "The preferred language for the user. Should follow the ISO 639-1 two-letter code."
+    },
+    "provisionedPlans" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "capabilityStatus" : {
+            "type" : "string"
+          },
+          "provisioningStatus" : {
+            "type" : "string"
+          },
+          "service" : {
+            "type" : "string"
+          },
+          "servicePlanId" : {
+            "type" : "string"
+          }
+        }
+      },
+      "description" : "The plans that are provisioned for the user."
+    },
+    "proxyAddresses" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      },
+      "description" : "For example: ['SMTP: bob@contoso.com', 'smtp: bob@sales.contoso.com']"
+    },
+    "securityIdentifier" : {
+      "type" : "string",
+      "description" : "The security identifier (SID) of the user."
+    },
+    "serviceProvisioningErrors" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "originSystem" : {
+            "type" : "string"
+          },
+          "propertyCausingError" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "resolvedBy" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "description" : "Errors that occurred during user provisioning."
+    },
+    "showInAddressList" : {
+      "type" : "boolean",
+      "description" : "true if the user should be included in the address book; otherwise, false."
+    },
+    "signInSessionsValidFromDateTime" : {
+      "type" : "string",
+      "format" : "date-time",
+      "description" : "Any refresh tokens or sessions tokens issued before this time are invalid, and applications will need to acquire a new valid token."
+    },
+    "state" : {
+      "type" : "string",
+      "description" : "The state or province in the user's address."
+    },
+    "streetAddress" : {
+      "type" : "string",
+      "description" : "The street address of the user's place of business."
+    },
+    "surname" : {
+      "type" : "string",
+      "description" : "The user's surname (family name or last name)."
+    },
+    "usageLocation" : {
+      "type" : "string",
+      "description" : "A two letter country code (ISO standard 3166). Required for users that will be assigned licenses due to legal requirement to check for availability of services in countries."
+    },
+    "userPrincipalName" : {
+      "type" : "string",
+      "description" : "The user principal name (UPN) of the user. The UPN is an Internet-style login name for the user based on the Internet standard RFC 822. By convention, this should map to the user's email name. The general format is alias@domain, where domain must be present in the tenant's collection of verified domains."
+    },
+    "userType" : {
+      "type" : "string",
+      "description" : "A string value that can be used to classify user types in your directory, such as 'Member' and 'Guest'."
     }
-  },
-  "type": "object"
+  }
 }
