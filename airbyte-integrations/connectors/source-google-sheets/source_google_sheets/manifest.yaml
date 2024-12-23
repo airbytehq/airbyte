@@ -53,6 +53,11 @@ dynamic_streams:
             type: NoPagination
           record_selector:
             extractor:
+              type: CustomRecordExtractor
+              class_name: source_google_sheets.components.DpathSchemaExtractor
+              parameters:
+                schema_type_identifier:
+                  $ref: "#/definitions/schema_type_identifier"
               field_path:
                 - sheets
                 - "*"
@@ -60,7 +65,6 @@ dynamic_streams:
                 - "*"
                 - rowData
                 - "*"
-              type: DpathExtractor
             type: RecordSelector
           requester:
             $ref: "#/definitions/base_requester"
@@ -69,69 +73,16 @@ dynamic_streams:
             http_method: GET
             path: '{% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"]}}!1:1&alt=json'
         schema_type_identifier:
-          key_pointer:
-            - formattedValue
-          schema_pointer:
-            - values
+          $ref: "#/definitions/schema_type_identifier"
+    #          key_pointer:
+    #            - formattedValue
+    #          schema_pointer:
+    #            - values
     components_resolver:
       type: HttpComponentsResolver
-      description: We use spreadsheet information (sheets) to create streams.
+      description: We use first row of sheet to obtain data.
       retriever:
-        type: SimpleRetriever
-        paginator:
-          type: NoPagination
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - sheets
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: title
-              partition_field: sheet_id
-              stream:
-                $ref: "#/definitions/streams/sheets"
-        requester:
-          $ref: "#/definitions/base_requester"
-          description: spreadsheet_id can be either the full url to spreadsheet or the spreadsheet id.
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    predicate: >-
-                      {{ 'sheets' in response and response["sheets"] | length !=
-                      1  }}
-                    http_codes: []
-                    # error lacks of information as error_message can't interpolate stream_slice["potato"]
-                    error_message: >-
-                      Unable to read the schema of sheet. Error: Unexpected return
-                      result: Sheet was
-                      expected to contain data on exactly 1 sheet.
-                  #              - type: DefaultErrorHandler
-                  #                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    predicate: >-
-                      {{ response["sheets"][0]["data"][0]["rowData"][0]["values"] |
-                      map(attribute="formattedValue") | list | length !=
-                      response["sheets"][0]["data"][0]["rowData"][0]["values"] |
-                      map(attribute="formattedValue") | list | unique | list | length }}
-                    error_message: >-
-                      The following duplicate headers were found in the sheet.
-                      Please fix them to continue: {% set values =
-                      response["sheets"][0]["data"][0]["rowData"][0]["values"] |
-                      map(attribute="formattedValue") | list %}{{ values | select("in",
-                      values | reject("sameas", None) | reject("in", values | unique)) |
-                      unique | list }}
-          path: >-
-            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{stream_partition.sheet_id}}!1:1&alt=json
+        $ref: "#/definitions/retrievers/components_resolver_retriever"
       components_mapping:
         - field_path:
             - name
@@ -183,9 +134,9 @@ dynamic_streams:
 
 definitions:
   streams:
-    sheets:
+    get_spreadsheet_info_and_sheets:
       type: DeclarativeStream
-      name: sheets
+      name: get_spreadsheet_info_and_sheets
       retriever:
         type: SimpleRetriever
         requester:
@@ -198,24 +149,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      The spreadsheet link is not valid. Enter the URL of the
-                      Google spreadsheet you want to sync.
-                  #              - type: DefaultErrorHandler
-                  #                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      The authenticated Google Sheets user does not have permissions to view the
-                      spreadsheet with id {{config["spreadsheet_id"]}}. Please ensure the authenticated user has access
-                      to the Spreadsheet and reauthenticate. If the issue persists, contact support.
-                      The caller does not have right permissions.
+                  $ref: "#/definitions/response_filters/spreadsheet_info_stream_filters"
         record_selector:
           type: RecordSelector
           extractor:
@@ -224,6 +158,9 @@ definitions:
               - sheets
               - "*"
               - properties
+          record_filter:
+            type: RecordFilter
+            condition: '{{ record["sheetType"] == "GRID" and record["gridProperties"]["rowCount"] > 0}}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -232,6 +169,106 @@ definitions:
     type: HttpRequester
     url_base: https://sheets.googleapis.com/v4/spreadsheets/
     authenticator: "#/definitions/authenticator"
+  retrievers:
+    components_resolver_retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - sheets
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: title
+            partition_field: sheet_id
+            stream:
+              $ref: "#/definitions/streams/get_spreadsheet_info_and_sheets"
+      requester:
+        $ref: "#/definitions/base_requester"
+        description: spreadsheet_id can be either the full url to spreadsheet or the spreadsheet id.
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                $ref: "#/definitions/response_filters/resolver_filters"
+        path: >-
+          {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{stream_partition.sheet_id}}!1:1&alt=json
+
+  response_filters:
+    expected_one_sheet:
+      type: HttpResponseFilter
+      action: FAIL
+      predicate: >-
+        {{ 'sheets' in response and response["sheets"] | length !=
+        1  }}
+      http_codes: []
+      # error lacks of information as error_message can't interpolate stream_slice["potato"]
+      error_message: >-
+        Unable to read the schema of sheet. Error: Unexpected return
+        result: Sheet was
+        expected to contain data on exactly 1 sheet.
+    ignore_duplicate_headers:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: >-
+        {{ response["sheets"][0]["data"][0]["rowData"][0]["values"] |
+        map(attribute="formattedValue") | list | length !=
+        response["sheets"][0]["data"][0]["rowData"][0]["values"] |
+        map(attribute="formattedValue") | list | unique | list | length }}
+      error_message: >-
+        The following duplicate headers were found in the sheet.
+        Please fix them to continue: {% set values =
+        response["sheets"][0]["data"][0]["rowData"][0]["values"] |
+        map(attribute="formattedValue") | list %}{{ values | select("in",
+        values | reject("sameas", None) | reject("in", values | unique)) |
+        unique | list }}
+    fail_duplicate_headers:
+      $ref: "#/definitions/response_filters/ignore_duplicate_headers"
+      action: FAIL
+    resolver_filters:
+      - $ref: "#/definitions/response_filters/expected_one_sheet"
+      - $ref: "#/definitions/response_filters/ignore_duplicate_headers"
+    check_operation_resolver_filters:
+      - $ref: "#/definitions/response_filters/expected_one_sheet"
+      - $ref: "#/definitions/response_filters/fail_duplicate_headers"
+    spreadsheet_info_stream_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 404
+        error_message: >-
+          The spreadsheet link is not valid. Enter the URL of the
+          Google spreadsheet you want to sync.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 403
+        error_message: >-
+          The authenticated Google Sheets user does not have permissions to view the
+          spreadsheet with id {{config["spreadsheet_id"]}}. Please ensure the authenticated user has access
+          to the Spreadsheet and reauthenticate. If the issue persists, contact support.
+          The caller does not have right permissions.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 500
+        error_message: >-
+          Could not discover the schema of your spreadsheet. There was an issue
+          with the Google Sheets API. This is usually a temporary issue from
+          Google's side. Please try again. If this issue persists, contact
+          support. Interval Server error.
+  schema_type_identifier:
+    key_pointer:
+      - formattedValue
+    schema_pointer:
+      - values
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
