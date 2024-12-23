@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg.v2
 
 import org.apache.iceberg.Schema
@@ -17,9 +21,11 @@ class IcebergTypesComparator {
      * Represents the differences between two Iceberg schemas.
      *
      * @property newColumns list of column names that are new in the incoming schema.
-     * @property updatedDataTypes list of column names whose types differ between incoming and existing schema.
+     * @property updatedDataTypes list of column names whose types differ between incoming and
+     * existing schema.
      * @property removedColumns list of column names that no longer exist in the incoming schema.
-     * @property newlyOptionalColumns list of column names that changed from required (existing) to optional (incoming).
+     * @property newlyOptionalColumns list of column names that changed from required (existing) to
+     * optional (incoming).
      */
     data class ColumnDiff(
         val newColumns: List<String>,
@@ -33,7 +39,8 @@ class IcebergTypesComparator {
      *
      * @param incomingSchema the new or updated schema.
      * @param existingSchema the currently stored schema.
-     * @return a [ColumnDiff] representing the changes between the existing and the incoming schemas.
+     * @return a [ColumnDiff] representing the changes between the existing and the incoming
+     * schemas.
      */
     fun compareSchemas(incomingSchema: Schema, existingSchema: Schema): ColumnDiff {
         val incomingFields = incomingSchema.asStruct().fields().associateBy { it.name() }
@@ -113,23 +120,22 @@ class IcebergTypesComparator {
                 // For these primitive types, the type ID match is enough
                 true
             }
-
             Type.TypeID.TIMESTAMP -> {
-                require(existingType is Types.TimestampType && incomingType is Types.TimestampType) {
-                    "Expected timestamp types, but received $existingType and $incomingType."
-                }
+                require(
+                    existingType is Types.TimestampType && incomingType is Types.TimestampType
+                ) { "Expected timestamp types, but received $existingType and $incomingType." }
                 // Both must either adjust to UTC or not adjust
                 existingType.shouldAdjustToUTC() == incomingType.shouldAdjustToUTC()
             }
-
             Type.TypeID.LIST -> {
                 require(existingType is Types.ListType && incomingType is Types.ListType) {
                     "Expected list types, but received $existingType and $incomingType."
                 }
-                val sameElementType = typesAreEqual(existingType.elementType(), incomingType.elementType())
-                sameElementType && (existingType.isElementOptional == incomingType.isElementOptional)
+                val sameElementType =
+                    typesAreEqual(existingType.elementType(), incomingType.elementType())
+                sameElementType &&
+                    (existingType.isElementOptional == incomingType.isElementOptional)
             }
-
             Type.TypeID.STRUCT -> {
                 val struct1 = existingType.asStructType()
                 val struct2 = incomingType.asStructType()
