@@ -5,7 +5,7 @@ plugins {
 airbyteBulkConnector {
     core = 'extract'
     toolkits = ['extract-jdbc', 'extract-cdc']
-    cdk = '0.224'
+    cdk = '0.238'
 }
 
 application {
@@ -15,10 +15,6 @@ application {
 dependencies {
     implementation 'com.oracle.database.jdbc:ojdbc11-production:23.4.0.24.05'
     implementation 'io.debezium:debezium-connector-oracle'
-    implementation 'org.bouncycastle:bcpkix-jdk18on:1.77'
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
-    implementation 'org.bouncycastle:bctls-jdk18on:1.77'
 
-    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.1')
     testImplementation 'org.testcontainers:oracle-xe'
 }

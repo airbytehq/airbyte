@@ -7,23 +7,19 @@ import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
+import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.File
-import java.io.FileOutputStream
-import java.io.StringReader
+import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.security.KeyStore
-import java.security.cert.Certificate
-import java.security.cert.CertificateFactory
 import java.time.Duration
 import java.util.UUID
-import org.bouncycastle.util.io.pem.PemReader
+import kotlin.io.path.toPath
 
 private val log = KotlinLogging.logger {}
 
@@ -119,30 +115,8 @@ class OracleSourceConfigurationFactory :
         }
         // Determine protocol and configure encryption.
         val encryption: Encryption = pojo.getEncryptionValue()
-        if (encryption is SslCertificate) {
-            val pemFileContents: String = encryption.sslCertificate
-            val pemReader = PemReader(StringReader(pemFileContents))
-            val certDer = pemReader.readPemObject().content
-            val cf: CertificateFactory = CertificateFactory.getInstance("X.509")
-            val cert: Certificate = cf.generateCertificate(certDer.inputStream())
-            val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
-            keyStore.load(null, null) // Initialize the KeyStore
-            keyStore.setCertificateEntry("rds-root", cert)
-            val keyStorePass: String = UUID.randomUUID().toString()
-            val keyStoreFile: File = Files.createTempFile("clientkeystore_", ".jks").toFile()
-            keyStoreFile.deleteOnExit()
-            val fos = FileOutputStream(keyStoreFile)
-            keyStore.store(fos, keyStorePass.toCharArray())
-            fos.close()
-            jdbcProperties["javax.net.ssl.trustStore"] = keyStoreFile.toString()
-            jdbcProperties["javax.net.ssl.trustStoreType"] = "JKS"
-            jdbcProperties["javax.net.ssl.trustStorePassword"] = keyStorePass
-        } else if (encryption is EncryptionAlgorithm) {
-            val algorithm: String = encryption.encryptionAlgorithm
-            jdbcProperties["oracle.net.encryption_client"] = "REQUIRED"
-            jdbcProperties["oracle.net.encryption_types_client"] = "( $algorithm )"
-        }
         val protocol: String = if (encryption is SslCertificate) "TCPS" else "TCP"
+        jdbcProperties.putAll(encryptionJdbcProperties(encryption))
         // Build JDBC URL
         val address = "(ADDRESS=(PROTOCOL=$protocol)(HOST=%s)(PORT=%d))"
         val connectionData: ConnectionData = pojo.getConnectionDataValue()
@@ -197,5 +171,31 @@ class OracleSourceConfigurationFactory :
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
         )
+    }
+
+    private fun encryptionJdbcProperties(encryption: Encryption): Map<String, String> {
+        val props = mutableMapOf<String, String>()
+        when (encryption) {
+            Unencrypted -> Unit
+            is EncryptionAlgorithm -> {
+                val algorithm: String = encryption.encryptionAlgorithm
+                props["oracle.net.encryption_client"] = "REQUIRED"
+                props["oracle.net.encryption_types_client"] = "( $algorithm )"
+            }
+            is SslCertificate -> {
+                val keyStorePass: String = UUID.randomUUID().toString()
+                val keyStoreURI: URI =
+                    SSLCertificateUtils.keyStoreFromCertificate(
+                        certString = encryption.sslCertificate,
+                        keyStorePassword = keyStorePass,
+                    )
+                val keyStoreFile: File = keyStoreURI.toPath().toFile()
+                keyStoreFile.deleteOnExit()
+                props["javax.net.ssl.trustStore"] = keyStoreFile.toString()
+                props["javax.net.ssl.trustStoreType"] = "PKCS12"
+                props["javax.net.ssl.trustStorePassword"] = keyStorePass
+            }
+        }
+        return props
     }
 }
