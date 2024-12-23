@@ -68,6 +68,7 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 
 sealed interface AllTypesBehavior
 
@@ -126,6 +127,7 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
+    val failOnUnknownTypes: Boolean = false,
     nullEqualsUnset: Boolean = false,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper, nullEqualsUnset) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
@@ -1795,11 +1797,6 @@ abstract class BasicFunctionalityIntegrationTest(
                         "schemaless_object" to FieldType(ObjectTypeWithoutSchema, nullable = true),
                         "schematized_array" to FieldType(ArrayType(intType), nullable = true),
                         "schemaless_array" to FieldType(ArrayTypeWithoutSchema, nullable = true),
-                        "unknown" to
-                            FieldType(
-                                UnknownType(JsonNodeFactory.instance.textNode("test")),
-                                nullable = true
-                            ),
                     ),
                 ),
                 generationId = 42,
@@ -1820,8 +1817,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "empty_object": {},
                           "schemaless_object": { "uuid": "38F52396-736D-4B23-B5B4-F504D8894B97", "probability": 1.5 },
                           "schematized_array": [10, null],
-                          "schemaless_array": [ 10, "foo", null, { "bar": "qua" } ],
-                          "unknown": {"foo": "bar"}
+                          "schemaless_array": [ 10, "foo", null, { "bar": "qua" } ]
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
                 ),
@@ -1835,8 +1831,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "empty_object": {"extra": "stuff"},
                           "schemaless_object": { "address": { "street": "113 Hickey Rd", "zip": "37932" }, "flags": [ true, false, false ] },
                           "schematized_array": [],
-                          "schemaless_array": [],
-                          "unknown": {}
+                          "schemaless_array": []
                         }""".trimIndent(),
                     emittedAtMs = 1602637589200,
                 ),
@@ -1850,8 +1845,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "empty_object": null,
                           "schemaless_object": null,
                           "schematized_array": null,
-                          "schemaless_array": null,
-                          "unknown": null
+                          "schemaless_array": null
                         }""".trimIndent(),
                     emittedAtMs = 1602637589300,
                 ),
@@ -1884,12 +1878,6 @@ abstract class BasicFunctionalityIntegrationTest(
                                     """[10,"foo",null,{"bar":"qua"}]"""
                                 } else {
                                     listOf(10, "foo", null, mapOf("bar" to "qua"))
-                                },
-                            "unknown" to
-                                if (stringifySchemalessObjects) {
-                                    """{"foo":"bar"}"""
-                                } else {
-                                    mapOf("foo" to "bar")
                                 },
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
@@ -1927,12 +1915,6 @@ abstract class BasicFunctionalityIntegrationTest(
                                 } else {
                                     emptyList<Any>()
                                 },
-                            "unknown" to
-                                if (stringifySchemalessObjects) {
-                                    """{}"""
-                                } else {
-                                    emptyMap<String, Any?>()
-                                },
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -1947,7 +1929,6 @@ abstract class BasicFunctionalityIntegrationTest(
                             "schemaless_object" to null,
                             "schematized_array" to null,
                             "schemaless_array" to null,
-                            "unknown" to null,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -1960,6 +1941,74 @@ abstract class BasicFunctionalityIntegrationTest(
             primaryKey = listOf(listOf("id")),
             cursor = null,
         )
+    }
+
+    @Test
+    open fun testUnknownTypes() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "problematic_types"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to
+                            FieldType(
+                                UnknownType(
+                                    JsonNodeFactory.instance.objectNode().put("type", "whatever")
+                                ),
+                                nullable = true
+                            ),
+                    ),
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            configContents,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "problematic_types",
+                    """
+                        {
+                          "id": "ex falso quodlibet"
+                        }""".trimIndent(),
+                    emittedAtMs = 1602637589100,
+                )
+            )
+        )
+
+        val expectedRecords: List<OutputRecord> =
+            listOf(
+                OutputRecord(
+                    extractedAt = 1602637589100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to "ex falso quodlibet",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            )
+
+        val dumpBlock = {
+            dumpAndDiffRecords(
+                parsedConfig,
+                expectedRecords,
+                stream,
+                primaryKey = listOf(listOf("id")),
+                cursor = null,
+            )
+        }
+        if (failOnUnknownTypes) {
+            // Note: this will not catch assertion errors against data
+            // if the destination actually succeeds (by design).
+            assertThrows<Exception> { dumpBlock() }
+        } else {
+            dumpBlock()
+        }
     }
 
     /**
