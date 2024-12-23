@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
+import io.airbyte.cdk.load.data.avro.AvroExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -148,19 +148,24 @@ class S3V2WriteTestCsvGzip :
 class S3V2WriteTestAvroUncompressed :
     S3V2WriteTest(
         S3V2TestUtils.AVRO_UNCOMPRESSED_CONFIG_PATH,
-        NoopExpectedRecordMapper,
+        AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         failOnUnknownTypes = true,
-    )
+    ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+}
 
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(
         S3V2TestUtils.AVRO_BZIP2_CONFIG_PATH,
-        NoopExpectedRecordMapper,
+        AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
@@ -172,7 +177,7 @@ class S3V2WriteTestAvroBzip2 :
 class S3V2WriteTestParquetUncompressed :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH,
-        NoopExpectedRecordMapper,
+        AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
@@ -184,7 +189,7 @@ class S3V2WriteTestParquetUncompressed :
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
-        NoopExpectedRecordMapper,
+        AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
