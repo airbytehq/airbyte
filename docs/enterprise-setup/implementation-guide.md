@@ -562,9 +562,9 @@ Once this is complete, ensure that the value of the `webapp-url` field in your `
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
-#### Configure a custom image registry
+#### (Optional) Configure a custom image registry
 
-You can configure Airbyte to pull Docker images from a custom image registry. In this case, Airbyte pulls both platform images (e.g. `server`, `webapp`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
+You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `webapp`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
 
 Implementing Airbyte this way has several advantages.
 

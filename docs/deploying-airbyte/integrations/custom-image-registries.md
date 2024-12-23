@@ -6,7 +6,7 @@ import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 # Custom image registry
 
-You can configure Airbyte to pull Docker images from a custom image registry. In this case, Airbyte pulls both platform images (e.g. `server`, `webapp`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
+You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `webapp`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
 
 Implementing Airbyte this way has several advantages.
 
