@@ -455,12 +455,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "tenant_id",
-              "client_id",
-              "client_secret",
-              "auth_type"
-            ]
+            "required": ["tenant_id", "client_id", "client_secret", "auth_type"]
           }
         ]
       },

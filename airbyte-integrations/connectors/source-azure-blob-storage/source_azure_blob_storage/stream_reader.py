@@ -3,7 +3,7 @@
 
 import logging
 from io import IOBase
-from typing import Iterable, List, Optional, Union, Mapping, Any, MutableMapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pytz
 from azure.core.credentials import AccessToken, TokenCredential
@@ -18,14 +18,9 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 
 from .spec import SourceAzureBlobStorageSpec
 
+
 class AzureClientCredentialsAuthenticator(Oauth2Authenticator, TokenCredential):
-    def __init__(
-            self,
-            tenant_id: str,
-            client_id: str,
-            client_secret: str,
-            **kwargs
-        ):
+    def __init__(self, tenant_id: str, client_id: str, client_secret: str, **kwargs):
         super().__init__(
             token_refresh_endpoint=f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
             client_id=client_id,
@@ -34,7 +29,7 @@ class AzureClientCredentialsAuthenticator(Oauth2Authenticator, TokenCredential):
             scopes=["https://storage.azure.com/.default"],
             refresh_token=None,
         )
- 
+
     def build_refresh_request_body(self) -> Mapping[str, Any]:
         """
         Returns the request body to set on the refresh request
@@ -59,12 +54,9 @@ class AzureClientCredentialsAuthenticator(Oauth2Authenticator, TokenCredential):
         return payload
 
     def get_token(self, *args, **kwargs) -> AccessToken:
-        """Parent class handles Oauth Refresh token logic.
-        """
-        return AccessToken(
-            token=self.get_access_token(), 
-            expires_on=int(self.get_token_expiry_date().timestamp())
-        )
+        """Parent class handles Oauth Refresh token logic."""
+        return AccessToken(token=self.get_access_token(), expires_on=int(self.get_token_expiry_date().timestamp()))
+
 
 class AzureOauth2Authenticator(Oauth2Authenticator, TokenCredential):
     """
@@ -126,7 +118,7 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
                     tenant_id=self.config.credentials.tenant_id,
                     client_id=self.config.credentials.client_id,
                     client_secret=self.config.credentials.client_secret,
-                ) 
+                )
 
         return self._credentials
 

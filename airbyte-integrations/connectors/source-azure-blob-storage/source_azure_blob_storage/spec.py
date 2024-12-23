@@ -35,6 +35,7 @@ class Oauth2(BaseModel):
         airbyte_secret=True,
     )
 
+
 class ClientCredentials(BaseModel):
     class Config(OneOfOptionConfig):
         title = "Authenticate via Client Credentials"

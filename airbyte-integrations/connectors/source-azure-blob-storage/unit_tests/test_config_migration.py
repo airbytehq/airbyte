@@ -9,7 +9,6 @@ from tempfile import TemporaryDirectory
 from typing import Any, Mapping
 
 from pytest import fixture
-
 from source_azure_blob_storage import SourceAzureBlobStorage, SourceAzureBlobStorageSpec, SourceAzureBlobStorageStreamReader
 from source_azure_blob_storage.config_migrations import MigrateCredentials, MigrateLegacyConfig
 
@@ -59,7 +58,6 @@ def test_legacy_config_migration(temp_configs):
         ],
     }
     assert test_migrated_config == expected_config
-
 
 
 def test_credentials_config_migration(temp_configs):
