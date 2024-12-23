@@ -67,14 +67,14 @@ interface BatchAccumulator {
         throw NotImplementedError(
             "processRecords must be implemented if createBatchAccumulator is overridden"
         )
-
-    // suspend fun processFilePart(file: DestinationFile, index: Long): Unit =
-    //     throw NotImplementedError(
-    //         "processRecords must be implemented if createBatchAccumulator is overridden"
-    //     )
 }
 
 interface FileBatchAccumulator {
+    /**
+     * This is an unusal way to process a message (the DestinationFile). The batch are pushed to the
+     * queue immediately instead of being return by the method, the main reason is that we nned to
+     * keep a single instance of a PartFactory for the whole file.
+     */
     suspend fun processFilePart(file: DestinationFile, index: Long): Unit =
         throw NotImplementedError(
             "processRecords must be implemented if createBatchAccumulator is overridden"
