@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.object_storage.*
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -40,16 +40,15 @@ class RecordToPartAccumulatorTest {
         coEvery { bufferedWriter.close() } returns Unit
     }
 
-    private fun makeRecord(): DestinationRecord =
-        DestinationRecord(
+    private fun makeRecord(): DestinationRecordAirbyteValue =
+        DestinationRecordAirbyteValue(
             DestinationStream.Descriptor("test", "stream"),
             ObjectValue(linkedMapOf()),
             0L,
             null,
-            ""
         )
 
-    private fun makeRecords(n: Int): Iterator<DestinationRecord> =
+    private fun makeRecords(n: Int): Iterator<DestinationRecordAirbyteValue> =
         (0 until n).map { makeRecord() }.listIterator()
 
     private fun makeBytes(n: Int): ByteArray? =
@@ -138,7 +137,6 @@ class RecordToPartAccumulatorTest {
         // should be second part and final (and not empty)
         when (val batch = acc.processRecords(makeRecords(1), 0L, false) as ObjectStorageBatch) {
             is LoadablePart -> {
-                println(batch.part.bytes.contentToString())
                 assert(batch.part.bytes.contentEquals(makeBytes(1)))
                 assert(batch.part.partIndex == 2)
                 assert(batch.part.fileNumber == 111L)

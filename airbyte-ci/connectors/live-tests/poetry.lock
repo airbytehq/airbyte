@@ -804,7 +804,7 @@ files = [
 
 [[package]]
 name = "connection-retriever"
-version = "0.7.4"
+version = "1.0.0"
 description = "A tool to retrieve connection information from our Airbyte Cloud config api database"
 optional = false
 python-versions = "^3.10"
@@ -818,7 +818,7 @@ dpath = "^2.1.6"
 google-cloud-iam = "^2.14.3"
 google-cloud-logging = "^3.9.0"
 google-cloud-secret-manager = "^2.18.3"
-inquirer = "^3.2.4"
+inquirer = "^3.4"
 jinja2 = "^3.1.3"
 pandas-gbq = "^0.22.0"
 python-dotenv = "^1.0.1"
@@ -829,8 +829,8 @@ tqdm = "^4.66.2"
 [package.source]
 type = "git"
 url = "git@github.com:airbytehq/airbyte-platform-internal"
-reference = "f7359106b28e5197e45b3c8524c4f72a314805a2"
-resolved_reference = "f7359106b28e5197e45b3c8524c4f72a314805a2"
+reference = "HEAD"
+resolved_reference = "d71a5ae1f1621628f49d88832d7496949b89e1c7"
 subdirectory = "tools/connection-retriever"
 
 [[package]]

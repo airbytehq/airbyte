@@ -8,7 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
@@ -31,7 +31,7 @@ class IcebergStreamLoader(
     private val log = KotlinLogging.logger {}
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
+        records: Iterator<DestinationRecordAirbyteValue>,
         totalSizeBytes: Long,
         endOfStream: Boolean
     ): Batch {

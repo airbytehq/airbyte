@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
-import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
@@ -30,7 +29,7 @@ import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
-import io.airbyte.cdk.load.task.internal.SizedInputFlow
+import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
@@ -125,7 +124,7 @@ class DefaultDestinationTaskLauncher(
     @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 
     // Input Consumer requirements
-    private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+    private val inputFlow: ReservingDeserializingInputFlow,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
@@ -149,7 +148,7 @@ class DefaultDestinationTaskLauncher(
                 log.info { "Task $innerTask was cancelled." }
                 throw e
             } catch (e: Exception) {
-                log.error { "Caught exception in task $innerTask: $e" }
+                log.error(e) { "Caught exception in task $innerTask" }
                 handleException(e)
             }
         }

@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
 import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
-import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
@@ -58,7 +57,7 @@ interface InputConsumerTask : KillableScope
 @Secondary
 class DefaultInputConsumerTask(
     private val catalog: DestinationCatalog,
-    private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+    private val inputFlow: ReservingDeserializingInputFlow,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
@@ -82,7 +81,7 @@ class DefaultInputConsumerTask(
                     StreamRecordEvent(
                         index = manager.countRecordIn(),
                         sizeBytes = sizeBytes,
-                        record = message
+                        payload = message.asRecordSerialized()
                     )
                 recordQueue.publish(reserved.replace(wrapped))
             }
@@ -200,7 +199,7 @@ class DefaultInputConsumerTask(
 interface InputConsumerTaskFactory {
     fun make(
         catalog: DestinationCatalog,
-        inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+        inputFlow: ReservingDeserializingInputFlow,
         recordQueueSupplier:
             MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
         checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
@@ -215,7 +214,7 @@ class DefaultInputConsumerTaskFactory(private val syncManager: SyncManager) :
     InputConsumerTaskFactory {
     override fun make(
         catalog: DestinationCatalog,
-        inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+        inputFlow: ReservingDeserializingInputFlow,
         recordQueueSupplier:
             MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
         checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
