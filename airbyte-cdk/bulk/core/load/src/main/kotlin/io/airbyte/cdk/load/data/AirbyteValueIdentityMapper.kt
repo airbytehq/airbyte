@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 
@@ -12,8 +12,8 @@ interface AirbyteValueMapper {
     fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        changes: List<DestinationRecord.Change> = emptyList()
-    ): Pair<AirbyteValue, List<DestinationRecord.Change>>
+        changes: List<Meta.Change> = emptyList()
+    ): Pair<AirbyteValue, List<Meta.Change>>
 }
 
 /** An optimized identity mapper that just passes through. */
@@ -21,22 +21,22 @@ class AirbyteValueNoopMapper : AirbyteValueMapper {
     override fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        changes: List<DestinationRecord.Change>
-    ): Pair<AirbyteValue, List<DestinationRecord.Change>> = value to changes
+        changes: List<Meta.Change>
+    ): Pair<AirbyteValue, List<Meta.Change>> = value to changes
 }
 
 open class AirbyteValueIdentityMapper : AirbyteValueMapper {
     data class Context(
         val nullable: Boolean = false,
         val path: List<String> = emptyList(),
-        val changes: MutableSet<DestinationRecord.Change> = mutableSetOf(),
+        val changes: MutableSet<Meta.Change> = mutableSetOf(),
     )
 
     override fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        changes: List<DestinationRecord.Change>
-    ): Pair<AirbyteValue, List<DestinationRecord.Change>> =
+        changes: List<Meta.Change>
+    ): Pair<AirbyteValue, List<Meta.Change>> =
         mapInner(value, schema, Context(changes = changes.toMutableSet())).let {
             it.first to it.second.changes.toList()
         }
@@ -46,9 +46,7 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         context: Context,
         reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
     ): Pair<AirbyteValue, Context> {
-        context.changes.add(
-            DestinationRecord.Change(context.path.joinToString("."), Change.NULLED, reason)
-        )
+        context.changes.add(Meta.Change(context.path.joinToString("."), Change.NULLED, reason))
         return mapInner(NullValue, schema, context)
     }
 

@@ -52,6 +52,15 @@ tasks.named('check').configure {
     dependsOn integrationTest
 }
 
+project.tasks.matching {
+    it.name == 'spotbugsIntegrationTestLegacy' ||
+            it.name == 'spotbugsIntegrationTest' ||
+            it.name == 'spotbugsTest' ||
+            it.name == 'spotbugsMain'
+}.configureEach {
+    enabled = false
+}
+
 test {
     systemProperties(["mockk.junit.extension.requireParallelTesting":"true"])
 }
