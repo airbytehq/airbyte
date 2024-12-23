@@ -54,9 +54,7 @@ class MysqlJdbcEncryption(
             val caCertKeyStoreUri =
                 SSLCertificateUtils.keyStoreFromCertificate(
                     caCertificate,
-                    clientKeyPassword,
-                    FileSystems.getDefault(),
-                    ""
+                    clientKeyPassword
                 )
             return Pair(caCertKeyStoreUri, clientKeyPassword)
         } catch (ex: Exception) {
