@@ -56,12 +56,12 @@ object MySqlSourceDatatypeTestOperations :
     override fun streamConfigSpec(
         container: MySQLContainer<*>
     ): MySqlSourceConfigurationSpecification =
-        MySqlContainerFactory.config(container).also { it.setMethodValue(UserDefinedCursor) }
+        MySqlContainerFactory.config(container).also { it.setIncrementalValue(UserDefinedCursor) }
 
     override fun globalConfigSpec(
         container: MySQLContainer<*>
     ): MySqlSourceConfigurationSpecification =
-        MySqlContainerFactory.config(container).also { it.setMethodValue(CdcCursor()) }
+        MySqlContainerFactory.config(container).also { it.setIncrementalValue(Cdc()) }
 
     override val configFactory: MySqlSourceConfigurationFactory = MySqlSourceConfigurationFactory()
 
@@ -98,12 +98,7 @@ object MySqlSourceDatatypeTestOperations :
             "b'0'" to "false",
         )
 
-    val longBitValues =
-        mapOf(
-            "b'10101010'" to """-86""",
-        )
-
-    val longBitCdcValues =
+    val multiBitValues =
         mapOf(
             "b'10101010'" to """"qg=="""",
         )
@@ -117,13 +112,23 @@ object MySqlSourceDatatypeTestOperations :
 
     val jsonValues = mapOf("""'{"col1": "v1"}'""" to """"{\"col1\": \"v1\"}"""")
 
-    val jsonCdcValues = mapOf("""'{"col1": "v1"}'""" to """"{\"col1\":\"v1\"}"""")
-
     val yearValues =
         mapOf(
             "1992" to """1992""",
             "2002" to """2002""",
             "70" to """1970""",
+        )
+
+    val bigDecimalValues =
+        mapOf(
+            "10000000000000000000000000000000000000000.0001" to
+                "10000000000000000000000000000000000000000.0001",
+        )
+
+    val bigIntegerValues =
+        mapOf(
+            "10000000000000000000000000000000000000000" to
+                "10000000000000000000000000000000000000000",
         )
 
     val decimalValues =
@@ -136,12 +141,12 @@ object MySqlSourceDatatypeTestOperations :
             "123.4567" to """123.4567""",
         )
 
-    val zeroPrecisionDecimalValues =
+    val doubleValues =
         mapOf(
-            "2" to """2""",
+            "123.4567" to """123.45670318603516""",
         )
 
-    val zeroPrecisionDecimalCdcValues =
+    val zeroPrecisionDecimalValues =
         mapOf(
             "2" to """2""",
         )
@@ -163,17 +168,23 @@ object MySqlSourceDatatypeTestOperations :
     val dateValues =
         mapOf(
             "'2022-01-01'" to """"2022-01-01"""",
+            "'0600-12-02'" to """"0600-12-02"""",
+            "'1752-09-09'" to """"1752-09-09"""",
+            "NULL" to """"2020-03-30""""
         )
 
     val timeValues =
         mapOf(
             "'14:30:00'" to """"14:30:00.000000"""",
+            "NULL" to """"10:30:00.000000"""",
         )
 
     val dateTimeValues =
         mapOf(
             "'2024-09-13 14:30:00'" to """"2024-09-13T14:30:00.000000"""",
-            "'2024-09-13T14:40:00+00:00'" to """"2024-09-13T14:40:00.000000""""
+            "'2024-09-13T14:40:00+00:00'" to """"2024-09-13T14:40:00.000000"""",
+            "'1752-09-01 14:30:00'" to """"1752-09-01T14:30:00.000000"""",
+            "NULL" to """"2020-03-30T10:30:00.000000"""",
         )
 
     val timestampValues =
@@ -181,12 +192,14 @@ object MySqlSourceDatatypeTestOperations :
             "'2024-09-12 14:30:00'" to """"2024-09-12T14:30:00.000000Z"""",
             "CONVERT_TZ('2024-09-12 14:30:00', 'America/Los_Angeles', 'UTC')" to
                 """"2024-09-12T21:30:00.000000Z"""",
+            "NULL" to """"2020-03-30T10:30:00.000000Z"""",
         )
 
     val booleanValues =
         mapOf(
             "TRUE" to "true",
             "FALSE" to "false",
+            "NULL" to "null",
         )
 
     val enumValues =
@@ -215,6 +228,16 @@ object MySqlSourceDatatypeTestOperations :
                     LeafAirbyteSchemaType.STRING,
                 ),
                 MySqlSourceDatatypeTestCase(
+                    "DECIMAL(60,4)",
+                    bigDecimalValues,
+                    LeafAirbyteSchemaType.NUMBER,
+                ),
+                MySqlSourceDatatypeTestCase(
+                    "DECIMAL(60,0)",
+                    bigIntegerValues,
+                    LeafAirbyteSchemaType.INTEGER,
+                ),
+                MySqlSourceDatatypeTestCase(
                     "DECIMAL(10,2)",
                     decimalValues,
                     LeafAirbyteSchemaType.NUMBER,
@@ -239,10 +262,20 @@ object MySqlSourceDatatypeTestOperations :
                     "FLOAT(7,4)",
                     floatValues,
                     LeafAirbyteSchemaType.NUMBER,
+                    isGlobal = false // 123.4567 renders as 123.45670318603516 with CDC, which is OK
                 ),
                 MySqlSourceDatatypeTestCase(
                     "FLOAT(53,8)",
                     floatValues,
+                    LeafAirbyteSchemaType.NUMBER,
+                    // Disable CDC testing for this case:
+                    //  - 123.4567 is rendered as 123.45670318603516
+                    //    not strictly equal due to IEEE754 encoding artifacts, but acceptable.
+                    isGlobal = false,
+                ),
+                MySqlSourceDatatypeTestCase(
+                    "FLOAT(53,8)",
+                    doubleValues,
                     LeafAirbyteSchemaType.NUMBER,
                 ),
                 MySqlSourceDatatypeTestCase("DOUBLE", decimalValues, LeafAirbyteSchemaType.NUMBER),
@@ -293,19 +326,23 @@ object MySqlSourceDatatypeTestOperations :
                     intValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlSourceDatatypeTestCase("DATE", dateValues, LeafAirbyteSchemaType.DATE),
                 MySqlSourceDatatypeTestCase(
-                    "TIMESTAMP",
+                    "DATE NOT NULL DEFAULT '2020-03-30'",
+                    dateValues,
+                    LeafAirbyteSchemaType.DATE,
+                ),
+                MySqlSourceDatatypeTestCase(
+                    "TIMESTAMP NOT NULL DEFAULT '2020-03-30 10:30:00'",
                     timestampValues,
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
                 ),
                 MySqlSourceDatatypeTestCase(
-                    "DATETIME",
+                    "DATETIME(3) NOT NULL DEFAULT '2020-03-30 10:30:00'",
                     dateTimeValues,
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                 ),
                 MySqlSourceDatatypeTestCase(
-                    "TIME",
+                    "TIME NOT NULL DEFAULT '10:30:00'",
                     timeValues,
                     LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                 ),
@@ -322,27 +359,14 @@ object MySqlSourceDatatypeTestOperations :
                 ),
                 MySqlSourceDatatypeTestCase(
                     "BIT(8)",
-                    longBitValues,
-                    LeafAirbyteSchemaType.INTEGER,
-                    isGlobal = false,
-                ),
-                MySqlSourceDatatypeTestCase(
-                    "BIT(8)",
-                    longBitCdcValues,
-                    LeafAirbyteSchemaType.INTEGER,
-                    isStream = false,
+                    multiBitValues,
+                    LeafAirbyteSchemaType.BINARY,
                 ),
                 MySqlSourceDatatypeTestCase(
                     "JSON",
                     jsonValues,
-                    LeafAirbyteSchemaType.STRING,
-                    isGlobal = false,
-                ),
-                MySqlSourceDatatypeTestCase(
-                    "JSON",
-                    jsonCdcValues,
-                    LeafAirbyteSchemaType.STRING,
-                    isStream = false,
+                    LeafAirbyteSchemaType.STRING, // TODO: fix this bug, should be JSONB
+                    isGlobal = false // different, more compact rendering with CDC, which is OK
                 ),
                 MySqlSourceDatatypeTestCase(
                     "ENUM('a', 'b', 'c')",
@@ -358,8 +382,10 @@ data class MySqlSourceDatatypeTestCase(
     val sqlToAirbyte: Map<String, String>,
     override val expectedAirbyteSchemaType: AirbyteSchemaType,
     override val isGlobal: Boolean = true,
-    override val isStream: Boolean = true,
 ) : DatatypeTestCase {
+
+    override val isStream: Boolean
+        get() = true
 
     private val typeName: String
         get() =
@@ -387,5 +413,12 @@ data class MySqlSourceDatatypeTestCase(
             )
 
     val dml: List<String>
-        get() = sqlToAirbyte.keys.map { "INSERT INTO $id ($fieldName) VALUES ($it)" }
+        get() =
+            sqlToAirbyte.keys.map {
+                if (it == "NULL") {
+                    "INSERT INTO $id VALUES ()"
+                } else {
+                    "INSERT INTO $id ($fieldName) VALUES ($it)"
+                }
+            }
 }

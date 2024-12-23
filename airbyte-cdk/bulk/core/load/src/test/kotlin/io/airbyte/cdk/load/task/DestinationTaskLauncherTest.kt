@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.command.MockDestinationConfiguration
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
-import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
@@ -44,7 +43,7 @@ import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
-import io.airbyte.cdk.load.task.internal.SizedInputFlow
+import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
@@ -61,7 +60,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.toList
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -93,13 +91,18 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
     @Inject lateinit var mockForceFlushTask: MockForceFlushTask
     @Inject lateinit var updateCheckpointsTask: MockUpdateCheckpointsTask
-    @Inject lateinit var inputFlow: MockInputFlow
+    @Inject lateinit var inputFlow: ReservingDeserializingInputFlow
     @Inject lateinit var queueWriter: MockQueueWriter
     @Inject lateinit var messageQueueSupplier: MockMessageQueueSupplier
     @Inject lateinit var flushTickTask: FlushTickTask
     @Inject lateinit var mockFailStreamTaskFactory: MockFailStreamTaskFactory
     @Inject lateinit var mockFailSyncTaskFactory: MockFailSyncTaskFactory
     @Inject lateinit var config: MockDestinationConfiguration
+
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    fun inputFlow(): ReservingDeserializingInputFlow = mockk(relaxed = true)
 
     @Singleton
     @Primary
@@ -115,15 +118,6 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
     fun processBatchTaskFactory(): ProcessBatchTaskFactory = mockk(relaxed = true)
-
-    @Singleton
-    @Primary
-    @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockInputFlow : SizedInputFlow<Reserved<DestinationMessage>> {
-        override suspend fun collect(
-            collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>
-        ) {}
-    }
 
     @Singleton
     @Primary
@@ -154,7 +148,7 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
 
         override fun make(
             catalog: DestinationCatalog,
-            inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+            inputFlow: ReservingDeserializingInputFlow,
             recordQueueSupplier:
                 MessageQueueSupplier<
                     DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
