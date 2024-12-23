@@ -21,7 +21,7 @@ from .utils import (
 )
 
 DATE_FORMAT = "%Y-%m-%d"
-WINDOW_IN_DAYS = 1
+WINDOW_IN_DAYS = 1 #max is 45
 POLLING_IN_SECONDS = 30
 
 class BaseResourceStream(HttpStream, ABC):
@@ -341,7 +341,7 @@ class SourceMagnite(AbstractSource):
                 "constraints": [],
                 "orderings": [],
                 "range": {
-                    "fromDate": config["fromDate"],
+                    "fromDate": date_to_string(date.today() - timedelta(days=WINDOW_IN_DAYS - 1)),
                     "toDate": date_to_string(date.today())
                 },
                 "fmt": "csv"
