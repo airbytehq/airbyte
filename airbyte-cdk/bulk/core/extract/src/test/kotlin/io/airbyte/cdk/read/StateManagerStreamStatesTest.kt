@@ -162,7 +162,7 @@ class StateManagerStreamStatesTest {
 
         val emptyCheckpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
         // check if state manager hasn't set for this stream, state would be null and thus skipped.
-        Assertions.assertTrue(emptyCheckpoint.isEmpty());
+        Assertions.assertTrue(emptyCheckpoint.isEmpty())
 
         // update state manager with fake work result
         stateManager
