@@ -37,7 +37,7 @@ class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
                 is ObjectType -> "object"
                 is ArrayTypeWithoutSchema,
                 is ObjectTypeWithoutSchema,
-                is ObjectTypeWithEmptySchema -> "string"
+                is ObjectTypeWithEmptySchema -> "object"
                 is UnionType -> "union"
                 is UnknownType -> "unknown"
             }

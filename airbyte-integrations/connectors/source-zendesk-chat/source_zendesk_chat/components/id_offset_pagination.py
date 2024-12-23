@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import OffsetIncrement
 

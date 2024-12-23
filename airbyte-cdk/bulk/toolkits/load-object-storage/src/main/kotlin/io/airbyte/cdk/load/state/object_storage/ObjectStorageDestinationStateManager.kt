@@ -84,9 +84,8 @@ class ObjectStorageDestinationState(
         val partNumber: Long,
     )
 
-    @get:JsonIgnore
-    val generations: Sequence<Generation>
-        get() =
+    suspend fun getGenerations(): Sequence<Generation> =
+        accessLock.withLock {
             generationMap.entries
                 .asSequence()
                 .map { (state, gens) ->
@@ -100,14 +99,16 @@ class ObjectStorageDestinationState(
                     }
                 }
                 .flatten()
+        }
 
-    @get:JsonIgnore
-    val nextPartNumber: Long
-        get() = generations.flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
+    suspend fun getNextPartNumber(): Long =
+        getGenerations().flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
 
     /** Returns generationId -> objectAndPart for all staged objects that should be kept. */
-    fun getStagedObjectsToFinalize(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> =
-        generations
+    suspend fun getStagedObjectsToFinalize(
+        minimumGenerationId: Long
+    ): Sequence<Pair<Long, ObjectAndPart>> =
+        getGenerations()
             .filter { it.isStaging && it.generationId >= minimumGenerationId }
             .flatMap { it.objects.map { obj -> it.generationId to obj } }
 
@@ -115,8 +116,8 @@ class ObjectStorageDestinationState(
      * Returns generationId -> objectAndPart for all objects (staged and unstaged) that should be
      * cleaned up.
      */
-    fun getObjectsToDelete(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> {
-        val (toKeep, toDrop) = generations.partition { it.generationId >= minimumGenerationId }
+    suspend fun getObjectsToDelete(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> {
+        val (toKeep, toDrop) = getGenerations().partition { it.generationId >= minimumGenerationId }
         val keepKeys = toKeep.flatMap { it.objects.map { obj -> obj.key } }.toSet()
         return toDrop.asSequence().flatMap {
             it.objects.filter { obj -> obj.key !in keepKeys }.map { obj -> it.generationId to obj }

@@ -9,6 +9,7 @@ import sgqlc.operation
 
 from . import schema
 
+
 _schema = schema
 _schema_root = _schema.shopify_schema
 

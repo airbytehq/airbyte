@@ -8,7 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
@@ -68,8 +68,9 @@ class LoggingStreamLoader(override val stream: DestinationStream, loggingConfig:
     }
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        records: Iterator<DestinationRecordAirbyteValue>,
+        totalSizeBytes: Long,
+        endOfStream: Boolean,
     ): Batch {
         log.info { "Processing record batch with logging" }
 
@@ -99,8 +100,9 @@ class LoggingStreamLoader(override val stream: DestinationStream, loggingConfig:
 
 class SilentStreamLoader(override val stream: DestinationStream) : StreamLoader {
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        records: Iterator<DestinationRecordAirbyteValue>,
+        totalSizeBytes: Long,
+        endOfStream: Boolean
     ): Batch {
         return SimpleBatch(state = Batch.State.COMPLETE)
     }
@@ -121,8 +123,9 @@ class ThrottledStreamLoader(
     private val log = KotlinLogging.logger {}
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        records: Iterator<DestinationRecordAirbyteValue>,
+        totalSizeBytes: Long,
+        endOfStream: Boolean
     ): Batch {
         log.info { "Processing record batch with delay of $millisPerRecord per record" }
 
@@ -150,8 +153,9 @@ class FailingStreamLoader(override val stream: DestinationStream, private val nu
     }
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        records: Iterator<DestinationRecordAirbyteValue>,
+        totalSizeBytes: Long,
+        endOfStream: Boolean
     ): Batch {
         log.info { "Processing record batch with failure after $numMessages messages" }
 
