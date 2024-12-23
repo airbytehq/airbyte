@@ -8,6 +8,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
+from requests import Response
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -16,7 +18,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
-from requests import Response
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 from .exceptions import KlaviyoBackoffError
@@ -128,7 +129,6 @@ class KlaviyoStream(HttpStream, CheckpointMixin, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-
         current_state = self.state or {}
         try:
             for record in super().read_records(sync_mode, cursor_field, stream_slice, current_state):
@@ -263,7 +263,6 @@ class CampaignsDetailed(Campaigns):
             record["campaign_message"] = campaign_message_response.json().get("data")
 
     def get_error_handler(self) -> ErrorHandler:
-
         error_mapping = DEFAULT_ERROR_MAPPING | {
             404: ErrorResolution(ResponseAction.IGNORE, FailureType.config_error, "Resource not found. Ignoring.")
         }

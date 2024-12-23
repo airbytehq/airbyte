@@ -69,7 +69,7 @@ class DynamicDatatypeTestFactory<
                     },
                 )
         val globalTests: List<DynamicTest> =
-            if (!testCase.isGlobal) emptyList()
+            if (!ops.withGlobal || !testCase.isGlobal) emptyList()
             else
                 listOf(
                     DynamicTest.dynamicTest("discover-global") {
@@ -98,23 +98,27 @@ class DynamicDatatypeTestFactory<
     private fun records(testCase: T, actualRead: BufferingOutputConsumer?) {
         Assertions.assertNotNull(actualRead)
         val actualRecords: List<AirbyteRecordMessage> = actualRead?.records() ?: emptyList()
-        val actualRecordData: List<JsonNode> =
-            actualRecords.mapNotNull { actualFieldData(testCase, it) }
-        val actual: JsonNode = sortedRecordData(actualRecordData)
+        val actual: String =
+            actualRecords
+                .mapNotNull { actualFieldData(testCase, it) }
+                .sorted()
+                .joinToString(separator = ",", prefix = "[", postfix = "]")
         log.info { "test case ${testCase.id}: emitted records $actual" }
-        val expected: JsonNode = sortedRecordData(testCase.expectedData)
+        val expected: String =
+            testCase.expectedData
+                .sorted()
+                .joinToString(separator = ",", prefix = "[", postfix = "]")
         Assertions.assertEquals(expected, actual)
     }
 
-    private fun sortedRecordData(data: List<JsonNode>): JsonNode =
-        Jsons.createArrayNode().apply { addAll(data.sortedBy { it.toString() }) }
-
-    private fun actualFieldData(testCase: T, record: AirbyteRecordMessage): JsonNode? {
+    private fun actualFieldData(testCase: T, record: AirbyteRecordMessage): String? {
         val data: ObjectNode = record.data as? ObjectNode ?: return null
-        val fieldName: String =
-            data.fieldNames().asSequence().find { it.equals(testCase.fieldName, ignoreCase = true) }
-                ?: return null
-        return data[fieldName]?.deepCopy()
+        val result: ObjectNode = data.deepCopy()
+        for (fieldName in data.fieldNames()) {
+            if (fieldName.equals(testCase.fieldName, ignoreCase = true)) continue
+            result.remove(fieldName)
+        }
+        return Jsons.writeValueAsString(result)
     }
 }
 
@@ -141,7 +145,7 @@ interface DatatypeTestCase {
     val isGlobal: Boolean
     val isStream: Boolean
     val expectedAirbyteSchemaType: AirbyteSchemaType
-    val expectedData: List<JsonNode>
+    val expectedData: List<String>
 }
 
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "control flow")

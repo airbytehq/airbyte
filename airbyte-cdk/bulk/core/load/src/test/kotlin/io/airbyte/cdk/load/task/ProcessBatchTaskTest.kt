@@ -49,14 +49,14 @@ class ProcessBatchTaskTest {
         coEvery { batchQueue.consume() } returns
             streamLoaders.keys
                 .map {
-                    BatchEnvelope(streamDescriptor = it, batch = SimpleBatch(Batch.State.LOCAL))
+                    BatchEnvelope(streamDescriptor = it, batch = SimpleBatch(Batch.State.STAGED))
                 }
                 .asFlow()
 
         task.execute()
 
         streamLoaders.forEach { (descriptor, loader) ->
-            coVerify { loader.processBatch(match { it.state == Batch.State.LOCAL }) }
+            coVerify { loader.processBatch(match { it.state == Batch.State.STAGED }) }
             coVerify {
                 taskLauncher.handleNewBatch(
                     descriptor,

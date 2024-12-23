@@ -15,9 +15,11 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnknownValue
+import io.airbyte.cdk.load.util.TimeStringUtility
 import org.apache.iceberg.Schema
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Type
+import org.apache.iceberg.types.Types.TimestampType
 
 class AirbyteValueToIcebergRecord {
     fun convert(airbyteValue: AirbyteValue, type: Type): Any? {
@@ -73,7 +75,16 @@ class AirbyteValueToIcebergRecord {
                 }
             is TimestampValue ->
                 return when (type.typeId()) {
-                    Type.TypeID.TIMESTAMP -> TimeStringUtility.toOffsetDateTime(airbyteValue.value)
+                    Type.TypeID.TIMESTAMP -> {
+                        val timestampType = type as TimestampType
+                        val offsetDateTime = TimeStringUtility.toOffsetDateTime(airbyteValue.value)
+
+                        if (timestampType.shouldAdjustToUTC()) {
+                            offsetDateTime
+                        } else {
+                            offsetDateTime.toLocalDateTime()
+                        }
+                    }
                     else ->
                         throw IllegalArgumentException(
                             "${type.typeId()} type is not allowed for TimestampValue"
