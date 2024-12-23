@@ -230,6 +230,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| 1.5.7 | 2024-12-21 | [50040](https://github.com/airbytehq/airbyte/pull/50040) | Update dependencies |
 | 1.5.6 | 2024-12-14 | [49173](https://github.com/airbytehq/airbyte/pull/49173) | Update dependencies |
 | 1.5.5 | 2024-11-25 | [43730](https://github.com/airbytehq/airbyte/pull/43730) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.5.4 | 2024-09-06 | [45196](https://github.com/airbytehq/airbyte/pull/45196) | Fix request body for report streams by keyword |

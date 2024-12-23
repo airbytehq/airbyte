@@ -25,7 +25,7 @@ data class LoadablePart(val part: Part) : ObjectStorageBatch {
 // An UploadablePart that has been uploaded to an incomplete object.
 // Returned by processBatch
 data class IncompletePartialUpload(val key: String) : ObjectStorageBatch {
-    override val state: Batch.State = Batch.State.LOCAL
+    override val state: Batch.State = Batch.State.STAGED
     override val groupId: String = key
 }
 

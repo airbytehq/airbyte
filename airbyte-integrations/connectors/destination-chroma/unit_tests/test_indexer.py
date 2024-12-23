@@ -5,9 +5,10 @@
 import unittest
 from unittest.mock import Mock
 
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
 from destination_chroma.config import ChromaIndexingConfigModel
 from destination_chroma.indexer import ChromaIndexer
+
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
 
 
 class TestChromaIndexer(unittest.TestCase):
@@ -30,7 +31,6 @@ class TestChromaIndexer(unittest.TestCase):
         self.mock_client.get_collection = Mock()
 
     def test_valid_collection_name(self):
-
         test_configs = [
             ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, None),
             (

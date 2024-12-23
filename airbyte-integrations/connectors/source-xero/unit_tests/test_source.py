@@ -22,6 +22,7 @@ def test_check_connection_failed(bad_config, requests_mock):
     assert check_succeeded is False
     assert error == "" or "none" in error.lower()
 
+
 def test_streams_count(config_pass):
     source = SourceXero()
     streams = source.streams(config_pass)

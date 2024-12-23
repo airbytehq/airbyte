@@ -3,8 +3,9 @@
 #
 
 import pytest
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet, SpreadsheetValues, ValueRange
+
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 
 @pytest.fixture
@@ -28,10 +29,11 @@ def spreadsheet():
             sheets=[
                 Sheet(
                     data=[GridData(rowData=[RowData(values=[CellData(formattedValue="ID")])])],
-                    properties=SheetProperties(title=sheet_name, gridProperties={"rowCount": 2})
+                    properties=SheetProperties(title=sheet_name, gridProperties={"rowCount": 2}),
                 ),
             ],
         )
+
     return maker
 
 
@@ -39,6 +41,7 @@ def spreadsheet():
 def spreadsheet_values():
     def maker(spreadsheet_id):
         return SpreadsheetValues(spreadsheetId=spreadsheet_id, valueRanges=[ValueRange(values=[["1"]])])
+
     return maker
 
 
@@ -51,4 +54,5 @@ def catalog():
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             )
+
     return maker

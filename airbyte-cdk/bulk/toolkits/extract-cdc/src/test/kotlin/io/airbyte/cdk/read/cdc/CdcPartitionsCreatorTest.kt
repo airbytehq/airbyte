@@ -37,8 +37,6 @@ class CdcPartitionsCreatorTest {
 
     @MockK lateinit var concurrencyResource: ConcurrencyResource
 
-    @MockK(relaxUnitFun = true) lateinit var globalLockResource: CdcGlobalLockResource
-
     @MockK lateinit var creatorOps: CdcPartitionsCreatorDebeziumOperations<CreatorPosition>
 
     @MockK lateinit var readerOps: CdcPartitionReaderDebeziumOperations<CreatorPosition>
@@ -65,7 +63,6 @@ class CdcPartitionsCreatorTest {
         get() =
             CdcPartitionsCreator(
                 concurrencyResource,
-                globalLockResource,
                 globalFeedBootstrap,
                 creatorOps,
                 readerOps,

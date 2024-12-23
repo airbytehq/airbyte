@@ -181,7 +181,7 @@ class GlueCatalogSpecification(
     @get:JsonPropertyDescription(
         "The AWS Account ID associated with the Glue service used by the Iceberg catalog."
     )
-    @get:JsonProperty("glue_id")
+    @JsonProperty("glue_id")
     @JsonSchemaInject(json = """{"order":1}""")
     val glueId: String,
 ) : CatalogType(catalogType)

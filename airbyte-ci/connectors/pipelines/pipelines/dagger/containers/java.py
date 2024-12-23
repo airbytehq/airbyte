@@ -5,6 +5,7 @@
 import datetime
 
 from dagger import CacheVolume, Container, File, Platform
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions.connector.hooks import finalize_build
