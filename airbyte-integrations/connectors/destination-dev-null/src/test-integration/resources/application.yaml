@@ -11,4 +11,4 @@ airbyte:
     rate-ms: 900000 # 15 minutes
     window-ms: 900000 # 15 minutes
   destination:
-    record-batch-size: 1 # Microbatch for testing
+    record-batch-size-override: 1 # Microbatch for testing

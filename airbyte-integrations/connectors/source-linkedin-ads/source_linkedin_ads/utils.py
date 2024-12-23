@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, List, Mapping
 
 import pendulum as pdm
 
+
 # replace `pivot` with `_pivot`, to allow redshift normalization,
 # since `pivot` is a reserved keyword for Destination Redshift,
 # on behalf of https://github.com/airbytehq/airbyte/issues/13018,

@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
@@ -29,7 +28,7 @@ import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
-import io.airbyte.cdk.load.task.internal.SizedInputFlow
+import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
@@ -125,7 +124,7 @@ class DefaultDestinationTaskLauncher(
     @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 
     // Input Consumer requirements
-    private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+    private val inputFlow: ReservingDeserializingInputFlow,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
@@ -148,7 +147,7 @@ class DefaultDestinationTaskLauncher(
                 log.info { "Task $innerTask was cancelled." }
                 throw e
             } catch (e: Exception) {
-                log.error { "Caught exception in task $innerTask: $e" }
+                log.error(e) { "Caught exception in task $innerTask" }
                 handleException(e)
             }
         }
@@ -189,6 +188,7 @@ class DefaultDestinationTaskLauncher(
         val setupTask = setupTaskFactory.make(this)
         enqueue(setupTask)
 
+        // TODO: pluggable file transfer
         if (!fileTransferEnabled) {
             // Start a spill-to-disk task for each record stream
             catalog.streams.forEach { stream ->
@@ -264,16 +264,12 @@ class DefaultDestinationTaskLauncher(
             }
 
             if (streamManager.isBatchProcessingComplete()) {
-                log.info {
-                    "Batch $wrapped complete and batch processing complete: Starting close stream task for $stream"
-                }
+                log.info { "Batch processing complete: Starting close stream task for $stream" }
 
                 val task = closeStreamTaskFactory.make(this, stream)
                 enqueue(task)
             } else {
-                log.info {
-                    "Batch $wrapped complete, but batch processing not complete: nothing else to do."
-                }
+                log.info { "Batch processing not complete: nothing else to do." }
             }
         }
     }

@@ -6,6 +6,7 @@
 from typing import Any
 
 from dagger import Container, Platform
+
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext

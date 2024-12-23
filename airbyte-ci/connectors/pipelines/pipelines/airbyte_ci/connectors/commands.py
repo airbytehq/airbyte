@@ -8,6 +8,7 @@ from typing import List, Set, Tuple
 
 import asyncclick as click
 from connector_ops.utils import Connector, ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
+
 from pipelines import main_logger
 from pipelines.cli.airbyte_ci import wrap_in_secret
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj

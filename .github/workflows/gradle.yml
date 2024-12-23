@@ -21,7 +21,7 @@ on:
 
 jobs:
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       java: ${{ steps.changes.outputs.java }}
 
@@ -81,7 +81,7 @@ jobs:
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - run-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
@@ -94,7 +94,7 @@ jobs:
 
   set-instatus-incident-on-success:
     name: Create Instatus Incident on Success
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - run-check
     if: ${{ success() && github.ref == 'refs/heads/master' }}
@@ -107,7 +107,7 @@ jobs:
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - run-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
@@ -136,7 +136,7 @@ jobs:
 
   notify-failure-slack-channel-fixed-broken-build:
     name: "Notify Slack Channel on Build Fixes"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - run-check
     if: ${{ success() && github.event.pull_request.head.repo.fork != true }}
