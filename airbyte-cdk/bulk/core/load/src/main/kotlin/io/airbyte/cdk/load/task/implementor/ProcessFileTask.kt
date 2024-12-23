@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
 import io.airbyte.cdk.load.util.use
-import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.FileBatchAccumulator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -30,7 +29,8 @@ class DefaultProcessFileTask(
     private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
 ) : ProcessFileTask {
     val log = KotlinLogging.logger {}
-    private val accumulators = ConcurrentHashMap<DestinationStream.Descriptor, FileBatchAccumulator>()
+    private val accumulators =
+        ConcurrentHashMap<DestinationStream.Descriptor, FileBatchAccumulator>()
 
     override suspend fun execute() {
         outputQueue.use {
