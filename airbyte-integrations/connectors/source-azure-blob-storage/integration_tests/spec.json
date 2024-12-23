@@ -455,7 +455,12 @@
                 "type": "string"
               }
             },
-            "required": ["app_tenant_id", "app_client_id", "app_client_secret", "auth_type"]
+            "required": [
+              "app_tenant_id",
+              "app_client_id",
+              "app_client_secret",
+              "auth_type"
+            ]
           }
         ]
       },
