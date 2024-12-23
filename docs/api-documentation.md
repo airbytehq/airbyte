@@ -15,6 +15,8 @@ Our API is a reliable, easy-to-use interface for programmatically controlling th
 
 View our documentation [here](./using-airbyte/configuring-api-access.md) to learn how to start using the Airbyte API.             
 
+__note for OSS users_: to access the API in the OSS edition, you need to use the `/api/public/v1` path. (eg: retrieve 
+
 ## Using the Airbyte API
 Navigate to our full API documentation to learn how to retrieve your access token, make API requests, and manage resources like sources, destinations, and workspaces. 
 
