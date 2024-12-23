@@ -168,6 +168,7 @@ class Case(IncrementalStream):
         super().__init__(**kwargs)
         self._cursor_value = parse_datetime_with_microseconds(start_date)
         self.schema = schema
+        self.last_record = None
 
     def get_json_schema(self):
         return self.schema
@@ -190,13 +191,32 @@ class Case(IncrementalStream):
         # start date is what we saved for forms
         # if self.cursor_field in self.state else (CommcareStream.last_form_date or self.initial_date)
         ix: datetime = self.state[self.cursor_field]
-        params = {"format": "json", "indexed_on_start": ix.strftime(self.dateformat_for_query), "order_by": "indexed_on", "limit": "5000"}
+        LIMIT = 5000
+        params = {
+            "format": "json",
+            "indexed_on_start": ix.strftime(self.dateformat_for_query),
+            "order_by": "indexed_on",
+            "limit": str(LIMIT),
+        }
         if next_page_token:
-            params.update(next_page_token)
+            # next_page_token = {'format': ['json'], 'indexed_on_start': ['2024-12-01T00:00:00.000000'], 'order_by': ['indexed_on'], 'limit': ['5000'], 'offset': ['5000']}
+            MAX_OFFSET = 900000
+            if "offset" in next_page_token and int(next_page_token["offset"][0]) >= MAX_OFFSET:
+                self.logger.info("=========== last_record, params before, params after ===========")
+                self.logger.info(self.last_record)
+                self.logger.info(params)
+                params.update(next_page_token)
+                params["indexed_on_start"] = self.last_record[self.cursor_field].replace("Z", "")
+                params["offset"] = "0"
+                self.logger.info(params)
+                self.logger.info("================================================================")
+            else:
+                params.update(next_page_token)
         return params
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
+            self.last_record = record
             if any(f in CommcareStream.forms for f in record["xform_ids"]):
                 self._cursor_value = parse_datetime_with_microseconds(record[self.cursor_field])
                 # Make indexed_on tz aware
