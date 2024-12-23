@@ -439,13 +439,13 @@
               "app_tenant_id": {
                 "title": "Tenant ID",
                 "description": "Tenant ID of the Microsoft Azure Application",
-                "airbyte_secret": false,
+                "airbyte_secret": true,
                 "type": "string"
               },
               "app_client_id": {
                 "title": "Client ID",
                 "description": "Client ID of your Microsoft developer application",
-                "airbyte_secret": false,
+                "airbyte_secret": true,
                 "type": "string"
               },
               "app_client_secret": {
