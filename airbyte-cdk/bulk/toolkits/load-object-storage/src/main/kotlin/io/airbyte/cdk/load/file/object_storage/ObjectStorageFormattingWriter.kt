@@ -102,7 +102,7 @@ class CSVFormattingWriter(
     private val stream: DestinationStream,
     outputStream: OutputStream,
     private val rootLevelFlattening: Boolean
-) : ObjectStorageFormattingWriter() {
+) : ObjectStorageFormattingWriter {
 
     private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)

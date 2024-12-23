@@ -45,14 +45,14 @@ import io.airbyte.cdk.load.state.StreamProcessingFailed
  * but only if [start] returned successfully. If any exception was thrown during processing, it is
  * passed as an argument to [close].
  */
-interface StreamLoader : BatchAccumulator {
+interface StreamLoader : BatchAccumulator, FileBatchAccumulator {
     val stream: DestinationStream
 
     suspend fun start() {}
     suspend fun createBatchAccumulator(): BatchAccumulator = this
     suspend fun createFileBatchAccumulator(
         outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
-    ): BatchAccumulator = this
+    ): FileBatchAccumulator = this
 
     suspend fun processBatch(batch: Batch): Batch = SimpleBatch(Batch.State.COMPLETE)
     suspend fun close(streamFailure: StreamProcessingFailed? = null) {}
@@ -68,6 +68,13 @@ interface BatchAccumulator {
             "processRecords must be implemented if createBatchAccumulator is overridden"
         )
 
+    // suspend fun processFilePart(file: DestinationFile, index: Long): Unit =
+    //     throw NotImplementedError(
+    //         "processRecords must be implemented if createBatchAccumulator is overridden"
+    //     )
+}
+
+interface FileBatchAccumulator {
     suspend fun processFilePart(file: DestinationFile, index: Long): Unit =
         throw NotImplementedError(
             "processRecords must be implemented if createBatchAccumulator is overridden"

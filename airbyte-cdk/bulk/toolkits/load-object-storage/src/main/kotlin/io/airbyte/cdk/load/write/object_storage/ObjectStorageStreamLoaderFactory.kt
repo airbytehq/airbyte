@@ -24,6 +24,7 @@ import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
 import io.airbyte.cdk.load.write.BatchAccumulator
+import io.airbyte.cdk.load.write.FileBatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -100,7 +101,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
 
     override suspend fun createFileBatchAccumulator(
         outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
-    ): BatchAccumulator = FilePartAccumulator(pathFactory, stream, outputQueue)
+    ): FileBatchAccumulator = FilePartAccumulator(pathFactory, stream, outputQueue)
 
     @VisibleForTesting fun createFile(url: String) = File(url)
 
