@@ -18,8 +18,12 @@ class MigrateRAASCredentials:
 
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
-        return config.get(cls.username_field_to_migrate) and config.get(cls.password_field_to_migrate) and config.get(
-            cls.report_ids_field_to_migrate) and not config.get(cls.migrate_to_path)
+        return (
+            config.get(cls.username_field_to_migrate)
+            and config.get(cls.password_field_to_migrate)
+            and config.get(cls.report_ids_field_to_migrate)
+            and not config.get(cls.migrate_to_path)
+        )
 
     @classmethod
     def transform(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -27,12 +31,14 @@ class MigrateRAASCredentials:
             "username": config[cls.username_field_to_migrate],
             "password": config[cls.password_field_to_migrate],
             "report_ids": config[cls.report_ids_field_to_migrate],
-            "auth_type": cls.auth_type
+            "auth_type": cls.auth_type,
         }
         return config
 
     @classmethod
-    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    def modify_and_save(
+        cls, config_path: str, source: Source, config: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
         migrated_config = cls.transform(config)
 
         source.write_config(migrated_config, config_path)
@@ -42,7 +48,9 @@ class MigrateRAASCredentials:
     @classmethod
     def emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
         # add the Airbyte Control Message to message repo
-        cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
+        cls.message_repository.emit_message(
+            create_connector_config_control_message(migrated_config)
+        )
         # emit the Airbyte Control Message from message queue to stdout
         for message in cls.message_repository._message_queue:
             print(message)

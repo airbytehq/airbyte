@@ -9,7 +9,9 @@ from source_falcon.schema_helper import ReportXMLSchemaHelper
 class ReportSchemaLoader(DefaultSchemaLoader):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._parameters = parameters
-        self.default_loader = ReportXMLSchemaHelper(self.config, self._parameters["report_id"])
+        self.default_loader = ReportXMLSchemaHelper(
+            self.config, self._parameters["report_id"]
+        )
         self.schema = {}
 
     def get_json_schema(self) -> Mapping[str, Any]:

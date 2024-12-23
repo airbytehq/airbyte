@@ -5,7 +5,6 @@ import pathlib
 from typing import Any, Mapping
 
 import pytest
-
 from source_falcon import SourceFalcon
 from source_falcon.config_migrations import MigrateRAASCredentials
 
@@ -26,10 +25,22 @@ def revert_config(path: str) -> None:
     "config_file_path, run_revert",
     [
         # Migration is required
-        (str(pathlib.Path(__file__).parent / "resource/config_migrations/old_config.json"), True),
+        (
+            str(
+                pathlib.Path(__file__).parent
+                / "resource/config_migrations/old_config.json"
+            ),
+            True,
+        ),
         # New config format
-        (str(pathlib.Path(__file__).parent / "resource/config_migrations/new_config.json"), False)
-    ]
+        (
+            str(
+                pathlib.Path(__file__).parent
+                / "resource/config_migrations/new_config.json"
+            ),
+            False,
+        ),
+    ],
 )
 def test_migrate_config(config_file_path, run_revert):
     args = ["check", "--config", config_file_path]

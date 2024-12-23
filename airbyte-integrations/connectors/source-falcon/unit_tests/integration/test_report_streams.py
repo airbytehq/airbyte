@@ -15,15 +15,25 @@ from source_falcon.source import SourceFalcon
 
 
 class TestReports(TestCase):
-
     def catalog(self, report_id: str, sync_mode: SyncMode = SyncMode.full_refresh):
-        return CatalogBuilder().with_stream(name=f"test/{report_id}", sync_mode=sync_mode).build()
+        return (
+            CatalogBuilder()
+            .with_stream(name=f"test/{report_id}", sync_mode=sync_mode)
+            .build()
+        )
 
     def config(self, report_id: str):
         return ConfigBuilder().with_report_id(f"test/{report_id}").raas_build()
 
     def xml_schema_content(self, report: str):
-        with open(str(pathlib.Path(__file__).parent.parent / "resource/http/response/xml" / f"{report}.xml"), "r") as f:
+        with open(
+            str(
+                pathlib.Path(__file__).parent.parent
+                / "resource/http/response/xml"
+                / f"{report}.xml"
+            ),
+            "r",
+        ) as f:
             return f.read()
 
     def mock_schema_request(self, http_mocker: HttpMocker, report: str):
@@ -31,7 +41,7 @@ class TestReports(TestCase):
             HttpRequest(
                 url=f"https://test_host/ccx/service/customreport2/test_tenant/test/{report}?xsd"
             ),
-            HttpResponse(body=self.xml_schema_content(report), status_code=200)
+            HttpResponse(body=self.xml_schema_content(report), status_code=200),
         )
 
     def mock_read_request(self, http_mocker: HttpMocker, report: str):
@@ -39,8 +49,10 @@ class TestReports(TestCase):
             HttpRequest(
                 url=f"https://test_host/ccx/service/customreport2/test_tenant/test/{report}?format=json"
             ),
-            HttpResponse(body=json.dumps(find_template(f"json/{report}", __file__)), status_code=200)
-
+            HttpResponse(
+                body=json.dumps(find_template(f"json/{report}", __file__)),
+                status_code=200,
+            ),
         )
 
     def mock_requests(self, http_mocker: HttpMocker, report: str):
@@ -48,7 +60,14 @@ class TestReports(TestCase):
         self.mock_read_request(http_mocker, report)
 
     def get_expected_json_schema(self, report: str):
-        with open(str(pathlib.Path(__file__).parent.parent / "resource/json_schema" / f"{report}.json"), "r") as f:
+        with open(
+            str(
+                pathlib.Path(__file__).parent.parent
+                / "resource/json_schema"
+                / f"{report}.json"
+            ),
+            "r",
+        ) as f:
             return json.load(f)
 
     @HttpMocker()
@@ -60,8 +79,10 @@ class TestReports(TestCase):
 
     @HttpMocker()
     def test_read_than_transform_record_fields(self, http_mocker: HttpMocker):
-        for report, field_to_transform in [("report_1", "Eligibility_Rules"),
-                                           ("report_2", "Job_Family_Group_for_Job_Family")]:
+        for report, field_to_transform in [
+            ("report_1", "Eligibility_Rules"),
+            ("report_2", "Job_Family_Group_for_Job_Family"),
+        ]:
             self.mock_requests(http_mocker, report)
             output = read(SourceFalcon(), self.config(report), self.catalog(report))
 

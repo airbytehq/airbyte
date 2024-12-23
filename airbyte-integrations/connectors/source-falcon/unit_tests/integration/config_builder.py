@@ -25,8 +25,8 @@ class ConfigBuilder:
                 "username": "test_user",
                 "password": "test_password",
                 "report_ids": self._report_ids,
-                "auth_type": "RAAS"
-            }
+                "auth_type": "RAAS",
+            },
         }
 
         return self._config
@@ -38,8 +38,8 @@ class ConfigBuilder:
             "credentials": {
                 "access_token": self._access_token,
                 "start_date": "2024-05-01T00:00:00.000Z",
-                "auth_type": "REST"
-            }
+                "auth_type": "REST",
+            },
         }
 
         return self._config

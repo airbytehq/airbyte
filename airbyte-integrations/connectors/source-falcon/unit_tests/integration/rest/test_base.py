@@ -2,7 +2,7 @@
 
 import json
 from copy import deepcopy
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 from unittest import TestCase
 
 from airbyte_cdk.models import SyncMode
@@ -30,7 +30,11 @@ class TestBase(TestCase):
         return self.path
 
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
-        return CatalogBuilder().with_stream(name=self.stream_name, sync_mode=sync_mode).build()
+        return (
+            CatalogBuilder()
+            .with_stream(name=self.stream_name, sync_mode=sync_mode)
+            .build()
+        )
 
     def config(self):
         return ConfigBuilder().with_access_token("test access token").rest_build()
@@ -41,13 +45,20 @@ class TestBase(TestCase):
             HttpRequest(
                 url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100"
             ),
-            HttpResponse(body=json.dumps(find_template(f"json/{self.stream_name}", __file__)), status_code=200)
-
+            HttpResponse(
+                body=json.dumps(find_template(f"json/{self.stream_name}", __file__)),
+                status_code=200,
+            ),
         )
         output = read(SourceFalcon(), self.config(), self.catalog())
         assert len(output.records) == self.output_records_count
         # verify auth method
-        assert http_mocker._mocker._adapter._matchers[0].last_request.headers["Authorization"] == "Bearer test access token"
+        assert (
+            http_mocker._mocker._adapter._matchers[0].last_request.headers[
+                "Authorization"
+            ]
+            == "Bearer test access token"
+        )
 
     def create_range_of_records(self, start: int, end: int) -> List[Dict[str, Any]]:
         record = find_template(f"json/{self.stream_name}", __file__)["data"][0]
@@ -68,22 +79,34 @@ class TestBase(TestCase):
             HttpRequest(
                 url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100"
             ),
-            HttpResponse(body=json.dumps({"data": records_page_1, "total": total},), status_code=200)
-
+            HttpResponse(
+                body=json.dumps(
+                    {"data": records_page_1, "total": total},
+                ),
+                status_code=200,
+            ),
         )
         http_mocker.get(
             HttpRequest(
                 url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100&offset=100"
             ),
-            HttpResponse(body=json.dumps({"data": records_page_2, "total": total},), status_code=200)
-
+            HttpResponse(
+                body=json.dumps(
+                    {"data": records_page_2, "total": total},
+                ),
+                status_code=200,
+            ),
         )
         http_mocker.get(
             HttpRequest(
                 url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100&offset=200"
             ),
-            HttpResponse(body=json.dumps({"data": records_page_3, "total": total},), status_code=200)
-
+            HttpResponse(
+                body=json.dumps(
+                    {"data": records_page_3, "total": total},
+                ),
+                status_code=200,
+            ),
         )
 
         output = read(SourceFalcon(), self.config(), self.catalog())

@@ -15,7 +15,10 @@ from source_falcon.schema_helper import ReportXMLSchemaHelper
             "report_1.xml",
             {
                 "Eligibility_Rules": {
-                    "items": {"properties": {"ID": {"type": ["string", "null"]}}, "type": ["object", "null"]},
+                    "items": {
+                        "properties": {"ID": {"type": ["string", "null"]}},
+                        "type": ["object", "null"],
+                    },
                     "type": ["array", "null"],
                 },
                 "Stock_Plan": {"type": ["string", "null"]},
@@ -27,11 +30,19 @@ from source_falcon.schema_helper import ReportXMLSchemaHelper
             "report_2.xml",
             {
                 "Job_Family_Group_for_Job_Family": {
-                    "items": {"properties": {"ID": {"type": ["string", "null"]}}, "type": ["object", "null"]},
+                    "items": {
+                        "properties": {"ID": {"type": ["string", "null"]}},
+                        "type": ["object", "null"],
+                    },
                     "type": ["array", "null"],
                 },
                 "Job_Family_Groups_for_Job_Profile_group": {
-                    "items": {"properties": {"Job_Family_Group_Ref_ID": {"type": ["string", "null"]}}, "type": ["object", "null"]},
+                    "items": {
+                        "properties": {
+                            "Job_Family_Group_Ref_ID": {"type": ["string", "null"]}
+                        },
+                        "type": ["object", "null"],
+                    },
                     "type": ["array", "null"],
                 },
                 "Job_Family_Ref_ID": {"type": ["string", "null"]},
@@ -45,7 +56,10 @@ from source_falcon.schema_helper import ReportXMLSchemaHelper
     ],
 )
 def test_get_properties(xml_file, expected_output):
-    with open(str(pathlib.Path(__file__).parent / "resource/http/response/xml" / xml_file), "r") as f:
+    with open(
+        str(pathlib.Path(__file__).parent / "resource/http/response/xml" / xml_file),
+        "r",
+    ) as f:
         xml_tree = ElementTree.fromstring(f.read())
 
     with patch.object(ReportXMLSchemaHelper, "_get_xml_tree", return_value=xml_tree):
@@ -104,7 +118,10 @@ def test_xml_schema_url(config, report_id, expected_output):
     ],
 )
 def test_fields_transform_string_array(xml_file, expected_output):
-    with open(str(pathlib.Path(__file__).parent / "resource/http/response/xml" / xml_file), "r") as f:
+    with open(
+        str(pathlib.Path(__file__).parent / "resource/http/response/xml" / xml_file),
+        "r",
+    ) as f:
         xml_tree = ElementTree.fromstring(f.read())
 
     with patch.object(ReportXMLSchemaHelper, "_get_xml_tree", return_value=xml_tree):

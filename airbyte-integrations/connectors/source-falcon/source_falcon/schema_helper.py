@@ -44,7 +44,9 @@ class ReportXMLSchemaHelper:
 
     def _extract_namespace(self):
         # tag {http://www.w3.org/2001/XMLSchema}schema
-        namespace = self.root.tag[self.root.tag.index("{") + 1 : self.root.tag.index("}")]
+        namespace = self.root.tag[
+            self.root.tag.index("{") + 1 : self.root.tag.index("}")
+        ]
         return {"xsd": namespace}
 
     def _get_xml_tree(self) -> ElementTree:
@@ -63,7 +65,9 @@ class ReportXMLSchemaHelper:
             )
         return ElementTree.fromstring(xml_data.content)
 
-    def _find_elements_types(self, complex_type: str, default_name: str = "") -> Dict[str, Optional[Any]]:
+    def _find_elements_types(
+        self, complex_type: str, default_name: str = ""
+    ) -> Dict[str, Optional[Any]]:
         """
         Searches for type of field name in sequence in complexType element.
         If sequence not found uses basic extension in simpleContent element and uses default name for field name.
@@ -73,7 +77,9 @@ class ReportXMLSchemaHelper:
 
         types = {}
 
-        complex_type_entry = self.root.find(f'.//xsd:complexType[@name="{complex_type}"]', self.namespace)
+        complex_type_entry = self.root.find(
+            f'.//xsd:complexType[@name="{complex_type}"]', self.namespace
+        )
         if complex_type_entry is None:
             raise ValueError(f"No {complex_type} element found")
 
@@ -82,21 +88,35 @@ class ReportXMLSchemaHelper:
         if sequence is not None:
             for element in sequence.findall(".//xsd:element", self.namespace):
                 # indicates array of items. when element ID we should use element type instead of array
-                if element.get("maxOccurs") == "unbounded" and element.get("name") != "ID":
-                    array_item_type = self._find_elements_types(element.get("type").replace("wd:", ""), element.get("name"))
+                if (
+                    element.get("maxOccurs") == "unbounded"
+                    and element.get("name") != "ID"
+                ):
+                    array_item_type = self._find_elements_types(
+                        element.get("type").replace("wd:", ""), element.get("name")
+                    )
                     # adding to properties instead of types as type is already known
-                    self._PROPERTIES[element.get("name")] = {"type": "array", "items": array_item_type}
+                    self._PROPERTIES[element.get("name")] = {
+                        "type": "array",
+                        "items": array_item_type,
+                    }
                 else:
                     types[element.get("name")] = element.get("type")
         else:
             # if sequence element not found we should search for type in simpleContent/extension
-            extension = complex_type_entry.find(".//xsd:simpleContent", self.namespace).find(".//xsd:extension", self.namespace).get("base")
+            extension = (
+                complex_type_entry.find(".//xsd:simpleContent", self.namespace)
+                .find(".//xsd:extension", self.namespace)
+                .get("base")
+            )
             # if simpleContent/extension is None use default string type
             types[default_name] = extension or self.default_string_type
 
         return types
 
-    def _validate_types(self, types: Dict[str, Optional[Any]]) -> Dict[str, Optional[Any]]:
+    def _validate_types(
+        self, types: Dict[str, Optional[Any]]
+    ) -> Dict[str, Optional[Any]]:
         """
         Adds known types to _PROPERTIES. deletes it from types .
         Returns updated types dict
@@ -120,12 +140,16 @@ class ReportXMLSchemaHelper:
         """
 
         for field, field_types in types.items():
-            field_types = self._find_elements_types(field_types.replace("wd:", ""), default_name)
+            field_types = self._find_elements_types(
+                field_types.replace("wd:", ""), default_name
+            )
             field_types = self._validate_types(field_types)
             if field_types != {}:
                 self.find_element_types(field_types, field)
 
-    def _create_array_type(self, field_type: Dict[str, Optional[Any]]) -> Dict[str, Optional[Any]]:
+    def _create_array_type(
+        self, field_type: Dict[str, Optional[Any]]
+    ) -> Dict[str, Optional[Any]]:
         """
         Creates json schema notation for array types.
         """
@@ -133,7 +157,10 @@ class ReportXMLSchemaHelper:
         final_type = [field_type["type"], "null"]
         items = field_type["items"]
         k, v = list(items.keys())[0], list(items.values())[0]
-        final_items = {"type": ["object", "null"], "properties": {k: {"type": [TYPE_MAP.get(v, "string"), "null"]}}}
+        final_items = {
+            "type": ["object", "null"],
+            "properties": {k: {"type": [TYPE_MAP.get(v, "string"), "null"]}},
+        }
 
         return {"type": final_type, "items": final_items}
 
@@ -149,7 +176,9 @@ class ReportXMLSchemaHelper:
                 if f_type["type"] == "array":
                     final_properties[field] = self._create_array_type(f_type)
             else:
-                final_properties[field] = {"type": [TYPE_MAP.get(f_type, "string"), "null"]}
+                final_properties[field] = {
+                    "type": [TYPE_MAP.get(f_type, "string"), "null"]
+                }
 
         return final_properties
 

@@ -4,19 +4,27 @@ import pathlib
 import unittest
 from unittest.mock import MagicMock
 
-from source_falcon import SourceFalcon
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
+from source_falcon import SourceFalcon
+
 
 def mock_schema_request(http_mocker: HttpMocker, report: str):
-    with open(str(pathlib.Path(__file__).parent / "resource/http/response/xml" / f"{report}.xml"), "r") as f:
+    with open(
+        str(
+            pathlib.Path(__file__).parent
+            / "resource/http/response/xml"
+            / f"{report}.xml"
+        ),
+        "r",
+    ) as f:
         xml_schema_content = f.read()
 
     http_mocker.get(
         HttpRequest(
             url=f"https://test_host/ccx/service/customreport2/test_tenant/test/{report}?xsd"
         ),
-        HttpResponse(body=xml_schema_content, status_code=200)
+        HttpResponse(body=xml_schema_content, status_code=200),
     )
 
 
@@ -28,8 +36,8 @@ class TestSourceFalcon(unittest.TestCase):
             "username": "test_user",
             "password": "test_password",
             "report_ids": ["test/report_1"],
-            "auth_type": "RAAS"
-        }
+            "auth_type": "RAAS",
+        },
     }
 
     rest_config = {
@@ -38,8 +46,8 @@ class TestSourceFalcon(unittest.TestCase):
         "credentials": {
             "access_token": "test_access_token",
             "start_date": "2024-05-01T00:00:00.000Z",
-            "auth_type": "REST"
-        }
+            "auth_type": "REST",
+        },
     }
 
     @HttpMocker()
@@ -66,8 +74,8 @@ class TestSourceFalcon(unittest.TestCase):
             ),
             HttpResponse(
                 body=json.dumps(json.dumps(find_template("json/report_1", __file__))),
-                status_code=200
-            )
+                status_code=200,
+            ),
         )
 
         assert source.check_connection(MagicMock(), self.raas_config) == (True, None)
@@ -82,8 +90,8 @@ class TestSourceFalcon(unittest.TestCase):
             ),
             HttpResponse(
                 body=json.dumps(json.dumps(find_template("json/workers", __file__))),
-                status_code=200
-            )
+                status_code=200,
+            ),
         )
 
         assert source.check_connection(MagicMock(), self.rest_config) == (True, None)
