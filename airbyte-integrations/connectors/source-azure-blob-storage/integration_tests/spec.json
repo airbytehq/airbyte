@@ -436,26 +436,26 @@
                 "enum": ["client_credentials"],
                 "type": "string"
               },
-              "tenant_id": {
+              "app_tenant_id": {
                 "title": "Tenant ID",
                 "description": "Tenant ID of the Microsoft Azure Application",
                 "airbyte_secret": false,
                 "type": "string"
               },
-              "client_id": {
+              "app_client_id": {
                 "title": "Client ID",
                 "description": "Client ID of your Microsoft developer application",
                 "airbyte_secret": false,
                 "type": "string"
               },
-              "client_secret": {
+              "app_client_secret": {
                 "title": "Client Secret",
                 "description": "Client Secret of your Microsoft developer application",
                 "airbyte_secret": true,
                 "type": "string"
               }
             },
-            "required": ["tenant_id", "client_id", "client_secret", "auth_type"]
+            "required": ["app_tenant_id", "app_client_id", "app_client_secret", "auth_type"]
           }
         ]
       },

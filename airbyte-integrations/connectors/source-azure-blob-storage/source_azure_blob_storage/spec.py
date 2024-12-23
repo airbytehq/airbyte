@@ -42,13 +42,13 @@ class ClientCredentials(BaseModel):
         discriminator = "auth_type"
 
     auth_type: Literal["client_credentials"] = Field("client_credentials", const=True)
-    tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft Azure Application", airbyte_secret=False)
-    client_id: str = Field(
+    app_tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft Azure Application", airbyte_secret=False)
+    app_client_id: str = Field(
         title="Client ID",
         description="Client ID of your Microsoft developer application",
         airbyte_secret=False,
     )
-    client_secret: str = Field(
+    app_client_secret: str = Field(
         title="Client Secret",
         description="Client Secret of your Microsoft developer application",
         airbyte_secret=True,

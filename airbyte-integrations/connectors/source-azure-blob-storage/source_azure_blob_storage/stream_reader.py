@@ -115,9 +115,9 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
                 )
             elif self.config.credentials.auth_type == "client_credentials":
                 self._credentials = AzureClientCredentialsAuthenticator(
-                    tenant_id=self.config.credentials.tenant_id,
-                    client_id=self.config.credentials.client_id,
-                    client_secret=self.config.credentials.client_secret,
+                    tenant_id=self.config.credentials.app_tenant_id,
+                    client_id=self.config.credentials.app_client_id,
+                    client_secret=self.config.credentials.app_client_secret,
                 )
 
         return self._credentials
