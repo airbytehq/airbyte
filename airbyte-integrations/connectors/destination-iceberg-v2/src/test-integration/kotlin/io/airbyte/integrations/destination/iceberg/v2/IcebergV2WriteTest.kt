@@ -80,6 +80,12 @@ abstract class IcebergV2WriteTest(
     override fun testDedupChangeCursor() {
         super.testDedupChangeCursor()
     }
+
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11221")
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
+    }
 }
 
 class IcebergGlueWriteTest :
