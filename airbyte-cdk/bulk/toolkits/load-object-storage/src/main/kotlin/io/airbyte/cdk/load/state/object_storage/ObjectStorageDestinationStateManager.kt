@@ -19,6 +19,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.nio.file.Paths
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
@@ -83,9 +84,8 @@ class ObjectStorageDestinationState(
         val partNumber: Long,
     )
 
-    @get:JsonIgnore
-    val generations: Sequence<Generation>
-        get() =
+    suspend fun getGenerations(): Sequence<Generation> =
+        accessLock.withLock {
             generationMap.entries
                 .asSequence()
                 .map { (state, gens) ->
@@ -99,6 +99,30 @@ class ObjectStorageDestinationState(
                     }
                 }
                 .flatten()
+        }
+
+    suspend fun getNextPartNumber(): Long =
+        getGenerations().flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
+
+    /** Returns generationId -> objectAndPart for all staged objects that should be kept. */
+    suspend fun getStagedObjectsToFinalize(
+        minimumGenerationId: Long
+    ): Sequence<Pair<Long, ObjectAndPart>> =
+        getGenerations()
+            .filter { it.isStaging && it.generationId >= minimumGenerationId }
+            .flatMap { it.objects.map { obj -> it.generationId to obj } }
+
+    /**
+     * Returns generationId -> objectAndPart for all objects (staged and unstaged) that should be
+     * cleaned up.
+     */
+    suspend fun getObjectsToDelete(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> {
+        val (toKeep, toDrop) = getGenerations().partition { it.generationId >= minimumGenerationId }
+        val keepKeys = toKeep.flatMap { it.objects.map { obj -> obj.key } }.toSet()
+        return toDrop.asSequence().flatMap {
+            it.objects.filter { obj -> obj.key !in keepKeys }.map { obj -> it.generationId to obj }
+        }
+    }
 }
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
@@ -107,13 +131,14 @@ class ObjectStorageStagingPersister(
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     private val log = KotlinLogging.logger {}
+    private val fallbackPersister = ObjectStorageFallbackPersister(client, pathFactory)
 
     companion object {
         const val STATE_FILENAME = "__airbyte_state.json"
     }
 
     private fun keyFor(stream: DestinationStream): String =
-        pathFactory.getStagingDirectory(stream).resolve(STATE_FILENAME).toString()
+        Paths.get(pathFactory.getStagingDirectory(stream), STATE_FILENAME).toString()
 
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
         val key = keyFor(stream)
@@ -123,8 +148,8 @@ class ObjectStorageStagingPersister(
                 inputStream.readIntoClass(ObjectStorageDestinationState::class.java)
             }
         } catch (e: Exception) {
-            log.info { "No destination state found at $key: $e" }
-            return ObjectStorageDestinationState()
+            log.info { "No destination state found at $key: $e; falling back to metadata search" }
+            return fallbackPersister.load(stream)
         }
     }
 
@@ -138,16 +163,14 @@ class ObjectStorageFallbackPersister(
     private val client: ObjectStorageClient<*>,
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
+    private val log = KotlinLogging.logger {}
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
         val matcher = pathFactory.getPathMatcher(stream)
-        val pathConstant = pathFactory.getFinalDirectory(stream, streamConstant = true).toString()
-        val firstVariableIndex = pathConstant.indexOfFirst { it == '$' }
         val longestUnambiguous =
-            if (firstVariableIndex > 0) {
-                pathConstant.substring(0, firstVariableIndex)
-            } else {
-                pathConstant
-            }
+            pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
+        log.info {
+            "Searching path $longestUnambiguous (matching ${matcher.regex}) for destination state metadata"
+        }
         client
             .list(longestUnambiguous)
             .mapNotNull { matcher.match(it.key) }
@@ -163,6 +186,10 @@ class ObjectStorageFallbackPersister(
             }
             .toMutableMap()
             .let {
+                val generationSizes = it.map { gen -> gen.key to gen.value.size }
+                log.info {
+                    "Inferred state for generations with size: $generationSizes (minimum=${stream.minimumGenerationId}; current=${stream.generationId})"
+                }
                 return ObjectStorageDestinationState(
                     mutableMapOf(ObjectStorageDestinationState.State.FINALIZED to it)
                 )

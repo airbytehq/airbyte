@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
@@ -41,7 +42,15 @@ class RecordDiffer(
      * files).
      */
     val nullEqualsUnset: Boolean = false,
+    /**
+     * Most tests should require the destination to contain an exact list of records. However, some
+     * tests expect a record to be present, but may also expect other unspecified records to exist.
+     * Those tests should set this parameter to true.
+     */
+    val allowUnexpectedRecord: Boolean = false,
 ) {
+    private val valueComparator = getValueComparator(nullEqualsUnset)
+
     private fun extract(data: Map<String, AirbyteValue>, path: List<String>): AirbyteValue {
         return when (path.size) {
             0 -> throw IllegalArgumentException("Empty path")
@@ -81,7 +90,7 @@ class RecordDiffer(
             )
         }
 
-        comparePks(pk1, pk2)
+        comparePks(pk1, pk2, nullEqualsUnset)
     }
 
     /**
@@ -120,8 +129,8 @@ class RecordDiffer(
             expectedRecordIndex < expectedRecordsSorted.size &&
                 actualRecordIndex < actualRecordsSorted.size
         ) {
-            val expectedRecord = expectedRecords[expectedRecordIndex]
-            val actualRecord = actualRecords[actualRecordIndex]
+            val expectedRecord = expectedRecordsSorted[expectedRecordIndex]
+            val actualRecord = actualRecordsSorted[actualRecordIndex]
             val compare = everythingComparator.compare(expectedRecord, actualRecord)
             if (compare == 0) {
                 // These records are the same underlying record
@@ -133,8 +142,10 @@ class RecordDiffer(
                 matches.add(MatchingRecords(expectedRecord, actualRecord = null))
                 expectedRecordIndex++
             } else {
-                // There's an extra actual record
-                matches.add(MatchingRecords(expectedRecord = null, actualRecord))
+                if (!allowUnexpectedRecord) {
+                    // There's an extra actual record
+                    matches.add(MatchingRecords(expectedRecord = null, actualRecord))
+                }
                 actualRecordIndex++
             }
         }
@@ -144,9 +155,13 @@ class RecordDiffer(
             matches.add(MatchingRecords(expectedRecords[expectedRecordIndex], actualRecord = null))
             expectedRecordIndex++
         }
-        while (actualRecordIndex < actualRecords.size) {
-            matches.add(MatchingRecords(expectedRecord = null, actualRecords[actualRecordIndex]))
-            actualRecordIndex++
+        if (!allowUnexpectedRecord) {
+            while (actualRecordIndex < actualRecords.size) {
+                matches.add(
+                    MatchingRecords(expectedRecord = null, actualRecords[actualRecordIndex])
+                )
+                actualRecordIndex++
+            }
         }
 
         // We've paired up all the records, now find just the ones that are wrong.
@@ -264,30 +279,39 @@ class RecordDiffer(
     }
 
     companion object {
-        val valueComparator: Comparator<AirbyteValue> =
-            Comparator.nullsFirst { v1, v2 -> compare(v1!!, v2!!) }
+        fun getValueComparator(nullEqualsUnset: Boolean): Comparator<AirbyteValue> =
+            Comparator.nullsFirst { v1, v2 -> compare(v1!!, v2!!, nullEqualsUnset) }
 
         /**
          * Compare each PK field in order, until we find a field that the two records differ in. If
          * all the fields are equal, then these two records have the same PK.
          */
-        fun comparePks(pk1: List<AirbyteValue?>, pk2: List<AirbyteValue?>) =
-            (pk1.zip(pk2)
-                .map { (pk1Field, pk2Field) -> valueComparator.compare(pk1Field, pk2Field) }
+        fun comparePks(
+            pk1: List<AirbyteValue?>,
+            pk2: List<AirbyteValue?>,
+            nullEqualsUnset: Boolean,
+        ): Int {
+            return (pk1.zip(pk2)
+                .map { (pk1Field, pk2Field) ->
+                    getValueComparator(nullEqualsUnset).compare(pk1Field, pk2Field)
+                }
                 .firstOrNull { it != 0 }
                 ?: 0)
+        }
 
-        private fun compare(v1: AirbyteValue, v2: AirbyteValue): Int {
+        private fun compare(v1: AirbyteValue, v2: AirbyteValue, nullEqualsUnset: Boolean): Int {
             if (v1 is UnknownValue) {
                 return compare(
                     JsonToAirbyteValue().fromJson(v1.value),
                     v2,
+                    nullEqualsUnset,
                 )
             }
             if (v2 is UnknownValue) {
                 return compare(
                     v1,
                     JsonToAirbyteValue().fromJson(v2.value),
+                    nullEqualsUnset,
                 )
             }
 
@@ -334,6 +358,37 @@ class RecordDiffer(
                             } catch (e: Exception) {
                                 v1.value.compareTo((v2 as TimestampValue).value)
                             }
+                        }
+                    }
+                    is ObjectValue -> {
+                        fun objComp(a: ObjectValue, b: ObjectValue): Int {
+                            // objects aren't really comparable, so just do an equality check
+                            return if (a == b) 0 else 1
+                        }
+                        if (nullEqualsUnset) {
+                            // Walk through the airbyte value, removing any NullValue entries
+                            // from ObjectValues.
+                            fun removeObjectNullValues(value: AirbyteValue): AirbyteValue =
+                                when (value) {
+                                    is ObjectValue ->
+                                        ObjectValue(
+                                            value.values
+                                                .filterTo(linkedMapOf()) { (_, v) ->
+                                                    v !is NullValue
+                                                }
+                                                .mapValuesTo(linkedMapOf()) { (_, v) ->
+                                                    removeObjectNullValues(v)
+                                                }
+                                        )
+                                    is ArrayValue ->
+                                        ArrayValue(value.values.map { removeObjectNullValues(it) })
+                                    else -> value
+                                }
+                            val filteredV1 = removeObjectNullValues(v1) as ObjectValue
+                            val filteredV2 = removeObjectNullValues(v2) as ObjectValue
+                            objComp(filteredV1, filteredV2)
+                        } else {
+                            objComp(v1, v2 as ObjectValue)
                         }
                     }
                     // otherwise, just be a terrible person.

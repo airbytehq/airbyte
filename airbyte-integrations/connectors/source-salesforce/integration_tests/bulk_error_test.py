@@ -10,10 +10,12 @@ from typing import Any, Mapping
 
 import pytest
 import requests_mock
+from source_salesforce.source import SourceSalesforce
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from source_salesforce.source import SourceSalesforce
+
 
 HERE = Path(__file__).parent
 _ANY_CATALOG = CatalogBuilder().build()

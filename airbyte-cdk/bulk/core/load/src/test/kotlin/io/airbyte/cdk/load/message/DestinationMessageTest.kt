@@ -23,6 +23,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -47,7 +48,7 @@ class DestinationMessageTest {
 
     private fun convert(
         factory: DestinationMessageFactory,
-        message: AirbyteMessage
+        message: AirbyteMessage,
     ): DestinationMessage {
         val serialized = message.serializeToString()
         return factory.fromAirbyteMessage(
@@ -223,8 +224,17 @@ class DestinationMessageTest {
                 .map { Arguments.of(it) }
 
         @JvmStatic
-        fun roundTrippableFileMessages(): List<Arguments> =
-            listOf(
+        fun roundTrippableFileMessages(): List<Arguments> {
+            val file =
+                mapOf(
+                    "file_url" to "file://foo/bar",
+                    "file_relative_path" to "foo/bar",
+                    "source_file_url" to "file://source/foo/bar",
+                    "modified" to 123L,
+                    "bytes" to 9001L,
+                )
+
+            return listOf(
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.RECORD)
                         .withRecord(
@@ -232,11 +242,7 @@ class DestinationMessageTest {
                                 .withStream("name")
                                 .withNamespace("namespace")
                                 .withEmittedAt(1234)
-                                .withAdditionalProperty("file_url", "file://foo/bar")
-                                .withAdditionalProperty("bytes", 9001L)
-                                .withAdditionalProperty("file_relative_path", "foo/bar")
-                                .withAdditionalProperty("modified", 123L)
-                                .withAdditionalProperty("source_file_url", "file://source/foo/bar")
+                                .withAdditionalProperty("file", file)
                         ),
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.TRACE)
@@ -276,5 +282,23 @@ class DestinationMessageTest {
                         ),
                 )
                 .map { Arguments.of(it) }
+        }
+    }
+
+    @Test
+    fun testNullStreamState() {
+        val inputMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(
+                            AirbyteStreamState().withStreamDescriptor(descriptor.asProtocolObject())
+                        )
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                )
+
+        assertDoesNotThrow { convert(factory(false), inputMessage) as StreamCheckpoint }
     }
 }

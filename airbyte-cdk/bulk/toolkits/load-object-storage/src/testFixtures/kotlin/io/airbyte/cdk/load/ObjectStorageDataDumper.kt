@@ -29,9 +29,11 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.maybeUnflatten
 import io.airbyte.cdk.load.test.util.toOutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
+import java.io.BufferedReader
 import java.io.InputStream
 import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -46,15 +48,17 @@ class ObjectStorageDataDumper(
     private val formatConfig: ObjectStorageFormatConfiguration,
     private val compressionConfig: ObjectStorageCompressionConfiguration<*>? = null
 ) {
-    private val avroMapperPipeline = AvroMapperPipelineFactory().create(stream)
-    private val parquetMapperPipeline = ParquetMapperPipelineFactory().create(stream)
-
     fun dump(): List<OutputRecord> {
-        val prefix = pathFactory.getFinalDirectory(stream).toString()
+        // Note: this is implicitly a test of the `streamConstant` final directory
+        // and the path matcher, so a failure here might imply a bug in the metadata-based
+        // destination state loader, which lists by `prefix` and filters against the matcher.
+        val prefix = pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
+        val matcher = pathFactory.getPathMatcher(stream)
         return runBlocking {
             withContext(Dispatchers.IO) {
                 client
                     .list(prefix)
+                    .filter { matcher.match(it.key) != null }
                     .map { listedObject: RemoteObject<*> ->
                         client.get(listedObject.key) { objectData: InputStream ->
                             val decompressed =
@@ -69,6 +73,29 @@ class ObjectStorageDataDumper(
                     }
                     .toList()
                     .flatten()
+            }
+        }
+    }
+
+    fun dumpFile(): List<String> {
+        val prefix = pathFactory.getFinalDirectory(stream).toString()
+        return runBlocking {
+            withContext(Dispatchers.IO) {
+                client
+                    .list(prefix)
+                    .map { listedObject: RemoteObject<*> ->
+                        client.get(listedObject.key) { objectData: InputStream ->
+                            val decompressed =
+                                when (compressionConfig?.compressor) {
+                                    is GZIPProcessor -> GZIPInputStream(objectData)
+                                    is NoopProcessor,
+                                    null -> objectData
+                                    else -> error("Unsupported compressor")
+                                }
+                            BufferedReader(decompressed.reader()).readText()
+                        }
+                    }
+                    .toList()
             }
         }
     }
@@ -101,6 +128,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
+                val avroMapperPipeline = AvroMapperPipelineFactory().create(stream)
                 val finalSchema = avroMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
                 inputStream.toAvroReader(finalSchema.toAvroSchema(stream.descriptor)).use { reader
                     ->
@@ -115,6 +143,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is ParquetFormatConfiguration -> {
+                val parquetMapperPipeline = ParquetMapperPipelineFactory().create(stream)
                 val finalSchema = parquetMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
                 inputStream.toParquetReader(finalSchema.toAvroSchema(stream.descriptor)).use {
                     reader ->

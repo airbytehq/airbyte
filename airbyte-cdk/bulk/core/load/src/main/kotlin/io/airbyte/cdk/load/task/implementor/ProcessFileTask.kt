@@ -4,24 +4,25 @@
 
 package io.airbyte.cdk.load.task.implementor
 
+import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
-import io.airbyte.cdk.load.task.StreamLevel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface ProcessFileTask : StreamLevel, ImplementorScope
+interface ProcessFileTask : ImplementorScope
 
 class DefaultProcessFileTask(
-    override val streamDescriptor: DestinationStream.Descriptor,
+    private val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher,
     private val syncManager: SyncManager,
-    private val file: DestinationFile
+    private val file: DestinationFile,
+    private val index: Long,
 ) : ProcessFileTask {
     val log = KotlinLogging.logger {}
 
@@ -30,7 +31,7 @@ class DefaultProcessFileTask(
 
         val batch = streamLoader.processFile(file)
 
-        val wrapped = BatchEnvelope(batch)
+        val wrapped = BatchEnvelope(batch, Range.singleton(index), streamDescriptor)
         taskLauncher.handleNewBatch(streamDescriptor, wrapped)
     }
 }
@@ -40,6 +41,7 @@ interface ProcessFileTaskFactory {
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream.Descriptor,
         file: DestinationFile,
+        index: Long,
     ): ProcessFileTask
 }
 
@@ -52,7 +54,8 @@ class DefaultFileRecordsTaskFactory(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream.Descriptor,
         file: DestinationFile,
+        index: Long,
     ): ProcessFileTask {
-        return DefaultProcessFileTask(stream, taskLauncher, syncManager, file)
+        return DefaultProcessFileTask(stream, taskLauncher, syncManager, file, index)
     }
 }

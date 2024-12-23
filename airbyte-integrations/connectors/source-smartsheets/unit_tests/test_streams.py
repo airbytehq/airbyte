@@ -5,8 +5,9 @@
 import datetime
 from unittest.mock import Mock
 
-from airbyte_cdk.models import SyncMode
 from source_smartsheets.streams import SmartsheetStream
+
+from airbyte_cdk.models import SyncMode
 
 
 def test_state_saved_after_each_record(config, get_sheet_mocker):

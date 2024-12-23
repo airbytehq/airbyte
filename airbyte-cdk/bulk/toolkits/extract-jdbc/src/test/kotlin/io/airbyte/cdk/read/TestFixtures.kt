@@ -93,7 +93,6 @@ object TestFixtures {
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
             ConcurrencyResource(configuration),
-            NoOpGlobalLockResource()
         )
     }
 
@@ -160,7 +159,11 @@ object TestFixtures {
             return object : SelectQuerier.Result {
                 val wrapped: Iterator<ObjectNode> = mockedQuery.results.iterator()
                 override fun hasNext(): Boolean = wrapped.hasNext()
-                override fun next(): ObjectNode = wrapped.next()
+                override fun next(): SelectQuerier.ResultRow =
+                    object : SelectQuerier.ResultRow {
+                        override val data: ObjectNode = wrapped.next()
+                        override val changes: Map<Field, FieldValueChange> = emptyMap()
+                    }
                 override fun close() {}
             }
         }
@@ -190,6 +193,9 @@ object TestFixtures {
     object MockStateQuerier : StateQuerier {
         override val feeds: List<Feed> = listOf()
         override fun current(feed: Feed): OpaqueStateValue? = null
+        override fun resetFeedStates() {
+            // no-op
+        }
     }
 
     object MockMetaFieldDecorator : MetaFieldDecorator {
@@ -212,6 +218,9 @@ object TestFixtures {
                 object : StateQuerier {
                     override val feeds: List<Feed> = listOf(this@bootstrap)
                     override fun current(feed: Feed): OpaqueStateValue? = opaqueStateValue
+                    override fun resetFeedStates() {
+                        // no-op
+                    }
                 },
             stream = this
         )

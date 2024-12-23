@@ -56,6 +56,9 @@ This CLI is currently running nightly in GitHub Actions. The workflow can be fou
 
 ## Changelog
 
+### 0.3.5
+Fix permissions issue when installing `pylint` in connector container.
+
 ### 0.3.4
 Update `dagger` to `0.13.3`.
 

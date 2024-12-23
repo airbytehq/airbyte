@@ -7,12 +7,13 @@ from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+from requests import HTTPError
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 from airbyte_protocol.models import ConnectorSpecification
-from requests import HTTPError
 from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.streams import (
@@ -73,6 +74,7 @@ from source_amazon_seller_partner.streams import (
 )
 from source_amazon_seller_partner.utils import AmazonConfigException
 
+
 # given the retention period: 730
 DEFAULT_RETENTION_PERIOD_IN_DAYS = 730
 
@@ -107,7 +109,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "authenticator": auth,
             "replication_start_date": start_date,
             "marketplace_id": marketplace_id,
-            "period_in_days": config.get("period_in_days", 30),
+            "period_in_days": config.get("period_in_days", 365),
             "replication_end_date": end_date,
         }
         return stream_kwargs
