@@ -59,6 +59,14 @@ class AzureClientCredentialsAuthenticator(Oauth2Authenticator):
 
         return payload
 
+    def get_token(self, *args, **kwargs) -> AccessToken:
+        """Parent class handles Oauth Refresh token logic.
+        """
+        return AccessToken(
+            token=self.get_access_token(), 
+            expires_on=int(self.get_token_expiry_date().timestamp())
+        )
+
 class AzureOauth2Authenticator(Oauth2Authenticator):
     """
     Authenticator for Azure Blob Storage SDK to align with azure.core.credentials.TokenCredential protocol
