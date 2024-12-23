@@ -169,6 +169,7 @@ class Case(IncrementalStream):
         self._cursor_value = parse_datetime_with_microseconds(start_date)
         self.schema = schema
         self.last_record = None
+        self.seen_ids = set()
 
     def get_json_schema(self):
         return self.schema
@@ -216,6 +217,9 @@ class Case(IncrementalStream):
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
+            if record["id"] in self.seen_ids:
+                continue
+            self.seen_ids.add(record["id"])
             self.last_record = record
             if any(f in CommcareStream.forms for f in record["xform_ids"]):
                 self._cursor_value = parse_datetime_with_microseconds(record[self.cursor_field])
