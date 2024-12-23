@@ -35,6 +35,24 @@ class Oauth2(BaseModel):
         airbyte_secret=True,
     )
 
+class ClientCredentials(BaseModel):
+    class Config(OneOfOptionConfig):
+        title = "Authenticate via Client Credentials"
+        discriminator = "auth_type"
+
+    auth_type: Literal["client_credentials"] = Field("client_credentials", const=True)
+    tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft Azure Application", airbyte_secret=False)
+    client_id: str = Field(
+        title="Client ID",
+        description="Client ID of your Microsoft developer application",
+        airbyte_secret=False,
+    )
+    client_secret: str = Field(
+        title="Client Secret",
+        description="Client Secret of your Microsoft developer application",
+        airbyte_secret=True,
+    )
+
 
 class StorageAccountKey(BaseModel):
     class Config(OneOfOptionConfig):
@@ -61,7 +79,7 @@ class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl("https://docs.airbyte.com/integrations/sources/azure-blob-storage", scheme="https")
 
-    credentials: Union[Oauth2, StorageAccountKey] = Field(
+    credentials: Union[Oauth2, ClientCredentials, StorageAccountKey] = Field(
         title="Authentication",
         description="Credentials for connecting to the Azure Blob Storage",
         discriminator="auth_type",

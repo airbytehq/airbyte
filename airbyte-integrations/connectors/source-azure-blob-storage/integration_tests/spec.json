@@ -438,7 +438,7 @@
               },
               "tenant_id": {
                 "title": "Tenant ID",
-                "description": "Tenant ID of the Microsoft Azure Application user",
+                "description": "Tenant ID of the Microsoft Azure Application",
                 "airbyte_secret": false,
                 "type": "string"
               },

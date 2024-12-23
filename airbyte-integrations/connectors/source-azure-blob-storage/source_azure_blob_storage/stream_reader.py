@@ -6,7 +6,7 @@ from io import IOBase
 from typing import Iterable, List, Optional, Union, Mapping, Any, MutableMapping
 
 import pytz
-from azure.core.credentials import AccessToken
+from azure.core.credentials import AccessToken, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from smart_open import open
@@ -19,7 +19,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import
 
 from .spec import SourceAzureBlobStorageSpec
 
-class AzureClientCredentialsAuthenticator(Oauth2Authenticator):
+class AzureClientCredentialsAuthenticator(Oauth2Authenticator, TokenCredential):
     def __init__(
             self,
             tenant_id: str,
@@ -67,7 +67,7 @@ class AzureClientCredentialsAuthenticator(Oauth2Authenticator):
             expires_on=int(self.get_token_expiry_date().timestamp())
         )
 
-class AzureOauth2Authenticator(Oauth2Authenticator):
+class AzureOauth2Authenticator(Oauth2Authenticator, TokenCredential):
     """
     Authenticator for Azure Blob Storage SDK to align with azure.core.credentials.TokenCredential protocol
     """
