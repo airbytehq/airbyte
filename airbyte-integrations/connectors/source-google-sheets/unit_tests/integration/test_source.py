@@ -5,8 +5,7 @@ import json
 from copy import deepcopy
 from typing import Any, Dict, Optional
 from unittest import TestCase
-from unittest.mock import patch  # patch("time.sleep")
-from unittest.mock import ANY, Mock
+from unittest.mock import ANY, patch
 
 import pytest
 from airbyte_cdk.models import (
@@ -16,11 +15,13 @@ from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteStream,
+    AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     FailureType,
     Level,
     Status,
+    StreamDescriptor,
     SyncMode,
     TraceType,
     Type,
@@ -30,7 +31,6 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteSt
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
-from airbyte_cdk.utils import AirbyteTracedException
 from source_google_sheets import SourceGoogleSheets
 
 from .entrypoint_wrapper_helper import check
@@ -45,13 +45,14 @@ _C_STREAM_NAME = "c_stream_name"
 
 
 _CONFIG = {
-  "spreadsheet_id": _SPREADSHEET_ID,
-  "credentials": oauth_credentials
+    "spreadsheet_id": _SPREADSHEET_ID,
+    "credentials": oauth_credentials,
+    "batch_size": 200
 }
 
 _SERVICE_CONFIG = {
-  "spreadsheet_id": _SPREADSHEET_ID,
-  "credentials": service_account_credentials
+    "spreadsheet_id": _SPREADSHEET_ID,
+    "credentials": service_account_credentials
 }
 
 
@@ -80,7 +81,7 @@ def _read(
     expecting_exception: bool = False,
 ) -> EntrypointOutput:
 
-    source = _source(catalog=catalog, config=config, state=state)
+    source = _source(catalog=catalog, config=config, state={})
     return read(source, config, catalog, state, expecting_exception)
 
 class GoogleSheetSourceTest(TestCase):
@@ -97,8 +98,8 @@ class GoogleSheetSourceTest(TestCase):
         return _discover(config, expecting_exception=expecting_exception)
 
     @staticmethod
-    def _read(config: Dict[str, Any], catalog, expecting_exception: bool = False) -> EntrypointOutput:
-        return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
+    def _read(config: Dict[str, Any], catalog: ConfiguredAirbyteCatalog, expecting_exception: bool = False) -> EntrypointOutput:
+        return _read(config, catalog, expecting_exception=expecting_exception)
 
     @staticmethod
     def authorize(http_mocker: HttpMocker):
@@ -509,7 +510,6 @@ class GoogleSheetSourceTest(TestCase):
         assert len(output.catalog.catalog.streams) == 0
 
     @HttpMocker()
-    @pytest.mark.skip("Pending to review")
     def test_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta")
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range")
@@ -517,11 +517,23 @@ class GoogleSheetSourceTest(TestCase):
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
-        output = read(self._source, self._config, configured_catalog)
+        output =  self._read(self._config, catalog=configured_catalog, expecting_exception=False)
         assert len(output.records) == 2
 
     @HttpMocker()
-    @pytest.mark.skip("Pending to review")
+    @pytest.mark.skip("Pending to do")
+    def test_when_read_then_return_records_with_name_conversion(self, http_mocker: HttpMocker) -> None:
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta")
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "names_conversion_range")
+        GoogleSheetSourceTest.get_stream_data(http_mocker, "read_records_range_with_dimensions")
+
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"_1_test": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        self._config["names_conversion"] = True
+        output =  self._read(self._config, catalog=configured_catalog, expecting_exception=False)
+        assert len(output.records) == 2
+
+    @HttpMocker()
     def test_when_read_multiple_streams_return_records(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "multiple_streams_schemas_meta", 200)
 
@@ -548,23 +560,36 @@ class GoogleSheetSourceTest(TestCase):
         )
         .build())
 
-        output = read(self._source, self._config, configured_catalog)
+        output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
         assert len(output.records) == 9
 
         assert output.state_messages[0].state.stream.stream_descriptor.name == _STREAM_NAME
         assert output.state_messages[1].state.stream.stream_descriptor.name == _B_STREAM_NAME
         assert output.state_messages[2].state.stream.stream_descriptor.name == _C_STREAM_NAME
 
-        airbyte_stream_statuses = [AirbyteStreamStatus.COMPLETE, AirbyteStreamStatus.RUNNING, AirbyteStreamStatus.STARTED]
-        for output_id in range(3):
-            assert output.state_messages[output_id].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
-            expected_status = airbyte_stream_statuses.pop()
-            assert output.trace_messages[output_id].trace.stream_status.status == expected_status
-            assert output.trace_messages[output_id + 3].trace.stream_status.status == expected_status
-            assert output.trace_messages[output_id + 6].trace.stream_status.status == expected_status
+        expected_messages = []
+        for current_stream in [_STREAM_NAME, _B_STREAM_NAME, _C_STREAM_NAME]:
+            for current_status in [AirbyteStreamStatus.COMPLETE, AirbyteStreamStatus.RUNNING, AirbyteStreamStatus.STARTED]:
+                stream_descriptor = StreamDescriptor(
+                    name=current_stream,
+                    namespace=None
+                )
+                stream_status = AirbyteStreamStatusTraceMessage(
+                    status= current_status,
+                    stream_descriptor=stream_descriptor
+                )
+                airbyte_trace_message = AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=ANY,
+                    stream_status= stream_status
+                )
+                airbyte_message = AirbyteMessage(type=Type.TRACE, trace=airbyte_trace_message)
+                expected_messages.append(airbyte_message)
+        assert len(output.trace_messages) == len(expected_messages)
+        for message in expected_messages:
+            assert message in output.trace_messages
 
     @HttpMocker()
-    @pytest.mark.skip("Pending to review")
     def test_when_read_then_status_and_state_messages_emitted(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta_2", 200)
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range_2", 200)
@@ -572,7 +597,7 @@ class GoogleSheetSourceTest(TestCase):
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
-        output = read(self._source, self._config, configured_catalog)
+        output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
         assert len(output.records) == 5
         assert output.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
         assert output.state_messages[0].state.stream.stream_descriptor.name == _STREAM_NAME
@@ -583,7 +608,6 @@ class GoogleSheetSourceTest(TestCase):
 
 
     @HttpMocker()
-    @pytest.mark.skip("Pending to review")
     def test_read_429_error(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
@@ -591,72 +615,80 @@ class GoogleSheetSourceTest(TestCase):
 
         configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
-        with patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 1):
-            output = read(self._source, self._config, configured_catalog)
+        with patch("time.sleep"):
+            output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
 
         expected_message = (
-            "Stopped syncing process due to rate limits. Rate limit has been reached. Please try later or request a higher quota for your account."
+            "Exception while syncing stream a_stream_name: Stopped syncing process due to rate limits. Rate limit has been reached. Please try later or request a higher quota for your account."
         )
-        assert output.errors[0].trace.error.message == expected_message
+        assert output.errors[0].trace.error.internal_message == expected_message
 
     @HttpMocker()
-    @pytest.mark.skip("Pending to review")
     def test_read_403_error(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
         GoogleSheetSourceTest.get_stream_data(http_mocker, "invalid_permissions", 403)
 
-        configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
-        output = read(self._source, self._config, configured_catalog)
+        # output = read(self._source, self._config, configured_catalog)
+        output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
 
         expected_message = (
-            f"Stopped syncing process. The authenticated Google Sheets user does not have permissions to view the spreadsheet with id {_SPREADSHEET_ID}. Please ensure the authenticated user has access to the Spreadsheet and reauthenticate. If the issue persists, contact support"
+            f"The authenticated Google Sheets user does not have permissions to view the spreadsheet with id {_SPREADSHEET_ID}. Please ensure the authenticated user has access to the Spreadsheet and reauthenticate. If the issue persists, contact support. The caller does not have right permissions."
         )
         assert output.errors[0].trace.error.message == expected_message
 
     @HttpMocker()
-    @pytest.mark.skip("Pending to review")
     def test_read_500_error(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
         GoogleSheetSourceTest.get_stream_data(http_mocker, "internal_server_error", 500)
 
-        configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
-        with patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 1):
-            output = read(self._source, self._config, configured_catalog)
+        with patch("time.sleep"):
+            output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
 
         expected_message = (
-            "Stopped syncing process. There was an issue with the Google Sheets API. This is usually a temporary issue from Google's side. Please try again. If this issue persists, contact support"
+            "Exception while syncing stream a_stream_name: There was an issue with the Google Sheets API. This is usually a temporary issue from Google's side. Please try again. If this issue persists, contact support"
         )
-        assert output.errors[0].trace.error.message == expected_message
+        assert output.errors[0].trace.error.internal_message == expected_message
 
     @HttpMocker()
-    @pytest.mark.skip("Pending to review")
     def test_read_empty_sheet(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range_empty", 200)
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
-        output = read(self._source, self._config, configured_catalog)
+        output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
         expected_message = (
-            f"Unexpected return result: Sheet {_STREAM_NAME} was expected to contain data on exactly 1 sheet. "
+            f"Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet."
         )
-        assert output.errors[0].trace.error.internal_message == expected_message
+        assert output.errors[0].trace.error.message == expected_message
 
     @HttpMocker()
-    @pytest.mark.skip("Pending to review")
     def test_read_expected_data_on_1_sheet(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range_with_unexpected_extra_sheet", 200)
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
-        output = read(self._source, self._config, configured_catalog)
+        output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
         expected_message = (
-            f"Unexpected return result: Sheet {_STREAM_NAME} was expected to contain data on exactly 1 sheet. "
+            f"Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet."
         )
-        assert output.errors[0].trace.error.internal_message == expected_message
+        assert output.errors[0].trace.error.message == expected_message
 
+    @pytest.mark.skip("Pending to do")
+    def test_name_conversion_for_schema_match(self):
+        pass
+
+    @pytest.mark.skip("Pending to do")
+    def test_for_columns_empty_does_right_match(self):
+        pass
+
+    @pytest.mark.skip("Pending to do")
+    def test_for_increase_batch_size_when_rate_limit(self):
+        pass
