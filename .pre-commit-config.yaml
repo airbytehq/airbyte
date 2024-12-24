@@ -53,7 +53,7 @@ repos:
 
       - id: spotless
         name: Format Java files with Spotless
-        entry: bash -c 'command -v mvn >/dev/null 2>&1 || { echo "Maven not installed, skipping spotless" >&2; exit 0; }; mvn -f spotless-maven-pom.xml spotless:apply'
+        entry: bash -c 'command -v mvn >/dev/null 2>&1 || { if [ -z "$CI" ]; then echo "Maven not installed, skipping spotless" >&2; exit 0; fi }; mvn -f spotless-maven-pom.xml spotless:apply'
         language: system
         files: \.(java|kt|gradle)$
         pass_filenames: false
