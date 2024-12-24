@@ -39,10 +39,7 @@
         "status": "LEARNING",
         "conversions": 12,
         "last_sig_edit_ts": 1734947501,
-        "attribution_windows": [
-            "7d_click",
-            "1d_view"
-        ]
+        "attribution_windows": ["7d_click", "1d_view"]
       }
     }
   ]
