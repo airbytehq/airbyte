@@ -9,7 +9,6 @@ import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
-import io.airbyte.cdk.jdbc.SSLCertificateUtils.DEFAULT_ROOT_FOLDER
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -234,9 +233,9 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
         val clientCertKeyStoreUrl: URL =
             buildKeyStore("client") {
                 SSLCertificateUtils.keyStoreFromClientCertificate(
-                    sslData.clientCertificate,
-                    sslData.clientKey,
-                    password
+                    certString=sslData.clientCertificate,
+                    keyString=sslData.clientKey,
+                    keyStorePassword=password
                 )
             }
         extraJdbcProperties[CLIENT_KEY_STORE_URL] = clientCertKeyStoreUrl.toString()
