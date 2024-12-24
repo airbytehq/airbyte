@@ -7,13 +7,13 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface FailSyncTask : ImplementorScope
+interface FailSyncTask : Task
 
 /**
  * FailSyncTask is a task that is executed only when the destination itself fails during a sync. If

@@ -48,8 +48,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class DestinationTaskLauncherUTest {
-    private val taskScopeProvider: TaskScopeProvider<WrappedTask<ScopedTask>> =
-        mockk(relaxed = true)
     private val catalog: DestinationCatalog = mockk(relaxed = true)
     private val syncManager: SyncManager = mockk(relaxed = true)
 
@@ -89,7 +87,6 @@ class DestinationTaskLauncherUTest {
         useFileTranfer: Boolean
     ): DefaultDestinationTaskLauncher {
         return DefaultDestinationTaskLauncher(
-            taskScopeProvider,
             catalog,
             config,
             syncManager,
@@ -118,8 +115,6 @@ class DestinationTaskLauncherUTest {
 
     @BeforeEach
     fun init() {
-        coEvery { taskScopeProvider.launch(any()) } returns Unit
-
         val stream = mockk<DestinationStream>(relaxed = true)
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         every { stream.descriptor } returns streamDescriptor
@@ -159,7 +154,6 @@ class DestinationTaskLauncherUTest {
         destinationTaskLauncher.handleTeardownComplete()
 
         coVerify { failStreamTaskFactory.make(any(), e, any()) }
-        coVerify { taskScopeProvider.launch(match { it.innerTask is FailStreamTask }) }
     }
 
     @Test
