@@ -28,7 +28,7 @@ abstract class S3V2WriteTest(
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
-    failOnUnknownTypes: Boolean = false,
+    nullUnknownTypes: Boolean = false,
     envVars: Map<String, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
@@ -47,7 +47,7 @@ abstract class S3V2WriteTest(
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
         envVars = envVars,
-        failOnUnknownTypes = failOnUnknownTypes,
+        nullUnknownTypes = nullUnknownTypes,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -154,11 +154,11 @@ class S3V2WriteTestAvroUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        failOnUnknownTypes = true,
+        nullUnknownTypes = true,
     ) {
     @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
     }
 }
 
@@ -171,7 +171,7 @@ class S3V2WriteTestAvroBzip2 :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        failOnUnknownTypes = true,
+        nullUnknownTypes = true,
     )
 
 class S3V2WriteTestParquetUncompressed :
@@ -183,7 +183,7 @@ class S3V2WriteTestParquetUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        failOnUnknownTypes = true,
+        nullUnknownTypes = true,
     )
 
 class S3V2WriteTestParquetSnappy :
@@ -195,7 +195,7 @@ class S3V2WriteTestParquetSnappy :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        failOnUnknownTypes = true,
+        nullUnknownTypes = true,
     )
 
 class S3V2WriteTestEndpointURL :

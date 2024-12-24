@@ -39,6 +39,7 @@ abstract class IcebergV2WriteTest(
         supportFileTransfer = false,
         envVars = envVars,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullUnknownTypes = true,
         nullEqualsUnset = true,
     ) {
     @Test
@@ -79,12 +80,6 @@ abstract class IcebergV2WriteTest(
     @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
     override fun testDedupChangeCursor() {
         super.testDedupChangeCursor()
-    }
-
-    @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11221")
-    override fun testUnknownTypes() {
-        super.testUnknownTypes()
     }
 }
 
