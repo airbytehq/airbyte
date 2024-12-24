@@ -42,7 +42,7 @@ class AirbyteTypeToAvroSchema {
                         .fold(builder) { acc, (name, field) ->
                             val converted = convert(field.type, path + name)
                             val propertySchema = maybeMakeNullable(field, converted)
-                            val nameMangled = Transformations.toAlphanumericAndUnderscore(name)
+                            val nameMangled = Transformations.toAvroSafeName(name)
                             acc.name(nameMangled).type(propertySchema).let {
                                 if (field.nullable) {
                                     it.withDefault(null)
