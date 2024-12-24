@@ -56,4 +56,4 @@ jobs:
     steps:
       - name: Output Airbyte Server Docker Image Tag
         run: |
-          echo "Docker Image Tag: blotout/source-woocommerce:v1-latest
+          echo "Docker Image Tag: blotout/source-woocommerce:v1-latest"
