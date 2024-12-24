@@ -4,109 +4,172 @@
 
 package io.airbyte.integrations.destination.iceberg.v2
 
+import jakarta.inject.Singleton
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
 
 /**
- * Compares two Iceberg [Schema] definitions to identify:
+ * Compares two Iceberg [Schema] definitions (including nested structs) to identify:
  * - New columns that do not exist in the "existing" schema.
  * - Columns whose data types have changed.
- * - Columns that no longer exist in the incoming schema (i.e., removed).
+ * - Columns that no longer exist in the incoming schema (removed).
  * - Columns that changed from required to optional.
  */
+@Singleton
 class IcebergTypesComparator {
 
-    /**
-     * Represents the differences between two Iceberg schemas.
-     *
-     * @property newColumns list of column names that are new in the incoming schema.
-     * @property updatedDataTypes list of column names whose types differ between incoming and
-     * existing schema.
-     * @property removedColumns list of column names that no longer exist in the incoming schema.
-     * @property newlyOptionalColumns list of column names that changed from required (existing) to
-     * optional (incoming).
-     */
-    data class ColumnDiff(
-        val newColumns: List<String>,
-        val updatedDataTypes: List<String>,
-        val removedColumns: List<String>,
-        val newlyOptionalColumns: List<String>
-    )
+    companion object {
+        /** Separator used to represent nested field paths: parent~child. */
+        const val PARENT_CHILD_SEPARATOR: Char = '~'
 
-    /**
-     * Compares two Iceberg schemas and returns a [ColumnDiff] describing how they differ.
-     *
-     * @param incomingSchema the new or updated schema.
-     * @param existingSchema the currently stored schema.
-     * @return a [ColumnDiff] representing the changes between the existing and the incoming
-     * schemas.
-     */
-    fun compareSchemas(incomingSchema: Schema, existingSchema: Schema): ColumnDiff {
-        val incomingFields = incomingSchema.asStruct().fields().associateBy { it.name() }
-        val existingFields = existingSchema.asStruct().fields().associateBy { it.name() }
+        /**
+         * Returns a fully-qualified field name by appending `child` to `parent` using
+         * [PARENT_CHILD_SEPARATOR]. If `parent` is blank, returns `child` alone.
+         */
+        private fun fullyQualifiedName(parent: String?, child: String): String =
+            if (parent.isNullOrBlank()) child else "$parent$PARENT_CHILD_SEPARATOR$child"
 
-        val newColumns = mutableListOf<String>()
-        val updatedDataTypes = mutableListOf<String>()
-        val removedColumns = mutableListOf<String>()
-        val newlyOptionalColumns = mutableListOf<String>()
-
-        // Identify new, updated, and columns that became optional
-        for ((incomingName, incomingField) in incomingFields) {
-            val existingField = existingFields[incomingName]
-
-            if (existingField == null) {
-                // Column doesn't exist in the existing schema
-                newColumns.add(incomingName)
+        /**
+         * Splits a fully-qualified name (e.g. `"outer~inner~field"`) into:
+         * ```
+         * parent = "outer~inner"
+         * leaf   = "field"
+         * ```
+         * If there's no [PARENT_CHILD_SEPARATOR], then it's top-level:
+         * ```
+         * parent = ""
+         * leaf   = "outer"
+         * ```
+         */
+        fun splitIntoParentAndLeaf(fqName: String): Pair<String, String> {
+            val idx = fqName.lastIndexOf(PARENT_CHILD_SEPARATOR)
+            return if (idx < 0) {
+                "" to fqName
             } else {
-                // Column exists in both. Check for type or structure changes
-                if (!typesAreEqual(incomingField.type(), existingField.type())) {
-                    updatedDataTypes.add(incomingName)
-                }
-
-                // Check if it changed from required to optional
-                val wasRequired = !existingField.isOptional
-                val isNowOptional = incomingField.isOptional
-                if (wasRequired && isNowOptional) {
-                    newlyOptionalColumns.add(incomingName)
-                }
+                fqName.substring(0, idx) to fqName.substring(idx + 1)
             }
         }
-
-        // Identify removed columns
-        for ((existingName, _) in existingFields) {
-            if (!incomingFields.containsKey(existingName)) {
-                removedColumns.add(existingName)
-            }
-        }
-
-        return ColumnDiff(
-            newColumns = newColumns,
-            updatedDataTypes = updatedDataTypes,
-            removedColumns = removedColumns,
-            newlyOptionalColumns = newlyOptionalColumns
-        )
     }
 
     /**
-     * Checks if two Iceberg [Type]s are semantically equal. For example:
-     * - Primitive types must match by [Type.TypeID].
-     * - Timestamp types must match with respect to UTC adjustment.
-     * - Structs are compared field-by-field.
-     * - Lists compare the element type.
+     * A data class representing differences between two Iceberg schemas.
      *
-     * @param existingType the type in the existing schema
-     * @param incomingType the type in the incoming schema
-     * @return `true` if the types are considered the same, otherwise `false`.
+     * @property newColumns list of fully-qualified column names that are new in the incoming
+     * schema.
+     * @property updatedDataTypes list of fully-qualified column names whose types differ.
+     * @property removedColumns list of fully-qualified column names that are no longer in the
+     * incoming schema.
+     * @property newlyOptionalColumns list of fully-qualified column names that changed from
+     * required -> optional.
      */
-    private fun typesAreEqual(existingType: Type?, incomingType: Type?): Boolean {
-        // If either is null (shouldn't happen if the schema is valid), treat as not equal
-        if (existingType == null || incomingType == null) return false
-
-        // Check the top-level type ID
-        if (existingType.typeId() != incomingType.typeId()) {
-            return false
+    data class ColumnDiff(
+        val newColumns: MutableList<String> = mutableListOf(),
+        val updatedDataTypes: MutableList<String> = mutableListOf(),
+        val removedColumns: MutableList<String> = mutableListOf(),
+        val newlyOptionalColumns: MutableList<String> = mutableListOf()
+    ) {
+        fun hasChanges(): Boolean {
+            return newColumns.isNotEmpty() ||
+                updatedDataTypes.isNotEmpty() ||
+                removedColumns.isNotEmpty() ||
+                newlyOptionalColumns.isNotEmpty()
         }
+    }
+
+    /**
+     * Compares [incomingSchema] with [existingSchema], returning a [ColumnDiff].
+     *
+     * @param incomingSchema the schema of incoming data.
+     * @param existingSchema the schema currently known/used by Iceberg.
+     */
+    fun compareSchemas(incomingSchema: Schema, existingSchema: Schema): ColumnDiff {
+        val diff = ColumnDiff()
+        compareStructFields(
+            parentPath = null,
+            incomingType = incomingSchema.asStruct(),
+            existingType = existingSchema.asStruct(),
+            diff = diff
+        )
+        return diff
+    }
+
+    /**
+     * Recursively compares fields of two struct types, identifying new, updated, or removed
+     * columns, and appending the results to [diff].
+     *
+     * @param parentPath fully-qualified parent path, or `null` if at top-level.
+     * @param incomingType struct type of the incoming schema.
+     * @param existingType struct type of the existing schema.
+     * @param diff the [ColumnDiff] object to be updated.
+     */
+    private fun compareStructFields(
+        parentPath: String?,
+        incomingType: Types.StructType,
+        existingType: Types.StructType,
+        diff: ColumnDiff
+    ) {
+        val incomingFieldsByName = incomingType.fields().associateBy { it.name() }
+        val existingFieldsByName = existingType.fields().associateBy { it.name() }
+
+        // 1) Identify new and changed fields
+        for ((fieldName, incomingField) in incomingFieldsByName) {
+            val fqName = fullyQualifiedName(parentPath, fieldName)
+            val existingField = existingFieldsByName[fieldName]
+
+            if (existingField == null) {
+                // This column does not exist in the existing schema => new column
+                diff.newColumns.add(fqName)
+            } else {
+                // The column exists in both => check for type differences at top-level
+                if (
+                    parentPath.isNullOrBlank() &&
+                        !typesAreEqual(incomingField.type(), existingField.type())
+                ) {
+                    diff.updatedDataTypes.add(fqName)
+                }
+
+                // Check if it changed from required to optional at top-level
+                val wasRequired = !existingField.isOptional
+                val isNowOptional = incomingField.isOptional
+                if (parentPath.isNullOrBlank() && wasRequired && isNowOptional) {
+                    diff.newlyOptionalColumns.add(fqName)
+                }
+
+                // If both are struct types, recursively compare subfields
+                if (incomingField.type().isStructType && existingField.type().isStructType) {
+                    compareStructFields(
+                        parentPath = fqName,
+                        incomingType = incomingField.type().asStructType(),
+                        existingType = existingField.type().asStructType(),
+                        diff = diff
+                    )
+                }
+            }
+        }
+
+        // 2) Identify removed fields (only at top-level)
+        if (parentPath.isNullOrBlank()) {
+            for ((existingName) in existingFieldsByName) {
+                if (!incomingFieldsByName.containsKey(existingName)) {
+                    val fqName = fullyQualifiedName(parentPath, existingName)
+                    diff.removedColumns.add(fqName)
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if two Iceberg [Type]s are semantically equal by comparing type IDs and any relevant
+     * sub-properties (e.g., for timestamps, lists, structs).
+     *
+     * @param incomingType the type from the incoming schema.
+     * @param existingType the type from the existing schema.
+     * @return `true` if they are effectively the same type, `false` otherwise.
+     * @throws IllegalArgumentException if an unsupported or unmapped Iceberg type is encountered.
+     */
+    fun typesAreEqual(incomingType: Type, existingType: Type): Boolean {
+        if (existingType.typeId() != incomingType.typeId()) return false
 
         return when (val typeId = existingType.typeId()) {
             Type.TypeID.BOOLEAN,
@@ -117,41 +180,40 @@ class IcebergTypesComparator {
             Type.TypeID.DATE,
             Type.TypeID.TIME,
             Type.TypeID.STRING -> {
-                // For these primitive types, the type ID match is enough
+                // Matching primitive types
                 true
             }
             Type.TypeID.TIMESTAMP -> {
                 require(
                     existingType is Types.TimestampType && incomingType is Types.TimestampType
-                ) { "Expected timestamp types, but received $existingType and $incomingType." }
-                // Both must either adjust to UTC or not adjust
+                ) { "Expected TIMESTAMP types, got $existingType and $incomingType." }
+                // Must match UTC adjustment or not
                 existingType.shouldAdjustToUTC() == incomingType.shouldAdjustToUTC()
             }
             Type.TypeID.LIST -> {
                 require(existingType is Types.ListType && incomingType is Types.ListType) {
-                    "Expected list types, but received $existingType and $incomingType."
+                    "Expected LIST types, but received $existingType and $incomingType."
                 }
                 val sameElementType =
-                    typesAreEqual(existingType.elementType(), incomingType.elementType())
+                    typesAreEqual(incomingType.elementType(), existingType.elementType())
                 sameElementType &&
                     (existingType.isElementOptional == incomingType.isElementOptional)
             }
             Type.TypeID.STRUCT -> {
-                val struct1 = existingType.asStructType()
-                val struct2 = incomingType.asStructType()
+                val incomingStructFields =
+                    incomingType.asStructType().fields().associateBy { it.name() }
+                val existingStructFields =
+                    existingType.asStructType().fields().associateBy { it.name() }
 
-                // Must have the same number of fields
-                if (struct1.fields().size != struct2.fields().size) return false
-
-                // Compare each field by index
-                struct1.fields().indices.forEach { i ->
-                    val field1 = struct1.fields()[i]
-                    val field2 = struct2.fields()[i]
-
-                    if (field1.name() != field2.name()) return false
-                    if (field1.isOptional != field2.isOptional) return false
-                    if (!typesAreEqual(field1.type(), field2.type())) return false
+                // For all fields in existing, ensure there's a matching field in incoming
+                for ((name, existingField) in existingStructFields) {
+                    val incomingField = incomingStructFields[name] ?: return false
+                    if (existingField.isOptional != incomingField.isOptional) return false
+                    if (!typesAreEqual(incomingField.type(), existingField.type())) return false
                 }
+                // If there are extra fields in `incoming`, that doesn't mean they're "unequal" per
+                // se —
+                // but for this function's purpose, we only check the existing fields.
                 true
             }
             Type.TypeID.BINARY,
@@ -161,8 +223,7 @@ class IcebergTypesComparator {
             Type.TypeID.MAP,
             Type.TypeID.TIMESTAMP_NANO -> {
                 throw IllegalArgumentException(
-                    "Unsupported or unmapped Iceberg type: $typeId. " +
-                        "Please implement handling if needed."
+                    "Unsupported or unmapped Iceberg type: $typeId. Implement handling if needed."
                 )
             }
         }
