@@ -156,12 +156,31 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
                 data[ordered_properties[relevant_index]] = unmatch_value
         yield data
 
+    @staticmethod
+    def is_row_empty(cell_values: List[str]) -> bool:
+        for cell in cell_values:
+            if cell.strip() != "":
+                return False
+        return True
+
+    @staticmethod
+    def row_contains_relevant_data(cell_values: List[str], relevant_indices: Iterable[int]) -> bool:
+        for idx in relevant_indices:
+            if len(cell_values) > idx and cell_values[idx].strip() != "":
+                return True
+        return False
+
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
         raw_records_extracted = super().extract_records(response=response)
         for raw_record in raw_records_extracted:
             unmatched_values_collection = raw_record[self._values_to_match_key]
             for unmatched_values in unmatched_values_collection:
-                yield from DpathSchemaMatchingExtractor.match_properties_with_values(unmatched_values, self._indexed_properties_to_match)
+                if not DpathSchemaMatchingExtractor.is_row_empty(
+                    unmatched_values
+                ) and DpathSchemaMatchingExtractor.row_contains_relevant_data(unmatched_values, self._indexed_properties_to_match.keys()):
+                    yield from DpathSchemaMatchingExtractor.match_properties_with_values(
+                        unmatched_values, self._indexed_properties_to_match
+                    )
 
 
 class DpathSchemaExtractor(DpathExtractor, RawSchemaParser):
