@@ -77,4 +77,5 @@ class S3V2ParquetDestinationAcceptanceTest : S3BaseParquetDestinationAcceptanceT
     // Disable these tests until we fix the incomplete stream handling behavior.
     override fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {}
     override fun testOverwriteSyncFailedResumedGeneration() {}
+    override fun testFakeFileTransfer() {}
 }

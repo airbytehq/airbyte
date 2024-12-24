@@ -853,7 +853,8 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+|---------|------------------------------------------------------------| ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.48.1  | [#50410](https://github.com/airbytehq/airbyte/pull/50410)  | Java connector build: give ownership of built artifacts to the current image user.                                                                                          |
 | 4.48.0  | [#49960](https://github.com/airbytehq/airbyte/pull/49960)  | Deprecate airbyte-ci format command                                                                                          |
 | 4.47.0  | [#49832](https://github.com/airbytehq/airbyte/pull/49462)  | Build java connectors from the base image declared in `metadata.yaml`.                                                       |
 | 4.46.5  | [#49835](https://github.com/airbytehq/airbyte/pull/49835)  | Fix connector language discovery for projects with Kotlin Gradle build scripts.                                              |
