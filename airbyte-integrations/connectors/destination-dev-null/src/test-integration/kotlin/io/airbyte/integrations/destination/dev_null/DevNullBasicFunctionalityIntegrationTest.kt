@@ -38,9 +38,7 @@ class DevNullBasicFunctionalityIntegrationTest :
         super.testMidSyncCheckpointingStreamState()
     }
 
-    @Test
-    @Disabled("File transfer is not supported")
-    override fun testBasicWriteFile() {
-        super.testBasicWriteFile()
-    }
+    @Test @Disabled("File transfer is not supported") override fun testBasicWriteFile() {}
+
+    @Test @Disabled("DevNull does not support Unknown types") override fun testUnknownTypes() {}
 }
