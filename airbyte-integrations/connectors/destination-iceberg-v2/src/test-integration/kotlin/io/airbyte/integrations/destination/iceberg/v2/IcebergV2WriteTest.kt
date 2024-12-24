@@ -102,6 +102,16 @@ class IcebergGlueWriteTest :
     }
 }
 
+class IcebergGlueAssumeRoleWriteTest :
+    IcebergV2WriteTest(
+        Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
+        IcebergDestinationCleaner(
+            IcebergV2TestUtil.getCatalog(
+                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
+            )
+        ),
+    )
+
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
 )
