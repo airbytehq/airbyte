@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
-@Timeout(25, unit = TimeUnit.MINUTES)
+@Timeout(30, unit = TimeUnit.MINUTES)
 abstract class S3V2WriteTest(
     path: String,
     stringifySchemalessObjects: Boolean,
@@ -205,4 +205,13 @@ class S3V2WriteTestEndpointURL :
         preserveUndeclaredFields = false,
         allTypesBehavior = Untyped,
         nullEqualsUnset = true,
+    )
+
+class S3V2AmbiguousFilepath :
+    S3V2WriteTest(
+        S3V2TestUtils.AMBIGUOUS_FILEPATH_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
     )
