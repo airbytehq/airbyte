@@ -1,48 +1,63 @@
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-# Updating Documentation
+# Updating documentation
 
-We welcome contributions to the Airbyte documentation!
+Everyone is welcome to contribute to Airbyte's documentation! 
 
-Our docs are written in [Markdown](https://guides.github.com/features/mastering-markdown/) following the [Google developer documentation style guide](https://developers.google.com/style/highlights) and the files are stored in our [Github repository](https://github.com/airbytehq/airbyte/tree/master/docs). The docs are published at [docs.airbyte.com](https://docs.airbyte.com/) using [Docusaurus](https://docusaurus.io/) and [GitHub Pages](https://pages.github.com/).
+Our documentation is stored in the [Airbyte repository](https://github.com/airbytehq/airbyte/tree/master/docs) on GitHub. It is published at [docs.airbyte.com](https://docs.airbyte.com/) using [GitHub Pages](https://pages.github.com/). The docs are built on [Docusaurus](https://docusaurus.io/). Content is written in [Markdown](https://guides.github.com/features/mastering-markdown/) and all topics are in the /docs/ folder. Configuration files are in the /docusaurus/ folder.
 
-## Finding good first issues
+## Open source contributions
 
-Before contributing to Airbyte docs, read the Airbyte Community [Code of Conduct](../community/code-of-conduct.md).
+Open source contributors are a vital part of Airbyte. You're welcome to use content you author in your portfolio. If you join Airbyte's [Contributor program](https://airbyte.com/community/contributor-program), we pay for high-quality work on select issues.
 
-The Docs team maintains a list of [good first issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Fdocumentation+label%3A%22good+first+issue%22) for new contributors.
+## Before you start
 
-- If you're new to technical writing, start with the smaller issues (fixing typos, broken links, spelling and grammar, and so on). You can [edit the files directly on GitHub](#editing-directly-on-github).
-- If you're an experienced technical writer or a developer interested in technical writing, comment on an issue that interests you to discuss it with the Docs team. Once we decide on the approach and the tasks involved, [edit the files and open a Pull Request](#editing-on-your-local-machine) for the Docs team to review.
+Before you contribute, familiarize yourself with these concepts.
 
-:::tip
-If you're new to GitHub and Markdown, complete [the First Contributions tutorial](https://github.com/firstcontributions/first-contributions) and learn [Markdown basics](https://guides.github.com/features/mastering-markdown/) before contributing to Airbyte documentation. Even if you're familiar with the basics, you may be interested in Airbyte's [custom markdown extensions for connector docs](#custom-markdown-extensions-for-connector-docs).
-:::
+### Read our code of conduct
 
-## Editing directly on GitHub
+Read the Airbyte Community [code of conduct](../community/code-of-conduct.md).
 
-To make minor changes (example: fixing typos) or edit a single file, you can edit the file directly on GitHub:
+### Learn the Docusaurus basics
 
-1. Click **Edit this page** at the bottom of any published document on [docs.airbyte.com](https://docs.airbyte.com/). You'll be taken to the GitHub editor.
+Even if you've never used it before, most developers and technical writers find Docusaurus intuitive.
+
+- [Markdown basics](https://guides.github.com/features/mastering-markdown/)
+- [Docusaurus 5-minute tutorial](https://tutorial.docusaurus.io/)
+
+### Style guide
+
+Follow the [Google developer documentation style guide](https://developers.google.com/style/highlights). It's a widely adopted style guide with good examples and easy-to-follow rules. We don't enforce these rules with automation, but might in the future. Fow now, just try to follow it to the best of your ability.
+
+### Find a good first issue
+
+The Docs team maintains a list of [good first issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Fdocumentation+label%3A%22good+first+issue%22) for new contributors. If you'd like to start a complex documentation project, create or comment on a [GitHub issue](https://github.com/airbytehq/airbyte/issues) and tag [@ian-at-airbyte](https://github.com/ian-at-airbyte) so we can decide on an approach together.
+
+## Edit files directly on GitHub
+
+To make minor changes like fixing typos or editing a single file, you can edit the file directly in your browser.
+
+1. Click **Edit this page** at the bottom of any page on [docs.airbyte.com](https://docs.airbyte.com/). You'll be taken to the GitHub editor.
 2. [Edit the file directly on GitHub and open a Pull Request](https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files).
 
-## Editing on your local machine
+## Edit files on your local machine
+
+If you're making substantial documentation changes, it's best to clone the repository and work locally.
 
 ### Prerequisites
 
-To contribute to our documentation, please ensure following required technologies are installed on your local machine:
+Install these tools on your local machine, first.
 
-1. [`Node.js`](https://nodejs.org/en/learn/getting-started/how-to-install-nodejs)
+1. [Node.js](https://nodejs.org/en/learn/getting-started/how-to-install-nodejs)
 2. [`pnpm`](https://pnpm.io/installation)
+3. A tool to work with GitHub, like [Git](https://git-scm.com/) or [GitHub Desktop](https://github.com/apps/desktop)
 
-### Setup and Making Changes
+### Fork and clone the repo
 
-To make complex changes or edit multiple files, edit the files on your local machine:
+1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [Airbyte repo](https://github.com/airbytehq/airbyte).
 
-1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the Airbyte [repository](https://github.com/airbytehq/airbyte).
-
-2. Clone the fork on your local machine:
+2. Clone the fork on your local machine.
 
    ```bash
    git clone git@github.com:{YOUR_USERNAME}/airbyte.git
@@ -56,110 +71,154 @@ To make complex changes or edit multiple files, edit the files on your local mac
    cd airbyte
    ```
 
-3. Create a feature branch from which to make changes:
+3. Create a feature branch.
 
    ```bash
    git checkout -b {YOUR_USERNAME}/{FEATURE/BUG}
    ```
 
-   (e.g. `jdoe/source-stock-api-stream-fix`)
-
-4. Test changes locally:
-
-   To install the docs locally, run the following commands in your terminal:
+   For example:
 
    ```bash
-   cd docusaurus
-   pnpm install
+   git checkout -b jdoe/source-stock-api-stream-fix
    ```
 
-   To see changes as you make them, run:
+### Set up your environment
+
+Open a terminal and install the docs locally.
+
+```bash
+cd docusaurus
+pnpm install
+```
+
+To see changes as you make them in a dev build:
+
+1. Run:
 
    ```bash
    pnpm start
    ```
 
-   Then navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you will see them reflected in the server. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.
+2. Navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you will see them reflected in the server. To stop the running server, press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal.
 
-   You can also build the docs locally and see the resulting changes. This is useful if you introduce changes that need to be run at build-time (e.g. adding a docs plug-in). To do so, run:
+To create an optimized production build that does not update automatically:
+
+1. Run:
 
    ```bash
    pnpm build
    pnpm serve
    ```
 
-   Then navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.
+2. Navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. To stop the running server, press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal.
 
-5. [Follow the GitHub workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects/) to edit the files and create a pull request.
+## Write docs
 
-   :::note
-   Before we accept any contributions, you'll need to sign the Contributor License Agreement (CLA). By signing a CLA, we can ensure that the community is free and confident in its ability to use your contributions. You will be prompted to sign the CLA while opening a pull request.
-   :::
+[Follow the usual GitHub workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects/) to update content.
 
-6. Assign `airbytehq/docs` as a Reviewer for your pull request.
+### Templates
 
-## Guide To Writing Connector Docs
+Every page must have a purpose. Bad documentation often has origins in:
 
-For instructions specific to connector configuration docs, please see the [Connector Documentation Guide](../connector-development/writing-connector-docs.md).
+- Poorly-defined goals, or no goal
+- Failed execution of otherwise good goals
+- The intimidating effect of a blank page
 
-## Common Tools and Patterns
+The [Good Docs Project](https://www.thegooddocsproject.dev/) maintains a collection of open-source docs templates you can use to help you write and update articles. Here are common patterns we see at Airbyte:
 
-### Select between mutually-exclusive content options with `<Tabs>`
+| Purpose         | Overview                                                                                            | Template                                                                  |
+| --------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Concept         | Explain a concept, context, or background information about a product or its features.              | [Template](https://gitlab.com/tgdp/templates/-/tree/main/concept)         |
+| How-to          | A concise set of numbered steps to do one task with the product.                                    | [Template](https://gitlab.com/tgdp/templates/-/tree/main/how-to)          |
+| Tutorial        | Instructions to set up an example project using the product, intended for hands-on learning.        | [Template](https://gitlab.com/tgdp/templates/-/tree/main/tutorial)        |
+| Troubleshooting | Common problems experienced by users, an explanation of the causes, and steps to resolve the issue. | [Template](https://gitlab.com/tgdp/templates/-/tree/main/troubleshooting) |
+| Reference       | Specific, in-depth details about a particular topic.                                                | [Template](https://gitlab.com/tgdp/templates/-/tree/main/reference)       |
+| Release note    | Communicate new features, improvements, bug fixes, and known issues about a product.                | [Template](https://gitlab.com/tgdp/templates/-/tree/main/release-notes)   |
 
-Tabs are a built-in feature of Docusaurus, the tool we use to build `https://docs.airbyte.com`; please refer to [their documentation](https://docusaurus.io/docs/markdown-features/tabs) for their options and behavior in this context. For better site-agnostic documentation, and because we like the feature, we maintain a separate `Tabs` implementation with limited, one-way API compatibility: all usage options we document should behave the same in-app and on `https://docs.airbyte.com`. If you find a discrepancy or breakage, we would appreciate if you [report it as a bug](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2Carea%2Fdocumentation+needs-triage&projects=&template=8-documentation.yaml)! The reverse is not necessarily true, however: Docusaurus supports many use cases besides ours, so supporting its every usage pattern is a deliberate non-goal.
+[View all templates](https://www.thegooddocsproject.dev/template).
 
-:::info
-Because Docusaurus uses an mdx component, you must include the following import lines in any markdown file which uses tabs:
+### Write connector docs
 
-```js
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-```
+If you're writing docs for a data source or destination, there are special rules you must follow. See the [Connector Documentation Guide](../connector-development/writing-connector-docs.md). Platform documentation is less strict.
 
-This is not optional: if these lines are missing, the documentation site will have errors. They won't show up in the rendered document, however.
+### Common tools and patterns
+
+Since the docs site is based on Docusaurus, it inherits all of Docusaurus' capabilities. There are also some Airbyte-specific elements to be aware of. Most of these customizations can be combined together.
+
+#### Tabs
+
+Use tabs to display mutually-exclusive concepts in a concise way. See [Tabs](https://docusaurus.io/docs/markdown-features/tabs). 
+
+:::note
+We maintain a separate `Tabs` implementation to support in-app content the same way we support docs.airbyte.com. Our in-app renderer creates some additional rules that aren't necessarily true in other Docusaurus implementations:
+
+- Always use empty lines to separate different Markup elements (tags, paragraphs, lists, etc.)
+- Do not indent `TabItem` tags and their content according to normal HTML conventions. Different Markdown rendering tools handle indented tags inconsistently.
 :::
 
-Here's an example set of tabs; note that you can put any number of `<TabItem value="..." label="...">...</TabItem>` tags inside a `<Tabs>`.
+#### Code blocks
+
+Code blocks are used to represent sample code and command line input and output with easy-to-read syntax highlighting. See [Code blocks](https://docusaurus.io/docs/markdown-features/code-blocks).
+
+#### Admonitions (notes, warnings, tips, etc.)
+
+Docusaurus has custom markup to create a note, warning, tip, danger, or info block. See [Admonitions](https://docusaurus.io/docs/markdown-features/admonitions).
+
+#### Expandable panels (details)
+
+Expandable details panels are a great way to render auxiliary content that is only valuable for a minority of people or situations. See [Details](https://docusaurus.io/docs/markdown-features#details).
+
+#### Product metadata
+
+#### Environment specific content 
+<!-- I think this needs to be moved to the connector docs doc -->
+
+Airbyte's documentation also appears in Airbyte itself, mainly as context-sensitive help when setting up data sources and destinations. This won't generally cause you problems, but we do have some special markup to handle different contexts, and you should always beware that your content can be viewed in a context you did not expect when you wrote it.
+
+Sometimes, there are connector setup instructions which differ between open-source Airbyte builds and Airbyte Cloud. Document both cases, but wrap each in a pair of special HTML comments:
 
 ```md
-<Tabs>
-<TabItem value="http-basic" label="Basic HTTP authentication">
+<!-- env:oss -->
+<HideInUI>
 
-When configuring this hypothetical connector using basic HTTP auth, you should mind some tricky security considerations! This just a hypothetical, though, so I never bothered to come up with any.
+## For open source:
 
-As the first tab, this would be shown by default if no `TabItem` were marked as `default`.
+</HideInUI>
 
-</TabItem>
-<TabItem value="oauth" label="OAuth authentication" default>
+Only open-source builds of the Airbyte UI will render this content.
 
-When configuring this hypothetical connector using OAuth authentication, you should do a dance. Good for you! Since it's not the first `TabItem` in its set, we had to explicitly mark this tab as `default` for it to get top billing.
+<!-- /env:oss -->
 
-</TabItem>
-</Tabs>
+<!-- env:cloud -->
+<HideInUI>
+
+## For Airbyte Cloud:
+
+</HideInUI>
+
+Only cloud builds of the Airbyte UI will render this content.
+
+<!-- /env:oss -->
+
+Content outside of the magic-comment-delimited blocks will be rendered everywhere.
 ```
 
-That renders as the following:
+Note that the documentation site will render _all_ environment-specific content, so please introduce environment-specific variants with some documentation-site-only context (like the hidden subheadings in the example above) to disambiguate.
 
-<Tabs>
-<TabItem value="http-basic" label="Basic HTTP authentication">
 
-When configuring this hypothetical connector using basic HTTP auth, you should mind some tricky security considerations! This just a hypothetical, though, so I never bothered to come up with any.
 
-As the first tab, this would be shown by default if no `TabItem` were marked as `default`.
 
-</TabItem>
-<TabItem value="oauth" label="OAuth authentication" default>
 
-When configuring this hypothetical connector using OAuth authentication, you should do a dance. Good for you! Since it's not the first `TabItem` in its set, we had to explicitly mark this tab as `default` for it to get top billing.
 
-</TabItem>
-</Tabs>
 
-- You don't need to mark any tab as `default`
-- If you don't, the first tab (here, Basic HTTP) will be the initial selection instead
-- You can use ordinary markdown syntax inside a `TabItem`
-- **however**, due to bugs in our in-app markdown rendering library, you should be dilligent about using empty lines to separate different formatting-related things (surrounding tags and their contents, paragraphs vs lists, etc)
-- You should also avoid indenting `TabItem` tags and their content according to html conventions, since text indented by four spaces (common for html nested inside two levels of tags) can be interpreted as a code block; different markdown rendering tools can handle this inconsistently.
+<!-- 
+---
+Everything below this line is not yet updated.
+---
+-->
+
+
 
 ### Environment-specific in-app content with magic html comments
 
@@ -399,3 +458,13 @@ erDiagram
 
 check out the rest of the Mermaid documentation for its capabilities just be aware that not all
 the features are available to the docusaurus plugin.
+
+## Create a pull request
+
+:::note
+Before we accept any contributions, you need to sign the Contributor License Agreement (CLA). By signing a CLA, we can ensure that the community is free and confident in its ability to use your contributions. You will be prompted to sign the CLA while opening a pull request.
+:::
+
+6. Assign [@ian-at-airbyte](https://github.com/ian-at-airbyte) as a reviewer for your pull request. If you want a developer to review them, do so.
+- A great way to collaborate is to create a draft PR so Vercel can build your docs site.
+- Tag others
