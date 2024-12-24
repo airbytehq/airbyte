@@ -50,7 +50,7 @@ abstract class S3V2WriteTest(
         super.testAppendSchemaEvolution()
     }
 
-    @Disabled("Temporarily disable because failing in CI")
+    @Disabled("For most test the file test is not needed since it doesn't apply compression")
     @Test
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
@@ -73,6 +73,11 @@ class S3V2WriteTestJsonUncompressed :
     @Test
     override fun testBasicTypes() {
         super.testBasicTypes()
+    }
+
+    @Test
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
     }
 }
 
@@ -121,7 +126,12 @@ class S3V2WriteTestCsvUncompressed :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}
 
 class S3V2WriteTestCsvRootLevelFlattening :
     S3V2WriteTest(
