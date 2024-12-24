@@ -183,6 +183,7 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         )
         base = with_integration_base_java(context, build_platform).with_entrypoint(["/airbyte/base.sh"])
 
+    current_user = (await base.with_exec(["whoami"]).stdout()).strip()
     connector_container = (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
