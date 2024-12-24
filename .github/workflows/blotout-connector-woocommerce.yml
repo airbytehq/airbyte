@@ -48,3 +48,12 @@ jobs:
     - name: Push Docker image to Docker Hub
       run: |
         docker push blotout/source-woocommerce:v1-latest
+
+
+  output_image_tag:
+    runs-on: ubuntu-latest
+    needs: build_and_push
+    steps:
+      - name: Output Airbyte Server Docker Image Tag
+        run: |
+          echo "Docker Image Tag: blotout/source-woocommerce:v1-latest
