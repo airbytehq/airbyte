@@ -56,6 +56,9 @@ _SERVICE_CONFIG = {
     "credentials": service_account_credentials
 }
 
+GET_SHEETS_FIRST_ROW = "get_sheet_first_row"
+GET_SPREADSHEET_INFO = "get_spreadsheet_info"
+GET_STREAM_DATA = "get_stream_data"
 
 def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
@@ -399,6 +402,32 @@ class GoogleSheetSourceTest(TestCase):
         assert output.catalog == expected_message
 
     @HttpMocker()
+    def test_discover_empty_column_return_expected_schema(self, http_mocker: HttpMocker) -> None:
+        """
+        The response from headers (first row) has columns "name | age | | address | address2"  so everything after empty cell will be
+        discarded, in this case address and address2 shouldn't be part of the schema.
+        """
+        expected_schemas_properties = {
+            _STREAM_NAME: {'name': {'type':  ['null', 'string']}, 'age': {'type':  ['null', 'string']}},
+        }
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "discover_with_empty_column_spreadsheet_info_and_sheets", 200)
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"discover_with_empty_column_get_sheet_first_row", 200)
+
+
+        expected_streams = []
+        for expected_stream_name, expected_stream_properties in expected_schemas_properties.items():
+            expected_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
+                               'properties': expected_stream_properties,
+                               'type': 'object'}
+            expected_stream = AirbyteStream(name=expected_stream_name, json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False)
+            expected_streams.append(expected_stream)
+        expected_catalog = AirbyteCatalog(streams=expected_streams)
+        expected_message = AirbyteMessage(type=Type.CATALOG, catalog=expected_catalog)
+
+        output = self._discover(self._config, expecting_exception=False)
+        assert output.catalog == expected_message
+
+    @HttpMocker()
     def test_discover_with_names_conversion(self, http_mocker: HttpMocker) -> None:
         # will convert '1 тест' to '_1_test and 'header2' to 'header_2'
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "only_headers_meta", 200)
@@ -541,6 +570,43 @@ class GoogleSheetSourceTest(TestCase):
         assert output.records == expected_records
 
     @HttpMocker()
+    def test_when_read_empty_column_then_return_records(self, http_mocker: HttpMocker) -> None:
+        """
+        The response from headers (first row) has columns "header_1 | header_2 | | address | address2"  so everything after empty cell will be
+        discarded, in this case address and address2 shouldn't be part of the schema in records.
+        """
+        test_file_base_name = "read_with_empty_column"
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}")
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}")
+        GoogleSheetSourceTest.get_stream_data(http_mocker, f"{test_file_base_name}_{GET_STREAM_DATA}")
+        first_property = "header_1"
+        second_property = "header_2"
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema(
+            {"properties": {first_property: {"type": ["null", "string"]}, second_property: {"type": ["null", "string"]}}})).build()
+
+        output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
+        expected_records = [
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={first_property: 'value_11', second_property: 'value_12'}
+                )
+            ),
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={first_property: 'value_21', second_property: 'value_22'}
+                )
+            )
+        ]
+        assert len(output.records) == 2
+        assert output.records == expected_records
+
+    @HttpMocker()
     def test_when_read_then_return_records_with_name_conversion(self, http_mocker: HttpMocker) -> None:
         # will convert '1 тест' to '_1_test and 'header2' to 'header_2'
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta")
@@ -647,7 +713,6 @@ class GoogleSheetSourceTest(TestCase):
         assert output.trace_messages[1].trace.stream_status.status == AirbyteStreamStatus.RUNNING
         assert output.trace_messages[2].trace.stream_status.status == AirbyteStreamStatus.COMPLETE
 
-
     @HttpMocker()
     def test_read_429_error(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
@@ -723,13 +788,25 @@ class GoogleSheetSourceTest(TestCase):
         assert output.errors[0].trace.error.message == expected_message
 
     @pytest.mark.skip("Pending to do")
-    def test_for_empty_columns_does_right_discovery(self):
+    def test_for_duplicated_headers_right_discovery(self):
         # 1.- Empty and duplicated headers won't make it to the schema, either the indexed or json schema.
         # 2.- Empty cell in header will mark the end of the header row.
         pass
 
     @pytest.mark.skip("Pending to do")
-    def test_for_empty_columns_does_right_match(self):
+    def test_for_duplicated_headers_right_read(self):
+        # 1.- Empty and duplicated headers won't make it to the schema, either the indexed or json schema.
+        # 2.- Empty cell in header will mark the end of the header row.
+        pass
+
+    @pytest.mark.skip("Pending to do")
+    def test_for_empty_rows_does_right_read(self):
+        # 1.- Empty and duplicated headers won't make it to the schema, either the indexed or json schema.
+        # 2.- Empty cell in header will mark the end of the header row.
+        pass
+
+    @pytest.mark.skip("Pending to do")
+    def test_complex_test_with_empty_rows_and_columns_duplicated_headers_after_how_many_requests_ends(self):
         # 1.- Empty and duplicated headers won't make it to the schema, either the indexed or json schema.
         # 2.- Empty cell in header will mark the end of the header row.
         pass

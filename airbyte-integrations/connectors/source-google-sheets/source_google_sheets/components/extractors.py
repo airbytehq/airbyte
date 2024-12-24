@@ -84,12 +84,14 @@ class RawSchemaParser:
         names_conversion = self.config.get("names_conversion", False)
         schema_pointer = schema_type_identifier.get("schema_pointer")
         key_pointer = schema_type_identifier["key_pointer"]
-
+        parsed_properties = []
         for raw_schema_data in records:
             for _, parsed_value, raw_schema_property in self.parse_raw_schema_values(
                 raw_schema_data, schema_pointer, key_pointer, names_conversion
             ):
                 self._set_data(parsed_value, raw_schema_property, key_pointer)
+                parsed_properties.append(raw_schema_property)
+            self._set_data(parsed_properties, raw_schema_data, schema_pointer)
             yield raw_schema_data
 
 
