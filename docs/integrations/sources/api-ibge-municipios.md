@@ -9,7 +9,7 @@ Extrair dados de municípios do site do IBGE
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Municipios | id | DefaultPaginator | ✅ |  ❌  |
+| Municipios | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 

@@ -14,53 +14,43 @@ definitions:
     Municipios:
       type: DeclarativeStream
       name: Municipios
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /api/v1/localidades/municipios
+          path: /localidades/municipios
           http_method: GET
           request_body_json:
-            type: object
-            properties:
-              id:
-                type: integer
-              nome:
-                type: string
-              microrregiao:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  nome:
-                    type: string
+            id: 1100015
+            nome: Alta Floresta D'Oeste
+            microrregiao:
+              id: 11006
+              nome: Cacoal
+              mesorregiao:
+                UF:
+                  id: 11
+                  nome: Rondônia
+                  sigla: RO
+                  regiao:
+                    id: 1
+                    nome: Norte
+                    sigla: "N"
+                id: 1102
+                nome: Leste Rondoniense
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: Limit
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
+      primary_key:
+        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Municipios"
   base_requester:
     type: HttpRequester
-    url_base: https://servicodados.ibge.gov.br/
+    url_base: https://servicodados.ibge.gov.br/api/v1
 
 streams:
   - $ref: "#/definitions/streams/Municipios"
@@ -75,26 +65,31 @@ spec:
     additionalProperties: true
 
 metadata:
-  autoImportSchema:
-    Municipios: true
+  assist: {}
   testedStreams:
     Municipios:
-      streamHash: 6e98413b07b99b590f168c32cfb4b159b102ac32
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 1a3283b838415d4d35393ffe01c0f9d3b6017bf1
+      hasResponse: true
       primaryKeysAreUnique: true
-  assist: {}
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Municipios: true
 
 schemas:
   Municipios:
     type: object
     $schema: http://json-schema.org/schema#
-    additionalProperties: true
+    required:
+      - id
     properties:
       id:
         type: number
+      nome:
+        type:
+          - string
+          - "null"
       microrregiao:
         type:
           - object
@@ -103,6 +98,10 @@ schemas:
           id:
             type:
               - number
+              - "null"
+          nome:
+            type:
+              - string
               - "null"
           mesorregiao:
             type:
@@ -119,6 +118,10 @@ schemas:
                       - number
                       - "null"
                   nome:
+                    type:
+                      - string
+                      - "null"
+                  sigla:
                     type:
                       - string
                       - "null"
@@ -139,10 +142,6 @@ schemas:
                         type:
                           - string
                           - "null"
-                  sigla:
-                    type:
-                      - string
-                      - "null"
               id:
                 type:
                   - number
@@ -151,14 +150,6 @@ schemas:
                 type:
                   - string
                   - "null"
-          nome:
-            type:
-              - string
-              - "null"
-      nome:
-        type:
-          - string
-          - "null"
       regiao-imediata:
         type:
           - object
@@ -190,6 +181,10 @@ schemas:
                     type:
                       - string
                       - "null"
+                  sigla:
+                    type:
+                      - string
+                      - "null"
                   regiao:
                     type:
                       - object
@@ -207,10 +202,6 @@ schemas:
                         type:
                           - string
                           - "null"
-                  sigla:
-                    type:
-                      - string
-                      - "null"
               id:
                 type:
                   - number
@@ -219,5 +210,4 @@ schemas:
                 type:
                   - string
                   - "null"
-    required:
-      - id
+    additionalProperties: true
