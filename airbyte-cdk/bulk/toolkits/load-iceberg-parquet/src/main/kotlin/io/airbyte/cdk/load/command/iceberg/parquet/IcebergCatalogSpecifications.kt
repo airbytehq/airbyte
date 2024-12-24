@@ -191,6 +191,7 @@ class GlueCatalogSpecification(
     @get:JsonPropertyDescription(
         "The AWS ARN of the role that should be assumed for AWS authentication."
     )
+    @JsonProperty("role_arn")
     @get:JsonSchemaInject(
         json =
             """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"], "always_show": true, "order":2}"""

@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
+import io.micronaut.context.annotation.Value
 import javax.inject.Singleton
 import org.apache.iceberg.Schema
 
@@ -17,7 +18,7 @@ import org.apache.iceberg.Schema
 class IcebergV2Writer(
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val icebergConfiguration: IcebergV2Configuration,
-    private val icebergUtil: IcebergUtil,
+    private val icebergUtil: IcebergUtil
 ) : DestinationWriter {
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {

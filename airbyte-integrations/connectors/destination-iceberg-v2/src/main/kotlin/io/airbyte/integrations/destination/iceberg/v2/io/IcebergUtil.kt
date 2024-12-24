@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.iceberg.v2.io
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
-import io.airbyte.cdk.load.command.iceberg.parquet.CatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
@@ -24,6 +23,7 @@ import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
 import io.airbyte.integrations.destination.iceberg.v2.SECRET_ACCESS_KEY
 import io.airbyte.integrations.destination.iceberg.v2.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.time.Duration
 import org.apache.hadoop.conf.Configuration
@@ -53,13 +53,17 @@ private val logger = KotlinLogging.logger {}
 
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
-const val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
-const val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
-const val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
-
 /** Collection of Iceberg related utilities. */
 @Singleton
-class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
+class IcebergUtil(private val tableIdGenerator: TableIdGenerator,
+    @Value("\${airbyte.aws.external-id}") val externalId: String,
+    @Value("\${airbyte.aws.access-key-id}") val accessKeyId: String,
+    @Value("\${airbyte.aws.secret-access-key}") val secretAccessKey: String) {
+
+    init {
+        println(externalId)
+    }
+
     internal class InvalidFormatException(message: String) : Exception(message)
 
     private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
@@ -278,14 +282,11 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         roleArn: String,
         config: IcebergV2Configuration
     ): Map<String, String> {
-        val externalId = System.getenv(EXTERNAL_ID)
-        val awsAccessKeyId = System.getenv(AWS_ACCESS_KEY_ID)
-        val awsSecretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY)
         val region = config.s3BucketConfiguration.s3BucketRegion.region
 
         return mapOf(
-            AwsProperties.REST_ACCESS_KEY_ID to awsAccessKeyId,
-            AwsProperties.REST_SECRET_ACCESS_KEY to awsSecretAccessKey,
+            AwsProperties.REST_ACCESS_KEY_ID to accessKeyId,
+            AwsProperties.REST_SECRET_ACCESS_KEY to secretAccessKey,
             AwsProperties.CLIENT_FACTORY to AssumeRoleAwsClientFactory::class.java.name,
             AwsProperties.CLIENT_ASSUME_ROLE_ARN to roleArn,
             AwsProperties.CLIENT_ASSUME_ROLE_REGION to region,

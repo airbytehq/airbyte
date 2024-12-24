@@ -12,6 +12,7 @@ import java.nio.file.Path
 
 object IcebergV2TestUtil {
     val GLUE_CONFIG_PATH: Path = Path.of("secrets/glue.json")
+    val GLUE_ASSUME_ROLE_CONFIG_PATH: Path = Path.of("secrets/glue_assume_role.json")
 
     fun parseConfig(path: Path) =
         getConfig(

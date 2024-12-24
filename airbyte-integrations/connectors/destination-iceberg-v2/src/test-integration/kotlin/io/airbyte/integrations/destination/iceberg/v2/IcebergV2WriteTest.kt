@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.nio.file.Files
 import java.util.Base64
 import okhttp3.FormBody
@@ -18,6 +19,7 @@ import okhttp3.Request
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import jakarta.inject.Inject
 
 abstract class IcebergV2WriteTest(
     configContents: String,
@@ -104,13 +106,22 @@ class IcebergGlueWriteTest :
 
 class IcebergGlueAssumeRoleWriteTest :
     IcebergV2WriteTest(
-        Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
+        Files.readString(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
         IcebergDestinationCleaner(
             IcebergV2TestUtil.getCatalog(
-                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
+                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH)
             )
         ),
-    )
+    ) {
+        @Test
+        override fun testBasicWrite() {
+            super.testBasicWrite()
+        }
+
+        @Test
+        @Disabled("dest iceberge-v2 doesn't support unknown types")
+        override fun testUnknownTypes() {}
+    }
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
