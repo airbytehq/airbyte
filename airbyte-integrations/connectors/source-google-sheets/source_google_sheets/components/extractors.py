@@ -9,11 +9,92 @@ import requests
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.types import Config
-from source_google_sheets.utils import safe_name_conversion
+from source_google_sheets.utils import name_conversion, safe_name_conversion
+
+
+class RawSchemaParser:
+    config: Config
+
+    def _extract_data(
+        self,
+        body: Mapping[str, Any],
+        extraction_path: Optional[List[Union[InterpolatedString, str]]] = None,
+        default: Any = None,
+    ) -> Any:
+        """
+        Extracts data from the body based on the provided extraction path.
+        """
+
+        if not extraction_path:
+            return body
+
+        path = [node.eval(self.config) if not isinstance(node, str) else node for node in extraction_path]
+
+        return dpath.get(body, path, default=default)  # type: ignore # extracted
+
+    def _set_data(
+        self, value: Any, body: MutableMapping[str, Any], extraction_path: Optional[List[Union[InterpolatedString, str]]] = None
+    ) -> Any:
+        """
+        Sets data in the body based on the provided extraction path.
+        """
+        if not extraction_path:
+            body = value
+
+        path = [node.eval(self.config) if not isinstance(node, str) else node for node in extraction_path]
+
+        dpath.set(body, path, value=value)
+
+    def parse_raw_schema_values(
+        self,
+        raw_schema_data: MutableMapping[Any, Any],
+        schema_pointer: List[Union[InterpolatedString, str]],
+        key_pointer: List[Union[InterpolatedString, str]],
+        names_conversion: bool,
+    ):
+        """
+        Parses sheet headers from the provided row. This method assumes that data is contiguous
+        i.e: every cell contains a value and the first cell which does not contain a value denotes the end
+        of the headers.
+        """
+        raw_schema_properties = self._extract_data(raw_schema_data, schema_pointer)
+        duplicate_fields = set()
+        parsed_schema_values = []
+        seen_values = set()
+        for property_index, raw_schema_property in enumerate(raw_schema_properties):
+            raw_schema_property_value = self._extract_data(raw_schema_property, key_pointer)
+            if not raw_schema_property_value:
+                break
+            if names_conversion:
+                raw_schema_property_value = safe_name_conversion(raw_schema_property_value)
+
+            if raw_schema_property_value in seen_values:
+                duplicate_fields.add(raw_schema_property_value)
+            seen_values.add(raw_schema_property_value)
+            parsed_schema_values.append((property_index, raw_schema_property_value, raw_schema_property))
+
+        if duplicate_fields:
+            parsed_schema_values = [
+                parsed_schema_value for parsed_schema_value in parsed_schema_values if parsed_schema_values[1] not in duplicate_fields
+            ]
+
+        return parsed_schema_values
+
+    def parse(self, schema_type_identifier, records: Iterable[MutableMapping[Any, Any]]):
+        names_conversion = self.config.get("names_conversion", False)
+        schema_pointer = schema_type_identifier.get("schema_pointer")
+        key_pointer = schema_type_identifier["key_pointer"]
+
+        for raw_schema_data in records:
+            for _, parsed_value, raw_schema_property in self.parse_raw_schema_values(
+                raw_schema_data, schema_pointer, key_pointer, names_conversion
+            ):
+                self._set_data(parsed_value, raw_schema_property, key_pointer)
+            yield raw_schema_data
 
 
 @dataclass
-class FieldMatchingExtractor(DpathExtractor):
+class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
     """
     Current DpathExtractor has problems for this type of data in response:
     [
@@ -47,14 +128,20 @@ class FieldMatchingExtractor(DpathExtractor):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self._values_to_match_key = parameters["values_to_match_key"]
-        property_to_match_key = parameters["property_to_match_key"]
-        self._properties_to_match = FieldMatchingExtractor.extract_properties_to_match(
-            parameters["properties_to_match"], property_to_match_key
+        schema_type_identifier = parameters["schema_type_identifier"]
+        names_conversion = self.config.get("names_conversion", False)
+        self._indexed_properties_to_match = self.extract_properties_to_match(
+            parameters["properties_to_match"], schema_type_identifier, names_conversion=names_conversion
         )
 
-    @staticmethod
-    def extract_properties_to_match(properties_to_match, property_to_match_key):
-        indexed_properties = {index: item_for_match[property_to_match_key] for index, item_for_match in enumerate(properties_to_match)}
+    def extract_properties_to_match(self, properties_to_match, schema_type_identifier, names_conversion):
+        schema_pointer = schema_type_identifier.get("schema_pointer")
+        key_pointer = schema_type_identifier["key_pointer"]
+        indexed_properties = {}
+        for property_index, property_parsed_value, _ in self.parse_raw_schema_values(
+            properties_to_match, schema_pointer, key_pointer, names_conversion
+        ):
+            indexed_properties[property_index] = property_parsed_value
         return indexed_properties
 
     @staticmethod
@@ -74,67 +161,14 @@ class FieldMatchingExtractor(DpathExtractor):
         for raw_record in raw_records_extracted:
             unmatched_values_collection = raw_record[self._values_to_match_key]
             for unmatched_values in unmatched_values_collection:
-                yield from FieldMatchingExtractor.match_properties_with_values(unmatched_values, self._properties_to_match)
+                yield from DpathSchemaMatchingExtractor.match_properties_with_values(unmatched_values, self._indexed_properties_to_match)
 
 
-class NamesConversionForRawSchema:
-    config: Config
-
-    def _extract_data(
-        self,
-        body: Mapping[str, Any],
-        extraction_path: Optional[List[Union[InterpolatedString, str]]] = None,
-        default: Any = None,
-    ) -> Any:
-        """
-        Extracts data from the body based on the provided extraction path.
-        """
-
-        if not extraction_path:
-            return body
-
-        path = [node.eval(self.config) if not isinstance(node, str) else node for node in extraction_path]
-
-        return dpath.get(body, path, default=default)  # type: ignore # extracted
-
-    def _set_data(
-        self, value: Any, body: MutableMapping[str, Any], extraction_path: Optional[List[Union[InterpolatedString, str]]] = None
-    ) -> Any:
-        """
-        Sets data in the body based on the provided extraction path.
-        """
-        if not extraction_path:
-            body = value
-
-        path = [node.eval(self.config) if not isinstance(node, str) else node for node in extraction_path]
-
-        dpath.set(body, path, value=value)
-
-    def convert(self, schema_type_identifier, records: Iterable[MutableMapping[Any, Any]]):
-        schema_pointer = schema_type_identifier.get("schema_pointer")
-        key_pointer = schema_type_identifier["key_pointer"]
-        for record in records:
-            raw_schema_properties = self._extract_data(record, schema_pointer)
-
-            for raw_schema_property in raw_schema_properties:
-                raw_schema_property_value = self._extract_data(raw_schema_property, key_pointer)
-                converted_value = self._convert_value(raw_schema_property_value)
-                self._set_data(converted_value, raw_schema_property, key_pointer)
-            yield record
-
-    @staticmethod
-    def _convert_value(value: str):
-        return safe_name_conversion(value)
-
-
-class DpathSchemaExtractor(DpathExtractor, NamesConversionForRawSchema):
+class DpathSchemaExtractor(DpathExtractor, RawSchemaParser):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
-        self.names_conversion = self.config.get("names_conversion", False)
         self.schema_type_identifier = parameters["schema_type_identifier"]
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
         extracted_records = super().extract_records(response=response)
-        if self.names_conversion:
-            yield from self.convert(schema_type_identifier=self.schema_type_identifier, records=extracted_records)
-        yield from extracted_records
+        yield from self.parse(schema_type_identifier=self.schema_type_identifier, records=extracted_records)

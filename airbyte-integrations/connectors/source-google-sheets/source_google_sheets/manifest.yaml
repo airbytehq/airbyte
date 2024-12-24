@@ -26,13 +26,14 @@ dynamic_streams:
         record_selector:
           extractor:
             type: CustomRecordExtractor
-            class_name: source_google_sheets.components.FieldMatchingExtractor
+            class_name: source_google_sheets.components.DpathSchemaMatchingExtractor
             description: Extract record list of values (rows) and matches such values to correct schema property to generate individual records.
             field_path:
               - valueRanges
               - "*"
             $parameters:
-              property_to_match_key: "formattedValue"
+              schema_type_identifier:
+                $ref: "#/definitions/schema_type_identifier"
               values_to_match_key: "values"
               properties_to_match: ""
           type: RecordSelector
@@ -115,7 +116,7 @@ dynamic_streams:
             - $parameters
             - properties_to_match
           type: ComponentMappingDefinition
-          value: "{{components_values['data'][0]['rowData'][0]['values']}}"
+          value: "{{components_values['data'][0]['rowData'][0]}}"
           description: indexed_schema to match with row values.
         - field_path:
             - retriever

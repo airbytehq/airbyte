@@ -14,6 +14,7 @@ from airbyte_cdk.models import (
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
     AirbyteMessage,
+    AirbyteRecordMessage,
     AirbyteStream,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
@@ -399,7 +400,7 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_with_names_conversion(self, http_mocker: HttpMocker) -> None:
-        # will convert '1 тест' to '_1_test
+        # will convert '1 тест' to '_1_test and 'header2' to 'header_2'
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "only_headers_meta", 200)
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "names_conversion_range", 200)
         expected_schema  = {'$schema': 'http://json-schema.org/draft-07/schema#', 'properties': {'_1_test': {'type': ['null', 'string']}, 'header_2': {'type': ['null', 'string']}}, 'type': 'object'}
@@ -408,7 +409,6 @@ class GoogleSheetSourceTest(TestCase):
 
         self._config["names_conversion"] = True
         output = self._discover(self._config, expecting_exception=False)
-        assert output
         assert output.catalog == expected_message
 
     @HttpMocker()
@@ -514,24 +514,65 @@ class GoogleSheetSourceTest(TestCase):
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta")
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range")
         GoogleSheetSourceTest.get_stream_data(http_mocker, "read_records_range_with_dimensions")
-
-        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+        first_property = "header_1"
+        second_property = "header_2"
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {first_property: { "type": ["null", "string"] }, second_property: { "type": ["null", "string"] }}})).build()
 
         output =  self._read(self._config, catalog=configured_catalog, expecting_exception=False)
+        expected_records = [
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={first_property: 'value_11', second_property: 'value_12'}
+                )
+            ),
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={first_property: 'value_21', second_property: 'value_22'}
+                )
+            )
+        ]
         assert len(output.records) == 2
+        assert output.records == expected_records
 
     @HttpMocker()
-    @pytest.mark.skip("Pending to do")
     def test_when_read_then_return_records_with_name_conversion(self, http_mocker: HttpMocker) -> None:
+        # will convert '1 тест' to '_1_test and 'header2' to 'header_2'
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta")
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "names_conversion_range")
         GoogleSheetSourceTest.get_stream_data(http_mocker, "read_records_range_with_dimensions")
 
-        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"_1_test": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+        first_expected_converted_property = "_1_test"
+        second_expected_converted_property = "header_2"
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {first_expected_converted_property: { "type": ["null", "string"] }, second_expected_converted_property: { "type": ["null", "string"] }}})).build()
 
         self._config["names_conversion"] = True
         output =  self._read(self._config, catalog=configured_catalog, expecting_exception=False)
+        expected_records = [
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={first_expected_converted_property: 'value_11', second_expected_converted_property: 'value_12'}
+                )
+            ),
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={first_expected_converted_property: 'value_21', second_expected_converted_property: 'value_22'}
+                )
+            )
+        ]
         assert len(output.records) == 2
+        assert output.records == expected_records
 
     @HttpMocker()
     def test_when_read_multiple_streams_return_records(self, http_mocker: HttpMocker) -> None:
@@ -682,11 +723,15 @@ class GoogleSheetSourceTest(TestCase):
         assert output.errors[0].trace.error.message == expected_message
 
     @pytest.mark.skip("Pending to do")
-    def test_name_conversion_for_schema_match(self):
+    def test_for_empty_columns_does_right_discovery(self):
+        # 1.- Empty and duplicated headers won't make it to the schema, either the indexed or json schema.
+        # 2.- Empty cell in header will mark the end of the header row.
         pass
 
     @pytest.mark.skip("Pending to do")
-    def test_for_columns_empty_does_right_match(self):
+    def test_for_empty_columns_does_right_match(self):
+        # 1.- Empty and duplicated headers won't make it to the schema, either the indexed or json schema.
+        # 2.- Empty cell in header will mark the end of the header row.
         pass
 
     @pytest.mark.skip("Pending to do")
