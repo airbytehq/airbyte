@@ -70,10 +70,10 @@ class TestContactsMergedAuditStream(TestCase, HubspotTestCase):
         self._http_mocker.assert_number_of_calls(second_page_request, 1)
 
         assert len(output.records) == 10
-        assert output.state_messages[0].state.stream.stream_state.dict() == {"vidOffset": 5331889818}
+        assert output.state_messages[0].state.stream.stream_state.model_dump() == {"vidOffset": 5331889818}
         assert output.state_messages[0].state.stream.stream_descriptor.name == self.STREAM_NAME
         assert output.state_messages[0].state.sourceStats.recordCount == 7
-        assert output.state_messages[1].state.stream.stream_state.dict() == {"__ab_full_refresh_sync_complete": True}
+        assert output.state_messages[1].state.stream.stream_state.model_dump() == {"__ab_full_refresh_sync_complete": True}
         assert output.state_messages[1].state.stream.stream_descriptor.name == self.STREAM_NAME
         assert output.state_messages[1].state.sourceStats.recordCount == 3
 
@@ -132,6 +132,6 @@ class TestContactsMergedAuditStream(TestCase, HubspotTestCase):
         self._http_mocker.assert_number_of_calls(second_page_request, 1)
 
         assert len(output.records) == 3
-        assert output.state_messages[0].state.stream.stream_state.dict() == {"__ab_full_refresh_sync_complete": True}
+        assert output.state_messages[0].state.stream.stream_state.model_dump() == {"__ab_full_refresh_sync_complete": True}
         assert output.state_messages[0].state.stream.stream_descriptor.name == self.STREAM_NAME
         assert output.state_messages[0].state.sourceStats.recordCount == 3
