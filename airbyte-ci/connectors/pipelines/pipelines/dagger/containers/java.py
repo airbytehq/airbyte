@@ -186,7 +186,7 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     connector_container = (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
-        .with_mounted_directory("built_artifacts", build_stage.directory("/airbyte"))
+        .with_mounted_directory("built_artifacts", build_stage.directory("/airbyte"), owner=current_user)
         .with_exec(sh_dash_c(["mv built_artifacts/* ."]))
     )
     return await finalize_build(context, connector_container)
