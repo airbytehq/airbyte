@@ -7,12 +7,12 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface CloseStreamTask : ImplementorScope
+interface CloseStreamTask : Task
 
 /**
  * Wraps @[StreamLoader.close] and marks the stream as closed in the stream manager. Also starts the

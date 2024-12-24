@@ -13,12 +13,12 @@ import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.InternalScope
+import io.airbyte.cdk.load.task.Task
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface UpdateCheckpointsTask : InternalScope
+interface UpdateCheckpointsTask : Task
 
 @Singleton
 @Secondary

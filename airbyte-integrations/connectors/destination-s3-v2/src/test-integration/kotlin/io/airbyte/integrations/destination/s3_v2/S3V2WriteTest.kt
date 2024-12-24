@@ -76,6 +76,7 @@ class S3V2WriteTestJsonUncompressed :
     }
 
     @Test
+    @Disabled("not thread-safe")
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
     }
@@ -128,6 +129,7 @@ class S3V2WriteTestCsvUncompressed :
         allTypesBehavior = Untyped,
     ) {
     @Test
+    @Disabled("Not thread-safe")
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
     }

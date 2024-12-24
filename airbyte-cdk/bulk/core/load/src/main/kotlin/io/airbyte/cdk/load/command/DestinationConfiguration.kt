@@ -85,8 +85,13 @@ abstract class DestinationConfiguration : Configuration {
      */
     open val gracefulCancellationTimeoutMs: Long = 60 * 1000L // 1 minutes
 
+    // TODO: Generalize this configuration (when we generalize the accumulator tasks)
     open val numProcessRecordsWorkers: Int = 2
+    open val processRecordsWorkersAreIO: Boolean = true // TODO: Refactor reading from the spill-disk out of this task scope
+
     open val numProcessBatchWorkers: Int = 5
+    open val processBatchWorkersAreIO: Boolean = true
+
     open val numProcessBatchWorkersForFileTransfer: Int = 3
     open val batchQueueDepth: Int = 10
 
