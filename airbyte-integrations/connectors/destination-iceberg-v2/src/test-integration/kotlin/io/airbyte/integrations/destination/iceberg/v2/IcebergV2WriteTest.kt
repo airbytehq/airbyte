@@ -81,7 +81,11 @@ class IcebergGlueWriteTest :
                 IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
             )
         ),
-    )
+    ) {
+    @Test
+    @Disabled("dest iceberge-v2 doesn't support unknown types")
+    override fun testUnknownTypes() {}
+}
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
