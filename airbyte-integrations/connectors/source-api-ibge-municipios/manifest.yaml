@@ -1,0 +1,223 @@
+version: 6.5.2
+
+type: DeclarativeSource
+
+description: Extrair dados de municípios do site do IBGE
+
+check:
+  type: CheckStream
+  stream_names:
+    - Municipios
+
+definitions:
+  streams:
+    Municipios:
+      type: DeclarativeStream
+      name: Municipios
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/localidades/municipios
+          http_method: GET
+          request_body_json:
+            type: object
+            properties:
+              id:
+                type: integer
+              nome:
+                type: string
+              microrregiao:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  nome:
+                    type: string
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Municipios"
+  base_requester:
+    type: HttpRequester
+    url_base: https://servicodados.ibge.gov.br/
+
+streams:
+  - $ref: "#/definitions/streams/Municipios"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Municipios: true
+  testedStreams:
+    Municipios:
+      streamHash: 6e98413b07b99b590f168c32cfb4b159b102ac32
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  Municipios:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      microrregiao:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          mesorregiao:
+            type:
+              - object
+              - "null"
+            properties:
+              UF:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  nome:
+                    type:
+                      - string
+                      - "null"
+                  regiao:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      nome:
+                        type:
+                          - string
+                          - "null"
+                      sigla:
+                        type:
+                          - string
+                          - "null"
+                  sigla:
+                    type:
+                      - string
+                      - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              nome:
+                type:
+                  - string
+                  - "null"
+          nome:
+            type:
+              - string
+              - "null"
+      nome:
+        type:
+          - string
+          - "null"
+      regiao-imediata:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          nome:
+            type:
+              - string
+              - "null"
+          regiao-intermediaria:
+            type:
+              - object
+              - "null"
+            properties:
+              UF:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  nome:
+                    type:
+                      - string
+                      - "null"
+                  regiao:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      nome:
+                        type:
+                          - string
+                          - "null"
+                      sigla:
+                        type:
+                          - string
+                          - "null"
+                  sigla:
+                    type:
+                      - string
+                      - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              nome:
+                type:
+                  - string
+                  - "null"
+    required:
+      - id

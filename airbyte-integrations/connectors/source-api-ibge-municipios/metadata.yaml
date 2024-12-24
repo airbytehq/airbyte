@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "servicodados.ibge.gov.br"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-api-ibge-municipios
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.4@sha256:b73460101d4ff373826b56f00ef2012b635f5eab04c429892547dd055cd779dc
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e2abe652-837e-4fce-8029-c82da36a591e
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-api-ibge-municipios
+  githubIssueLabel: source-api-ibge-municipios
+  icon: icon.svg
+  license: MIT
+  name: API_IBGE_MUNICIPIOS
+  releaseDate: 2024-12-24
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/api-ibge-municipios
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
