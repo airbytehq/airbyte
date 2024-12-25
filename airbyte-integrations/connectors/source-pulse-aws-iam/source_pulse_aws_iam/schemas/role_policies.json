@@ -1,0 +1,35 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "PolicyName" : {
+      "type" : "string",
+      "description" : "The name of the policy."
+    },
+    "PolicyType" : {
+      "type" : "string",
+      "description" : "The type of policy - either 'Inline' or 'Attached'.",
+      "enum" : [
+        "Inline",
+        "Attached"
+      ]
+    },
+    "RoleName" : {
+      "type" : "string",
+      "description" : "The name of the IAM role that this policy is associated with."
+    },
+    "PolicyArn" : {
+      "type" : [
+        "string",
+        "null"
+      ],
+      "description" : "The Amazon Resource Name (ARN) of the policy. Only present for attached policies."
+    }
+  },
+  "required" : [
+    "PolicyName",
+    "PolicyType",
+    "RoleName"
+  ],
+  "additionalProperties" : false
+}

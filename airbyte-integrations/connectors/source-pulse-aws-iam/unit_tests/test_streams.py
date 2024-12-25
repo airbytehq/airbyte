@@ -1,83 +1,126 @@
-#
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-#
-
 from http import HTTPStatus
 from unittest.mock import MagicMock
-
 import pytest
-from source_pulse_aws_iam.source import PulseAwsIamStream
+from source_pulse_aws_iam.streams import BaseIamStream, UsersStream, AccessKeysStream
 
 
 @pytest.fixture
-def patch_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(PulseAwsIamStream, "path", "v0/example_endpoint")
-    mocker.patch.object(PulseAwsIamStream, "primary_key", "test_primary_key")
-    mocker.patch.object(PulseAwsIamStream, "__abstractmethods__", set())
+def config():
+    return {
+        "provider": {
+            "auth_type": "credentials",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region": "us-east-1"
+        }
+    }
 
 
-def test_request_params(patch_base_class):
-    stream = PulseAwsIamStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
+def test_request_params(config):
+    stream = UsersStream(config)
+    inputs = {
+        "stream_slice": None,
+        "stream_state": None,
+        "next_page_token": None
+    }
+    expected_params = {"MaxItems": stream.max_items_per_page}
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_next_page_token(patch_base_class):
-    stream = PulseAwsIamStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
+def test_request_params_with_marker(config):
+    stream = UsersStream(config)
+    inputs = {
+        "stream_slice": None,
+        "stream_state": None,
+        "next_page_token": {"Marker": "next-token"}
+    }
+    expected_params = {
+        "MaxItems": stream.max_items_per_page,
+        "Marker": "next-token"
+    }
+    assert stream.request_params(**inputs) == expected_params
 
 
-def test_parse_response(patch_base_class):
-    stream = PulseAwsIamStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+def test_next_page_token(config):
+    stream = UsersStream(config)
+    response = {"Marker": None}
+    assert stream.next_page_token(response) is None
+
+    response = {"Marker": "next-page"}
+    assert stream.next_page_token(response) == {"Marker": "next-page"}
 
 
-def test_request_headers(patch_base_class):
-    stream = PulseAwsIamStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
+def test_extract_records(config):
+    stream = UsersStream(config)
+    response = {
+        "Users": [
+            {"UserName": "test-user", "UserId": "AIDAXXXXXXXXXXXXX"}
+        ]
+    }
+    assert list(stream.extract_records(response)) == response["Users"]
 
 
-def test_http_method(patch_base_class):
-    stream = PulseAwsIamStream()
-    # TODO: replace this with your expected http request method
-    expected_method = "GET"
-    assert stream.http_method == expected_method
+def test_read_records_error_handling(mocker, config):
+    stream = UsersStream(config)
+    mock_client = mocker.MagicMock()
+    mock_client.list_users.side_effect = Exception("Test error")
+    stream.client = mock_client
+
+    records = list(stream.read_records(sync_mode="full_refresh"))
+    assert len(records) == 0
 
 
-@pytest.mark.parametrize(
-    ("http_status", "should_retry"),
-    [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-    ],
-)
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status
-    stream = PulseAwsIamStream()
-    assert stream.should_retry(response_mock) == should_retry
+def test_read_records_success(mocker, config):
+    stream = UsersStream(config)
+    mock_client = mocker.MagicMock()
+    mock_client.list_users.return_value = {
+        "Users": [
+            {"UserName": "test-user", "UserId": "AIDAXXXXXXXXXXXXX"}
+        ]
+    }
+    stream.client = mock_client
+
+    records = list(stream.read_records(sync_mode="full_refresh"))
+    assert len(records) == 1
+    assert records[0]["UserName"] == "test-user"
 
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
-    stream = PulseAwsIamStream()
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+def test_parent_child_stream_slice(mocker, config):
+    parent_stream = UsersStream(config)
+    child_stream = AccessKeysStream(config)
+
+    mock_client = mocker.MagicMock()
+    mock_client.list_users.return_value = {
+        "Users": [
+            {"UserName": "test-user", "UserId": "AIDAXXXXXXXXXXXXX"}
+        ]
+    }
+    parent_stream.client = mock_client
+
+    child_stream.parent_stream_class = lambda config: parent_stream
+
+    slices = list(child_stream.stream_slices(sync_mode="full_refresh"))
+
+    assert len(slices) > 0
+    assert all("parent_id" in slice for slice in slices)
+    assert slices[0]["parent_id"] == "test-user"
+
+
+def test_parent_child_read_records(mocker, config):
+    child_stream = AccessKeysStream(config)
+    mock_client = mocker.MagicMock()
+    mock_client.list_access_keys.return_value = {
+        "AccessKeyMetadata": [
+            {
+                "AccessKeyId": "AKIAXXXXXXXXXXXXX",
+                "Status": "Active"
+            }
+        ]
+    }
+    child_stream.client = mock_client
+
+    slice = {"parent_id": "test-user"}
+    records = list(child_stream.read_records(sync_mode="full_refresh", stream_slice=slice))
+    assert len(records) == 1
+    assert records[0]["AccessKeyId"] == "AKIAXXXXXXXXXXXXX"
+    assert records[0]["UserName"] == "test-user"

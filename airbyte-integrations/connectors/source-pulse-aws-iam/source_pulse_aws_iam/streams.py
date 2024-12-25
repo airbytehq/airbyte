@@ -185,6 +185,23 @@ class CloudTrailEventsStream(BaseIamStream):
     name = "cloudtrail_events"
     max_items_per_page = 50
 
+    AUTH_EVENT_NAMES = {
+        "AssumeRole",
+        "AssumeRoleWithSAML",
+        "ConsoleLogin",
+        "CreateSession",
+        "SwitchRole",
+        "ExitRole",
+        "GetSSOStatus",
+        "StartSSO",
+        "AssumeRoot",
+        "CreateLoginProfile",
+        "GetLoginProfile",
+        "GetCallerIdentity",
+        "CredentialChallenge",
+        "CredentialVerification"
+    }
+
     @property
     def cursor_field(self) -> str:
         return "EventTime"
@@ -222,6 +239,10 @@ class CloudTrailEventsStream(BaseIamStream):
         logger.info(f"CloudTrail lookup attributes - StartTime: {attrs.get('StartTime')}")
         return attrs
 
+    def is_auth_event(self, event: Dict[str, Any]) -> bool:
+        event_name = event.get('EventName')
+        return event_name in self.AUTH_EVENT_NAMES
+
     def read_records(self, sync_mode: str, cursor_field: List[str] = None,
                      stream_slice: Mapping[str, Any] = None,
                      stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
@@ -232,7 +253,8 @@ class CloudTrailEventsStream(BaseIamStream):
 
             for page in paginator.paginate(**lookup_attrs):
                 for event in page.get('Events', []):
-                    yield event
+                    if self.is_auth_event(event):
+                        yield event
         except Exception as e:
             logger.error(f"Error fetching CloudTrail events: {str(e)}", exc_info=True)
             yield from []
@@ -412,4 +434,259 @@ class IdentityProvidersStream(BaseIamStream):
             yield from providers
         except Exception as e:
             logger.error(f"Error fetching identity providers: {str(e)}")
+            yield from []
+
+class RolePoliciesStream(ParentChildIamStream):
+    primary_key = "RoleName"
+    name = "role_policies"
+    parent_stream_class = RolesStream
+    parent_id_field = "RoleName"
+    max_items_per_page = 100
+
+    def read_records(
+            self,
+            sync_mode: str,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        parent_id = stream_slice.get("parent_id") if stream_slice else None
+        if not parent_id:
+            return
+
+        try:
+            inline_policies = []
+            pagination_args = {
+                "RoleName": parent_id,
+                "MaxItems": self.max_items_per_page
+            }
+
+            while True:
+                try:
+                    response = self.client.list_role_policies(**pagination_args)
+                    policy_names = response.get('PolicyNames', [])
+
+                    for policy_name in policy_names:
+                        inline_policies.append({
+                            "PolicyName": policy_name,
+                            "PolicyType": "Inline",
+                            "RoleName": parent_id
+                        })
+
+                    next_page_token = self.next_page_token(response)
+                    if not next_page_token:
+                        break
+
+                    pagination_args.update(next_page_token)
+
+                except self.client.exceptions.NoSuchEntityException:
+                    logger.warning(f"Role {parent_id} not found")
+                    break
+                except Exception as e:
+                    logger.error(f"Error fetching inline policies for role {parent_id}: {str(e)}")
+                    break
+
+            attached_policies = []
+            pagination_args = {
+                "RoleName": parent_id,
+                "MaxItems": self.max_items_per_page
+            }
+
+            while True:
+                try:
+                    response = self.client.list_attached_role_policies(**pagination_args)
+                    policies = response.get('AttachedPolicies', [])
+
+                    for policy in policies:
+                        policy["PolicyType"] = "Attached"
+                        policy["RoleName"] = parent_id
+                        attached_policies.append(policy)
+
+                    next_page_token = self.next_page_token(response)
+                    if not next_page_token:
+                        break
+
+                    pagination_args.update(next_page_token)
+
+                except self.client.exceptions.NoSuchEntityException:
+                    break
+                except Exception as e:
+                    logger.error(f"Error fetching attached policies for role {parent_id}: {str(e)}")
+                    break
+
+            yield from inline_policies
+            yield from attached_policies
+
+        except Exception as e:
+            logger.error(f"Error in read_records: {str(e)}")
+            yield from []
+
+class GroupPoliciesStream(ParentChildIamStream):
+    primary_key = "GroupName"
+    name = "group_policies"
+    parent_stream_class = GroupsStream
+    parent_id_field = "GroupName"
+    max_items_per_page = 100
+
+    def read_records(
+            self,
+            sync_mode: str,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        parent_id = stream_slice.get("parent_id") if stream_slice else None
+        if not parent_id:
+            return
+
+        try:
+            inline_policies = []
+            pagination_args = {
+                "GroupName": parent_id,
+                "MaxItems": self.max_items_per_page
+            }
+
+            while True:
+                try:
+                    response = self.client.list_group_policies(**pagination_args)
+                    policy_names = response.get('PolicyNames', [])
+
+                    for policy_name in policy_names:
+                        inline_policies.append({
+                            "PolicyName": policy_name,
+                            "PolicyType": "Inline",
+                            "GroupName": parent_id
+                        })
+
+                    next_page_token = self.next_page_token(response)
+                    if not next_page_token:
+                        break
+
+                    pagination_args.update(next_page_token)
+
+                except self.client.exceptions.NoSuchEntityException:
+                    logger.warning(f"Group {parent_id} not found")
+                    break
+                except Exception as e:
+                    logger.error(f"Error fetching inline policies for group {parent_id}: {str(e)}")
+                    break
+
+            attached_policies = []
+            pagination_args = {
+                "GroupName": parent_id,
+                "MaxItems": self.max_items_per_page
+            }
+
+            while True:
+                try:
+                    response = self.client.list_attached_group_policies(**pagination_args)
+                    policies = response.get('AttachedPolicies', [])
+
+                    for policy in policies:
+                        policy["PolicyType"] = "Attached"
+                        policy["GroupName"] = parent_id
+                        attached_policies.append(policy)
+
+                    next_page_token = self.next_page_token(response)
+                    if not next_page_token:
+                        break
+
+                    pagination_args.update(next_page_token)
+
+                except self.client.exceptions.NoSuchEntityException:
+                    break
+                except Exception as e:
+                    logger.error(f"Error fetching attached policies for group {parent_id}: {str(e)}")
+                    break
+
+            yield from inline_policies
+            yield from attached_policies
+
+        except Exception as e:
+            logger.error(f"Error in read_records: {str(e)}")
+            yield from []
+
+class UserPoliciesStream(ParentChildIamStream):
+    primary_key = "UserName"
+    name = "user_policies"
+    parent_stream_class = UsersStream
+    parent_id_field = "UserName"
+    max_items_per_page = 100
+
+    def read_records(
+            self,
+            sync_mode: str,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        parent_id = stream_slice.get("parent_id") if stream_slice else None
+        if not parent_id:
+            return
+
+        try:
+            inline_policies = []
+            pagination_args = {
+                "UserName": parent_id,
+                "MaxItems": self.max_items_per_page
+            }
+
+            while True:
+                try:
+                    response = self.client.list_user_policies(**pagination_args)
+                    policy_names = response.get('PolicyNames', [])
+
+                    for policy_name in policy_names:
+                        inline_policies.append({
+                            "PolicyName": policy_name,
+                            "PolicyType": "Inline",
+                            "UserName": parent_id
+                        })
+
+                    next_page_token = self.next_page_token(response)
+                    if not next_page_token:
+                        break
+
+                    pagination_args.update(next_page_token)
+
+                except self.client.exceptions.NoSuchEntityException:
+                    logger.warning(f"User {parent_id} not found")
+                    break
+                except Exception as e:
+                    logger.error(f"Error fetching inline policies for user {parent_id}: {str(e)}")
+                    break
+
+            attached_policies = []
+            pagination_args = {
+                "UserName": parent_id,
+                "MaxItems": self.max_items_per_page
+            }
+
+            while True:
+                try:
+                    response = self.client.list_attached_user_policies(**pagination_args)
+                    policies = response.get('AttachedPolicies', [])
+
+                    for policy in policies:
+                        policy["PolicyType"] = "Attached"
+                        policy["UserName"] = parent_id
+                        attached_policies.append(policy)
+
+                    next_page_token = self.next_page_token(response)
+                    if not next_page_token:
+                        break
+
+                    pagination_args.update(next_page_token)
+
+                except self.client.exceptions.NoSuchEntityException:
+                    break
+                except Exception as e:
+                    logger.error(f"Error fetching attached policies for user {parent_id}: {str(e)}")
+                    break
+
+            yield from inline_policies
+            yield from attached_policies
+
+        except Exception as e:
+            logger.error(f"Error in read_records: {str(e)}")
             yield from []

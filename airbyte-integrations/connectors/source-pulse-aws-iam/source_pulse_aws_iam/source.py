@@ -2,7 +2,7 @@ from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_pulse_aws_iam.streams import ListAccountsStream
+from source_pulse_aws_iam.streams import ListAccountsStream, RolePoliciesStream, GroupPoliciesStream, UserPoliciesStream
 
 from .streams import UsersStream, GroupsStream, RolesStream, PoliciesStream, AccessKeysStream, CloudTrailEventsStream, \
     AccessAnalyzersStream, AnalyzerFindingsStream, CredentialReportStream, OrganizationDetailsStream, IdentityProvidersStream
@@ -31,4 +31,7 @@ class SourcePulseAwsIam(AbstractSource):
                 OrganizationDetailsStream(config=config),
                 IdentityProvidersStream(config=config),
                 ListAccountsStream(config=config),
+                RolePoliciesStream(config=config),
+                GroupPoliciesStream(config=config),
+                UserPoliciesStream(config=config),
                 ]

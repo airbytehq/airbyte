@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "users",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -11,11 +11,30 @@
     },
     {
       "stream": {
-        "name": "employees",
+        "name": "groups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "roles",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "cloudtrail_events",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
+      "cursor_field": ["EventTime"],
       "destination_sync_mode": "append"
     }
   ]

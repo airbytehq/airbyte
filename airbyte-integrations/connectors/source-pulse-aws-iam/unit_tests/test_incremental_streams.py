@@ -1,59 +1,90 @@
-#
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-#
-
-
+import pytest
 from airbyte_cdk.models import SyncMode
-from pytest import fixture
-from source_pulse_aws_iam.source import IncrementalPulseAwsIamStream
+from source_pulse_aws_iam.streams import CloudTrailEventsStream
+from datetime import datetime
 
 
-@fixture
-def patch_incremental_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(IncrementalPulseAwsIamStream, "path", "v0/example_endpoint")
-    mocker.patch.object(IncrementalPulseAwsIamStream, "primary_key", "test_primary_key")
-    mocker.patch.object(IncrementalPulseAwsIamStream, "__abstractmethods__", set())
+@pytest.fixture
+def config():
+    return {
+        "provider": {
+            "auth_type": "credentials",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region": "us-east-1",
+            "start_time": "2024-01-01T00:00:00Z"
+        }
+    }
 
 
-def test_cursor_field(patch_incremental_base_class):
-    stream = IncrementalPulseAwsIamStream()
-    # TODO: replace this with your expected cursor field
-    expected_cursor_field = []
-    assert stream.cursor_field == expected_cursor_field
+def test_cursor_field(config):
+    stream = CloudTrailEventsStream(config)
+    assert stream.cursor_field == "EventTime"
 
 
-def test_get_updated_state(patch_incremental_base_class):
-    stream = IncrementalPulseAwsIamStream()
-    # TODO: replace this with your input parameters
-    inputs = {"current_stream_state": None, "latest_record": None}
-    # TODO: replace this with your expected updated stream state
-    expected_state = {}
-    assert stream.get_updated_state(**inputs) == expected_state
+def test_get_lookup_attributes_with_state(config):
+    stream = CloudTrailEventsStream(config)
+    state = {"EventTime": "2024-02-01T00:00:00Z"}
+
+    lookup_attrs = stream.get_lookup_attributes(state)
+    assert "StartTime" in lookup_attrs
+    assert isinstance(lookup_attrs["StartTime"], datetime)
+    assert lookup_attrs["StartTime"].isoformat() + "Z" == "2024-02-01T00:00:00Z"
 
 
-def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalPulseAwsIamStream()
-    # TODO: replace this with your input parameters
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    # TODO: replace this with your expected stream slices list
-    expected_stream_slice = [{}]
-    assert stream.stream_slices(**inputs) == expected_stream_slice
+def test_get_lookup_attributes_with_config_start_time(config):
+    stream = CloudTrailEventsStream(config)
+    lookup_attrs = stream.get_lookup_attributes({})
+
+    assert "StartTime" in lookup_attrs
+    assert isinstance(lookup_attrs["StartTime"], datetime)
+    assert lookup_attrs["StartTime"].isoformat() + "Z" == "2024-01-01T00:00:00Z"
 
 
-def test_supports_incremental(patch_incremental_base_class, mocker):
-    mocker.patch.object(IncrementalPulseAwsIamStream, "cursor_field", "dummy_field")
-    stream = IncrementalPulseAwsIamStream()
-    assert stream.supports_incremental
+def test_get_lookup_attributes_no_start_time():
+    config_without_start = {
+        "provider": {
+            "auth_type": "credentials",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region": "us-east-1"
+        }
+    }
+    stream = CloudTrailEventsStream(config_without_start)
+    lookup_attrs = stream.get_lookup_attributes({})
+
+    assert "StartTime" not in lookup_attrs
 
 
-def test_source_defined_cursor(patch_incremental_base_class):
-    stream = IncrementalPulseAwsIamStream()
-    assert stream.source_defined_cursor
+def test_read_records_handles_errors(mocker, config):
+    mock_client = mocker.MagicMock()
+    mock_paginator = mocker.MagicMock()
+    mock_paginator.paginate.side_effect = Exception("Test error")
+    mock_client.get_paginator.return_value = mock_paginator
+
+    stream = CloudTrailEventsStream(config)
+    stream.cloudtrail_client = mock_client
+
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
+    assert len(records) == 0
 
 
-def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = IncrementalPulseAwsIamStream()
-    # TODO: replace this with your expected checkpoint interval
-    expected_checkpoint_interval = None
-    assert stream.state_checkpoint_interval == expected_checkpoint_interval
+def test_read_records_success(mocker, config):
+    mock_client = mocker.MagicMock()
+    mock_paginator = mocker.MagicMock()
+    mock_paginator.paginate.return_value = [{
+        "Events": [
+            {
+                "EventId": "test-event-1",
+                "EventTime": "2024-01-01T12:00:00Z"
+            }
+        ]
+    }]
+    mock_client.get_paginator.return_value = mock_paginator
+
+    stream = CloudTrailEventsStream(config)
+    stream.cloudtrail_client = mock_client
+
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
+    assert len(records) == 1
+    assert records[0]["EventId"] == "test-event-1"

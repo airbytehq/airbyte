@@ -1,3 +1,8 @@
 {
-  "fix-me": "TODO"
+  "provider": {
+    "auth_type": "credentials",
+    "aws_access_key_id": "{{ config['provider']['aws_access_key_id'] }}",
+    "aws_secret_access_key": "{{ config['provider']['aws_secret_access_key'] }}",
+    "region": "us-east-1"
+  }
 }

@@ -1,3 +1,6 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "provider": {
+    "auth_type": "invalid",
+    "region": "us-east-1"
+  }
 }
