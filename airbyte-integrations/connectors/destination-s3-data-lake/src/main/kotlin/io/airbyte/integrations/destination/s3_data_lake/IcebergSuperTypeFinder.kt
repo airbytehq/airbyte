@@ -22,6 +22,7 @@ import org.apache.iceberg.types.Types.*
  */
 @Singleton
 class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesComparator) {
+    private val unsupportedTypeIds = setOf(BINARY, DECIMAL, FIXED, UUID, MAP, TIMESTAMP_NANO)
 
     /**
      * Returns a supertype for [existingType] and [incomingType] if one exists.
@@ -67,11 +68,12 @@ class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesCom
      * @throws IllegalArgumentException if either type is unsupported.
      */
     private fun validateTypeIds(typeId1: TypeID, typeId2: TypeID) {
-        val unsupportedTypeIds = setOf(BINARY, DECIMAL, FIXED, UUID, MAP, TIMESTAMP_NANO)
-        if (typeId1 in unsupportedTypeIds || typeId2 in unsupportedTypeIds) {
-            val badTypeId = if (typeId1 in unsupportedTypeIds) typeId1 else typeId2
+        val providedTypes = listOf(typeId1, typeId2)
+        val foundUnsupported = providedTypes.filter { it in unsupportedTypeIds }
+
+        if (foundUnsupported.isNotEmpty()) {
             throw IllegalArgumentException(
-                "Unsupported or unmapped Iceberg type: $badTypeId. Please implement handling if needed."
+                "Unsupported or unmapped Iceberg type(s): ${foundUnsupported.joinToString()}. Please implement handling if needed."
             )
         }
     }
@@ -93,13 +95,12 @@ class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesCom
     ): Type {
         val existingTypeId = existingType.typeId()
         val incomingTypeId = incomingType.typeId()
-
-        validateTypeIds(existingTypeId, incomingTypeId)
-
         // If promotion is not allowed by Iceberg, fail fast.
         if (!TypeUtil.isPromotionAllowed(existingType, incomingType)) {
             throwIllegalTypeCombination(existingType, incomingType, columnName)
         }
+
+        validateTypeIds(existingTypeId, incomingTypeId)
 
         // If both are the same type ID, we just use the existing type
         if (existingTypeId == incomingTypeId) {
