@@ -18,22 +18,29 @@ class IcebergV2Writer(
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val icebergConfiguration: IcebergV2Configuration,
     private val icebergUtil: IcebergUtil,
+    private val icebergTableSynchronizer: IcebergTableSynchronizer
 ) : DestinationWriter {
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val properties = icebergUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
         val pipeline = IcebergParquetPipelineFactory().create(stream)
-        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+        val incomingSchema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
         val table =
             icebergUtil.createTable(
                 streamDescriptor = stream.descriptor,
                 catalog = catalog,
-                schema = schema,
+                schema = incomingSchema,
                 properties = properties
             )
 
-        existingAndIncomingSchemaShouldBeSame(catalogSchema = schema, tableSchema = table.schema())
+        // TODO : See if the identifier fields are allowed to change
+        identifierFieldsShouldNotChange(
+            incomingSchema = incomingSchema,
+            existingSchema = table.schema()
+        )
+
+        icebergTableSynchronizer.applySchemaChanges(table, incomingSchema)
 
         return IcebergStreamLoader(
             stream = stream,
@@ -46,38 +53,9 @@ class IcebergV2Writer(
         )
     }
 
-    private fun existingAndIncomingSchemaShouldBeSame(catalogSchema: Schema, tableSchema: Schema) {
-        val incomingFieldSet =
-            catalogSchema
-                .asStruct()
-                .fields()
-                .map { Triple(it.name(), it.type().typeId(), it.isOptional) }
-                .toSet()
-        val existingFieldSet =
-            tableSchema
-                .asStruct()
-                .fields()
-                .map { Triple(it.name(), it.type().typeId(), it.isOptional) }
-                .toSet()
-
-        val missingInIncoming = existingFieldSet - incomingFieldSet
-        val extraInIncoming = incomingFieldSet - existingFieldSet
-
-        if (missingInIncoming.isNotEmpty() || extraInIncoming.isNotEmpty()) {
-            val errorMessage = buildString {
-                append("Table schema fields are different than catalog schema:\n")
-                if (missingInIncoming.isNotEmpty()) {
-                    append("Fields missing in incoming schema: $missingInIncoming\n")
-                }
-                if (extraInIncoming.isNotEmpty()) {
-                    append("Extra fields in incoming schema: $extraInIncoming\n")
-                }
-            }
-            throw IllegalArgumentException(errorMessage)
-        }
-
-        val incomingIdentifierFields = catalogSchema.identifierFieldNames()
-        val existingIdentifierFieldNames = tableSchema.identifierFieldNames()
+    private fun identifierFieldsShouldNotChange(incomingSchema: Schema, existingSchema: Schema) {
+        val incomingIdentifierFields = incomingSchema.identifierFieldNames()
+        val existingIdentifierFieldNames = existingSchema.identifierFieldNames()
 
         val identifiersMissingInIncoming = existingIdentifierFieldNames - incomingIdentifierFields
         val identifiersExtraInIncoming = incomingIdentifierFields - existingIdentifierFieldNames
