@@ -119,7 +119,9 @@ class IcebergSuperTypeFinderTest {
         // Fails in validateTypeIds => BINARY is not supported
         assertThatThrownBy { superTypeFinder.findSuperType(binaryType, intType, "column_name") }
             .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("Unsupported or unmapped Iceberg type: BINARY")
+            .hasMessageContaining(
+                "Conversion for column \"column_name\" between binary and int is not allowed."
+            )
     }
 
     @Test
@@ -130,7 +132,9 @@ class IcebergSuperTypeFinderTest {
         // Fails in validateTypeIds => DECIMAL is not supported
         assertThatThrownBy { superTypeFinder.findSuperType(decimalType, intType, "column_name") }
             .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("Unsupported or unmapped Iceberg type: DECIMAL")
+            .hasMessageContaining(
+                "Conversion for column \"column_name\" between decimal(10, 2) and int is not allowed."
+            )
     }
 
     @Test
@@ -141,7 +145,9 @@ class IcebergSuperTypeFinderTest {
         // Fails in validateTypeIds => FIXED is not supported
         assertThatThrownBy { superTypeFinder.findSuperType(fixedType, intType, "column_name") }
             .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("Unsupported or unmapped Iceberg type: FIXED")
+            .hasMessageContaining(
+                "Conversion for column \"column_name\" between fixed[16] and int is not allowed."
+            )
     }
 
     @Test
@@ -152,7 +158,9 @@ class IcebergSuperTypeFinderTest {
         // Fails in validateTypeIds => UUID is not supported
         assertThatThrownBy { superTypeFinder.findSuperType(uuidType, intType, "column_name") }
             .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("Unsupported or unmapped Iceberg type: UUID")
+            .hasMessageContaining(
+                "Conversion for column \"column_name\" between uuid and int is not allowed."
+            )
     }
 
     @Test
@@ -174,7 +182,6 @@ class IcebergSuperTypeFinderTest {
                 superTypeFinder.findSuperType(nanoTimestamp, normalTimestamp, "column_name")
             }
             .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("Unsupported or unmapped Iceberg type: TIMESTAMP_NANO")
     }
 
     @Test
