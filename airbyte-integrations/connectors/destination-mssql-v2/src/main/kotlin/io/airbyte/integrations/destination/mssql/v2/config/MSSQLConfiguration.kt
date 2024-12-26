@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.mssql.v2.config
 
-import dagger.Component.Factory
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
 data class MSSQLConfiguration(
