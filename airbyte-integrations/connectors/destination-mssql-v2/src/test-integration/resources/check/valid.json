@@ -1,0 +1,10 @@
+{
+  "host": "localhost",
+  "port": 1433,
+  "database": "master",
+  "schema": "dbo",
+  "raw_data_schema": "guest",
+  "ssl_method": {"name":  "unencrypted"},
+  "user": "sa",
+  "password": "Averycomplicatedpassword1!"
+}
