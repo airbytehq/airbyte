@@ -261,17 +261,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         sync_mode: DestinationSyncMode,
     ) -> None:
         """Write the temp table into the final table using the provided write strategy."""
-        if sync_mode == DestinationSyncMode.overwrite:
-            # Note: No need to check for schema compatibility
-            # here, because we are fully replacing the table.
-            self._swap_temp_table_with_final_table(
-                stream_name=stream_name,
-                temp_table_name=temp_table_name,
-                final_table_name=final_table_name,
-            )
-            return
-
-        if sync_mode == DestinationSyncMode.append:
+        if sync_mode == DestinationSyncMode.append or sync_mode == DestinationSyncMode.overwrite:
             self._ensure_compatible_table_schema(
                 stream_name=stream_name,
                 table_name=final_table_name,
