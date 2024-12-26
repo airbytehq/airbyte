@@ -232,9 +232,23 @@ definitions:
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: update_time
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['replication_start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: since_timestamp
     $parameters:
       path_extractor: "organization"
-      path: "/organizations"
+      path: "/recents"
 
   organization_fields_stream:
     $ref: "#/definitions/base_stream"
