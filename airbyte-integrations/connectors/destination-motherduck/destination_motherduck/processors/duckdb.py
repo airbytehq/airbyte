@@ -262,6 +262,9 @@ class DuckDBSqlProcessor(SqlProcessorBase):
     ) -> None:
         """Write the temp table into the final table using the provided write strategy."""
         if sync_mode == DestinationSyncMode.append or sync_mode == DestinationSyncMode.overwrite:
+            # Because overwrite drops the table and reinsert all the data
+            # we can use the same logic as append. 
+            # The table is dropped during (_ensure_table_exists)
             self._ensure_compatible_table_schema(
                 stream_name=stream_name,
                 table_name=final_table_name,
