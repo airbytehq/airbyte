@@ -95,9 +95,7 @@ class DockerizedDestination(
         val containerName = "$shortImageName-$command-$randomSuffix"
         logger.info { "Creating docker container $containerName" }
         logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
-        val additionalEnvEntries = envVars.flatMap { (key, value) ->
-            listOf("-e", "$key=$value")
-        }
+        val additionalEnvEntries = envVars.flatMap { (key, value) -> listOf("-e", "$key=$value") }
         logger.info { "Env vars: $envVars loaded" }
         val cmd: MutableList<String> =
             (listOf(

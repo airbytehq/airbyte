@@ -45,9 +45,7 @@ class NonDockerizedDestination(
     private val file = File("/tmp/test_file")
 
     init {
-        envVars.forEach { (key, value) ->
-            IntegrationTest.nonDockerMockEnvVars.set(key, value)
-        }
+        envVars.forEach { (key, value) -> IntegrationTest.nonDockerMockEnvVars.set(key, value) }
         logger.info { "Env vars: $envVars loaded" }
 
         if (useFileTransfer) {
