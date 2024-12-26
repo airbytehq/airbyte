@@ -1,0 +1,169 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string",
+              "description": "The unique ID for the user"
+            },
+            "etag": {
+              "type": "string"
+            },
+            "primaryEmail": {
+              "type": "string",
+              "description": "The user's primary email address"
+            },
+            "name": {
+              "type": "object",
+              "properties": {
+                "givenName": {
+                  "type": "string"
+                },
+                "familyName": {
+                  "type": "string"
+                },
+                "fullName": {
+                  "type": "string"
+                }
+              }
+            },
+            "isAdmin": {
+              "type": "boolean"
+            },
+            "isDelegatedAdmin": {
+              "type": "boolean"
+            },
+            "lastLoginTime": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "creationTime": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "suspended": {
+              "type": "boolean"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "users_incremental",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string",
+              "description": "The unique ID for the user"
+            },
+            "etag": {
+              "type": "string"
+            },
+            "primaryEmail": {
+              "type": "string",
+              "description": "The user's primary email address"
+            },
+            "name": {
+              "type": "object",
+              "properties": {
+                "givenName": {
+                  "type": "string"
+                },
+                "familyName": {
+                  "type": "string"
+                },
+                "fullName": {
+                  "type": "string"
+                }
+              }
+            },
+            "isAdmin": {
+              "type": "boolean"
+            },
+            "isDelegatedAdmin": {
+              "type": "boolean"
+            },
+            "lastLoginTime": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "creationTime": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "suspended": {
+              "type": "boolean"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastLoginTime"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["lastLoginTime"],
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "groups",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string",
+              "description": "The unique ID of the group"
+            },
+            "etag": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string",
+              "description": "The group's email address"
+            },
+            "name": {
+              "type": "string",
+              "description": "The group's display name"
+            },
+            "directMembersCount": {
+              "type": "integer"
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "adminCreated": {
+              "type": "boolean"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

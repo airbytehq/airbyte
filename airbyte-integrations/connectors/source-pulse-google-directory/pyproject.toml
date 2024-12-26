@@ -1,0 +1,32 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-pulse-google-directory"
+description = "Source implementation for google-directory-v2."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/google-directory-v2"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [ { include = "source_google_directory_v2" }, {include = "main.py" } ]
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^0.90.0"
+google-api-python-client = "^2.0.0"
+google-auth-httplib2 = "^0.1.0"
+google-auth-oauthlib = "^1.0.0"
+pendulum = "^2.1.2"
+
+[tool.poetry.scripts]
+source-pulse-google-directory = "source_google_directory_v2.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest = "^6.2"
+pytest-mock = "^3.6.1"
+

@@ -1,0 +1,122 @@
+version: "0.50.0"
+type: "DeclerariveSource"
+
+check:
+  type: CheckStream
+  stream_names: ["users"]
+
+definitions:
+  schema_loader:
+    type: JsonSchema
+    schema:
+      users:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: object
+            properties:
+              fullName:
+                type: string
+              givenName:
+                type: string
+              familyName:
+                type: string
+          isAdmin:
+            type: boolean
+          creationTime:
+            type: string
+            format: date-time
+          primaryEmail:
+            type: string
+          lastLoginTime:
+            type: string
+            format: date-time
+
+      users_incremental:
+        $ref: "#/definitions/schema_loader/schema/users"
+
+      groups:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          email:
+            type: string
+          adminCreated:
+            type: boolean
+          directMembersCount:
+            type: integer
+
+  requester:
+    type: HttpRequester
+    url_base: "https://admin.googleapis.com/admin/directory/v1"
+    http_method: "GET"
+    authenticator:
+      type: OAuthAuthenticator
+      token_refresh_endpoint: "https://oauth2.googleapis.com/token"
+      client_id: "{{ config['credentials_json']['client_id'] }}"
+      client_secret: "{{ config['credentials_json']['client_secret'] }}"
+      refresh_token: "{{ config['credentials_json']['refresh_token'] }}"
+
+streams:
+  - name: users
+    type: DeclarativeStream
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    primary_key: ["id"]
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/users"
+
+  - name: users_incremental
+    type: DeclarativeStream
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    primary_key: ["id"]
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "creationTime"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/users"
+
+  - name: groups
+    type: DeclarativeStream
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    primary_key: ["id"]
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/groups"
+
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/google-directory-v2
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Google Directory V2 Spec
+    type: object
+    required:
+      - credentials_json
+      - admin_email
+    properties:
+      credentials_json:
+        title: Service Account Key
+        description: "The Service Account key in JSON format"
+        type: object
+        airbyte_secret: true
+      admin_email:
+        title: Admin Email
+        description: "The email of the workspace admin"
+        type: string
+        pattern: "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"

@@ -1,0 +1,9 @@
+{
+  "credentials_json": {
+    "type": "service_account",
+    "project_id": "invalid-project",
+    "private_key": "invalid-key",
+    "client_email": "invalid@example.com"
+  },
+  "admin_email": "invalid@example.com"
+}

@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "description": "The unique ID of the group"
+    },
+    "etag": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "description": "The group's email address"
+    },
+    "name": {
+      "type": "string",
+      "description": "The group's display name"
+    },
+    "directMembersCount": {
+      "type": "integer",
+      "description": "Number of direct members"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Description of the group"
+    },
+    "adminCreated": {
+      "type": "boolean",
+      "description": "Whether group was created by admin"
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of group's email aliases"
+    },
+    "nonEditableAliases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowExternalMembers": {
+      "type": "boolean",
+      "description": "Are external members allowed"
+    },
+    "allowWebPosting": {
+      "type": "boolean",
+      "description": "Is posting from web allowed"
+    },
+    "isArchived": {
+      "type": "boolean",
+      "description": "Whether or not group is archived"
+    },
+    "whoCanJoin": {
+      "type": "string",
+      "description": "Permission to join group"
+    },
+    "whoCanViewMembership": {
+      "type": "string",
+      "description": "Permission to view membership"
+    },
+    "whoCanViewGroup": {
+      "type": "string",
+      "description": "Permission to view group"
+    },
+    "whoCanInvite": {
+      "type": "string",
+      "description": "Permission to invite to group"
+    },
+    "whoCanAdd": {
+      "type": "string",
+      "description": "Permission to add to group"
+    },
+    "whoCanPostMessage": {
+      "type": "string",
+      "description": "Permission to post message"
+    }
+  }
+}
