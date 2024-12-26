@@ -95,6 +95,9 @@ class DockerizedDestination(
         val containerName = "$shortImageName-$command-$randomSuffix"
         logger.info { "Creating docker container $containerName" }
         logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
+        val additionalEnvEntries = envVars.flatMap { (key, value) ->
+            listOf("-e", "$key=$value")
+        }
         logger.info { "Env vars: $envVars loaded" }
         val cmd: MutableList<String> =
             (listOf(
@@ -122,6 +125,7 @@ class DockerizedDestination(
                     "-e",
                     "USE_FILE_TRANSFER=$useFileTransfer",
                 ) +
+                    additionalEnvEntries +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
                         // Yes, we hardcode the job ID to 0.
