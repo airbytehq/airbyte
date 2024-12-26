@@ -8,7 +8,8 @@ import java.util.UUID
 import javax.sql.DataSource
 
 @Singleton
-class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) : DestinationChecker<MSSQLConfiguration> {
+class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
+    DestinationChecker<MSSQLConfiguration> {
     override fun check(config: MSSQLConfiguration) {
         val dataSource: DataSource = dataSourceFactory.getDataSource(config)
         val testTableName = "check_test_${UUID.randomUUID()}"
