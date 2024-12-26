@@ -112,7 +112,7 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.4.0   | 2024-12-26 | [x](https://github.com/airbytehq/airbyte/pull/x) | Add incremental sync to organizations stream         |
+| 2.4.0   | 2024-12-26 | [50424](https://github.com/airbytehq/airbyte/pull/50424) | Add incremental sync to organizations stream         |
 | 2.3.0   | 2024-12-17 | [48615](https://github.com/airbytehq/airbyte/pull/48615) | Update airbyte-cdk to use concurrency                                                                                                                                  |
 | 2.2.28  | 2024-12-14 | [49692](https://github.com/airbytehq/airbyte/pull/49692) | Update dependencies                                                                                                                                                    |
 | 2.2.27  | 2024-12-12 | [49041](https://github.com/airbytehq/airbyte/pull/49041) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
