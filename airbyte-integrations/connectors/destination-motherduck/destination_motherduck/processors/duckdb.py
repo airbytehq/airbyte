@@ -357,6 +357,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         sync_mode: DestinationSyncMode,
     ) -> None:
         temp_table_name = self._create_table_for_loading(stream_name, batch_id=None)
+        final_table_name = self.normalizer.normalize(stream_name)
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
         except Exception:
@@ -375,7 +376,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             self._write_temp_table_to_target_table(
                 stream_name=stream_name,
                 temp_table_name=temp_table_name_dedup,
-                final_table_name=stream_name,
+                final_table_name=final_table_name,
                 sync_mode=sync_mode,
             )
         finally:
