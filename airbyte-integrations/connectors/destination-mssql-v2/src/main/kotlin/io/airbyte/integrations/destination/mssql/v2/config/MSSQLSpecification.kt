@@ -62,12 +62,12 @@ class MSSQLSpecification : ConfigurationSpecification() {
         "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
     )
     @get:JsonProperty("jdbc_url_params")
-    @get:JsonSchemaInject(json = """{""order":6""")
+    @get:JsonSchemaInject(json = """{"order":6}""")
     val jdbcUrlParams: String? = null
 
     @get:JsonSchemaTitle("Raw Table Schema Name")
     @get:JsonPropertyDescription("The schema to write raw tables into (default: airbyte_internal)")
-    @get:JsonProperty("password")
+    @get:JsonProperty("raw_data_schema")
     @get:JsonSchemaInject(json = """{"default":"airbyte_internal","order":5}""")
     val rawDataSchema: String = "airbyte_internal"
 
@@ -77,17 +77,17 @@ class MSSQLSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("ssl_method")
     @get:JsonSchemaInject(json = """{"order":8}""")
-    val sslMethod: EncryptionMethod = EncryptedVerify()
+    lateinit var sslMethod: EncryptionMethod
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "ssl_method")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "name")
 @JsonSubTypes(
     JsonSubTypes.Type(value = Unencrypted::class, name = Unencrypted.NAME),
     JsonSubTypes.Type(value = EncryptedTrust::class, name = EncryptedTrust.NAME),
     JsonSubTypes.Type(value = EncryptedVerify::class, name = EncryptedVerify.NAME),
 )
 sealed interface EncryptionMethod {
-    @get:JsonProperty("ssl_method") val sslMethod: String
+    @get:JsonProperty("name") val name: String
 }
 
 @JsonSchemaTitle("Unencrypted")
@@ -96,7 +96,7 @@ class Unencrypted : EncryptionMethod {
     companion object {
         const val NAME = "unencrypted"
     }
-    override val sslMethod: String = NAME
+    override val name: String = NAME
 }
 
 @JsonSchemaTitle("Encrypted (trust server certificate)")
@@ -107,7 +107,7 @@ class EncryptedTrust : EncryptionMethod {
     companion object {
         const val NAME = "encrypted_trust_server_certificate"
     }
-    override val sslMethod: String = NAME
+    override val name: String = NAME
 }
 
 @JsonSchemaTitle("Encrypted (verify certificate)")
@@ -116,7 +116,7 @@ class EncryptedVerify : EncryptionMethod {
     companion object {
         const val NAME = "encrypted_verify_certificate"
     }
-    override val sslMethod: String = NAME
+    override val name: String = NAME
 
     @get:JsonSchemaTitle("Trust Store Name")
     @get:JsonPropertyDescription("Specifies the name of the trust store.")
