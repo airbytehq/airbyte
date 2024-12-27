@@ -102,11 +102,11 @@ internal class IcebergTableCleanerTest {
         every { tasks.close() } just Runs
         every { table.newScan().planFiles() } returns tasks
 
-        every { fileScanTask.file().path().toString() } returns filePathToDelete
+        every { fileScanTask.file().location() } returns filePathToDelete
 
         val delete = mockk<DeleteFiles>()
         every { table.newDelete().toBranch("staging") } returns delete
-        every { delete.deleteFile(fileScanTask.file().path()) } returns delete
+        every { delete.deleteFile(filePathToDelete) } returns delete
         every { delete.commit() } just Runs
 
         assertDoesNotThrow {
@@ -116,7 +116,7 @@ internal class IcebergTableCleanerTest {
         verify {
             icebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
             table.newDelete().toBranch(eq("staging"))
-            delete.deleteFile(fileScanTask.file().path())
+            delete.deleteFile(filePathToDelete)
             delete.commit()
         }
     }
@@ -138,11 +138,11 @@ internal class IcebergTableCleanerTest {
         every { tasks.close() } just Runs
         every { table.newScan().planFiles() } returns tasks
 
-        every { fileScanTask.file().path().toString() } returns filePathToDelete
+        every { fileScanTask.file().location().toString() } returns filePathToDelete
 
         val delete = mockk<DeleteFiles>()
         every { table.newDelete().toBranch("staging") } returns delete
-        every { delete.deleteFile(fileScanTask.file().path()) } returns delete
+        every { delete.deleteFile(fileScanTask.file().location()) } returns delete
         every { delete.commit() } just Runs
 
         assertDoesNotThrow {

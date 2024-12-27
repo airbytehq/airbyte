@@ -15,6 +15,8 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import backoff
 import pendulum as pendulum
 import requests
+from requests import HTTPError, codes
+
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
@@ -30,7 +32,6 @@ from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
-from requests import HTTPError, codes
 from source_hubspot.components import NewtoLegacyFieldTransformation
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
@@ -44,6 +45,7 @@ from source_hubspot.helpers import (
     IURLPropertyRepresentation,
     StoreAsIs,
 )
+
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -1542,14 +1544,12 @@ class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
 
 
 class ContactsFormSubmissions(ContactsAllBase, ResumableFullRefreshMixin, ABC):
-
     records_field = "form-submissions"
     filter_field = "formSubmissionMode"
     filter_value = "all"
 
 
 class ContactsMergedAudit(ContactsAllBase, ResumableFullRefreshMixin, ABC):
-
     records_field = "merge-audits"
     unnest_fields = ["merged_from_email", "merged_to_email"]
 
@@ -2164,7 +2164,6 @@ class PropertyHistoryV3(PropertyHistory):
 
 
 class CompaniesPropertyHistory(PropertyHistoryV3):
-
     scopes = {"crm.objects.companies.read"}
     properties_scopes = {"crm.schemas.companies.read"}
     entity = "companies"
@@ -2318,7 +2317,7 @@ class Leads(CRMSearchStream):
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
-    scopes = {"e-commerce"}
+    scopes = {"e-commerce", "crm.objects.line_items.read"}
 
 
 class Products(CRMObjectIncrementalStream):
@@ -2446,7 +2445,6 @@ class WebAnalyticsStream(HttpSubStream, Stream, CheckpointMixin):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         now = pendulum.now(tz="UTC")
         for parent_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
-
             object_id = parent_slice["parent"][self.object_id_field]
 
             # We require this workaround to shorten the duration of the acceptance test run.
