@@ -12,7 +12,7 @@ from pytest_httpx import HTTPXMock
 
 
 def test_health_check(httpx_mock: HTTPXMock, client: DeepsetCloudApi) -> None:
-    httpx_mock.add_response(json={"workspaces": [{"name": client.config.workspace}]})
+    httpx_mock.add_response(json={"organization": {"workspaces": [{"name": client.config.workspace}]}})
     assert client.health_check() is None, "Health check failed!"
 
 
@@ -20,7 +20,7 @@ def test_health_check_retries_requests_until_success(httpx_mock: HTTPXMock, clie
     for _ in range(client.config.retries - 1):
         httpx_mock.add_response(status_code=codes.BAD_GATEWAY)
 
-    httpx_mock.add_response(json={"workspaces": [{"name": client.config.workspace}]})
+    httpx_mock.add_response(json={"organization": {"workspaces": [{"name": client.config.workspace}]}})
 
     assert client.health_check() is None, "Health check failed!"
 

@@ -7,7 +7,7 @@ from enum import Enum, unique
 from pathlib import Path
 from typing import Any, AnyStr, Dict, Optional
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Extra, Field, HttpUrl
 
 from airbyte_cdk.models import AirbyteRecordMessage
 from destination_deepset import util
@@ -47,6 +47,9 @@ class Filetypes(str, Enum):
 
 
 class DeepsetCloudConfig(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     api_key: str = Field(title="API Key", description="Your deepset cloud API key", min_length=8)
     base_url: HttpUrl = Field(
         default="https://api.cloud.deepset.ai",

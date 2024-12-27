@@ -46,6 +46,6 @@ The connector only ever writes data to the workspace but never deletes. If a fil
 
 | Version | Date       | Pull Request                                             | Subject                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------- |
-| 0.1.0   | 2024-12-18 | [48875](https://github.com/airbytehq/airbyte/pull/48875) | Initial release                        |
+| 0.1.0   | 2025-01-05 | [48875](https://github.com/airbytehq/airbyte/pull/48875) | Initial release                        |
 
 </details>

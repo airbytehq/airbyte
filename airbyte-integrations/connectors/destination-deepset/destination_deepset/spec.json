@@ -7,7 +7,7 @@
     "title": "Deepset Destination Spec",
     "type": "object",
     "required": ["api_key", "workspace"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_key": {
         "type": "string",
