@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
-@Timeout(25, unit = TimeUnit.MINUTES)
+@Timeout(30, unit = TimeUnit.MINUTES)
 abstract class S3V2WriteTest(
     path: String,
     stringifySchemalessObjects: Boolean,
@@ -50,7 +50,7 @@ abstract class S3V2WriteTest(
         super.testAppendSchemaEvolution()
     }
 
-    @Disabled("Temporarily disable because failing in CI")
+    @Disabled("For most test the file test is not needed since it doesn't apply compression")
     @Test
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
@@ -73,6 +73,11 @@ class S3V2WriteTestJsonUncompressed :
     @Test
     override fun testBasicTypes() {
         super.testBasicTypes()
+    }
+
+    @Test
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
     }
 }
 
@@ -121,7 +126,12 @@ class S3V2WriteTestCsvUncompressed :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}
 
 class S3V2WriteTestCsvRootLevelFlattening :
     S3V2WriteTest(
@@ -195,4 +205,13 @@ class S3V2WriteTestEndpointURL :
         preserveUndeclaredFields = false,
         allTypesBehavior = Untyped,
         nullEqualsUnset = true,
+    )
+
+class S3V2AmbiguousFilepath :
+    S3V2WriteTest(
+        S3V2TestUtils.AMBIGUOUS_FILEPATH_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
     )

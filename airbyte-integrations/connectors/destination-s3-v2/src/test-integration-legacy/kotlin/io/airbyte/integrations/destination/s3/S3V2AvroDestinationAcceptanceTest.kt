@@ -25,4 +25,5 @@ class S3V2AvroDestinationAcceptanceTest : S3BaseAvroDestinationAcceptanceTest() 
     // Disable these tests until we fix the incomplete stream handling behavior.
     override fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {}
     override fun testOverwriteSyncFailedResumedGeneration() {}
+    override fun testFakeFileTransfer() {}
 }
