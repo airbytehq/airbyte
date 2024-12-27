@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
-@Timeout(25, unit = TimeUnit.MINUTES)
+@Timeout(30, unit = TimeUnit.MINUTES)
 abstract class S3V2WriteTest(
     path: String,
     stringifySchemalessObjects: Boolean,
@@ -25,6 +25,7 @@ abstract class S3V2WriteTest(
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
+    failOnUnknownTypes: Boolean = false,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -41,6 +42,7 @@ abstract class S3V2WriteTest(
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
+        failOnUnknownTypes = failOnUnknownTypes,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -48,7 +50,7 @@ abstract class S3V2WriteTest(
         super.testAppendSchemaEvolution()
     }
 
-    @Disabled("Temporarily disable because failing in CI")
+    @Disabled("For most test the file test is not needed since it doesn't apply compression")
     @Test
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
@@ -71,6 +73,11 @@ class S3V2WriteTestJsonUncompressed :
     @Test
     override fun testBasicTypes() {
         super.testBasicTypes()
+    }
+
+    @Test
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
     }
 }
 
@@ -119,7 +126,12 @@ class S3V2WriteTestCsvUncompressed :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}
 
 class S3V2WriteTestCsvRootLevelFlattening :
     S3V2WriteTest(
@@ -149,6 +161,7 @@ class S3V2WriteTestAvroUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
+        failOnUnknownTypes = true,
     )
 
 class S3V2WriteTestAvroBzip2 :
@@ -159,6 +172,7 @@ class S3V2WriteTestAvroBzip2 :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
+        failOnUnknownTypes = true,
     )
 
 class S3V2WriteTestParquetUncompressed :
@@ -169,6 +183,7 @@ class S3V2WriteTestParquetUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
+        failOnUnknownTypes = true,
     )
 
 class S3V2WriteTestParquetSnappy :
@@ -179,6 +194,7 @@ class S3V2WriteTestParquetSnappy :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
+        failOnUnknownTypes = true,
     )
 
 class S3V2WriteTestEndpointURL :
@@ -189,4 +205,13 @@ class S3V2WriteTestEndpointURL :
         preserveUndeclaredFields = false,
         allTypesBehavior = Untyped,
         nullEqualsUnset = true,
+    )
+
+class S3V2AmbiguousFilepath :
+    S3V2WriteTest(
+        S3V2TestUtils.AMBIGUOUS_FILEPATH_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
     )

@@ -8,7 +8,6 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.JdbcSelectQuerier
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
@@ -16,39 +15,19 @@ import jakarta.inject.Singleton
 @Singleton
 @Primary
 class MySqlSourceSelectQuerier(
-    private val jdbcConnectionFactory: JdbcConnectionFactory,
-) : SelectQuerier by JdbcSelectQuerier(jdbcConnectionFactory) {
-    private val log = KotlinLogging.logger {}
+    jdbcConnectionFactory: JdbcConnectionFactory,
+) : SelectQuerier {
+
+    private val wrapped = JdbcSelectQuerier(jdbcConnectionFactory)
 
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
-    ): SelectQuerier.Result = MySqlResult(jdbcConnectionFactory, q, parameters)
-
-    inner class MySqlResult(
-        jdbcConnectionFactory: JdbcConnectionFactory,
-        q: SelectQuery,
-        parameters: SelectQuerier.Parameters,
-    ) : JdbcSelectQuerier.Result(jdbcConnectionFactory, q, parameters) {
-        /**
-         * MySQL does things differently with fetch size. Setting fetch size on a result set is
-         * safer than on a statement.
-         */
-        override fun initQueryExecution() {
-            conn = jdbcConnectionFactory.get()
-            stmt = conn!!.prepareStatement(q.sql)
-            stmt!!.fetchSize = Int.MIN_VALUE
-            var paramIdx = 1
-            for (binding in q.bindings) {
-                log.info { "Setting parameter #$paramIdx to $binding." }
-                binding.type.set(stmt!!, paramIdx, binding.value)
-                paramIdx++
-            }
-            rs = stmt!!.executeQuery()
-            parameters.fetchSize?.let { fetchSize: Int ->
-                log.info { "Setting fetchSize to $fetchSize." }
-                rs!!.fetchSize = fetchSize
-            }
-        }
+    ): SelectQuerier.Result {
+        val mySqlParameters: SelectQuerier.Parameters =
+        // MySQL requires this fetchSize setting on JDBC Statements to enable adaptive fetching.
+        // The ResultSet fetchSize value is what's used as an actual hint by the JDBC driver.
+        parameters.copy(statementFetchSize = Int.MIN_VALUE)
+        return wrapped.executeQuery(q, mySqlParameters)
     }
 }

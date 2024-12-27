@@ -213,14 +213,14 @@ class MySqlSourceCursorBasedIntegrationTest {
         "type": "STREAM",
         "stream": {
             "stream_descriptor": {
-              "name": "${tableName}",
+              "name": "$tableName",
               "namespace": "test"
             },
             "stream_state": {
               "cursor": "10",
               "version": 2,
               "state_type": "cursor_based",
-              "stream_name": "${tableName}",
+              "stream_name": "$tableName",
               "cursor_field": [
                 "k"
               ],
@@ -238,13 +238,13 @@ class MySqlSourceCursorBasedIntegrationTest {
         "type": "STREAM",
         "stream": {
             "stream_descriptor": {
-              "name": "${tableName}",
+              "name": "$tableName",
               "namespace": "test"
             },
             "stream_state": {
               "version": 2,
               "state_type": "cursor_based",
-              "stream_name": "${tableName}",
+              "stream_name": "$tableName",
               "cursor_field": [
                 "k"
               ],

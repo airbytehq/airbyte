@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.test.util
 
 import java.time.OffsetDateTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -155,7 +156,7 @@ class RecordDifferTest {
                         ),
                     )
                 )
-        assertEquals(null, diff)
+        assertNull(diff)
     }
 
     /** Verify that the differ can sort records which are identical other than the cursor */
@@ -193,7 +194,7 @@ class RecordDifferTest {
                         ),
                     ),
                 )
-        assertEquals(null, diff)
+        assertNull(diff)
     }
 
     /** Verify that the differ can sort records which are identical other than extractedAt */
@@ -231,6 +232,49 @@ class RecordDifferTest {
                         ),
                     )
                 )
-        assertEquals(null, diff)
+        assertNull(diff)
+    }
+
+    @Test
+    fun testNullEqualsUnset() {
+        val diff =
+            RecordDiffer(primaryKey = listOf(listOf("id")), cursor = null, nullEqualsUnset = true)
+                .diffRecords(
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1,
+                            generationId = 0,
+                            data =
+                                mapOf(
+                                    "id" to 1,
+                                    "sub_object" to
+                                        mapOf(
+                                            "foo" to "bar",
+                                            "sub_list" to listOf(mapOf<String, Any?>()),
+                                        )
+                                ),
+                            airbyteMeta = null,
+                        ),
+                    ),
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1,
+                            generationId = 0,
+                            data =
+                                mapOf(
+                                    "id" to 1,
+                                    "name" to null,
+                                    "sub_object" to
+                                        mapOf(
+                                            "foo" to "bar",
+                                            "bar" to null,
+                                            "sub_list" to listOf(mapOf("foo" to null)),
+                                        )
+                                ),
+                            airbyteMeta = null,
+                        ),
+                    ),
+                )
+        assertNull(diff)
     }
 }
