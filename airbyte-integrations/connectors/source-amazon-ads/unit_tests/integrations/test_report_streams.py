@@ -218,7 +218,7 @@ class TestDisplayReportStreams(TestCase):
         output = read_stream("sponsored_brands_v3_report_stream", SyncMode.incremental, self._config)
         # OLd format
         # assert output.most_recent_state.stream_state == AirbyteStateBlob({"1": {"reportDate": start_date.format("YYYY-MM-DD")}})
-        assert output.most_recent_state.stream_state.states == [{'cursor': {'reportDate': '2024-12-05'}, 'partition': {'parent_slice': {}, 'profileId': 1}}]
+        assert output.most_recent_state.stream_state.states == [{'cursor': {'reportDate': start_date.format("YYYY-MM-DD")}, 'partition': {'parent_slice': {}, 'profileId': 1}}]
         assert len(output.records) == 1
 
     @HttpMocker()
