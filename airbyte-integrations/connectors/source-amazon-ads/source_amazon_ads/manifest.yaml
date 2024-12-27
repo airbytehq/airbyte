@@ -1305,7 +1305,7 @@ definitions:
           http_method: GET
           authenticator: "#/definitions/oauth_authenticator"
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
         download_decoder:
           type: GzipJsonDecoder
