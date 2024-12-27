@@ -129,13 +129,15 @@ abstract class IntegrationTest(
         messages: List<InputMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
     ): List<AirbyteMessage> =
         runSync(
             configContents,
             DestinationCatalog(listOf(stream)),
             messages,
             streamStatus,
-            useFileTransfer
+            useFileTransfer,
+            envVars
         )
 
     /**
@@ -170,6 +172,7 @@ abstract class IntegrationTest(
          */
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
     ): List<AirbyteMessage> {
         val destination =
             destinationProcessFactory.createDestinationProcess(
@@ -177,6 +180,7 @@ abstract class IntegrationTest(
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
+                envVars = envVars,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -212,6 +216,7 @@ abstract class IntegrationTest(
         inputStateMessage: StreamCheckpoint,
         allowGracefulShutdown: Boolean,
         useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
     ): AirbyteStateMessage {
         val destination =
             destinationProcessFactory.createDestinationProcess(
@@ -219,6 +224,7 @@ abstract class IntegrationTest(
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
+                envVars
             )
         return runBlocking(Dispatchers.IO) {
             launch {

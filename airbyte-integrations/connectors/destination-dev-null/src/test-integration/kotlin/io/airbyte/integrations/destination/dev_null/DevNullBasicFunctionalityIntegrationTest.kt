@@ -26,6 +26,7 @@ class DevNullBasicFunctionalityIntegrationTest :
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        envVars = emptyMap(),
         supportFileTransfer = false,
     ) {
     @Test

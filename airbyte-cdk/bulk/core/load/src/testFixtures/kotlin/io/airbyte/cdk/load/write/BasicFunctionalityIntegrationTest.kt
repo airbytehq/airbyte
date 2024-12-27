@@ -116,6 +116,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val promoteUnionToObject: Boolean,
     val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
+    val envVars: Map<String, String>,
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
      * example:
@@ -170,7 +171,8 @@ abstract class BasicFunctionalityIntegrationTest(
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                     )
-                )
+                ),
+                envVars = envVars,
             )
 
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
