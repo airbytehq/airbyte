@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.nio.file.Files
 import java.util.Base64
 import okhttp3.FormBody
@@ -19,7 +18,6 @@ import okhttp3.Request
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import jakarta.inject.Inject
 
 abstract class IcebergV2WriteTest(
     configContents: String,
@@ -95,7 +93,7 @@ class IcebergGlueWriteTest :
         )
     ) {
     @Test
-    @Disabled("dest iceberge-v2 doesn't support unknown types")
+    @Disabled("dest iceberg-v2 doesn't support unknown types")
     override fun testUnknownTypes() {}
 
     @Test
