@@ -18,6 +18,10 @@ data:
           fileName: glue_assume_role.json
           secretStore:
             type: GSM
+        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_SYSTEM_AWS_CONFIG
+          fileName: glue_aws_assume_role.json
+          secretStore:
+            type: GSM
   connectorType: destination
   definitionId: 37a928c1-2d5c-431a-a97d-ae236bd1ea0c
   dockerImageTag: 0.2.5
