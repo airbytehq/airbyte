@@ -214,7 +214,7 @@ class MySqlSourceOperations :
                 // To prevent that from happening and resulted for skipping the table altogether,
                 // the minimum count is set to 10.
                 val quickCount =
-                    "SELECT GREATEST(10, table_rows) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'"
+                    "SELECT GREATEST(10, COALESCE(table_rows, 0)) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'"
                 val greatest = "GREATEST($greatestRate, $sampleSize / ($quickCount))"
                 // Rand returns a value between 0 and 1
                 val where = "WHERE RAND() < $greatest "
