@@ -23,6 +23,7 @@
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2024-12-28 | [50754](https://github.com/airbytehq/airbyte/pull/50754) | Update dependencies |
 | 0.0.6 | 2024-12-21 | [50370](https://github.com/airbytehq/airbyte/pull/50370) | Update dependencies |
 | 0.0.5 | 2024-12-14 | [49778](https://github.com/airbytehq/airbyte/pull/49778) | Update dependencies |
 | 0.0.4 | 2024-12-12 | [49393](https://github.com/airbytehq/airbyte/pull/49393) | Update dependencies |
