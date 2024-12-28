@@ -37,22 +37,22 @@ class AirbyteTypeToSqlType {
      */
     fun convert(airbyteSchema: AirbyteType): Int {
         return when (airbyteSchema) {
-            is ObjectType -> Types.BLOB
-            is ArrayType -> Types.BLOB
-            is ArrayTypeWithoutSchema -> Types.BLOB
+            is ObjectType -> Types.LONGVARCHAR
+            is ArrayType -> Types.LONGVARCHAR
+            is ArrayTypeWithoutSchema -> Types.LONGVARCHAR
             is BooleanType -> Types.BOOLEAN
             is DateType -> Types.DATE
             is IntegerType -> Types.BIGINT
             is NumberType -> Types.DECIMAL
-            is ObjectTypeWithEmptySchema -> Types.BLOB
-            is ObjectTypeWithoutSchema -> Types.BLOB
+            is ObjectTypeWithEmptySchema -> Types.LONGVARCHAR
+            is ObjectTypeWithoutSchema -> Types.LONGVARCHAR
             is StringType -> Types.VARCHAR
             is TimeTypeWithTimezone -> Types.TIME_WITH_TIMEZONE
             is TimeTypeWithoutTimezone -> Types.TIME
             is TimestampTypeWithTimezone -> Types.TIMESTAMP_WITH_TIMEZONE
             is TimestampTypeWithoutTimezone -> Types.TIMESTAMP
-            is UnionType -> Types.BLOB
-            is UnknownType -> Types.BLOB
+            is UnionType -> Types.LONGVARCHAR
+            is UnknownType -> Types.LONGVARCHAR
         }
     }
 }
