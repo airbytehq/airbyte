@@ -31,7 +31,7 @@ def test_get_auth_header(config) -> None:
 
 def test_streams(config) -> None:
     streams = SourceRecharge().streams(config)
-    assert len(streams) == 12
+    assert len(streams) == 13
 
 
 class TestCommon:
