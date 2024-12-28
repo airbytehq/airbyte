@@ -164,9 +164,7 @@ class MySqlSourceCursorBasedIntegrationTest {
         provisionView(connectionFactory)
         val catalog = getConfiguredCatalog()
         catalog.streams[0].stream.name = viewName
-        val run1: BufferingOutputConsumer =
-            CliRunner.source("read", config, catalog).run()
-
+        val run1: BufferingOutputConsumer = CliRunner.source("read", config, catalog).run()
         val lastStateMessageFromRun1 = run1.states().last()
         val lastStreamStateFromRun1 = lastStateMessageFromRun1.stream.streamState
 
