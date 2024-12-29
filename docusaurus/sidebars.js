@@ -527,6 +527,10 @@ module.exports = {
     },
     {
       type: "doc",
+      id: "using-airbyte/getting-started/academy",
+    },
+    {
+      type: "doc",
       label: "Quickstart",
       id: "using-airbyte/getting-started/oss-quickstart",
     },
