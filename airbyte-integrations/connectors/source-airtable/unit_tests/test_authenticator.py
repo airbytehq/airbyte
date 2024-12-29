@@ -6,7 +6,7 @@
 import pytest
 from source_airtable.auth import AirtableAuth, AirtableOAuth
 
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -16,9 +16,9 @@ CONFIG_OAUTH = {"credentials": {"auth_method": "oauth2.0", "client_id": "sample_
 @pytest.mark.parametrize(
     "config, expected_auth_class",
     [
-        ({"api_key": "sample_api_key"}, TokenAuthenticator),
+        ({"api_key": "sample_api_key"}, BearerAuthenticator),
         (CONFIG_OAUTH, AirtableOAuth),
-        ({"credentials": {"auth_method": "api_key", "api_key": "sample_api_key"}}, TokenAuthenticator),
+        ({"credentials": {"auth_method": "api_key", "api_key": "sample_api_key"}}, BearerAuthenticator),
     ],
     ids=["old_config_api_key", "oauth2.0", "api_key"],
 )
