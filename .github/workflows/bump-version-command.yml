@@ -12,7 +12,7 @@ on:
         required: false
 
       type:
-        description: "The type of bump to perform. One of 'major', 'minor', or 'patch'."
+        description: "The type of bump to perform. One of 'major', 'minor', 'patch', or 'rc'."
         required: false
         default: "patch"
 
@@ -21,6 +21,11 @@ on:
         required: false
         # TODO: We could infer the changelog string from the PR description!
         default: "Bumped automatically in the pull request, please see PR description"
+
+      is-release-candidate:
+        description: "If included, bumps the version by the specified bump-type and appends the '-rc.X' suffix to the version."
+        required: false
+        default: false
 
       # These must be declared, but they are unused and ignored.
       # TODO: Infer 'repo' and 'gitref' from PR number on other workflows, so we can remove these.
@@ -90,7 +95,8 @@ jobs:
             connectors --modified bump-version \
               ${{ github.event.inputs.type }} \
               "${{ github.event.inputs.changelog }}" \
-              --pr-number ${{ github.event.inputs.pr }}
+              --pr-number ${{ github.event.inputs.pr }} \
+              ${{ github.event.inputs.is-release-candidate == 'true' && '--rc' || '' }}
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
       - name: Remove any files that have been gitignored
