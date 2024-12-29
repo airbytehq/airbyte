@@ -1,0 +1,213 @@
+version: 6.5.2
+
+type: DeclarativeSource
+
+description: Extrair dados de municípios do site do IBGE
+
+check:
+  type: CheckStream
+  stream_names:
+    - Municipios
+
+definitions:
+  streams:
+    Municipios:
+      type: DeclarativeStream
+      name: Municipios
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /localidades/municipios
+          http_method: GET
+          request_body_json:
+            id: 1100015
+            nome: Alta Floresta D'Oeste
+            microrregiao:
+              id: 11006
+              nome: Cacoal
+              mesorregiao:
+                UF:
+                  id: 11
+                  nome: Rondônia
+                  sigla: RO
+                  regiao:
+                    id: 1
+                    nome: Norte
+                    sigla: "N"
+                id: 1102
+                nome: Leste Rondoniense
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Municipios"
+  base_requester:
+    type: HttpRequester
+    url_base: https://servicodados.ibge.gov.br/api/v1
+
+streams:
+  - $ref: "#/definitions/streams/Municipios"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    Municipios:
+      hasRecords: true
+      streamHash: 1a3283b838415d4d35393ffe01c0f9d3b6017bf1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Municipios: true
+
+schemas:
+  Municipios:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      nome:
+        type:
+          - string
+          - "null"
+      microrregiao:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          nome:
+            type:
+              - string
+              - "null"
+          mesorregiao:
+            type:
+              - object
+              - "null"
+            properties:
+              UF:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  nome:
+                    type:
+                      - string
+                      - "null"
+                  sigla:
+                    type:
+                      - string
+                      - "null"
+                  regiao:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      nome:
+                        type:
+                          - string
+                          - "null"
+                      sigla:
+                        type:
+                          - string
+                          - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              nome:
+                type:
+                  - string
+                  - "null"
+      regiao-imediata:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          nome:
+            type:
+              - string
+              - "null"
+          regiao-intermediaria:
+            type:
+              - object
+              - "null"
+            properties:
+              UF:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  nome:
+                    type:
+                      - string
+                      - "null"
+                  sigla:
+                    type:
+                      - string
+                      - "null"
+                  regiao:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      nome:
+                        type:
+                          - string
+                          - "null"
+                      sigla:
+                        type:
+                          - string
+                          - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              nome:
+                type:
+                  - string
+                  - "null"
+    additionalProperties: true
