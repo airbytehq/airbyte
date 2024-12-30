@@ -8,9 +8,16 @@ from collections.abc import Iterable, Mapping
 from typing import Any
 
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
 from destination_deepset import util
-from destination_deepset.models import DeepsetCloudFile, Filetypes
+from destination_deepset.models import DeepsetCloudFile
 from destination_deepset.writer import DeepsetCloudFileWriter
 
 
@@ -43,12 +50,9 @@ class DestinationDeepset(Destination):
         """
         writer = DeepsetCloudFileWriter.factory(config)
 
-        streams: dict[str, DestinationSyncMode] = {}
-        for catalog_stream in configured_catalog.streams:
-            if util.get(stream := catalog_stream.stream, "format.filetype") == Filetypes.DOCUMENT:
-                streams[stream.name] = catalog_stream.destination_sync_mode
-            else:
-                logger.warning(f"Only sources that produce document file type formatted records are supported! Got {stream = !s}")
+        streams: dict[str, DestinationSyncMode] = {
+            catalog_stream.stream.name: catalog_stream.destination_sync_mode for catalog_stream in configured_catalog.streams
+        }
 
         for message in input_messages:
             if message.type == Type.STATE:

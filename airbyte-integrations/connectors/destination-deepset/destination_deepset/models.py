@@ -61,6 +61,9 @@ class DeepsetCloudConfig(BaseModel):
 
 
 class FileData(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     content: str = Field(
         title="Content",
         description="Markdown formatted text extracted from Markdown, TXT, PDF, Word, Powerpoint or Google documents.",
