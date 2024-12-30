@@ -3,7 +3,7 @@
   "port": 1433,
   "database": "master",
   "schema": "dbo",
-  "raw_data_schema": "guest",
+  "raw_data_schema": "iamnotthere",
   "ssl_method": { "name": "unencrypted" },
   "user": "sa",
   "password": "Averycomplicatedpassword1!"

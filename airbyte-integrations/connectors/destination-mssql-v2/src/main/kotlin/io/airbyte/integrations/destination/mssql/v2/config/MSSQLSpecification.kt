@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -18,6 +19,7 @@ import jakarta.inject.Singleton
 
 @Singleton
 @JsonSchemaTitle("MSSQL V2 Destination Specification")
+@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
 class MSSQLSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Host")
     @get:JsonPropertyDescription("The host name of the MSSQL database.")
@@ -112,31 +114,29 @@ class EncryptedTrust : EncryptionMethod {
 
 @JsonSchemaTitle("Encrypted (verify certificate)")
 @JsonSchemaDescription("Verify and use the certificate provided by the server.")
-class EncryptedVerify : EncryptionMethod {
-    companion object {
-        const val NAME = "encrypted_verify_certificate"
-    }
-    override val name: String = NAME
-
+class EncryptedVerify(
     @get:JsonSchemaTitle("Trust Store Name")
     @get:JsonPropertyDescription("Specifies the name of the trust store.")
     @get:JsonProperty("trustStoreName")
     @get:JsonSchemaInject(json = """{"order":1}""")
-    val trustStoreName: String? = null
-
+    val trustStoreName: String? = null,
     @get:JsonSchemaTitle("Trust Store Password")
     @get:JsonPropertyDescription("Specifies the password of the trust store.")
     @get:JsonProperty("trustStorePassword")
     @get:JsonSchemaInject(json = """{"airbyte_secret":true,"order":2}""")
-    val trustStorePassword: String? = null
-
+    val trustStorePassword: String? = null,
     @get:JsonSchemaTitle("Host Name In Certificate")
     @get:JsonPropertyDescription(
         "Specifies the host name of the server. The value of this property must match the subject property of the certificate."
     )
     @get:JsonProperty("hostNameInCertificate")
     @get:JsonSchemaInject(json = """{"order":3}""")
-    val hostNameInCertificate: String? = null
+    val hostNameInCertificate: String? = null,
+) : EncryptionMethod {
+    companion object {
+        const val NAME = "encrypted_verify_certificate"
+    }
+    override val name: String = NAME
 }
 
 @Singleton
