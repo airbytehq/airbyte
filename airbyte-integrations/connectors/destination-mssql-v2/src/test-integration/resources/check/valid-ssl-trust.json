@@ -4,7 +4,7 @@
   "database": "master",
   "schema": "dbo",
   "raw_data_schema": "guest",
-  "ssl_method": { "name": "unencrypted" },
+  "ssl_method": { "name": "encrypted_trust_server_certificate" },
   "user": "sa",
   "password": "Averycomplicatedpassword1!"
 }
