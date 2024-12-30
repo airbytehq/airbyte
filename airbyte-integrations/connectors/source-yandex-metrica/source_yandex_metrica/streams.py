@@ -12,11 +12,13 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import pendulum
 import requests
+from pendulum import DateTime
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams.core import IncrementalMixin, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
-from pendulum import DateTime
+
 
 logger = logging.getLogger("airbyte")
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
 from live_tests.commons.evaluation_modes import TestEvaluationMode
 from live_tests.commons.models import ConnectionObjects, ConnectionSubset
 from live_tests.report import Report

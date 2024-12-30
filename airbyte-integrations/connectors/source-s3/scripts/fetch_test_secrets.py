@@ -28,6 +28,7 @@ from pathlib import Path
 import airbyte as ab
 from airbyte.secrets import GoogleGSMSecretManager, SecretHandle
 
+
 AIRBYTE_INTERNAL_GCP_PROJECT = "dataline-integration-testing"
 CONNECTOR_NAME = "source-s3"
 MISSING_ONLY = True
