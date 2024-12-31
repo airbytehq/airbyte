@@ -10,20 +10,21 @@ from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.models import Type
 from airbyte_cdk.models.airbyte_protocol import (
+    Type,
     AirbyteMessage,
     AirbyteStateMessage,
     AirbyteStateType,
     StreamDescriptor,
-    AirbyteStreamState
+    AirbyteStreamState,
+    SyncMode,
 )
-from airbyte_cdk.models import SyncMode
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
 
 # TODO: Add my_customer constant to the base class
+
 
 class GooglePulseDirectoryStream(HttpStream, ABC):
     """Base stream for Google Directory API"""
@@ -56,7 +57,7 @@ class GooglePulseDirectoryStream(HttpStream, ABC):
 
     def __init__(self, credentials: service_account.Credentials):
         super().__init__()
-        self.service = build('admin', 'directory_v1', credentials=credentials)
+        self.service = build("admin", "directory_v1", credentials=credentials)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -84,7 +85,7 @@ class GooglePulseDirectoryStream(HttpStream, ABC):
         return None
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
         Required by HttpStream but not used since we're using Google API client
@@ -111,28 +112,24 @@ class Users(GooglePulseDirectoryStream):
         return "users"  # Required by HttpStream but not actually used
 
     def read_records(
-            self,
-            sync_mode: str,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: str,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         page_token = None
 
         while True:
             users_request = self.service.users().list(
-                customer='my_customer',
-                maxResults=100,
-                pageToken=page_token,
-                orderBy='email',
-                projection='full'
+                customer="my_customer", maxResults=100, pageToken=page_token, orderBy="email", projection="full"
             )
             users_response = users_request.execute()
 
-            for user in users_response.get('users', []):
+            for user in users_response.get("users", []):
                 yield user
 
-            page_token = users_response.get('nextPageToken')
+            page_token = users_response.get("nextPageToken")
             if not page_token:
                 break
 
@@ -158,33 +155,27 @@ class Groups(GooglePulseDirectoryStream):
         page_token = None
 
         while True:
-            groups_request = self.service.groups().list(
-                customer='my_customer',
-                maxResults=100,
-                pageToken=page_token,
-                orderBy='email',
-                projection='full'
-            )
+            groups_request = self.service.groups().list(customer="my_customer", maxResults=100, pageToken=page_token, orderBy="email")
             groups_response = groups_request.execute()
 
-            for group in groups_response.get('groups', []):
+            for group in groups_response.get("groups", []):
                 yield group
 
-            page_token = groups_response.get('nextPageToken')
+            page_token = groups_response.get("nextPageToken")
             if not page_token:
                 break
 
 
-class OAuthAppsByUser(GooglePulseDirectoryStream):
+class Roles(GooglePulseDirectoryStream):
     """
-    Stream for OAuth Apps by User and the respective scopes
+    Stream for Google Workspace Roles
     """
 
-    name = "oauth_apps_by_user"
-    primary_key = "userId"
+    name = "roles"
+    primary_key = "roleId"
 
     def path(self, **kwargs) -> str:
-        return f"users/{kwargs['userId']}/tokens"
+        return "roles"  # Required by HttpStream but not actually used
 
     def read_records(
         self,
@@ -193,243 +184,138 @@ class OAuthAppsByUser(GooglePulseDirectoryStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-
-        self.logger.info(f"read_records: Reading OAuth apps for user: {stream_slice.get('userEmail')}")
-
-        user_email = stream_slice.get("userEmail")
-        if not user_email:
-            self.logger.warning("userEmail is missing from the stream_slice. Skipping this stream_slice.")
-            return
-
-        next_page_token = stream_state.get("nextPageToken", None) if stream_state else None
-
-        while True:
-            self.logger.info(f"Fetching OAuth apps for user: {user_email}, page_token: {next_page_token}")
-            tokens_request = self.service.tokens().list(userKey=user_email)
-            if next_page_token:
-                tokens_request.pageToken = next_page_token
-            tokens_response = tokens_request.execute()
-
-            oauth_apps = []
-            for token in tokens_response.get("items", []):
-                app_info = {
-                    "appId": token.get("clientId", ""),
-                    "appName": token.get("displayText", ""),
-                    "scopes": token.get("scopes", []),
-                    "anonymous": token.get("anonymous", False),
-                    "nativeApp": token.get("nativeApp", False),
-                    "issuedTime": token.get("issued", ""),
-                    "lastAccessTime": token.get("lastAccessTime", "Never"),
-                    "installationType": "user-specific",
-                    "appType": "oauth",
-                    "status": None,
-                    "etag": None,
-                }
-                oauth_apps.append(app_info)
-
-            if oauth_apps:
-                self.logger.info(f"Yielding {len(oauth_apps)} OAuth apps for user: {user_email}")
-                yield {
-                    "userId": stream_slice.get("userId"),
-                    "userEmail": stream_slice.get("userEmail"),
-                    "oauthApps": oauth_apps,
-                }
-            else:
-                self.logger.info(f"No OAuth apps found for user: {user_email}")
-
-            next_page_token = tokens_response.get("nextPageToken")
-            if not next_page_token:
-                self.logger.info(f"Reached the end of the OAuth apps for user: {user_email}")
-                break
-
-    def stream_slices(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         page_token = None
-        total_users = 0
 
         while True:
-            users_request = self.service.users().list(
-                customer='my_customer',
-                maxResults=100,
-                pageToken=page_token,
-                orderBy='email'
-            )
-            users_response = users_request.execute()
-            self.logger.info(f"stream_slices: Found {len(users_response.get('users', []))} users")
-            total_users += len(users_response.get('users', []))
+            roles_request = self.service.roles().list(customer="my_customer", maxResults=100, pageToken=page_token)
+            roles_response = roles_request.execute()
 
-            for user in users_response.get('users', []):
-                user_email = user.get("primaryEmail")
-                if user_email:
-                    self.logger.info(f"stream_slices: Yielding user: {user_email}")
-                    yield {
-                        "userId": user["id"],
-                        "userEmail": user_email,
-                        "nextPageToken": page_token
-                    }
-                else:
-                    self.logger.warning(f"Skipping user with missing primaryEmail: {user}")
+            for group in roles_response.get("items", []):
+                yield group
 
-            page_token = users_response.get("nextPageToken")
+            page_token = roles_response.get("nextPageToken")
             if not page_token:
-                self.logger.info(f"stream_slices: Total users found: {total_users}")
                 break
 
 
-class IncrementalGooglePulseDirectoryStream(GooglePulseDirectoryStream, IncrementalMixin, ABC):
-    """Base class for incremental streams in Google Directory"""
+class RoleAssignments(GooglePulseDirectoryStream):
+    """
+    Stream for Google Workspace RoleAssignments
+    """
 
-    state_checkpoint_interval = 100  # Save state every 100 records
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, value):
-        self._state[self.cursor_field] = value[self.cursor_field]
-
-    @staticmethod
-    def _emit_state_message(stream_name: str, state: Mapping[str, Any]) -> AirbyteMessage:
-        """Create proper per-stream state message for Airbyte protocol"""
-        return AirbyteMessage(
-            type=Type.STATE,
-            state=AirbyteStateMessage(
-                type=AirbyteStateType.STREAM,
-                stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(
-                        name=stream_name
-                    ),
-                    stream_state=state
-                )
-            )
-        )
-
-    # @abstractmethod
-    # def get_updated_state(
-    #         self,
-    #         current_stream_state: MutableMapping[str, Any],
-    #         latest_record: Mapping[str, Any]
-    # ) -> Mapping[str, Any]:
-    #     """
-    #     Abstract method to be implemented by concrete classes
-    #     to define their own state update logic
-    #     """
-    #     pass
-
-
-class IncrementalUsers(IncrementalGooglePulseDirectoryStream):
-    """Incremental stream for Users based on etags"""
-
-    name = "users_incremental"
-    primary_key = "id"
-    cursor_field = "etag"
-
-    @property
-    def state_checkpoint_interval(self) -> int:
-        return 100
-
-    @property
-    def supported_sync_modes(self) -> List[SyncMode]:
-        from airbyte_cdk.models import SyncMode
-        return [SyncMode.full_refresh, SyncMode.incremental]
+    name = "roleAssignments"
+    primary_key = "roleAssignmentId"
 
     def path(self, **kwargs) -> str:
-        return "users"
-
-    def _should_emit(self, record: Mapping[str, Any], stream_state: Mapping[str, Any]) -> bool:
-        """Determine if the record should be emitted based on etag comparison"""
-        if not stream_state or 'user_etags' not in stream_state:
-            return True
-
-        user_id = record.get('id')
-        current_etag = record.get('etag')
-        previous_etag = stream_state.get('user_etags', {}).get(user_id)
-
-        should_emit = previous_etag is None or previous_etag != current_etag
-        self.logger.info(f"Comparing etags for user {user_id}: {previous_etag} vs {current_etag} -> {should_emit}")
-
-        return should_emit
-
-    # def get_updated_state(
-    #         self,
-    #         current_stream_state: MutableMapping[str, Any],
-    #         latest_record: Mapping[str, Any]
-    # ) -> Mapping[str, Any]:
-    #     """Calculate new state based on latest record without modifying current state"""
-    #     new_state = {
-    #         # TODO: Optimize this to avoid copying the entire state
-    #         'user_etags': current_stream_state.get('user_etags', {}).copy()
-    #     }
-    #
-    #     user_id = latest_record.get('id')
-    #     latest_etag = latest_record.get('etag')
-    #
-    #     if user_id and latest_etag:
-    #         new_state['user_etags'][user_id] = latest_etag
-    #
-    #     return new_state
+        return "roles"  # Required by HttpStream but not actually used
 
     def read_records(
-            self,
-            sync_mode: str,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: str,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        self.logger.info(f"Starting read_records with sync_mode={sync_mode}, cursor_field={cursor_field}, stream_state={stream_state}")
-
-        # Extract state from the incoming state message format
-        if isinstance(stream_state, dict):
-            if "data" in stream_state:
-                stream_state = stream_state.get("data", {}).get("stream", {}).get("stream_state", {})
-            elif "stream" in stream_state:
-                stream_state = stream_state.get("stream", {}).get("stream_state", {})
-
-        current_state = stream_state or {}
-        self.logger.info(f"Initial state: {current_state}")
-
         page_token = None
-        records_processed = 0
 
         while True:
-            try:
-                request = self.service.users().list(
-                    customer='my_customer',
-                    maxResults=100,
-                    pageToken=page_token,
-                    orderBy='email'
-                )
-                response = request.execute()
-                users = response.get('users', [])
-                self.logger.info(f"Fetched {len(users)} users")
+            role_assignments_request = self.service.roleAssignments().list(customer="my_customer", maxResults=100, pageToken=page_token)
+            role_assignments_response = role_assignments_request.execute()
 
-                for user in users:
-                    # Always update state for every user we see
-                    current_state = self.get_updated_state(current_state, user)
+            for group in role_assignments_response.get("items", []):
+                yield group
 
-                    if sync_mode == "incremental":
-                        if self._should_emit(user, stream_state):  # Note: comparing against original state
-                            records_processed += 1
+            page_token = role_assignments_response.get("nextPageToken")
+            if not page_token:
+                break
 
-                            if records_processed % self.state_checkpoint_interval == 0:
-                                state_msg = self._emit_state_message(self.name, current_state)
-                                self.logger.info(f"Emitting state checkpoint: {current_state}")
-                                yield state_msg
 
-                            yield user
-                    else:
-                        yield user
+class Tokens(GooglePulseDirectoryStream):
+    """
+    Stream for Google Workspace Tokens
+    """
 
-                page_token = response.get('nextPageToken')
-                if not page_token:
-                    if sync_mode == "incremental":
-                        self.logger.info(f"Emitting final state with {len(current_state.get('user_etags', {}))} users: {current_state}")
-                        yield self._emit_state_message(self.name, current_state)
-                    break
+    name = "tokens"
+    primary_key = "userKey"
 
-            except Exception as e:
-                self.logger.error(f"Error in read_records loop: {str(e)}")
-                raise
+    def __init__(self, parent: Users, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for user in self.parent.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"user_id": user["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        user_id = stream_slice["user_id"]
+        return f"users/{user_id}/tokens"  # Required by HttpStream but not actually used
+
+    def read_records(
+        self,
+        sync_mode: str,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        page_token = None
+        user_id = stream_slice["user_id"]
+
+        while True:
+            tokes_request = self.service.tokens().list(userKey=user_id)
+            tokens_response = tokes_request.execute()
+
+            for group in tokens_response.get("items", []):
+                yield group
+
+            page_token = tokens_response.get("nextPageToken")
+            if not page_token:
+                break
+
+
+class Asps(GooglePulseDirectoryStream):
+    """
+    Stream for Google Workspace Tokens
+    """
+
+    name = "asps"
+    primary_key = "userKey"
+
+    def __init__(self, parent: Users, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for user in self.parent.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"user_id": user["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        user_id = stream_slice["user_id"]
+        return f"users/{user_id}/asps"  # Required by HttpStream but not actually used
+
+    def read_records(
+        self,
+        sync_mode: str,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        page_token = None
+        user_id = stream_slice["user_id"]
+
+        while True:
+            asps_request = self.service.asps().list(userKey=user_id)
+            asps_response = asps_request.execute()
+
+            for group in asps_response.get("items", []):
+                yield group
+
+            page_token = asps_response.get("nextPageToken")
+            if not page_token:
+                break
 
 
 class SourcePulseGoogleDirectory(AbstractSource):
@@ -448,11 +334,15 @@ class SourcePulseGoogleDirectory(AbstractSource):
             credentials_json = config.get("credentials_json")
             admin_email = config["admin_email"]
             account_info = json.loads(credentials_json)
-            creds = service_account.Credentials.from_service_account_info(account_info, scopes=[
-                    'https://www.googleapis.com/auth/admin.directory.user.readonly',
-                    'https://www.googleapis.com/auth/admin.directory.group.readonly',
-                    'https://www.googleapis.com/auth/admin.directory.user.security'
-                ])
+            creds = service_account.Credentials.from_service_account_info(
+                account_info,
+                scopes=[
+                    "https://www.googleapis.com/auth/admin.directory.user.readonly",
+                    "https://www.googleapis.com/auth/admin.directory.group.readonly",
+                    "https://www.googleapis.com/auth/admin.directory.user.security",
+                    "https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly",
+                ],
+            )
             creds = creds.with_subject(admin_email)
             return creds
         except ValueError as e:
@@ -461,8 +351,8 @@ class SourcePulseGoogleDirectory(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             credentials = self.create_credentials(config)
-            service = build('admin', 'directory_v1', credentials=credentials)
-            service.users().list(customer='my_customer', maxResults=1, orderBy='email').execute()
+            service = build("admin", "directory_v1", credentials=credentials)
+            service.users().list(customer="my_customer", maxResults=1, orderBy="email").execute()
 
             return True, None
 
@@ -475,7 +365,10 @@ class SourcePulseGoogleDirectory(AbstractSource):
         except Exception as e:
             error_msg = str(e)
             if "invalid_grant" in error_msg.lower():
-                return False, "Invalid credentials or insufficient permissions. Make sure the service account has proper access and admin_email is correct."
+                return (
+                    False,
+                    "Invalid credentials or insufficient permissions. Make sure the service account has proper access and admin_email is correct.",
+                )
             elif "access_denied" in error_msg.lower():
                 return False, "Access denied. Check if the service account has the required permissions and admin_email is correct."
             elif "invalid_client" in error_msg.lower():
@@ -492,12 +385,14 @@ class SourcePulseGoogleDirectory(AbstractSource):
         except ValueError as e:
             raise ValueError(f"Invalid configuration format: {str(e)}")
 
+        users_stream = Users(credentials=credentials)
+
         return [
             # Regular full refresh streams
             Groups(credentials=credentials),
-            Users(credentials=credentials),
+            Roles(credentials=credentials),
+            RoleAssignments(credentials=credentials),
             OAuthAppsByUser(credentials=credentials),
-            # Incremental streams
-            # IncrementalGroups(credentials=credentials),
-            IncrementalUsers(credentials=credentials)
+            Tokens(credentials=credentials, parent=users_stream),
+            Asps(credentials=credentials, parent=users_stream),
         ]

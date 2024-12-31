@@ -60,69 +60,88 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
+
     {
       "stream": {
-        "name": "users_incremental",
+        "name": "oauth_apps_by_user",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "kind": {
-              "type": "string"
-            },
-            "id": {
+            "userId": {
               "type": "string",
-              "description": "The unique ID for the user"
+              "description": "The unique ID of the user"
             },
-            "etag": {
-              "type": "string"
-            },
-            "primaryEmail": {
+            "userEmail": {
               "type": "string",
-              "description": "The user's primary email address"
+              "description": "The email address of the user"
             },
-            "name": {
-              "type": "object",
-              "properties": {
-                "givenName": {
-                  "type": "string"
-                },
-                "familyName": {
-                  "type": "string"
-                },
-                "fullName": {
-                  "type": "string"
+            "oauthApps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "appId": {
+                    "type": "string",
+                    "description": "The unique ID of the OAuth app"
+                  },
+                  "appName": {
+                    "type": "string",
+                    "description": "The name of the OAuth app"
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "The scopes required by the OAuth app"
+                  },
+                  "anonymous": {
+                    "type": "boolean",
+                    "description": "Whether the OAuth app is an anonymous application"
+                  },
+                  "nativeApp": {
+                    "type": "boolean",
+                    "description": "Whether the OAuth app is a native application"
+                  },
+                  "issuedTime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The time when the OAuth app was created"
+                  },
+                  "lastAccessTime": {
+                    "type": "string",
+                    "description": "The last time the OAuth app was accessed"
+                  },
+                  "instalationType": {
+                    "type": "string",
+                    "description": "The type of installation for the OAuth app (e.g., user-specific, domain-wide, third-party)"
+                  },
+                  "appType": {
+                    "type": "string",
+                    "description": "The type of the app (in this case, 'oauth')"
+                  },
+                  "status": {
+                    "type": ["string", "null"],
+                    "description": "The status of the OAuth app (if available)"
+                  },
+                  "etag": {
+                    "type": ["string", "null"],
+                    "description": "The etag of the OAuth app (if available)"
+                  }
                 }
-              }
-            },
-            "isAdmin": {
-              "type": "boolean"
-            },
-            "isDelegatedAdmin": {
-              "type": "boolean"
-            },
-            "lastLoginTime": {
-              "type": ["string", "null"],
-              "format": "date-time"
-            },
-            "creationTime": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "suspended": {
-              "type": "boolean"
+              },
+              "description": "The list of OAuth apps associated with the user"
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["lastLoginTime"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "cursor_field": ["lastLoginTime"],
-      "destination_sync_mode": "append_dedup"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
+
     {
       "stream": {
         "name": "groups",
@@ -164,6 +183,173 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "roles",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "roleId": {
+              "type": "string",
+              "description": "The unique ID of the role"
+            },
+            "etag": {
+              "type": "string"
+            },
+            "rolePrivileges": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "serviceId": {
+                    "type": "string",
+                    "description": "The obfuscated ID of the service this privilege is for. This value is returned with Privileges.list(). "
+                  },
+                  "privilegeName": {
+                    "type": "string",
+                    "description": "The name of the privilege."
+                  }
+                }
+              },
+              "description": "The set of privileges that are granted to this role."
+            },
+            "roleName": {
+              "type": "string",
+              "description": "Name of the role"
+            },
+            "roleDescription": {
+              "type": "string",
+              "description": "A short descripton of the role"
+            },
+            "isSystemRole": {
+              "type": "boolean",
+              "description": "Returns true if this is a pre-defined system role."
+            },
+            "isSuperAdminRole": {
+              "type": "boolean",
+              "description": "Returns true if the role is a super admin role."
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["roleId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "roleAssignments",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "roleAssignmentId": {
+              "type": "string",
+              "description": "ID of this roleAssignment.",
+              "format": "int64"
+            },
+            "roleId": {
+              "type": "string",
+              "description": "The ID of the role that is assigned.",
+              "format": "int64"
+            },
+            "kind": {
+              "type": "string",
+              "description": "The type of the API resource. This is always admin#directory#roleAssignment.",
+              "const": "admin#directory#roleAssignment"
+            },
+            "etag": {
+              "type": "string",
+              "description": "ETag of the resource."
+            },
+            "assignedTo": {
+              "type": "string",
+              "description": "The unique ID of the entity this role is assigned to—either the userId of a user, the groupId of a group, or the uniqueId of a service account as defined in Identity and Access Management (IAM)."
+            },
+            "assigneeType": {
+              "type": "string",
+              "description": "Output only. The type of the assignee (USER or GROUP).",
+              "enum": ["USER", "GROUP"]
+            },
+            "scopeType": {
+              "type": "string",
+              "description": "The scope in which this role is assigned.",
+              "enum": ["CUSTOMER", "ORG_UNIT"]
+            },
+            "orgUnitId": {
+              "type": "string",
+              "description": "If the role is restricted to an organization unit, this contains the ID for the organization unit the exercise of this role is restricted to."
+            },
+            "condition": {
+              "type": "string",
+              "description": "Optional. The condition associated with this role assignment. Feature is available to Enterprise Standard, Enterprise Plus, Google Workspace for Education Plus and Cloud Identity Premium customers. Currently supports conditions for Security Groups and Locked Groups."
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["roleId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "tokens",
+        "description": "Returns the set of tokens specified user has issued to 3rd party applications.",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "clientId": {
+              "type": "string",
+              "description": "The Client ID of the application the token is issued to."
+            },
+            "scopes": {
+              "type": "array",
+              "description": "A list of authorization scopes the application is granted.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "userKey": {
+              "type": "string",
+              "description": "The unique ID of the user that issued the token."
+            },
+            "anonymous": {
+              "type": "boolean",
+              "description": "Whether the application is registered with Google. The value is true if the application has an anonymous Client ID."
+            },
+            "displayText": {
+              "type": "string",
+              "description": "The displayable name of the application the token is issued to."
+            },
+            "nativeApp": {
+              "type": "boolean",
+              "description": "Whether the token is issued to an installed application. The value is true if the application is installed to a desktop or mobile device."
+            },
+            "kind": {
+              "type": "string",
+              "description": "The type of the API resource. This is always admin#directory#token.",
+              "const": "admin#directory#token"
+            },
+            "etag": {
+              "type": "string",
+              "description": "ETag of the resource."
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["roleId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
+
