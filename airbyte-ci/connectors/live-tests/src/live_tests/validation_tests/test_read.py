@@ -16,6 +16,7 @@ from airbyte_protocol.models import (
     AirbyteStreamStatusTraceMessage,
     ConfiguredAirbyteCatalog,
 )
+
 from live_tests.commons.json_schema_helper import conforms_to_schema
 from live_tests.commons.models import ExecutionResult
 from live_tests.utils import fail_test_on_failing_execution_results, get_test_logger
@@ -32,9 +33,7 @@ pytestmark = [
 async def test_read(
     request: "SubRequest",
     record_property: Callable,
-    configured_catalog: ConfiguredAirbyteCatalog,
     read_target_execution_result: ExecutionResult,
-    primary_keys_per_stream: dict[str, Optional[list[str]]],
 ):
     """
     Verify that the read command succeeds on the target connection.
@@ -51,11 +50,11 @@ async def test_read(
         record_property,
         [read_target_execution_result],
     )
-    for stream in configured_catalog.streams:
+    for stream in read_target_execution_result.configured_catalog.streams:
         records = read_target_execution_result.get_records_per_stream(stream.stream.name)
         state_messages = read_target_execution_result.get_states_per_stream(stream.stream.name)
         statuses = read_target_execution_result.get_status_messages_per_stream(stream.stream.name)
-        primary_key = primary_keys_per_stream.get(stream.stream.name)
+        primary_key = read_target_execution_result.primary_keys_per_stream.get(stream.stream.name)
 
         for record in records:
             has_records = True
@@ -71,14 +70,18 @@ async def test_read(
                     f"At least one state message should be emitted per stream, but no state messages were emitted for {stream.stream.name}."
                 )
             try:
-                _validate_state_messages(state_messages=state_messages[stream.stream.name], configured_catalog=configured_catalog)
+                _validate_state_messages(
+                    state_messages=state_messages[stream.stream.name], configured_catalog=read_target_execution_result.configured_catalog
+                )
             except AssertionError as exc:
                 warnings.append(
                     f"Invalid state message for stream {stream.stream.name}. exc={exc} state_messages={state_messages[stream.stream.name]}"
                 )
             if stream.stream.name not in statuses:
                 warnings.append(f"No stream statuses were emitted for stream {stream.stream.name}.")
-            if not _validate_stream_statuses(configured_catalog=configured_catalog, statuses=statuses[stream.stream.name]):
+            if not _validate_stream_statuses(
+                configured_catalog=read_target_execution_result.configured_catalog, statuses=statuses[stream.stream.name]
+            ):
                 errors.append(f"Invalid statuses for stream {stream.stream.name}. statuses={statuses[stream.stream.name]}")
     if not has_records:
         errors.append("At least one record should be read using provided catalog.")

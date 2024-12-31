@@ -8,8 +8,6 @@ import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableCleaner
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
-import io.airbyte.integrations.destination.iceberg.v2.io.toIcebergTableIdentifier
-import io.github.oshai.kotlinlogging.KotlinLogging
 import javax.inject.Singleton
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Types
@@ -17,9 +15,10 @@ import org.apache.iceberg.types.Types
 @Singleton
 class IcebergV2Checker(
     private val icebergTableCleaner: IcebergTableCleaner,
-    private val icebergUtil: IcebergUtil
+    private val icebergUtil: IcebergUtil,
+    private val tableIdGenerator: TableIdGenerator,
 ) : DestinationChecker<IcebergV2Configuration> {
-    private val log = KotlinLogging.logger {}
+
     override fun check(config: IcebergV2Configuration) {
         catalogValidation(config)
     }
@@ -44,7 +43,7 @@ class IcebergV2Checker(
 
         icebergTableCleaner.clearTable(
             catalog,
-            testTableIdentifier.toIcebergTableIdentifier(),
+            tableIdGenerator.toTableIdentifier(testTableIdentifier),
             table.io(),
             table.location()
         )

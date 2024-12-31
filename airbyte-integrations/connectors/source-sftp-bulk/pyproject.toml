@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.4.0"
+version = "1.6.0"
 name = "source-sftp-bulk"
 description = "Source implementation for SFTP Bulk."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_sftp_bulk"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = {version = "^6.1.0", extras = ["file-based"]}
+airbyte-cdk = {version = "^6.5.2", extras = ["file-based"]}
 paramiko = "3.4.0"
 
 [tool.poetry.scripts]
@@ -27,4 +27,5 @@ source-sftp-bulk = "source_sftp_bulk.run:run"
 docker = "^7.0.0"
 freezegun = "^1.4.0"
 pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest = "^7"
+pytest-memray = "^1.6.0"
