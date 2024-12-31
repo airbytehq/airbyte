@@ -276,7 +276,7 @@ class Tokens(GooglePulseDirectoryStream):
 
 class Asps(GooglePulseDirectoryStream):
     """
-    Stream for Google Workspace Tokens
+    Stream for Google Workspace Application-Specific Password
     """
 
     name = "asps"
@@ -392,7 +392,6 @@ class SourcePulseGoogleDirectory(AbstractSource):
             Groups(credentials=credentials),
             Roles(credentials=credentials),
             RoleAssignments(credentials=credentials),
-            OAuthAppsByUser(credentials=credentials),
             Tokens(credentials=credentials, parent=users_stream),
             Asps(credentials=credentials, parent=users_stream),
         ]

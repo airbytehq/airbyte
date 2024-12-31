@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "codeId": {
+      "type": "integer",
+      "description": "The unique ID of the ASP."
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the application that the user, represented by their userId, entered when the ASP was created."
+    },
+    "creationTime": {
+      "type": "string",
+      "description": "The time when the ASP was created. Expressed in Unix time format.",
+      "format": "int64"
+    },
+    "lastTimeUsed": {
+      "type": "string",
+      "description": "The time when the ASP was last used. Expressed in Unix time format.",
+      "format": "int64"
+    },
+    "userKey": {
+      "type": "string",
+      "description": "The unique ID of the user who issued the ASP."
+    },
+    "kind": {
+      "type": "string",
+      "description": "The type of the API resource. This is always admin#directory#asp.",
+      "const": "admin#directory#asp"
+    },
+    "etag": {
+      "type": "string",
+      "description": "ETag of the ASP."
+    }
+  }
+}
