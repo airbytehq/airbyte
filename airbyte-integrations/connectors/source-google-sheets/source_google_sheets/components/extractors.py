@@ -75,7 +75,7 @@ class RawSchemaParser:
 
         if duplicate_fields:
             parsed_schema_values = [
-                parsed_schema_value for parsed_schema_value in parsed_schema_values if parsed_schema_values[1] not in duplicate_fields
+                parsed_schema_value for parsed_schema_value in parsed_schema_values if parsed_schema_value[1] not in duplicate_fields
             ]
 
         return parsed_schema_values

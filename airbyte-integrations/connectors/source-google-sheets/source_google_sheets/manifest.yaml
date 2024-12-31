@@ -226,15 +226,36 @@ definitions:
         response["sheets"][0]["data"][0]["rowData"][0]["values"] |
         map(attribute="formattedValue") | list | unique | list | length }}
       error_message: >-
-        The following duplicate headers were found in the sheet.
-        Please fix them to continue: {% set values =
-        response["sheets"][0]["data"][0]["rowData"][0]["values"] |
-        map(attribute="formattedValue") | list %}{{ values | select("in",
-        values | reject("sameas", None) | reject("in", values | unique)) |
-        unique | list }}
+        {%- set headers_found = response["sheets"][0]["data"][0]["rowData"][0]["values"] | map(attribute="formattedValue") | list -%}
+        {%- set headers_count = {} -%}
+        {%- set duplicate_fields = [] -%}
+        {%- for headerFound in headers_found -%}
+            {%- if headerFound is not none -%}
+                {%- set headers_count = headers_count.update({headerFound: headers_count.get(headerFound, 0) + 1}) or headers_count -%}
+                {%- if headers_count.get(headerFound) > 1 and headerFound not in duplicate_fields -%}
+                    {%- set duplicate_fields = duplicate_fields.append(headerFound) -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+        Duplicate headers found in sheet.
+        Ignoring them: {{ duplicate_fields }}
     fail_duplicate_headers:
       $ref: "#/definitions/response_filters/ignore_duplicate_headers"
       action: FAIL
+      error_message: >-
+        {%- set headers_found = response["sheets"][0]["data"][0]["rowData"][0]["values"] | map(attribute="formattedValue") | list -%}
+        {%- set headers_count = {} -%}
+        {%- set duplicate_fields = [] -%}
+        {%- for headerFound in headers_found -%}
+            {%- if headerFound is not none -%}
+                {%- set headers_count = headers_count.update({headerFound: headers_count.get(headerFound, 0) + 1}) or headers_count -%}
+                {%- if headers_count.get(headerFound) > 1 and headerFound not in duplicate_fields -%}
+                    {%- set duplicate_fields = duplicate_fields.append(headerFound) -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+        The following duplicate headers were found in the sheet.
+        Please fix them to continue: {{ duplicate_fields }}
     not_found:
       type: HttpResponseFilter
       action: FAIL

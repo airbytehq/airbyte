@@ -3,7 +3,7 @@
 
 import json
 from copy import deepcopy
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 from unittest import TestCase
 from unittest.mock import ANY, patch
 
@@ -56,8 +56,8 @@ _SERVICE_CONFIG = {
     "credentials": service_account_credentials
 }
 
-GET_SHEETS_FIRST_ROW = "get_sheet_first_row"
 GET_SPREADSHEET_INFO = "get_spreadsheet_info"
+GET_SHEETS_FIRST_ROW = "get_sheet_first_row"
 GET_STREAM_DATA = "get_stream_data"
 
 def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
@@ -191,7 +191,7 @@ class GoogleSheetSourceTest(TestCase):
         )
 
     @staticmethod
-    def get_stream_data(http_mocker: HttpMocker, range_data_response_file: str, range_response_code: int=200, stream_name:Optional[str]=_STREAM_NAME):
+    def get_stream_data(http_mocker: HttpMocker, data_response_file: str, response_code: int=200, stream_name:Optional[str]=_STREAM_NAME, request_range: Tuple=(2,202) ):
         """"
         Mock requests to 'https://sheets.googleapis.com/v4/spreadsheets/<spreadsheet>/values:batchGet?ranges=<sheet>!2:202&majorDimension=ROWS&alt=json'
         to obtain value ranges (data) for stream from the spreadsheet + sheet provided.
@@ -213,10 +213,12 @@ class GoogleSheetSourceTest(TestCase):
           ]
         }
         """
-        batch_request_ranges = f"{stream_name}!2:202"
+        start_range = str(request_range[0])
+        end_range = str(request_range[1])
+        batch_request_ranges = f"{stream_name}!{start_range}:{end_range}"
         http_mocker.get(
             RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template(range_data_response_file, __file__)), range_response_code)
+            HttpResponse(json.dumps(find_template(data_response_file, __file__)), response_code)
         )
 
     @HttpMocker()
@@ -428,6 +430,33 @@ class GoogleSheetSourceTest(TestCase):
         assert output.catalog == expected_message
 
     @HttpMocker()
+    def test_discover_with_duplicated_return_expected_schema(self, http_mocker: HttpMocker):
+        """
+        The response from headers (first row) has columns "header_1 | header_2 | header_2 | address | address2"  so header_2 will
+        be ignored from schema.
+        """
+        expected_schema_properties = {'header_1': {'type': ['null', 'string']}, 'address': {'type': ['null', 'string']}, 'address2': {'type': ['null', 'string']}
+        }
+        test_file_base_name = "discover_duplicated_headers"
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}")
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}")
+
+        expected_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
+                           'properties': expected_schema_properties,
+                           'type': 'object'}
+        expected_stream = AirbyteStream(name=_STREAM_NAME, json_schema=expected_schema,
+                                        supported_sync_modes=[SyncMode.full_refresh], is_resumable=False)
+
+        expected_catalog = AirbyteCatalog(streams=[expected_stream])
+        expected_message = AirbyteMessage(type=Type.CATALOG, catalog=expected_catalog)
+        expected_log_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Duplicate headers found in sheet. Ignoring them: ['header_2']"))
+
+        output = self._discover(self._config, expecting_exception=False)
+
+        assert output.catalog == expected_message
+        assert output.logs[-1] == expected_log_message
+
+    @HttpMocker()
     def test_discover_with_names_conversion(self, http_mocker: HttpMocker) -> None:
         # will convert '1 тест' to '_1_test and 'header2' to 'header_2'
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "only_headers_meta", 200)
@@ -605,6 +634,132 @@ class GoogleSheetSourceTest(TestCase):
         ]
         assert len(output.records) == 2
         assert output.records == expected_records
+
+    @HttpMocker()
+    def test_when_read_with_duplicated_headers_then_return_records(self, http_mocker: HttpMocker):
+        """"
+        header_2 will be ignored from records as column is duplicated.
+
+        header_1	header_2	header_2	address	        address2
+        value_11	value_12	value_13	main	        main st
+        value_21	value_22	value_23	washington 3	colonial
+
+        It will correctly match row values and field/column names in read records.
+        """
+        test_file_base_name = "read_duplicated_headers"
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}")
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}")
+        GoogleSheetSourceTest.get_stream_data(http_mocker, f"{test_file_base_name}_{GET_STREAM_DATA}")
+        first_property = "header_1"
+        second_property = "address"
+        third_property = "address2"
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema(
+            {"properties": {first_property: {"type": ["null", "string"]},
+                            second_property: {"type": ["null", "string"]},
+                            third_property: {"type": ["null", "string"]},
+                            }})
+
+        ).build()
+
+        output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
+        expected_records = [
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={first_property: 'value_11', second_property: 'main', third_property: 'main st'}
+                )
+            ),
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={first_property: 'value_21', second_property: 'washington 3', third_property: 'colonial'}
+                )
+            )
+        ]
+        assert len(output.records) == 2
+        assert output.records == expected_records
+
+    @HttpMocker()
+    def test_when_empty_rows_then_return_records(self, http_mocker: HttpMocker):
+        """"
+        There are a few empty rows in the response that we shuld ignore
+
+        e.g.
+        id	name	            normalized_name
+        7	Children	        children
+        12	Mechanical Santa	mechanical santa
+        13	Tattoo Man	        tattoo man
+        16	DOCTOR ZITSOFSKY	doctor zitsofsky
+
+
+        20	Students	        students
+
+        There are two empty rows between id 16 and 20 that we will not be present in read records
+        """
+        test_file_base_name = "read_empty_rows"
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}")
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}")
+        GoogleSheetSourceTest.get_stream_data(http_mocker, f"{test_file_base_name}_{GET_STREAM_DATA}")
+        expected_properties = ["id", "name", "normalized_name"]
+        catalog_properties = {}
+        for property in expected_properties:
+            catalog_properties[property] = {"type": ["null", "string"]}
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema(
+            {"properties": catalog_properties})
+
+        ).build()
+
+        records_in_response = find_template(f"{test_file_base_name}_{GET_STREAM_DATA}", __file__)
+        empty_row_count = 0
+        expected_rows_found = 23
+        expected_empty_rows = 7
+        expected_records = []
+
+        for row in records_in_response["valueRanges"][0]["values"]:
+            if row:
+                expected_records += [
+                    AirbyteMessage(
+                            type=Type.RECORD,
+                            record=AirbyteRecordMessage(
+                                emitted_at=ANY,
+                                stream=_STREAM_NAME,
+                                data={expected_property:row_value for expected_property,row_value in zip(expected_properties, row)}
+                            )
+                        )
+                ]
+            else:
+                empty_row_count += 1
+        assert empty_row_count == expected_empty_rows
+        assert len(expected_records) == expected_rows_found
+        output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
+        assert len(output.records) == expected_rows_found
+        assert output.records == expected_records
+
+    @HttpMocker()
+    def test_when_read_by_batches_make_expected_requests(self, http_mocker: HttpMocker):
+        test_file_base_name = "read_by_batches"
+        batch_size = 10
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}")
+        GoogleSheetSourceTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}")
+        start_range = 2
+        for range_file_postfix in ("first_batch", "second_batch", "third_batch", "fourth_batch", "fifth_batch"):
+            end_range = start_range + batch_size
+            request_range = (start_range, end_range)
+            GoogleSheetSourceTest.get_stream_data(http_mocker, data_response_file=f"{test_file_base_name}_{GET_STREAM_DATA}_{range_file_postfix}", request_range=request_range)
+            start_range += batch_size + 1
+        catalog_properties = {}
+        for expected_property in ["id", "name", "normalized_name"]:
+            catalog_properties[expected_property] = {"type": ["null", "string"]}
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema(
+            {"properties": catalog_properties})
+        ).build()
+        self._config["batch_size"] = batch_size
+        output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
+        assert len(output.records) > 0
 
     @HttpMocker()
     def test_when_read_then_return_records_with_name_conversion(self, http_mocker: HttpMocker) -> None:
@@ -787,29 +942,6 @@ class GoogleSheetSourceTest(TestCase):
         )
         assert output.errors[0].trace.error.message == expected_message
 
-    @pytest.mark.skip("Pending to do")
-    def test_for_duplicated_headers_right_discovery(self):
-        # 1.- Empty and duplicated headers won't make it to the schema, either the indexed or json schema.
-        # 2.- Empty cell in header will mark the end of the header row.
-        pass
-
-    @pytest.mark.skip("Pending to do")
-    def test_for_duplicated_headers_right_read(self):
-        # 1.- Empty and duplicated headers won't make it to the schema, either the indexed or json schema.
-        # 2.- Empty cell in header will mark the end of the header row.
-        pass
-
-    @pytest.mark.skip("Pending to do")
-    def test_for_empty_rows_does_right_read(self):
-        # 1.- Empty and duplicated headers won't make it to the schema, either the indexed or json schema.
-        # 2.- Empty cell in header will mark the end of the header row.
-        pass
-
-    @pytest.mark.skip("Pending to do")
-    def test_complex_test_with_empty_rows_and_columns_duplicated_headers_after_how_many_requests_ends(self):
-        # 1.- Empty and duplicated headers won't make it to the schema, either the indexed or json schema.
-        # 2.- Empty cell in header will mark the end of the header row.
-        pass
 
     @pytest.mark.skip("Pending to do")
     def test_for_increase_batch_size_when_rate_limit(self):
