@@ -190,7 +190,8 @@ definitions:
           http_method: GET
           request_parameters:
             q: search
-            search: "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
+            search: >-
+              {"status": {"values": ["ACTIVE", "ARCHIVED", "CANCELED", "DRAFT", "PAUSED", "PENDING_DELETION", "REMOVED"]}}
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
@@ -402,10 +403,11 @@ definitions:
             name: ad_campaign_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:CAMPAIGN)"
-            timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            pivot: "CAMPAIGN"
+            timeGranularity: "DAILY"
+            campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id', 'default_campaign_id')}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', {{stream_slice.get('end.date', {{now_utc().strftime('%Y-%m-%d')}} }}"
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -477,10 +479,11 @@ definitions:
             name: ad_creative_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:CREATIVE)"
-            timeGranularity: "(value:DAILY)"
-            creatives: "List(urn%3Ali%3AsponsoredCreative%3A{{stream_slice.get('creative_id').split(':')[-1]}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            pivot: "CREATIVE"
+            timeGranularity: "DAILY"
+            creatives: "[\"urn:li:sponsoredCreative:{{stream_slice.get('creative_id').split(':')[-1]}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -552,10 +555,11 @@ definitions:
             name: ad_impression_device_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:IMPRESSION_DEVICE_TYPE)"
-            timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            pivot: "IMPRESSION_DEVICE_TYPE"
+            timeGranularity: "DAILY"
+            campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -627,11 +631,12 @@ definitions:
             name: ad_member_company_size_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:MEMBER_COMPANY_SIZE)"
-            timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            pivot: "MEMBER_COMPANY_SIZE"
+            timeGranularity: "DAILY"
+            campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+                        fields: "{{stream_slice['fields']}}"            fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
@@ -702,11 +707,12 @@ definitions:
             name: ad_member_country_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:MEMBER_COUNTRY_V2)"
-            timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
-            fields: "{{stream_slice['fields']}}"
+            pivot: "MEMBER_COUNTRY_V2"
+            timeGranularity: "DAILY"
+            campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+            fields: "{{stream_slice['fields']}}"            
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
@@ -777,10 +783,11 @@ definitions:
             name: ad_member_job_function_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:MEMBER_JOB_FUNCTION)"
-            timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            pivot: "MEMBER_JOB_FUNCTION"
+            timeGranularity: "DAILY"
+            campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -852,10 +859,11 @@ definitions:
             name: ad_member_job_title_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:MEMBER_JOB_TITLE)"
-            timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            pivot: "MEMBER_JOB_TITLE"
+            timeGranularity: "DAILY"
+            campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -927,10 +935,11 @@ definitions:
             name: ad_member_industry_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:MEMBER_INDUSTRY)"
-            timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            pivot: "MEMBER_INDUSTRY"
+            timeGranularity: "DAILY"
+            campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -1002,10 +1011,11 @@ definitions:
             name: ad_member_seniority_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:MEMBER_SENIORITY)"
-            timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            pivot: "MEMBER_SENIORITY"
+            timeGranularity: "DAILY"
+            campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -1077,10 +1087,11 @@ definitions:
             name: ad_member_region_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:MEMBER_REGION_V2)"
-            timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            pivot: "MEMBER_REGION_V2"
+            timeGranularity: "DAILY"
+            campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -1152,10 +1163,11 @@ definitions:
             name: ad_member_company_analytics
           request_parameters:
             q: analytics
-            pivot: "(value:MEMBER_COMPANY)"
-            timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
-            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            pivot: "MEMBER_COMPANY"
+            timeGranularity: "DAILY"
+            campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
+            dateRange: >-
+              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
