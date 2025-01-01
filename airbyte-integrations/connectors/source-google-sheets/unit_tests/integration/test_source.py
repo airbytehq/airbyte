@@ -37,9 +37,10 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 from .google_sheets_base_test import GoogleSheetsBaseTest
-from .request_builder import AuthBuilder, RequestBuilder
 from .mock_credentials import AUTH_BODY, oauth_credentials, service_account_credentials, service_account_info
 from .protocol_helpers import check_helper, discover_helper, read_helper
+from .request_builder import AuthBuilder, RequestBuilder
+
 
 _SPREADSHEET_ID = "a_spreadsheet_id"
 
@@ -58,7 +59,6 @@ GET_STREAM_DATA = "get_stream_data"
 
 
 class TestSource(GoogleSheetsBaseTest):
-
     @HttpMocker()
     def test_given_spreadsheet_when_check_then_status_is_succeeded(self, http_mocker: HttpMocker) -> None:
         TestSource.get_spreadsheet_info_and_sheets(http_mocker, "check_succeeded_meta")
@@ -67,7 +67,6 @@ class TestSource(GoogleSheetsBaseTest):
         output = self._check(self._config, expecting_exception=False)
         expected_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Check succeeded"))
         assert output.logs[-1] == expected_message
-
 
     @HttpMocker()
     def test_check_expected_to_read_data_from_1_sheet(self, http_mocker: HttpMocker) -> None:
@@ -604,7 +603,6 @@ class TestSource(GoogleSheetsBaseTest):
         assert output.trace_messages[0].trace.stream_status.status == AirbyteStreamStatus.STARTED
         assert output.trace_messages[1].trace.stream_status.status == AirbyteStreamStatus.RUNNING
         assert output.trace_messages[2].trace.stream_status.status == AirbyteStreamStatus.COMPLETE
-
 
     @HttpMocker()
     def test_read_empty_sheet(self, http_mocker: HttpMocker) -> None:

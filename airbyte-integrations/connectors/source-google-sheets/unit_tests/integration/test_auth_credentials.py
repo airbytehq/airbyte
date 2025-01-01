@@ -17,13 +17,13 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 from .google_sheets_base_test import GoogleSheetsBaseTest
-from .request_builder import AuthBuilder, RequestBuilder
 from .mock_credentials import AUTH_BODY, oauth_credentials, service_account_credentials, service_account_info
+from .request_builder import AuthBuilder, RequestBuilder
+
 
 _SPREADSHEET_ID = "a_spreadsheet_id"
 
@@ -42,7 +42,6 @@ GET_STREAM_DATA = "get_stream_data"
 
 
 class TestCredentials(GoogleSheetsBaseTest):
-
     def test_given_authentication_error_when_check_then_status_is_failed(self) -> None:
         del self._config["credentials"]["client_secret"]
 
@@ -88,8 +87,6 @@ class TestCredentials(GoogleSheetsBaseTest):
         )
         expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
         assert output.errors[-1] == expected_message
-
-
 
     def test_check_invalid_creds_json_file(self) -> None:
         invalid_creds_json_file = {}

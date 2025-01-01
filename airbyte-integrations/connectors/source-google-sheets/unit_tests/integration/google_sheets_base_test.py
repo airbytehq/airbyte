@@ -14,9 +14,10 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
-from .request_builder import AuthBuilder, RequestBuilder
 from .mock_credentials import AUTH_BODY, oauth_credentials, service_account_credentials
 from .protocol_helpers import check_helper, discover_helper, read_helper
+from .request_builder import AuthBuilder, RequestBuilder
+
 
 _SPREADSHEET_ID = "a_spreadsheet_id"
 

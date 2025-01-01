@@ -18,9 +18,11 @@ from airbyte_cdk.test.mock_http import HttpMocker
 
 from .google_sheets_base_test import GoogleSheetsBaseTest
 
+
 _SPREADSHEET_ID = "a_spreadsheet_id"
 
 _STREAM_NAME = "a_stream_name"
+
 
 def exception_description_by_status_code(code: int, spreadsheet_id) -> str:
     if code in [status_codes.INTERNAL_SERVER_ERROR, status_codes.BAD_GATEWAY, status_codes.SERVICE_UNAVAILABLE]:
@@ -43,6 +45,7 @@ def exception_description_by_status_code(code: int, spreadsheet_id) -> str:
         return "Rate limit has been reached. Please try later or request a higher quota for your account."
 
     return ""
+
 
 class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
     @HttpMocker()
@@ -67,7 +70,7 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
     def test_check_access_expired(self, http_mocker: HttpMocker) -> None:
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_permissions", status_codes.FORBIDDEN)
         expected_message = (
-             f"{exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID)}. The caller does not have right permissions."
+            f"{exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID)}. The caller does not have right permissions."
         )
 
         output = self._check(self._config, expecting_exception=True)
@@ -104,7 +107,7 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
             )
             expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
             assert output.errors[-1] == expected_message
-    
+
     @HttpMocker()
     def test_discover_404_error(self, http_mocker: HttpMocker) -> None:
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_link", status_codes.NOT_FOUND)
@@ -122,14 +125,14 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
         )
         expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
         assert output.errors[-1] == expected_message
-    
+
     @HttpMocker()
     def test_discover_403_error(self, http_mocker: HttpMocker) -> None:
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_permissions", status_codes.FORBIDDEN)
         output = self._discover(self._config, expecting_exception=True)
 
         expected_message = (
-             f"{exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID)}. The caller does not have right permissions."
+            f"{exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID)}. The caller does not have right permissions."
         )
 
         trace_message = AirbyteTraceMessage(
@@ -168,7 +171,6 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
 
         assert output.errors[0].trace.error.internal_message == expected_message
 
-
     @HttpMocker()
     def test_read_403_error(self, http_mocker: HttpMocker) -> None:
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
@@ -187,10 +189,9 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
 
         output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
         expected_message = (
-             f"{exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID)}. The caller does not have right permissions."
+            f"{exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID)}. The caller does not have right permissions."
         )
         assert output.errors[0].trace.error.message == expected_message
-
 
     @HttpMocker()
     def test_read_500_error(self, http_mocker: HttpMocker) -> None:

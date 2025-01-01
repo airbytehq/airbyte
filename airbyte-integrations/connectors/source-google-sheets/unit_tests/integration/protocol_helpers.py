@@ -2,18 +2,14 @@
 
 
 from typing import Any, Dict, Optional, Tuple
+
 from source_google_sheets import SourceGoogleSheets
 
-from airbyte_cdk.models import (
-    ConfiguredAirbyteCatalog,
-    SyncMode
-)
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 
-
 from .entrypoint_wrapper_helper import check
-
 
 
 def _catalog(sync_mode: SyncMode, stream_name: str) -> ConfiguredAirbyteCatalog:
