@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicReference
 /** [PartitionsCreator] implementation for CDC with Debezium. */
 class CdcPartitionsCreator<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
-    val globalLockResource: CdcGlobalLockResource,
     val feedBootstrap: GlobalFeedBootstrap,
     val creatorOps: CdcPartitionsCreatorDebeziumOperations<T>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
@@ -43,7 +42,6 @@ class CdcPartitionsCreator<T : Comparable<T>>(
 
     override suspend fun run(): List<PartitionReader> {
         if (CDCNeedsRestart) {
-            globalLockResource.markCdcAsComplete()
             throw TransientErrorException(
                 "Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch."
             )
@@ -67,7 +65,6 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                         creatorOps.deserialize(incumbentOpaqueStateValue, activeStreams)
                     } catch (ex: ConfigErrorException) {
                         log.error(ex) { "Existing state is invalid." }
-                        globalLockResource.markCdcAsComplete()
                         throw ex
                     } catch (_: OffsetInvalidNeedsResyncIllegalStateException) {
                         // If deserialization concludes we need a re-sync we rollback stream states
@@ -102,7 +99,6 @@ class CdcPartitionsCreator<T : Comparable<T>>(
             log.info {
                 "Current position '$lowerBound' equals or exceeds target position '$upperBound'."
             }
-            globalLockResource.markCdcAsComplete()
             return emptyList()
         }
         if (lowerBoundInPreviousRound != null && lowerBound <= lowerBoundInPreviousRound) {
@@ -111,7 +107,6 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                 "Current position '$lowerBound' has not increased in the last round, " +
                     "prior to which is was '$lowerBoundInPreviousRound'."
             }
-            globalLockResource.markCdcAsComplete()
             return emptyList()
         }
         // Handle common case.

@@ -149,6 +149,8 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.22 | 2024-12-28 | [50626](https://github.com/airbytehq/airbyte/pull/50626) | Update dependencies |
+| 0.0.21 | 2024-12-21 | [50140](https://github.com/airbytehq/airbyte/pull/50140) | Update dependencies |
 | 0.0.20 | 2024-12-14 | [49653](https://github.com/airbytehq/airbyte/pull/49653) | Update dependencies |
 | 0.0.19 | 2024-12-11 | [48976](https://github.com/airbytehq/airbyte/pull/48976) | Update dependencies |
 | 0.0.18 | 2024-11-25 | [48669](https://github.com/airbytehq/airbyte/pull/48669) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

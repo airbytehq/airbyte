@@ -46,6 +46,8 @@ Please read [How to get your APIs Token and Key](https://help.qualaroo.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| 0.4.5 | 2024-12-28 | [50701](https://github.com/airbytehq/airbyte/pull/50701) | Update dependencies |
+| 0.4.4 | 2024-12-21 | [50224](https://github.com/airbytehq/airbyte/pull/50224) | Update dependencies |
 | 0.4.3 | 2024-12-14 | [49680](https://github.com/airbytehq/airbyte/pull/49680) | Update dependencies |
 | 0.4.2 | 2024-12-12 | [49344](https://github.com/airbytehq/airbyte/pull/49344) | Update dependencies |
 | 0.4.1 | 2024-12-11 | [49098](https://github.com/airbytehq/airbyte/pull/49098) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

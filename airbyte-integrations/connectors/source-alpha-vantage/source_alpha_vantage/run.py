@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_alpha_vantage import SourceAlphaVantage
+
+from airbyte_cdk.entrypoint import launch
 
 
 def run():

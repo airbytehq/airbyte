@@ -42,6 +42,7 @@ You can learn more about the API here https://developer.deputy.com/deputy-docs/r
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.5 | 2024-12-21 | [49991](https://github.com/airbytehq/airbyte/pull/49991) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49534](https://github.com/airbytehq/airbyte/pull/49534) | Update dependencies |
 | 0.0.3 | 2024-12-12 | [49170](https://github.com/airbytehq/airbyte/pull/49170) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [48934](https://github.com/airbytehq/airbyte/pull/48934) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

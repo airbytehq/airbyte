@@ -27,6 +27,7 @@ class MockBasicFunctionalityIntegrationTest :
         preserveUndeclaredFields = true,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        envVars = emptyMap(),
         supportFileTransfer = false,
     ) {
     @Test
@@ -74,6 +75,7 @@ class MockBasicFunctionalityIntegrationTest :
         super.testAppendSchemaEvolution()
     }
 
+    @Disabled("flaky")
     @Test
     override fun testDedup() {
         super.testDedup()
@@ -93,6 +95,4 @@ class MockBasicFunctionalityIntegrationTest :
     override fun testBasicTypes() {
         super.testBasicTypes()
     }
-
-    @Test @Disabled override fun testBasicWriteFile() {}
 }

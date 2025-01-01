@@ -36,8 +36,10 @@ import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecord.Change
+import io.airbyte.cdk.load.message.InputFile
+import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.message.InputStreamCheckpoint
+import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -66,6 +68,7 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 
 sealed interface AllTypesBehavior
 
@@ -113,6 +116,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val promoteUnionToObject: Boolean,
     val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
+    val envVars: Map<String, String>,
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
      * example:
@@ -124,6 +128,7 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
+    val failOnUnknownTypes: Boolean = false,
     nullEqualsUnset: Boolean = false,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper, nullEqualsUnset) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
@@ -144,7 +149,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 configContents,
                 stream,
                 listOf(
-                    DestinationRecord(
+                    InputRecord(
                         namespace = randomizedNamespace,
                         name = "test_stream",
                         data = """{"id": 5678, "undeclared": "asdf"}""",
@@ -160,13 +165,14 @@ abstract class BasicFunctionalityIntegrationTest(
                                 )
                             )
                     ),
-                    StreamCheckpoint(
+                    InputStreamCheckpoint(
                         streamName = "test_stream",
                         streamNamespace = randomizedNamespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                     )
-                )
+                ),
+                envVars = envVars,
             )
 
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
@@ -256,13 +262,12 @@ abstract class BasicFunctionalityIntegrationTest(
                 configContents,
                 stream,
                 listOf(
-                    DestinationFile(
+                    InputFile(
                         stream = stream.descriptor,
                         emittedAtMs = 1234,
-                        serialized = "",
                         fileMessage = fileMessage,
                     ),
-                    StreamCheckpoint(
+                    InputStreamCheckpoint(
                         streamName = stream.descriptor.name,
                         streamNamespace = stream.descriptor.namespace,
                         blob = """{"foo": "bar"}""",
@@ -316,7 +321,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     configContents,
                     stream,
                     listOf(
-                        DestinationRecord(
+                        InputRecord(
                             namespace = randomizedNamespace,
                             name = "test_stream",
                             data = """{"id": 12}""",
@@ -402,13 +407,13 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             ),
             listOf(
-                DestinationRecord(
+                InputRecord(
                     namespace = stream1.descriptor.namespace,
                     name = stream1.descriptor.name,
                     data = """{"id": 1234}""",
                     emittedAtMs = 1234,
                 ),
-                DestinationRecord(
+                InputRecord(
                     namespace = stream2.descriptor.namespace,
                     name = stream2.descriptor.name,
                     data = """{"id": 5678}""",
@@ -502,7 +507,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // The id field is always 42, and the string fields are always "foo\nbar".
         val messages =
             catalog.streams.map { stream ->
-                DestinationRecord(
+                InputRecord(
                     stream.descriptor,
                     ObjectValue(
                         (stream.schema as ObjectType)
@@ -560,7 +565,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "name": "first_value"}""",
@@ -573,7 +578,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             finalStream,
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "name": "second_value"}""",
@@ -611,7 +616,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testInterruptedTruncateWithPriorData() {
         assumeTrue(verifyDataWriting)
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
@@ -780,7 +785,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testInterruptedTruncateWithoutPriorData() {
         assumeTrue(verifyDataWriting)
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
@@ -901,7 +906,7 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun resumeAfterCancelledTruncate() {
         assumeTrue(verifyDataWriting)
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
@@ -1100,7 +1105,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             makeStream(syncId = 42),
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "name": "first_value"}""",
@@ -1113,7 +1118,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             finalStream,
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "name": "second_value"}""",
@@ -1169,7 +1174,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType)
             ),
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "to_drop": "val1", "to_change": 42}""",
@@ -1186,7 +1191,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             finalStream,
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
@@ -1248,7 +1253,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = syncId,
             )
         fun makeRecord(data: String, extractedAt: Long) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 data,
@@ -1393,7 +1398,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         fun makeRecord(cursorName: String) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 data = """{"id": 1, "$cursorName": 1, "name": "foo_$cursorName"}""",
@@ -1453,7 +1458,7 @@ abstract class BasicFunctionalityIntegrationTest(
             }
         val messages =
             (0..manyStreamCount).map { i ->
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "test_stream_$i",
                     """{"id": 1, "name": "foo_$i"}""",
@@ -1507,7 +1512,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         fun makeRecord(data: String) =
-            DestinationRecord(
+            InputRecord(
                 randomizedNamespace,
                 "test_stream",
                 data,
@@ -1794,11 +1799,6 @@ abstract class BasicFunctionalityIntegrationTest(
                         "schemaless_object" to FieldType(ObjectTypeWithoutSchema, nullable = true),
                         "schematized_array" to FieldType(ArrayType(intType), nullable = true),
                         "schemaless_array" to FieldType(ArrayTypeWithoutSchema, nullable = true),
-                        "unknown" to
-                            FieldType(
-                                UnknownType(JsonNodeFactory.instance.textNode("test")),
-                                nullable = true
-                            ),
                     ),
                 ),
                 generationId = 42,
@@ -1809,7 +1809,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             stream,
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """
@@ -1819,12 +1819,11 @@ abstract class BasicFunctionalityIntegrationTest(
                           "empty_object": {},
                           "schemaless_object": { "uuid": "38F52396-736D-4B23-B5B4-F504D8894B97", "probability": 1.5 },
                           "schematized_array": [10, null],
-                          "schemaless_array": [ 10, "foo", null, { "bar": "qua" } ],
-                          "unknown": {"foo": "bar"}
+                          "schemaless_array": [ 10, "foo", null, { "bar": "qua" } ]
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
                 ),
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """
@@ -1834,12 +1833,11 @@ abstract class BasicFunctionalityIntegrationTest(
                           "empty_object": {"extra": "stuff"},
                           "schemaless_object": { "address": { "street": "113 Hickey Rd", "zip": "37932" }, "flags": [ true, false, false ] },
                           "schematized_array": [],
-                          "schemaless_array": [],
-                          "unknown": {}
+                          "schemaless_array": []
                         }""".trimIndent(),
                     emittedAtMs = 1602637589200,
                 ),
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """
@@ -1849,8 +1847,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "empty_object": null,
                           "schemaless_object": null,
                           "schematized_array": null,
-                          "schemaless_array": null,
-                          "unknown": null
+                          "schemaless_array": null
                         }""".trimIndent(),
                     emittedAtMs = 1602637589300,
                 ),
@@ -1883,12 +1880,6 @@ abstract class BasicFunctionalityIntegrationTest(
                                     """[10,"foo",null,{"bar":"qua"}]"""
                                 } else {
                                     listOf(10, "foo", null, mapOf("bar" to "qua"))
-                                },
-                            "unknown" to
-                                if (stringifySchemalessObjects) {
-                                    """{"foo":"bar"}"""
-                                } else {
-                                    mapOf("foo" to "bar")
                                 },
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
@@ -1926,12 +1917,6 @@ abstract class BasicFunctionalityIntegrationTest(
                                 } else {
                                     emptyList<Any>()
                                 },
-                            "unknown" to
-                                if (stringifySchemalessObjects) {
-                                    """{}"""
-                                } else {
-                                    emptyMap<String, Any?>()
-                                },
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -1946,7 +1931,6 @@ abstract class BasicFunctionalityIntegrationTest(
                             "schemaless_object" to null,
                             "schematized_array" to null,
                             "schemaless_array" to null,
-                            "unknown" to null,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -1959,6 +1943,74 @@ abstract class BasicFunctionalityIntegrationTest(
             primaryKey = listOf(listOf("id")),
             cursor = null,
         )
+    }
+
+    @Test
+    open fun testUnknownTypes() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "problematic_types"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to
+                            FieldType(
+                                UnknownType(
+                                    JsonNodeFactory.instance.objectNode().put("type", "whatever")
+                                ),
+                                nullable = true
+                            ),
+                    ),
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            configContents,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "problematic_types",
+                    """
+                        {
+                          "id": "ex falso quodlibet"
+                        }""".trimIndent(),
+                    emittedAtMs = 1602637589100,
+                )
+            )
+        )
+
+        val expectedRecords: List<OutputRecord> =
+            listOf(
+                OutputRecord(
+                    extractedAt = 1602637589100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to "ex falso quodlibet",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            )
+
+        val dumpBlock = {
+            dumpAndDiffRecords(
+                parsedConfig,
+                expectedRecords,
+                stream,
+                primaryKey = listOf(listOf("id")),
+                cursor = null,
+            )
+        }
+        if (failOnUnknownTypes) {
+            // Note: this will not catch assertion errors against data
+            // if the destination actually succeeds (by design).
+            assertThrows<Exception> { dumpBlock() }
+        } else {
+            dumpBlock()
+        }
     }
 
     /**
@@ -2066,7 +2118,7 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             stream,
             listOf(
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """
@@ -2080,7 +2132,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
                 ),
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """
@@ -2094,7 +2146,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         }""".trimIndent(),
                     emittedAtMs = 1602637589200,
                 ),
-                DestinationRecord(
+                InputRecord(
                     randomizedNamespace,
                     "problematic_types",
                     """

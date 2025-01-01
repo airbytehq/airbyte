@@ -8,6 +8,7 @@ from typing import List, Optional, Sequence
 
 from click import UsageError
 from dagger import Container, Directory
+
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import PATH_TO_LOCAL_CDK
