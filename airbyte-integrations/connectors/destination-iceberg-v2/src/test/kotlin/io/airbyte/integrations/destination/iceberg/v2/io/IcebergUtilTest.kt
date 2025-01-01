@@ -8,7 +8,8 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
-import io.airbyte.cdk.load.command.iceberg.parquet.NessieServerConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.data.FieldType
@@ -20,12 +21,14 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
-import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
+import io.airbyte.integrations.destination.iceberg.v2.SimpleTableIdGenerator
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -51,10 +54,11 @@ import org.junit.jupiter.api.assertThrows
 internal class IcebergUtilTest {
 
     private lateinit var icebergUtil: IcebergUtil
+    private val tableIdGenerator = SimpleTableIdGenerator()
 
     @BeforeEach
     fun setup() {
-        icebergUtil = IcebergUtil()
+        icebergUtil = IcebergUtil(tableIdGenerator)
     }
 
     @Test
@@ -85,11 +89,13 @@ internal class IcebergUtilTest {
             every { create() } returns mockk()
         }
         val catalog: NessieCatalog = mockk {
-            every { buildTable(streamDescriptor.toIcebergTableIdentifier(), any()) } returns
-                tableBuilder
+            every {
+                buildTable(tableIdGenerator.toTableIdentifier(streamDescriptor), any())
+            } returns tableBuilder
             every { createNamespace(any()) } returns Unit
             every { namespaceExists(any()) } returns false
-            every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns false
+            every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
+                false
         }
         val table =
             icebergUtil.createTable(
@@ -100,7 +106,9 @@ internal class IcebergUtilTest {
             )
         assertNotNull(table)
         verify(exactly = 1) {
-            catalog.createNamespace(streamDescriptor.toIcebergTableIdentifier().namespace())
+            catalog.createNamespace(
+                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace()
+            )
         }
         verify(exactly = 1) { tableBuilder.create() }
     }
@@ -118,10 +126,12 @@ internal class IcebergUtilTest {
             every { create() } returns mockk()
         }
         val catalog: NessieCatalog = mockk {
-            every { buildTable(streamDescriptor.toIcebergTableIdentifier(), any()) } returns
-                tableBuilder
+            every {
+                buildTable(tableIdGenerator.toTableIdentifier(streamDescriptor), any())
+            } returns tableBuilder
             every { namespaceExists(any()) } returns true
-            every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns false
+            every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
+                false
         }
         val table =
             icebergUtil.createTable(
@@ -132,7 +142,9 @@ internal class IcebergUtilTest {
             )
         assertNotNull(table)
         verify(exactly = 0) {
-            catalog.createNamespace(streamDescriptor.toIcebergTableIdentifier().namespace())
+            catalog.createNamespace(
+                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace()
+            )
         }
         verify(exactly = 1) { tableBuilder.create() }
     }
@@ -143,9 +155,10 @@ internal class IcebergUtilTest {
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val catalog: NessieCatalog = mockk {
-            every { loadTable(streamDescriptor.toIcebergTableIdentifier()) } returns mockk()
+            every { loadTable(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
+                mockk()
             every { namespaceExists(any()) } returns true
-            every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns true
+            every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns true
         }
         val table =
             icebergUtil.createTable(
@@ -156,9 +169,13 @@ internal class IcebergUtilTest {
             )
         assertNotNull(table)
         verify(exactly = 0) {
-            catalog.createNamespace(streamDescriptor.toIcebergTableIdentifier().namespace())
+            catalog.createNamespace(
+                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace()
+            )
         }
-        verify(exactly = 1) { catalog.loadTable(streamDescriptor.toIcebergTableIdentifier()) }
+        verify(exactly = 1) {
+            catalog.loadTable(tableIdGenerator.toTableIdentifier(streamDescriptor))
+        }
     }
 
     @Test
@@ -180,15 +197,14 @@ internal class IcebergUtilTest {
                 syncId = 1,
             )
         val airbyteRecord =
-            DestinationRecord(
+            DestinationRecordAirbyteValue(
                 stream = airbyteStream.descriptor,
                 data =
                     ObjectValue(
                         linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
                     ),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = DestinationRecord.Meta(),
-                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
+                meta = Meta(),
             )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
         val columns =
@@ -228,7 +244,7 @@ internal class IcebergUtilTest {
                 syncId = 1,
             )
         val airbyteRecord =
-            DestinationRecord(
+            DestinationRecordAirbyteValue(
                 stream = airbyteStream.descriptor,
                 data =
                     ObjectValue(
@@ -239,8 +255,7 @@ internal class IcebergUtilTest {
                         )
                     ),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = DestinationRecord.Meta(),
-                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
+                meta = Meta(),
             )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
         val columns =
@@ -280,15 +295,14 @@ internal class IcebergUtilTest {
                 syncId = 1,
             )
         val airbyteRecord =
-            DestinationRecord(
+            DestinationRecordAirbyteValue(
                 stream = airbyteStream.descriptor,
                 data =
                     ObjectValue(
                         linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
                     ),
                 emittedAtMs = System.currentTimeMillis(),
-                meta = DestinationRecord.Meta(),
-                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
+                meta = Meta(),
             )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
         val columns =
@@ -323,27 +337,25 @@ internal class IcebergUtilTest {
                 accessKeyId = awsAccessKey,
                 secretAccessKey = awsSecretAccessKey,
             )
-        val nessieServerConfiguration =
-            NessieServerConfiguration(
-                serverUri = nessieServerUri,
-                accessToken = nessieAccessToken,
-                warehouseLocation = warehouseLocation,
-                mainBranchName = "main",
-            )
         val s3BucketConfiguration =
             S3BucketConfiguration(
                 s3BucketName = s3BucketName,
                 s3BucketRegion = S3BucketRegion.`us-east-1`,
                 s3Endpoint = s3Endpoint,
             )
+        val icebergCatalogConfiguration =
+            IcebergCatalogConfiguration(
+                warehouseLocation,
+                "main",
+                NessieCatalogConfiguration(nessieServerUri, nessieAccessToken)
+            )
         val configuration =
             IcebergV2Configuration(
                 awsAccessKeyConfiguration = awsAccessKeyConfiguration,
-                nessieServerConfiguration = nessieServerConfiguration,
+                icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,
             )
-        val catalogProperties =
-            icebergUtil.toCatalogProperties(icebergConfiguration = configuration)
+        val catalogProperties = icebergUtil.toCatalogProperties(config = configuration)
         assertEquals(ICEBERG_CATALOG_TYPE_NESSIE, catalogProperties[ICEBERG_CATALOG_TYPE])
         assertEquals(nessieServerUri, catalogProperties[URI])
         assertEquals(warehouseLocation, catalogProperties[WAREHOUSE_LOCATION])
