@@ -269,6 +269,8 @@ definitions:
       action: RETRY
       http_codes:
         - 500
+        - 502
+        - 503
       error_message: >-
         There was an issue
         with the Google Sheets API. This is usually a temporary issue from
