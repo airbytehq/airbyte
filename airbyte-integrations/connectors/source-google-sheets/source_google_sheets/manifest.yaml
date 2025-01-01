@@ -45,13 +45,14 @@ dynamic_streams:
             sheet_id: ""
             name: ""
           http_method: GET
-          path: '{% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"]}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json'
+          path: >-
+            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"]}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
-                  $ref: "#/definitions/response_filters/stream_data_filters"
+                  $ref: "#/definitions/response_filters/response_error_filters"
       schema_loader:
         type: DynamicSchemaLoader
         retriever:
@@ -78,7 +79,14 @@ dynamic_streams:
             $parameters:
               sheet_id: ""
             http_method: GET
-            path: '{% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"]}}!1:1&alt=json'
+            path: >-
+              {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"]}}!1:1&alt=json
+            error_handler:
+              type: CompositeErrorHandler
+              error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                    $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
         schema_type_identifier:
           $ref: "#/definitions/schema_type_identifier"
     components_resolver:
@@ -152,7 +160,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
-                  $ref: "#/definitions/response_filters/spreadsheet_info_stream_filters"
+                  $ref: "#/definitions/response_filters/response_error_filters"
         record_selector:
           type: RecordSelector
           extractor:
@@ -202,7 +210,7 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                $ref: "#/definitions/response_filters/resolver_filters"
+                $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
 
   response_filters:
     expected_one_sheet:
@@ -256,14 +264,16 @@ definitions:
         {%- endfor -%}
         The following duplicate headers were found in the sheet.
         Please fix them to continue: {{ duplicate_fields }}
-    not_found:
+    server_error:
       type: HttpResponseFilter
-      action: FAIL
+      action: RETRY
       http_codes:
-        - 404
+        - 500
       error_message: >-
-        The spreadsheet link is not valid. Enter the URL of the
-        Google spreadsheet you want to sync.
+        There was an issue
+        with the Google Sheets API. This is usually a temporary issue from
+        Google's side. Please try again. If this issue persists, contact
+        support
     forbidden:
       type: HttpResponseFilter
       action: FAIL
@@ -274,44 +284,32 @@ definitions:
         spreadsheet with id {{config["spreadsheet_id"]}}. Please ensure the authenticated user has access
         to the Spreadsheet and reauthenticate. If the issue persists, contact support.
         The caller does not have right permissions.
-    base_server_error:
+    not_found:
       type: HttpResponseFilter
-      action: RETRY
+      action: FAIL
       http_codes:
-        - 500
-    server_error_spreadsheet_info:
-      $ref: "#/definitions/response_filters/base_server_error"
+        - 404
       error_message: >-
-        Could not discover the schema of your spreadsheet. There was an issue
-        with the Google Sheets API. This is usually a temporary issue from
-        Google's side. Please try again. If this issue persists, contact
-        support. Interval Server error.
-    server_error_stream_data:
-      $ref: "#/definitions/response_filters/base_server_error"
-      error_message: >-
-        There was an issue with the Google Sheets API. This is usually a temporary
-        issue from Google's side. Please try again. If this issue persists, contact support
+        The requested Google Sheets spreadsheet with id {{config["spreadsheet_id"]}} does not exist.
+        Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support
     rate_limit:
       type: HttpResponseFilter
       action: RETRY
       http_codes:
         - 429
       error_message: >-
-        Stopped syncing process due to rate limits. Rate limit has been
+        Rate limit has been
         reached. Please try later or request a higher quota for your account.
-    resolver_filters:
+    single_sheet_response_error_filters:
       - $ref: "#/definitions/response_filters/expected_one_sheet"
       - $ref: "#/definitions/response_filters/ignore_duplicate_headers"
-    check_operation_resolver_filters:
+    check_operation_single_sheet_response_error_filters:
       - $ref: "#/definitions/response_filters/expected_one_sheet"
       - $ref: "#/definitions/response_filters/fail_duplicate_headers"
-    spreadsheet_info_stream_filters:
+    response_error_filters:
+      - $ref: "#/definitions/response_filters/server_error"
+      - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/not_found"
-      - $ref: "#/definitions/response_filters/forbidden"
-      - $ref: "#/definitions/response_filters/server_error_spreadsheet_info"
-    stream_data_filters:
-      - $ref: "#/definitions/response_filters/server_error_stream_data"
-      - $ref: "#/definitions/response_filters/forbidden"
       - $ref: "#/definitions/response_filters/rate_limit"
   schema_type_identifier:
     key_pointer:

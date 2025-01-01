@@ -4,6 +4,7 @@
 import json
 from copy import deepcopy
 from typing import Any, Dict, Optional, Tuple
+from requests.status_codes import codes as status_codes
 from unittest import TestCase
 from unittest.mock import ANY, patch
 
@@ -33,6 +34,7 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from source_google_sheets import SourceGoogleSheets
+from source_google_sheets.utils import exception_description_by_status_code
 
 from .entrypoint_wrapper_helper import check
 from .request_builder import AuthBuilder, RequestBuilder
@@ -195,7 +197,7 @@ class GoogleSheetSourceTest(TestCase):
         """"
         Mock requests to 'https://sheets.googleapis.com/v4/spreadsheets/<spreadsheet>/values:batchGet?ranges=<sheet>!2:202&majorDimension=ROWS&alt=json'
         to obtain value ranges (data) for stream from the spreadsheet + sheet provided.
-        For this we use range [2:202(2 + range in config which default is 200)].
+        For this we use range e.g. [2:202(2 + range in config which default is 200)].
         We start at 2 as we consider row 1 to contain headers. If we had more data the routine would continue to next ranges.
         e.g. from response file
         {
@@ -281,13 +283,14 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_invalid_link_error_message_when_check(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_link", 404)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_link", status_codes.NOT_FOUND)
+        error_message = exception_description_by_status_code(status_codes.NOT_FOUND, _SPREADSHEET_ID)
         output = self._check(self._config, expecting_exception=True)
         trace_message = AirbyteTraceMessage(
             type=TraceType.ERROR,
             emitted_at=ANY,
             error=AirbyteErrorTraceMessage(
-                message="The spreadsheet link is not valid. Enter the URL of the Google spreadsheet you want to sync.",
+                message=error_message,
                 internal_message=ANY,
                 failure_type=FailureType.system_error,
                 stack_trace=ANY,
@@ -305,26 +308,22 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_check_access_expired(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_permissions", 403)
-        error_message = (
-            "The authenticated Google Sheets user does not have permissions to view the "
-            f"spreadsheet with id {_SPREADSHEET_ID}. Please ensure the authenticated user has access"
-            " to the Spreadsheet and reauthenticate. If the issue persists, contact support. "
-            "The caller does not have right permissions."
-        )
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_permissions", status_codes.FORBIDDEN)
+        expected_message = exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID) + ". The caller does not have right permissions."
+
         output = self._check(self._config, expecting_exception=True)
         trace_message = AirbyteTraceMessage(
             type=TraceType.ERROR,
             emitted_at=ANY,
             error=AirbyteErrorTraceMessage(
-                message=error_message,
+                message=expected_message,
                 internal_message=ANY,
                 failure_type=FailureType.config_error,
                 stack_trace=ANY,
             ),
         )
-        expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
-        assert output.errors[-1] == expected_message
+        expected_airbyte_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
+        assert output.errors[-1] == expected_airbyte_message
 
     @HttpMocker()
     def test_check_expected_to_read_data_from_1_sheet(self, http_mocker: HttpMocker) -> None:
@@ -471,14 +470,11 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_could_not_run_discover(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "internal_server_error", 500)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "internal_server_error", status_codes.INTERNAL_SERVER_ERROR)
 
         with patch("time.sleep"):
             output = self._discover(self._config, expecting_exception=True)
-            expected_message = (
-                "Could not discover the schema of your spreadsheet. There was an issue with the Google Sheets API."
-                " This is usually a temporary issue from Google's side. Please try again. If this issue persists, contact support. Interval Server error."
-            )
+            expected_message = exception_description_by_status_code(status_codes.INTERNAL_SERVER_ERROR, _SPREADSHEET_ID)
 
             trace_message = AirbyteTraceMessage(
                 type=TraceType.ERROR,
@@ -516,13 +512,14 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_404_error(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_link", 404)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_link", status_codes.NOT_FOUND)
         output = self._discover(self._config, expecting_exception=True)
+        error_message = exception_description_by_status_code(status_codes.NOT_FOUND, _SPREADSHEET_ID)
         trace_message = AirbyteTraceMessage(
             type=TraceType.ERROR,
             emitted_at=ANY,
             error=AirbyteErrorTraceMessage(
-                message="The spreadsheet link is not valid. Enter the URL of the Google spreadsheet you want to sync.",
+                message=error_message,
                 internal_message=ANY,
                 failure_type=FailureType.system_error,
                 stack_trace=ANY,
@@ -533,27 +530,23 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_403_error(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_permissions", 403)
+        GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_permissions", status_codes.FORBIDDEN)
         output = self._discover(self._config, expecting_exception=True)
-        error_message = (
-            "The authenticated Google Sheets user does not have permissions to view the "
-            f"spreadsheet with id {_SPREADSHEET_ID}. Please ensure the authenticated user has access"
-            " to the Spreadsheet and reauthenticate. If the issue persists, contact support. "
-            "The caller does not have right permissions."
-        )
+
+        expected_message = exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID) + ". The caller does not have right permissions."
 
         trace_message = AirbyteTraceMessage(
             type=TraceType.ERROR,
             emitted_at=ANY,
             error=AirbyteErrorTraceMessage(
-                message=error_message,
+                message=expected_message,
                 internal_message=ANY,
                 failure_type=FailureType.config_error,
                 stack_trace=ANY,
             ),
         )
-        expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
-        assert output.errors[-1] == expected_message
+        expected_airbyte_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
+        assert output.errors[-1] == expected_airbyte_message
 
     @HttpMocker()
     def test_given_grid_sheet_type_without_rows_when_discover_then_ignore_stream(self, http_mocker: HttpMocker) -> None:
@@ -825,9 +818,14 @@ class GoogleSheetSourceTest(TestCase):
         output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
         assert len(output.records) == 9
 
-        assert output.state_messages[0].state.stream.stream_descriptor.name == _STREAM_NAME
-        assert output.state_messages[1].state.stream.stream_descriptor.name == _B_STREAM_NAME
-        assert output.state_messages[2].state.stream.stream_descriptor.name == _C_STREAM_NAME
+        assert len(output.state_messages) == 3
+        state_messages_streams = []
+        for state_message in output.state_messages:
+            state_messages_streams.append(state_message.state.stream.stream_descriptor.name)
+
+        assert _STREAM_NAME in state_messages_streams
+        assert _B_STREAM_NAME in state_messages_streams
+        assert _C_STREAM_NAME in state_messages_streams
 
         expected_messages = []
         for current_stream in [_STREAM_NAME, _B_STREAM_NAME, _C_STREAM_NAME]:
@@ -872,32 +870,27 @@ class GoogleSheetSourceTest(TestCase):
     def test_read_429_error(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
-        GoogleSheetSourceTest.get_stream_data(http_mocker, "rate_limit_error", 429)
+        GoogleSheetSourceTest.get_stream_data(http_mocker, "rate_limit_error", status_codes.TOO_MANY_REQUESTS)
 
         configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
         with patch("time.sleep"):
             output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
 
-        expected_message = (
-            "Exception while syncing stream a_stream_name: Stopped syncing process due to rate limits. Rate limit has been reached. Please try later or request a higher quota for your account."
-        )
+        expected_message = f"Exception while syncing stream {_STREAM_NAME}: " + exception_description_by_status_code(status_codes.TOO_MANY_REQUESTS, _STREAM_NAME)
+
         assert output.errors[0].trace.error.internal_message == expected_message
 
     @HttpMocker()
     def test_read_403_error(self, http_mocker: HttpMocker) -> None:
         GoogleSheetSourceTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
         GoogleSheetSourceTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
-        GoogleSheetSourceTest.get_stream_data(http_mocker, "invalid_permissions", 403)
+        GoogleSheetSourceTest.get_stream_data(http_mocker, "invalid_permissions", status_codes.FORBIDDEN)
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
-        # output = read(self._source, self._config, configured_catalog)
         output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
-
-        expected_message = (
-            f"The authenticated Google Sheets user does not have permissions to view the spreadsheet with id {_SPREADSHEET_ID}. Please ensure the authenticated user has access to the Spreadsheet and reauthenticate. If the issue persists, contact support. The caller does not have right permissions."
-        )
+        expected_message = exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID) + ". The caller does not have right permissions."
         assert output.errors[0].trace.error.message == expected_message
 
     @HttpMocker()
