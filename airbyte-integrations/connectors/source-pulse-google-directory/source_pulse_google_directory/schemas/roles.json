@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string"
+    },
+    "roleId": {
+      "type": "string",
+      "description": "The unique ID of the role"
+    },
+    "etag": {
+      "type": "string"
+    },
+    "rolePrivileges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string",
+            "description": "The obfuscated ID of the service this privilege is for. This value is returned with Privileges.list(). "
+          },
+          "privilegeName": {
+            "type": "string",
+            "description": "The name of the privilege."
+          }
+        }
+      },
+      "description": "The set of privileges that are granted to this role."
+    },
+    "roleName": {
+      "type": "string",
+      "description": "Name of the role"
+    },
+    "roleDescription": {
+      "type": "string",
+      "description": "A short descripton of the role"
+    },
+    "isSystemRole": {
+      "type": "boolean",
+      "description": "Returns true if this is a pre-defined system role."
+    },
+    "isSuperAdminRole": {
+      "type": "boolean",
+      "description": "Returns true if the role is a super admin role."
+    }
+  }
+}

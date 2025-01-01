@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "roleAssignmentId": {
+      "type": "string",
+      "description": "ID of this roleAssignment.",
+      "format": "int64"
+    },
+    "roleId": {
+      "type": "string",
+      "description": "The ID of the role that is assigned.",
+      "format": "int64"
+    },
+    "kind": {
+      "type": "string",
+      "description": "The type of the API resource. This is always admin#directory#roleAssignment.",
+      "const": "admin#directory#roleAssignment"
+    },
+    "etag": {
+      "type": "string",
+      "description": "ETag of the resource."
+    },
+    "assignedTo": {
+      "type": "string",
+      "description": "The unique ID of the entity this role is assigned to—either the userId of a user, the groupId of a group, or the uniqueId of a service account as defined in Identity and Access Management (IAM)."
+    },
+    "assigneeType": {
+      "type": "string",
+      "description": "Output only. The type of the assignee (USER or GROUP).",
+      "enum": ["USER", "GROUP"]
+    },
+    "scopeType": {
+      "type": "string",
+      "description": "The scope in which this role is assigned.",
+      "enum": ["CUSTOMER", "ORG_UNIT"]
+    },
+    "orgUnitId": {
+      "type": "string",
+      "description": "If the role is restricted to an organization unit, this contains the ID for the organization unit the exercise of this role is restricted to."
+    },
+    "condition": {
+      "type": "string",
+      "description": "Optional. The condition associated with this role assignment. Feature is available to Enterprise Standard, Enterprise Plus, Google Workspace for Education Plus and Cloud Identity Premium customers. Currently supports conditions for Security Groups and Locked Groups."
+    }
+  }
+}
