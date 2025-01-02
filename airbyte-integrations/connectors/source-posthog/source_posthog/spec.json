@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "PostHog Spec",
     "type": "object",
-    "required": ["api_key", "start_date"],
+    "required": ["api_key", "project_id", "start_date"],
     "properties": {
       "start_date": {
         "title": "Start Date",
@@ -25,7 +25,13 @@
         "default": "https://app.posthog.com",
         "title": "Base URL",
         "description": "Base PostHog url. Defaults to PostHog Cloud (https://app.posthog.com).",
-        "examples": ["https://posthog.example.com"]
+        "examples": ["https://posthog.example.com", "https://eu.posthog.com"]
+      },
+      "project_id": {
+        "type": "integer",
+        "title": "Project ID",
+        "description": "You can find the project ID in the URL of your PostHog dashboard. Create a separate source for each project.",
+        "examples": ["12345"]
       },
       "events_time_step": {
         "type": "integer",

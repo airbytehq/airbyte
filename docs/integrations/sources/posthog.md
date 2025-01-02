@@ -21,18 +21,20 @@ This page contains the setup guide and reference information for the PostHog sou
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the PostHog connector and select **PostHog** from the Source type dropdown.
 4. Enter your `apikey`.
-5. Enter your `start_date`.
-6. Change default `base_url` if self-hosted posthog instances is used
-7. Click **Set up source**.
+5. Enter your `project_id`.
+6. Enter your `start_date`.
+7. Change default `base_url` if self-hosted posthog instances is used
+8. Click **Set up source**.
 
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-4. Enter your `start_date`.
-5. Change default `base_url` if self-hosted posthog instances is used
-6. Click **Set up source**.
+4. Enter your `project_id`.
+5. Enter your `start_date`.
+6. Change default `base_url` if self-hosted posthog instances is used
+7. Click **Set up source**.
 
 ## Supported streams and sync modes
 
@@ -71,6 +73,7 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| 2.0.0 | 2024-01-29 | [?](https://github.com/airbytehq/airbyte/pull/?) | Require a single `project_id` to be specified in the source |
 | 1.1.24 | 2025-01-25 | [52536](https://github.com/airbytehq/airbyte/pull/52536) | Update dependencies |
 | 1.1.23 | 2025-01-18 | [51856](https://github.com/airbytehq/airbyte/pull/51856) | Update dependencies |
 | 1.1.22 | 2025-01-11 | [51313](https://github.com/airbytehq/airbyte/pull/51313) | Update dependencies |
