@@ -6,8 +6,10 @@ package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 
@@ -43,13 +45,15 @@ import io.airbyte.cdk.load.state.StreamProcessingFailed
  * but only if [start] returned successfully. If any exception was thrown during processing, it is
  * passed as an argument to [close].
  */
-interface StreamLoader : BatchAccumulator {
+interface StreamLoader : BatchAccumulator, FileBatchAccumulator {
     val stream: DestinationStream
 
     suspend fun start() {}
     suspend fun createBatchAccumulator(): BatchAccumulator = this
+    suspend fun createFileBatchAccumulator(
+        outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
+    ): FileBatchAccumulator = this
 
-    suspend fun processFile(file: DestinationFile): Batch
     suspend fun processBatch(batch: Batch): Batch = SimpleBatch(Batch.State.COMPLETE)
     suspend fun close(streamFailure: StreamProcessingFailed? = null) {}
 }
@@ -60,6 +64,18 @@ interface BatchAccumulator {
         totalSizeBytes: Long,
         endOfStream: Boolean = false
     ): Batch =
+        throw NotImplementedError(
+            "processRecords must be implemented if createBatchAccumulator is overridden"
+        )
+}
+
+interface FileBatchAccumulator {
+    /**
+     * This is an unusal way to process a message (the DestinationFile). The batch are pushed to the
+     * queue immediately instead of being return by the method, the main reason is that we nned to
+     * keep a single instance of a PartFactory for the whole file.
+     */
+    suspend fun processFilePart(file: DestinationFile, index: Long): Unit =
         throw NotImplementedError(
             "processRecords must be implemented if createBatchAccumulator is overridden"
         )

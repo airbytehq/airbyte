@@ -226,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.10.0-rc.4 | 2024-12-23 | [48587](https://github.com/airbytehq/airbyte/pull/48587)   | Fix minor state counting mechanism.                                                                                                                    |
 | 3.10.0-rc.3 | 2024-12-20 | [49918](https://github.com/airbytehq/airbyte/pull/49918)   | Fix minor datatype handling and conversion bugs, maintain big number precision.                                                                 |
 | 3.10.0-rc.2 | 2024-12-20 | [49950](https://github.com/airbytehq/airbyte/pull/49950)   | Remove unused configuration field, streamline SSL certificate key store logic.                                                                  |
 | 3.10.0-rc.1 | 2024-12-20 | [49948](https://github.com/airbytehq/airbyte/pull/49948)   | Pin Bulk CDK version to 231, adopt required changes.                                                                                            |

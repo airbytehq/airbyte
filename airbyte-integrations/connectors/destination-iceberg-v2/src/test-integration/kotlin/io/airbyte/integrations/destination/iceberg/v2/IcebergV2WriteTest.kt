@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test
 abstract class IcebergV2WriteTest(
     configContents: String,
     destinationCleaner: DestinationCleaner,
+    envVars: Map<String, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
         configContents,
@@ -37,6 +38,7 @@ abstract class IcebergV2WriteTest(
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         supportFileTransfer = false,
+        envVars = envVars,
         allTypesBehavior = StronglyTyped(),
         nullEqualsUnset = true,
     ) {
@@ -80,8 +82,17 @@ class IcebergGlueWriteTest :
             IcebergV2TestUtil.getCatalog(
                 IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
             )
-        ),
-    )
+        )
+    ) {
+    @Test
+    @Disabled("dest iceberge-v2 doesn't support unknown types")
+    override fun testUnknownTypes() {}
+
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
@@ -92,6 +103,7 @@ class IcebergNessieMinioWriteTest :
         // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
         NoopDestinationCleaner
     ) {
+
     companion object {
         private fun getToken(): String {
             val client = OkHttpClient()
