@@ -6,5 +6,5 @@
   "raw_data_schema": "iamnotthere",
   "ssl_method": { "name": "unencrypted" },
   "user": "sa",
-  "password": "Averycomplicatedpassword1!"
+  "password": "replace_me"
 }
