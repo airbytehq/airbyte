@@ -1,0 +1,1880 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Account Type": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Account Type"
+    },
+    "Account added via form": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Account added via form"
+    },
+    "BOP Registered On Time": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "BOP Registered On Time"
+    },
+    "Business Outcome Plan Accepted Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Business Outcome Plan Accepted Date"
+    },
+    "Business Outcome Plan Registration Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Business Outcome Plan Registration Date"
+    },
+    "Customer Sentiment": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "list_attribute",
+      "attribute": "Customer Sentiment"
+    },
+    "Cancellation Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Cancellation Date"
+    },
+    "Cisco Partner Program Actual Registration Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Cisco Partner Program Actual Registration Date"
+    },
+    "Cisco Partner Program Registration Due Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Cisco Partner Program Registration Due Date"
+    },
+    "Closed Lost Reason": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Closed Lost Reason"
+    },
+    "Complemented Onboarding On Time": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Complemented Onboarding On Time"
+    },
+    "Contract Renewal Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Contract Renewal Date"
+    },
+    "Contract Start Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Contract Start Date"
+    },
+    "Contract Value": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Contract Value"
+    },
+    "Contract Value (Sum)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric",
+      "attribute": "Contract Value (Sum)",
+      "additionalProps": {
+        "metric": "sum__contract_value",
+        "source": "rollup"
+      }
+    },
+    "Conversion Likelihood": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "lifecycle_attribute",
+      "attribute": "Conversion Likelihood"
+    },
+    "Create Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Create Date"
+    },
+    "Customer Journey Stage": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "lifecycle_attribute",
+      "attribute": "Customer Journey Stage"
+    },
+    "Eligible Business Objective Incentive Amount": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Eligible Business Objective Incentive Amount"
+    },
+    "Eligible SuccessPlan Incentive Amount": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Eligible SuccessPlan Incentive Amount"
+    },
+    "Enabled Users": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Enabled Users"
+    },
+    "Escalation Severity": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "list_attribute",
+      "attribute": "Escalation Severity"
+    },
+    "Escalation Status": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "lifecycle_attribute",
+      "attribute": "Escalation Status"
+    },
+    "Escalation Type": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "multi_value_string_attribute",
+      "attribute": "Escalation Type"
+    },
+    "Expansion Status": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "lifecycle_attribute",
+      "attribute": "Expansion Status"
+    },
+    "First Activity Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date",
+      "additionalProps": {
+        "term": "simple_first_activity_time"
+      },
+      "attribute": "First Activity Date"
+    },
+    "Forecast Contract Value": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Forecast Contract Value"
+    },
+    "Forecast Period": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Forecast Period"
+    },
+    "Forecast State": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Forecast State"
+    },
+    "Industry": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "list_attribute",
+      "attribute": "Industry"
+    },
+    "Last Business Review Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Last Business Review Date"
+    },
+    "Last Contract Value Change Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Last Contract Value Change Date"
+    },
+    "Last Payment Amount": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Last Payment Amount"
+    },
+    "Last Payment Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Last Payment Date"
+    },
+    "Last Reference Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Last Reference Date"
+    },
+    "Last activity date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date",
+      "additionalProps": {
+        "term": "simple_last_activity_time"
+      },
+      "attribute": "Last activity date"
+    },
+    "Licenses": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Licenses"
+    },
+    "Next Business Review Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Next Business Review Date"
+    },
+    "Next Payment Due Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Next Payment Due Date"
+    },
+    "# Of References Given": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "# Of References Given"
+    },
+    "Onboarding Stage": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "lifecycle_attribute",
+      "attribute": "Onboarding Stage"
+    },
+    "Project Status": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "lifecycle_attribute",
+      "attribute": "Project Status"
+    },
+    "Order Booking Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Order Booking Date"
+    },
+    "Outstanding Balance": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Outstanding Balance"
+    },
+    "Payment Method Expiration Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Payment Method Expiration Date"
+    },
+    "Purchase Scenario": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "list_attribute",
+      "attribute": "Purchase Scenario"
+    },
+    "Received Business Objective Incentive Amount": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Received Business Objective Incentive Amount"
+    },
+    "Received SuccessPlan Incentive Amount": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Received SuccessPlan Incentive Amount"
+    },
+    "Referenceability": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Referenceability"
+    },
+    "Renewal Status": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "lifecycle_attribute",
+      "attribute": "Renewal Status"
+    },
+    "Support System Account Id": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Support System Account Id"
+    },
+    "Risk Reason": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Risk Reason"
+    },
+    "Risk Status": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "lifecycle_attribute",
+      "attribute": "Risk Status"
+    },
+    "Sample Data": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Sample Data"
+    },
+    "Satisfaction Score": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Satisfaction Score"
+    },
+    "Status": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Status"
+    },
+    "SuccessPlan Accepted Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "SuccessPlan Accepted Date"
+    },
+    "SuccessPlan Agreement": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "list_attribute",
+      "attribute": "SuccessPlan Agreement"
+    },
+    "SuccessPlan Due Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "SuccessPlan Due Date"
+    },
+    "SuccessPlan ID": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "SuccessPlan ID"
+    },
+    "SuccessPlan Registration Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "SuccessPlan Registration Date"
+    },
+    "SuccessPlan Registration Due Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "SuccessPlan Registration Due Date"
+    },
+    "SuccessPlan Status": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "lifecycle_attribute",
+      "attribute": "SuccessPlan Status"
+    },
+    "Ticket Volume": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Ticket Volume"
+    },
+    "Tier": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "list_attribute",
+      "attribute": "Tier"
+    },
+    "Top priority satisfaction score": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Top priority satisfaction score"
+    },
+    "Top priority ticket volume": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Top priority ticket volume"
+    },
+    "Top priority unsolved tickets": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Top priority unsolved tickets"
+    },
+    "Totango Opportunity Close Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Totango Opportunity Close Date"
+    },
+    "Totango Opportunity Description": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Totango Opportunity Description"
+    },
+    "Totango Opportunity Name": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "Totango Opportunity Name"
+    },
+    "Totango Opportunity Stage": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "lifecycle_attribute",
+      "attribute": "Totango Opportunity Stage"
+    },
+    "Totango Opportunity Type": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "list_attribute",
+      "attribute": "Totango Opportunity Type"
+    },
+    "Totango Opportunity Value": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Totango Opportunity Value"
+    },
+    "Trial Expiration Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date",
+      "source_attribute": "simple_date_attribute",
+      "attribute": "Trial Expiration Date"
+    },
+    "Unsolved Tickets": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Unsolved Tickets"
+    },
+    "account_id": {
+      "type": [
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "account_id"
+    },
+    "account_name": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "account_name"
+    },
+    "Active Days (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Active Days (7d)"
+    },
+    "contract_value": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "contract_value"
+    },
+    "customer_portal_account_name": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "customer_portal_account_name"
+    },
+    "daumau_1576037919793": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "daumau_1576037919793"
+    },
+    "dauwau_1607139136395": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "dauwau_1607139136395"
+    },
+    "TouchPoint Default BCC Email": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "list_attribute",
+      "attribute": "email_to_tp_default"
+    },
+    "health": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "health"
+    },
+    "licenses": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "licenses"
+    },
+    "License utilization (1d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "licenses_utilization",
+        "duration": 1
+      },
+      "attribute": "License utilization (1d)"
+    },
+    "License utilization (3d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "licenses_utilization",
+        "duration": 3
+      },
+      "attribute": "License utilization (3d)"
+    },
+    "License utilization (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "licenses_utilization",
+        "duration": 7
+      },
+      "attribute": "License utilization (7d)"
+    },
+    "License utilization (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "licenses_utilization",
+        "duration": 14
+      },
+      "attribute": "License utilization (14d)"
+    },
+    "License utilization (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "licenses_utilization",
+        "duration": 30
+      },
+      "attribute": "License utilization (30d)"
+    },
+    "License utilization (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "licenses_utilization",
+        "duration": 90
+      },
+      "attribute": "License utilization (90d)"
+    },
+    "minutes_on_system": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "minutes_on_system"
+    },
+    "minutes_on_system_per_unique_users": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "minutes_on_system_per_unique_users"
+    },
+    "ofid": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "ofid"
+    },
+    "parent_id": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "parent_id"
+    },
+    "Customer Portal Shared Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "simple_date_attribute",
+      "attribute": "portal_shared_date"
+    },
+    "product_id": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "product_id"
+    },
+    "purchased_license_deployment_1576039108130": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "purchased_license_deployment_1576039108130"
+    },
+    "score": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "score"
+    },
+    "sfid": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "sfid"
+    },
+    "Contract status": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string",
+      "additionalProps": {
+        "term": "status_group"
+      },
+      "attribute": "Contract status"
+    },
+    "Contract Status Change Date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_metric_change_date",
+      "additionalProps": {
+        "metric": "status_group"
+      },
+      "attribute": "Contract Status Change Date"
+    },
+    "Days in contract status": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_metric_change_date",
+      "additionalProps": {
+        "metric": "status_group"
+      },
+      "attribute": "Days in contract status"
+    },
+    "Previous contract status": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_metric_prev_value",
+      "additionalProps": {
+        "metric": "status_group"
+      },
+      "attribute": "Previous contract status"
+    },
+    "task_collection": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "task_collection"
+    },
+    "total_activities": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "total_activities"
+    },
+    "total_activities_per_unique_users": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "total_activities_per_unique_users"
+    },
+    "Touchpoints (1d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Number of touchpoints created in the last 1 days"
+    },
+    "Touchpoints (3d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Number of touchpoints created in the last 3 days"
+    },
+    "Touchpoints (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Number of touchpoints created in the last 7 days"
+    },
+    "Touchpoints (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Number of touchpoints created in the last 14 days"
+    },
+    "Touchpoints (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_attribute",
+      "attribute": "Number of touchpoints created in the last 30 days"
+    },
+    "Number of active users (1d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "unique_users",
+        "duration": 1
+      },
+      "attribute": "Number of active users (1d)"
+    },
+    "Number of active users (3d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "unique_users",
+        "duration": 3
+      },
+      "attribute": "Number of active users (3d)"
+    },
+    "Number of active users (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "unique_users",
+        "duration": 7
+      },
+      "attribute": "Number of active users (7d)"
+    },
+    "Number of active users (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "unique_users",
+        "duration": 14
+      },
+      "attribute": "Number of active users (14d)"
+    },
+    "Number of active users (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "unique_users",
+        "duration": 30
+      },
+      "attribute": "Number of active users (30d)"
+    },
+    "Number of active users (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "unique_users",
+        "duration": 90
+      },
+      "attribute": "Number of active users (90d)"
+    },
+    "waumau_1576035722312": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "source_attribute": "string_attribute",
+      "attribute": "waumau_1576035722312"
+    },
+    "Number of Active Days (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "activity_days",
+        "duration": 7
+      },
+      "attribute": "Number of Active Days (7d)"
+    },
+    "Number of Active Days (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "activity_days",
+        "duration": 14
+      },
+      "attribute": "Number of Active Days (14d)"
+    },
+    "Number of Active Days (3d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "activity_days",
+        "duration": 3
+      },
+      "attribute": "Number of Active Days (3d)"
+    },
+    "Number of Active Days (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "activity_days",
+        "duration": 30
+      },
+      "attribute": "Number of Active Days (30d)"
+    },
+    "Number of Active Days (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "activity_days",
+        "duration": 90
+      },
+      "attribute": "Number of Active Days (90d)"
+    },
+    "Usage Frequency": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric",
+      "additionalProps": {
+        "metric": "usage_frequency",
+        "source": "userdef"
+      },
+      "attribute": "Usage Frequency"
+    },
+    "License Utilization (7d) (Avg)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric",
+      "additionalProps": {
+        "metric": "avg__licenses_utilization/7",
+        "source": "rollup"
+      },
+      "attribute": "License Utilization (7d) (Avg)"
+    },
+    "Contract Value (Sum) %25 change (3d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "sum__contract_value",
+        "source": "rollup",
+        "relative_to": 3
+      },
+      "attribute": "Contract Value (Sum) %25 change (3d)"
+    },
+    "Contract Value (Sum) %25 change (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "sum__contract_value",
+        "source": "rollup",
+        "relative_to": 7
+      },
+      "attribute": "Contract Value (Sum) %25 change (7d)"
+    },
+    "Contract Value (Sum) %25 change (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "sum__contract_value",
+        "source": "rollup",
+        "relative_to": 14
+      },
+      "attribute": "Contract Value (Sum) %25 change (14d)"
+    },
+    "Contract Value (Sum) %25 change (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "sum__contract_value",
+        "source": "rollup",
+        "relative_to": 30
+      },
+      "attribute": "Contract Value (Sum) %25 change (30d)"
+    },
+    "Contract Value (Sum) %25 change (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "sum__contract_value",
+        "source": "rollup",
+        "relative_to": 90
+      },
+      "attribute": "Contract Value (Sum) %25 change (90d)"
+    },
+    "DAU/MAU": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric",
+      "additionalProps": {
+        "metric": "daumau_1576037919793",
+        "source": "userdef"
+      },
+      "attribute": "DAU/MAU"
+    },
+    "DAU/MAU %25 Change (1d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "daumau_1576037919793",
+        "source": "userdef",
+        "relative_to": 1
+      },
+      "attribute": "DAU/MAU %25 Change (1d)"
+    },
+    "DAU/MAU %25 change (3d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "daumau_1576037919793",
+        "source": "userdef",
+        "relative_to": 3
+      },
+      "attribute": "DAU/MAU %25 change (3d)"
+    },
+    "DAU/MAU %25 change (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "daumau_1576037919793",
+        "source": "userdef",
+        "relative_to": 7
+      },
+      "attribute": "DAU/MAU %25 change (7d)"
+    },
+    "DAU/MAU %25 change (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "daumau_1576037919793",
+        "source": "userdef",
+        "relative_to": 14
+      },
+      "attribute": "DAU/MAU %25 change (14d)"
+    },
+    "DAU/MAU %25 change (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "daumau_1576037919793",
+        "source": "userdef",
+        "relative_to": 30
+      },
+      "attribute": "DAU/MAU %25 change (30d)"
+    },
+    "DAU/MAU %25 change (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "daumau_1576037919793",
+        "source": "userdef",
+        "relative_to": 90
+      },
+      "attribute": "DAU/MAU %25 change (90d)"
+    },
+    "DAU/WAU %25 change (1d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "dauwau_1607139136395",
+        "source": "userdef",
+        "relative_to": 1
+      },
+      "attribute": "DAU/WAU %25 change (1d)"
+    },
+    "DAU/WAU %25 change (3d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "dauwau_1607139136395",
+        "source": "userdef",
+        "relative_to": 3
+      },
+      "attribute": "DAU/WAU %25 change (3d)"
+    },
+    "DAU/WAU %25 change (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "dauwau_1607139136395",
+        "source": "userdef",
+        "relative_to": 7
+      },
+      "attribute": "DAU/WAU %25 change (7d)"
+    },
+    "DAU/WAU %25 change (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "dauwau_1607139136395",
+        "source": "userdef",
+        "relative_to": 14
+      },
+      "attribute": "DAU/WAU %25 change (14d)"
+    },
+    "DAU/WAU %25 change (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "dauwau_1607139136395",
+        "source": "userdef",
+        "relative_to": 30
+      },
+      "attribute": "DAU/WAU %25 change (30d)"
+    },
+    "DAU/WAU %25 change (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric_change",
+      "additionalProps": {
+        "metric": "dauwau_1607139136395",
+        "source": "userdef",
+        "relative_to": 90
+      },
+      "attribute": "DAU/WAU %25 change (90d)"
+    },
+    "DAU/WAU": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric",
+      "additionalProps": {
+        "metric": "dauwau_1607139136395",
+        "source": "userdef"
+      },
+      "attribute": "DAU/WAU"
+    },
+    "Active Users (7d) (Sum)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric",
+      "additionalProps": {
+        "metric": "sum__unique_users/7",
+        "source": "rollup"
+      },
+      "attribute": "Active Users (7d) (Sum)"
+    },
+    "Engagement": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number",
+      "additionalProps": {
+        "term": "score"
+      },
+      "attribute": "Engagement"
+    },
+    "Number of Renewal (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_renewal",
+        "duration": "7"
+      },
+      "attribute": "Number of Renewal (7d)"
+    },
+    "Number of Renewal (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_renewal",
+        "duration": "14"
+      },
+      "attribute": "Number of Renewal (14d)"
+    },
+    "Number of Renewal (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_renewal",
+        "duration": "30"
+      },
+      "attribute": "Number of Renewal (30d)"
+    },
+    "Number of Renewal (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_renewal",
+        "duration": "90"
+      },
+      "attribute": "Number of Renewal (90d)"
+    },
+    "Number of Support (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_support",
+        "duration": "7"
+      },
+      "attribute": "Number of Support (7d)"
+    },
+    "Number of Support (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_support",
+        "duration": "14"
+      },
+      "attribute": "Number of Support (14d)"
+    },
+    "Number of Support (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_support",
+        "duration": "30"
+      },
+      "attribute": "Number of Support (30d)"
+    },
+    "Number of Support (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_support",
+        "duration": "90"
+      },
+      "attribute": "Number of Support (90d)"
+    },
+    "Number of Upsell (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_upsell",
+        "duration": "7"
+      },
+      "attribute": "Number of Upsell (7d)"
+    },
+    "Number of Upsell (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_upsell",
+        "duration": "14"
+      },
+      "attribute": "Number of Upsell (14d)"
+    },
+    "Number of Upsell (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_upsell",
+        "duration": "30"
+      },
+      "attribute": "Number of Upsell (30d)"
+    },
+    "Number of Upsell (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_upsell",
+        "duration": "90"
+      },
+      "attribute": "Number of Upsell (90d)"
+    },
+    "Number of Escalation (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_escalation",
+        "duration": "7"
+      },
+      "attribute": "Number of Escalation (7d)"
+    },
+    "Number of Escalation (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_escalation",
+        "duration": "14"
+      },
+      "attribute": "Number of Escalation (14d)"
+    },
+    "Number of Escalation (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_escalation",
+        "duration": "30"
+      },
+      "attribute": "Number of Escalation (30d)"
+    },
+    "Number of Escalation (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_escalation",
+        "duration": "90"
+      },
+      "attribute": "Number of Escalation (90d)"
+    },
+    "Number of Onboarding (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_onboarding_101",
+        "duration": "7"
+      },
+      "attribute": "Number of Onboarding (7d)"
+    },
+    "Number of Onboarding (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_onboarding_101",
+        "duration": "14"
+      },
+      "attribute": "Number of Onboarding (14d)"
+    },
+    "Number of Onboarding (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_onboarding_101",
+        "duration": "30"
+      },
+      "attribute": "Number of Onboarding (30d)"
+    },
+    "Number of Onboarding (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_onboarding_101",
+        "duration": "90"
+      },
+      "attribute": "Number of Onboarding (90d)"
+    },
+    "Number of Adoption (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_adoption",
+        "duration": "7"
+      },
+      "attribute": "Number of Adoption (7d)"
+    },
+    "Number of Adoption (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_adoption",
+        "duration": "14"
+      },
+      "attribute": "Number of Adoption (14d)"
+    },
+    "Number of Adoption (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_adoption",
+        "duration": "30"
+      },
+      "attribute": "Number of Adoption (30d)"
+    },
+    "Number of Adoption (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_adoption",
+        "duration": "90"
+      },
+      "attribute": "Number of Adoption (90d)"
+    },
+    "Number of Risk (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_risk_1560979263618",
+        "duration": "7"
+      },
+      "attribute": "Number of Risk (7d)"
+    },
+    "Number of Risk (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_risk_1560979263618",
+        "duration": "14"
+      },
+      "attribute": "Number of Risk (14d)"
+    },
+    "Number of Risk (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_risk_1560979263618",
+        "duration": "30"
+      },
+      "attribute": "Number of Risk (30d)"
+    },
+    "Number of Risk (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_risk_1560979263618",
+        "duration": "90"
+      },
+      "attribute": "Number of Risk (90d)"
+    },
+    "Number of Intelligence (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_intelligence_1561140678082",
+        "duration": "7"
+      },
+      "attribute": "Number of Intelligence (7d)"
+    },
+    "Number of Intelligence (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_intelligence_1561140678082",
+        "duration": "14"
+      },
+      "attribute": "Number of Intelligence (14d)"
+    },
+    "Number of Intelligence (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_intelligence_1561140678082",
+        "duration": "30"
+      },
+      "attribute": "Number of Intelligence (30d)"
+    },
+    "Number of Intelligence (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "successflow_count_intelligence_1561140678082",
+        "duration": "90"
+      },
+      "attribute": "Number of Intelligence (90d)"
+    },
+    "Purchased License Consumption": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "number_metric",
+      "additionalProps": {
+        "metric": "purchased_license_deployment_1576039108130",
+        "source": "userdef"
+      },
+      "attribute": "Purchased License Consumption"
+    },
+    "Overall time spent (1d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "minutes_on_system",
+        "duration": "1"
+      },
+      "attribute": "Overall time spent (1d)"
+    },
+    "Overall time spent (3d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "minutes_on_system",
+        "duration": "3"
+      },
+      "attribute": "Overall time spent (3d)"
+    },
+    "Overall time spent (7d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "minutes_on_system",
+        "duration": "7"
+      },
+      "attribute": "Overall time spent (7d)"
+    },
+    "Overall time spent (14d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "minutes_on_system",
+        "duration": "14"
+      },
+      "attribute": "Overall time spent (14d)"
+    },
+    "Overall time spent (30d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "minutes_on_system",
+        "duration": "30"
+      },
+      "attribute": "Overall time spent (30d)"
+    },
+    "Overall time spent (90d)": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "source_attribute": "named_aggregation",
+      "additionalProps": {
+        "aggregation": "minutes_on_system",
+        "duration": "90"
+      },
+      "attribute": "Overall time spent (90d)"
+    }
+  }
+}

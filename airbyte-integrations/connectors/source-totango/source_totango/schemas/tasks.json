@@ -1,0 +1,497 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "timestamp": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "account": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "task_content": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "action": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "task_id": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "is_modified": {
+                            "type": [
+                                "null",
+                                "boolean"
+                            ]
+                        },
+                        "current": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "assigner": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "is_modified": {
+                            "type": [
+                                "null",
+                                "boolean"
+                            ],
+                            "current": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "assignee": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "is_modified": {
+                            "type": [
+                                "null",
+                                "boolean"
+                            ]
+                        },
+                        "current": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "last_updater": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "is_modified": {
+                            "type": [
+                                "null",
+                                "boolean"
+                            ]
+                        },
+                        "current": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "status": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "is_modified": {
+                            "type": [
+                                "null",
+                                "boolean"
+                            ]
+                        },
+                        "current": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "priority": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "is_modified": {
+                            "type": [
+                                "null",
+                                "boolean"
+                            ]
+                        },
+                        "current": {
+                            "type": [
+                                "null",
+                                "number"
+                            ]
+                        }
+                    }
+                },
+                "due_date": {
+                    "type": [
+                        "null",
+                        "object"
+                    ],
+                    "properties": {
+                        "is_modified": {
+                            "type": [
+                                "null",
+                                "boolean"
+                            ]
+                        },
+                        "current": {
+                            "type": [
+                                "null",
+                                "string"
+                            ],
+                            "format": "date"
+                        }
+                    }
+                },
+                "origin": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "taskAction": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "properties": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "creation_time": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "activity_type_id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "activity_type_id_is_modified": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "update_time": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "creator_transaction_id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "containsFormatting": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "title": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "last_updated_internal": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "is_associated_with_user": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "actual_effort_is_modified": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "estimated_effort_is_modified": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                }
+            }
+        },
+        "enrichedUsers": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "userType": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "fullName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "permissions": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "active": {
+                        "type": [
+                            "null",
+                            "boolean"
+                        ]
+                    },
+                    "enabled": {
+                        "type": [
+                            "null",
+                            "boolean"
+                        ]
+                    },
+                    "authorities": {
+                        "type": [
+                            "null",
+                            "array"
+                        ],
+                        "items": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    },
+                    "timezone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "salesforceUserName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "createDate": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date-time"
+                    },
+                    "mappingId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "signupDate": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date-time"
+                    },
+                    "externalId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "managerExternalId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "firstName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "lastName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "passwordCreatedAt": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date-time"
+                    },
+                    "invitationDate": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date-time"
+                    },
+                    "uuid": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "manager": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "title": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "prefJson": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "role": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "username": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "lastLogin": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "managerDetails": {
+                        "type": [
+                            "null",
+                            "object"
+                        ],
+                        "properties": {
+                            "mappingId": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "username": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "email": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "firstName": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "lastName": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "fullName": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
