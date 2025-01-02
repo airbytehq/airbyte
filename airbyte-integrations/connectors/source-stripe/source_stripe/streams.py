@@ -702,6 +702,12 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             legacy_cursor_field=legacy_cursor_field,
             event_types=event_types,
             response_filter=response_filter,
+            record_extractor=UpdatedCursorIncrementalRecordExtractor(
+                cursor_field=cursor_field,
+                legacy_cursor_field=legacy_cursor_field,
+                response_filter=response_filter,
+                slice_data_retriever=kwargs.get("slice_data_retriever"),
+            ),
             **kwargs,
         )
         self.lazy_substream = StripeLazySubStream(
