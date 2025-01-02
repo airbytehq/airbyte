@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "airbyte-connectors-base-images"
-version = "1.4.0"
+version = "1.5.0"
 description = "This package is used to generate and publish the base images for Airbyte Connectors."
 authors = ["Augustin Lafanechere <augustin@airbyte.io>"]
 readme = "README.md"
