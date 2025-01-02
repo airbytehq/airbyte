@@ -7,10 +7,10 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs, urlparse
 
 from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.requesters import HttpRequester
 
 
 @dataclass
@@ -70,23 +70,25 @@ class EventsHttpRequester(HttpRequester):
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
         """
         if next_page_token is not None:
-            url = next_page_token['next_page_token']
+            url = next_page_token["next_page_token"]
             parsed_url = urlparse(url)
 
-            options = dict((k, v[0] if isinstance(v, list) else v)
-                           for k, v in parse_qs(parsed_url.query).items())
+            options = dict((k, v[0] if isinstance(v, list) else v) for k, v in parse_qs(parsed_url.query).items())
         else:
             options = self._get_request_options(
-                stream_state, stream_slice, next_page_token, self.get_request_params, self.get_authenticator(
-                ).get_request_params, extra_params
+                stream_state,
+                stream_slice,
+                next_page_token,
+                self.get_request_params,
+                self.get_authenticator().get_request_params,
+                extra_params
             )
-            
+
         if isinstance(options, str):
             raise ValueError("Request params cannot be a string")
 
         for k, v in options.items():
             if isinstance(v, (list, dict)):
-                raise ValueError(
-                    f"Invalid value for `{k}` parameter. The values of request params cannot be an array or object.")
+                raise ValueError(f"Invalid value for `{k}` parameter. The values of request params cannot be an array or object.")
 
         return options
