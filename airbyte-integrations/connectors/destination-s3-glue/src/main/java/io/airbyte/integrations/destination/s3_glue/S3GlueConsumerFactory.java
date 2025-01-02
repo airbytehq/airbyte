@@ -101,7 +101,7 @@ public class S3GlueConsumerFactory {
         throw new RuntimeException("Unknown sync mode: " + sourceSyncMode);
       }
       final S3GlueWriteConfig writeConfig =
-          new S3GlueWriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode, jsonSchema, location);
+          new S3GlueWriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode, jsonSchema, location, sourceSyncMode);
       return writeConfig;
     };
   }
@@ -177,7 +177,7 @@ public class S3GlueConsumerFactory {
         for (final S3GlueWriteConfig writeConfig : writeConfigs) {
           metastoreOperations.upsertTable(glueDestinationConfig.getDatabase(),
               writeConfig.getStreamName(), writeConfig.getLocation(), writeConfig.getJsonSchema(),
-              glueDestinationConfig.getSerializationLibrary(), s3DestinationConfig);
+              glueDestinationConfig.getSerializationLibrary(), s3DestinationConfig, writeConfig.getSourceSyncMode());
         }
       }
     };

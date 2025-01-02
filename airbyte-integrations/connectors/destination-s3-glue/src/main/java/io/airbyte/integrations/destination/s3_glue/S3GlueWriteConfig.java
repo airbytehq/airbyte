@@ -4,8 +4,10 @@
 
 package io.airbyte.integrations.destination.s3_glue;
 
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.s3.WriteConfig;
+import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
 public class S3GlueWriteConfig extends WriteConfig {
@@ -14,6 +16,8 @@ public class S3GlueWriteConfig extends WriteConfig {
 
   private final String location;
 
+  private final SyncMode sourceSyncMode;
+
   public S3GlueWriteConfig(String namespace,
                            String streamName,
                            String outputBucketPath,
@@ -21,10 +25,12 @@ public class S3GlueWriteConfig extends WriteConfig {
                            String fullOutputPath,
                            DestinationSyncMode syncMode,
                            JsonNode jsonSchema,
-                           String location) {
+                           String location,
+                           SyncMode sourceSyncMode) {
     super(namespace, streamName, outputBucketPath, pathFormat, fullOutputPath, syncMode);
     this.jsonSchema = jsonSchema;
     this.location = location;
+    this.sourceSyncMode = sourceSyncMode;
   }
 
   public JsonNode getJsonSchema() {
@@ -33,6 +39,10 @@ public class S3GlueWriteConfig extends WriteConfig {
 
   public String getLocation() {
     return location;
+  }
+
+  public SyncMode getSourceSyncMode() {
+    return sourceSyncMode;
   }
 
 }
