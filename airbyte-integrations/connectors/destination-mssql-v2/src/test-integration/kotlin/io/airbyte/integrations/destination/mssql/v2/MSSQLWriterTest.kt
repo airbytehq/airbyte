@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -35,7 +36,7 @@ abstract class MSSQLWriterTest(
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
         commitDataIncrementally = true,
-        allTypesBehavior = StronglyTyped(),
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         supportFileTransfer = false,
         envVars = emptyMap(),
@@ -75,17 +76,16 @@ class MSSQLDataDumper : DestinationDataDumper {
                                     val meta =
                                         Jsons.deserialize(it, AirbyteRecordMessageMeta::class.java)
                                     OutputRecord.Meta(
-                                        // TODO clean this up
-//                                        changes =
-//                                            meta.changes
-//                                                .map {
-//                                                    DestinationRecord.Change(
-//                                                        field = it.field,
-//                                                        change = it.change,
-//                                                        reason = it.reason,
-//                                                    )
-//                                                }
-//                                                .toList(),
+                                        changes =
+                                            meta.changes
+                                                .map { change ->
+                                                    Meta.Change(
+                                                        field = change.field,
+                                                        change = change.change,
+                                                        reason = change.reason,
+                                                    )
+                                                }
+                                                .toList(),
                                         syncId =
                                             meta.additionalProperties["syncId"]
                                                 ?.toString()

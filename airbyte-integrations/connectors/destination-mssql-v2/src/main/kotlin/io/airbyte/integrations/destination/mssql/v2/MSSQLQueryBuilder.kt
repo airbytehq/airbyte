@@ -35,17 +35,18 @@ import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.UnknownValue
-import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDate
 import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDateTime
 import io.airbyte.cdk.load.util.TimeStringUtility.toOffset
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToSqlType
+import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToSqlValue
 import io.airbyte.integrations.destination.mssql.v2.convert.SqlTypeToMssqlType
 import io.airbyte.protocol.models.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.Jsons
+import java.lang.ArithmeticException
 import java.sql.Date
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -83,7 +84,6 @@ class MSSQLQueryBuilder(
         inline fun <reified T> deserialize(value: String): T =
             Jsons.deserialize(value, T::class.java)
 
-
         fun String.toTimeWithTimezone(): TimeValue =
             TimeValue(
                 OffsetDateTime.parse(this,
@@ -100,19 +100,45 @@ class MSSQLQueryBuilder(
         fun String.toTimestampWithoutTimezone(): TimestampValue =
             TimestampValue(Timestamp.valueOf(this).toLocalDateTime().toString())
 
-        fun AirbyteValue.toNamedValue(name: String): NamedValue = NamedValue(name, this)
+        fun AirbyteValue?.toNamedValue(name: String): NamedValue =
+            if (this != null) NamedValue(name, this) else NamedValue(name, NullValue)
 
-        fun ResultSet.getTimeWithTimezone(name: String): NamedValue =
-            this.getString(name).toTimeWithTimezone().toNamedValue(name)
+        fun ResultSet.getBooleanValue(name: String): NamedValue =
+            getNullable(name, this::getBoolean)?.let { BooleanValue(it) }.toNamedValue(name)
 
-        fun ResultSet.getTimeWithoutTimezone(name: String): NamedValue =
-            this.getString(name).toTimeWithoutTimezone().toNamedValue(name)
+        fun ResultSet.getDateValue(name: String): NamedValue =
+            getNullable(name, this::getDate)?.let { DateValue(it.toString()) }.toNamedValue(name)
 
-        fun ResultSet.getTimestampWithTimezone(name: String): NamedValue =
-            this.getString(name).toTimestampWithTimezone().toNamedValue(name)
+        fun ResultSet.getIntegerValue(name: String): NamedValue =
+            getNullable(name, this::getLong)?.let { IntegerValue(it) }.toNamedValue(name)
 
-        fun ResultSet.getTimestampWithoutTimezone(name: String): NamedValue =
-            this.getString(name).toTimestampWithoutTimezone().toNamedValue(name)
+        fun ResultSet.getNumberValue(name: String): NamedValue =
+            getNullable(name, this::getDouble)?.let { NumberValue(it.toBigDecimal()) }.toNamedValue(name)
+
+        fun ResultSet.getObjectValue(name: String): NamedValue =
+            getNullable(name, this::getString)?.let {
+                ObjectValue.from(deserialize<Map<String, Any?>>(it))
+            }.toNamedValue(name)
+
+        fun ResultSet.getStringValue(name: String): NamedValue =
+            getNullable(name, this::getString)?.let { StringValue(it) }.toNamedValue(name)
+
+        fun ResultSet.getTimeWithTimezoneValue(name: String): NamedValue =
+            getNullable(name, this::getString)?.toTimeWithTimezone().toNamedValue(name)
+
+        fun ResultSet.getTimeWithoutTimezoneValue(name: String): NamedValue =
+            getNullable(name, this::getString)?.toTimeWithoutTimezone().toNamedValue(name)
+
+        fun ResultSet.getTimestampWithTimezoneValue(name: String): NamedValue =
+            getNullable(name, this::getString)?.toTimestampWithTimezone().toNamedValue(name)
+
+        fun ResultSet.getTimestampWithoutTimezoneValue(name: String): NamedValue =
+            getNullable(name, this::getString)?.toTimestampWithoutTimezone().toNamedValue(name)
+
+        private fun <T> ResultSet.getNullable(name: String, getter: (String) -> T): T? {
+            val value = getter(name)
+            return if (wasNull()) null else value
+        }
     }
 
     data class NamedField(val name: String, val type: FieldType)
@@ -140,6 +166,7 @@ class MSSQLQueryBuilder(
         schema: List<NamedField>
     ) {
         val toSqlType = AirbyteTypeToSqlType()
+        val toSqlValue = AirbyteValueToSqlValue()
         val recordObject = record.data as ObjectValue
 
         var airbyteMetaStatementIndex: Int? = null
@@ -173,13 +200,22 @@ class MSSQLQueryBuilder(
                 try {
                     when (value) {
                         is ObjectValue ->
-                            statement.setString(stmntIdx, Jsons.serialize(value.values))
+                            statement.setString(
+                                stmntIdx,
+                                Jsons.serialize(toSqlValue.convert(value))
+                            )
+
                         is ArrayValue ->
-                            statement.setString(stmntIdx, Jsons.serialize(value.values))
+                            statement.setString(
+                                stmntIdx,
+                                Jsons.serialize(toSqlValue.convert(value))
+                            )
+
                         is BooleanValue -> statement.setBoolean(stmntIdx, value.value)
                         is DateValue ->
                             statement.setDate(stmntIdx, Date.valueOf(toLocalDate((value.value))))
-                        is IntegerValue -> statement.setLong(stmntIdx, value.value.toLong())
+
+                        is IntegerValue -> statement.setLong(stmntIdx, value.value.longValueExact())
                         NullValue -> statement.setNull(stmntIdx, sqlType)
                         is NumberValue -> statement.setDouble(stmntIdx, value.value.toDouble())
                         is StringValue ->
@@ -188,16 +224,30 @@ class MSSQLQueryBuilder(
                             } else {
                                 throw IllegalArgumentException()
                             }
+
                         is TimeValue ->
                             statement.setTime(stmntIdx, Time.valueOf(toOffset(value.value)))
+
                         is TimestampValue ->
                             statement.setTimestamp(
                                 stmntIdx,
                                 Timestamp.valueOf(toLocalDateTime(value.value))
                             )
+
                         is UnknownValue ->
                             statement.setString(stmntIdx, Jsons.serialize(value.value))
                     }
+                } catch (e: ArithmeticException) {
+                    statement.setNull(stmntIdx, sqlType)
+                    airbyteMeta.changes.add(
+                        AirbyteRecordMessageMetaChange()
+                            .withField(field.name)
+                            .withChange(AirbyteRecordMessageMetaChange.Change.NULLED)
+                            .withReason(
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION
+                            )
+                    )
                 } catch (e: DateTimeParseException) {
                     statement.setNull(stmntIdx, sqlType)
                     airbyteMeta.changes.add(
@@ -221,26 +271,6 @@ class MSSQLQueryBuilder(
                             )
                     )
                 }
-                //                when (sqlType) {
-                //                    Types.LONGVARCHAR -> statement.setString(statementIndex,
-                // Jsons.serialize(value))
-                //                    Types.BOOLEAN -> statement.setBoolean(statementIndex, value as
-                // Boolean)
-                //                    Types.DATE -> statement.setDate(statementIndex, value as Date)
-                //                    Types.BIGINT ->
-                //                        statement.setLong(statementIndex, (value as
-                // BigInteger).toLong())
-                //                    Types.DECIMAL ->
-                //                        statement.setDouble(statementIndex, (value as
-                // BigDecimal).toDouble())
-                //                    Types.VARCHAR -> statement.setString(statementIndex, value as
-                // String)
-                //                    Types.TIMESTAMP_WITH_TIMEZONE ->
-                //                        statement.setTimestamp(statementIndex, value as Timestamp)
-                //                    Types.TIME -> statement.setTime(statementIndex, value as Time)
-                //                    Types.TIMESTAMP -> statement.setTimestamp(statementIndex,
-                // value as Timestamp)
-                //                }
             }
         }
         airbyteMetaStatementIndex?.let { statementIndex ->
@@ -255,46 +285,20 @@ class MSSQLQueryBuilder(
                 .map { field ->
                     try {
                         when (field.type.type) {
-                            is StringType ->
-                                NamedValue(field.name, StringValue(rs.getString(field.name)))
+                            is StringType -> rs.getStringValue(field.name)
                             is ArrayType -> TODO()
                             ArrayTypeWithoutSchema -> TODO()
-                            BooleanType ->
-                                NamedValue(field.name, BooleanValue(rs.getBoolean(field.name)))
-                            DateType ->
-                                NamedValue(field.name, DateValue(rs.getDate(field.name).toString()))
-                            IntegerType ->
-                                NamedValue(field.name, IntegerValue(rs.getLong(field.name)))
-                            NumberType ->
-                                NamedValue(
-                                    field.name,
-                                    NumberValue(rs.getDouble(field.name).toBigDecimal())
-                                )
-                            is ObjectType ->
-                                NamedValue(
-                                    field.name,
-                                    ObjectValue.from(
-                                        deserialize<Map<String, Any?>>(rs.getString(field.name))
-                                    )
-                                )
-                            ObjectTypeWithEmptySchema ->
-                                NamedValue(
-                                    field.name,
-                                    ObjectValue.from(
-                                        deserialize<Map<String, Any?>>(rs.getString(field.name))
-                                    )
-                                )
-                            ObjectTypeWithoutSchema ->
-                                NamedValue(
-                                    field.name,
-                                    ObjectValue.from(
-                                        deserialize<Map<String, Any?>>(rs.getString(field.name))
-                                    )
-                                )
-                            TimeTypeWithTimezone -> rs.getTimeWithTimezone(field.name)
-                            TimeTypeWithoutTimezone -> rs.getTimeWithoutTimezone(field.name)
-                            TimestampTypeWithTimezone -> rs.getTimestampWithTimezone(field.name)
-                            TimestampTypeWithoutTimezone -> rs.getTimestampWithoutTimezone(field.name)
+                            BooleanType -> rs.getBooleanValue(field.name)
+                            DateType -> rs.getDateValue(field.name)
+                            IntegerType -> rs.getIntegerValue(field.name)
+                            NumberType -> rs.getNumberValue(field.name)
+                            is ObjectType -> rs.getObjectValue(field.name)
+                            ObjectTypeWithEmptySchema -> rs.getObjectValue(field.name)
+                            ObjectTypeWithoutSchema -> rs.getObjectValue(field.name)
+                            TimeTypeWithTimezone -> rs.getTimeWithTimezoneValue(field.name)
+                            TimeTypeWithoutTimezone -> rs.getTimeWithoutTimezoneValue(field.name)
+                            TimestampTypeWithTimezone -> rs.getTimestampWithTimezoneValue(field.name)
+                            TimestampTypeWithoutTimezone -> rs.getTimestampWithoutTimezoneValue(field.name)
                             is UnionType -> TODO()
                             is UnknownType -> TODO()
                         }
@@ -358,7 +362,9 @@ class MSSQLQueryBuilder(
         val toSqlType = AirbyteTypeToSqlType()
         val toMssqlType = SqlTypeToMssqlType()
         return schema
-            .map { "${it.name} ${toMssqlType.convert(toSqlType.convert(it.type.type)).sqlString}" }
+            .map {
+                "${it.name} ${toMssqlType.convert(toSqlType.convert(it.type.type)).sqlString} NULL"
+            }
             .joinToString(separator = separator)
     }
 }
