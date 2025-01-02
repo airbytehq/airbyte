@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.parquet.toParquetReader
+import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.maybeUnflatten
 import io.airbyte.cdk.load.test.util.toOutputRecord
@@ -53,7 +54,8 @@ class ObjectStorageDataDumper(
         // and the path matcher, so a failure here might imply a bug in the metadata-based
         // destination state loader, which lists by `prefix` and filters against the matcher.
         val prefix = pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
-        val matcher = pathFactory.getPathMatcher(stream)
+        val matcher =
+            pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
         return runBlocking {
             withContext(Dispatchers.IO) {
                 client

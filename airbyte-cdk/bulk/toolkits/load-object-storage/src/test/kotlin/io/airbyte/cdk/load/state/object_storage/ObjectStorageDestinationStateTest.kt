@@ -34,7 +34,7 @@ class ObjectStorageDestinationStateTest {
     companion object {
         val stream1 = MockDestinationCatalogFactory.stream1
         const val PERSISTED =
-            """{"generations_by_state":{"FINALIZED":{"0":{"key1":0,"key2":1},"1":{"key3":0,"key4":1}}}}"""
+            """{"generations_by_state":{"FINALIZED":{"0":{"key1":0,"key2":1},"1":{"key3":0,"key4":1}}},"count_by_key":{}}"""
     }
 
     @Singleton

@@ -23,5 +23,6 @@ object S3V2TestUtils {
     const val PARQUET_SNAPPY_CONFIG_PATH = "secrets/s3_dest_v2_parquet_snappy_config.json"
     const val ENDPOINT_URL_CONFIG_PATH = "secrets/s3_dest_v2_endpoint_url_config.json"
     const val ENDPOINT_EMPTY_URL_CONFIG_PATH = "secrets/s3_dest_v2_endpoint_empty_url_config.json"
+    const val AMBIGUOUS_FILEPATH_CONFIG_PATH = "secrets/s3_dest_v2_ambiguous_filepath_config.json"
     fun getConfig(configPath: String): String = Files.readString(Path.of(configPath))
 }
