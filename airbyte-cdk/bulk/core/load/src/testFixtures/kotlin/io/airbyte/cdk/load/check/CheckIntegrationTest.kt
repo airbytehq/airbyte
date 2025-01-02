@@ -27,6 +27,7 @@ data class CheckTestConfig(val configPath: Path, val featureFlags: Set<FeatureFl
 open class CheckIntegrationTest<T : ConfigurationSpecification>(
     val successConfigFilenames: List<CheckTestConfig>,
     val failConfigFilenamesAndFailureReasons: Map<CheckTestConfig, Pattern>,
+    val configUpdater: ((String) -> String)? = null,
 ) :
     IntegrationTest(
         FakeDataDumper,
@@ -36,7 +37,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
     @Test
     open fun testSuccessConfigs() {
         for ((path, featureFlags) in successConfigFilenames) {
-            val config = Files.readString(path, StandardCharsets.UTF_8)
+            val config = updateConfig(Files.readString(path, StandardCharsets.UTF_8))
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",
@@ -45,6 +46,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()
+            println(messages)
             val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
 
             assertEquals(
@@ -64,7 +66,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
     open fun testFailConfigs() {
         for ((checkTestConfig, failurePattern) in failConfigFilenamesAndFailureReasons) {
             val (path, featureFlags) = checkTestConfig
-            val config = Files.readString(path)
+            val config = updateConfig(Files.readString(path))
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",
@@ -92,5 +94,11 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                 }
             )
         }
+    }
+
+    private fun updateConfig(config: String): String {
+        return configUpdater?.let {
+            configUpdater.invoke(config)
+        } ?: config
     }
 }
