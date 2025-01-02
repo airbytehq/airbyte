@@ -4,9 +4,7 @@
 
 package io.airbyte.cdk.load.test.util
 
-/**
- * Utility that may update/modify a connector configuration for test purposes.
- */
+/** Utility that may update/modify a connector configuration for test purposes. */
 interface ConfigurationUpdater {
 
     /**
@@ -18,8 +16,8 @@ interface ConfigurationUpdater {
 }
 
 /**
- * Basic implementation of the [ConfigurationUpdater] interface
- * that does not modify the configuration.
+ * Basic implementation of the [ConfigurationUpdater] interface that does not modify the
+ * configuration.
  */
 object FakeConfigurationUpdater : ConfigurationUpdater {
     override fun update(config: String): String = config

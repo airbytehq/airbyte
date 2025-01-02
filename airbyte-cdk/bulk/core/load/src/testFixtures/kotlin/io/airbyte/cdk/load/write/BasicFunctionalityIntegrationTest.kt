@@ -133,13 +133,15 @@ abstract class BasicFunctionalityIntegrationTest(
     val failOnUnknownTypes: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
-) : IntegrationTest(
-    dataDumper=dataDumper,
-    destinationCleaner=destinationCleaner,
-    recordMangler=recordMangler,
-    nameMapper=nameMapper,
-    nullEqualsUnset=nullEqualsUnset,
-    configUpdater=configUpdater) {
+) :
+    IntegrationTest(
+        dataDumper = dataDumper,
+        destinationCleaner = destinationCleaner,
+        recordMangler = recordMangler,
+        nameMapper = nameMapper,
+        nullEqualsUnset = nullEqualsUnset,
+        configUpdater = configUpdater
+    ) {
     val parsedConfig =
         ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))
 
