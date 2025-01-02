@@ -75,12 +75,12 @@ class EventsHttpRequester(HttpRequester):
 
             options = dict((k, v[0] if isinstance(v, list) else v)
                            for k, v in parse_qs(parsed_url.query).items())
-
         else:
             options = self._get_request_options(
                 stream_state, stream_slice, next_page_token, self.get_request_params, self.get_authenticator(
                 ).get_request_params, extra_params
             )
+            
         if isinstance(options, str):
             raise ValueError("Request params cannot be a string")
 

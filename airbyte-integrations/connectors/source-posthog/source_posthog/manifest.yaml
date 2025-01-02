@@ -127,8 +127,6 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
       requester:
-        # $ref: "#/definitions/requester"
-
         type: CustomRequester
         class_name: source_posthog.components.EventsHttpRequester
         url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
