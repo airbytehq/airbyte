@@ -53,6 +53,9 @@ import java.sql.Time
 import java.sql.Timestamp
 import java.sql.Types
 import java.time.Instant
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.UUID
 
@@ -79,6 +82,37 @@ class MSSQLQueryBuilder(
 
         inline fun <reified T> deserialize(value: String): T =
             Jsons.deserialize(value, T::class.java)
+
+
+        fun String.toTimeWithTimezone(): TimeValue =
+            TimeValue(
+                OffsetDateTime.parse(this,
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")).toOffsetTime().toString())
+
+        fun String.toTimeWithoutTimezone(): TimeValue =
+            TimeValue(LocalTime.parse(this).toString())
+
+        fun String.toTimestampWithTimezone(): TimestampValue =
+            TimestampValue(
+                OffsetDateTime.parse(this,
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")).toString())
+
+        fun String.toTimestampWithoutTimezone(): TimestampValue =
+            TimestampValue(Timestamp.valueOf(this).toLocalDateTime().toString())
+
+        fun AirbyteValue.toNamedValue(name: String): NamedValue = NamedValue(name, this)
+
+        fun ResultSet.getTimeWithTimezone(name: String): NamedValue =
+            this.getString(name).toTimeWithTimezone().toNamedValue(name)
+
+        fun ResultSet.getTimeWithoutTimezone(name: String): NamedValue =
+            this.getString(name).toTimeWithoutTimezone().toNamedValue(name)
+
+        fun ResultSet.getTimestampWithTimezone(name: String): NamedValue =
+            this.getString(name).toTimestampWithTimezone().toNamedValue(name)
+
+        fun ResultSet.getTimestampWithoutTimezone(name: String): NamedValue =
+            this.getString(name).toTimestampWithoutTimezone().toNamedValue(name)
     }
 
     data class NamedField(val name: String, val type: FieldType)
@@ -257,14 +291,10 @@ class MSSQLQueryBuilder(
                                         deserialize<Map<String, Any?>>(rs.getString(field.name))
                                     )
                                 )
-                            TimeTypeWithTimezone ->
-                                NamedValue(field.name, TimeValue(rs.getString(field.name)))
-                            TimeTypeWithoutTimezone ->
-                                NamedValue(field.name, TimeValue(rs.getString(field.name)))
-                            TimestampTypeWithTimezone ->
-                                NamedValue(field.name, TimestampValue(rs.getString(field.name)))
-                            TimestampTypeWithoutTimezone ->
-                                NamedValue(field.name, TimestampValue(rs.getString(field.name)))
+                            TimeTypeWithTimezone -> rs.getTimeWithTimezone(field.name)
+                            TimeTypeWithoutTimezone -> rs.getTimeWithoutTimezone(field.name)
+                            TimestampTypeWithTimezone -> rs.getTimestampWithTimezone(field.name)
+                            TimestampTypeWithoutTimezone -> rs.getTimestampWithoutTimezone(field.name)
                             is UnionType -> TODO()
                             is UnknownType -> TODO()
                         }
