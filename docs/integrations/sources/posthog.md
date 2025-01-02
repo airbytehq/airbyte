@@ -73,7 +73,7 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| 2.0.0 | 2024-01-02 | [?](https://github.com/airbytehq/airbyte/pull/?) | Require a single `project_id` to be specified in the source |
+| 2.0.0 | 2024-01-02 | [50848](https://github.com/airbytehq/airbyte/pull/50848) | Require a single `project_id` to be specified in the source |
 | 1.1.21 | 2024-12-28 | [50685](https://github.com/airbytehq/airbyte/pull/50685) | Update dependencies |
 | 1.1.20 | 2024-12-21 | [50280](https://github.com/airbytehq/airbyte/pull/50280) | Update dependencies |
 | 1.1.19 | 2024-12-14 | [49716](https://github.com/airbytehq/airbyte/pull/49716) | Update dependencies |
