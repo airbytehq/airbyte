@@ -20,7 +20,7 @@ import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.KillableScope
+import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.lineSequence
 import io.airbyte.cdk.load.util.use
@@ -34,7 +34,7 @@ import java.io.InputStream
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.inputStream
 
-interface ProcessRecordsTask : KillableScope
+interface ProcessRecordsTask : Task
 
 /**
  * Wraps @[StreamLoader.processRecords] and feeds it a lazy iterator over the last batch of spooled
@@ -131,7 +131,9 @@ class DefaultProcessRecordsTask(
             .takeWhile {
                 it !is DestinationRecordStreamComplete && it !is DestinationRecordStreamIncomplete
             }
-            .map { (it as DestinationRecord).asRecordMarshaledToAirbyteValue() }
+            .map {
+                (it as DestinationRecord).asRecordMarshaledToAirbyteValue()
+            }
             .iterator()
     }
 }

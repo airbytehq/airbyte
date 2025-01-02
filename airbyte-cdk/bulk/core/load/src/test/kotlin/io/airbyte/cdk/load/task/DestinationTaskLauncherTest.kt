@@ -76,8 +76,7 @@ import org.junit.jupiter.api.Test
             "MockScopeProvider",
         ]
 )
-class DestinationTaskLauncherTest<T : ScopedTask> {
-    @Inject lateinit var mockScopeProvider: MockScopeProvider
+class DestinationTaskLauncherTest {
     @Inject lateinit var taskLauncher: DestinationTaskLauncher
     @Inject lateinit var syncManager: SyncManager
 
@@ -448,31 +447,10 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     }
 
     @Test
-    fun testHandleTeardownComplete() = runTest {
-        // This should close the scope provider.
-        launch {
-            taskLauncher.run()
-            Assertions.assertTrue(mockScopeProvider.didClose)
-        }
-        taskLauncher.handleTeardownComplete()
-    }
-
-    @Test
-    fun testHandleCallbackWithFailure() = runTest {
-        launch {
-            taskLauncher.run()
-            Assertions.assertTrue(mockScopeProvider.didKill)
-        }
-        taskLauncher.handleTeardownComplete(success = false)
-    }
-
-    @Test
     fun `test exceptions in tasks throw`(catalog: DestinationCatalog) = runTest {
         mockSpillToDiskTaskFactory.forceFailure.getAndSet(true)
 
-        val job = launch { taskLauncher.run() }
-        taskLauncher.handleTeardownComplete()
-        job.join()
+        launch { taskLauncher.run() }
 
         mockFailStreamTaskFactory.didRunFor.close()
 

@@ -84,6 +84,7 @@ sealed class AirbyteConnectorRunner(
             ApplicationContext.builder(R::class.java, *envs)
                 .propertySources(
                     *listOfNotNull(
+                            null,
                             airbytePropertySource,
                             commandLinePropertySource,
                             MetadataYamlPropertySource(),
