@@ -83,8 +83,7 @@ class S3V2Specification :
     //    @get:JsonSchemaInject(json = """{"examples":["__staging/data_sync/test"],"order":11}""")
     //    override val s3StagingPrefix: String? = null
 
-    @get:JsonProperty("num_process_records_workers")
-    val numProcessRecordsWorkers: Int? = 2
+    @get:JsonProperty("num_process_records_workers") val numProcessRecordsWorkers: Int? = 2
 
     @get:JsonProperty("estimated_record_memory_overhead_ratio")
     val estimatedRecordMemoryOverheadRatio: Double? = 5.0
