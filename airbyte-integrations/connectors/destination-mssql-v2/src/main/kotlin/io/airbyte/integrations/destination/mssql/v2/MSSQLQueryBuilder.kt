@@ -7,33 +7,23 @@ package io.airbyte.integrations.destination.mssql.v2
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.ArrayValue
-import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
-import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimeValue
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampValue
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.data.UnknownType
+
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDate
@@ -42,6 +32,7 @@ import io.airbyte.cdk.load.util.TimeStringUtility.toOffset
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToSqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToSqlValue
+import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
 import io.airbyte.integrations.destination.mssql.v2.convert.SqlTypeToMssqlType
 import io.airbyte.protocol.models.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
@@ -54,9 +45,6 @@ import java.sql.Time
 import java.sql.Timestamp
 import java.sql.Types
 import java.time.Instant
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.UUID
 
@@ -81,64 +69,6 @@ class MSSQLQueryBuilder(
 
         val airbyteFields = airbyteFinalTableFields.map { it.name }.toSet()
 
-        inline fun <reified T> deserialize(value: String): T =
-            Jsons.deserialize(value, T::class.java)
-
-        fun String.toTimeWithTimezone(): TimeValue =
-            TimeValue(
-                OffsetDateTime.parse(this,
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")).toOffsetTime().toString())
-
-        fun String.toTimeWithoutTimezone(): TimeValue =
-            TimeValue(LocalTime.parse(this).toString())
-
-        fun String.toTimestampWithTimezone(): TimestampValue =
-            TimestampValue(
-                OffsetDateTime.parse(this,
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")).toString())
-
-        fun String.toTimestampWithoutTimezone(): TimestampValue =
-            TimestampValue(Timestamp.valueOf(this).toLocalDateTime().toString())
-
-        fun AirbyteValue?.toNamedValue(name: String): NamedValue =
-            if (this != null) NamedValue(name, this) else NamedValue(name, NullValue)
-
-        fun ResultSet.getBooleanValue(name: String): NamedValue =
-            getNullable(name, this::getBoolean)?.let { BooleanValue(it) }.toNamedValue(name)
-
-        fun ResultSet.getDateValue(name: String): NamedValue =
-            getNullable(name, this::getDate)?.let { DateValue(it.toString()) }.toNamedValue(name)
-
-        fun ResultSet.getIntegerValue(name: String): NamedValue =
-            getNullable(name, this::getLong)?.let { IntegerValue(it) }.toNamedValue(name)
-
-        fun ResultSet.getNumberValue(name: String): NamedValue =
-            getNullable(name, this::getDouble)?.let { NumberValue(it.toBigDecimal()) }.toNamedValue(name)
-
-        fun ResultSet.getObjectValue(name: String): NamedValue =
-            getNullable(name, this::getString)?.let {
-                ObjectValue.from(deserialize<Map<String, Any?>>(it))
-            }.toNamedValue(name)
-
-        fun ResultSet.getStringValue(name: String): NamedValue =
-            getNullable(name, this::getString)?.let { StringValue(it) }.toNamedValue(name)
-
-        fun ResultSet.getTimeWithTimezoneValue(name: String): NamedValue =
-            getNullable(name, this::getString)?.toTimeWithTimezone().toNamedValue(name)
-
-        fun ResultSet.getTimeWithoutTimezoneValue(name: String): NamedValue =
-            getNullable(name, this::getString)?.toTimeWithoutTimezone().toNamedValue(name)
-
-        fun ResultSet.getTimestampWithTimezoneValue(name: String): NamedValue =
-            getNullable(name, this::getString)?.toTimestampWithTimezone().toNamedValue(name)
-
-        fun ResultSet.getTimestampWithoutTimezoneValue(name: String): NamedValue =
-            getNullable(name, this::getString)?.toTimestampWithoutTimezone().toNamedValue(name)
-
-        private fun <T> ResultSet.getNullable(name: String, getter: (String) -> T): T? {
-            val value = getter(name)
-            return if (wasNull()) null else value
-        }
     }
 
     data class NamedField(val name: String, val type: FieldType)
@@ -282,31 +212,7 @@ class MSSQLQueryBuilder(
         val valueMap =
             schema
                 .filter { field -> field.name !in airbyteFields }
-                .map { field ->
-                    try {
-                        when (field.type.type) {
-                            is StringType -> rs.getStringValue(field.name)
-                            is ArrayType -> TODO()
-                            ArrayTypeWithoutSchema -> TODO()
-                            BooleanType -> rs.getBooleanValue(field.name)
-                            DateType -> rs.getDateValue(field.name)
-                            IntegerType -> rs.getIntegerValue(field.name)
-                            NumberType -> rs.getNumberValue(field.name)
-                            is ObjectType -> rs.getObjectValue(field.name)
-                            ObjectTypeWithEmptySchema -> rs.getObjectValue(field.name)
-                            ObjectTypeWithoutSchema -> rs.getObjectValue(field.name)
-                            TimeTypeWithTimezone -> rs.getTimeWithTimezoneValue(field.name)
-                            TimeTypeWithoutTimezone -> rs.getTimeWithoutTimezoneValue(field.name)
-                            TimestampTypeWithTimezone -> rs.getTimestampWithTimezoneValue(field.name)
-                            TimestampTypeWithoutTimezone -> rs.getTimestampWithoutTimezoneValue(field.name)
-                            is UnionType -> TODO()
-                            is UnknownType -> TODO()
-                        }
-                    } catch (e: NullPointerException) {
-                        null
-                    }
-                }
-                .filterNotNull()
+                .map { field -> rs.getAirbyteNamedValue(field) }
                 .associate { it.name to it.value }
         return ObjectValue.from(valueMap)
     }
