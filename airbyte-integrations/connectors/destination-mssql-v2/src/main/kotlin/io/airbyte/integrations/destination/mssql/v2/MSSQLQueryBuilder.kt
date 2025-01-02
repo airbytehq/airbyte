@@ -36,6 +36,7 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDate
 import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDateTime
 import io.airbyte.cdk.load.util.TimeStringUtility.toOffset
@@ -101,7 +102,7 @@ class MSSQLQueryBuilder(
 
     fun populateStatement(
         statement: PreparedStatement,
-        record: DestinationRecord,
+        record: DestinationRecordAirbyteValue,
         schema: List<NamedField>
     ) {
         val toSqlType = AirbyteTypeToSqlType()

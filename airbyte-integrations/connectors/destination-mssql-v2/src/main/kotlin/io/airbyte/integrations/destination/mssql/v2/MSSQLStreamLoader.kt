@@ -6,8 +6,7 @@ package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.write.StreamLoader
 import javax.sql.DataSource
@@ -19,7 +18,7 @@ class MSSQLStreamLoader(
 ) : StreamLoader {
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
+        records: Iterator<DestinationRecordAirbyteValue>,
         totalSizeBytes: Long,
         endOfStream: Boolean
     ): Batch {
@@ -36,7 +35,4 @@ class MSSQLStreamLoader(
         return SimpleBatch(Batch.State.COMPLETE)
     }
 
-    override suspend fun processFile(file: DestinationFile): Batch {
-        TODO("Not yet implemented")
-    }
 }
