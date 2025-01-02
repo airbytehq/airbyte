@@ -165,7 +165,7 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.payload.NextToken }}"
-
+# FinanceStream
     list_financial_event_groups:
       type: DeclarativeStream
       name: ListFinancialEventGroups
@@ -181,11 +181,11 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           # start date and end date should not be more than 180 days apart.
-          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date', now_utc() - duration('P180D')  ), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT5M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           field_name: FinancialEventGroupStartedAfter
@@ -230,7 +230,6 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.payload.NextToken }}"
-
     list_financial_events:
       type: DeclarativeStream
       name: ListFinancialEvents
@@ -246,11 +245,11 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           # start date and end date should not be more than 180 days apart.
-          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date', now_utc() - duration('P180D')  ), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT5M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           field_name: PostedAfter
@@ -300,11 +299,190 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.payload.NextToken }}"
 
+    get_flat_file_all_orders_data_by_order_date_general:
+      type: DeclarativeStream
+      name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+      primary_key: ["amazon-order-id"]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last-updated-date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+#        replication_start_date_limit_in_days = 30
+        step: "P{{ min( config.get('period_in_days', 365), 30 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+      retriever:
+        type: AsyncRetriever
+        status_mapping:
+          failed:
+            - FATAL
+          running:
+            - IN_PROGRESS
+            - IN_QUEUE
+          timeout:
+            - CANCELLED
+          completed:
+              - DONE
+        urls_extractor:
+          type: DpathExtractor
+          field_path:
+            - reportDocumentId
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - processingStatus
+        creation_requester:
+          type: HttpRequester
+          path: reports/2021-06-30/reports
+          url_base: "{{ config['endpoint'] }}"
+          authenticator: "#/definitions/authenticator"
+          http_method: POST
+          request_headers:
+            content-type: "application/json"
+          request_body_json:
+            reportType: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
+        polling_requester:
+          type: HttpRequester
+          path: reports/2021-06-30/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+          url_base: "{{ config['endpoint'] }}"
+          authenticator: "#/definitions/authenticator"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+
+        download_requester:
+          type: HttpRequester
+          path: "{{stream_slice.extra_fields['url'] }}"
+          url_base: "{{ config['endpoint'] }}"
+          http_method: GET
+          authenticator: "#/definitions/authenticator"
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.decoder.GzipCsvDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: []
+
+    get_ledger_detail_view_data:
+      type: DeclarativeStream
+      name: GET_LEDGER_DETAIL_VIEW_DATA
+      primary_key: [ ]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: Date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        #        replication_start_date_limit_in_days = 365
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+      retriever:
+        type: AsyncRetriever
+        status_mapping:
+          failed:
+            - FATAL
+          running:
+            - IN_PROGRESS
+            - IN_QUEUE
+          timeout:
+            - CANCELLED
+          completed:
+            - DONE
+        urls_extractor:
+          type: DpathExtractor
+          field_path:
+            - reportDocumentId
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.type_transformers.LedgerDetailedViewReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: [ ]
+
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - processingStatus
+        creation_requester:
+          type: HttpRequester
+          path: reports/2021-06-30/reports
+          url_base: "{{ config['endpoint'] }}"
+          authenticator: "#/definitions/authenticator"
+          http_method: POST
+          request_headers:
+            content-type: "application/json"
+          request_body_json:
+            reportType: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
+        polling_requester:
+          type: HttpRequester
+          path: reports/2021-06-30/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+          url_base: "{{ config['endpoint'] }}"
+          authenticator: "#/definitions/authenticator"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+
+        download_requester:
+          type: HttpRequester
+          path: "{{stream_slice.extra_fields['url'] }}"
+          url_base: "{{ config['endpoint'] }}"
+          http_method: GET
+          authenticator: "#/definitions/authenticator"
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.decoder.GzipCsvDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: [ ]
+
 streams:
   - $ref: "#/definitions/streams/orders"
   - $ref: "#/definitions/streams/order_items"
   - $ref: "#/definitions/streams/list_financial_event_groups"
   - $ref: "#/definitions/streams/list_financial_events"
+  - $ref: "#/definitions/streams/get_flat_file_all_orders_data_by_order_date_general"
+  - $ref: "#/definitions/streams/get_ledger_detail_view_data"
 
 concurrency_level:
   type: ConcurrencyLevel
