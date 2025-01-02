@@ -11,6 +11,7 @@ from airbyte_cdk.test.mock_http.request import HttpRequest
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID
 
+
 API_VERSION = "v21.0"
 
 
