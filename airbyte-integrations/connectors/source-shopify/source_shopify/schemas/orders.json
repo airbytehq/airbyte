@@ -450,6 +450,10 @@
       "description": "Name of the order's source",
       "type": ["null", "string"]
     },
+    "event_name": {
+      "description": "Name of the event",
+      "type": ["null", "string"]
+    },
     "source_url": {
       "description": "URL of the order's source",
       "type": ["null", "string"]

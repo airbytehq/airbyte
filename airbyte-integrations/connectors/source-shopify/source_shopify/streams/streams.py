@@ -93,6 +93,21 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
             params["status"] = "any"
         return params
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code is requests.codes.OK:
+            try:
+                json_response = response.json()
+                records = json_response.get(self.data_field, []) if self.data_field else json_response
+                # Add 'event_name' field to each order
+                for record in records:
+                    record['event_name'] = 'orders'  # Inject 'event_name' field
+
+                # Yield transformed records using produce_records
+                yield from self.produce_records(records)
+            except RequestException as e:
+                self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
+                yield {}
+
 
 class Disputes(IncrementalShopifyStream):
     data_field = "disputes"
