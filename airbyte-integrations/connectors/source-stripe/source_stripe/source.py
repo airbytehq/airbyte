@@ -206,7 +206,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             ],
             **args,
         )
-        subscription_items = UpdatedCursorIncrementalStripeLazySubStream(
+        subscription_items = ParentIncrementalStripeSubStream(
             name="subscription_items",
             path="subscription_items",
             parent=subscriptions,
@@ -217,8 +217,6 @@ class SourceStripe(ConcurrentSourceAdapter):
             },
             cursor_field="subscription_updated",
             use_cache=USE_CACHE,
-            sub_items_attr="items",
-            event_types=["customer.subscription.created", "customer.subscription.updated"],
             **args,
         )
         transfers = IncrementalStripeStream(
