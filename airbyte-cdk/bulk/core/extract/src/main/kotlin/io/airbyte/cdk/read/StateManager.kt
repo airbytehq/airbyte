@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
@@ -16,6 +17,9 @@ interface StateQuerier {
 
     /** Returns the current state value for the given [feed]. */
     fun current(feed: Feed): OpaqueStateValue?
+
+    /** Rolls back each feed state. This is required when resyncing CDC from scratch */
+    fun resetFeedStates()
 }
 
 /** Singleton object which tracks the state of an ongoing READ operation. */
@@ -36,18 +40,15 @@ class StateManager(
                     .mapKeys { it.key.id }
         } else {
             val globalStreams: Map<Stream, OpaqueStateValue?> =
-                global.streams.associateWith { initialStreamStates[it] }
+                global.streams.associateWith { initialStreamStates[it] } +
+                    initialStreamStates.filterKeys { global.streams.contains(it).not() }
             this.global =
                 GlobalStateManager(
                     global = global,
                     initialGlobalState = initialGlobalState,
                     initialStreamStates = globalStreams,
                 )
-            nonGlobal =
-                initialStreamStates
-                    .filterKeys { !globalStreams.containsKey(it) }
-                    .mapValues { NonGlobalStreamStateManager(it.key, it.value) }
-                    .mapKeys { it.key.id }
+            nonGlobal = emptyMap()
         }
     }
 
@@ -57,6 +58,10 @@ class StateManager(
             nonGlobal.values.map { it.feed }
 
     override fun current(feed: Feed): OpaqueStateValue? = scoped(feed).current()
+
+    override fun resetFeedStates() {
+        feeds.forEach { f -> scoped(f).set(Jsons.objectNode(), 0) }
+    }
 
     /** Returns a [StateManagerScopedToFeed] instance scoped to this [feed]. */
     fun scoped(feed: Feed): StateManagerScopedToFeed =
@@ -88,15 +93,19 @@ class StateManager(
      * Updates the internal state of the [StateManager] to ensure idempotency (no redundant messages
      * are emitted).
      */
-    fun checkpoint(): List<AirbyteStateMessage> =
-        listOfNotNull(global?.checkpoint()) + nonGlobal.mapNotNull { it.value.checkpoint() }
+    fun checkpoint(): List<AirbyteStateMessage> {
+        return listOfNotNull(global?.checkpoint()) +
+            nonGlobal
+                .mapNotNull { it.value.checkpoint() }
+                .filter { it.stream.streamState.isNull.not() }
+    }
 
     private sealed class BaseStateManager<K : Feed>(
         override val feed: K,
         initialState: OpaqueStateValue?,
     ) : StateManagerScopedToFeed {
         private var currentStateValue: OpaqueStateValue? = initialState
-        private var pendingStateValue: OpaqueStateValue? = initialState
+        private var pendingStateValue: OpaqueStateValue? = null
         private var pendingNumRecords: Long = 0L
 
         @Synchronized override fun current(): OpaqueStateValue? = currentStateValue
@@ -199,7 +208,14 @@ class StateManager(
                 streamStates.add(
                     AirbyteStreamState()
                         .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                        .withStreamState(streamStateForCheckpoint.opaqueStateValue),
+                        .withStreamState(
+                            when (streamStateForCheckpoint.opaqueStateValue?.isNull) {
+                                null,
+                                true -> Jsons.objectNode()
+                                false -> streamStateForCheckpoint.opaqueStateValue
+                                        ?: Jsons.objectNode()
+                            }
+                        ),
                 )
             }
             if (!shouldCheckpoint) {
@@ -233,7 +249,9 @@ class StateManager(
             val airbyteStreamState =
                 AirbyteStreamState()
                     .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
-                    .withStreamState(streamStateForCheckpoint.opaqueStateValue)
+                    .withStreamState(
+                        streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                    )
             return AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                 .withStream(airbyteStreamState)

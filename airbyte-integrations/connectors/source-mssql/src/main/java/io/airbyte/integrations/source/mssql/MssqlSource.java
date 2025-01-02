@@ -572,8 +572,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   public static void main(final String[] args) throws Exception {
     final Source source = MssqlSource.sshWrappedSource(new MssqlSource());
+    final MSSqlSourceExceptionHandler exceptionHandler = new MSSqlSourceExceptionHandler();
     LOGGER.info("starting source: {}", MssqlSource.class);
-    new IntegrationRunner(source).run(args);
+    new IntegrationRunner(source).run(args, exceptionHandler);
     LOGGER.info("completed source: {}", MssqlSource.class);
   }
 

@@ -5,14 +5,24 @@
 
 import json
 
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from google.cloud import storage
-from google.oauth2 import service_account
+from google.oauth2 import credentials, service_account
+
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 
 def get_gcs_client(config):
-    credentials = service_account.Credentials.from_service_account_info(json.loads(config.service_account))
-    client = storage.Client(credentials=credentials)
+    if config.credentials.auth_type == "Service":
+        creds = service_account.Credentials.from_service_account_info(json.loads(config.credentials.service_account))
+    else:
+        creds = credentials.Credentials(
+            config.credentials.access_token,
+            refresh_token=config.credentials.refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=config.credentials.client_id,
+            client_secret=config.credentials.client_secret,
+        )
+    client = storage.Client(credentials=creds)
     return client
 
 

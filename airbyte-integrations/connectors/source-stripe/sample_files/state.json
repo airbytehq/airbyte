@@ -14,5 +14,7 @@
   "payouts": { "created": 1617067556 },
   "disputes": { "created": 1610996305 },
   "products": { "created": 1585511341 },
-  "refunds": { "created": 1619595629 }
+  "refunds": { "created": 1619595629 },
+  "invoice_line_items": { "created": 1619595629 },
+  "subscription_items": { "created": 1619595629 }
 }

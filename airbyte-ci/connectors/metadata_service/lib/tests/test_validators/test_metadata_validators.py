@@ -4,6 +4,8 @@ import pytest
 import requests
 import semver
 import yaml
+
+from metadata_service.docker_hub import get_latest_version_on_dockerhub
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.validators import metadata_validator
 
@@ -132,7 +134,8 @@ def test_validation_pass_on_docker_image_tag_increment(metadata_definition, incr
     assert error_message is None
 
 
-def test_validation_pass_on_same_docker_image_tag(metadata_definition):
+def test_validation_pass_on_same_docker_image_tag(mocker, metadata_definition):
+    mocker.patch.object(metadata_validator, "get_latest_version_on_dockerhub", return_value=metadata_definition.data.dockerImageTag)
     success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     assert success
     assert error_message is None

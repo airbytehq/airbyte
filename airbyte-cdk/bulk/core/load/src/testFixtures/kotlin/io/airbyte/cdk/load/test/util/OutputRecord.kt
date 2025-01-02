@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.message.DestinationRecord.Change
+import io.airbyte.cdk.load.message.Meta.Change
 import java.time.Instant
 import java.util.UUID
 
@@ -29,7 +29,7 @@ data class OutputRecord(
      * that we write to the destination.
      */
     data class Meta(
-        val changes: List<Change>? = null,
+        val changes: List<Change> = listOf(),
         val syncId: Long? = null,
     )
 

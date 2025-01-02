@@ -6,8 +6,10 @@
 from typing import Any, Mapping
 
 import pytest
-from airbyte_cdk.sources.streams import Stream
 from source_gitlab.source import SourceGitlab
+
+from airbyte_cdk.sources.streams import Stream
+
 
 BASE_CONFIG = {
     "start_date": "2021-01-01T00:00:00Z",
