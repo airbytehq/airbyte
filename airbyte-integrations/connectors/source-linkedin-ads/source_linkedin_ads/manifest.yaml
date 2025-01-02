@@ -407,7 +407,7 @@ definitions:
             timeGranularity: "DAILY"
             campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id', 'default_campaign_id')}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', {{stream_slice.get('end.date', {{now_utc().strftime('%Y-%m-%d')}} }}"
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', {{stream_slice.get('end.date', {{now_utc().strftime('%Y-%m-%d')}} }}"
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -483,7 +483,7 @@ definitions:
             timeGranularity: "DAILY"
             creatives: "[\"urn:li:sponsoredCreative:{{stream_slice.get('creative_id').split(':')[-1]}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -559,7 +559,7 @@ definitions:
             timeGranularity: "DAILY"
             campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -635,7 +635,7 @@ definitions:
             timeGranularity: "DAILY"
             campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
                         fields: "{{stream_slice['fields']}}"            fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -711,7 +711,7 @@ definitions:
             timeGranularity: "DAILY"
             campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"            
           request_headers:
             Linkedin-Version: "202404"
@@ -787,7 +787,7 @@ definitions:
             timeGranularity: "DAILY"
             campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -863,7 +863,7 @@ definitions:
             timeGranularity: "DAILY"
             campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -939,7 +939,7 @@ definitions:
             timeGranularity: "DAILY"
             campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -1015,7 +1015,7 @@ definitions:
             timeGranularity: "DAILY"
             campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -1091,7 +1091,7 @@ definitions:
             timeGranularity: "DAILY"
             campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
@@ -1167,7 +1167,7 @@ definitions:
             timeGranularity: "DAILY"
             campaigns: "[\"urn:li:sponsoredCampaign:{{stream_slice.get('campaign_id')}}\"]"
             dateRange: >-
-              {"start": "{{stream_slice.get('start.date', '2024-01-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
+              {"start": "{{stream_slice.get('start.date', '2005-11-01')}}", "end": "{{stream_slice.get('end.date', now_utc().strftime('%Y-%m-%d'))}}"}
             fields: "{{stream_slice['fields']}}"
           request_headers:
             Linkedin-Version: "202404"
