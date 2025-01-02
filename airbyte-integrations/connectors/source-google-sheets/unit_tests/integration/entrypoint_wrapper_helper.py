@@ -23,6 +23,4 @@ def check(
         tmp_directory_path = Path(tmp_directory)
         config_file = make_file(tmp_directory_path / "config.json", config)
 
-        return _run_command(
-            source, ["check", "--config", config_file, "--debug"], expecting_exception
-        )
+        return _run_command(source, ["check", "--config", config_file, "--debug"], expecting_exception)
