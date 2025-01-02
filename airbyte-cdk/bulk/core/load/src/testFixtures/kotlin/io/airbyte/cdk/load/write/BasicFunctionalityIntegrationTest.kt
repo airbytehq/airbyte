@@ -140,7 +140,8 @@ abstract class BasicFunctionalityIntegrationTest(
     nameMapper=nameMapper,
     nullEqualsUnset=nullEqualsUnset,
     configUpdater=configUpdater) {
-    val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))
+    val parsedConfig =
+        ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))
 
     @Test
     open fun testBasicWrite() {
