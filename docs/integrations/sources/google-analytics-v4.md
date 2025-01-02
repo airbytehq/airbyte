@@ -276,6 +276,8 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.4.5 | 2024-12-28 | [50589](https://github.com/airbytehq/airbyte/pull/50589) | Update dependencies |
+| 0.4.4 | 2024-12-21 | [50063](https://github.com/airbytehq/airbyte/pull/50063) | Update dependencies |
 | 0.4.3 | 2024-12-14 | [49507](https://github.com/airbytehq/airbyte/pull/49507) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.4.2 | 2024-11-04 | [48206](https://github.com/airbytehq/airbyte/pull/48206) | Update dependencies |
 | 0.4.1 | 2024-10-29 | [47766](https://github.com/airbytehq/airbyte/pull/47766) | Update dependencies |

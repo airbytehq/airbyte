@@ -95,6 +95,8 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.6 | 2024-12-28 | [50653](https://github.com/airbytehq/airbyte/pull/50653) | Update dependencies |
+| 2.11.5 | 2024-12-21 | [50088](https://github.com/airbytehq/airbyte/pull/50088) | Update dependencies |
 | 2.11.4 | 2024-12-14 | [49250](https://github.com/airbytehq/airbyte/pull/49250) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.11.3 | 2024-12-12 | [49144](https://github.com/airbytehq/airbyte/pull/49144) | Update dependencies |
 | 2.11.2 | 2024-12-02 | [48748](https://github.com/airbytehq/airbyte/pull/48748) | Bump CDK to evict non retriable requests to avoid high memory usage |

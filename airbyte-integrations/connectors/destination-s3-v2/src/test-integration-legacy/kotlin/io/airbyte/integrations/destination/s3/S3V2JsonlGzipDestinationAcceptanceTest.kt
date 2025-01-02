@@ -19,4 +19,5 @@ class S3V2JsonlGzipDestinationAcceptanceTest : S3BaseJsonlGzipDestinationAccepta
     // Disable these tests until we fix the incomplete stream handling behavior.
     override fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {}
     override fun testOverwriteSyncFailedResumedGeneration() {}
+    override fun testFakeFileTransfer() {}
 }

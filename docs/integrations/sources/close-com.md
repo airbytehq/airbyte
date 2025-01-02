@@ -109,6 +109,8 @@ The Close.com connector is subject to rate limits. For more information on this 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| 0.5.28 | 2024-12-28 | [50532](https://github.com/airbytehq/airbyte/pull/50532) | Update dependencies |
+| 0.5.27 | 2024-12-21 | [50065](https://github.com/airbytehq/airbyte/pull/50065) | Update dependencies |
 | 0.5.26 | 2024-12-14 | [48918](https://github.com/airbytehq/airbyte/pull/48918) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.5.25 | 2024-11-04 | [47933](https://github.com/airbytehq/airbyte/pull/47933) | Update dependencies |
 | 0.5.24 | 2024-10-21 | [47047](https://github.com/airbytehq/airbyte/pull/47047) | Update dependencies |

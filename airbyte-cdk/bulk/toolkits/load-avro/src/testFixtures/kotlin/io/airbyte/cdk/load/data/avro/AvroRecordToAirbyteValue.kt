@@ -72,7 +72,7 @@ class AvroRecordToAirbyteValue {
                 )
             is IntegerType -> return IntegerValue(avroValue as Long)
             is NumberType -> return NumberValue((avroValue as Double).toBigDecimal())
-            is UnknownType,
+            is UnknownType -> return NullValue
             ArrayTypeWithoutSchema,
             ObjectTypeWithEmptySchema,
             ObjectTypeWithoutSchema,

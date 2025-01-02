@@ -106,6 +106,8 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 1.3.3 | 2024-12-28 | [50442](https://github.com/airbytehq/airbyte/pull/50442) | Update dependencies |
+| 1.3.2 | 2024-12-21 | [50195](https://github.com/airbytehq/airbyte/pull/50195) | Update dependencies |
 | 1.3.1 | 2024-12-14 | [48966](https://github.com/airbytehq/airbyte/pull/48966) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.3.0 | 2024-12-06 | [48712](https://github.com/airbytehq/airbyte/pull/48712) | Upgrade to process full refresh and non-incremental substreams using concurrent CDK |
 | 1.2.14 | 2024-11-04 | [48175](https://github.com/airbytehq/airbyte/pull/48175) | Update dependencies |

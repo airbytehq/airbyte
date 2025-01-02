@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.parquet.toParquetReader
+import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.maybeUnflatten
 import io.airbyte.cdk.load.test.util.toOutputRecord
@@ -48,15 +49,13 @@ class ObjectStorageDataDumper(
     private val formatConfig: ObjectStorageFormatConfiguration,
     private val compressionConfig: ObjectStorageCompressionConfiguration<*>? = null
 ) {
-    private val avroMapperPipeline = AvroMapperPipelineFactory().create(stream)
-    private val parquetMapperPipeline = ParquetMapperPipelineFactory().create(stream)
-
     fun dump(): List<OutputRecord> {
         // Note: this is implicitly a test of the `streamConstant` final directory
         // and the path matcher, so a failure here might imply a bug in the metadata-based
         // destination state loader, which lists by `prefix` and filters against the matcher.
         val prefix = pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
-        val matcher = pathFactory.getPathMatcher(stream)
+        val matcher =
+            pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
         return runBlocking {
             withContext(Dispatchers.IO) {
                 client
@@ -131,6 +130,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
+                val avroMapperPipeline = AvroMapperPipelineFactory().create(stream)
                 val finalSchema = avroMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
                 inputStream.toAvroReader(finalSchema.toAvroSchema(stream.descriptor)).use { reader
                     ->
@@ -145,6 +145,7 @@ class ObjectStorageDataDumper(
                 }
             }
             is ParquetFormatConfiguration -> {
+                val parquetMapperPipeline = ParquetMapperPipelineFactory().create(stream)
                 val finalSchema = parquetMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
                 inputStream.toParquetReader(finalSchema.toAvroSchema(stream.descriptor)).use {
                     reader ->
