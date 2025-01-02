@@ -269,7 +269,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.4.0 | 2024-12-24 | [50418](https://github.com/airbytehq/airbyte/pull/50418) | Add `learning_stage_info` field to `ad_sets` stream |
+| 3.4.0 | 2024-12-24 | [50851](https://github.com/airbytehq/airbyte/issues/50851) | Add `learning_stage_info` field to `ad_sets` stream |
 | 3.3.23 | 2024-12-28 | [50533](https://github.com/airbytehq/airbyte/pull/50533) | Update dependencies |
 | 3.3.22 | 2024-12-21 | [50014](https://github.com/airbytehq/airbyte/pull/50014) | Update dependencies |
 | 3.3.21 | 2024-12-14 | [49197](https://github.com/airbytehq/airbyte/pull/49197) | Update dependencies |
