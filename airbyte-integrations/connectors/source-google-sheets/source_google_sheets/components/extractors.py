@@ -194,6 +194,7 @@ class DpathSchemaExtractor(DpathExtractor, RawSchemaParser):
     """
     Makes names conversion and parses sheet headers from the provided row.
     """
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.schema_type_identifier = parameters["schema_type_identifier"]

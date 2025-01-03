@@ -297,7 +297,6 @@ class TestSourceRead(GoogleSheetsBaseTest):
         assert len(output.records) == 2
         assert output.records == expected_records
 
-
     @HttpMocker()
     def test_when_read_empty_column_then_return_records(self, http_mocker: HttpMocker) -> None:
         """
@@ -585,8 +584,10 @@ class TestSourceRead(GoogleSheetsBaseTest):
             assert message in output.trace_messages
 
     @HttpMocker()
-    def test_when_read_single_stream_with_multiple_streams_available_return_records_of_requested_stream(self, http_mocker: HttpMocker) -> None:
-        """"
+    def test_when_read_single_stream_with_multiple_streams_available_return_records_of_requested_stream(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """ "
         Source has multiple sheets/stream but configured catalog will just request data for one sheet/stream
         then we just get records for that stream.
         """
@@ -700,7 +701,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
         )
         assert output.errors[0].trace.error.message == expected_message
 
-    def _make_read_with_spreadsheet(self,http_mocker: HttpMocker, spreadsheet_id: str, spreadsheet_id_for_config: str):
+    def _make_read_with_spreadsheet(self, http_mocker: HttpMocker, spreadsheet_id: str, spreadsheet_id_for_config: str):
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", spreadsheet_id=spreadsheet_id)
         GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "read_records_range", spreadsheet_id=spreadsheet_id)
         GoogleSheetsBaseTest.get_stream_data(http_mocker, "read_records_range_with_dimensions", spreadsheet_id=spreadsheet_id)
@@ -741,32 +742,44 @@ class TestSourceRead(GoogleSheetsBaseTest):
     @HttpMocker()
     def test_spreadsheet_url_with_edit_and_gid_in_path(self, http_mocker: HttpMocker) -> None:
         spreadsheet_id = "18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q"
-        spreadsheet_id_for_config = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q/edit#gid=1820065035"
-        self._make_read_with_spreadsheet(http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config)
+        spreadsheet_id_for_config = (
+            "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q/edit#gid=1820065035"
+        )
+        self._make_read_with_spreadsheet(
+            http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config
+        )
 
     @HttpMocker()
     def test_spreadsheet_url_with_edit_in_path(self, http_mocker: HttpMocker) -> None:
         spreadsheet_id = "18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q"
         spreadsheet_id_for_config = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q/edit"
-        self._make_read_with_spreadsheet(http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config)
+        self._make_read_with_spreadsheet(
+            http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config
+        )
 
     @HttpMocker()
     def test_spreadsheet_path(self, http_mocker: HttpMocker) -> None:
         spreadsheet_id = "18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
         spreadsheet_id_for_config = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/"
-        self._make_read_with_spreadsheet(http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config)
+        self._make_read_with_spreadsheet(
+            http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config
+        )
 
     @HttpMocker()
     def test_spreadsheet_url_with_pound_in_path(self, http_mocker: HttpMocker) -> None:
         spreadsheet_id = "18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
         spreadsheet_id_for_config = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/#"
-        self._make_read_with_spreadsheet(http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config)
+        self._make_read_with_spreadsheet(
+            http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config
+        )
 
     @HttpMocker()
     def test_spreadsheet_id(self, http_mocker: HttpMocker) -> None:
         spreadsheet_id = "18vWlVH8BfjGegwY_GdV1BjcPP9re66xI8uJK25dtY9Q"
         spreadsheet_id_for_config = "18vWlVH8BfjGegwY_GdV1BjcPP9re66xI8uJK25dtY9Q"
-        self._make_read_with_spreadsheet(http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config)
+        self._make_read_with_spreadsheet(
+            http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config
+        )
 
     @pytest.mark.skip("Pending to do")
     def test_for_increase_batch_size_when_rate_limit(self):

@@ -55,7 +55,10 @@ class GoogleSheetsBaseTest(TestCase, ABC):
 
     @staticmethod
     def get_spreadsheet_info_and_sheets(
-        http_mocker: HttpMocker, streams_response_file: Optional[str] = None, meta_response_code: Optional[int] = 200, spreadsheet_id: Optional[str] = _SPREADSHEET_ID
+        http_mocker: HttpMocker,
+        streams_response_file: Optional[str] = None,
+        meta_response_code: Optional[int] = 200,
+        spreadsheet_id: Optional[str] = _SPREADSHEET_ID,
     ):
         """ "
         Mock request to https://sheets.googleapis.com/v4/spreadsheets/<spreed_sheet_id>?includeGridData=false&alt=json in order
