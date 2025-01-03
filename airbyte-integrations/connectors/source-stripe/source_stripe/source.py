@@ -206,7 +206,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             ],
             **args,
         )
-        subscription_items = UpdatedCursorIncrementalStripeLazySubStream(
+        subscription_items = ParentIncrementalStripeSubStream(
             name="subscription_items",
             path="subscription_items",
             parent=subscriptions,
@@ -217,8 +217,6 @@ class SourceStripe(ConcurrentSourceAdapter):
             },
             cursor_field="subscription_updated",
             use_cache=USE_CACHE,
-            sub_items_attr="items",
-            event_types=["customer.subscription.created", "customer.subscription.updated"],
             **args,
         )
         transfers = IncrementalStripeStream(
@@ -552,20 +550,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 },
                 **args,
             ),
-            UpdatedCursorIncrementalStripeLazySubStream(
+            ParentIncrementalStripeSubStream(
                 name="invoice_line_items",
                 path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice['parent']['id']}/lines",
                 parent=invoices,
                 cursor_field="invoice_updated",
-                event_types=[
-                    "invoice.created",
-                    "invoice.deleted",
-                    "invoice.updated",
-                    # the event type = "invoice.upcoming" doesn't contain the `primary_key = `id` field,
-                    # thus isn't used, see the doc: https://docs.stripe.com/api/invoices/object#invoice_object-id
-                    # reference issue: https://github.com/airbytehq/oncall/issues/5560
-                ],
-                sub_items_attr="lines",
                 slice_data_retriever=lambda record, stream_slice: {
                     "invoice_id": stream_slice["parent"]["id"],
                     "invoice_created": stream_slice["parent"]["created"],
