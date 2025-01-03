@@ -46,6 +46,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+
+    integrationTestImplementation("org.testcontainers:mssqlserver:1.20.4")
 }
 
 tasks.named<Test>("test") {
