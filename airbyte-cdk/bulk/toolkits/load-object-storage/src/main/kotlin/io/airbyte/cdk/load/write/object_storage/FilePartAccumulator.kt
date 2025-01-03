@@ -17,6 +17,9 @@ import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.object_storage.LoadablePart
 import io.airbyte.cdk.load.write.FileBatchAccumulator
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileReader
+import java.nio.file.Files
 import java.nio.file.Path
 
 @SuppressFBWarnings(
@@ -39,8 +42,7 @@ class FilePartAccumulator(
                 fileNumber = index,
             )
 
-        val localFile = File(file.fileMessage.fileUrl)
-        val fileInputStream = localFile.inputStream()
+        val fileInputStream = FileInputStream(file.fileMessage.fileUrl)
 
         while (true) {
             val bytePart =
@@ -62,7 +64,7 @@ class FilePartAccumulator(
                 handleFilePart(batch, stream.descriptor, index)
             }
         }
-        localFile.delete()
+        Files.delete(Path.of(file.fileMessage.fileUrl))
     }
 
     private suspend fun handleFilePart(
