@@ -21,18 +21,20 @@ This page contains the setup guide and reference information for the PostHog sou
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the PostHog connector and select **PostHog** from the Source type dropdown.
 4. Enter your `apikey`.
-5. Enter your `start_date`.
-6. Change default `base_url` if self-hosted posthog instances is used
-7. Click **Set up source**.
+5. Enter your `project_id`.
+6. Enter your `start_date`.
+7. Change default `base_url` if self-hosted posthog instances is used
+8. Click **Set up source**.
 
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-4. Enter your `start_date`.
-5. Change default `base_url` if self-hosted posthog instances is used
-6. Click **Set up source**.
+4. Enter your `project_id`.
+5. Enter your `start_date`.
+6. Change default `base_url` if self-hosted posthog instances is used
+7. Click **Set up source**.
 
 ## Supported streams and sync modes
 
@@ -71,6 +73,7 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| 2.0.0 | 2024-01-02 | [50848](https://github.com/airbytehq/airbyte/pull/50848) | Require a single `project_id` to be specified in the source |
 | 1.1.21 | 2024-12-28 | [50685](https://github.com/airbytehq/airbyte/pull/50685) | Update dependencies |
 | 1.1.20 | 2024-12-21 | [50280](https://github.com/airbytehq/airbyte/pull/50280) | Update dependencies |
 | 1.1.19 | 2024-12-14 | [49716](https://github.com/airbytehq/airbyte/pull/49716) | Update dependencies |
