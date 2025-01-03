@@ -115,7 +115,7 @@ class MSSQLQueryBuilder(
             } else {
                 try {
                     val value = recordObject.values[field.name]
-                    statement.setValue(statementIndex, value, field.type.type)
+                    statement.setValue(statementIndex, value, field)
                 } catch (e: Exception) {
                     statement.setAsNullValue(statementIndex, field.type.type)
                     when (e) {

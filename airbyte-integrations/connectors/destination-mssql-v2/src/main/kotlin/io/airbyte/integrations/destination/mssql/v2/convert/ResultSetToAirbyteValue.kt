@@ -58,7 +58,7 @@ class ResultSetToAirbyteValue {
                 TimeTypeWithoutTimezone -> getTimeWithoutTimezoneValue(field.name)
                 TimestampTypeWithTimezone -> getTimestampWithTimezoneValue(field.name)
                 TimestampTypeWithoutTimezone -> getTimestampWithoutTimezoneValue(field.name)
-                is UnionType -> TODO()
+                is UnionType -> getObjectValue(field.name)
                 is UnknownType -> TODO()
             }
 
