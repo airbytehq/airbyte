@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.mssql.v2.convert
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
@@ -44,8 +45,8 @@ class ResultSetToAirbyteValue {
         fun ResultSet.getAirbyteNamedValue(field: MSSQLQueryBuilder.NamedField): NamedValue =
             when (field.type.type) {
                 is StringType -> getStringValue(field.name)
-                is ArrayType -> TODO()
-                ArrayTypeWithoutSchema -> TODO()
+                is ArrayType -> getArrayValue(field.name)
+                ArrayTypeWithoutSchema -> getArrayValue(field.name)
                 BooleanType -> getBooleanValue(field.name)
                 DateType -> getDateValue(field.name)
                 IntegerType -> getIntegerValue(field.name)
@@ -60,6 +61,11 @@ class ResultSetToAirbyteValue {
                 is UnionType -> TODO()
                 is UnknownType -> TODO()
             }
+
+        private fun ResultSet.getArrayValue(name: String): NamedValue =
+            getNullable(name, this::getString)?.let {
+                ArrayValue.from(deserialize<List<Any?>>(it))
+            }.toNamedValue(name)
 
         private fun ResultSet.getBooleanValue(name: String): NamedValue =
             getNullable(name, this::getBoolean)?.let { BooleanValue(it) }.toNamedValue(name)
