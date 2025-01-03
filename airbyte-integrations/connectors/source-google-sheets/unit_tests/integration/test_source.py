@@ -663,7 +663,9 @@ class TestSourceRead(GoogleSheetsBaseTest):
                 .with_json_schema({"properties": {"email": {"type": "string"}, "name": {"type": "string"}}})
             )
             .with_stream(
-                ConfiguredAirbyteStreamBuilder().with_name(unavailable_stream).with_json_schema({"properties": {"address": {"type": "string"}}})
+                ConfiguredAirbyteStreamBuilder()
+                .with_name(unavailable_stream)
+                .with_json_schema({"properties": {"address": {"type": "string"}}})
             )
             .build()
         )
@@ -849,4 +851,3 @@ class TestSourceRead(GoogleSheetsBaseTest):
     @pytest.mark.skip("Pending to do")
     def test_for_increase_batch_size_when_rate_limit(self):
         pass
-
