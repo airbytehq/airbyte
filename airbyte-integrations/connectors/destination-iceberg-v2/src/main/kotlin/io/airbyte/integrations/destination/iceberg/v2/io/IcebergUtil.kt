@@ -186,22 +186,15 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     fun toCatalogProperties(config: IcebergV2Configuration): Map<String, String> {
         val icebergCatalogConfig = config.icebergCatalogConfiguration
         val catalogConfig = icebergCatalogConfig.catalogConfiguration
-        val awsAccessKeyId =
-            requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
-                "AWS Access Key ID cannot be null"
-            }
-        val awsSecretAccessKey =
-            requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
-                "AWS Secret Access Key cannot be null"
-            }
+        val awsAccessKeyId = config.awsAccessKeyConfiguration.accessKeyId
+        val awsSecretAccessKey = config.awsAccessKeyConfiguration.secretAccessKey
 
         // Common S3/Iceberg properties shared across all catalog types.
         // The S3 endpoint is optional; if provided, it will be included.
         val s3CommonProperties =
             mutableMapOf<String, String>(
                     CatalogProperties.FILE_IO_IMPL to S3FileIO::class.java.name,
-                    S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
-                    S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
+
                     // Required for MinIO or other S3-compatible stores using path-style access.
                     S3FileIOProperties.PATH_STYLE_ACCESS to "true"
                 )
@@ -210,6 +203,15 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                         this[S3FileIOProperties.ENDPOINT] = endpoint
                     }
                 }
+
+        // If we don't have explicit S3 creds, fall back to the default creds provider chain.
+        // For example, this should allow us to use AWS instance profiles.
+        // TODO add support for our IAM assume role feature
+        //   (https://github.com/airbytehq/airbyte-internal-issues/issues/11082)
+        if (awsAccessKeyId != null && awsSecretAccessKey != null) {
+            s3CommonProperties[S3FileIOProperties.ACCESS_KEY_ID] = awsAccessKeyId
+            s3CommonProperties[S3FileIOProperties.SECRET_ACCESS_KEY] = awsSecretAccessKey
+        }
 
         return when (catalogConfig) {
             is NessieCatalogConfiguration -> {
