@@ -49,6 +49,9 @@ class CustomPageIncrement(PaginationStrategy):
         res = response.json().get("response")
         current_page = res.get("currentPage")
         total_pages = res.get("pages")
+
+        # The first request to the API does not include the page_token, so it comes in as None when determing whether to paginate
+        last_page_token_value = last_page_token_value or 0
         if current_page < total_pages:
             return last_page_token_value + 1
         else:

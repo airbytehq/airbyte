@@ -50,3 +50,15 @@ def test_page_increment(components_module, current_page, total_pages, expected_n
             response=mock_response, last_page_size=7, last_record=Record(data={}, stream_name="test"), last_page_token_value=next_page
         )
         assert next_page == expected_next_next_page, f"Page {current_page} of {total_pages} should get next_page={expected_next_next_page}"
+
+
+def test_incoming_last_page_token_value_is_none(components_module):
+    mock_response = create_response(0, 5)
+
+    CustomPageIncrement = components_module.CustomPageIncrement
+    pagination_strategy = CustomPageIncrement({}, 10, {})
+    actual_next_page = pagination_strategy.next_page_token(
+        response=mock_response, last_page_size=5, last_record=Record(data={}, stream_name="test"), last_page_token_value=None
+    )
+
+    assert actual_next_page == 1  # guardian API starts at page 0
