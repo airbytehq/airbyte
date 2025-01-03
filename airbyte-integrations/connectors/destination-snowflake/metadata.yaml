@@ -61,11 +61,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-SNOWFLAKE_INSERT__CREDS
-          fileName: insert_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-SNOWFLAKE_INSUFFICIENT_GCS_ROLE__CREDS
           fileName: copy_insufficient_gcs_roles_config.json
           secretStore:
