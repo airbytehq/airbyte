@@ -30,6 +30,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.data.anonymized
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
@@ -109,7 +110,7 @@ class AirbyteValueToAvroRecord {
             }
         } catch (e: Exception) {
             throw RuntimeException(
-                "Failed to convert $airbyteSchema(${airbyteValue.javaClass.simpleName}) to $schema",
+                "Failed to convert $airbyteSchema(record structure: ${airbyteValue.anonymized(airbyteSchema)}) to $schema",
                 e
             )
         }
