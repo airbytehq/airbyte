@@ -21,9 +21,7 @@ def get_connector_modified_files(connector: Connector, all_modified_files: Set[P
     return frozenset(connector_modified_files)
 
 
-def _is_connector_modified_directly(
-    connector: Connector, modified_files: Set[Union[str, Path]]
-) -> bool:
+def _is_connector_modified_directly(connector: Connector, modified_files: Set[Union[str, Path]]) -> bool:
     """Test if the connector is being impacted by file changes in the connector itself."""
     result = False
     for file_path in modified_files:
@@ -37,9 +35,7 @@ def _is_connector_modified_directly(
     return result
 
 
-def _is_connector_modified_indirectly(
-    connector: Connector, modified_files: Set[Union[str, Path]]
-) -> bool:
+def _is_connector_modified_indirectly(connector: Connector, modified_files: Set[Union[str, Path]]) -> bool:
     """Test if the connector is being impacted by file changes in the connector's dependencies."""
     connector_dependencies = connector.get_local_dependency_paths()
     result = False
