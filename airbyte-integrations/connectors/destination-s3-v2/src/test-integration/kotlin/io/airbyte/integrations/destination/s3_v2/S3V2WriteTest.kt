@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
+import io.airbyte.cdk.load.data.avro.AvroExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -28,7 +28,7 @@ abstract class S3V2WriteTest(
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
-    failOnUnknownTypes: Boolean = false,
+    nullUnknownTypes: Boolean = false,
     envVars: Map<String, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
@@ -47,7 +47,7 @@ abstract class S3V2WriteTest(
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
         envVars = envVars,
-        failOnUnknownTypes = failOnUnknownTypes,
+        nullUnknownTypes = nullUnknownTypes,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -148,49 +148,54 @@ class S3V2WriteTestCsvGzip :
 class S3V2WriteTestAvroUncompressed :
     S3V2WriteTest(
         S3V2TestUtils.AVRO_UNCOMPRESSED_CONFIG_PATH,
-        NoopExpectedRecordMapper,
+        AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        failOnUnknownTypes = true,
-    )
+        nullUnknownTypes = true,
+    ) {
+    @Test
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
+    }
+}
 
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(
         S3V2TestUtils.AVRO_BZIP2_CONFIG_PATH,
-        NoopExpectedRecordMapper,
+        AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        failOnUnknownTypes = true,
+        nullUnknownTypes = true,
     )
 
 class S3V2WriteTestParquetUncompressed :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH,
-        NoopExpectedRecordMapper,
+        AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        failOnUnknownTypes = true,
+        nullUnknownTypes = true,
     )
 
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
-        NoopExpectedRecordMapper,
+        AvroExpectedRecordMapper,
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        failOnUnknownTypes = true,
+        nullUnknownTypes = true,
     )
 
 class S3V2WriteTestEndpointURL :

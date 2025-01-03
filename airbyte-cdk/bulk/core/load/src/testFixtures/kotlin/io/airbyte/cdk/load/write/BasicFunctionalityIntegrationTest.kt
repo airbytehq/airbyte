@@ -68,7 +68,6 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertThrows
 
 sealed interface AllTypesBehavior
 
@@ -128,7 +127,7 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
-    val failOnUnknownTypes: Boolean = false,
+    val nullUnknownTypes: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
 ) :
@@ -1954,13 +1953,15 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testUnknownTypes() {
+        assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "problematic_types"),
                 Append,
                 ObjectType(
                     linkedMapOf(
-                        "id" to
+                        "id" to intType,
+                        "name" to
                             FieldType(
                                 UnknownType(
                                     JsonNodeFactory.instance.objectNode().put("type", "whatever")
@@ -1982,7 +1983,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     "problematic_types",
                     """
                         {
-                          "id": "ex falso quodlibet"
+                          "id": 1,
+                          "name": "ex falso quodlibet"
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
                 )
@@ -1996,28 +1998,41 @@ abstract class BasicFunctionalityIntegrationTest(
                     generationId = 42,
                     data =
                         mapOf(
-                            "id" to "ex falso quodlibet",
+                            "id" to 1,
+                            "name" to
+                                if (nullUnknownTypes) {
+                                    null
+                                } else {
+                                    "ex falso quodlibet"
+                                },
                         ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                    airbyteMeta =
+                        OutputRecord.Meta(
+                            syncId = 42,
+                            changes =
+                                if (nullUnknownTypes) {
+                                    listOf(
+                                        Change(
+                                            "name",
+                                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                                            AirbyteRecordMessageMetaChange.Reason
+                                                .DESTINATION_SERIALIZATION_ERROR
+                                        )
+                                    )
+                                } else {
+                                    emptyList()
+                                }
+                        ),
                 ),
             )
 
-        val dumpBlock = {
-            dumpAndDiffRecords(
-                parsedConfig,
-                expectedRecords,
-                stream,
-                primaryKey = listOf(listOf("id")),
-                cursor = null,
-            )
-        }
-        if (failOnUnknownTypes) {
-            // Note: this will not catch assertion errors against data
-            // if the destination actually succeeds (by design).
-            assertThrows<Exception> { dumpBlock() }
-        } else {
-            dumpBlock()
-        }
+        dumpAndDiffRecords(
+            parsedConfig,
+            expectedRecords,
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
     }
 
     /**
@@ -2043,6 +2058,15 @@ abstract class BasicFunctionalityIntegrationTest(
                         // Our AirbyteType treats them identically, so we don't need two test cases.
                         "combined_type" to
                             FieldType(UnionType.of(StringType, IntegerType), nullable = true),
+                        // For destinations which promote unions to objects,
+                        // and also stringify schemaless values,
+                        // we should verify that the promoted schemaless value
+                        // is still labelled as "object" rather than "string".
+                        "union_of_string_and_schemaless_type" to
+                            FieldType(
+                                UnionType.of(ObjectTypeWithoutSchema, IntegerType),
+                                nullable = true,
+                            ),
                         "union_of_objects_with_properties_identical" to
                             FieldType(
                                 UnionType.of(
@@ -2132,6 +2156,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         {
                           "id": 1,
                           "combined_type": "string1",
+                          "union_of_string_and_schemaless_type": {"foo": "bar"},
                           "union_of_objects_with_properties_identical": { "id": 10, "name": "Joe" },
                           "union_of_objects_with_properties_overlapping": { "id": 20, "name": "Jane", "flagged": true },
                           "union_of_objects_with_properties_contradicting": { "id": 1, "name": "Jenny" },
@@ -2188,6 +2213,15 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id" to 1,
                             "combined_type" to maybePromote("string", "string1"),
+                            "union_of_string_and_schemaless_type" to
+                                maybePromote(
+                                    "object",
+                                    if (stringifySchemalessObjects) {
+                                        """{"foo":"bar"}"""
+                                    } else {
+                                        mapOf("foo" to "bar")
+                                    }
+                                ),
                             "union_of_objects_with_properties_identical" to
                                 mapOf("id" to 10, "name" to "Joe"),
                             "union_of_objects_with_properties_overlapping" to
@@ -2246,6 +2280,53 @@ abstract class BasicFunctionalityIntegrationTest(
             expectedRecords,
             stream,
             primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
+     * Verify that we can handle a stream with 0 columns. This is... not particularly useful, but
+     * happens sometimes.
+     */
+    open fun testNoColumns() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf()),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            configContents,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"foo": "bar"}""",
+                    emittedAtMs = 1000L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1000L,
+                    generationId = 42,
+                    data =
+                        if (preserveUndeclaredFields) {
+                            mapOf("foo" to "bar")
+                        } else {
+                            emptyMap()
+                        },
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                )
+            ),
+            stream,
+            primaryKey = listOf(),
             cursor = null,
         )
     }
