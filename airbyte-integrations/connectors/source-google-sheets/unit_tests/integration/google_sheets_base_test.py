@@ -55,7 +55,7 @@ class GoogleSheetsBaseTest(TestCase, ABC):
 
     @staticmethod
     def get_spreadsheet_info_and_sheets(
-        http_mocker: HttpMocker, streams_response_file: Optional[str] = None, meta_response_code: Optional[int] = 200
+        http_mocker: HttpMocker, streams_response_file: Optional[str] = None, meta_response_code: Optional[int] = 200, spreadsheet_id: Optional[str] = _SPREADSHEET_ID
     ):
         """ "
         Mock request to https://sheets.googleapis.com/v4/spreadsheets/<spreed_sheet_id>?includeGridData=false&alt=json in order
@@ -79,7 +79,7 @@ class GoogleSheetsBaseTest(TestCase, ABC):
         GoogleSheetsBaseTest.authorize(http_mocker)
         if streams_response_file:
             http_mocker.get(
-                RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+                RequestBuilder().with_spreadsheet_id(spreadsheet_id).with_include_grid_data(False).with_alt("json").build(),
                 HttpResponse(json.dumps(find_template(streams_response_file, __file__)), meta_response_code),
             )
 
@@ -91,6 +91,7 @@ class GoogleSheetsBaseTest(TestCase, ABC):
         stream_name: Optional[str] = _STREAM_NAME,
         data_initial_range_response_file: Optional[str] = None,
         data_initial_response_code: Optional[int] = 200,
+        spreadsheet_id: Optional[str] = _SPREADSHEET_ID,
     ):
         """ "
         Mock request to 'https://sheets.googleapis.com/v4/spreadsheets/<spreadsheet>?includeGridData=true&ranges=<sheet>!1:1&alt=json'
@@ -136,7 +137,7 @@ class GoogleSheetsBaseTest(TestCase, ABC):
         """
         http_mocker.get(
             RequestBuilder()
-            .with_spreadsheet_id(_SPREADSHEET_ID)
+            .with_spreadsheet_id(spreadsheet_id)
             .with_include_grid_data(True)
             .with_ranges(f"{stream_name}!1:1")
             .with_alt("json")
@@ -151,6 +152,7 @@ class GoogleSheetsBaseTest(TestCase, ABC):
         response_code: int = 200,
         stream_name: Optional[str] = _STREAM_NAME,
         request_range: Tuple = (2, 202),
+        spreadsheet_id: Optional[str] = _SPREADSHEET_ID,
     ):
         """ "
         Mock requests to 'https://sheets.googleapis.com/v4/spreadsheets/<spreadsheet>/values:batchGet?ranges=<sheet>!2:202&majorDimension=ROWS&alt=json'
@@ -178,7 +180,7 @@ class GoogleSheetsBaseTest(TestCase, ABC):
         batch_request_ranges = f"{stream_name}!{start_range}:{end_range}"
         http_mocker.get(
             RequestBuilder.get_account_endpoint()
-            .with_spreadsheet_id(_SPREADSHEET_ID)
+            .with_spreadsheet_id(spreadsheet_id)
             .with_ranges(batch_request_ranges)
             .with_major_dimension("ROWS")
             .with_alt("json")

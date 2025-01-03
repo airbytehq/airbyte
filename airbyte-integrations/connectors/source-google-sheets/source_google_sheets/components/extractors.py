@@ -54,9 +54,12 @@ class RawSchemaParser:
         names_conversion: bool,
     ):
         """
-        Parses sheet headers from the provided row. This method assumes that data is contiguous
-        i.e: every cell contains a value and the first cell which does not contain a value denotes the end
-        of the headers.
+        1. Parses sheet headers from the provided raw schema. This method assumes that data is contiguous
+            i.e: every cell contains a value and the first cell which does not contain a value denotes the end
+            of the headers.
+        2. Makes name conversion if required.
+        3. Removes duplicated fields from the schema.
+        Return a list of tuples with correct property index (by found in array), value and raw_schema
         """
         raw_schema_properties = self._extract_data(raw_schema_data, schema_pointer)
         duplicate_fields = set()
@@ -82,6 +85,7 @@ class RawSchemaParser:
         return parsed_schema_values
 
     def parse(self, schema_type_identifier, records: Iterable[MutableMapping[Any, Any]]):
+        """Removes duplicated fields and makes names conversion"""
         names_conversion = self.config.get("names_conversion", False)
         schema_pointer = schema_type_identifier.get("schema_pointer")
         key_pointer = schema_type_identifier["key_pointer"]
@@ -148,15 +152,15 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
         return indexed_properties
 
     @staticmethod
-    def match_properties_with_values(unmatched_values: List[str], ordered_properties: Dict[int, str]):
+    def match_properties_with_values(unmatched_values: List[str], indexed_properties: Dict[int, str]):
         data = {}
-        for relevant_index in sorted(ordered_properties.keys()):
+        for relevant_index in sorted(indexed_properties.keys()):
             if relevant_index >= len(unmatched_values):
                 break
 
             unmatch_value = unmatched_values[relevant_index]
             if unmatch_value.strip() != "":
-                data[ordered_properties[relevant_index]] = unmatch_value
+                data[indexed_properties[relevant_index]] = unmatch_value
         yield data
 
     @staticmethod
@@ -187,6 +191,9 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
 
 
 class DpathSchemaExtractor(DpathExtractor, RawSchemaParser):
+    """
+    Makes names conversion and parses sheet headers from the provided row.
+    """
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.schema_type_identifier = parameters["schema_type_identifier"]

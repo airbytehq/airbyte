@@ -12,7 +12,7 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 from .entrypoint_wrapper_helper import check
 
 
-def _catalog(sync_mode: SyncMode, stream_name: str) -> ConfiguredAirbyteCatalog:
+def catalog_helper(sync_mode: SyncMode, stream_name: str) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(stream_name, sync_mode).build()
 
 
@@ -22,14 +22,14 @@ def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Op
 
 def check_helper(config: Dict[str, Any], stream_name: str, expecting_exception: bool = False) -> EntrypointOutput:
     sync_mode = SyncMode.full_refresh
-    catalog = _catalog(sync_mode, stream_name)
+    catalog = catalog_helper(sync_mode, stream_name)
     source = _source(catalog=catalog, config=config, state={})
     return check(source, config, expecting_exception)
 
 
 def discover_helper(config: Dict[str, Any], stream_name: str, expecting_exception: bool = False) -> EntrypointOutput:
     sync_mode = SyncMode.full_refresh
-    catalog = _catalog(sync_mode, stream_name)
+    catalog = catalog_helper(sync_mode, stream_name)
     source = _source(catalog=catalog, config=config, state={})
     return discover(source, config, expecting_exception)
 
