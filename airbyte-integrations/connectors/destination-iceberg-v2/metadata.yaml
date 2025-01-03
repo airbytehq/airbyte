@@ -22,7 +22,7 @@ data:
   githubIssueLabel: destination-iceberg-v2
   icon: icon.svg
   license: ELv2
-  name: Iceberg V2 Destination
+  name: S3 Data Lake Destination
   registryOverrides:
     cloud:
       enabled: false
