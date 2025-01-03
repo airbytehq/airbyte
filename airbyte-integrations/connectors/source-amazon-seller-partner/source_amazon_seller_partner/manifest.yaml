@@ -322,69 +322,15 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
       retriever:
-        type: AsyncRetriever
-        status_mapping:
-          failed:
-            - FATAL
-          running:
-            - IN_PROGRESS
-            - IN_QUEUE
-          timeout:
-            - CANCELLED
-          completed:
-              - DONE
-        urls_extractor:
-          type: DpathExtractor
-          field_path:
-            - reportDocumentId
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-
-        status_extractor:
-          type: DpathExtractor
-          field_path:
-            - processingStatus
+        $ref: "#/definitions/basic_async_retriever"
         creation_requester:
-          type: HttpRequester
-          path: reports/2021-06-30/reports
-          url_base: "{{ config['endpoint'] }}"
-          authenticator: "#/definitions/authenticator"
-          http_method: POST
-          request_headers:
-            content-type: "application/json"
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             reportType: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
 
-        polling_requester:
-          type: HttpRequester
-          path: reports/2021-06-30/reports/{{stream_slice['create_job_response'].json()['reportId']}}
-          url_base: "{{ config['endpoint'] }}"
-          authenticator: "#/definitions/authenticator"
-          http_method: GET
-          request_headers:
-            content-type: "application/json"
-
-        download_requester:
-          type: HttpRequester
-          path: "{{stream_slice.extra_fields['url'] }}"
-          url_base: "{{ config['endpoint'] }}"
-          http_method: GET
-          authenticator: "#/definitions/authenticator"
-          request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
-            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
-        download_decoder:
-          type: CustomDecoder
-          class_name: source_amazon_seller_partner.components.decoder.GzipCsvDecoder
-        download_extractor:
-          type: DpathExtractor
-          field_path: []
 
     get_ledger_detail_view_data:
       type: DeclarativeStream
@@ -409,21 +355,14 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
       retriever:
-        type: AsyncRetriever
-        status_mapping:
-          failed:
-            - FATAL
-          running:
-            - IN_PROGRESS
-            - IN_QUEUE
-          timeout:
-            - CANCELLED
-          completed:
-            - DONE
-        urls_extractor:
-          type: DpathExtractor
-          field_path:
-            - reportDocumentId
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
         record_selector:
           type: RecordSelector
           schema_normalization:
@@ -433,48 +372,70 @@ definitions:
             type: DpathExtractor
             field_path: [ ]
 
-        status_extractor:
-          type: DpathExtractor
-          field_path:
-            - processingStatus
-        creation_requester:
-          type: HttpRequester
-          path: reports/2021-06-30/reports
-          url_base: "{{ config['endpoint'] }}"
-          authenticator: "#/definitions/authenticator"
-          http_method: POST
-          request_headers:
-            content-type: "application/json"
-          request_body_json:
-            reportType: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
-            marketplaceIds: '{{ [config["marketplace_id"]] }}'
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
-            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+  basic_async_retriever:
+    type: AsyncRetriever
+    status_mapping:
+      failed:
+        - FATAL
+      running:
+        - IN_PROGRESS
+        - IN_QUEUE
+      timeout:
+        - CANCELLED
+      completed:
+          - DONE
+    urls_extractor:
+      type: DpathExtractor
+      field_path:
+        - reportDocumentId
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
 
-        polling_requester:
-          type: HttpRequester
-          path: reports/2021-06-30/reports/{{stream_slice['create_job_response'].json()['reportId']}}
-          url_base: "{{ config['endpoint'] }}"
-          authenticator: "#/definitions/authenticator"
-          http_method: GET
-          request_headers:
-            content-type: "application/json"
+    status_extractor:
+      type: DpathExtractor
+      field_path:
+        - processingStatus
+    creation_requester:
+      type: HttpRequester
+      path: reports/2021-06-30/reports
+      url_base: "{{ config['endpoint'] }}"
+      authenticator: "#/definitions/authenticator"
+      http_method: POST
+      request_headers:
+        content-type: "application/json"
+      request_body_json:
+        reportType: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL # TODO: change here
+        marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+        dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
 
-        download_requester:
-          type: HttpRequester
-          path: "{{stream_slice.extra_fields['url'] }}"
-          url_base: "{{ config['endpoint'] }}"
-          http_method: GET
-          authenticator: "#/definitions/authenticator"
-          request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
-            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
-        download_decoder:
-          type: CustomDecoder
-          class_name: source_amazon_seller_partner.components.decoder.GzipCsvDecoder
-        download_extractor:
-          type: DpathExtractor
-          field_path: [ ]
+    polling_requester:
+      type: HttpRequester
+      path: reports/2021-06-30/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+      url_base: "{{ config['endpoint'] }}"
+      authenticator: "#/definitions/authenticator"
+      http_method: GET
+      request_headers:
+        content-type: "application/json"
+
+    download_requester:
+      type: HttpRequester
+      path: "{{stream_slice.extra_fields['url'] }}"
+      url_base: "{{ config['endpoint'] }}"
+      http_method: GET
+      authenticator: "#/definitions/authenticator"
+      request_headers:
+        Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+        Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+    download_decoder:
+      type: CustomDecoder
+      class_name: source_amazon_seller_partner.components.decoder.GzipCsvDecoder
+    download_extractor:
+      type: DpathExtractor
+      field_path: []
 
 streams:
   - $ref: "#/definitions/streams/orders"
