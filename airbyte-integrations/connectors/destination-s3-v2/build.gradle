@@ -5,7 +5,7 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = ['load-s3']
+    toolkits = ['load-s3', 'load-avro']
     cdk = 'local'
 }
 
@@ -37,9 +37,6 @@ dependencies {
     // temporary dependencies so that we can continue running the legacy test suite.
     // eventually we should remove those tests + rely solely on the bulk CDK tests.
     integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations"))
-
-    // TODO this should come from from the cdk plugin + respect the cdk version
-    integrationTestImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-avro"))
 }
 
 // Exclude conflicting log4j-over-slf4j dependency
