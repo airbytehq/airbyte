@@ -6,5 +6,5 @@
   "raw_data_schema": "guest",
   "ssl_method": { "name": "encrypted_trust_server_certificate" },
   "user": "sa",
-  "password": "Averycomplicatedpassword1!"
+  "password": "replace_me"
 }
