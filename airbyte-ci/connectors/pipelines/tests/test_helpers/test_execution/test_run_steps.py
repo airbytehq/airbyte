@@ -4,6 +4,7 @@ import time
 
 import anyio
 import pytest
+from exceptiongroup import ExceptionGroup
 
 from pipelines.helpers.execution.run_steps import InvalidStepConfiguration, RunStepOptions, StepToRun, run_steps
 from pipelines.models.contexts.pipeline_context import PipelineContext
@@ -353,7 +354,7 @@ async def test_run_steps_throws_on_invalid_args(invalid_args):
         [StepToRun(id="step1", step=TestStep(test_context), args=invalid_args)],
     ]
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ExceptionGroup):
         await run_steps(steps)
 
 
@@ -362,7 +363,7 @@ async def test_run_steps_with_params():
     steps = [StepToRun(id="step1", step=TestStep(test_context))]
     options = RunStepOptions(fail_fast=True, step_params={"step1": {"--param1": ["value1"]}})
     TestStep.accept_extra_params = False
-    with pytest.raises(ValueError):
+    with pytest.raises(ExceptionGroup):
         await run_steps(steps, options=options)
     assert steps[0].step.params_as_cli_options == []
     TestStep.accept_extra_params = True
