@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 @Disabled
 class S3V2CsvAssumeRoleDestinationAcceptanceTest : S3BaseCsvDestinationAcceptanceTest() {
-    override val imageName: String = "airbyte/destination-s3-v2:dev"
+    override val imageName: String = "airbyte/destination-s3:dev"
     override val baseConfigJson: JsonNode
         get() = S3V2DestinationTestUtils.assumeRoleConfig
 

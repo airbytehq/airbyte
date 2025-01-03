@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Timeout
 
 @Timeout(5, unit = TimeUnit.MINUTES)
 class S3V2ParquetDestinationAcceptanceTest : S3BaseParquetDestinationAcceptanceTest() {
-    override val imageName: String = "airbyte/destination-s3-v2:dev"
+    override val imageName: String = "airbyte/destination-s3:dev"
     override fun getProtocolVersion(): ProtocolVersion {
         return ProtocolVersion.V1
     }
