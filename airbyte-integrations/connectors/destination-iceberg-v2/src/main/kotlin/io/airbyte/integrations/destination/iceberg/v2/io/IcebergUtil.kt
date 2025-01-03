@@ -186,15 +186,12 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     fun toCatalogProperties(config: IcebergV2Configuration): Map<String, String> {
         val icebergCatalogConfig = config.icebergCatalogConfiguration
         val catalogConfig = icebergCatalogConfig.catalogConfiguration
-        val awsAccessKeyId = config.awsAccessKeyConfiguration.accessKeyId
-        val awsSecretAccessKey = config.awsAccessKeyConfiguration.secretAccessKey
 
         // Common S3/Iceberg properties shared across all catalog types.
         // The S3 endpoint is optional; if provided, it will be included.
         val s3CommonProperties =
             mutableMapOf<String, String>(
                     CatalogProperties.FILE_IO_IMPL to S3FileIO::class.java.name,
-
                     // Required for MinIO or other S3-compatible stores using path-style access.
                     S3FileIOProperties.PATH_STYLE_ACCESS to "true"
                 )
@@ -208,6 +205,8 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         // For example, this should allow us to use AWS instance profiles.
         // TODO add support for our IAM assume role feature
         //   (https://github.com/airbytehq/airbyte-internal-issues/issues/11082)
+        val awsAccessKeyId = config.awsAccessKeyConfiguration.accessKeyId
+        val awsSecretAccessKey = config.awsAccessKeyConfiguration.secretAccessKey
         if (awsAccessKeyId != null && awsSecretAccessKey != null) {
             s3CommonProperties[S3FileIOProperties.ACCESS_KEY_ID] = awsAccessKeyId
             s3CommonProperties[S3FileIOProperties.SECRET_ACCESS_KEY] = awsSecretAccessKey
@@ -240,7 +239,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                     AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER + "."
 
                 val glueProperties =
-                    mapOf(
+                    mutableMapOf(
                         ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_GLUE,
                         WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
                         AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId,
@@ -248,10 +247,15 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                             config.s3BucketConfiguration.s3BucketRegion.region,
                         AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
                             GlueCredentialsProvider::class.java.name,
-                        "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
-                        "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to
-                            awsSecretAccessKey
                     )
+
+                // Similar to above - if the creds are set, use them.
+                if (awsAccessKeyId != null && awsSecretAccessKey != null) {
+                    glueProperties["${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}"] =
+                        awsAccessKeyId
+                    glueProperties["${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}"] =
+                        awsSecretAccessKey
+                }
 
                 glueProperties + s3CommonProperties
             }
