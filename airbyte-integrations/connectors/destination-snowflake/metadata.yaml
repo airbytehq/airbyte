@@ -111,11 +111,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION_SNOWFLAKE_INTERNAL_STAGING_CREDS
-          fileName: internal_staging_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION_SNOWFLAKE_KEY_PAIR_ENCRYPTED__CREDS
           fileName: config_key_pair_encrypted.json
           secretStore:
