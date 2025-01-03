@@ -18,11 +18,15 @@ from __future__ import annotations
 
 import warnings
 
-from airbyte_cdk.sql.secrets import SecretString
-from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
+from sqlalchemy import Engine, create_engine
+
+from airbyte_cdk.sql.constants import DEBUG_MODE
+from airbyte_cdk.sql.secrets import SecretString
+from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
+
 
 # Suppress warnings from DuckDB about reflection on indices.
 # https://github.com/Mause/duckdb_engine/issues/905
@@ -52,17 +56,36 @@ class MotherDuckConfig(DuckDBConfig):
             category=DuckDBEngineWarning,
         )
 
-        return SecretString(
-            f"duckdb:///md:{self.database}?motherduck_token={self.api_key}"
-            f"&custom_user_agent={self.custom_user_agent}"
-            # Not sure why this doesn't work. We have to override later in the flow.
-            # f"&schema={self.schema_name}"
-        )
+        # We defer adding schema name and API token until `create_engine()` call.
+        return SecretString(f"duckdb:///md:{self.database}?custom_user_agent={self.custom_user_agent}")
 
     @overrides
     def get_database_name(self) -> str:
         """Return the name of the database."""
         return self.database
+
+    @overrides
+    def get_sql_engine(self) -> Engine:
+        """
+        Return a new SQL engine to use.
+
+        This method is overridden to:
+            - ensure that the database parent directory is created if it doesn't exist.
+            - pass the DuckDB query parameters (such as motherduck_token) via the config
+        """
+        return create_engine(
+            url=self.get_sql_alchemy_url(),
+            echo=DEBUG_MODE,
+            execution_options={
+                "schema_translate_map": {None: self.schema_name},
+            },
+            future=True,
+            connect_args={
+                "config": {
+                    "motherduck_token": self.api_key,
+                },
+            },
+        )
 
 
 class MotherDuckSqlProcessor(DuckDBSqlProcessor):

@@ -9,9 +9,10 @@ import dpath.util
 import jsonschema
 import pytest
 from airbyte_protocol.models import ConnectorSpecification
+
 from live_tests.commons.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_paths_in_connector_config
 from live_tests.commons.models import ExecutionResult, SecretDict
-from live_tests.utils import fail_test_on_failing_execution_results, find_all_values_for_key_in_schema, get_test_logger
+from live_tests.utils import fail_test_on_failing_execution_results, find_all_values_for_key_in_schema, get_spec, get_test_logger
 
 pytestmark = [
     pytest.mark.anyio,
@@ -48,6 +49,16 @@ DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
 DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 
+@pytest.fixture
+def target_spec(spec_target_execution_result: ExecutionResult) -> ConnectorSpecification:
+    return get_spec(spec_target_execution_result)
+
+
+@pytest.fixture
+def connector_config(spec_target_execution_result: ExecutionResult) -> Dict[str, any]:
+    return spec_target_execution_result.config
+
+
 async def test_spec(
     record_property: Callable,
     spec_target_execution_result: ExecutionResult,
@@ -59,7 +70,7 @@ async def test_spec(
 @pytest.mark.allow_diagnostic_mode
 async def test_config_match_spec(
     target_spec: ConnectorSpecification,
-    connector_config: Optional[SecretDict],
+    connector_config: Dict[str, any],
 ):
     """Check that config matches the actual schema from the spec call"""
     # Getting rid of technical variables that start with an underscore

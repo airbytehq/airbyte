@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState

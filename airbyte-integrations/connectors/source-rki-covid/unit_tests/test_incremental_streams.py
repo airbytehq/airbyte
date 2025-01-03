@@ -3,9 +3,10 @@
 #
 
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_rki_covid.source import IncrementalRkiCovidStream
+
+from airbyte_cdk.models import SyncMode
 
 
 @fixture

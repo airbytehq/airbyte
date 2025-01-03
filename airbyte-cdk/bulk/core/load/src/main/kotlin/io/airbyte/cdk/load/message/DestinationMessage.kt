@@ -8,11 +8,13 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.json.AirbyteValueToJson
-import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -29,6 +31,8 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStre
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
+import java.math.BigInteger
+import java.time.OffsetDateTime
 
 /**
  * Internal representation of destination messages. These are intended to be specialized for
@@ -47,48 +51,63 @@ sealed interface DestinationRecordDomainMessage : DestinationStreamAffinedMessag
 
 sealed interface DestinationFileDomainMessage : DestinationStreamAffinedMessage
 
-data class DestinationRecord(
-    override val stream: DestinationStream.Descriptor,
-    val data: AirbyteValue,
-    val emittedAtMs: Long,
-    val meta: Meta?,
-    val serialized: String,
-) : DestinationRecordDomainMessage {
-    /** Convenience constructor, primarily intended for use in tests. */
-    constructor(
-        namespace: String?,
-        name: String,
-        data: String,
-        emittedAtMs: Long,
-        changes: MutableList<Change> = mutableListOf(),
-    ) : this(
-        stream = DestinationStream.Descriptor(namespace, name),
-        data = JsonToAirbyteValue().convert(data.deserializeToNode(), ObjectTypeWithoutSchema),
-        emittedAtMs = emittedAtMs,
-        meta = Meta(changes),
-        serialized = "",
-    )
+data class Meta(
+    val changes: List<Change> = mutableListOf(),
+) {
+    companion object {
+        const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
+        const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
+        const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
+        const val COLUMN_NAME_AB_GENERATION_ID: String = "_airbyte_generation_id"
+        const val COLUMN_NAME_DATA: String = "_airbyte_data"
+        val COLUMN_NAMES =
+            setOf(
+                COLUMN_NAME_AB_RAW_ID,
+                COLUMN_NAME_AB_EXTRACTED_AT,
+                COLUMN_NAME_AB_META,
+                COLUMN_NAME_AB_GENERATION_ID,
+            )
 
-    data class Meta(val changes: List<Change> = mutableListOf()) {
-        companion object {
-            const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
-            const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"
-            const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
-            const val COLUMN_NAME_AB_GENERATION_ID: String = "_airbyte_generation_id"
-            const val COLUMN_NAME_DATA: String = "_airbyte_data"
-            val COLUMN_NAMES =
-                setOf(
-                    COLUMN_NAME_AB_RAW_ID,
-                    COLUMN_NAME_AB_EXTRACTED_AT,
-                    COLUMN_NAME_AB_META,
-                    COLUMN_NAME_AB_GENERATION_ID,
-                )
+        fun getMetaValue(metaColumnName: String, value: String): AirbyteValue {
+            if (!COLUMN_NAMES.contains(metaColumnName)) {
+                throw IllegalArgumentException("Invalid meta column name: $metaColumnName")
+            }
+            fun toObjectValue(value: JsonNode): AirbyteValue {
+                if (value.isTextual) {
+                    return toObjectValue(value.textValue().deserializeToNode())
+                }
+                return value.toAirbyteValue()
+            }
+            return when (metaColumnName) {
+                COLUMN_NAME_AB_RAW_ID -> StringValue(value)
+                COLUMN_NAME_AB_EXTRACTED_AT -> {
+                    // Some destinations represent extractedAt as a long epochMillis,
+                    // and others represent it as a timestamp string.
+                    // Handle both cases here.
+                    try {
+                        IntegerValue(BigInteger(value))
+                    } catch (e: Exception) {
+                        TimestampWithTimezoneValue(
+                            OffsetDateTime.parse(
+                                value,
+                                AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER
+                            )
+                        )
+                    }
+                }
+                COLUMN_NAME_AB_META -> toObjectValue(value.deserializeToNode())
+                COLUMN_NAME_AB_GENERATION_ID -> IntegerValue(BigInteger(value))
+                COLUMN_NAME_DATA -> toObjectValue(value.deserializeToNode())
+                else ->
+                    throw NotImplementedError(
+                        "Column name $metaColumnName is not yet supported. This is probably a bug."
+                    )
+            }
         }
-
-        fun asProtocolObject(): AirbyteRecordMessageMeta =
-            AirbyteRecordMessageMeta()
-                .withChanges(changes.map { change -> change.asProtocolObject() })
     }
+
+    fun asProtocolObject(): AirbyteRecordMessageMeta =
+        AirbyteRecordMessageMeta().withChanges(changes.map { change -> change.asProtocolObject() })
 
     data class Change(
         val field: String,
@@ -100,23 +119,47 @@ data class DestinationRecord(
         fun asProtocolObject(): AirbyteRecordMessageMetaChange =
             AirbyteRecordMessageMetaChange().withField(field).withChange(change).withReason(reason)
     }
-
-    override fun asProtocolMessage(): AirbyteMessage =
-        AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(
-                AirbyteRecordMessage()
-                    .withStream(stream.name)
-                    .withNamespace(stream.namespace)
-                    .withEmittedAt(emittedAtMs)
-                    .withData(AirbyteValueToJson().convert(data))
-                    .also {
-                        if (meta != null) {
-                            it.meta = meta.asProtocolObject()
-                        }
-                    }
-            )
 }
+
+data class DestinationRecord(
+    override val stream: DestinationStream.Descriptor,
+    val message: AirbyteMessage,
+    val serialized: String,
+    val schema: AirbyteType
+) : DestinationRecordDomainMessage {
+    override fun asProtocolMessage(): AirbyteMessage = message
+
+    fun asRecordSerialized(): DestinationRecordSerialized =
+        DestinationRecordSerialized(stream, serialized)
+    fun asRecordMarshaledToAirbyteValue(): DestinationRecordAirbyteValue {
+        return DestinationRecordAirbyteValue(
+            stream,
+            message.record.data.toAirbyteValue(),
+            message.record.emittedAt,
+            Meta(
+                message.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
+                    ?: emptyList()
+            )
+        )
+    }
+}
+
+/**
+ * Represents a record already in its serialized state. The intended use is for conveying records
+ * from stdin to the spill file, where reserialization is not necessary.
+ */
+data class DestinationRecordSerialized(
+    val stream: DestinationStream.Descriptor,
+    val serialized: String
+)
+
+/** Represents a record both deserialized AND marshaled to airbyte value. The marshaling */
+data class DestinationRecordAirbyteValue(
+    val stream: DestinationStream.Descriptor,
+    val data: AirbyteValue,
+    val emittedAtMs: Long,
+    val meta: Meta?,
+)
 
 data class DestinationFile(
     override val stream: DestinationStream.Descriptor,
@@ -251,12 +294,14 @@ sealed interface CheckpointMessage : DestinationMessage {
     data class Stats(val recordCount: Long)
     data class Checkpoint(
         val stream: DestinationStream.Descriptor,
-        val state: JsonNode,
+        val state: JsonNode?,
     ) {
         fun asProtocolObject(): AirbyteStreamState =
-            AirbyteStreamState()
-                .withStreamDescriptor(stream.asProtocolObject())
-                .withStreamState(state)
+            AirbyteStreamState().withStreamDescriptor(stream.asProtocolObject()).also {
+                if (state != null) {
+                    it.streamState = state
+                }
+            }
     }
 
     val sourceStats: Stats?
@@ -363,7 +408,10 @@ class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
     @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 ) {
-    fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
+    fun fromAirbyteMessage(
+        message: AirbyteMessage,
+        serialized: String,
+    ): DestinationMessage {
         fun toLong(value: Any?, name: String): Long? {
             return value?.let {
                 when (it) {
@@ -387,50 +435,32 @@ class DestinationMessageFactory(
                         name = message.record.stream,
                     )
                 if (fileTransferEnabled) {
-                    @Suppress("UNCHECKED_CAST")
-                    val fileMessage =
-                        message.record.additionalProperties["file"] as Map<String, Any>
+                    try {
+                        @Suppress("UNCHECKED_CAST")
+                        val fileMessage =
+                            message.record.additionalProperties["file"] as Map<String, Any>
 
-                    DestinationFile(
-                        stream = stream.descriptor,
-                        emittedAtMs = message.record.emittedAt,
-                        serialized = serialized,
-                        fileMessage =
-                            DestinationFile.AirbyteRecordMessageFile(
-                                fileUrl = fileMessage["file_url"] as String?,
-                                bytes = toLong(fileMessage["bytes"], "message.record.bytes"),
-                                fileRelativePath = fileMessage["file_relative_path"] as String?,
-                                modified =
-                                    toLong(fileMessage["modified"], "message.record.modified"),
-                                sourceFileUrl = fileMessage["source_file_url"] as String?
-                            )
-                    )
+                        DestinationFile(
+                            stream = stream.descriptor,
+                            emittedAtMs = message.record.emittedAt,
+                            serialized = serialized,
+                            fileMessage =
+                                DestinationFile.AirbyteRecordMessageFile(
+                                    fileUrl = fileMessage["file_url"] as String?,
+                                    bytes = toLong(fileMessage["bytes"], "message.record.bytes"),
+                                    fileRelativePath = fileMessage["file_relative_path"] as String?,
+                                    modified =
+                                        toLong(fileMessage["modified"], "message.record.modified"),
+                                    sourceFileUrl = fileMessage["source_file_url"] as String?
+                                )
+                        )
+                    } catch (e: Exception) {
+                        throw IllegalArgumentException(
+                            "Failed to construct file message: ${e.message}"
+                        )
+                    }
                 } else {
-                    DestinationRecord(
-                        stream = stream.descriptor,
-                        data =
-                            message.record.data?.let {
-                                JsonToAirbyteValue().convert(it, stream.schema)
-                            }
-                                ?: ObjectValue(linkedMapOf()),
-                        emittedAtMs = message.record.emittedAt,
-                        meta =
-                            DestinationRecord.Meta(
-                                changes =
-                                    message.record.meta
-                                        ?.changes
-                                        ?.map {
-                                            DestinationRecord.Change(
-                                                field = it.field,
-                                                change = it.change,
-                                                reason = it.reason,
-                                            )
-                                        }
-                                        ?.toMutableList()
-                                        ?: mutableListOf()
-                            ),
-                        serialized = serialized
-                    )
+                    DestinationRecord(stream.descriptor, message, serialized, stream.schema)
                 }
             }
             AirbyteMessage.Type.TRACE -> {
@@ -449,7 +479,7 @@ class DestinationMessageFactory(
                             if (fileTransferEnabled) {
                                 DestinationFileStreamComplete(
                                     stream.descriptor,
-                                    message.trace.emittedAt.toLong()
+                                    message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             } else {
                                 DestinationRecordStreamComplete(
@@ -461,12 +491,12 @@ class DestinationMessageFactory(
                             if (fileTransferEnabled) {
                                 DestinationFileStreamIncomplete(
                                     stream.descriptor,
-                                    message.trace.emittedAt.toLong()
+                                    message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             } else {
                                 DestinationRecordStreamIncomplete(
                                     stream.descriptor,
-                                    message.trace.emittedAt.toLong()
+                                    message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             }
                         else -> Undefined
@@ -513,7 +543,7 @@ class DestinationMessageFactory(
         val descriptor = streamState.streamDescriptor
         return Checkpoint(
             stream = DestinationStream.Descriptor(descriptor.namespace, descriptor.name),
-            state = streamState.streamState
+            state = runCatching { streamState.streamState }.getOrNull()
         )
     }
 }

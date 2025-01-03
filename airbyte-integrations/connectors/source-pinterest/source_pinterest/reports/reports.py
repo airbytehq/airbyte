@@ -8,9 +8,10 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import urljoin
 
-import airbyte_cdk.sources.utils.casing as casing
 import backoff
 import requests
+
+import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader

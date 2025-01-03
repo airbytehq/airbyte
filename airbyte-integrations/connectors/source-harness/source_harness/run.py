@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_harness import SourceHarness
+
+from airbyte_cdk.entrypoint import launch
 
 
 def run():

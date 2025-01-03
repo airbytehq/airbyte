@@ -87,7 +87,8 @@ all values in the array must be of the same data type. Hence, every field can be
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.1.2   | 2024-02-13 | [35230](https://github.com/airbytehq/airbyte/pull/35230) | Adopt CDK 0.20.4               |
+| 0.1.3 | 2024-12-18 | [49863](https://github.com/airbytehq/airbyte/pull/49863) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.1.2 | 2024-02-13 | [35230](https://github.com/airbytehq/airbyte/pull/35230) | Adopt CDK 0.20.4 |
 | `0.1.2` | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version               |
 | `0.1.1` | 2022-12-02 | [18118](https://github.com/airbytehq/airbyte/pull/18118) | Avoid too_long_frame_exception |
 | `0.1.0` | 2022-07-12 | [14118](https://github.com/airbytehq/airbyte/pull/14118) | Initial Release                |

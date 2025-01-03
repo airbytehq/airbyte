@@ -7,7 +7,6 @@ from datetime import datetime
 from unittest.mock import MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
-from airbyte_cdk import AirbyteTracedException
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import (
     FileReadMode,
@@ -16,6 +15,8 @@ from source_microsoft_sharepoint.stream_reader import (
     SourceMicrosoftSharePointStreamReader,
 )
 from wcmatch.glob import GLOBSTAR, globmatch
+
+from airbyte_cdk import AirbyteTracedException
 
 
 def create_mock_drive_item(is_file, name, children=None):
@@ -465,9 +466,10 @@ def test_get_shared_drive_object(
     ],
 )
 def test_drives_property(auth_type, user_principal_name, has_refresh_token):
-    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query, patch(
-        "source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client"
-    ) as mock_one_drive_client:
+    with (
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
+        patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client") as mock_one_drive_client,
+    ):
         refresh_token = "dummy_refresh_token" if has_refresh_token else None
         # Setup for different authentication types
         config_mock = MagicMock(

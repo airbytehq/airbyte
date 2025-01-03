@@ -10,13 +10,7 @@ from requests import Response
 from source_airtable.airtable_backoff_strategy import AirtableBackoffStrategy
 
 
-@pytest.mark.parametrize(
-    "response_code, expected_backoff_time",
-    [
-        (429, 30),
-        (404, None)
-    ]
-)
+@pytest.mark.parametrize("response_code, expected_backoff_time", [(429, 30), (404, None)])
 def test_backoff_time(response_code, expected_backoff_time):
     mocked_logger = MagicMock(spec=logging.Logger)
     backoff = AirtableBackoffStrategy(logger=mocked_logger)

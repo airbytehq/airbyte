@@ -497,10 +497,40 @@ streams:
         properties:
           amount:
             type: string
+          billing_subscription:
+            type: object
+            properties:
+              id: 
+                type: integer
+              v2_id:
+                type: integer
           categories:
             type: array
           credit_notes:
             type: array
+            items:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+                currency_amount:
+                  type: string
+                currency_price_before_tax:
+                  type: string
+                currency_tax:
+                  type: string
+                draft:
+                  type: boolean
+                id:
+                  type: string
+                invoice_number:
+                  type: string                
+                tax:
+                  type: string 
+                v2_id:
+                  type: integer
           currency:
             type: string
           currency_amount:
@@ -572,9 +602,18 @@ streams:
             type: string
           id:
             type: string
+          imputation_dates:
+            type: object
+            properties:
+              end_date:
+                type: string
+              start_date:
+                type: string
           invoice_number:
             type: string
           is_draft:
+            type: boolean
+          is_estimate:
             type: boolean
           label:
             type: string
@@ -630,6 +669,17 @@ streams:
             type: array
           paid:
             type: boolean
+          payments:
+            type: array
+            items:
+              type: object
+              properties:
+                created_at:
+                  type: string
+                currency_amount:
+                  type: string
+                label:
+                  type: string
           pdf_invoice_free_text:
             type: string
           pdf_invoice_subject:
@@ -646,8 +696,19 @@ streams:
             type: string
           status:
             type: string
+          transactions_reference:
+            type: object
+            properties:
+              banking_provider:
+                type: string
+              provider_field_name:
+                type: string
+              provider_field_value:
+                type: string
           updated_at:
             type: string
+          v2_id:
+            type: integer
     retriever:
       type: SimpleRetriever
       requester:

@@ -14,12 +14,11 @@ import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.InternalScope
-import io.airbyte.cdk.load.task.SyncLevel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface UpdateCheckpointsTask : SyncLevel, InternalScope
+interface UpdateCheckpointsTask : InternalScope
 
 @Singleton
 @Secondary

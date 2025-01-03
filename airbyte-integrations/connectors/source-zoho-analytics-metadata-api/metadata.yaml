@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-zoho-analytics-metadata-api
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.2.1@sha256:641f18edae53820aa91de6c828d1318ec5da22dc2a9f407cc8b6b75cc4e96569
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.4@sha256:b73460101d4ff373826b56f00ef2012b635f5eab04c429892547dd055cd779dc
   connectorSubtype: api
   connectorType: source
   definitionId: 63114ebf-1c0e-4e6e-bb93-28ae03332b14
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/source-zoho-analytics-metadata-api
   githubIssueLabel: source-zoho-analytics-metadata-api
   icon: icon.svg

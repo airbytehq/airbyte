@@ -21,6 +21,10 @@ class StripeRequestBuilder:
         return cls(f"application_fees/{application_fee_id}/refunds", account_id, client_secret)
 
     @classmethod
+    def balance_transactions_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("balance_transactions", account_id, client_secret)
+
+    @classmethod
     def customers_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls("customers", account_id, client_secret)
 
@@ -53,6 +57,10 @@ class StripeRequestBuilder:
         return cls(f"customers/{customer_id}/payment_methods", account_id, client_secret)
 
     @classmethod
+    def payouts_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("payouts", account_id, client_secret)
+
+    @classmethod
     def persons_endpoint(
         cls,
         parent_account_id: str,
@@ -82,6 +90,7 @@ class StripeRequestBuilder:
         self._created_lte: Optional[datetime] = None
         self._limit: Optional[int] = None
         self._object: Optional[str] = None
+        self._payout: Optional[str] = None
         self._starting_after_id: Optional[str] = None
         self._types: List[str] = []
         self._expands: List[str] = []
@@ -118,6 +127,10 @@ class StripeRequestBuilder:
         self._expands = expands
         return self
 
+    def with_payout(self, payout: str) -> "StripeRequestBuilder":
+        self._payout = payout
+        return self
+
     def build(self) -> HttpRequest:
         query_params = {}
         if self._created_gte:
@@ -135,6 +148,8 @@ class StripeRequestBuilder:
                 query_params["type"] = self._types
         if self._object:
             query_params["object"] = self._object
+        if self._payout:
+            query_params["payout"] = self._payout
         if self._expands:
             query_params["expand[]"] = self._expands
 

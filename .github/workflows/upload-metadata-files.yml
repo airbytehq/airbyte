@@ -6,7 +6,7 @@ on:
 jobs:
   deploy-catalog-to-stage:
     name: "Upload Metadata Files to Metadata Service"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte Cloud
         uses: actions/checkout@v2

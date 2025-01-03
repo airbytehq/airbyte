@@ -8,6 +8,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 
+
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
 source connector.

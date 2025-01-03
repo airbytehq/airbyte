@@ -3,9 +3,11 @@
 #
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_google_sheets.writer import GoogleSheetsWriter
 from integration_tests.test_spreadsheet import TEST_SPREADSHEET
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
+
 
 # ----- PREPARE ENV -----
 

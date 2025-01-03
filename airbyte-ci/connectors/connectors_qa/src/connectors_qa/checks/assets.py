@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING
 
 from connector_ops.utils import Connector  # type: ignore
+
 from connectors_qa.models import Check, CheckCategory, CheckResult
 
 if TYPE_CHECKING:
@@ -27,7 +28,6 @@ class CheckConnectorIconIsAvailable(AssetsCheck):
     requires_metadata = False
 
     def _check_is_valid_svg(self, icon_path: Path) -> Tuple[bool, str | None]:
-
         try:
             # Ensure the file has an .svg extension
             if not icon_path.suffix.lower() == ".svg":

@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 from source_linkedin_ads.source import SourceLinkedinAds
 
+
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 

@@ -2,8 +2,9 @@
 
 
 import pytest
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from source_freshdesk.components import FreshdeskTicketsIncrementalSync
+
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 
 
 class TestFreshdeskTicketsIncrementalSync:

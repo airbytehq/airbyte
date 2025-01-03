@@ -9,10 +9,12 @@ from urllib.parse import quote_plus, unquote_plus
 
 import pendulum
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests.auth import AuthBase
+
 
 BASE_URL = "https://www.googleapis.com/webmasters/v3/"
 ROW_LIMIT = 25000

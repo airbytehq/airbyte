@@ -7,8 +7,9 @@ import logging
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import AirbyteCatalog
 from source_airtable.source import SourceAirtable
+
+from airbyte_cdk.models import AirbyteCatalog
 
 
 @pytest.mark.parametrize(

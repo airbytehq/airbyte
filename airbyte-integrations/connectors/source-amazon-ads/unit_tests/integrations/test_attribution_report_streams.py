@@ -6,6 +6,7 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 import freezegun
+
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -16,6 +17,7 @@ from .ad_responses.pagination_strategies import CursorBasedPaginationStrategy
 from .ad_responses.records import AttributionReportRecordBuilder, ErrorRecordBuilder, ProfilesRecordBuilder
 from .config import ConfigBuilder
 from .utils import get_log_messages_by_log_level, read_stream
+
 
 REPORTING_PERIOD = 90
 _NOW = datetime.now(timezone.utc)

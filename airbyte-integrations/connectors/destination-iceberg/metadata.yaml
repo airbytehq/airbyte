@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: df65a8f3-9908-451b-aa9b-445462803560
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/destination-iceberg
   githubIssueLabel: destination-iceberg
   icon: iceberg.svg
@@ -21,6 +21,8 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests

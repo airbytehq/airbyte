@@ -7,6 +7,7 @@ from importlib import metadata
 from importlib.abc import Loader
 
 from dagger import Container
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 

@@ -172,5 +172,6 @@ SingleStore data types are mapped to the following data types when synchronizing
 
 | Version | Date       | Pull Request                                           | Subject                          |
 |:--------|:-----------|:-------------------------------------------------------|:---------------------------------|
-| 0.1.0   | 2024-04-16 | [37337](https://github.com/airbytehq/airbyte/pull/37337) | Add SingleStore source connector |
+| 0.1.1 | 2024-12-18 | [49862](https://github.com/airbytehq/airbyte/pull/49862) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.1.0 | 2024-04-16 | [37337](https://github.com/airbytehq/airbyte/pull/37337) | Add SingleStore source connector |
  

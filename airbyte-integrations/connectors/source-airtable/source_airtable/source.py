@@ -18,7 +18,6 @@ from .streams import AirtableBases, AirtableStream, AirtableTables
 
 
 class SourceAirtable(AbstractSource):
-
     logger: logging.Logger = logging.getLogger("airbyte")
     streams_catalog: Iterable[Mapping[str, Any]] = []
     _auth: AirtableAuth = None

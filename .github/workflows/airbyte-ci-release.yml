@@ -87,7 +87,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         working-directory: airbyte-ci/connectors/pipelines/
         run: |
-          echo "::set-output name=version::$(poetry version --short)"
+          echo "version=$(poetry version --short)" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud Prod
         id: auth_prod

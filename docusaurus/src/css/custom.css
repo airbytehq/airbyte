@@ -261,7 +261,9 @@ table tr:last-child td:last-child {
   border-bottom-right-radius: 10px;
 }
 
-
+table th code {
+  color: var(--ifm-color-content);
+}
 
 table td code {
   background-color: var(--color-blue-30);

@@ -10,6 +10,7 @@ from airbyte_cdk.sources.streams import Stream
 
 from .streams import Products, Purchases, Users
 
+
 DEFAULT_COUNT = 1_000
 
 

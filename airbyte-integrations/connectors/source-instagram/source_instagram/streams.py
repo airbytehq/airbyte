@@ -9,10 +9,11 @@ from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
+from cached_property import cached_property
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from cached_property import cached_property
 from source_instagram.api import InstagramAPI
 
 from .common import remove_params_from_url

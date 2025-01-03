@@ -37,6 +37,10 @@ class S3V2CheckTest :
                     Path.of(S3V2TestUtils.CSV_GZIP_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 ),
+                CheckTestConfig(
+                    Path.of(S3V2TestUtils.ENDPOINT_EMPTY_URL_CONFIG_PATH),
+                    setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
+                )
             ),
         failConfigFilenamesAndFailureReasons = emptyMap()
     ) {

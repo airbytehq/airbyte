@@ -6,6 +6,7 @@ from unittest.mock import Mock
 
 from source_zoho_crm.auth import ZohoOauth2Authenticator
 
+
 authenticator = ZohoOauth2Authenticator("http://dummy.url/oauth/v2/token", "client_id", "client_secret", "refresh_token")
 
 

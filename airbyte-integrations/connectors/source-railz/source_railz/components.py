@@ -8,6 +8,8 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional, Union
 
 import requests
+from isodate import Duration, parse_duration
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
@@ -15,7 +17,6 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
-from isodate import Duration, parse_duration
 
 
 @dataclass

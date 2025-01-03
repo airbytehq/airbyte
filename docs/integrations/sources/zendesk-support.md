@@ -56,14 +56,16 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 ### Set up the Zendesk Support connector in Airbyte
 
 <!-- env:cloud -->
+
 #### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
 4. Enter a name for the Zendesk Support connector.
-<!-- /env:cloud -->
-<!-- env:oss -->
+   <!-- /env:cloud -->
+   <!-- env:oss -->
+
 #### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
@@ -149,7 +151,7 @@ The Zendesk Support source connector supports the following streams:
 The Zendesk Support connector fetches deleted records in the following streams:
 
 | Stream                   | Deletion indicator field |
-|:-------------------------|:-------------------------|
+| :----------------------- | :----------------------- |
 | **Brands**               | `is_deleted`             |
 | **Groups**               | `deleted`                |
 | **Organizations**        | `deleted_at`             |
@@ -183,7 +185,8 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.1   | 2024-12-13 | [48889](https://github.com/airbytehq/airbyte/pull/48889) | Check if `start_date` exist in check operation                                                                                                                                                                                     |
 | 4.4.0   | 2024-11-11 | [48379](https://github.com/airbytehq/airbyte/pull/48379) | Make DatetimeBasedCursor syncs concurrent                                                                                                                                                                                          |
 | 4.3.3   | 2024-10-28 | [47663](https://github.com/airbytehq/airbyte/pull/47663) | Update dependencies                                                                                                                                                                                                                |
 | 4.3.2   | 2024-10-21 | [47202](https://github.com/airbytehq/airbyte/pull/47202) | Update dependencies and expected records                                                                                                                                                                                           |
@@ -294,10 +297,10 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 0.2.3   | 2022-03-23 | [11349](https://github.com/airbytehq/airbyte/pull/11349) | Fixed the bug when Tickets stream didn't return deleted records                                                                                                                                                                    |
 | 0.2.2   | 2022-03-17 | [11237](https://github.com/airbytehq/airbyte/pull/11237) | Fixed the bug when TicketComments stream didn't return all records                                                                                                                                                                 |
 | 0.2.1   | 2022-03-15 | [11162](https://github.com/airbytehq/airbyte/pull/11162) | Added support of OAuth2.0 authentication method                                                                                                                                                                                    |
-| 0.2.0   | 2022-03-01 | [9456](https://github.com/airbytehq/airbyte/pull/9456) | Update source to use future requests                                                                                                                                                                                               |
-| 0.1.12  | 2022-01-25 | [9785](https://github.com/airbytehq/airbyte/pull/9785) | Add additional log messages                                                                                                                                                                                                        |
-| 0.1.11  | 2021-12-21 | [8987](https://github.com/airbytehq/airbyte/pull/8987) | Update connector fields title/description                                                                                                                                                                                          |
-| 0.1.9   | 2021-12-16 | [8616](https://github.com/airbytehq/airbyte/pull/8616) | Adds Brands, CustomRoles and Schedules streams                                                                                                                                                                                     |
+| 0.2.0   | 2022-03-01 | [9456](https://github.com/airbytehq/airbyte/pull/9456)   | Update source to use future requests                                                                                                                                                                                               |
+| 0.1.12  | 2022-01-25 | [9785](https://github.com/airbytehq/airbyte/pull/9785)   | Add additional log messages                                                                                                                                                                                                        |
+| 0.1.11  | 2021-12-21 | [8987](https://github.com/airbytehq/airbyte/pull/8987)   | Update connector fields title/description                                                                                                                                                                                          |
+| 0.1.9   | 2021-12-16 | [8616](https://github.com/airbytehq/airbyte/pull/8616)   | Adds Brands, CustomRoles and Schedules streams                                                                                                                                                                                     |
 | 0.1.8   | 2021-11-23 | [8050](https://github.com/airbytehq/airbyte/pull/8168)   | Adds TicketMetricEvents stream                                                                                                                                                                                                     |
 | 0.1.7   | 2021-11-23 | [8058](https://github.com/airbytehq/airbyte/pull/8058)   | Added support of AccessToken authentication                                                                                                                                                                                        |
 | 0.1.6   | 2021-11-18 | [8050](https://github.com/airbytehq/airbyte/pull/8050)   | Fix wrong types for schemas, add TypeTransformer                                                                                                                                                                                   |

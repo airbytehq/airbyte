@@ -9,6 +9,9 @@ from typing import Any, Dict, List, Mapping
 
 import docker
 import pytest
+from destination_sftp_json import DestinationSftpJson
+from destination_sftp_json.client import SftpClient
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -22,8 +25,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_sftp_json import DestinationSftpJson
-from destination_sftp_json.client import SftpClient
 
 
 @pytest.fixture(scope="module")

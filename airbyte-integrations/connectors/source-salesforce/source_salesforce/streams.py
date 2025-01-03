@@ -11,6 +11,9 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 
 import pendulum
 import requests  # type: ignore[import]
+from pendulum import DateTime  # type: ignore[attr-defined]
+from requests import exceptions
+
 from airbyte_cdk import (
     BearerAuthenticator,
     CursorPaginationStrategy,
@@ -46,12 +49,11 @@ from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import exceptions
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
+
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)

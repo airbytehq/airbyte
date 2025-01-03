@@ -46,6 +46,9 @@ List of available streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.3.5 | 2024-12-28 | [50823](https://github.com/airbytehq/airbyte/pull/50823) | Update dependencies |
+| 0.3.4 | 2024-12-21 | [49737](https://github.com/airbytehq/airbyte/pull/49737) | Update dependencies |
+| 0.3.3 | 2024-12-12 | [49430](https://github.com/airbytehq/airbyte/pull/49430) | Update dependencies |
 | 0.3.2 | 2024-10-29 | [47823](https://github.com/airbytehq/airbyte/pull/47823) | Update dependencies |
 | 0.3.1 | 2024-10-22 | [47237](https://github.com/airbytehq/airbyte/pull/47237) | Update dependencies |
 | 0.3.0 | 2024-08-26 | [44775](https://github.com/airbytehq/airbyte/pull/44775) | Refactor connector to manifest-only format |

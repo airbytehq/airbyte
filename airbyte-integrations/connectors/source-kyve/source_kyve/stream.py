@@ -8,9 +8,11 @@ import logging
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_kyve.utils import query_endpoint
+
 
 logger = logging.getLogger("airbyte")
 

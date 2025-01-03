@@ -4,8 +4,10 @@
 
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_amazon_seller_partner.streams import FlatFileSettlementV2Reports
+
+from airbyte_cdk.models import SyncMode
+
 
 START_DATE_1 = "2022-05-25T00:00:00Z"
 END_DATE_1 = "2022-05-26T00:00:00Z"

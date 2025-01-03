@@ -155,7 +155,6 @@ class PriorStateHandler:
 
 @dataclass
 class IncrementalSingleSliceCursor(DeclarativeCursor):
-
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]

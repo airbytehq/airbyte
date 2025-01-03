@@ -4,73 +4,112 @@ definitions:
   selector:
     extractor:
       field_path: ["data", "items"]
-  requester:
-    url_base: "https://api.partnerstack.com/api/v2/"
+
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_partnerstack/schemas/{{ parameters.get('schema_name') or parameters['name'] }}.json"
+
+  base_requester:
+    url_base: "https://api.partnerstack.com/api/v2"
     http_method: "GET"
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['public_key'] }}"
       password: "{{ config['private_key'] }}"
-    request_parameters:
-      min_created: "{{ timestamp(config['start_date']) * 1000 }}"
-  partition_router:
-    request_cursor_field: "min_updated"
-    cursor_field: "updated_at"
-    class_name: source_partnerstack.components.PartnerstackSlicer
+
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: starting_after
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 250
+      cursor_value: "{{ last_record['key'] }}"
+      stop_condition: "{{ response.data.has_more is false }}"
+
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%ms"
+    datetime_format: "%ms"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: min_updated
+      inject_into: request_parameter
+
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: "CursorPagination"
-        cursor_value: "{{ last_record['key'] }}"
-        stop_condition: "{{ response.data.has_more is false }}"
-        page_size: 250
-      page_size_option:
-        field_name: "limit"
-        inject_into: "request_parameter"
-      page_token_option:
-        type: RequestOption
-        field_name: "starting_after"
-        inject_into: "request_parameter"
+      $ref: "#/definitions/paginator"
     requester:
-      $ref: "#/definitions/requester"
-    partition_router:
-      $ref: "#/definitions/partition_router"
+      $ref: "#/definitions/base_requester"
 
   # base stream
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/paginator"
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          min_created: "{{ (timestamp(config['start_date']) * 1000) | int }}"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  incremental_stream:
+    retriever:
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/paginator"
+      requester:
+        $ref: "#/definitions/base_requester"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
 
   # stream definitions
   customers_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/incremental_stream"
     $parameters:
       name: "customers"
       primary_key: "key"
       path: "/customers"
   deals_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/incremental_stream"
     $parameters:
       name: "deals"
       primary_key: "key"
       path: "/deals"
   groups_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/incremental_stream"
     $parameters:
       name: "groups"
       primary_key: "key"
       path: "/groups"
   leads_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/incremental_stream"
     $parameters:
       name: "leads"
       primary_key: "key"
       path: "/leads"
   partnerships_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/incremental_stream"
     $parameters:
       name: "partnerships"
       primary_key: "key"

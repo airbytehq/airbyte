@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import Callable, Final
 
 import dagger
+
 from base_images import bases, published_image
 from base_images import sanity_checks as base_sanity_checks
 from base_images.python import sanity_checks as python_sanity_checks

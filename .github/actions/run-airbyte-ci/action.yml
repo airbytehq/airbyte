@@ -195,11 +195,17 @@ runs:
       shell: bash
       run: tar cvzf ./dagger_engine_logs.tgz ./dagger_engine_logs
 
+    - name: Hash subcommand
+      id: hash-subcommand
+      shell: bash
+      if: always()
+      run: echo "subcommand_hash=$(echo ${{ inputs.subcommand }} | sha256sum | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+
     - name: Upload logs to GitHub
       id: upload-dagger-engine-logs
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.job }}_dagger_engine_logs.tgz
+        name: ${{ github.job }}_${{ steps.hash-subcommand.outputs.subcommand_hash }}_dagger_engine_logs.tgz
         path: ./dagger_engine_logs.tgz
         retention-days: 7

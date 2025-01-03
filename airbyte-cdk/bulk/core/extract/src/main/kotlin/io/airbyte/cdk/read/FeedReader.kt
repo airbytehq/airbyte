@@ -199,7 +199,14 @@ class FeedReader(
         }
         var checkpoint: PartitionReadCheckpoint
         try {
-            withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
+            if (partitionReader is UnlimitedTimePartitionReader) {
+                partitionReader.run()
+            } else {
+                log.info {
+                    "Running partition reader with ${root.timeout.toKotlinDuration()} timeout"
+                }
+                withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
+            }
             log.info {
                 "completed reading partition $partitionReaderID " +
                     "for '${feed.label}' in round $partitionsCreatorID"

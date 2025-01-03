@@ -8,6 +8,7 @@ import freezegun
 import pytest
 from source_yandex_metrica.source import SourceYandexMetrica
 
+
 logger = logging.getLogger("test_source")
 
 

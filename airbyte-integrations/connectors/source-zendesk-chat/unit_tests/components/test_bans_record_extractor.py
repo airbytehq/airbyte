@@ -8,8 +8,8 @@ from source_zendesk_chat.components.bans_record_extractor import ZendeskChatBans
 
 def test_bans_stream_record_extractor(
     config,
-    requests_mock, 
-    bans_stream_record, 
+    requests_mock,
+    bans_stream_record,
     bans_stream_record_extractor_expected_output,
 ) -> None:
     test_url = f"https://{config['subdomain']}.zendesk.com/api/v2/chat/bans"

@@ -8,6 +8,7 @@ from typing import List, Optional
 import pandas as pd
 from dagster import MetadataValue, Output
 
+
 OutputDataFrame = Output[pd.DataFrame]
 CURSOR_SEPARATOR = ":"
 

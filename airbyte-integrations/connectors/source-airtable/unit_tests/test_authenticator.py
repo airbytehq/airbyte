@@ -4,9 +4,11 @@
 
 
 import pytest
+from source_airtable.auth import AirtableAuth, AirtableOAuth
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from source_airtable.auth import AirtableAuth, AirtableOAuth
+
 
 CONFIG_OAUTH = {"credentials": {"auth_method": "oauth2.0", "client_id": "sample_client_id", "client_secret": "sample_client_secret"}}
 

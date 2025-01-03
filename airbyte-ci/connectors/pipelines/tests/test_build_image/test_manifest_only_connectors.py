@@ -5,6 +5,7 @@
 from pathlib import Path
 
 import pytest
+
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization, manifest_only_connectors
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.models.steps import StepStatus
@@ -92,6 +93,12 @@ class TestBuildConnectorImage:
         )
 
         mocker.patch.object(
+            manifest_only_connectors.BuildConnectorImages,
+            "get_image_user",
+            return_value="airbyte",
+        )
+
+        mocker.patch.object(
             build_customization,
             "apply_airbyte_entrypoint",
             return_value=container_built_from_base,
@@ -107,7 +114,9 @@ class TestBuildConnectorImage:
 
         await step._build_connector(all_platforms[0], container_built_from_base)
         if components_file_exists:
-            container_built_from_base.with_file.assert_any_call("source_declarative_manifest/components.py", mock_components_file)
+            container_built_from_base.with_file.assert_any_call(
+                "source_declarative_manifest/components.py", mock_components_file, owner="airbyte"
+            )
             mock_connector_dir.file.assert_any_call("components.py")
         else:
             self._assert_file_not_handled(container_built_from_base, "source_declarative_manifest/components.py")

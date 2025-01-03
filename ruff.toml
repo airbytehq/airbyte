@@ -1,0 +1,150 @@
+target-version = "py310"
+line-length = 140
+extend-exclude = ["docs", "test", "tests"]
+
+[lint.pylint]
+max-args = 8      # Relaxed from default of 5
+max-branches = 15 # Relaxed from default of 12
+
+[lint]
+select = [
+    "I",    # isort replacement
+]
+
+# TODO: Re-enable these once we have time to address them
+# select = [
+#     # For rules reference, see https://docs.astral.sh/ruff/rules/
+#     "A",     # flake8-builtins
+#     "ANN",   # flake8-annotations
+#     "ARG",   # flake8-unused-arguments
+#     "ASYNC", # flake8-async
+#     "B",     # flake8-bugbear
+#     "FBT",   # flake8-boolean-trap
+#     "BLE",   # Blind except
+#     "C4",    # flake8-comprehensions
+#     "C90",   # mccabe (complexity)
+#     "COM",   # flake8-commas
+#     # "CPY",   # missing copyright notice  # Requires 'preview=true'
+#     # "D", # pydocstyle # TODO: Re-enable when adding docstrings
+#     "DTZ",  # flake8-datetimez
+#     "E",    # pycodestyle (errors)
+#     "ERA",  # flake8-eradicate (commented out code)
+#     "EXE",  # flake8-executable
+#     "F",    # Pyflakes
+#     "FA",   # flake8-future-annotations
+#     "FIX",  # flake8-fixme
+#     "FLY",  # flynt
+#     "FURB", # Refurb
+#     "I",    # isort
+#     "ICN",  # flake8-import-conventions
+#     "INP",  # flake8-no-pep420
+#     "INT",  # flake8-gettext
+#     "ISC",  # flake8-implicit-str-concat
+#     "ICN",  # flake8-import-conventions
+#     "LOG",  # flake8-logging
+#     "N",    # pep8-naming
+#     "PD",   # pandas-vet
+#     "PERF", # Perflint
+#     "PIE",  # flake8-pie
+#     "PGH",  # pygrep-hooks
+#     "PL",   # Pylint
+#     "PT",   # flake8-pytest-style
+#     "PTH",  # flake8-use-pathlib
+#     "PYI",  # flake8-pyi
+#     "Q",    # flake8-quotes
+#     "RET",  # flake8-return
+#     "RSE",  # flake8-raise
+#     "RUF",  # Ruff-specific rules
+#     "SIM",  # flake8-simplify
+#     "SLF",  # flake8-self
+#     "SLOT", # flake8-slots
+#     "T10",  # debugger calls
+#     # "T20", # flake8-print # TODO: Re-enable once we have logging
+#     "TCH",    # flake8-type-checking
+#     "TD",     # flake8-todos
+#     "TID",    # flake8-tidy-imports
+#     "TRY",    # tryceratops
+#     "TRY002", # Disallow raising vanilla Exception. Create or use a custom exception instead.
+#     "TRY003", # Disallow vanilla string passing. Prefer kwargs to the exception constructur.
+#     "UP",     # pyupgrade
+#     "W",      # pycodestyle (warnings)
+#     "YTT",    # flake8-2020
+# ]
+
+ignore = [
+    # For rules reference, see https://docs.astral.sh/ruff/rules/
+
+    # These we don't agree with or don't want to prioritize to enforce:
+    "ANN003",  # kwargs missing type annotations
+    "COM812",  # Because it conflicts with ruff auto-format
+    "EM",      # flake8-errmsgs (may reconsider later)
+    "DJ",      # Django linting
+    "G",       # flake8-logging-format
+    "ISC001",  # Conflicts with ruff auto-format
+    "NPY",     # NumPy-specific rules
+    "PIE790",  # Allow unnecssary 'pass' (sometimes useful for readability)
+    "PERF203", # exception handling in loop
+    "S",       # flake8-bandit (noisy, security related)
+    "SIM910",  # Allow "None" as second argument to Dict.get(). "Explicit is better than implicit."
+    "TD002",   # Require author for TODOs
+    "ASYNC1",  # flake8-trio (opinionated, noisy)
+    "INP001",  # Dir 'examples' is part of an implicit namespace package. Add an __init__.py.
+
+    # TODO: Consider re-enabling these before release:
+    "A003",    # Class attribute 'type' is shadowing a Python builtin
+    "BLE001",  # Do not catch blind exception: Exception
+    "ERA001",  # Remove commented-out code
+    "FIX002",  # Allow "TODO:" until release (then switch to requiring links via TDO003)
+    "PLW0603", # Using the global statement to update _cache is discouraged
+    "TD003",   # Require links for TODOs # TODO: Re-enable when we disable FIX002
+
+    "UP007", # Allow legacy `Union[a, b]` and `Optional[a]` for Pydantic, until we drop Python 3.9 (Pydantic doesn't like it)
+]
+fixable = ["ALL"]
+unfixable = [
+    "ERA001", # Commented-out code (avoid silent loss of code)
+    "T201",   # print() calls (avoid silent loss of code / log messages)
+]
+
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[lint.isort]
+force-sort-within-sections = false
+lines-after-imports = 2
+known-first-party = [
+    "airbyte",
+    "airbyte_cdk",
+    "airbyte_protocol",
+    "airbyte_api_client",
+    "connector_ops",
+    "pipelines",
+]
+known-third-party = []
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+
+[lint.mccabe]
+max-complexity = 24
+
+[lint.pycodestyle]
+ignore-overlong-task-comments = true
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.flake8-annotations]
+allow-star-arg-any = false
+ignore-fully-untyped = false
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+preview = false
+docstring-code-format = true

@@ -63,6 +63,7 @@ abstract class DestinationProcessFactory {
         configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 

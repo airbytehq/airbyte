@@ -4,10 +4,12 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.core import Stream
 from source_instagram.api import InstagramAPI
 from source_instagram.streams import UserInsights
+
 
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into

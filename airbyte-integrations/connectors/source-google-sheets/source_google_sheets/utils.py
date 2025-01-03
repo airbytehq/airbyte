@@ -8,6 +8,7 @@ import re
 import unidecode
 from requests.status_codes import codes as status_codes
 
+
 TOKEN_PATTERN = re.compile(r"[A-Z]+[a-z]*|[a-z]+|\d+|(?P<NoToken>[^a-zA-Z\d]+)")
 DEFAULT_SEPARATOR = "_"
 

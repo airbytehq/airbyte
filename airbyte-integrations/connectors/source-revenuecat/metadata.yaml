@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-revenuecat
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.7.3@sha256:4c4a567211fbcdf42805f261020bf5be46454bfeba781a92d30fe414ef964212
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.9.2@sha256:ea8087899b36a891ce16e47035b10de8d52b0fb041b593b18e53ed2d699e3b46
   connectorSubtype: api
   connectorType: source
   definitionId: d8b3b5d6-7b64-49f7-9e73-73a1da277cf2
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-revenuecat
   githubIssueLabel: source-revenuecat
   icon: icon.svg

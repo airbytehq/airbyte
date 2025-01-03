@@ -22,6 +22,7 @@ from typing import Optional
 import asyncclick as click
 import docker  # type: ignore
 from github import PullRequest
+
 from pipelines import main_logger
 from pipelines.cli.auto_update import __installed_version__, check_for_upgrade, pre_confirm_auto_update_flag
 from pipelines.cli.click_decorators import (

@@ -15,6 +15,8 @@ import yaml
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage  # type: ignore
 from dagger import Container, Directory, ExecError, File, ImageLayerCompression, Platform, QueryError
+from pydantic import BaseModel, ValidationError
+
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
@@ -30,7 +32,6 @@ from pipelines.dagger.actions.system import docker
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
 from pipelines.helpers.pip import is_package_published
 from pipelines.models.steps import Step, StepModifyingFiles, StepResult, StepStatus
-from pydantic import BaseModel, ValidationError
 
 
 class InvalidSpecOutputError(Exception):
@@ -244,8 +245,10 @@ class PullConnectorImageFromRegistry(Step):
     async def _run(self, attempt: int = 3) -> StepResult:
         try:
             try:
-                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image}").with_exec(
-                    ["spec"], use_entrypoint=True
+                await (
+                    self.context.dagger_client.container()
+                    .from_(f"docker.io/{self.context.docker_image}")
+                    .with_exec(["spec"], use_entrypoint=True)
                 )
             except ExecError:
                 if attempt > 0:

@@ -92,7 +92,7 @@ jobs:
   uuid:
     name: "Custom UUID of workflow run"
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: UUID ${{ inputs.uuid }}
         run: true
@@ -100,7 +100,7 @@ jobs:
     name: Start Build EC2 Runner
     needs: uuid
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
@@ -262,7 +262,7 @@ jobs:
       - start-test-runner # required to get output from the start-runner job
       - performance-test # required to wait when the main job is done
       - uuid
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
       - name: Configure AWS credentials

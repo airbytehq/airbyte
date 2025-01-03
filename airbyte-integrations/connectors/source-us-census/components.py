@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
@@ -116,7 +117,6 @@ class USCensusErrorHandler(DefaultErrorHandler):
     """
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
-
         if self.response_filters:
             for response_filter in self.response_filters:
                 matched_error_resolution = response_filter.matches(response_or_exception=response_or_exception)

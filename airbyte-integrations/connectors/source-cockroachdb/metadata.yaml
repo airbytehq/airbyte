@@ -1,30 +1,32 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - ${host}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
   connectorType: source
   definitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/source-cockroachdb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
   githubIssueLabel: source-cockroachdb
   icon: cockroachdb.svg
   license: MIT
   name: Cockroachdb
   registryOverrides:
     cloud:
-      enabled: false # Can not be in cloud until security is handled via DEPLOYMENT_MODE=cloud.
+      enabled: false
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
+  supportLevel: community
   tags:
     - language:java
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
 metadataSpecVersion: "1.0"

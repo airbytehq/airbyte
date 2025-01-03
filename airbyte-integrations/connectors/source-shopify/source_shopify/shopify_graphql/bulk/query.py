@@ -2562,7 +2562,6 @@ class ProductVariant(ShopifyBulkQuery):
 
     @property
     def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
-
         prices_fields: List[str] = ["amount", "currencyCode"]
         presentment_prices_fields: List[Field] = [
             Field(

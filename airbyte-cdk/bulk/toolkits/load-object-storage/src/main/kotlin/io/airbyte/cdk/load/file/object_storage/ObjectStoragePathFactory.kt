@@ -36,7 +36,7 @@ interface PathFactory {
         isStaging: Boolean = false,
         extension: String? = null
     ): String
-    fun getPathMatcher(stream: DestinationStream): PathMatcher
+    fun getPathMatcher(stream: DestinationStream, suffixPattern: String? = null): PathMatcher
 
     val supportsStaging: Boolean
     val prefix: String
@@ -47,12 +47,13 @@ data class PathMatcher(val regex: Regex, val variableToIndex: Map<String, Int>) 
         val match = regex.matchEntire(path) ?: return null
         return PathMatcherResult(
             path,
-            variableToIndex["part_number"]?.let { match.groupValues[it].toLong() }
+            variableToIndex["part_number"]?.let { match.groupValues[it].toLong() },
+            variableToIndex["suffix"]?.let { match.groupValues[it].let { g -> g.ifBlank { null } } }
         )
     }
 }
 
-data class PathMatcherResult(val path: String, val partNumber: Long?)
+data class PathMatcherResult(val path: String, val partNumber: Long?, val customSuffix: String?)
 
 @Singleton
 @Secondary
@@ -370,7 +371,7 @@ class ObjectStoragePathFactory(
         }
     }
 
-    override fun getPathMatcher(stream: DestinationStream): PathMatcher {
+    override fun getPathMatcher(stream: DestinationStream, suffixPattern: String?): PathMatcher {
         val pathVariableToPattern = getPathVariableToPattern(stream)
         val variableToIndex = mutableMapOf<String, Int>()
 
@@ -396,6 +397,13 @@ class ObjectStoragePathFactory(
             } else {
                 "$prefix/$replacedForPath$replacedForFile"
             }
-        return PathMatcher(Regex(combined), variableToIndex)
+        val withSuffix =
+            if (suffixPattern != null) {
+                variableToIndex["suffix"] = variableToIndex.size + 1
+                "$combined$suffixPattern"
+            } else {
+                combined
+            }
+        return PathMatcher(Regex(withSuffix), variableToIndex)
     }
 }

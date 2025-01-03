@@ -142,7 +142,7 @@ rootProject.name = 'airbyte'
 def cdkPath = rootDir.toPath().resolve('airbyte-cdk/java/airbyte-cdk')
 if (cdkPath.toFile().exists()) {
     cdkPath.eachDir { dir ->
-        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+        def buildFiles = file(dir).list { file, name -> name.matches("build\\.gradle(?:\\.kts)?") }
         if (buildFiles.length == 1) {
             def path = ":airbyte-cdk:java:airbyte-cdk:${dir.getFileName()}"
             include path
@@ -153,7 +153,7 @@ if (cdkPath.toFile().exists()) {
 def bulkCdkCorePath = rootDir.toPath().resolve('airbyte-cdk/bulk/core')
 if (bulkCdkCorePath.toFile().exists()) {
     bulkCdkCorePath.eachDir { dir ->
-        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+        def buildFiles = file(dir).list { file, name -> name.matches("build\\.gradle(?:\\.kts)?") }
         if (buildFiles.length == 1) {
             def path = ":airbyte-cdk:bulk:core:${dir.getFileName()}"
             include path
@@ -164,7 +164,7 @@ if (bulkCdkCorePath.toFile().exists()) {
 def bulkCdkToolkitPath = rootDir.toPath().resolve('airbyte-cdk/bulk/toolkits')
 if (bulkCdkToolkitPath.toFile().exists()) {
     bulkCdkToolkitPath.eachDir { dir ->
-        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+        def buildFiles = file(dir).list { file, name -> name.matches("build\\.gradle(?:\\.kts)?") }
         if (buildFiles.length == 1) {
             def path = ":airbyte-cdk:bulk:toolkits:${dir.getFileName()}"
             include path
@@ -176,7 +176,7 @@ if (bulkCdkToolkitPath.toFile().exists()) {
 // Include all java connector projects.
 def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
 integrationsPath.eachDir { dir ->
-    def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+    def buildFiles = file(dir).list { file, name -> name.matches("build\\.gradle(?:\\.kts)?") }
     if (buildFiles.length != 1) {
         // Ignore python and other non-gradle connectors.
         return

@@ -10,11 +10,11 @@ from typing import Any
 import psycopg2
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
+
 from destination_pgvector.destination import DestinationPGVector
 
 
 class PGVectorIntegrationTest(BaseIntegrationTest):
-
     def setUp(self):
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())
@@ -331,7 +331,7 @@ class PGVectorIntegrationTest(BaseIntegrationTest):
             for i in range(1)
         ]
 
-         # initial sync with replace
+        # initial sync with replace
         destination = DestinationPGVector()
         list(destination.write(self.config, catalog, [*records, first_state_message]))
         assert self._get_record_count("mystream") == 3
@@ -358,4 +358,3 @@ class PGVectorIntegrationTest(BaseIntegrationTest):
         assert second_written_record["document_content"] == "Dogs are"
         assert third_written_record["document_id"] == "Stream_mystream_Key_0"
         assert third_written_record["document_content"] == "number 0"
-

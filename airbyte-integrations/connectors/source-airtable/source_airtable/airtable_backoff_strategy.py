@@ -4,6 +4,7 @@ import logging
 from typing import Any, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 
 

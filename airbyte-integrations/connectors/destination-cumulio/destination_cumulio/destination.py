@@ -11,6 +11,7 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 from destination_cumulio.client import CumulioClient
 from destination_cumulio.writer import CumulioWriter
 
+
 logger = getLogger("airbyte")
 
 

@@ -7,10 +7,12 @@ from http import HTTPStatus
 from typing import Any, Mapping, Union
 
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
-from requests import HTTPError
+
 
 # https://docs.airbyte.com/integrations/sources/my-hours
 # The Bearer token generated will expire in five days

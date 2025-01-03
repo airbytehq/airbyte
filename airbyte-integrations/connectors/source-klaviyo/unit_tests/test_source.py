@@ -7,10 +7,12 @@ import logging
 
 import pendulum
 import pytest
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import KlaviyoConfigBuilder
 from source_klaviyo.source import SourceKlaviyo
+
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
+
 
 logger = logging.getLogger("airbyte")
 
@@ -29,16 +31,12 @@ def _source() -> SourceKlaviyo:
         (
             400,
             False,
-            (
-                "Bad request. Please check your request parameters."
-            ),
+            ("Bad request. Please check your request parameters."),
         ),
         (
             403,
             False,
-            (
-                "Please provide a valid API key and make sure it has permissions to read specified streams."
-            ),
+            ("Please provide a valid API key and make sure it has permissions to read specified streams."),
         ),
     ),
 )

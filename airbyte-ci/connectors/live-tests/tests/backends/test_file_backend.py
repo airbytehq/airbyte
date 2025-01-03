@@ -13,6 +13,7 @@ from airbyte_protocol.models import (
     Status,
 )
 from airbyte_protocol.models import Type as AirbyteMessageType
+
 from live_tests.commons.backends import FileBackend
 
 

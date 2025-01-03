@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Mapping, Union
 
 import dpath.util
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor

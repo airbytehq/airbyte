@@ -4,6 +4,7 @@
 
 
 import asyncclick as click
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_poetry.pipeline import run_connector_migration_to_poetry_pipeline_wrapper
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -31,7 +32,6 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 )
 @click.pass_context
 async def migrate_to_poetry(ctx: click.Context, changelog: bool, bump: str | None) -> bool:
-
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Migrate {connector.technical_name} to Poetry",

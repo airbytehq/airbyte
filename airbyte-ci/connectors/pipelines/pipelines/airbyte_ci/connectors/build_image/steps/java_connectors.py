@@ -3,6 +3,7 @@
 #
 
 from dagger import Container, Directory, File, Platform, QueryError
+
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.gradle import GradleTask

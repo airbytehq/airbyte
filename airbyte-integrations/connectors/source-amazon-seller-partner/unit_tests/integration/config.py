@@ -10,6 +10,7 @@ from typing import Dict
 
 import pendulum
 
+
 ACCESS_TOKEN = "test_access_token"
 LWA_APP_ID = "amazon_app_id"
 LWA_CLIENT_SECRET = "amazon_client_secret"

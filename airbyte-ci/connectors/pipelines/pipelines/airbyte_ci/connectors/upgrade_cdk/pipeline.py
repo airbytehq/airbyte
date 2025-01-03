@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 import toml
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import LOCAL_BUILD_PLATFORM

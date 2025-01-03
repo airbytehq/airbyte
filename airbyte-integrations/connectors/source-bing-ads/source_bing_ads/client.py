@@ -14,8 +14,6 @@ from urllib.error import URLError
 
 import backoff
 import pendulum
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.exceptions import OAuthTokenRequestException
 from bingads.service_client import ServiceClient
@@ -24,6 +22,10 @@ from bingads.v13.bulk import BulkServiceManager, DownloadParameters
 from bingads.v13.reporting.exceptions import ReportingDownloadException
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from suds import WebFault, sudsobject
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
+
 
 FILE_TYPE = "Csv"
 TIMEOUT_IN_MILLISECONDS = 3_600_000

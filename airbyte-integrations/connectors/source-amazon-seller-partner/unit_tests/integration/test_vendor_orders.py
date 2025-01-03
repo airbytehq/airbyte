@@ -8,6 +8,7 @@ from typing import List, Optional
 
 import freezegun
 import pendulum
+
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -27,6 +28,7 @@ from .pagination import NEXT_TOKEN_STRING, VendorFulfillmentPaginationStrategy
 from .request_builder import RequestBuilder
 from .response_builder import response_with_status
 from .utils import config, mock_auth, read_output
+
 
 _START_DATE = pendulum.datetime(year=2023, month=1, day=1)
 _END_DATE = pendulum.datetime(year=2023, month=1, day=5)

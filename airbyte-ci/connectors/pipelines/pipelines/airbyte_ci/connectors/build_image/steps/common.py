@@ -7,15 +7,19 @@ from abc import ABC
 from typing import TYPE_CHECKING
 
 import docker  # type: ignore
+from base_images.bases import AirbyteConnectorBaseImage  # type: ignore
 from click import UsageError
 from connector_ops.utils import Connector  # type: ignore
 from dagger import Container, ExecError, Platform, QueryError
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.helpers.utils import export_container_to_tarball
+from pipelines.helpers.utils import export_container_to_tarball, sh_dash_c
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, Type, TypeVar
+
+    T = TypeVar("T", bound="BuildConnectorImagesBase")
 
 
 def apply_airbyte_docker_labels(connector_container: Container, connector: Connector) -> Container:
@@ -30,6 +34,7 @@ class BuildConnectorImagesBase(Step, ABC):
     """
 
     context: ConnectorContext
+    USER = AirbyteConnectorBaseImage.USER
 
     @property
     def title(self) -> str:
@@ -73,6 +78,21 @@ class BuildConnectorImagesBase(Step, ABC):
             Container: The container to package as a docker image for this platform.
         """
         raise NotImplementedError("`BuildConnectorImagesBase`s must define a '_build_connector' attribute.")
+
+    @classmethod
+    async def get_image_user(cls: Type[T], base_container: Container) -> str:
+        """If the base image in use has a user named 'airbyte', we will use it as the user for the connector image.
+
+        Args:
+            base_container (Container): The base container to use to build the connector.
+
+        Returns:
+            str: The user to use for the connector image.
+        """
+        users = (await base_container.with_exec(sh_dash_c(["cut -d: -f1 /etc/passwd | sort | uniq"])).stdout()).splitlines()
+        if cls.USER in users:
+            return cls.USER
+        return "root"
 
 
 class LoadContainerToLocalDockerHost(Step):

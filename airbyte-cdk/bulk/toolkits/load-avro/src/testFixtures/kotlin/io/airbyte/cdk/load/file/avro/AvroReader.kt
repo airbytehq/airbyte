@@ -4,10 +4,10 @@
 
 package io.airbyte.cdk.load.file.avro
 
+import io.airbyte.cdk.load.command.DestinationStream
 import java.io.Closeable
 import java.io.InputStream
 import kotlin.io.path.outputStream
-import org.apache.avro.Schema
 import org.apache.avro.file.DataFileReader
 import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.generic.GenericRecord
@@ -34,12 +34,12 @@ class AvroReader(
     }
 }
 
-fun InputStream.toAvroReader(avroSchema: Schema): AvroReader {
-    val reader = GenericDatumReader<GenericRecord>(avroSchema)
+fun InputStream.toAvroReader(streamDescriptor: DestinationStream.Descriptor): AvroReader {
+    val reader = GenericDatumReader<GenericRecord>()
     val tmpFile =
         kotlin.io.path.createTempFile(
-            prefix = "${avroSchema.namespace}.${avroSchema.name}",
-            suffix = ".avro"
+            prefix = "${streamDescriptor.namespace}.${streamDescriptor.name}",
+            suffix = ".avro",
         )
     tmpFile.outputStream().use { outputStream -> this.copyTo(outputStream) }
     val file = tmpFile.toFile()

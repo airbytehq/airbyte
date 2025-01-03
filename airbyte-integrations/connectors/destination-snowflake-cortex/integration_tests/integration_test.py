@@ -337,7 +337,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
             for i in range(1)
         ]
 
-         # initial sync with replace
+        # initial sync with replace
         destination = DestinationSnowflakeCortex()
         list(destination.write(self.config, catalog, [*records, first_state_message]))
         assert self._get_record_count("mystream") == 3
@@ -364,8 +364,6 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         assert second_written_record["DOCUMENT_CONTENT"] == '"Dogs are"'
         assert third_written_record["DOCUMENT_ID"] == "Stream_mystream_Key_0"
         assert third_written_record["DOCUMENT_CONTENT"] == '"number 0"'
-       
-
 
     """
     Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected

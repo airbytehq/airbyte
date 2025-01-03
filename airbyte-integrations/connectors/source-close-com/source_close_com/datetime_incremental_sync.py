@@ -6,6 +6,7 @@ import datetime
 from dataclasses import dataclass
 
 import pendulum
+
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 
 

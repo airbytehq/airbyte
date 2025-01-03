@@ -11,12 +11,14 @@ from unittest.mock import ANY, MagicMock, Mock, patch
 import pendulum
 import pytest
 import requests
+from source_marketo.source import Activities, IncrementalMarketoStream, Leads, MarketoExportCreate, MarketoStream, SourceMarketo
+
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.utils import AirbyteTracedException
-from source_marketo.source import Activities, IncrementalMarketoStream, Leads, MarketoExportCreate, MarketoStream, SourceMarketo
 
 from .conftest import START_DATE, get_stream_by_name
+
 
 logger = logging.getLogger("airbyte")
 
@@ -38,12 +40,7 @@ def test_should_retry_quota_exceeded(config, requests_mock):
     response_json = {
         "requestId": "d2ca#18c0b9833bf",
         "success": False,
-        "errors": [
-            {
-                "code": "1029",
-                "message": "Export daily quota 500MB exceeded."
-            }
-        ]
+        "errors": [{"code": "1029", "message": "Export daily quota 500MB exceeded."}],
     }
     requests_mock.register_uri("GET", create_job_url, status_code=200, json=response_json)
 
@@ -132,8 +129,8 @@ def test_activities_schema(activity, expected_schema, config):
         (
             (
                 "Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant,attributes\n"
-                "1,3,true,10,15,{\"spam\": \"true\"}\n"
-                "2,3,false,11,16,{\"spam\": \"false\"}"
+                '1,3,true,10,15,{"spam": "true"}\n'
+                '2,3,false,11,16,{"spam": "false"}'
             ),
             [
                 {
@@ -231,9 +228,7 @@ def test_parse_response_incremental(config, requests_mock):
     created_at_record_1 = START_DATE.add(days=1).strftime("%Y-%m-%dT%H:%M:%SZ")
     created_at_record_2 = START_DATE.add(days=3).strftime("%Y-%m-%dT%H:%M:%SZ")
     current_state = START_DATE.add(days=2).strftime("%Y-%m-%dT%H:%M:%SZ")
-    response = {
-        "result": [{"id": "1", "createdAt": created_at_record_1}, {"id": "2", "createdAt": created_at_record_2}]
-    }
+    response = {"result": [{"id": "1", "createdAt": created_at_record_1}, {"id": "2", "createdAt": created_at_record_2}]}
     requests_mock.get("/rest/v1/campaigns.json", json=response)
 
     stream = get_stream_by_name("campaigns", config)
@@ -322,16 +317,8 @@ def test_get_updated_state(config, latest_record, current_state, expected_state)
 def test_filter_null_bytes(config):
     stream = Leads(config)
 
-    test_lines = [
-        "Hello\x00World\n",
-        "Name,Email\n",
-        "John\x00Doe,john.doe@example.com\n"
-    ]
-    expected_lines = [
-        "HelloWorld\n",
-        "Name,Email\n",
-        "JohnDoe,john.doe@example.com\n"
-    ]
+    test_lines = ["Hello\x00World\n", "Name,Email\n", "John\x00Doe,john.doe@example.com\n"]
+    expected_lines = ["HelloWorld\n", "Name,Email\n", "JohnDoe,john.doe@example.com\n"]
     filtered_lines = stream.filter_null_bytes(test_lines)
     for expected_line, filtered_line in zip(expected_lines, filtered_lines):
         assert expected_line == filtered_line
@@ -340,15 +327,8 @@ def test_filter_null_bytes(config):
 def test_csv_rows(config):
     stream = Leads(config)
 
-    test_lines = [
-        "Name,Email\n",
-        "John Doe,john.doe@example.com\n",
-        "Jane Doe,jane.doe@example.com\n"
-    ]
-    expected_records = [
-        {"Name": "John Doe", "Email": "john.doe@example.com"},
-        {"Name": "Jane Doe", "Email": "jane.doe@example.com"}
-    ]
+    test_lines = ["Name,Email\n", "John Doe,john.doe@example.com\n", "Jane Doe,jane.doe@example.com\n"]
+    expected_records = [{"Name": "John Doe", "Email": "john.doe@example.com"}, {"Name": "Jane Doe", "Email": "jane.doe@example.com"}]
     records = stream.csv_rows(test_lines)
     for expected_record, record in zip(expected_records, records):
         assert expected_record == record

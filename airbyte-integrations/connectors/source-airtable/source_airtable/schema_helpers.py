@@ -9,11 +9,11 @@ from typing import Any, Dict
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 
+
 logger: logging.Logger = logging.getLogger("airbyte")
 
 
 class SchemaTypes:
-
     string: Dict = {"type": ["null", "string"]}
 
     number: Dict = {"type": ["null", "number"]}

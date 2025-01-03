@@ -28,10 +28,7 @@
         "name": "company_segments"
       },
       "stream_state": {
-        "updated_at": 7626086649,
-        "companies": {
-          "updated_at": 7626086649
-        }
+        "updated_at": 7626086649
       }
     }
   },
@@ -42,10 +39,7 @@
         "name": "conversations"
       },
       "stream_state": {
-        "updated_at": 7626086649,
-        "conversations": {
-          "updated_at": 7626086649
-        }
+        "updated_at": 7626086649
       }
     }
   },
@@ -56,10 +50,7 @@
         "name": "conversation_parts"
       },
       "stream_state": {
-        "updated_at": 7626086649,
-        "conversations": {
-          "updated_at": 7626086649
-        }
+        "updated_at": 7626086649
       }
     }
   },

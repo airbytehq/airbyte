@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import facebook_business
 import pendulum
+
 from airbyte_cdk.models import (
     AdvancedAuth,
     AuthFlowType,
@@ -54,6 +55,7 @@ from source_facebook_marketing.streams import (
 )
 
 from .utils import validate_end_date, validate_start_date
+
 
 logger = logging.getLogger("airbyte")
 UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}

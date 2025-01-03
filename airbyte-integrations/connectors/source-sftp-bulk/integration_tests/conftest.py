@@ -14,9 +14,11 @@ from typing import Any, Mapping, Tuple
 import docker
 import paramiko
 import pytest
+
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 from .utils import get_docker_ip, load_config
+
 
 logger = logging.getLogger("airbyte")
 

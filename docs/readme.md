@@ -16,7 +16,7 @@ displayed_sidebar: docs
  
 Today, teams and organizations require efficient and timely data access to an ever-growing list of data sources. In-house data pipelines are brittle and costly to build and maintain. Airbyte's unique open-source approach enables your data stack to adapt as your data needs evolve.
 
-- **Wide connector availability:** Airbyte’s connector catalog comes “out-of-the-box” with over 350 pre-built connectors. These connectors can be used to start replicating data from a source to a destination in just a few minutes. 
+- **Wide connector availability:** Airbyte’s connector catalog comes “out-of-the-box” with over 500 pre-built connectors. These connectors can be used to start replicating data from a source to a destination in just a few minutes. 
 - **Long-tail connector coverage:** You can easily extend Airbyte’s functionality to support your custom use cases through Airbyte's [No-Code Connector Builder](./connector-development/connector-builder-ui/overview).
 
 - **Robust platform** provides horizontal scaling required for large-scale data movement operations, available as [Cloud-managed](https://airbyte.com/product/airbyte-cloud) or [Self-managed](https://airbyte.com/product/airbyte-enterprise).
@@ -32,7 +32,7 @@ Airbyte is suitable for a wide range of data integration use cases, including AI
 
 <CardWithIcon title="Start Syncing Data" description="Deploy locally or sign up for Airbyte Cloud to sync data in minutes" ctaText="Get Started" ctaLink="./using-airbyte/getting-started/" icon="enterprise" />
 
-<CardWithIcon title="Connector Catalog" description="Browse the extensive Connector Catalog of over 350+ sources and destinations" ctaText="Browse" ctaLink="./integrations/" icon="oss" ctaVariant="secondary" />
+<CardWithIcon title="Connector Catalog" description="Browse the extensive Connector Catalog of over 500 sources and destinations" ctaText="Browse" ctaLink="./integrations/" icon="oss" ctaVariant="secondary" />
 
 <CardWithIcon title="Connector Development Guide" description="Learn how to build and customize connectors
 " ctaText="Learn More" ctaLink="./connector-development/" icon="cloud" ctaVariant="secondary" />

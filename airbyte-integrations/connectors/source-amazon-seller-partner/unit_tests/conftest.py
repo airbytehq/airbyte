@@ -8,6 +8,7 @@ from typing import Any, Dict
 
 import pytest
 
+
 os.environ["DEPLOYMENT_MODE"] = "testing"
 
 
@@ -25,10 +26,7 @@ def init_kwargs() -> Dict[str, Any]:
 
 @pytest.fixture
 def report_init_kwargs(init_kwargs) -> Dict[str, Any]:
-    return {
-        "stream_name": "GET_TEST_REPORT",
-        **init_kwargs
-    }
+    return {"stream_name": "GET_TEST_REPORT", **init_kwargs}
 
 
 @pytest.fixture

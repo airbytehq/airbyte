@@ -179,6 +179,11 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 systemProperties = project.test.systemProperties
                 maxParallelForks = project.test.maxParallelForks
                 maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                }
             }
 
             // For historical reasons (i.e. airbyte-ci), this task is called integrationTestJava.
@@ -200,6 +205,13 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 systemProperties = project.test.systemProperties
                 maxParallelForks = project.test.maxParallelForks
                 maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                    // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+                    showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+                }
             }
 
             project.dependencies {

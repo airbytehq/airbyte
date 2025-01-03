@@ -5,6 +5,7 @@ from functools import partial
 from typing import Any, Iterable, List, Mapping, Optional
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
@@ -12,6 +13,7 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+
 
 LOGGER = logging.getLogger("airbyte_logger")
 

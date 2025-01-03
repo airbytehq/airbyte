@@ -6,8 +6,9 @@
 from typing import Any, Dict, Literal, Optional, Union
 
 import dpath.util
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from pydantic.v1 import BaseModel, Field
+
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 
 
 class OAuthCredentials(BaseModel):

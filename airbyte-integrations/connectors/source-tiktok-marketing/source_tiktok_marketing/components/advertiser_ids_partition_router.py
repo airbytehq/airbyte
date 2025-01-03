@@ -4,6 +4,7 @@ import json
 from typing import Any, Iterable, Mapping
 
 import dpath.util
+
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.types import StreamSlice
 

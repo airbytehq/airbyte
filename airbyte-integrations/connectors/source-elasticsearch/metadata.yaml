@@ -1,9 +1,18 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: api
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
   connectorType: source
   definitionId: 7cf88806-25f5-4e1a-b422-b2fa9e1b0090
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   dockerRepository: airbyte/source-elasticsearch
+  documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
   githubIssueLabel: source-elasticsearch
   icon: elasticsearch.svg
   license: MIT
@@ -14,14 +23,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
+  supportLevel: community
   tags:
     - language:java
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
 metadataSpecVersion: "1.0"

@@ -491,7 +491,7 @@ protected constructor(
      * both syncs are preserved.
      */
     @Test
-    fun testOverwriteSyncFailedResumedGeneration() {
+    open fun testOverwriteSyncFailedResumedGeneration() {
         assumeTrue(
             implementsOverwrite(),
             "Destination's spec.json does not support overwrite sync mode."
@@ -525,7 +525,7 @@ protected constructor(
 
     /** Test runs 2 failed syncs and verifies the previous sync objects are not cleaned up. */
     @Test
-    fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {
+    open fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {
         assumeTrue(
             implementsOverwrite(),
             "Destination's spec.json does not support overwrite sync mode."
@@ -801,13 +801,11 @@ protected constructor(
                     catalog = catalog,
                     runNormalization = false,
                     imageName = imageName,
+                    additionalEnvs = mapOf("USE_FILE_TRANSFER" to "true"),
                 )
             fail("sync should have failed. Instead got output $destinationOutput")
         } catch (e: TestHarnessException) {
-            assertContains(
-                e.outputMessages!![0].trace.error.internalMessage,
-                S3DestinationFlushFunction.FILE_RECORD_ERROR_MESSAGE
-            )
+            assertContains(e.outputMessages!![0].trace.error.internalMessage, "File does not exist")
         }
     }
 

@@ -10,8 +10,9 @@ import anyio
 import dagger
 import inquirer  # type: ignore
 import semver
-from base_images import bases, console, consts, errors, hacks, publish, utils, version_registry
 from jinja2 import Environment, FileSystemLoader
+
+from base_images import bases, console, consts, errors, hacks, publish, utils, version_registry
 
 
 async def _generate_docs(dagger_client: dagger.Client):

@@ -251,4 +251,11 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val airbyteType = JsonSchemaToAirbyteType().convert(inputSchema)
         Assertions.assertEquals(UnionType.of(StringType, IntegerType), airbyteType)
     }
+
+    @Test
+    fun testUnrecognizedStringFormats() {
+        val schemaNode = ofType("string").put("format", "foo")
+        val airbyteType = JsonSchemaToAirbyteType().convert(schemaNode)
+        Assertions.assertTrue(airbyteType is StringType)
+    }
 }

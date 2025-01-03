@@ -7,8 +7,9 @@ from unittest.mock import patch
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_amazon_seller_partner.streams import AnalyticsStream, IncrementalAnalyticsStream
+
+from airbyte_cdk.models import SyncMode
 
 
 class SomeAnalyticsStream(AnalyticsStream):

@@ -1,6 +1,8 @@
-version: 5.7.5
+version: 5.16.0
 
 type: DeclarativeSource
+
+description: removed `is_read_only` attribute from dashboards stream schema
 
 check:
   type: CheckStream
@@ -681,14 +683,6 @@ schemas:
           - string
           - "null"
         description: Dashboard identifier.
-        readOnly: true
-      is_read_only:
-        type:
-          - boolean
-          - "null"
-        description: >-
-          Whether this dashboard is read-only. If True, only the author and
-          admins can make changes to it.
         readOnly: true
       layout_type:
         type:

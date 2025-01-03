@@ -12,13 +12,15 @@ from unittest.mock import MagicMock
 import mock
 import pendulum
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API, Companies, Deals, Engagements, MarketingEmails, Products, Stream
 
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+
 from .utils import read_full_refresh, read_incremental
+
 
 NUMBER_OF_PROPERTIES = 2000
 
@@ -83,7 +85,6 @@ def test_check_connection_invalid_start_date_exception(config_invalid_date):
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_streams(requests_mock, config):
-
     streams = SourceHubspot().streams(config)
 
     assert len(streams) == 35
@@ -91,7 +92,6 @@ def test_streams(requests_mock, config):
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_streams_incremental(requests_mock, config_experimental):
-
     streams = SourceHubspot().streams(config_experimental)
 
     assert len(streams) == 47
@@ -141,7 +141,7 @@ def test_cast_datetime(common_params, caplog):
             # if you find some diff locally try using "Ex: argument of type 'DateTime' is not iterable in the message". There could be a
             # difference in local environment when pendulum.parsing.__init__.py importing parse_iso8601. Anyway below is working fine
             # in container for now and I am not sure if this diff was just a problem with my setup.
-            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: expected string or bytes-like object"
+            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: expected string or bytes-like object",
         },
     }
     assert expected_warning_message["log"]["message"] in caplog.text
@@ -488,6 +488,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     assert len(records) == 11000
     assert test_stream.state["updatedAt"] == test_stream._init_sync.to_iso8601_string()
 
+
 def test_search_based_incremental_stream_should_sort_by_id(requests_mock, common_params, fake_properties_list):
     """
     If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
@@ -500,7 +501,7 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, common
     test_stream.associations = []
 
     def random_date(start, end):
-        return pendulum.from_timestamp(random.randint(start, end)/1000).to_iso8601_string()
+        return pendulum.from_timestamp(random.randint(start, end) / 1000).to_iso8601_string()
 
     after = 0
 
@@ -518,17 +519,13 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, common
         id = int(filters[2].get("value", 0))
         next = int(after) + 100
         results = [
-            {
-                "id": f"{y + id}",
-                "updatedAt": random_date(min_time, max_time),
-                "after": after
-            } for y in range(int(after) + 1, next + 1)
+            {"id": f"{y + id}", "updatedAt": random_date(min_time, max_time), "after": after} for y in range(int(after) + 1, next + 1)
         ]
         context.status_code = 200
-        if ((id + next) < 11000):
+        if (id + next) < 11000:
             return {"results": results, "paging": {"next": {"after": f"{next}"}}}
         else:
-            return {"results": results, "paging": {}} # Last page
+            return {"results": results, "paging": {}}  # Last page
 
     properties_response = [
         {
@@ -786,6 +783,7 @@ def test_get_granted_scopes(requests_mock, mocker):
     actual_scopes = SourceHubspot().get_granted_scopes(authenticator)
 
     assert expected_scopes == actual_scopes
+
 
 def test_get_granted_scopes_retry(requests_mock, mocker):
     authenticator = mocker.Mock()

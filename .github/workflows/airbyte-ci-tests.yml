@@ -17,7 +17,7 @@ on:
       - synchronize
 jobs:
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       internal_poetry_packages: ${{ steps.changes.outputs.internal_poetry_packages }}
 

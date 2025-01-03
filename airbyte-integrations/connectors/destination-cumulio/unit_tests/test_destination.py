@@ -9,6 +9,8 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock, call, patch
 
 import pytest
+from destination_cumulio.destination import DestinationCumulio
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -20,7 +22,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_cumulio.destination import DestinationCumulio
 
 
 @pytest.fixture(name="logger")

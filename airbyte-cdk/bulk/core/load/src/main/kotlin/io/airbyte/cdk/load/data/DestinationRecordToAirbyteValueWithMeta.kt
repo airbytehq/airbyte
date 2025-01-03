@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecord.Meta
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.Meta
 import java.util.*
 
 class DestinationRecordToAirbyteValueWithMeta(
@@ -51,7 +51,7 @@ class DestinationRecordToAirbyteValueWithMeta(
     }
 }
 
-fun Pair<AirbyteValue, List<DestinationRecord.Change>>.withAirbyteMeta(
+fun Pair<AirbyteValue, List<Meta.Change>>.withAirbyteMeta(
     stream: DestinationStream,
     emittedAtMs: Long,
     flatten: Boolean = false
@@ -59,5 +59,7 @@ fun Pair<AirbyteValue, List<DestinationRecord.Change>>.withAirbyteMeta(
     DestinationRecordToAirbyteValueWithMeta(stream, flatten)
         .convert(first, emittedAtMs, Meta(second))
 
-fun DestinationRecord.dataWithAirbyteMeta(stream: DestinationStream, flatten: Boolean = false) =
-    DestinationRecordToAirbyteValueWithMeta(stream, flatten).convert(data, emittedAtMs, meta)
+fun DestinationRecordAirbyteValue.dataWithAirbyteMeta(
+    stream: DestinationStream,
+    flatten: Boolean = false
+) = DestinationRecordToAirbyteValueWithMeta(stream, flatten).convert(data, emittedAtMs, meta)

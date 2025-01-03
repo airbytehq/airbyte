@@ -5,8 +5,9 @@ from datetime import date
 from enum import Enum
 from typing import List, Optional
 
-from airbyte_cdk.sources.config import BaseConfig
 from pydantic.v1 import Field
+
+from airbyte_cdk.sources.config import BaseConfig
 
 
 class StateFilterEnum(str, Enum):

@@ -4,9 +4,10 @@
 
 from unittest.mock import patch
 
-from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
 from source_google_analytics_data_api.config_migrations import MigratePropertyID
+
+from airbyte_cdk.entrypoint import AirbyteEntrypoint
 
 
 @patch.object(SourceGoogleAnalyticsDataApi, "read_config")

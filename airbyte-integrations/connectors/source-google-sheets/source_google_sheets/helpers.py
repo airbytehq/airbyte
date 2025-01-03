@@ -9,13 +9,15 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List, Tuple
 
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
 from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
 from googleapiclient import discovery
 
+from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
+
 from .models.spreadsheet import RowData, Spreadsheet
 from .utils import safe_name_conversion
+
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
 

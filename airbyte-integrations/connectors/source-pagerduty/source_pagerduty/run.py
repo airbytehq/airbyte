@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_pagerduty import SourcePagerduty
+
+from airbyte_cdk.entrypoint import launch
 
 
 def run():

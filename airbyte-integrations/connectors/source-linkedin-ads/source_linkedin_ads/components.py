@@ -12,6 +12,8 @@ from urllib.parse import urlencode
 
 import pendulum
 import requests
+from isodate import Duration, parse_duration
+
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -31,7 +33,6 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from isodate import Duration, parse_duration
 
 from .utils import ANALYTICS_FIELDS_V2, FIELDS_CHUNK_SIZE, transform_data
 

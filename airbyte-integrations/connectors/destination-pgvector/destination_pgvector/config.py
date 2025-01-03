@@ -22,7 +22,6 @@ class PasswordBasedAuthorizationModel(BaseModel):
 
 
 class PGVectorIndexingModel(BaseModel):
-
     host: str = Field(
         ...,
         title="Host",

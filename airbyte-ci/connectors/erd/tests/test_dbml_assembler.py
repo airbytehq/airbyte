@@ -4,6 +4,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStream, SyncMode
+
 from erd.dbml_assembler import DbmlAssembler, Source
 from tests.builder import RelationshipBuilder
 
@@ -18,7 +19,9 @@ class RelationshipsMergerTest(TestCase):
 
     def test_given_no_streams_then_database_is_empty(self) -> None:
         dbml = self._assembler.assemble(
-            self._source, AirbyteCatalog(streams=[]), {"streams": [RelationshipBuilder(_A_STREAM_NAME).build()]}
+            self._source,
+            AirbyteCatalog(streams=[]),
+            {"streams": [RelationshipBuilder(_A_STREAM_NAME).build()]},
         )
         assert not dbml.tables
 

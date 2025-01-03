@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.state.SyncFailure
+import io.airbyte.cdk.load.state.DestinationFailure
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
@@ -22,7 +22,7 @@ interface DestinationWriter {
 
     // Called once at the end of the job, unconditionally.
     // NOTE: we don't pass Success here, because it depends on this completing successfully.
-    suspend fun teardown(syncFailure: SyncFailure? = null) {}
+    suspend fun teardown(destinationFailure: DestinationFailure? = null) {}
 }
 
 @Singleton

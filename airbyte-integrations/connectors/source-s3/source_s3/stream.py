@@ -6,11 +6,12 @@ from datetime import timedelta
 from typing import Any, Iterator, Mapping
 
 import pendulum
-from airbyte_cdk import AirbyteTracedException, FailureType
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
 from botocore.exceptions import ClientError
+
+from airbyte_cdk import AirbyteTracedException, FailureType
 from source_s3.s3_utils import make_s3_client
 
 from .s3file import S3File
@@ -51,9 +52,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             # list_objects_v2 doesn't like a None value for ContinuationToken
             # so we don't set it if we don't have one.
             if ctoken:
-                kwargs = dict(
-                    Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken
-                )  # type: ignore[unreachable]
+                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken)  # type: ignore[unreachable]
             else:
                 kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""))
             try:

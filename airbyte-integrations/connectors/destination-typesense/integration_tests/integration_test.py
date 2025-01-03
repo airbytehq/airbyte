@@ -7,6 +7,9 @@ import logging
 from typing import Any, Dict, Mapping
 
 import pytest
+from destination_typesense.destination import DestinationTypesense, get_client
+from typesense import Client
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -19,8 +22,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_typesense.destination import DestinationTypesense, get_client
-from typesense import Client
 
 
 @pytest.fixture(name="config")

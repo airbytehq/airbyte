@@ -20,6 +20,9 @@ ruff = "^0.4.3"
 pytest = "^8.2.0"
 pyinstrument = "^4.6.2"
 
+[tool.ruff]
+line-length = 140
+
 [tool.ruff.lint]
 select = [
     "I" # isort

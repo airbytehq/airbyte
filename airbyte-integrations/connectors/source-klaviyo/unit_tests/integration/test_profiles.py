@@ -3,6 +3,8 @@ import datetime
 from typing import Any, Dict, Optional
 from unittest import TestCase
 
+from source_klaviyo import SourceKlaviyo
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
@@ -17,7 +19,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from integration.config import KlaviyoConfigBuilder
-from source_klaviyo import SourceKlaviyo
+
 
 _ENDPOINT_TEMPLATE_NAME = "profiles"
 _START_DATE = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
@@ -37,11 +39,11 @@ def _a_profile_request(start_date: datetime) -> HttpRequest:
     return HttpRequest(
         url=f"https://a.klaviyo.com/api/profiles",
         query_params={
-          "additional-fields[profile]": "predictive_analytics",
-          "page[size]": "100",
-          "filter": f"greater-than(updated,{start_date.strftime('%Y-%m-%dT%H:%M:%S%z')})",
-          "sort": "updated"
-        }
+            "additional-fields[profile]": "predictive_analytics",
+            "page[size]": "100",
+            "filter": f"greater-than(updated,{start_date.strftime('%Y-%m-%dT%H:%M:%S%z')})",
+            "sort": "updated",
+        },
     )
 
 

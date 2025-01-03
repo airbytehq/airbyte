@@ -11,12 +11,9 @@ import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
-import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAirbyteValue
-import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.csv.toAirbyteValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.GZIPProcessor
 import io.airbyte.cdk.load.file.NoopProcessor
@@ -25,6 +22,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.parquet.toParquetReader
+import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.maybeUnflatten
 import io.airbyte.cdk.load.test.util.toOutputRecord
@@ -48,15 +46,13 @@ class ObjectStorageDataDumper(
     private val formatConfig: ObjectStorageFormatConfiguration,
     private val compressionConfig: ObjectStorageCompressionConfiguration<*>? = null
 ) {
-    private val avroMapperPipeline = AvroMapperPipelineFactory().create(stream)
-    private val parquetMapperPipeline = ParquetMapperPipelineFactory().create(stream)
-
     fun dump(): List<OutputRecord> {
         // Note: this is implicitly a test of the `streamConstant` final directory
         // and the path matcher, so a failure here might imply a bug in the metadata-based
         // destination state loader, which lists by `prefix` and filters against the matcher.
         val prefix = pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
-        val matcher = pathFactory.getPathMatcher(stream)
+        val matcher =
+            pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
         return runBlocking {
             withContext(Dispatchers.IO) {
                 client
@@ -114,7 +110,7 @@ class ObjectStorageDataDumper(
                     .map { line ->
                         line
                             .deserializeToNode()
-                            .toAirbyteValue(stream.schema.withAirbyteMeta(wasFlattened))
+                            .toAirbyteValue()
                             .maybeUnflatten(wasFlattened)
                             .toOutputRecord()
                     }
@@ -131,30 +127,18 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
-                val finalSchema = avroMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
-                inputStream.toAvroReader(finalSchema.toAvroSchema(stream.descriptor)).use { reader
-                    ->
+                inputStream.toAvroReader(stream.descriptor).use { reader ->
                     reader
                         .recordSequence()
-                        .map {
-                            it.toAirbyteValue(finalSchema)
-                                .maybeUnflatten(wasFlattened)
-                                .toOutputRecord()
-                        }
+                        .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
                         .toList()
                 }
             }
             is ParquetFormatConfiguration -> {
-                val finalSchema = parquetMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
-                inputStream.toParquetReader(finalSchema.toAvroSchema(stream.descriptor)).use {
-                    reader ->
+                inputStream.toParquetReader(stream.descriptor).use { reader ->
                     reader
                         .recordSequence()
-                        .map {
-                            it.toAirbyteValue(finalSchema)
-                                .maybeUnflatten(wasFlattened)
-                                .toOutputRecord()
-                        }
+                        .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
                         .toList()
                 }
             }

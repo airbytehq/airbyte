@@ -6,9 +6,11 @@ import logging
 import typing
 from typing import Optional, Tuple
 
+from requests import HTTPError, codes
+
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from requests import HTTPError, codes
+
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source

@@ -12,12 +12,16 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimeValue
-import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnknownValue
+import java.time.ZoneOffset
 import org.apache.iceberg.Schema
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Type
+import org.apache.iceberg.types.Types.TimestampType
 
 class AirbyteValueToIcebergRecord {
     fun convert(airbyteValue: AirbyteValue, type: Type): Any? {
@@ -58,16 +62,61 @@ class AirbyteValueToIcebergRecord {
                 return array
             }
             is BooleanValue -> return airbyteValue.value
-            is DateValue ->
-                throw IllegalArgumentException("String-based date types are not supported")
+            is DateValue -> return airbyteValue.value
             is IntegerValue -> return airbyteValue.value.toLong()
             is NullValue -> return null
             is NumberValue -> return airbyteValue.value.toDouble()
             is StringValue -> return airbyteValue.value
-            is TimeValue ->
-                throw IllegalArgumentException("String-based time types are not supported")
-            is TimestampValue ->
-                throw IllegalArgumentException("String-based timestamp types are not supported")
+            is TimeWithTimezoneValue ->
+                return when (type.typeId()) {
+                    Type.TypeID.TIME -> airbyteValue.value.toLocalTime()
+                    else ->
+                        throw IllegalArgumentException(
+                            "${type.typeId()} type is not allowed for TimeValue"
+                        )
+                }
+            is TimeWithoutTimezoneValue ->
+                return when (type.typeId()) {
+                    Type.TypeID.TIME -> airbyteValue.value
+                    else ->
+                        throw IllegalArgumentException(
+                            "${type.typeId()} type is not allowed for TimeValue"
+                        )
+                }
+            is TimestampWithTimezoneValue ->
+                return when (type.typeId()) {
+                    Type.TypeID.TIMESTAMP -> {
+                        val timestampType = type as TimestampType
+                        val offsetDateTime = airbyteValue.value
+
+                        if (timestampType.shouldAdjustToUTC()) {
+                            offsetDateTime
+                        } else {
+                            offsetDateTime.toLocalDateTime()
+                        }
+                    }
+                    else ->
+                        throw IllegalArgumentException(
+                            "${type.typeId()} type is not allowed for TimestampValue"
+                        )
+                }
+            is TimestampWithoutTimezoneValue ->
+                return when (type.typeId()) {
+                    Type.TypeID.TIMESTAMP -> {
+                        val timestampType = type as TimestampType
+                        val localDateTime = airbyteValue.value
+
+                        if (timestampType.shouldAdjustToUTC()) {
+                            localDateTime.atOffset(ZoneOffset.UTC)
+                        } else {
+                            localDateTime
+                        }
+                    }
+                    else ->
+                        throw IllegalArgumentException(
+                            "${type.typeId()} type is not allowed for TimestampValue"
+                        )
+                }
             is UnknownValue -> throw IllegalArgumentException("Unknown type is not supported")
         }
     }

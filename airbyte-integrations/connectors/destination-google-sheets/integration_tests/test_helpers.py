@@ -6,11 +6,13 @@
 import json
 from typing import Any, Mapping
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_google_sheets.client import GoogleSheetsClient
 from destination_google_sheets.helpers import ConnectionTest, get_spreadsheet_id, get_streams_from_catalog
 from destination_google_sheets.spreadsheet import GoogleSheets
 from pygsheets.client import Client as pygsheets_client
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
+
 
 # ----- PREPARE ENV -----
 
