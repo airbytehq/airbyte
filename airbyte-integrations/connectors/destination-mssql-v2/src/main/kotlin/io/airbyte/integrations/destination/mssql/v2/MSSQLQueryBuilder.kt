@@ -94,7 +94,7 @@ class MSSQLQueryBuilder(
         var airbyteMetaStatementIndex: Int? = null
         val airbyteMeta =
             AirbyteRecordMessageMeta().apply {
-                changes = mutableListOf()
+                changes = record.meta?.changes?.map { it.asProtocolObject() }?.toMutableList() ?: mutableListOf()
                 setAdditionalProperty("syncId", stream.syncId)
             }
 
