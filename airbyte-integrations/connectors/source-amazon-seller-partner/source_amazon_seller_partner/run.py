@@ -17,17 +17,6 @@ from source_amazon_seller_partner import SourceAmazonSellerPartner
 from source_amazon_seller_partner.config_migrations import MigrateAccountType, MigrateReportOptions, MigrateStreamNameOption
 
 
-def run():
-    source = SourceAmazonSellerPartner()
-    MigrateAccountType.migrate(sys.argv[1:], source)
-    MigrateReportOptions.migrate(sys.argv[1:], source)
-    MigrateStreamNameOption.migrate(sys.argv[1:], source)
-    launch(source, sys.argv[1:])
-
-
-
-
-
 def _get_source(args: List[str]):
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     config_path = AirbyteEntrypoint.extract_config(args)
@@ -57,6 +46,7 @@ def _get_source(args: List[str]):
             ).decode()
         )
         return None
+
 
 def run():
     init_uncaught_exception_handler(logger)
