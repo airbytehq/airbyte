@@ -55,6 +55,7 @@ abstract class IntegrationTest(
     val nameMapper: NameMapper = NoopNameMapper,
     /** See [RecordDiffer.nullEqualsUnset]. */
     val nullEqualsUnset: Boolean = false,
+    val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -267,6 +268,8 @@ abstract class IntegrationTest(
             outputStateMessage
         }
     }
+
+    fun updateConfig(config: String): String = configUpdater.update(config)
 
     companion object {
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")

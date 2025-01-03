@@ -41,9 +41,11 @@ import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
+import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
@@ -130,8 +132,18 @@ abstract class BasicFunctionalityIntegrationTest(
     val allTypesBehavior: AllTypesBehavior,
     val failOnUnknownTypes: Boolean = false,
     nullEqualsUnset: Boolean = false,
-) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper, nullEqualsUnset) {
-    val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
+    configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
+) :
+    IntegrationTest(
+        dataDumper = dataDumper,
+        destinationCleaner = destinationCleaner,
+        recordMangler = recordMangler,
+        nameMapper = nameMapper,
+        nullEqualsUnset = nullEqualsUnset,
+        configUpdater = configUpdater
+    ) {
+    val parsedConfig =
+        ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))
 
     @Test
     open fun testBasicWrite() {
