@@ -588,6 +588,11 @@ definitions:
             type:
               - "null"
               - string
+          description:
+            description: Description summary of the incident.
+            type:
+              - "null"
+              - string
           tinyId:
             description: Short identifier for the incident.
             type:
@@ -622,6 +627,11 @@ definitions:
               type: string
           priority:
             description: Priority level assigned to the incident.
+            type:
+              - "null"
+              - string
+          ownerTeam:
+            description: Owner team of the incident.
             type:
               - "null"
               - string
@@ -668,13 +678,45 @@ definitions:
                 type:
                   - "null"
                   - string
-          details:
-            description: Additional details or context related to the incident.
+          extraProperties:
+            description:
+              Map of key-value pairs of custom properties of the incident.
             type:
               - "null"
               - object
             properties: {}
             additionalProperties: true
+          links:
+            description: Links related to the incident data.
+            type:
+              - "null"
+              - object
+            properties:
+              web:
+                description: Web link related to the incident.
+                type:
+                  - "null"
+                  - string
+              api:
+                description: API link related to the incident.
+                type:
+                  - "null"
+                  - string
+          impactStartDate:
+            description: The timestamp when the impact started for the incident.
+            type:
+              - "null"
+              - string
+            format: date-time
+          actions:
+            description: List of actions related to the incident.
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties: {}
+              additionalProperties: true
           notifyStakeholders:
             description:
               Flag indicating whether stakeholders should be notified about
@@ -2689,6 +2731,11 @@ streams:
             type:
               - "null"
               - string
+          description:
+            description: Description summary of the incident.
+            type:
+              - "null"
+              - string
           tinyId:
             description: Short identifier for the incident.
             type:
@@ -2726,6 +2773,11 @@ streams:
             type:
               - "null"
               - string
+          ownerTeam:
+            description: Owner team of the incident.
+            type:
+              - "null"
+              - string
           responders:
             description: List of responders assigned to deal with the incident.
             type:
@@ -2752,7 +2804,9 @@ streams:
             items:
               type: string
           statusPageEntry:
-            description: Information related to the incident status on the status page.
+            description:
+              Information related to the incident status on the status
+              page.
             type:
               - "null"
               - object
@@ -2767,13 +2821,45 @@ streams:
                 type:
                   - "null"
                   - string
-          details:
-            description: Additional details or context related to the incident.
+          extraProperties:
+            description:
+              Map of key-value pairs of custom properties of the incident.
             type:
               - "null"
               - object
             properties: {}
             additionalProperties: true
+          links:
+            description: Links related to the incident data.
+            type:
+              - "null"
+              - object
+            properties:
+              web:
+                description: Web link related to the incident.
+                type:
+                  - "null"
+                  - string
+              api:
+                description: API link related to the incident.
+                type:
+                  - "null"
+                  - string
+          impactStartDate:
+            description: The timestamp when the impact started for the incident.
+            type:
+              - "null"
+              - string
+            format: date-time
+          actions:
+            description: List of actions related to the incident.
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties: {}
+              additionalProperties: true
           notifyStakeholders:
             description:
               Flag indicating whether stakeholders should be notified about
