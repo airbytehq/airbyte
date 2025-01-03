@@ -5,16 +5,21 @@
 package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.testcontainers.containers.MSSQLServerContainer
 
+val logger = KotlinLogging.logger {}
+
 /**
- * Helper class for launching/stopping MSSQL Server test containers, as well
- * as updating destination configuration to match test container configuration.
+ * Helper class for launching/stopping MSSQL Server test containers, as well as updating destination
+ * configuration to match test container configuration.
  */
 object MSSQLContainerHelper : ConfigurationUpdater {
 
     private val testContainer =
-        MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-latest").acceptLicense()
+        MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-latest")
+            .acceptLicense()
+            .withLogConsumer({ e -> logger.debug { e.utf8String } })
 
     fun start() {
         if (!testContainer.isRunning()) {
@@ -24,6 +29,7 @@ object MSSQLContainerHelper : ConfigurationUpdater {
     fun stop() {
         if (testContainer.isRunning()) {
             testContainer.stop()
+            testContainer.close()
         }
     }
     override fun update(config: String): String {
