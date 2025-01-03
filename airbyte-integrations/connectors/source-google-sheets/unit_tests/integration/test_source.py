@@ -635,6 +635,71 @@ class TestSourceRead(GoogleSheetsBaseTest):
             assert message in output.trace_messages
 
     @HttpMocker()
+    def test_when_read_stream_is_not_available_then_is_marked_incomplete(self, http_mocker: HttpMocker) -> None:
+        """
+        Configured catalog will include a streams that is not available in first row response, so it will be marked as incomplete.
+        """
+        base_file_name = "multiple_streams_schemas"
+        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, f"{base_file_name}_meta", 200)
+
+        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"{base_file_name}_{_STREAM_NAME}_range", 200)
+        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"{base_file_name}_{_B_STREAM_NAME}_range", 200, _B_STREAM_NAME)
+        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"{base_file_name}_{_C_STREAM_NAME}_range", 200, _C_STREAM_NAME)
+
+        GoogleSheetsBaseTest.get_stream_data(http_mocker, f"{base_file_name}_{_STREAM_NAME}_range_2")
+        GoogleSheetsBaseTest.get_stream_data(http_mocker, f"{base_file_name}_{_B_STREAM_NAME}_range_2", stream_name=_B_STREAM_NAME)
+
+        unavailable_stream = "unavailable_stream"
+        configured_catalog = (
+            CatalogBuilder()
+            .with_stream(
+                ConfiguredAirbyteStreamBuilder()
+                .with_name(_STREAM_NAME)
+                .with_json_schema({"properties": {"age": {"type": "string"}, "name": {"type": "string"}}})
+            )
+            .with_stream(
+                ConfiguredAirbyteStreamBuilder()
+                .with_name(_B_STREAM_NAME)
+                .with_json_schema({"properties": {"email": {"type": "string"}, "name": {"type": "string"}}})
+            )
+            .with_stream(
+                ConfiguredAirbyteStreamBuilder().with_name(unavailable_stream).with_json_schema({"properties": {"address": {"type": "string"}}})
+            )
+            .build()
+        )
+
+        output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
+        a_and_b_stream_records_count = 5
+        assert len(output.records) == a_and_b_stream_records_count
+
+        catalog_available_streams = [_STREAM_NAME, _B_STREAM_NAME]
+        assert len(output.state_messages) == len(catalog_available_streams)
+        state_messages_streams = []
+        for state_message in output.state_messages:
+            state_messages_streams.append(state_message.state.stream.stream_descriptor.name)
+
+        assert _STREAM_NAME in state_messages_streams
+        assert _B_STREAM_NAME in state_messages_streams
+
+        expected_messages = []
+        for current_stream in catalog_available_streams:
+            for current_status in [AirbyteStreamStatus.COMPLETE, AirbyteStreamStatus.RUNNING, AirbyteStreamStatus.STARTED]:
+                stream_descriptor = StreamDescriptor(name=current_stream, namespace=None)
+                stream_status = AirbyteStreamStatusTraceMessage(status=current_status, stream_descriptor=stream_descriptor)
+                airbyte_trace_message = AirbyteTraceMessage(type=TraceType.STREAM_STATUS, emitted_at=ANY, stream_status=stream_status)
+                airbyte_message = AirbyteMessage(type=Type.TRACE, trace=airbyte_trace_message)
+                expected_messages.append(airbyte_message)
+
+        stream_descriptor = StreamDescriptor(name=unavailable_stream, namespace=None)
+        stream_status = AirbyteStreamStatusTraceMessage(status=AirbyteStreamStatus.INCOMPLETE, stream_descriptor=stream_descriptor)
+        airbyte_trace_message = AirbyteTraceMessage(type=TraceType.STREAM_STATUS, emitted_at=ANY, stream_status=stream_status)
+        airbyte_message_incomplete_stream = AirbyteMessage(type=Type.TRACE, trace=airbyte_trace_message)
+        expected_messages.append(airbyte_message_incomplete_stream)
+        assert len(output.trace_messages) == len(expected_messages)
+        for message in expected_messages:
+            assert message in output.trace_messages
+
+    @HttpMocker()
     def test_when_read_then_status_and_state_messages_emitted(self, http_mocker: HttpMocker) -> None:
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta_2", 200)
         GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "read_records_range_2", 200)
@@ -701,10 +766,10 @@ class TestSourceRead(GoogleSheetsBaseTest):
         )
         assert output.errors[0].trace.error.message == expected_message
 
-    def _make_read_with_spreadsheet(self, http_mocker: HttpMocker, spreadsheet_id: str, spreadsheet_id_for_config: str):
-        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", spreadsheet_id=spreadsheet_id)
-        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "read_records_range", spreadsheet_id=spreadsheet_id)
-        GoogleSheetsBaseTest.get_stream_data(http_mocker, "read_records_range_with_dimensions", spreadsheet_id=spreadsheet_id)
+    def _make_read_with_spreadsheet(self, http_mocker: HttpMocker, spreadsheet_id_to_mock: str, spreadsheet_id_for_config: str):
+        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", spreadsheet_id=spreadsheet_id_to_mock)
+        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "read_records_range", spreadsheet_id=spreadsheet_id_to_mock)
+        GoogleSheetsBaseTest.get_stream_data(http_mocker, "read_records_range_with_dimensions", spreadsheet_id=spreadsheet_id_to_mock)
         first_property = "header_1"
         second_property = "header_2"
         configured_catalog = (
@@ -741,46 +806,47 @@ class TestSourceRead(GoogleSheetsBaseTest):
 
     @HttpMocker()
     def test_spreadsheet_url_with_edit_and_gid_in_path(self, http_mocker: HttpMocker) -> None:
-        spreadsheet_id = "18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q"
+        spreadsheet_id_to_mock = "18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q"
         spreadsheet_id_for_config = (
             "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q/edit#gid=1820065035"
         )
         self._make_read_with_spreadsheet(
-            http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config
+            http_mocker=http_mocker, spreadsheet_id_to_mock=spreadsheet_id_to_mock, spreadsheet_id_for_config=spreadsheet_id_for_config
         )
 
     @HttpMocker()
     def test_spreadsheet_url_with_edit_in_path(self, http_mocker: HttpMocker) -> None:
-        spreadsheet_id = "18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q"
+        spreadsheet_id_to_mock = "18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q"
         spreadsheet_id_for_config = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q/edit"
         self._make_read_with_spreadsheet(
-            http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config
+            http_mocker=http_mocker, spreadsheet_id_to_mock=spreadsheet_id_to_mock, spreadsheet_id_for_config=spreadsheet_id_for_config
         )
 
     @HttpMocker()
     def test_spreadsheet_path(self, http_mocker: HttpMocker) -> None:
-        spreadsheet_id = "18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
+        spreadsheet_id_to_mock = "18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
         spreadsheet_id_for_config = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/"
         self._make_read_with_spreadsheet(
-            http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config
+            http_mocker=http_mocker, spreadsheet_id_to_mock=spreadsheet_id_to_mock, spreadsheet_id_for_config=spreadsheet_id_for_config
         )
 
     @HttpMocker()
     def test_spreadsheet_url_with_pound_in_path(self, http_mocker: HttpMocker) -> None:
-        spreadsheet_id = "18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
+        spreadsheet_id_to_mock = "18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
         spreadsheet_id_for_config = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/#"
         self._make_read_with_spreadsheet(
-            http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config
+            http_mocker=http_mocker, spreadsheet_id_to_mock=spreadsheet_id_to_mock, spreadsheet_id_for_config=spreadsheet_id_for_config
         )
 
     @HttpMocker()
     def test_spreadsheet_id(self, http_mocker: HttpMocker) -> None:
-        spreadsheet_id = "18vWlVH8BfjGegwY_GdV1BjcPP9re66xI8uJK25dtY9Q"
+        spreadsheet_id_to_mock = "18vWlVH8BfjGegwY_GdV1BjcPP9re66xI8uJK25dtY9Q"
         spreadsheet_id_for_config = "18vWlVH8BfjGegwY_GdV1BjcPP9re66xI8uJK25dtY9Q"
         self._make_read_with_spreadsheet(
-            http_mocker=http_mocker, spreadsheet_id=spreadsheet_id, spreadsheet_id_for_config=spreadsheet_id_for_config
+            http_mocker=http_mocker, spreadsheet_id_to_mock=spreadsheet_id_to_mock, spreadsheet_id_for_config=spreadsheet_id_for_config
         )
 
     @pytest.mark.skip("Pending to do")
     def test_for_increase_batch_size_when_rate_limit(self):
         pass
+
