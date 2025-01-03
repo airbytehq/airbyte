@@ -208,13 +208,16 @@ class MySqlSourceOperations :
                 // chance of a row getting picked. This comes at a price of bias to the beginning
                 // of table on very large tables ( > 100s million of rows)
                 val greatestRate: String = 0.00005.toString()
+                // We only do a full count in case information schema contains no row count.
+                // This is the case for views.
+                val fullCount = "SELECT COUNT(*) FROM `$namespace`.`$name`"
                 // Quick approximation to "select count(*) from table" which doesn't require
                 // full table scan. However, note this could give delayed summary info about a table
                 // and thus a new table could be treated as empty despite we recently added rows.
                 // To prevent that from happening and resulted for skipping the table altogether,
                 // the minimum count is set to 10.
                 val quickCount =
-                    "SELECT GREATEST(10, table_rows) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'"
+                    "SELECT GREATEST(10, COALESCE(table_rows, ($fullCount))) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'"
                 val greatest = "GREATEST($greatestRate, $sampleSize / ($quickCount))"
                 // Rand returns a value between 0 and 1
                 val where = "WHERE RAND() < $greatest "
