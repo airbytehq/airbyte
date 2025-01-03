@@ -23,22 +23,20 @@ def get_connector_modified_files(connector: Connector, all_modified_files: Set[P
 
 def _is_connector_modified_directly(connector: Connector, modified_files: Set[Union[str, Path]]) -> bool:
     """Test if the connector is being impacted by file changes in the connector itself."""
-    result = False
     for file_path in modified_files:
         if _is_ignored_file(file_path):
             continue
 
         if Path(file_path).is_relative_to(Path(connector.code_directory)) or file_path == connector.documentation_file_path:
             main_logger.info(f"Adding connector '{connector}' due to connector file modification: {file_path}.")
-            result = True
+            return True
 
-    return result
+    return False
 
 
 def _is_connector_modified_indirectly(connector: Connector, modified_files: Set[Union[str, Path]]) -> bool:
     """Test if the connector is being impacted by file changes in the connector's dependencies."""
     connector_dependencies = connector.get_local_dependency_paths()
-    result = False
 
     for file_path in modified_files:
         if _is_ignored_file(file_path):
@@ -47,11 +45,9 @@ def _is_connector_modified_indirectly(connector: Connector, modified_files: Set[
         for connector_dependency in connector_dependencies:
             if Path(file_path).is_relative_to(Path(connector_dependency)):
                 main_logger.info(f"Adding connector '{connector}' due to dependency modification: '{file_path}'.")
-                result = True
-                # Exit inner loop to avoid spamming the logs with redundant messages.
-                break
+                return True
 
-    return result
+    return False
 
 
 def _is_ignored_file(file_path: Union[str, Path]) -> bool:
