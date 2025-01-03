@@ -65,40 +65,35 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         } else
             try {
                 when (schema) {
-                    is ObjectType -> mapObject(value as ObjectValue, schema, context)
+                    is ObjectType -> mapObject(value, schema, context)
                     is ObjectTypeWithoutSchema -> mapObjectWithoutSchema(value, schema, context)
                     is ObjectTypeWithEmptySchema -> mapObjectWithEmptySchema(value, schema, context)
-                    is ArrayType -> mapArray(value as ArrayValue, schema, context)
+                    is ArrayType -> mapArray(value, schema, context)
                     is ArrayTypeWithoutSchema -> mapArrayWithoutSchema(value, schema, context)
                     is UnionType -> mapUnion(value, schema, context)
-                    is BooleanType -> mapBoolean(value as BooleanValue, context)
-                    is NumberType -> mapNumber(value as NumberValue, context)
-                    is StringType -> mapString(value as StringValue, context)
-                    is IntegerType -> mapInteger(value as IntegerValue, context)
+                    is BooleanType -> mapBoolean(value, context)
+                    is NumberType -> mapNumber(value, context)
+                    is StringType -> mapString(value, context)
+                    is IntegerType -> mapInteger(value, context)
                     is DateType -> mapDate(value, context)
-                    is TimeTypeWithTimezone ->
-                        mapTimeWithTimezone(
-                            value,
-                            context,
-                        )
-                    is TimeTypeWithoutTimezone ->
-                        mapTimeWithoutTimezone(
-                            value,
-                            context,
-                        )
+                    is TimeTypeWithTimezone -> mapTimeWithTimezone(value, context)
+                    is TimeTypeWithoutTimezone -> mapTimeWithoutTimezone(value, context)
                     is TimestampTypeWithTimezone -> mapTimestampWithTimezone(value, context)
                     is TimestampTypeWithoutTimezone -> mapTimestampWithoutTimezone(value, context)
-                    is UnknownType -> mapUnknown(value as UnknownValue, context)
+                    is UnknownType -> mapUnknown(value, context)
                 }
             } catch (e: Exception) {
                 nulledOut(schema, context)
             }
 
     open fun mapObject(
-        value: ObjectValue,
+        value: AirbyteValue,
         schema: ObjectType,
         context: Context
     ): Pair<AirbyteValue, Context> {
+        if (value !is ObjectValue) {
+            return value to context
+        }
         val values = LinkedHashMap<String, AirbyteValue>()
         schema.properties.forEach { (name, field) ->
             values[name] =
@@ -125,10 +120,13 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapArray(
-        value: ArrayValue,
+        value: AirbyteValue,
         schema: ArrayType,
         context: Context
     ): Pair<AirbyteValue, Context> {
+        if (value !is ArrayValue) {
+            return value to context
+        }
         val mapped =
             value.values.mapIndexed { index, element ->
                 mapInner(
@@ -156,16 +154,16 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         context: Context
     ): Pair<AirbyteValue, Context> = value to context
 
-    open fun mapBoolean(value: BooleanValue, context: Context): Pair<AirbyteValue, Context> =
+    open fun mapBoolean(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 
-    open fun mapNumber(value: NumberValue, context: Context): Pair<AirbyteValue, Context> =
+    open fun mapNumber(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 
-    open fun mapString(value: StringValue, context: Context): Pair<AirbyteValue, Context> =
+    open fun mapString(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 
-    open fun mapInteger(value: IntegerValue, context: Context): Pair<AirbyteValue, Context> =
+    open fun mapInteger(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 
     /**
@@ -197,6 +195,6 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
 
     open fun mapNull(context: Context): Pair<AirbyteValue, Context> = NullValue to context
 
-    open fun mapUnknown(value: UnknownValue, context: Context): Pair<AirbyteValue, Context> =
+    open fun mapUnknown(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 }
