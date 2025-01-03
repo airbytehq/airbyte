@@ -1,13 +1,13 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING, Any, Mapping
 
 import dagger
 import semver
-import re
 import yaml  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME, PYPROJECT_FILE_NAME  # type: ignore
 
@@ -68,39 +68,34 @@ class SetConnectorVersion(StepModifyingFiles):
         return updated_connector_dir
 
     @staticmethod
-    async def _enable_progressive_rollout_in_metadata(connector_directory: dagger.Directory) -> dagger.Directory:
+    async def _enable_progressive_rollout_in_metadata(self, connector_directory: dagger.Directory) -> dagger.Directory:
         raw_metadata = await dagger_read_file(connector_directory, METADATA_FILE_NAME)
         current_metadata = yaml.safe_load(raw_metadata)
+        new_raw_metadata = raw_metadata
 
         # We use regex sub here instead of mutating the deserialized yaml to avoid messing up with the comments in the metadata file.
-        if releases := current_metadata.get("data", {}).get("releases") is not None:
-            if rollout_configuration := releases.get("rolloutConfiguration") is not None:
-                if progressive_rollout_enabled := rollout_configuration.get("enableProgressiveRollout") is not None:
-                    if progressive_rollout_enabled:
+        releases = current_metadata.get("data", {}).get("releases")
+        if releases is not None:
+            releases = current_metadata.get("data").get("releases")
+            rollout_configuration = releases.get("rolloutConfiguration")
+            if rollout_configuration is not None:
+                enable_progressive_rollout = rollout_configuration.get("enableProgressiveRollout")
+                if enable_progressive_rollout is not None:
+                    if enable_progressive_rollout:
                         return connector_directory
                     else:
-                        new_raw_metadata = re.sub(r"(enableProgressiveRollout:\s*)false", r"\1true\n", raw_metadata)
+                        new_raw_metadata = re.sub(r"(enableProgressiveRollout:\s*)false", r"\1true", raw_metadata)
                 else:
-                    new_raw_metadata = re.sub(
-                        r"(rolloutConfiguration:)",
-                        r"\1\nenableProgressiveRollout: true\n",
-                        raw_metadata
-                    )
+                    new_raw_metadata = re.sub(r"(rolloutConfiguration:)", r"\1\n      enableProgressiveRollout: true", raw_metadata)
             else:
                 new_raw_metadata = re.sub(
-                    r"(releases:)",
-                    r"\1\nrolloutConfiguration:\nenableProgressiveRollout: true\n",
-                    raw_metadata
+                    r"(releases:)", r"\1\n    rolloutConfiguration:\n      enableProgressiveRollout: true", raw_metadata
                 )
         else:
             new_raw_metadata = re.sub(
-                r"(name:)",
-                r"\1\nreleases:\nrolloutConfiguration:\nenableProgressiveRollout: true\n",
-                raw_metadata
+                r"(releaseStage:\s*.+)", r"\1\n  releases:\n    rolloutConfiguration:\n      enableProgressiveRollout: true", raw_metadata
             )
-
         updated_connector_dir = dagger_write_file(connector_directory, METADATA_FILE_NAME, new_raw_metadata)
-
         return updated_connector_dir
 
     @staticmethod
@@ -122,7 +117,9 @@ class SetConnectorVersion(StepModifyingFiles):
         original_connector_directory = self.modified_directory
         try:
             modified_directory = await self._set_version_in_metadata(self.new_version, original_connector_directory)
-            self.modified_directory = await self._enable_progressive_rollout_in_metadata(modified_directory) if "rc" in self.new_version else modified_directory
+            self.modified_directory = (
+                await self._enable_progressive_rollout_in_metadata(modified_directory) if "rc" in self.new_version else modified_directory
+            )
             self.modified_files.append(METADATA_FILE_NAME)
         except (FileNotFoundError, ConnectorVersionNotFoundError) as e:
             return StepResult(
