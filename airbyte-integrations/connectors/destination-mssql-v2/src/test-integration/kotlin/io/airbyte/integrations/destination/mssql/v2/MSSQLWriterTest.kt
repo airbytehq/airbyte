@@ -18,6 +18,7 @@ import io.airbyte.integrations.destination.mssql.v2.config.MSSQLSpecification
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import java.nio.file.Files
+import java.time.Instant
 import java.util.UUID
 
 abstract class MSSQLWriterTest(
@@ -64,10 +65,7 @@ class MSSQLDataDumper : DestinationDataDumper {
                                     UUID.fromString(it)
                                 },
                             extractedAt =
-                                rs.getTimestamp(MSSQLQueryBuilder.AIRBYTE_EXTRACTED_AT)
-                                    .toInstant()
-                                    // Weirdly with the MSSQL loop, we end up off by one
-                                    .minusMillis(-1),
+                                Instant.ofEpochMilli(rs.getLong(MSSQLQueryBuilder.AIRBYTE_EXTRACTED_AT)),
                             loadedAt = null,
                             generationId = rs.getLong(MSSQLQueryBuilder.AIRBYTE_GENERATION_ID),
                             data = objectValue,

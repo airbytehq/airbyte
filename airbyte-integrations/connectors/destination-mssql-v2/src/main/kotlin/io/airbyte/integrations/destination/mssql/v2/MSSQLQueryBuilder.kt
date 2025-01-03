@@ -45,7 +45,7 @@ class MSSQLQueryBuilder(
         val airbyteFinalTableFields =
             listOf(
                 NamedField(AIRBYTE_RAW_ID, FieldType(StringType, false)),
-                NamedField(AIRBYTE_EXTRACTED_AT, FieldType(TimestampTypeWithoutTimezone, false)),
+                NamedField(AIRBYTE_EXTRACTED_AT, FieldType(IntegerType, false)),
                 NamedField(AIRBYTE_META, FieldType(ObjectTypeWithoutSchema, false)),
                 NamedField(AIRBYTE_GENERATION_ID, FieldType(IntegerType, false)),
             )
@@ -105,9 +105,9 @@ class MSSQLQueryBuilder(
                     AIRBYTE_RAW_ID ->
                         statement.setString(statementIndex, UUID.randomUUID().toString())
                     AIRBYTE_EXTRACTED_AT ->
-                        statement.setTimestamp(
+                        statement.setLong(
                             statementIndex,
-                            Timestamp.from(Instant.ofEpochMilli(record.emittedAtMs))
+                            record.emittedAtMs
                         )
                     AIRBYTE_GENERATION_ID -> statement.setLong(statementIndex, stream.generationId)
                     AIRBYTE_META -> airbyteMetaStatementIndex = statementIndex
