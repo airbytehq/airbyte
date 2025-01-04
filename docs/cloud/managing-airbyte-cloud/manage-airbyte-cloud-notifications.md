@@ -14,8 +14,8 @@ This page provides guidance on how to manage notifications for Airbyte, allowing
 | **Successful Syncs**                              | A sync from any of your connections succeeds. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy            |
 | **Automated Connection Updates**                  | A connection is updated automatically (ex. a source schema is automatically updated)                                                                                      |
 | **Connection Updates Requiring Action**           | A connection update requires you to take action (ex. a breaking schema change is detected)                                                                                |
-| **Warning - Repeated Failures**                   | A connection will be disabled soon due to repeated failures. It has failed 50 times consecutively or there were only failed jobs in the past 7 days                       |
-| **Sync Disabled - Repeated Failures**             | A connection was automatically disabled due to repeated failures. It will be disabled when it has failed 100 times consecutively or has been failing for 14 days in a row |
+| **Warning - Repeated Failures**                   | A connection will be disabled soon due to repeated failures. It has failed 20 times consecutively and there were only failed jobs in the past 4 days                       |
+| **Sync Disabled - Repeated Failures**             | A connection was automatically disabled due to repeated failures. It will be disabled when it has failed 30 times consecutively and has been failing for 7 days in a row |
 | **Warning - Upgrade Required** (Cloud only)       | A new connector version is available and requires manual upgrade                                                                                                          |
 | **Sync Disabled - Upgrade Required** (Cloud only) | One or more connections were automatically disabled due to a connector upgrade deadline passing                                                                           |
 

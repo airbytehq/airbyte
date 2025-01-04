@@ -8,7 +8,9 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.protocol.models.Jsons
+import io.airbyte.cdk.load.util.deserializeToClass
+import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -21,6 +23,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -45,9 +48,9 @@ class DestinationMessageTest {
 
     private fun convert(
         factory: DestinationMessageFactory,
-        message: AirbyteMessage
+        message: AirbyteMessage,
     ): DestinationMessage {
-        val serialized = Jsons.serialize(message)
+        val serialized = message.serializeToString()
         return factory.fromAirbyteMessage(
             // We have to set some stuff in additionalProperties, so force the protocol model back
             // to a serialized representation and back.
@@ -56,7 +59,7 @@ class DestinationMessageTest {
             // whereas converting to JSON yields `{"foo": 12}`, which then deserializes back out
             // as `Int?`.
             // Fortunately, the protocol models are (by definition) round-trippable through JSON.
-            Jsons.deserialize(serialized, AirbyteMessage::class.java),
+            serialized.deserializeToClass(AirbyteMessage::class.java),
             serialized,
         )
     }
@@ -101,14 +104,13 @@ class DestinationMessageTest {
             // we represent the state message ID as a long, but jackson sees that 1234 can be Int,
             // and Int(1234) != Long(1234). (and additionalProperties is just a Map<String, Any?>)
             // So we just compare the serialized protocol messages.
-            Jsons.serialize(
-                inputMessage.also {
-                    it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0)
-                }
-            ),
-            Jsons.serialize(
-                parsedMessage.withDestinationStats(CheckpointMessage.Stats(3)).asProtocolMessage()
-            ),
+            inputMessage
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .serializeToString(),
+            parsedMessage
+                .withDestinationStats(CheckpointMessage.Stats(3))
+                .asProtocolMessage()
+                .serializeToString()
         )
     }
 
@@ -139,21 +141,20 @@ class DestinationMessageTest {
         val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
 
         Assertions.assertEquals(
-            Jsons.serialize(
-                inputMessage.also {
-                    it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0)
-                }
-            ),
-            Jsons.serialize(
-                parsedMessage.withDestinationStats(CheckpointMessage.Stats(3)).asProtocolMessage()
-            ),
+            inputMessage
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .serializeToString(),
+            parsedMessage
+                .withDestinationStats(CheckpointMessage.Stats(3))
+                .asProtocolMessage()
+                .serializeToString()
         )
     }
 
     companion object {
         private val descriptor = DestinationStream.Descriptor("namespace", "name")
-        private val blob1 = Jsons.deserialize("""{"foo": "bar"}""")
-        private val blob2 = Jsons.deserialize("""{"foo": "bar"}""")
+        private val blob1 = """{"foo": "bar"}""".deserializeToNode()
+        private val blob2 = """{"foo": "bar"}""".deserializeToNode()
 
         @JvmStatic
         fun roundTrippableMessages(): List<Arguments> =
@@ -223,8 +224,17 @@ class DestinationMessageTest {
                 .map { Arguments.of(it) }
 
         @JvmStatic
-        fun roundTrippableFileMessages(): List<Arguments> =
-            listOf(
+        fun roundTrippableFileMessages(): List<Arguments> {
+            val file =
+                mapOf(
+                    "file_url" to "file://foo/bar",
+                    "file_relative_path" to "foo/bar",
+                    "source_file_url" to "file://source/foo/bar",
+                    "modified" to 123L,
+                    "bytes" to 9001L,
+                )
+
+            return listOf(
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.RECORD)
                         .withRecord(
@@ -232,11 +242,7 @@ class DestinationMessageTest {
                                 .withStream("name")
                                 .withNamespace("namespace")
                                 .withEmittedAt(1234)
-                                .withAdditionalProperty("file_url", "file://foo/bar")
-                                .withAdditionalProperty("bytes", 9001L)
-                                .withAdditionalProperty("file_relative_path", "foo/bar")
-                                .withAdditionalProperty("modified", 123L)
-                                .withAdditionalProperty("source_file_url", "file://source/foo/bar")
+                                .withAdditionalProperty("file", file)
                         ),
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.TRACE)
@@ -276,5 +282,23 @@ class DestinationMessageTest {
                         ),
                 )
                 .map { Arguments.of(it) }
+        }
+    }
+
+    @Test
+    fun testNullStreamState() {
+        val inputMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(
+                            AirbyteStreamState().withStreamDescriptor(descriptor.asProtocolObject())
+                        )
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                )
+
+        assertDoesNotThrow { convert(factory(false), inputMessage) as StreamCheckpoint }
     }
 }

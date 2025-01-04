@@ -25,6 +25,7 @@ import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
+import io.airbyte.cdk.read.FieldValueChange
 import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
@@ -169,13 +170,20 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
         val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer> =
             mapOf(
                 stream.id to
-                    StreamRecordConsumer { recordData: ObjectNode, _ ->
-                        outputConsumer.accept(
-                            AirbyteRecordMessage()
-                                .withStream(stream.name)
-                                .withNamespace(stream.namespace)
-                                .withData(recordData)
-                        )
+                    object : StreamRecordConsumer {
+                        override val stream: Stream = this@CdcPartitionReaderTest.stream
+
+                        override fun accept(
+                            recordData: ObjectNode,
+                            changes: Map<Field, FieldValueChange>?
+                        ) {
+                            outputConsumer.accept(
+                                AirbyteRecordMessage()
+                                    .withStream(stream.name)
+                                    .withNamespace(stream.namespace)
+                                    .withData(recordData)
+                            )
+                        }
                     }
             )
         val reader =
@@ -245,6 +253,7 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     override fun deserialize(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
+        stream: Stream,
     ): DeserializedRecord {
         val id: Int = key.element("id").asInt()
         val after: Int? = value.after["v"]?.asInt()
@@ -257,11 +266,16 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
                 Update(id, after)
             }
         return DeserializedRecord(
-            streamID = stream.id,
             data = Jsons.valueToTree(record) as ObjectNode,
             changes = emptyMap(),
         )
     }
+
+    override fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
+        stream.id.namespace
+
+    override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
+        stream.id.name
 
     override fun serialize(debeziumState: DebeziumState): OpaqueStateValue =
         Jsons.valueToTree(
@@ -666,7 +680,8 @@ class CdcPartitionReaderMongoTest :
 
     override fun deserialize(
         key: DebeziumRecordKey,
-        value: DebeziumRecordValue
+        value: DebeziumRecordValue,
+        stream: Stream,
     ): DeserializedRecord {
         val id: Int = key.element("id").asInt()
         val record: Record =
@@ -691,7 +706,6 @@ class CdcPartitionReaderMongoTest :
                 }
             }
         return DeserializedRecord(
-            streamID = stream.id,
             data = Jsons.valueToTree(record),
             changes = emptyMap(),
         )

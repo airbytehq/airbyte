@@ -6,6 +6,7 @@ import pytest
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API
 
+
 NUMBER_OF_PROPERTIES = 2000
 
 
@@ -80,6 +81,16 @@ def some_credentials_fixture():
 @pytest.fixture(name="fake_properties_list")
 def fake_properties_list():
     return [f"property_number_{i}" for i in range(NUMBER_OF_PROPERTIES)]
+
+
+@pytest.fixture(name="migrated_properties_list")
+def migrated_properties_list():
+    return [
+        "hs_v2_date_entered_prospect",
+        "hs_v2_date_exited_prospect",
+        "hs_v2_cumulative_time_in_prsopect",
+        "hs_v2_some_other_property_in_prospect",
+    ]
 
 
 @pytest.fixture(name="api")

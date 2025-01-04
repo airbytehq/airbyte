@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.21"
+version = "0.2.25"
 name = "source-appsflyer"
 description = "Source implementation for Appsflyer."
 authors = [ "Airbyte <contact@airbyte.io>",]

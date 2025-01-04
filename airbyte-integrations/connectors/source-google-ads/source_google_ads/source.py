@@ -6,11 +6,12 @@
 import logging
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
+from pendulum import duration, parse, today
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from pendulum import duration, parse, today
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds

@@ -11,12 +11,14 @@ class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
         }
         /* Create a schema of { "type": "string", "<typename(option1)>": <type(option1)>, etc... } */
         val properties = linkedMapOf("type" to FieldType(StringType, nullable = false))
-        schema.options.forEach {
-            val name = typeName(it)
+        schema.options.forEach { unmappedType ->
+            /* Necessary because the type might contain a nested union that needs mapping to a disjoint record. */
+            val mappedType = map(unmappedType)
+            val name = typeName(mappedType)
             if (name in properties) {
                 throw IllegalArgumentException("Union of types with same name: $name")
             }
-            properties[typeName(it)] = FieldType(it, nullable = true)
+            properties[typeName(mappedType)] = FieldType(mappedType, nullable = true)
         }
         return ObjectType(properties)
     }
@@ -33,9 +35,9 @@ class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
                 is TimestampTypeWithoutTimezone -> "timestamp_without_timezone"
                 is TimeTypeWithTimezone -> "time_with_timezone"
                 is TimeTypeWithoutTimezone -> "time_without_timezone"
-                is ArrayType,
-                is ArrayTypeWithoutSchema -> "array"
-                is ObjectType,
+                is ArrayType -> "array"
+                is ObjectType -> "object"
+                is ArrayTypeWithoutSchema,
                 is ObjectTypeWithoutSchema,
                 is ObjectTypeWithEmptySchema -> "object"
                 is UnionType -> "union"
@@ -65,20 +67,20 @@ class UnionValueToDisjointRecord : AirbyteValueIdentityMapper() {
 
     private fun matches(schema: AirbyteType, value: AirbyteValue): Boolean {
         return when (schema) {
-            is ArrayType,
-            is ArrayTypeWithoutSchema -> value is ArrayValue
+            is StringType -> value is StringValue
             is BooleanType -> value is BooleanValue
-            is DateType -> value is DateValue
             is IntegerType -> value is IntegerValue
             is NumberType -> value is NumberValue
-            is ObjectType,
+            is ArrayType -> value is ArrayValue
+            is ObjectType -> value is ObjectValue
+            is ArrayTypeWithoutSchema,
             is ObjectTypeWithoutSchema,
-            is ObjectTypeWithEmptySchema -> value is ObjectValue
-            is StringType -> value is StringValue
+            is ObjectTypeWithEmptySchema -> value is StringValue
+            is DateType,
             is TimeTypeWithTimezone,
             is TimeTypeWithoutTimezone,
             is TimestampTypeWithTimezone,
-            is TimestampTypeWithoutTimezone -> value is TimeValue
+            is TimestampTypeWithoutTimezone -> value is IntegerValue
             is UnionType -> schema.options.any { matches(it, value) }
             is UnknownType -> false
         }

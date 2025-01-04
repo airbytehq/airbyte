@@ -3,6 +3,8 @@
 import json
 from unittest import TestCase, mock
 
+from source_github import SourceGithub
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -10,9 +12,9 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStreamStatus, Level, TraceType
-from source_github import SourceGithub
 
 from .config import ConfigBuilder
+
 
 _CONFIG = ConfigBuilder().with_repositories(["airbytehq/integration-test"]).build()
 

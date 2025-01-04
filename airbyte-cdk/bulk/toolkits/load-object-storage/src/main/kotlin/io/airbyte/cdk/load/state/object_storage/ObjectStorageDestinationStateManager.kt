@@ -13,12 +13,15 @@ import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.state.DestinationState
 import io.airbyte.cdk.load.state.DestinationStatePersister
+import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
+import io.airbyte.cdk.load.util.readIntoClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.nio.file.Paths
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
@@ -30,6 +33,7 @@ class ObjectStorageDestinationState(
     @JsonProperty("generations_by_state")
     var generationMap: MutableMap<State, MutableMap<Long, MutableMap<String, Long>>> =
         mutableMapOf(),
+    @JsonProperty("count_by_key") var countByKey: MutableMap<String, Long> = mutableMapOf()
 ) : DestinationState {
     enum class State {
         STAGED,
@@ -38,6 +42,9 @@ class ObjectStorageDestinationState(
 
     companion object {
         const val METADATA_GENERATION_ID_KEY = "ab-generation-id"
+        const val STREAM_NAMESPACE_KEY = "ab-stream-namespace"
+        const val STREAM_NAME_KEY = "ab-stream-name"
+        const val OPTIONAL_ORDINAL_SUFFIX_PATTERN = "(-[0-9]+)?"
 
         fun metadataFor(stream: DestinationStream): Map<String, String> =
             mapOf(METADATA_GENERATION_ID_KEY to stream.generationId.toString())
@@ -48,14 +55,14 @@ class ObjectStorageDestinationState(
     suspend fun addObject(
         generationId: Long,
         key: String,
-        partNumber: Long,
+        partNumber: Long?,
         isStaging: Boolean = false
     ) {
         val state = if (isStaging) State.STAGED else State.FINALIZED
         accessLock.withLock {
             generationMap
                 .getOrPut(state) { mutableMapOf() }
-                .getOrPut(generationId) { mutableMapOf() }[key] = partNumber
+                .getOrPut(generationId) { mutableMapOf() }[key] = partNumber ?: 0L
         }
     }
 
@@ -83,9 +90,8 @@ class ObjectStorageDestinationState(
         val partNumber: Long,
     )
 
-    @get:JsonIgnore
-    val generations: Sequence<Generation>
-        get() =
+    suspend fun getGenerations(): Sequence<Generation> =
+        accessLock.withLock {
             generationMap.entries
                 .asSequence()
                 .map { (state, gens) ->
@@ -99,6 +105,42 @@ class ObjectStorageDestinationState(
                     }
                 }
                 .flatten()
+        }
+
+    suspend fun getNextPartNumber(): Long =
+        getGenerations().flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
+
+    /** Returns generationId -> objectAndPart for all staged objects that should be kept. */
+    suspend fun getStagedObjectsToFinalize(
+        minimumGenerationId: Long
+    ): Sequence<Pair<Long, ObjectAndPart>> =
+        getGenerations()
+            .filter { it.isStaging && it.generationId >= minimumGenerationId }
+            .flatMap { it.objects.map { obj -> it.generationId to obj } }
+
+    /**
+     * Returns generationId -> objectAndPart for all objects (staged and unstaged) that should be
+     * cleaned up.
+     */
+    suspend fun getObjectsToDelete(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> {
+        val (toKeep, toDrop) = getGenerations().partition { it.generationId >= minimumGenerationId }
+        val keepKeys = toKeep.flatMap { it.objects.map { obj -> obj.key } }.toSet()
+        return toDrop.asSequence().flatMap {
+            it.objects.filter { obj -> obj.key !in keepKeys }.map { obj -> it.generationId to obj }
+        }
+    }
+
+    /** Used to guarantee the uniqueness of a key */
+    suspend fun ensureUnique(key: String): String {
+        val ordinal =
+            accessLock.withLock { countByKey.merge(key, 0L) { old, new -> maxOf(old + 1, new) } }
+                ?: 0L
+        return if (ordinal > 0L) {
+            "$key-$ordinal"
+        } else {
+            key
+        }
+    }
 }
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
@@ -107,26 +149,25 @@ class ObjectStorageStagingPersister(
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     private val log = KotlinLogging.logger {}
+    private val fallbackPersister = ObjectStorageFallbackPersister(client, pathFactory)
 
     companion object {
         const val STATE_FILENAME = "__airbyte_state.json"
     }
 
     private fun keyFor(stream: DestinationStream): String =
-        pathFactory.getStagingDirectory(stream).resolve(STATE_FILENAME).toString()
+        Paths.get(pathFactory.getStagingDirectory(stream), STATE_FILENAME).toString()
 
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
         val key = keyFor(stream)
         try {
             log.info { "Loading destination state from $key" }
             return client.get(key) { inputStream ->
-                Jsons.readTree(inputStream).let {
-                    Jsons.treeToValue(it, ObjectStorageDestinationState::class.java)
-                }
+                inputStream.readIntoClass(ObjectStorageDestinationState::class.java)
             }
         } catch (e: Exception) {
-            log.info { "No destination state found at $key: $e" }
-            return ObjectStorageDestinationState()
+            log.info { "No destination state found at $key: $e; falling back to metadata search" }
+            return fallbackPersister.load(stream)
         }
     }
 
@@ -140,13 +181,24 @@ class ObjectStorageFallbackPersister(
     private val client: ObjectStorageClient<*>,
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
+    private val log = KotlinLogging.logger {}
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
-        val prefix = pathFactory.prefix
-        val matcher = pathFactory.getPathMatcher(stream)
-        client
-            .list(prefix)
-            .mapNotNull { matcher.match(it.key) }
-            .toList()
+        // Add a suffix matching an OPTIONAL -[0-9]+ ordinal
+        val matcher =
+            pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
+        val longestUnambiguous =
+            pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
+        log.info {
+            "Searching path $longestUnambiguous (matching ${matcher.regex}) for destination state metadata"
+        }
+        val matches = client.list(longestUnambiguous).mapNotNull { matcher.match(it.key) }.toList()
+        val countByKey = mutableMapOf<String, Long>()
+        matches.forEach {
+            val key = it.path.replace(Regex("-[0-9]+$"), "")
+            val ordinal = it.customSuffix?.substring(1)?.toLongOrNull() ?: 0
+            countByKey.merge(key, ordinal) { a, b -> maxOf(a, b) }
+        }
+        matches
             .groupBy {
                 client
                     .getMetadata(it.path)[ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY]
@@ -158,8 +210,13 @@ class ObjectStorageFallbackPersister(
             }
             .toMutableMap()
             .let {
+                val generationSizes = it.map { gen -> gen.key to gen.value.size }
+                log.info {
+                    "Inferred state for generations with size: $generationSizes (minimum=${stream.minimumGenerationId}; current=${stream.generationId})"
+                }
                 return ObjectStorageDestinationState(
-                    mutableMapOf(ObjectStorageDestinationState.State.FINALIZED to it)
+                    mutableMapOf(ObjectStorageDestinationState.State.FINALIZED to it),
+                    countByKey
                 )
             }
     }
