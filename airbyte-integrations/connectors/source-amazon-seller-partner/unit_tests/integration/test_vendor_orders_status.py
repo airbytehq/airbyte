@@ -75,7 +75,9 @@ class TestFullRefresh:
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
-        http_mocker.get(_vendor_orders_status_request().build(), _vendor_orders_status_response().with_record(_order_status_record()).build())
+        http_mocker.get(
+            _vendor_orders_status_request().build(), _vendor_orders_status_response().with_record(_order_status_record()).build()
+        )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
         assert len(output.records) == 1
@@ -166,7 +168,9 @@ class TestIncremental:
     @HttpMocker()
     def test_when_read_then_add_cursor_field(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
-        http_mocker.get(_vendor_orders_status_request().build(), _vendor_orders_status_response().with_record(_order_status_record()).build())
+        http_mocker.get(
+            _vendor_orders_status_request().build(), _vendor_orders_status_response().with_record(_order_status_record()).build()
+        )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
         expected_cursor_value = _END_DATE.strftime(TIME_FORMAT)
