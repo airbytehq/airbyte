@@ -73,6 +73,7 @@ FullStory [API reference](https://api.fullstory.com) has v1 at present. The conn
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.5 | 2024-12-28 | [50587](https://github.com/airbytehq/airbyte/pull/50587) | Update dependencies |
 | 0.2.4 | 2024-12-21 | [50050](https://github.com/airbytehq/airbyte/pull/50050) | Update dependencies |
 | 0.2.3 | 2024-12-14 | [49524](https://github.com/airbytehq/airbyte/pull/49524) | Update dependencies |
 | 0.2.2 | 2024-12-12 | [49156](https://github.com/airbytehq/airbyte/pull/49156) | Update dependencies |
