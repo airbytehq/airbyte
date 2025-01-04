@@ -32,6 +32,7 @@ class NonDockerizedDestination(
     catalog: ConfiguredAirbyteCatalog?,
     useFileTransfer: Boolean,
     envVars: Map<String, String>,
+    additionalEnvironments: Array<out String>,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
@@ -73,6 +74,7 @@ class NonDockerizedDestination(
                 catalog = catalog,
                 inputStream = destinationStdin,
                 featureFlags = featureFlags,
+                additionalEnvironments = additionalEnvironments,
             )
     }
 
@@ -121,7 +123,8 @@ class NonDockerizedDestination(
     }
 }
 
-class NonDockerizedDestinationFactory : DestinationProcessFactory() {
+class NonDockerizedDestinationFactory(private val additionalEnvironments: Array<out String>) :
+    DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
         configContents: String?,
@@ -137,6 +140,7 @@ class NonDockerizedDestinationFactory : DestinationProcessFactory() {
             catalog,
             useFileTransfer,
             envVars,
+            additionalEnvironments,
             *featureFlags
         )
     }

@@ -68,10 +68,15 @@ abstract class DestinationProcessFactory {
     ): DestinationProcess
 
     companion object {
-        fun get(): DestinationProcessFactory =
+        /**
+         * @param nonDockerDefaultEnvironments The environments to launch the connector with, in
+         * non-docker mode. (in Docker mode, the connector is expected to launch itself with these
+         * environments)
+         */
+        fun get(nonDockerDefaultEnvironments: Array<out String>): DestinationProcessFactory =
             when (val runner = System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER")) {
                 null,
-                "non-docker" -> NonDockerizedDestinationFactory()
+                "non-docker" -> NonDockerizedDestinationFactory(nonDockerDefaultEnvironments)
                 "docker" -> {
                     val rawProperties: Map<String, Any?> =
                         YamlPropertySourceLoader()

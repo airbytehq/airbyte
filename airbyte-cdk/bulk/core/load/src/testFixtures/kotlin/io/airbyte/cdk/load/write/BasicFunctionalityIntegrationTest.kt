@@ -115,6 +115,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val promoteUnionToObject: Boolean,
     val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
+    additionalEnvironments: Array<out String> = emptyArray(),
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
      * example:
@@ -139,6 +140,7 @@ abstract class BasicFunctionalityIntegrationTest(
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = configUpdater,
         envVars = envVars,
+        additionalEnvironments = additionalEnvironments,
     ) {
     val parsedConfig =
         ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))

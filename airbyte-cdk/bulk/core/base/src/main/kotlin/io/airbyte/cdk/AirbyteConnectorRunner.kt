@@ -42,11 +42,20 @@ class AirbyteDestinationRunner(
     systemEnv: Map<String, String> = System.getenv(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
-) : AirbyteConnectorRunner("destination", args, systemEnv, testBeanDefinitions) {
+    additionalEnvironments: Array<out String> = emptyArray(),
+) :
+    AirbyteConnectorRunner(
+        "destination",
+        args,
+        systemEnv,
+        testBeanDefinitions,
+        additionalEnvironments
+    ) {
     companion object {
         @JvmStatic
-        fun run(vararg args: String) {
-            AirbyteDestinationRunner(args).run<AirbyteConnectorRunnable>()
+        fun run(vararg args: String, additionalEnvironments: Array<out String> = emptyArray()) {
+            AirbyteDestinationRunner(args, additionalEnvironments = additionalEnvironments)
+                .run<AirbyteConnectorRunnable>()
         }
     }
 }
@@ -60,6 +69,7 @@ sealed class AirbyteConnectorRunner(
     val args: Array<out String>,
     systemEnv: Map<String, String>,
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
+    val additionalEnvironments: Array<out String> = emptyArray(),
 ) {
     val envs: Array<String> =
         arrayOf(Environment.CLI, connectorType) +
@@ -90,6 +100,7 @@ sealed class AirbyteConnectorRunner(
                         )
                         .toTypedArray(),
                 )
+                .environments(*additionalEnvironments)
                 .beanDefinitions(*testBeanDefinitions)
                 .start()
         val isTest: Boolean = ctx.environment.activeNames.contains(Environment.TEST)

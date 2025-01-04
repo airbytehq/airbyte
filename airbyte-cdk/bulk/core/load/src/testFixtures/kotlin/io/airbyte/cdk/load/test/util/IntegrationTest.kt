@@ -57,11 +57,12 @@ abstract class IntegrationTest(
     val nullEqualsUnset: Boolean = false,
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val envVars: Map<String, String> = emptyMap(),
+    additionalEnvironments: Array<out String> = emptyArray(),
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
     // multiple times.
-    val destinationProcessFactory = DestinationProcessFactory.get()
+    val destinationProcessFactory = DestinationProcessFactory.get(additionalEnvironments)
 
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
