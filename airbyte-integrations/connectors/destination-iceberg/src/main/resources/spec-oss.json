@@ -144,6 +144,12 @@
                 "examples": ["username:password"],
                 "order": 2
               },
+              "rest_scope": {
+                "title": "OAuth2 Scope",
+                "type": "string",
+                "examples": ["PRINCIPAL:ALL"],
+                "order": 3
+              },
               "rest_token": {
                 "title": "A Bearer token which will be used for interaction with the server.",
                 "type": "string",
@@ -151,7 +157,7 @@
                 "examples": [
                   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
                 ],
-                "order": 3
+                "order": 4
               }
             }
           },

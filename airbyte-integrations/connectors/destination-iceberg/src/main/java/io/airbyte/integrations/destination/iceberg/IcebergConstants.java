@@ -29,6 +29,7 @@ public class IcebergConstants {
   public static final String JDBC_CATALOG_SCHEMA_CONFIG_KEY = "catalog_schema";
   public static final String REST_CATALOG_URI_CONFIG_KEY = "rest_uri";
   public static final String REST_CATALOG_CREDENTIAL_CONFIG_KEY = "rest_credential";
+  public static final String REST_CATALOG_SCOPE_CONFIG_KEY = "rest_scope";
   public static final String REST_CATALOG_TOKEN_CONFIG_KEY = "rest_token";
 
   /**

@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.iceberg.config.catalog;
 
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.CATALOG_NAME;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.REST_CATALOG_CREDENTIAL_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.REST_CATALOG_SCOPE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.REST_CATALOG_TOKEN_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.REST_CATALOG_URI_CONFIG_KEY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -31,14 +32,17 @@ public class RESTCatalogConfig
 
   private final String uri;
   private final String credential;
+  private final String scope;
   private final String token;
 
   public RESTCatalogConfig(@NotNull JsonNode catalogConfig) {
     Preconditions.checkArgument(null != catalogConfig.get(REST_CATALOG_URI_CONFIG_KEY), "%s is required", REST_CATALOG_URI_CONFIG_KEY);
     this.uri = catalogConfig.get(REST_CATALOG_URI_CONFIG_KEY).asText();
     JsonNode credentialNode = catalogConfig.get(REST_CATALOG_CREDENTIAL_CONFIG_KEY);
+    JsonNode scopeNode = catalogConfig.get(REST_CATALOG_SCOPE_CONFIG_KEY);
     JsonNode tokenNode = catalogConfig.get(REST_CATALOG_TOKEN_CONFIG_KEY);
     this.credential = null != credentialNode ? credentialNode.asText() : null;
+    this.scope = null != scopeNode ? scopeNode.asText() : null;
     this.token = null != tokenNode ? tokenNode.asText() : null;
   }
 
@@ -55,6 +59,9 @@ public class RESTCatalogConfig
 
     if (isNotBlank(this.credential)) {
       configMap.put("spark.sql.catalog." + CATALOG_NAME + ".credential", this.credential);
+    }
+    if (isNotBlank(this.scope)) {
+      configMap.put("spark.sql.catalog." + CATALOG_NAME + ".scope", this.scope);
     }
     if (isNotBlank(this.token)) {
       configMap.put("spark.sql.catalog." + CATALOG_NAME + ".token", this.token);
@@ -74,6 +81,9 @@ public class RESTCatalogConfig
     }
     if (isNotBlank(this.token)) {
       properties.put(OAuth2Properties.TOKEN, this.token);
+    }
+    if (isNotBlank(this.scope)) {
+      properties.put(OAuth2Properties.SCOPE, this.scope);
     }
     properties.put(CatalogProperties.WAREHOUSE_LOCATION, this.storageConfig.getWarehouseUri());
     catalog.initialize(CATALOG_NAME, properties);
