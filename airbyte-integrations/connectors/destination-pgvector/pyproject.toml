@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-pgvector"
-version = "0.1.1"
+version = "0.1.2"
 description = "Airbyte destination implementation for PGVector."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
