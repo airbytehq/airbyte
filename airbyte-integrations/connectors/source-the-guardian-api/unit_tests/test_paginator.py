@@ -5,6 +5,8 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 
+from airbyte_cdk.sources.types import Record
+
 
 def create_response(current_page: int, total_pages: int) -> requests.Response:
     """Helper function to create mock responses"""
@@ -14,17 +16,17 @@ def create_response(current_page: int, total_pages: int) -> requests.Response:
 
 
 @pytest.mark.parametrize(
-    "current_page,total_pages,expected_next_page",
+    "current_page,total_pages,expected_next_page,expected_next_next_page",
     [
-        (1, 5, 2),  # First page
-        (2, 5, 3),  # Middle page
-        (4, 5, 5),  # Second to last page
-        (5, 5, None),  # Last page
-        (1, 1, None),  # Single page
+        (1, 5, 2, 3),  # First page
+        (2, 5, 3, 4),  # Middle page
+        (4, 5, 5, 6),  # Second to last page
+        (5, 5, None, None),  # Last page
+        (1, 1, None, None),  # Single page
     ],
     ids=["First page", "Middle page", "Penultimate page", "Last page", "Single page"],
 )
-def test_page_increment(connector_dir, components_module, current_page, total_pages, expected_next_page):
+def test_page_increment(components_module, current_page, total_pages, expected_next_page, expected_next_next_page):
     """Test the CustomPageIncrement pagination for various page combinations"""
 
     CustomPageIncrement = components_module.CustomPageIncrement
@@ -32,34 +34,31 @@ def test_page_increment(connector_dir, components_module, current_page, total_pa
     config = {}
     page_size = 10
     parameters = {}
-    paginator = CustomPageIncrement(config, page_size, parameters)
+    pagination_strategy = CustomPageIncrement(config, page_size, parameters)
 
-    # Set internal page counter to match current_page
-    paginator._page = current_page
+    initial_token = pagination_strategy.initial_token
+    assert initial_token is None
 
     mock_response = create_response(current_page, total_pages)
-    next_page = paginator.next_page_token(mock_response)
+    next_page = pagination_strategy.next_page_token(
+        response=mock_response, last_page_size=5, last_record=Record(data={}, stream_name="test"), last_page_token_value=current_page
+    )
     assert next_page == expected_next_page, f"Page {current_page} of {total_pages} should get next_page={expected_next_page}"
 
+    if expected_next_next_page:
+        next_page = pagination_strategy.next_page_token(
+            response=mock_response, last_page_size=7, last_record=Record(data={}, stream_name="test"), last_page_token_value=next_page
+        )
+        assert next_page == expected_next_next_page, f"Page {current_page} of {total_pages} should get next_page={expected_next_next_page}"
 
-def test_reset_functionality(components_module):
-    """Test the reset behavior of CustomPageIncrement"""
+
+def test_incoming_last_page_token_value_is_none(components_module):
+    mock_response = create_response(0, 5)
+
     CustomPageIncrement = components_module.CustomPageIncrement
+    pagination_strategy = CustomPageIncrement({}, 10, {})
+    actual_next_page = pagination_strategy.next_page_token(
+        response=mock_response, last_page_size=5, last_record=Record(data={}, stream_name="test"), last_page_token_value=None
+    )
 
-    config = {}
-    page_size = 10
-    parameters = {}
-    paginator = CustomPageIncrement(config, page_size, parameters)
-
-    # Advance a few pages
-    mock_response = create_response(current_page=1, total_pages=5)
-    paginator.next_page_token(mock_response)
-    paginator.next_page_token(create_response(current_page=2, total_pages=5))
-
-    # Test reset
-    paginator.reset()
-    assert paginator._page == 1, "Reset should set page back to 1"
-
-    # Verify pagination works after reset
-    next_page = paginator.next_page_token(mock_response)
-    assert next_page == 2, "Should increment to page 2 after reset"
+    assert actual_next_page == 1  # guardian API starts at page 0
