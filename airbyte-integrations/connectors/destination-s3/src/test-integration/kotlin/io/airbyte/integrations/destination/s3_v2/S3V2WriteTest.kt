@@ -37,6 +37,7 @@ abstract class S3V2WriteTest(
         S3V2DataDumper,
         NoopDestinationCleaner,
         expectedRecordMapper,
+        additionalEnvironments = S3V2Destination.ENVIRONMENTS,
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
         stringifySchemalessObjects = stringifySchemalessObjects,

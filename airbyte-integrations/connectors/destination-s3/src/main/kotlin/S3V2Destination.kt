@@ -8,9 +8,10 @@ import io.airbyte.cdk.AirbyteDestinationRunner
 
 class S3V2Destination {
     companion object {
+        val ENVIRONMENTS = arrayOf("s3")
         @JvmStatic
         fun main(args: Array<String>) {
-            AirbyteDestinationRunner.run(*args)
+            AirbyteDestinationRunner.run(*args, additionalEnvironments = ENVIRONMENTS)
         }
     }
 }
