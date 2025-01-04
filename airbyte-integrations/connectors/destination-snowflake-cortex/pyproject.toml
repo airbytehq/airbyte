@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-snowflake-cortex"
-version = "0.2.22"
+version = "0.2.23"
 description = "Airbyte destination implementation for Snowflake cortex."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
