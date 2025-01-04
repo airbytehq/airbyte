@@ -56,7 +56,7 @@ class SchemalessValuesToJsonString : AirbyteValueIdentityMapper() {
         context: Context
     ): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
-    override fun mapUnknown(value: UnknownValue, context: Context): Pair<AirbyteValue, Context> =
+    override fun mapUnknown(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
 
     override fun mapUnion(

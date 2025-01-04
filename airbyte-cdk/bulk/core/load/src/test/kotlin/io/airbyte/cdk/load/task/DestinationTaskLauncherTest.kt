@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTask
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
+import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.task.implementor.OpenStreamTask
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
@@ -153,7 +154,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
                 MessageQueueSupplier<
                     DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
             checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-            destinationTaskLauncher: DestinationTaskLauncher
+            destinationTaskLauncher: DestinationTaskLauncher,
+            fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
         ): InputConsumerTask {
             return object : InputConsumerTask {
                 override suspend fun execute() {
