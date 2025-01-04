@@ -40,7 +40,7 @@ stringData:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: airbyte-config-secrets
+  name: airbyte-abctl-gcs-log-creds
 type: Opaque
 stringData:
   gcp.json: ## {
@@ -112,7 +112,7 @@ Ensure you've already created a Kubernetes secret containing the credentials blo
 global:
   secretsManager:
     type: googleSecretManager
-    secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
+    secretName: "airbyte-abctl-gcs-log-creds" # Name of your Kubernetes secret.
     googleSecretManager:
       projectId: <project-id>
       credentialsSecretKey: gcp.json
