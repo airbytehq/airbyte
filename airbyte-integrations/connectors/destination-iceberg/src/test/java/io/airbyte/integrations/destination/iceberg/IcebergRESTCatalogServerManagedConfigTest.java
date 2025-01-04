@@ -30,6 +30,7 @@ class IcebergRESTCatalogServerManagedConfigTest {
   private static final String FAKE_WAREHOUSE_NAME = "fake-warehouse";
   private static final String FAKE_REST_URI = "http://fake-rest-uri";
   private static final String FAKE_CREDENTIAL = "fake-credential";
+  private static final String FAKE_SCOPE = "fake-scope";
   private static final String FAKE_TOKEN = "fake-token";
 
   private RESTCatalogConfig config;
@@ -38,6 +39,7 @@ class IcebergRESTCatalogServerManagedConfigTest {
   void setup() {
     JsonNode jsonNode = Jsons.jsonNode(ofEntries(entry(IcebergConstants.REST_CATALOG_URI_CONFIG_KEY, FAKE_REST_URI),
         entry(IcebergConstants.REST_CATALOG_CREDENTIAL_CONFIG_KEY, FAKE_CREDENTIAL),
+        entry(IcebergConstants.REST_CATALOG_SCOPE_CONFIG_KEY, FAKE_SCOPE),
         entry(IcebergConstants.REST_CATALOG_TOKEN_CONFIG_KEY, FAKE_TOKEN)));
 
     config = new RESTCatalogConfig(jsonNode);
@@ -54,6 +56,7 @@ class IcebergRESTCatalogServerManagedConfigTest {
                                                                                      "catalog_config": {
                                                                                        "catalog_type": "REST",
                                                                                        "rest_credential": "fake-credential",
+                                                                                       "rest_scope": "fake-scope",
                                                                                        "rest_token": "fake-token",
                                                                                        "database": "test"
                                                                                      },
@@ -79,6 +82,7 @@ class IcebergRESTCatalogServerManagedConfigTest {
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.catalog-impl")).isEqualTo(RESTCatalog.class.getName());
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.uri")).isEqualTo(FAKE_REST_URI);
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.credential")).isEqualTo(FAKE_CREDENTIAL);
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.scope")).isEqualTo(FAKE_SCOPE);
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.token")).isEqualTo(FAKE_TOKEN);
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg")).isEqualTo(SparkCatalog.class.getName());
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.warehouse")).isEqualTo(FAKE_WAREHOUSE_NAME);
