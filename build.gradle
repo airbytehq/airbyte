@@ -9,6 +9,7 @@ plugins {
     id 'com.github.spotbugs' version '6.0.7'
     id 'org.jetbrains.kotlin.jvm' version '2.0.0'
     id 'com.google.devtools.ksp' version '2.0.0-1.0.24'
+    id 'com.diffplug.spotless' version '6.0.0'
 }
 
 allprojects {
@@ -234,5 +235,46 @@ allprojects {
 
     javadoc {
         options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
+spotless {
+    java {
+        googleJavaFormat('4.21') // Use the desired version of Google Java Format
+        target 'src/**/*.java'
+        exclude '**/generated/**/*'
+        exclude '**/other_generated/**/*'
+        importOrder() // Match the import order configuration
+        eclipse {
+            version '4.21'
+            file 'tools/gradle/codestyle/java-google-style.xml'
+        }
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    kotlin {
+        ktlint('0.39') // Use the desired version of ktlint
+        target 'src/**/*.kt'
+        exclude '**/generated/**/*'
+        // Match the KTFmt configuration
+        ktfmt {
+            version '0.39'
+            style 'KOTLINLANG'
+        }
+    }
+    groovy {
+        includes {
+            include '**/*.gradle'
+        }
+        importOrder()
+        removeSemicolons()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    format 'misc', {
+        target '**/*.gradle', '**/*.md', '**/*.yaml', '**/*.yml'
+        prettier().config(['tabWidth': 4, 'useTabs': false])
+        exclude '**/generated/**/*'
     }
 }
