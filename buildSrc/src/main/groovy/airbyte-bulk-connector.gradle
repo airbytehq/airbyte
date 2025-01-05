@@ -68,6 +68,7 @@ class AirbyteBulkConnectorExtension {
         // Use a temporary configuration to find the Micronaut version
         // in the transitive dependencies of the Bulk CDK base.
         def tempConfiguration = project.configurations.detachedConfiguration()
+        // NOTE: I think this is failing: ("Could not get unknown property 'first' for project of type org.gradle.api.Project.")
         def baseDependency = (cdk == "local")
                 ? project.dependencies.create(fromSource.first)
                 : project.dependencies.create(fromJar.first)

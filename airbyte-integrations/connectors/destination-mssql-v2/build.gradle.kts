@@ -10,7 +10,7 @@ plugins {
 airbyteBulkConnector {
     core = "load"
     toolkits = listOf()
-    cdk = "local"
+    // cdk = "local"
 }
 
 application {

@@ -6,7 +6,7 @@ plugins {
 airbyteBulkConnector {
     core = 'load'
     toolkits = ['load-iceberg-parquet']
-    cdk = 'local'
+    // cdk = 'local'
 }
 
 application {
