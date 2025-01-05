@@ -245,41 +245,35 @@ subprojects { subproject ->
     spotless {
         java {
             googleJavaFormat()  // TODO: Pin version here
-            target 'src/**/*.java'
-            targetExclude '**/generated/**/*'
-            targetExclude '**/other_generated/**/*'
+            target '**/*.java'
+            targetExclude '**/non_formatted_code/*'
             importOrder() // Match the import order configuration
-            // eclipse {
-            //     version '4.21'
-            //     file 'tools/gradle/codestyle/java-google-style.xml'
-            // }
+            eclipse().configFile("${rootDir}/tools/gradle/codestyle/java-google-style.xml")
             removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+        groovy {
+            target '**/*.gradle'
+            importOrder()
+            // removeSemicolons()  # No signature of method: com.diffplug.gradle.spotless.GroovyExtension.removeSemicolons() is applicable for argument types: () values: []
             trimTrailingWhitespace()
             endWithNewline()
         }
         kotlin {
             ktlint()  // TODO: Pin version here
-            target 'src/**/*.kt'
-            targetExclude '**/generated/**/*'
+            target '**/*.kt'
+            targetExclude '**/non_formatted_code/**/*'
             // Match the KTFmt configuration
             ktfmt()
             //     version '0.39'
             //     style 'KOTLINLANG'
             // }
         }
-        groovy {
-            // includes {
-            //     include '**/*.gradle'
-            // }
-            importOrder()
-            // removeSemicolons()
-            trimTrailingWhitespace()
-            endWithNewline()
-        }
-        format 'misc', {
-            target '**/*.gradle', '**/*.md', '**/*.yaml', '**/*.yml'
-            prettier().config(['tabWidth': 4, 'useTabs': false])
-            targetExclude '**/generated/**/*'
-        }
+        // format 'misc', {
+        //     target '**/*.gradle', '**/*.md', '**/*.yaml', '**/*.yml'
+        //     prettier().config(['tabWidth': 4, 'useTabs': false])
+        //     targetExclude '**/generated/**/*'
+        // }
     }
 }
