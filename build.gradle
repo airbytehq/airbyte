@@ -256,7 +256,6 @@ subprojects { subproject ->
         groovy {
             target '**/*.gradle'
             importOrder()
-            // removeSemicolons()  # No signature of method: com.diffplug.gradle.spotless.GroovyExtension.removeSemicolons() is applicable for argument types: () values: []
             trimTrailingWhitespace()
             endWithNewline()
         }
@@ -264,11 +263,7 @@ subprojects { subproject ->
             ktlint()  // TODO: Pin version here
             target '**/*.kt'
             targetExclude '**/non_formatted_code/**/*'
-            // Match the KTFmt configuration
-            ktfmt()
-            //     version '0.39'
-            //     style 'KOTLINLANG'
-            // }
+            ktfmt("0.39")
         }
         // format 'misc', {
         //     target '**/*.gradle', '**/*.md', '**/*.yaml', '**/*.yml'
