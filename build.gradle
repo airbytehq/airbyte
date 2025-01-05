@@ -9,7 +9,7 @@ plugins {
     id 'com.github.spotbugs' version '6.0.7'
     id 'org.jetbrains.kotlin.jvm' version '2.0.0'
     id 'com.google.devtools.ksp' version '2.0.0-1.0.24'
-    id 'com.diffplug.spotless' version '6.0.0'
+    id 'com.diffplug.spotless' version '6.13.0'
 }
 
 allprojects {
@@ -19,8 +19,8 @@ allprojects {
     apply plugin: 'com.github.spotbugs'
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'com.google.devtools.ksp'
+    // apply plugin: 'com.diffplug.spotless'
     apply plugin: 'idea'
-
 
     // By default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
@@ -238,43 +238,48 @@ allprojects {
     }
 }
 
-spotless {
-    java {
-        googleJavaFormat('4.21') // Use the desired version of Google Java Format
-        target 'src/**/*.java'
-        exclude '**/generated/**/*'
-        exclude '**/other_generated/**/*'
-        importOrder() // Match the import order configuration
-        eclipse {
-            version '4.21'
-            file 'tools/gradle/codestyle/java-google-style.xml'
+subprojects { subproject ->
+    apply plugin: 'groovy'
+    apply plugin: 'com.diffplug.spotless'
+
+    spotless {
+        java {
+            googleJavaFormat()  // TODO: Pin version here
+            target 'src/**/*.java'
+            targetExclude '**/generated/**/*'
+            targetExclude '**/other_generated/**/*'
+            importOrder() // Match the import order configuration
+            // eclipse {
+            //     version '4.21'
+            //     file 'tools/gradle/codestyle/java-google-style.xml'
+            // }
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
         }
-        removeUnusedImports()
-        trimTrailingWhitespace()
-        endWithNewline()
-    }
-    kotlin {
-        ktlint('0.39') // Use the desired version of ktlint
-        target 'src/**/*.kt'
-        exclude '**/generated/**/*'
-        // Match the KTFmt configuration
-        ktfmt {
-            version '0.39'
-            style 'KOTLINLANG'
+        kotlin {
+            ktlint()  // TODO: Pin version here
+            target 'src/**/*.kt'
+            targetExclude '**/generated/**/*'
+            // Match the KTFmt configuration
+            ktfmt()
+            //     version '0.39'
+            //     style 'KOTLINLANG'
+            // }
         }
-    }
-    groovy {
-        includes {
-            include '**/*.gradle'
+        groovy {
+            // includes {
+            //     include '**/*.gradle'
+            // }
+            importOrder()
+            // removeSemicolons()
+            trimTrailingWhitespace()
+            endWithNewline()
         }
-        importOrder()
-        removeSemicolons()
-        trimTrailingWhitespace()
-        endWithNewline()
-    }
-    format 'misc', {
-        target '**/*.gradle', '**/*.md', '**/*.yaml', '**/*.yml'
-        prettier().config(['tabWidth': 4, 'useTabs': false])
-        exclude '**/generated/**/*'
+        format 'misc', {
+            target '**/*.gradle', '**/*.md', '**/*.yaml', '**/*.yml'
+            prettier().config(['tabWidth': 4, 'useTabs': false])
+            targetExclude '**/generated/**/*'
+        }
     }
 }
