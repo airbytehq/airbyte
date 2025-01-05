@@ -1,9 +1,8 @@
 import logging
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, Optional, MutableMapping  # Added MutableMapping
-from datetime import datetime
-
-from airbyte_cdk.sources.streams import Stream
+from datetime import datetime, timedelta
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
 from .base import BaseAwsClient
 
@@ -180,10 +179,12 @@ class AccessKeysStream(ParentChildIamStream):
             logger.error(f"Error in read_records: {str(e)}")
             yield from []
 
-class CloudTrailEventsStream(BaseIamStream):
+class CloudTrailEventsStream(BaseIamStream, IncrementalMixin):
     primary_key = "EventId"
     name = "cloudtrail_events"
     max_items_per_page = 50
+    state_checkpoint_interval = 1000
+    _cursor_value = None
 
     AUTH_EVENT_NAMES = {
         "AssumeRole",
@@ -207,16 +208,14 @@ class CloudTrailEventsStream(BaseIamStream):
         return "EventTime"
 
     @property
-    def state(self) -> MutableMapping[str, Any]:
-        return self._state
+    def state(self) -> Mapping[str, Any]:
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        return {}
 
     @state.setter
-    def state(self, value: MutableMapping[str, Any]) -> None:
-        self._state = value or {}
-
-    def __init__(self, config: Mapping[str, Any]):
-        super().__init__(config)
-        self._state = {}
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = value.get(self.cursor_field)
 
     def next_page_token(self, response: Dict[str, Any]) -> Optional[Mapping[str, Any]]:
         next_token = response.get('NextToken')
@@ -225,39 +224,47 @@ class CloudTrailEventsStream(BaseIamStream):
         return None
 
     def get_lookup_attributes(self, stream_state: Mapping[str, Any]) -> Dict:
-        attrs = {}
-        start_time_str = stream_state.get("EventTime") or self.config.get('provider', {}).get('start_time')
+        start_time_str = stream_state.get(self.cursor_field)
+        if not start_time_str:
+            start_time = datetime.utcnow() - timedelta(days=1)
+            start_time_str = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        if start_time_str:
-            try:
-                attrs['StartTime'] = datetime.strptime(start_time_str, "%Y-%m-%dT%H:%M:%SZ")
-            except Exception as e:
-                logger.error(f"Error parsing StartTime from stream_state or config: {e}")
-        else:
-            logger.warning("No StartTime found in stream_state or config, defaulting to no start time")
-
-        logger.info(f"CloudTrail lookup attributes - StartTime: {attrs.get('StartTime')}")
-        return attrs
+        try:
+            return {'StartTime': datetime.strptime(start_time_str, "%Y-%m-%dT%H:%M:%SZ")}
+        except ValueError as e:
+            logger.error(f"Error parsing start time {start_time_str}: {e}")
+            raise
 
     def is_auth_event(self, event: Dict[str, Any]) -> bool:
         event_name = event.get('EventName')
         return event_name in self.AUTH_EVENT_NAMES
 
-    def read_records(self, sync_mode: str, cursor_field: List[str] = None,
-                     stream_slice: Mapping[str, Any] = None,
-                     stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+            self, sync_mode: str, cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
         try:
             stream_state = stream_state or {}
             lookup_attrs = self.get_lookup_attributes(stream_state)
-            paginator = self.cloudtrail_client.get_paginator('lookup_events')
+            latest_cursor_value = stream_state.get(self.cursor_field)
 
+            paginator = self.cloudtrail_client.get_paginator('lookup_events')
             for page in paginator.paginate(**lookup_attrs):
                 for event in page.get('Events', []):
-                    if self.is_auth_event(event):
-                        yield event
+                    if not self.is_auth_event(event):
+                        continue
+
+                    event_time = event.get('EventTime')
+                    event_time_str = event_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+                    event['EventTime'] = event_time_str
+
+                    yield event
+                    latest_cursor_value = max(latest_cursor_value or "", event_time_str)
+
+            if latest_cursor_value:
+                self.state = {self.cursor_field: latest_cursor_value}
         except Exception as e:
-            logger.error(f"Error fetching CloudTrail events: {str(e)}", exc_info=True)
-            yield from []
+            logger.error(f"Error fetching CloudTrail events: {str(e)}")
 
 class AccessAnalyzersStream(BaseIamStream):
     primary_key = "arn"
