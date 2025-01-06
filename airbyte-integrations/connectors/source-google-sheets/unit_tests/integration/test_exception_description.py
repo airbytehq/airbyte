@@ -167,7 +167,7 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
         with patch("time.sleep"):
             output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
 
-        expected_message = f"Exception while syncing stream {_STREAM_NAME}: {exception_description_by_status_code(status_codes.TOO_MANY_REQUESTS, _STREAM_NAME)}"
+        expected_message = f"{exception_description_by_status_code(status_codes.TOO_MANY_REQUESTS, _STREAM_NAME)}"
 
         assert output.errors[0].trace.error.internal_message == expected_message
 
@@ -212,5 +212,5 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
         with patch("time.sleep"):
             output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
 
-        expected_message = f"Exception while syncing stream a_stream_name: {exception_description_by_status_code(status_codes.INTERNAL_SERVER_ERROR, _SPREADSHEET_ID)}"
+        expected_message = f"{exception_description_by_status_code(status_codes.INTERNAL_SERVER_ERROR, _SPREADSHEET_ID)}"
         assert output.errors[0].trace.error.internal_message == expected_message

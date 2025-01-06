@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import dpath
 import requests
 
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.types import Config
@@ -134,6 +135,7 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
+        self.decoder = JsonDecoder(parameters={})
         self._values_to_match_key = parameters["values_to_match_key"]
         schema_type_identifier = parameters["schema_type_identifier"]
         names_conversion = self.config.get("names_conversion", False)

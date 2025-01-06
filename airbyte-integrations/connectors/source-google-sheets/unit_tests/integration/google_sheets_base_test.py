@@ -4,7 +4,7 @@
 import json
 from abc import ABC
 from copy import deepcopy
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Union, List
 from unittest import TestCase
 
 from airbyte_cdk.models import (
@@ -14,6 +14,7 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
+from source_google_sheets.batch_size_manager import BatchSizeManager
 from .mock_credentials import AUTH_BODY, oauth_credentials, service_account_credentials
 from .protocol_helpers import check_helper, discover_helper, read_helper
 from .request_builder import AuthBuilder, RequestBuilder
@@ -32,6 +33,7 @@ class GoogleSheetsBaseTest(TestCase, ABC):
     def setUp(self) -> None:
         self._config = deepcopy(_CONFIG)
         self._service_config = deepcopy(_SERVICE_CONFIG)
+        BatchSizeManager.reset()
 
     @staticmethod
     def _check(config: Dict[str, Any], expecting_exception: bool = True) -> EntrypointOutput:
@@ -151,11 +153,12 @@ class GoogleSheetsBaseTest(TestCase, ABC):
     @staticmethod
     def get_stream_data(
         http_mocker: HttpMocker,
-        data_response_file: str,
-        response_code: int = 200,
+        data_response_file: Optional[str] = None,
+        response_code: Optional[int] = 200,
         stream_name: Optional[str] = _STREAM_NAME,
         request_range: Tuple = (2, 202),
         spreadsheet_id: Optional[str] = _SPREADSHEET_ID,
+        responses: Optional[Union[HttpResponse, List[HttpResponse]]] = None,
     ):
         """ "
         Mock requests to 'https://sheets.googleapis.com/v4/spreadsheets/<spreadsheet>/values:batchGet?ranges=<sheet>!2:202&majorDimension=ROWS&alt=json'
@@ -188,5 +191,5 @@ class GoogleSheetsBaseTest(TestCase, ABC):
             .with_major_dimension("ROWS")
             .with_alt("json")
             .build(),
-            HttpResponse(json.dumps(find_template(data_response_file, __file__)), response_code),
+            HttpResponse(json.dumps(find_template(data_response_file, __file__)), response_code) if data_response_file else responses,
         )

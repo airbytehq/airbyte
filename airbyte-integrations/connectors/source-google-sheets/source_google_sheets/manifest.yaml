@@ -13,17 +13,15 @@ dynamic_streams:
       name: ""
       primary_key: []
       retriever:
-        type: SimpleRetriever
-        partition_router:
-          type: CustomPartitionRouter
-          $parameters:
-            row_count: 0
-            batch_size: 0
-          class_name: source_google_sheets.components.RangePartitionRouter
-          description: Partition router that generates ranges for batch fetching.
+        type: CustomRetriever
+        class_name: "source_google_sheets.components.SheetsDataRetriever"
+        $parameters:
+          row_count: 0
         paginator:
           type: NoPagination
         record_selector:
+          decoder:
+            type: JsonDecoder
           extractor:
             type: CustomRecordExtractor
             class_name: source_google_sheets.components.DpathSchemaMatchingExtractor
@@ -48,11 +46,10 @@ dynamic_streams:
           path: >-
             {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"]}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  $ref: "#/definitions/response_filters/response_error_filters"
+            type: CustomErrorHandler
+            class_name: source_google_sheets.components.SheetDataErrorHandler
+            response_filters:
+              $ref: "#/definitions/response_filters/response_error_filters"
       schema_loader:
         type: DynamicSchemaLoader
         retriever:
@@ -128,7 +125,6 @@ dynamic_streams:
           description: indexed_schema to match with row values.
         - field_path:
             - retriever
-            - partition_router
             - $parameters
             - row_count
           type: ComponentMappingDefinition
@@ -371,3 +367,10 @@ schemas:
         type:
           - string
           - "null"
+
+
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
+  max_concurrency: 1
