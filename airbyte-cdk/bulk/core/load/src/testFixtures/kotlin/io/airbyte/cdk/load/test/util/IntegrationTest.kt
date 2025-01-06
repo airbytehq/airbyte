@@ -55,6 +55,7 @@ abstract class IntegrationTest(
     val nameMapper: NameMapper = NoopNameMapper,
     /** See [RecordDiffer.nullEqualsUnset]. */
     val nullEqualsUnset: Boolean = false,
+    val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -129,13 +130,15 @@ abstract class IntegrationTest(
         messages: List<InputMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
     ): List<AirbyteMessage> =
         runSync(
             configContents,
             DestinationCatalog(listOf(stream)),
             messages,
             streamStatus,
-            useFileTransfer
+            useFileTransfer,
+            envVars
         )
 
     /**
@@ -170,6 +173,7 @@ abstract class IntegrationTest(
          */
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
     ): List<AirbyteMessage> {
         val destination =
             destinationProcessFactory.createDestinationProcess(
@@ -177,6 +181,7 @@ abstract class IntegrationTest(
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
+                envVars = envVars,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -212,6 +217,7 @@ abstract class IntegrationTest(
         inputStateMessage: StreamCheckpoint,
         allowGracefulShutdown: Boolean,
         useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
     ): AirbyteStateMessage {
         val destination =
             destinationProcessFactory.createDestinationProcess(
@@ -219,6 +225,7 @@ abstract class IntegrationTest(
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
+                envVars
             )
         return runBlocking(Dispatchers.IO) {
             launch {
@@ -261,6 +268,8 @@ abstract class IntegrationTest(
             outputStateMessage
         }
     }
+
+    fun updateConfig(config: String): String = configUpdater.update(config)
 
     companion object {
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")

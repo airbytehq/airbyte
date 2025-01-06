@@ -8,7 +8,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
@@ -69,10 +68,6 @@ class IcebergStreamLoader(
             }
 
         return SimpleBatch(Batch.State.COMPLETE)
-    }
-
-    override suspend fun processFile(file: DestinationFile): Batch {
-        throw NotImplementedError("Destination Iceberg does not support universal file transfer.")
     }
 
     override suspend fun close(streamFailure: StreamProcessingFailed?) {

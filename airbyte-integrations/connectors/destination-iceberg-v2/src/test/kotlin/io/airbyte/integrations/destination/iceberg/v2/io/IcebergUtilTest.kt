@@ -19,7 +19,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
@@ -251,7 +251,8 @@ internal class IcebergUtilTest {
                         linkedMapOf(
                             "id" to IntegerValue(42L),
                             "name" to StringValue("John Doe"),
-                            AIRBYTE_CDC_DELETE_COLUMN to TimestampValue("2024-01-01T00:00:00Z"),
+                            AIRBYTE_CDC_DELETE_COLUMN to
+                                TimestampWithTimezoneValue("2024-01-01T00:00:00Z"),
                         )
                     ),
                 emittedAtMs = System.currentTimeMillis(),

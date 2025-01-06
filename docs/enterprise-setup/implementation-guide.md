@@ -4,6 +4,7 @@ products: oss-enterprise
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 # Implementation Guide
 
@@ -560,6 +561,127 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 Once this is complete, ensure that the value of the `webapp-url` field in your `values.yaml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
+
+#### (Optional) Configure a custom image registry
+
+You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `webapp`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
+
+Implementing Airbyte this way has several advantages.
+
+- **Security**: Private custom image registries keep images in your network, reducing the risk of external threats.
+- **Access control**: You have more control over who can access and modify images.
+- **Compliance**: By keeping images in a controlled environment, it's easier to prove compliance with regulatory requirements for data storage and handling.
+
+<details>
+<summary>Before you start</summary>
+
+1. Set up your custom image registry. The examples in this article use GitHub, but you have many options. Here are some popular ones:
+
+    <ContainerProviders/>
+
+2. Install `abctl`. Although abctl is typically only used to manage local installations of Airbyte, it has some helpful commands for this process.
+
+    <Tabs>
+      <TabItem value="abctl-brew" label="Homebrew" default>
+        ```bash
+        brew tap airbytehq/tap
+        brew install abctl
+        ```
+      </TabItem>
+      <TabItem value="abctl-go" label="Go">
+        ```bash
+        go install github.com/airbytehq/abctl@latest
+        ```
+      </TabItem>
+      <TabItem value="abctl-gh" label="GitHub">
+        See [GitHub releases](https://github.com/airbytehq/abctl/releases/latest).
+      </TabItem>
+    </Tabs>
+
+</details>
+
+<details>
+<summary>Get a list of all Airbyte images</summary>
+
+To get a list of Airbyte images for the latest version, use abctl.
+
+```bash
+abctl images manifest
+```
+
+You should see something like this:
+
+```bash
+airbyte/bootloader:1.3.1
+airbyte/connector-builder-server:1.3.1
+airbyte/connector-sidecar:1.3.1
+airbyte/container-orchestrator:1.3.1
+airbyte/cron:1.3.1
+airbyte/db:1.3.1
+airbyte/mc:latest
+airbyte/server:1.3.1
+airbyte/webapp:1.3.1
+airbyte/worker:1.3.1
+airbyte/workload-api-server:1.3.1
+airbyte/workload-init-container:1.3.1
+airbyte/workload-launcher:1.3.1
+bitnami/kubectl:1.28.9
+busybox:1.35
+busybox:latest
+curlimages/curl:8.1.1
+minio/minio:RELEASE.2023-11-20T22-40-07Z
+temporalio/auto-setup:1.23.0
+```
+
+</details>
+
+<details>
+<summary>Step 1: Customize Airbyte to use your image registry</summary>
+
+To pull all platform and connector images from a custom image registry, add the following customization to Airbyte's `values.yaml` file, replacing the `registry` value with your own registry location.
+
+```yaml title="values.yaml"
+global:
+  image:
+    registry: ghcr.io/NAMESPACE
+```
+
+If your registry requires authentication, you can create a Kubernetes secret and reference it in the Airbyte config:
+
+1. Create a Kubernetes secret. In this example, you create a secret called `regcred` from a config file. That file contains authentication information for a private custom image registry. [Learn more about Kubernetes secrets](https://kubernetes.io/docs/tasks/configmap-secret/).
+
+    ```bash
+    kubectl create secret generic regcred \
+    --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
+    --type=kubernetes.io/dockerconfigjson
+    ```
+
+2. Add the secret you created to your `values.yaml` file. In this example, you use your `regcred` secret to authenticate.
+
+    ```yaml title="values.yaml"
+    global:
+      image:
+        registry: ghcr.io/NAMESPACE
+      // highlight-start
+      imagePullSecrets:
+        - name: regcred
+      // highlight-end
+    ```
+
+</details>
+
+<details>
+<summary>Step 2: Tag and push Airbyte images</summary>
+
+Tag and push Airbyte's images to your custom image registry. In this example, you tag all Airbyte images and push them all to GitHub.
+
+```bash
+abctl images manifest | xargs -L1 -I{} docker tag {} ghcr.io/NAMESPACE/{} && docker push ghcr.io/NAMESPACE/{}
+```
+
+Now, when you install Airbyte, images will come from the custom image registry you configured.
+
+</details>
 
 ### Step 3: Deploy Self-Managed Enterprise
 
