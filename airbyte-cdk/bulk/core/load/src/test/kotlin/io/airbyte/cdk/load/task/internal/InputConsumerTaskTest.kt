@@ -94,11 +94,12 @@ class InputConsumerTaskTest {
         val task =
             DefaultInputConsumerTaskFactory(syncManager)
                 .make(
-                    catalog,
-                    inputFlow,
-                    recordQueueSupplier,
-                    checkpointQueue,
-                    mockk(),
+                    catalog = catalog,
+                    inputFlow = inputFlow,
+                    recordQueueSupplier = recordQueueSupplier,
+                    checkpointQueue = checkpointQueue,
+                    destinationTaskLauncher = mockk(),
+                    fileTransferQueue = mockk(relaxed = true),
                 )
         task.execute()
 
@@ -150,11 +151,12 @@ class InputConsumerTaskTest {
         val task =
             DefaultInputConsumerTaskFactory(syncManager)
                 .make(
-                    catalog,
-                    inputFlow,
-                    recordQueueSupplier,
-                    checkpointQueue,
-                    mockk(),
+                    catalog = catalog,
+                    inputFlow = inputFlow,
+                    recordQueueSupplier = recordQueueSupplier,
+                    checkpointQueue = checkpointQueue,
+                    destinationTaskLauncher = mockk(),
+                    fileTransferQueue = mockk(relaxed = true),
                 )
         task.execute()
         coVerifySequence {
@@ -187,11 +189,12 @@ class InputConsumerTaskTest {
         val task =
             DefaultInputConsumerTaskFactory(syncManager)
                 .make(
-                    catalog,
-                    inputFlow,
-                    recordQueueSupplier,
-                    checkpointQueue,
-                    mockk(),
+                    catalog = catalog,
+                    inputFlow = inputFlow,
+                    recordQueueSupplier = recordQueueSupplier,
+                    checkpointQueue = checkpointQueue,
+                    destinationTaskLauncher = mockk(),
+                    fileTransferQueue = mockk(relaxed = true),
                 )
         coEvery { inputFlow.collect(any()) } coAnswers
             {
@@ -242,11 +245,12 @@ class InputConsumerTaskTest {
         val task =
             DefaultInputConsumerTaskFactory(syncManager)
                 .make(
-                    catalog,
-                    inputFlow,
-                    recordQueueSupplier,
-                    checkpointQueue,
-                    mockk(),
+                    catalog = catalog,
+                    inputFlow = inputFlow,
+                    recordQueueSupplier = recordQueueSupplier,
+                    checkpointQueue = checkpointQueue,
+                    destinationTaskLauncher = mockk(),
+                    fileTransferQueue = mockk(relaxed = true),
                 )
 
         coEvery { inputFlow.collect(any()) } coAnswers
@@ -314,11 +318,12 @@ class InputConsumerTaskTest {
         val task =
             DefaultInputConsumerTaskFactory(syncManager)
                 .make(
-                    catalog,
-                    inputFlow,
-                    recordQueueSupplier,
-                    checkpointQueue,
-                    mockk(relaxed = true),
+                    catalog = catalog,
+                    inputFlow = inputFlow,
+                    recordQueueSupplier = recordQueueSupplier,
+                    checkpointQueue = checkpointQueue,
+                    destinationTaskLauncher = mockk(relaxed = true),
+                    fileTransferQueue = mockk(relaxed = true),
                 )
 
         assertThrows(IllegalStateException::class) { task.execute() }

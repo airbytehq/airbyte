@@ -66,7 +66,8 @@ class RecordToPartAccumulatorTest {
                 partSizeBytes = partSizeBytes,
                 fileSizeBytes = fileSizeBytes,
                 stream = stream,
-                fileNumber = fileNumber
+                fileNumber = fileNumber,
+                fileNameMapper = { "$it!" },
             )
 
         val bufferSize = AtomicLong(0L)
@@ -102,7 +103,7 @@ class RecordToPartAccumulatorTest {
                 assert(batch.part.fileNumber == 111L)
                 assert(!batch.isPersisted())
                 assert(!batch.part.isFinal)
-                assert(batch.part.key == "path.111")
+                assert(batch.part.key == "path.111!")
             }
             else -> assert(false)
         }
@@ -115,7 +116,7 @@ class RecordToPartAccumulatorTest {
                 assert(batch.part.fileNumber == 111L)
                 assert(!batch.isPersisted())
                 assert(!batch.part.isFinal)
-                assert(batch.part.key == "path.111")
+                assert(batch.part.key == "path.111!")
             }
             else -> assert(false)
         }
@@ -128,7 +129,7 @@ class RecordToPartAccumulatorTest {
                 assert(batch.part.fileNumber == 111L)
                 assert(!batch.isPersisted())
                 assert(!batch.part.isFinal)
-                assert(batch.part.key == "path.111")
+                assert(batch.part.key == "path.111!")
             }
             else -> assert(false)
         }
@@ -142,7 +143,7 @@ class RecordToPartAccumulatorTest {
                 assert(batch.part.fileNumber == 111L)
                 assert(!batch.isPersisted())
                 assert(batch.part.isFinal)
-                assert(batch.part.key == "path.111")
+                assert(batch.part.key == "path.111!")
             }
             else -> assert(false)
         }
@@ -157,7 +158,7 @@ class RecordToPartAccumulatorTest {
                 assert(batch.part.fileNumber == 112L)
                 assert(!batch.isPersisted())
                 assert(batch.part.isFinal)
-                assert(batch.part.key == "path.112")
+                assert(batch.part.key == "path.112!")
             }
             else -> assert(false)
         }
@@ -171,7 +172,7 @@ class RecordToPartAccumulatorTest {
                 assert(batch.part.fileNumber == 113L)
                 assert(!batch.isPersisted())
                 assert(batch.part.isFinal)
-                assert(batch.part.key == "path.113")
+                assert(batch.part.key == "path.113!")
             }
             else -> assert(false)
         }

@@ -8,8 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.data.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class JsonSchemaToAirbyteType {
+    private val log = KotlinLogging.logger {}
+
     fun convert(schema: JsonNode): AirbyteType = convertInner(schema)!!
 
     private fun convertInner(schema: JsonNode): AirbyteType? {
@@ -87,7 +90,10 @@ class JsonSchemaToAirbyteType {
                     TimestampTypeWithTimezone
                 }
             null -> StringType
-            else -> UnknownType(schema)
+            else -> {
+                log.warn { "Ignoring unrecognized string format: ${schema.get("format").asText()}" }
+                StringType
+            }
         }
 
     private fun fromNumber(schema: ObjectNode): AirbyteType =
