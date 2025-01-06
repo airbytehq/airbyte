@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.file.s3.S3ClientFactory
 import io.airbyte.cdk.load.file.s3.S3Object
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
@@ -19,13 +20,17 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 
 @Singleton
-class S3V2Checker<T : OutputStream>(private val timeProvider: TimeProvider) :
-    DestinationChecker<S3V2Configuration<T>> {
+class S3V2Checker<T : OutputStream>(
+    private val timeProvider: TimeProvider,
+    @Value("\${airbyte.destination.s3.assume-role.access-key}") val accessKey: String?,
+    @Value("\${airbyte.destination.s3.assume-role.secret-key}") val secretKey: String?,
+    @Value("\${airbyte.destination.s3.assume-role.external-id}") val externalId: String?,
+) : DestinationChecker<S3V2Configuration<T>> {
     private val log = KotlinLogging.logger {}
 
     override fun check(config: S3V2Configuration<T>) {
         runBlocking {
-            val s3Client = S3ClientFactory.make(config)
+            val s3Client = S3ClientFactory.make(config, accessKey, secretKey, externalId)
             val pathFactory = ObjectStoragePathFactory.from(config, timeProvider)
             val path =
                 if (pathFactory.supportsStaging) {

@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.data.avro.AvroExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.destination_process.Property
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
@@ -24,20 +25,23 @@ abstract class S3V2WriteTest(
     stringifySchemalessObjects: Boolean,
     promoteUnionToObject: Boolean,
     preserveUndeclaredFields: Boolean,
+    dataDumper: S3V2DataDumper = S3V2DataDumper(),
     /** This is false for staging mode, and true for non-staging mode. */
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
     nullUnknownTypes: Boolean = false,
     envVars: Map<String, String> = emptyMap(),
+    additionalMicronautProperties: Map<Property, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
         S3V2Specification::class.java,
-        S3V2DataDumper,
+        dataDumper,
         NoopDestinationCleaner,
         expectedRecordMapper,
         additionalEnvironments = S3V2Destination.ENVIRONMENTS,
+        additionalMicronautProperties = additionalMicronautProperties,
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
         stringifySchemalessObjects = stringifySchemalessObjects,
@@ -220,4 +224,21 @@ class S3V2AmbiguousFilepath :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+    )
+
+class S3V2CsvAssumeRole :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_ASSUME_ROLE_CONFIG_PATH,
+        UncoercedExpectedRecordMapper,
+        dataDumper =
+            S3V2DataDumper(
+                S3V2TestUtils.assumeRoleAccessKey,
+                S3V2TestUtils.assumeRoleSecretKey,
+                S3V2TestUtils.assumeRoleExternalId,
+            ),
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+        additionalMicronautProperties = S3V2TestUtils.assumeRoleProperties,
     )

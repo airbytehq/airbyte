@@ -35,6 +35,7 @@ import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -184,27 +185,37 @@ class S3Client(
     }
 }
 
+/**
+ * The assume role parameters (access key, secret key, external ID) are required if
+ * [keyConfig.awsAccessKeyConfiguration.accessKeyId] is null and
+ * [arnRole.awsArnRoleConfiguration.roleArn] is not null. (i.e. if the user is actually trying to do
+ * the assume role flow, then we need platform to provide the relevant parameters.)
+ */
 @Factory
 class S3ClientFactory(
     private val arnRole: AWSArnRoleConfigurationProvider,
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
     private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
+    @Value("\${airbyte.destination.s3.assume-role.access-key}") val assumeRoleAccessKey: String?,
+    @Value("\${airbyte.destination.s3.assume-role.secret-key}") val assumeRoleSecretKey: String?,
+    @Value("\${airbyte.destination.s3.assume-role.external-id}") val assumeRoleExternalId: String?,
 ) {
     companion object {
         const val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
 
-        fun <T> make(config: T) where
+        fun <T> make(
+            config: T,
+            accessKey: String?,
+            secretKey: String?,
+            externalId: String?,
+        ) where
         T : S3BucketConfigurationProvider,
         T : AWSAccessKeyConfigurationProvider,
         T : AWSArnRoleConfigurationProvider,
         T : ObjectStorageUploadConfigurationProvider =
-            S3ClientFactory(config, config, config, config).make()
+            S3ClientFactory(config, config, config, config, accessKey, secretKey, externalId).make()
     }
-
-    private val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
-    private val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
-    private val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
 
     @Singleton
     @Secondary
@@ -217,16 +228,15 @@ class S3ClientFactory(
                 }
             } else if (arnRole.awsArnRoleConfiguration.roleArn != null) {
                 // The Platform is expected to inject via credentials if ROLE_ARN is present.
-                val externalId = System.getenv(EXTERNAL_ID) // Consider injecting this dependency
                 val assumeRoleParams =
                     AssumeRoleParameters(
                         roleArn = arnRole.awsArnRoleConfiguration.roleArn!!,
                         roleSessionName = AIRBYTE_STS_SESSION_NAME,
-                        externalId = externalId
+                        externalId = assumeRoleExternalId!!
                     )
                 val creds = StaticCredentialsProvider {
-                    accessKeyId = System.getenv(AWS_ACCESS_KEY_ID)
-                    secretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY)
+                    accessKeyId = assumeRoleAccessKey!!
+                    secretAccessKey = assumeRoleSecretKey!!
                 }
                 StsAssumeRoleCredentialsProvider(
                     bootstrapCredentialsProvider = creds,

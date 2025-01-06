@@ -12,7 +12,11 @@ import io.airbyte.cdk.load.file.s3.S3ClientFactory
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 
-object S3V2DataDumper : DestinationDataDumper {
+class S3V2DataDumper(
+    private val assumeRoleAccessKey: String? = null,
+    private val assumeRoleSecretKey: String? = null,
+    private val assumeRoleExternalId: String? = null,
+) : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream
@@ -33,7 +37,13 @@ object S3V2DataDumper : DestinationDataDumper {
     ): ObjectStorageDataDumper {
         val config =
             S3V2ConfigurationFactory().makeWithoutExceptionHandling(spec as S3V2Specification)
-        val s3Client = S3ClientFactory.make(config)
+        val s3Client =
+            S3ClientFactory.make(
+                config,
+                assumeRoleAccessKey,
+                assumeRoleSecretKey,
+                assumeRoleExternalId
+            )
         val pathFactory = ObjectStoragePathFactory.from(config)
         return ObjectStorageDataDumper(
             stream,
