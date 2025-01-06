@@ -588,11 +588,6 @@ definitions:
             type:
               - "null"
               - string
-          description:
-            description: Description summary of the incident.
-            type:
-              - "null"
-              - string
           tinyId:
             description: Short identifier for the incident.
             type:
@@ -2731,11 +2726,6 @@ streams:
             type:
               - "null"
               - string
-          description:
-            description: Description summary of the incident.
-            type:
-              - "null"
-              - string
           tinyId:
             description: Short identifier for the incident.
             type:
@@ -2804,9 +2794,7 @@ streams:
             items:
               type: string
           statusPageEntry:
-            description:
-              Information related to the incident status on the status
-              page.
+            description: Information related to the incident status on the status page.
             type:
               - "null"
               - object
