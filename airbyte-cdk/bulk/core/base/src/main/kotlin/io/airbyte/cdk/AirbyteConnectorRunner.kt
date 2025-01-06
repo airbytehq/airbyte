@@ -9,6 +9,7 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.context.RuntimeBeanDefinition
 import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
+import io.micronaut.context.env.MapPropertySource
 import io.micronaut.core.cli.CommandLine as MicronautCommandLine
 import java.nio.file.Path
 import kotlin.system.exitProcess
@@ -43,18 +44,28 @@ class AirbyteDestinationRunner(
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
     additionalEnvironments: Array<out String> = emptyArray(),
+    additionalProperties: Map<String, String> = emptyMap(),
 ) :
     AirbyteConnectorRunner(
         "destination",
         args,
         systemEnv,
         testBeanDefinitions,
-        additionalEnvironments
+        additionalEnvironments,
+        additionalProperties,
     ) {
     companion object {
         @JvmStatic
-        fun run(vararg args: String, additionalEnvironments: Array<out String> = emptyArray()) {
-            AirbyteDestinationRunner(args, additionalEnvironments = additionalEnvironments)
+        fun run(
+            vararg args: String,
+            additionalEnvironments: Array<out String> = emptyArray(),
+            additionalProperties: Map<String, String> = emptyMap()
+        ) {
+            AirbyteDestinationRunner(
+                    args,
+                    additionalEnvironments = additionalEnvironments,
+                    additionalProperties = additionalProperties
+                )
                 .run<AirbyteConnectorRunnable>()
         }
     }
@@ -70,6 +81,7 @@ sealed class AirbyteConnectorRunner(
     systemEnv: Map<String, String>,
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
     val additionalEnvironments: Array<out String> = emptyArray(),
+    val additionalProperties: Map<String, String> = emptyMap(),
 ) {
     val envs: Array<String> =
         arrayOf(Environment.CLI, connectorType) +
@@ -90,6 +102,8 @@ sealed class AirbyteConnectorRunner(
                 picocliCommandLineFactory.commands.options().map { it.longestName() },
             )
         val commandLinePropertySource = CommandLinePropertySource(micronautCommandLine)
+        val additionalPropertiesSource =
+            MapPropertySource("additional_properties", additionalProperties)
         val ctx: ApplicationContext =
             ApplicationContext.builder(R::class.java, *envs)
                 .propertySources(
@@ -97,6 +111,7 @@ sealed class AirbyteConnectorRunner(
                             airbytePropertySource,
                             commandLinePropertySource,
                             MetadataYamlPropertySource(),
+                            additionalPropertiesSource,
                         )
                         .toTypedArray(),
                 )

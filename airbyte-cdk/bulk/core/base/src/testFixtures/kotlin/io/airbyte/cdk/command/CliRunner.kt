@@ -55,6 +55,7 @@ data object CliRunner {
         inputStream: InputStream,
         vararg featureFlags: FeatureFlag,
         additionalEnvironments: Array<out String>,
+        additionalProperties: Map<String, String>,
     ): CliRunnable {
         val inputBeanDefinition: RuntimeBeanDefinition<InputStream> =
             RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
@@ -70,6 +71,7 @@ data object CliRunner {
                     inputBeanDefinition,
                     out.beanDefinition,
                     additionalEnvironments = additionalEnvironments,
+                    additionalProperties = additionalProperties,
                 )
             }
         return CliRunnable(runnable, out.results)
@@ -83,6 +85,7 @@ data object CliRunner {
         state: List<AirbyteStateMessage>? = null,
         featureFlags: Set<FeatureFlag> = setOf(),
         additionalEnvironments: Array<out String>,
+        additionalProperties: Map<String, String>,
         vararg input: AirbyteMessage,
     ): CliRunnable {
         val inputJsonBytes: ByteArray =
@@ -102,6 +105,7 @@ data object CliRunner {
             inputStream,
             *featureFlags.toTypedArray(),
             additionalEnvironments = additionalEnvironments,
+            additionalProperties = additionalProperties,
         )
     }
 

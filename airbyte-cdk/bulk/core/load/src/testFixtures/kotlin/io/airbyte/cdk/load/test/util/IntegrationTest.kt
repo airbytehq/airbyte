@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestination
+import io.airbyte.cdk.load.test.util.destination_process.Property
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
@@ -58,6 +59,7 @@ abstract class IntegrationTest(
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val envVars: Map<String, String> = emptyMap(),
     additionalEnvironments: Array<out String> = emptyArray(),
+    val additionalMicronautProperties: Map<Property, String> = emptyMap(),
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -132,6 +134,8 @@ abstract class IntegrationTest(
         messages: List<InputMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
+        micronautProperties: Map<Property, String> = emptyMap(),
     ): List<AirbyteMessage> =
         runSync(
             configContents,
@@ -139,6 +143,8 @@ abstract class IntegrationTest(
             messages,
             streamStatus,
             useFileTransfer,
+            envVars,
+            micronautProperties,
         )
 
     /**
@@ -173,6 +179,8 @@ abstract class IntegrationTest(
          */
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
+        micronautProperties: Map<Property, String> = emptyMap(),
     ): List<AirbyteMessage> {
         val destination =
             destinationProcessFactory.createDestinationProcess(
@@ -181,6 +189,7 @@ abstract class IntegrationTest(
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
                 envVars = envVars,
+                micronautProperties = micronautProperties + additionalMicronautProperties,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -216,6 +225,8 @@ abstract class IntegrationTest(
         inputStateMessage: StreamCheckpoint,
         allowGracefulShutdown: Boolean,
         useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
+        micronautProperties: Map<Property, String> = emptyMap(),
     ): AirbyteStateMessage {
         val destination =
             destinationProcessFactory.createDestinationProcess(
@@ -223,7 +234,8 @@ abstract class IntegrationTest(
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
-                envVars
+                envVars,
+                micronautProperties = micronautProperties + additionalMicronautProperties,
             )
         return runBlocking(Dispatchers.IO) {
             launch {

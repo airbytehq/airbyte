@@ -64,6 +64,7 @@ abstract class DestinationProcessFactory {
         catalog: ConfiguredAirbyteCatalog? = null,
         useFileTransfer: Boolean = false,
         envVars: Map<String, String> = emptyMap(),
+        micronautProperties: Map<Property, String> = emptyMap(),
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 
@@ -96,3 +97,19 @@ abstract class DestinationProcessFactory {
             }
     }
 }
+
+/**
+ * Represents a micronaut property, which has a corresponding entry in micronaut's `application.yml`
+ * file, which is populated by an environment variable. Just a pair of the micronaut property name,
+ * and that corresponding env var name.
+ *
+ * For example, this application.yaml:
+ * ```yaml
+ * airbyte:
+ *   destination:
+ *     foo-bar: ${FOO_BAR}
+ * ```
+ *
+ * Would be represented as `Property("airbyte.destination.foo-bar", "FOO_BAR")`.
+ */
+data class Property(val micronautProperty: String, val environmentVariable: String)

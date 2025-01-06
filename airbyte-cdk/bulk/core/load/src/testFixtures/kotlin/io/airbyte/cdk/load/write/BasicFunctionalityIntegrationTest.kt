@@ -49,6 +49,7 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.destination_process.Property
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -116,6 +117,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
     additionalEnvironments: Array<out String> = emptyArray(),
+    additionalMicronautProperties: Map<Property, String> = emptyMap(),
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
      * example:
@@ -141,6 +143,7 @@ abstract class BasicFunctionalityIntegrationTest(
         configUpdater = configUpdater,
         envVars = envVars,
         additionalEnvironments = additionalEnvironments,
+        additionalMicronautProperties = additionalMicronautProperties,
     ) {
     val parsedConfig =
         ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))

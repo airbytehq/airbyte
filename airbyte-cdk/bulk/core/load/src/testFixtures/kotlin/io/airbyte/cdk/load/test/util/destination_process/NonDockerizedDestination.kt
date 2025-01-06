@@ -33,6 +33,7 @@ class NonDockerizedDestination(
     useFileTransfer: Boolean,
     envVars: Map<String, String>,
     additionalEnvironments: Array<out String>,
+    micronautProperties: Map<Property, String>,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
@@ -75,6 +76,7 @@ class NonDockerizedDestination(
                 inputStream = destinationStdin,
                 featureFlags = featureFlags,
                 additionalEnvironments = additionalEnvironments,
+                additionalProperties = micronautProperties.mapKeys { (k, _) -> k.micronautProperty }
             )
     }
 
@@ -131,6 +133,7 @@ class NonDockerizedDestinationFactory(private val additionalEnvironments: Array<
         catalog: ConfiguredAirbyteCatalog?,
         useFileTransfer: Boolean,
         envVars: Map<String, String>,
+        micronautProperties: Map<Property, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
@@ -141,6 +144,7 @@ class NonDockerizedDestinationFactory(private val additionalEnvironments: Array<
             useFileTransfer,
             envVars,
             additionalEnvironments,
+            micronautProperties,
             *featureFlags
         )
     }
