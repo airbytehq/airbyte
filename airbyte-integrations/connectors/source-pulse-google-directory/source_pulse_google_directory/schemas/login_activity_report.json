@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "description": "The type of API resource, always admin#reports#activity",
+      "const": "admin#reports#activity"
+    },
+    "id": {
+      "type": "object",
+      "description": "Unique identifier for the activity",
+      "properties": {
+        "time": {
+          "type": "string",
+          "description": "Time of the activity",
+          "format": "date-time"
+        },
+        "uniqueQualifier": {
+          "type": "string",
+          "description": "Unique identifier for the activity"
+        },
+        "applicationName": {
+          "type": "string",
+          "description": "The application that generated the activity"
+        },
+        "customerId": {
+          "type": "string",
+          "description": "The unique ID for the customer's Google Workspace account"
+        }
+      },
+      "required": ["time", "uniqueQualifier", "applicationName", "customerId"]
+    },
+    "etag": {
+      "type": "string",
+      "description": "ETag of the resource"
+    },
+    "actor": {
+      "type": "object",
+      "description": "The user who performed the activity",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The primary email address of the actor"
+        },
+        "profileId": {
+          "type": "string",
+          "description": "The unique Google Workspace profile ID of the actor"
+        }
+      },
+      "required": ["email", "profileId"]
+    },
+    "ipAddress": {
+      "type": "string",
+      "description": "IP address of the user doing the action"
+    },
+    "events": {
+      "type": "array",
+      "description": "Activity events",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of event"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the event"
+          },
+          "parameters": {
+            "type": "array",
+            "description": "Event parameters",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name of the parameter"
+                },
+                "value": {
+                  "type": ["string", "null"],
+                  "description": "String value of the parameter"
+                },
+                "multiValue": {
+                  "type": "array",
+                  "description": "Multiple string values",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "boolValue": {
+                  "type": "boolean",
+                  "description": "Boolean value of the parameter"
+                }
+              },
+              "required": ["name"]
+            }
+          }
+        },
+        "required": ["type", "name"]
+      }
+    }
+  }
+}
