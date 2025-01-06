@@ -3,9 +3,9 @@
 #
 from typing import Any, Iterable, Mapping
 
-from source_google_sheets.batch_size_manager import BatchSizeManager
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.types import StreamSlice
+from source_google_sheets.batch_size_manager import BatchSizeManager
 
 
 class RangePartitionRouter(SinglePartitionRouter):

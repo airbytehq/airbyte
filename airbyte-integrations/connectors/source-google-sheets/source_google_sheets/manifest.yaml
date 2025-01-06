@@ -368,8 +368,6 @@ schemas:
           - string
           - "null"
 
-
-
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 1

@@ -4,7 +4,9 @@
 
 import logging
 
+
 logger = logging.getLogger("airbyte")
+
 
 class BatchSizeManager:
     _instance = None

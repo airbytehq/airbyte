@@ -4,8 +4,10 @@
 import json
 from abc import ABC
 from copy import deepcopy
-from typing import Any, Dict, Optional, Tuple, Union, List
+from typing import Any, Dict, List, Optional, Tuple, Union
 from unittest import TestCase
+
+from source_google_sheets.batch_size_manager import BatchSizeManager
 
 from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
@@ -14,7 +16,6 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
-from source_google_sheets.batch_size_manager import BatchSizeManager
 from .mock_credentials import AUTH_BODY, oauth_credentials, service_account_credentials
 from .protocol_helpers import check_helper, discover_helper, read_helper
 from .request_builder import AuthBuilder, RequestBuilder
