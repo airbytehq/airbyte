@@ -9,6 +9,10 @@ acceptance_tests:
             bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
           - name: onetimes
             bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
+          - name: events
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
+          - name: bundle_selections
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
           - name: shop
             bypass_reason: "The stream is not empty, but the primary key is the entire record, so it is constantly changing"
         expect_records:
@@ -20,6 +24,10 @@ acceptance_tests:
           - name: discounts
             bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
           - name: onetimes
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
+          - name: events
+            bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
+          - name: bundle_selections
             bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
           - name: shop
             bypass_reason: "The stream is not empty, but the primary key is the entire record, so it is constantly changing"

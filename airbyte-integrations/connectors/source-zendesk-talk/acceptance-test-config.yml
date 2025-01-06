@@ -6,7 +6,7 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_zendesk_talk/spec.json"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -31,11 +31,17 @@ acceptance_tests:
         fail_on_extra_columns: false
         empty_streams:
           - name: account_overview
-            bypass_reason: "The stream is not empty, but makes the test failed due to frequently changing primary key value"
+            bypass_reason:
+              "The stream is not empty, but makes the test failed due to
+              frequently changing primary key value"
           - name: agents_overview
-            bypass_reason: "The stream is not empty, but makes the test failed due to frequently changing primary key value"
+            bypass_reason:
+              "The stream is not empty, but makes the test failed due to
+              frequently changing primary key value"
           - name: current_queue_activity
-            bypass_reason: "The stream is not empty, but makes the test failed due to frequently changing primary key value"
+            bypass_reason:
+              "The stream is not empty, but makes the test failed due to
+              frequently changing primary key value"
   incremental:
     tests:
       - config_path: "secrets/config.json"

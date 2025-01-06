@@ -3,31 +3,38 @@
 #
 
 import logging
+import time
 from datetime import datetime
 from io import IOBase
-from os import getenv
-from typing import Iterable, List, Optional, Set
+from os import getenv, makedirs, path
+from typing import Dict, Iterable, List, Optional, Set, cast
 
 import boto3.session
 import pendulum
+import psutil
 import pytz
 import smart_open
-from airbyte_cdk import FailureType
-from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
 from botocore.credentials import RefreshableCredentials
 from botocore.exceptions import ClientError
 from botocore.session import get_session
+from typing_extensions import override
+
+from airbyte_cdk import FailureType
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
+
 
 AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
+    FILE_SIZE_LIMIT = 1_500_000_000
+
     def __init__(self):
         super().__init__()
         self._s3_client = None
@@ -182,6 +189,84 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         # we can simply return the result here as it is a context manager itself that will release all resources
         return result
+
+    @staticmethod
+    def create_progress_handler(file_size: int, local_file_path: str, logger: logging.Logger):
+        previous_bytes_checkpoint = 0
+        total_bytes_transferred = 0
+
+        def progress_handler(bytes_transferred: int):
+            nonlocal previous_bytes_checkpoint, total_bytes_transferred
+            total_bytes_transferred += bytes_transferred
+            if total_bytes_transferred - previous_bytes_checkpoint >= 100 * 1024 * 1024:
+                logger.info(
+                    f"{total_bytes_transferred / (1024 * 1024):,.2f} MB ({total_bytes_transferred / (1024 * 1024 * 1024):.2f} GB) "
+                    f"of {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB) "
+                    f"written to {local_file_path}"
+                )
+                previous_bytes_checkpoint = total_bytes_transferred
+
+                # Get available disk space
+                disk_usage = psutil.disk_usage("/")
+                available_disk_space = disk_usage.free
+
+                # Get available memory
+                memory_info = psutil.virtual_memory()
+                available_memory = memory_info.available
+                logger.info(
+                    f"Available disk space: {available_disk_space / (1024 * 1024):,.2f} MB ({available_disk_space / (1024 * 1024 * 1024):.2f} GB), "
+                    f"available memory: {available_memory / (1024 * 1024):,.2f} MB ({available_memory / (1024 * 1024 * 1024):.2f} GB)."
+                )
+
+        return progress_handler
+
+    @override
+    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
+        """
+        Downloads a file from an S3 bucket to a specified local directory.
+
+        Args:
+            file (RemoteFile): The remote file object containing URI and metadata.
+            local_directory (str): The local directory path where the file will be downloaded.
+            logger (logging.Logger): Logger for logging information and errors.
+
+        Returns:
+            dict: A dictionary containing the following:
+                - "file_url" (str): The absolute path of the downloaded file.
+                - "bytes" (int): The file size in bytes.
+                - "file_relative_path" (str): The relative path of the file for local storage. Is relative to local_directory as
+                this a mounted volume in the pod container.
+
+        Raises:
+            FileSizeLimitError: If the file size exceeds the predefined limit (1 GB).
+        """
+        file_size = self.file_size(file)
+        # I'm putting this check here so we can remove the safety wheels per connector when ready.
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = "File size exceeds the 1 GB limit."
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+
+        file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
+
+        logger.info(
+            f"Starting to download the file {file.uri} with size: {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB)"
+        )
+        # at some moment maybe we will require to play with the max_pool_connections and max_concurrency of s3 config
+        start_download_time = time.time()
+        progress_handler = self.create_progress_handler(file_size, local_file_path, logger)
+        self.s3_client.download_file(self.config.bucket, file.uri, local_file_path, Callback=progress_handler)
+        write_duration = time.time() - start_download_time
+        logger.info(f"Finished downloading the file {file.uri} and saved to {local_file_path} in {write_duration:,.2f} seconds.")
+
+        return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
+
+    @override
+    def file_size(self, file: RemoteFile) -> int:
+        s3_object: boto3.s3.Object = self.s3_client.get_object(
+            Bucket=self.config.bucket,
+            Key=file.uri,
+        )
+        return cast(int, s3_object["ContentLength"])
 
     @staticmethod
     def _is_folder(file) -> bool:

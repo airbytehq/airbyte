@@ -1105,6 +1105,29 @@ class CustomerJourney(ShopifyBulkQuery):
                                     term
                                 }
                             }
+                            customerJourney {
+                                moments {
+                                    ... on CustomerVisit {
+                                        id
+                                        landingPage
+                                        landingPageHtml
+                                        occurredAt
+                                        referralCode
+                                        referralInfoHtml
+                                        referrerUrl
+                                        source
+                                        sourceDescription
+                                        sourceType
+                                        utmParameters {
+                                            campaign
+                                            content
+                                            medium
+                                            source
+                                            term
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1127,6 +1150,16 @@ class CustomerJourney(ShopifyBulkQuery):
         "sourceDescription",
         Field(name="utmParameters", fields=["campaign", "content", "medium", "source", "term"]),
     ]
+
+    customer_visit_fragment: List[InlineFragment] = [
+        InlineFragment(type="CustomerVisit", fields=visit_fields),
+    ]
+
+    # # use this in the next version
+    # moments_fields: List[Field] = [
+    #     Field(name="edges", fields=[Field(name="node", fields=customer_visit_fragment)]),
+    # ]
+
     customer_journey_summary_fields: List[Field] = [
         "ready",
         Field(name="momentsCount", fields=["count", "precision"]),
@@ -1134,6 +1167,8 @@ class CustomerJourney(ShopifyBulkQuery):
         "daysToConversion",
         Field(name="firstVisit", fields=visit_fields),
         Field(name="lastVisit", fields=visit_fields),
+        # # use this in the next version
+        # Field(name="moments", fields=moments_fields),
     ]
 
     query_nodes: List[Field] = [
@@ -1142,6 +1177,12 @@ class CustomerJourney(ShopifyBulkQuery):
         "createdAt",
         "updatedAt",
         Field(name="customerJourneySummary", fields=customer_journey_summary_fields),
+        Field(
+            name="customerJourney",
+            fields=[
+                Field(name="moments", fields=customer_visit_fragment),
+            ],
+        ),
     ]
 
     record_composition = {
@@ -1152,6 +1193,9 @@ class CustomerJourney(ShopifyBulkQuery):
         self,
         visit_data: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
+        if not visit_data:
+            return {}
+
         # save the id before it's resolved
         visit_data["admin_graphql_api_id"] = visit_data.get("id")
         # resolve the order_id to str
@@ -1162,14 +1206,24 @@ class CustomerJourney(ShopifyBulkQuery):
         visit_data = self.tools.fields_names_to_snake_case(visit_data)
         return visit_data
 
+    def process_moments(self, entity: List[Mapping[str, Any]]) -> List[MutableMapping[str, Any]]:
+        moments = []
+        for item in entity:
+            moments.append(self.process_visit(item))
+        return moments
+
     def process_customer_journey(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         customer_journey_summary = record.get("customerJourneySummary", {})
         if customer_journey_summary:
             # process first, last visit data
-            first_visit = customer_journey_summary.get("firstVisit", {})
-            last_visit = customer_journey_summary.get("lastVisit", {})
-            customer_journey_summary["firstVisit"] = self.process_visit(first_visit) if first_visit else {}
-            customer_journey_summary["lastVisit"] = self.process_visit(last_visit) if last_visit else {}
+            customer_journey_summary["firstVisit"] = self.process_visit(customer_journey_summary.get("firstVisit"))
+            customer_journey_summary["lastVisit"] = self.process_visit(customer_journey_summary.get("lastVisit"))
+
+            # # this will be a part of summary in the next api version
+            if customer_journey := record.get("customerJourney", {}):
+                moments = customer_journey.get("moments", [])
+                customer_journey_summary["moments"] = self.process_moments(moments)
+
         # cast field names to snake_case
         customer_journey_summary = self.tools.fields_names_to_snake_case(customer_journey_summary)
         return customer_journey_summary
@@ -2510,6 +2564,10 @@ class ProductVariant(ShopifyBulkQuery):
                                 color
                                 image {
                                     id
+                                    image {
+                                        src
+                                        url
+                                    }
                                 }
                             }
                         }
@@ -2517,6 +2575,8 @@ class ProductVariant(ShopifyBulkQuery):
                     grams: weight
                     image {
                         image_id: id
+                        image_src: src
+                        image_url: url
                     }
                     old_inventory_quantity: inventoryQuantity
                     product {
@@ -2556,7 +2616,6 @@ class ProductVariant(ShopifyBulkQuery):
 
     @property
     def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
-
         prices_fields: List[str] = ["amount", "currencyCode"]
         presentment_prices_fields: List[Field] = [
             Field(
@@ -2577,7 +2636,7 @@ class ProductVariant(ShopifyBulkQuery):
             "id",
             "name",
             Field(name="hasVariants", alias="has_variants"),
-            Field(name="swatch", fields=["color", Field(name="image", fields=["id"])]),
+            Field(name="swatch", fields=["color", Field(name="image", fields=["id", Field(name="image", fields=["src", "url"])])]),
         ]
         option_fields: List[Field] = [
             "name",
@@ -2587,6 +2646,12 @@ class ProductVariant(ShopifyBulkQuery):
         presentment_prices = (
             [Field(name="presentmentPrices", fields=presentment_prices_fields)] if self._should_include_presentment_prices else []
         )
+
+        image_fields = [
+            Field(name="id", alias="image_id"),
+            Field(name="src", alias="image_src"),
+            Field(name="url", alias="image_url"),
+        ]
 
         query_nodes: List[Field] = [
             "__typename",
@@ -2611,7 +2676,7 @@ class ProductVariant(ShopifyBulkQuery):
             "taxCode",
             Field(name="selectedOptions", alias="options", fields=option_fields),
             Field(name="weight", alias="grams"),
-            Field(name="image", fields=[Field(name="id", alias="image_id")]),
+            Field(name="image", fields=image_fields),
             Field(name="inventoryQuantity", alias="old_inventory_quantity"),
             Field(name="product", fields=[Field(name="id", alias="product_id")]),
             Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
@@ -2677,6 +2742,9 @@ class ProductVariant(ShopifyBulkQuery):
         record["product_id"] = self._unnest_and_resolve_id(record, "product", "product_id")
         record["inventory_item_id"] = self._unnest_and_resolve_id(record, "inventoryItem", "inventory_item_id")
         record["image_id"] = self._unnest_and_resolve_id(record, "image", "image_id")
+        image = record.get("image", {})
+        record["image_src"] = image.get("image_src") if image else None
+        record["image_url"] = image.get("image_url") if image else None
         # unnest `fulfillment_service` from `fulfillmentService`
         record["fulfillment_service"] = record.get("fulfillmentService", {}).get("fulfillment_service")
         # cast the `price` to number, could be literally `None`

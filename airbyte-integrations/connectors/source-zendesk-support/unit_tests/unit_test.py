@@ -16,8 +16,6 @@ import pendulum
 import pytest
 import pytz
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
     DATETIME_FORMAT,
@@ -65,6 +63,10 @@ from source_zendesk_support.streams import (
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
 
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+
+
 TICKET_SUBSTREAMS = [StatefulTicketMetrics]
 
 # prepared config
@@ -79,13 +81,6 @@ TEST_CONFIG = {
     "subdomain": "sandbox",
     "start_date": "2021-06-01T00:00:00Z",
     "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
-}
-
-# raw old config
-TEST_OLD_CONFIG = {
-    "auth_method": {"auth_method": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
-    "subdomain": "sandbox",
-    "start_date": "2021-06-01T00:00:00Z",
 }
 
 TEST_CONFIG_WITHOUT_START_DATE = {
@@ -144,13 +139,15 @@ def test_token_authenticator():
     ids=["api_token", "oauth"],
 )
 def test_convert_config2stream_args(config):
-    result = SourceZendeskSupport().convert_config2stream_args(config)
+    result = SourceZendeskSupport(config=config, catalog=None, state=None).convert_config2stream_args(config)
     assert "authenticator" in result
 
 
 @freezegun.freeze_time("2022-01-01")
 def test_default_start_date():
-    result = SourceZendeskSupport().convert_config2stream_args(TEST_CONFIG_WITHOUT_START_DATE)
+    result = SourceZendeskSupport(config=TEST_CONFIG_WITHOUT_START_DATE, catalog=None, state=None).convert_config2stream_args(
+        TEST_CONFIG_WITHOUT_START_DATE
+    )
     assert result["start_date"] == "2020-01-01T00:00:00Z"
 
 
@@ -159,26 +156,25 @@ def test_default_start_date():
     [
         (TEST_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
         (TEST_CONFIG_OAUTH, "test_access_token"),
-        (TEST_OLD_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
     ],
-    ids=["api_token", "oauth", "old_config"],
+    ids=["api_token", "oauth"],
 )
 def test_get_authenticator(config, expected):
     # we expect base64 from creds input
-    result = SourceZendeskSupport().get_authenticator(config=config)
+    result = SourceZendeskSupport(config=config, catalog=None, state=None).get_authenticator(config=config)
     assert result._token == expected
 
 
 @pytest.mark.parametrize(
     "response, start_date, check_passed",
-    [({"active_features": {"organization_access_enabled": True}}, "2020-01-01T00:00:00Z", True), ({}, "2020-01-00T00:00:00Z", False)],
+    [([{"active_features": {"organization_access_enabled": True}}], "2020-01-01T00:00:00Z", True), ([], "2020-01-01T00:00:00Z", False)],
     ids=["check_successful", "invalid_start_date"],
 )
 def test_check(response, start_date, check_passed):
     config = copy.deepcopy(TEST_CONFIG)
     config["start_date"] = start_date
-    with patch.object(UserSettingsStream, "get_settings", return_value=response) as mock_method:
-        ok, _ = SourceZendeskSupport().check_connection(logger=logging.Logger, config=config)
+    with patch.object(UserSettingsStream, "read_records", return_value=response) as mock_method:
+        ok, _ = SourceZendeskSupport(config=config, catalog=None, state=None).check_connection(logger=logging.Logger, config=config)
         assert check_passed == ok
         if ok:
             mock_method.assert_called()
@@ -211,7 +207,7 @@ def test_check(response, start_date, check_passed):
 )
 def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason):
     requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
-    result = SourceZendeskSupport().streams(config=TEST_CONFIG)
+    result = SourceZendeskSupport(config=TEST_CONFIG, catalog=None, state=None).streams(config=TEST_CONFIG)
     assert len(result) == expected_n_streams
     logged_warnings = (record for record in caplog.records if record.levelname == "WARNING")
     for msg in expected_warnings:
@@ -285,7 +281,7 @@ class TestAllStreams:
     def test_ticket_forms_exception_stream(self):
         with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
             mocked_records.side_effect = Exception("The error")
-            streams = SourceZendeskSupport().streams(TEST_CONFIG)
+            streams = SourceZendeskSupport(config=TEST_CONFIG, catalog=None, state=None).streams(TEST_CONFIG)
             assert not any([isinstance(stream, TicketForms) for stream in streams])
 
     @pytest.mark.parametrize(
@@ -1055,14 +1051,14 @@ def test_read_non_json_error(requests_mock, caplog):
     read_full_refresh(stream)
     assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
 
-class TestTicketMetrics:
 
+class TestTicketMetrics:
     @pytest.mark.parametrize(
-            "state, expected_implemented_stream",
-            [
-                ({"_ab_updated_at": 1727334000}, StatefulTicketMetrics),
-                ({}, StatelessTicketMetrics),
-            ]
+        "state, expected_implemented_stream",
+        [
+            ({"_ab_updated_at": 1727334000}, StatefulTicketMetrics),
+            ({}, StatelessTicketMetrics),
+        ],
     )
     def test_get_implemented_stream(self, state, expected_implemented_stream):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
@@ -1070,12 +1066,12 @@ class TestTicketMetrics:
         assert isinstance(implemented_stream, expected_implemented_stream)
 
     @pytest.mark.parametrize(
-            "sync_mode, state, expected_implemented_stream",
-            [
-                (SyncMode.incremental, {"_ab_updated_at": 1727334000}, StatefulTicketMetrics),
-                (SyncMode.full_refresh, {}, StatelessTicketMetrics),
-                (SyncMode.incremental, {}, StatelessTicketMetrics),
-            ]
+        "sync_mode, state, expected_implemented_stream",
+        [
+            (SyncMode.incremental, {"_ab_updated_at": 1727334000}, StatefulTicketMetrics),
+            (SyncMode.full_refresh, {}, StatelessTicketMetrics),
+            (SyncMode.incremental, {}, StatelessTicketMetrics),
+        ],
     )
     def test_stream_slices(self, sync_mode, state, expected_implemented_stream):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
@@ -1089,7 +1085,12 @@ class TestStatefulTicketMetrics:
         [
             (
                 {},
-                {"tickets": [{"id": "13", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp}, {"id": "80", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp}]},
+                {
+                    "tickets": [
+                        {"id": "13", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
+                        {"id": "80", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
+                    ]
+                },
                 [
                     {"ticket_id": "13", "_ab_updated_at": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
                     {"ticket_id": "80", "_ab_updated_at": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
@@ -1116,8 +1117,7 @@ class TestStatefulTicketMetrics:
     def test_read_with_error(self, requests_mock):
         stream = get_stream_instance(StatefulTicketMetrics, STREAM_ARGS)
         requests_mock.get(
-            f"https://sandbox.zendesk.com/api/v2/tickets/13/metrics",
-            json={"error": "RecordNotFound", "description": "Not found"}
+            f"https://sandbox.zendesk.com/api/v2/tickets/13/metrics", json={"error": "RecordNotFound", "description": "Not found"}
         )
 
         records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"ticket_id": "13"}))
@@ -1127,12 +1127,12 @@ class TestStatefulTicketMetrics:
     @pytest.mark.parametrize(
         "status_code, response_action",
         (
-                (200, ResponseAction.SUCCESS),
-                (404, ResponseAction.IGNORE),
-                (403, ResponseAction.IGNORE),
-                (500, ResponseAction.RETRY),
-                (429, ResponseAction.RATE_LIMITED),
-        )
+            (200, ResponseAction.SUCCESS),
+            (404, ResponseAction.IGNORE),
+            (403, ResponseAction.IGNORE),
+            (500, ResponseAction.RETRY),
+            (429, ResponseAction.RATE_LIMITED),
+        ),
     )
     def test_should_retry(self, status_code: int, response_action: bool):
         stream = get_stream_instance(StatefulTicketMetrics, STREAM_ARGS)
@@ -1143,37 +1143,62 @@ class TestStatefulTicketMetrics:
     @pytest.mark.parametrize(
         "current_stream_state, record_cursor_value, expected",
         [
-            ({ "_ab_updated_at": 1727334000}, 1727420400, { "_ab_updated_at": 1727420400}),
-            ({ "_ab_updated_at": 1727334000}, 1700000000, { "_ab_updated_at": 1727334000}),
-        ]
+            ({"_ab_updated_at": 1727334000}, 1727420400, {"_ab_updated_at": 1727420400}),
+            ({"_ab_updated_at": 1727334000}, 1700000000, {"_ab_updated_at": 1727334000}),
+        ],
     )
     def test_get_updated_state(self, current_stream_state, record_cursor_value, expected):
         stream = get_stream_instance(StatefulTicketMetrics, STREAM_ARGS)
-        latest_record = { "id": 1, "_ab_updated_at": record_cursor_value}
+        latest_record = {"id": 1, "_ab_updated_at": record_cursor_value}
         output_state = stream._get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
         assert output_state == expected
 
 
 class TestStatelessTicketMetrics:
     @pytest.mark.parametrize(
-            "start_date, response, expected",
-            [
-                (
-                    "2023-01-01T00:00:00Z",
-                    { "ticket_metrics": [{"id": 1, "ticket_id": 999, "updated_at": "2023-02-01T00:00:00Z"}, {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z"}]},
-                    [
-                        {"id": 1, "ticket_id": 999, "updated_at": "2023-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2023-02-01T00:00:00Z").int_timestamp},
-                        {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+        "start_date, response, expected",
+        [
+            (
+                "2023-01-01T00:00:00Z",
+                {
+                    "ticket_metrics": [
+                        {"id": 1, "ticket_id": 999, "updated_at": "2023-02-01T00:00:00Z"},
+                        {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z"},
                     ]
-                ),
-                (
-                    "2024-01-01T00:00:00Z",
-                    { "ticket_metrics": [{"id": 1, "ticket_id": 999, "updated_at": "2023-02-01T00:00:00Z"}, {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z"}]},
-                    [
-                        {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+                },
+                [
+                    {
+                        "id": 1,
+                        "ticket_id": 999,
+                        "updated_at": "2023-02-01T00:00:00Z",
+                        "_ab_updated_at": pendulum.parse("2023-02-01T00:00:00Z").int_timestamp,
+                    },
+                    {
+                        "id": 2,
+                        "ticket_id": 1000,
+                        "updated_at": "2024-02-01T00:00:00Z",
+                        "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp,
+                    },
+                ],
+            ),
+            (
+                "2024-01-01T00:00:00Z",
+                {
+                    "ticket_metrics": [
+                        {"id": 1, "ticket_id": 999, "updated_at": "2023-02-01T00:00:00Z"},
+                        {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z"},
                     ]
-                )
-            ]
+                },
+                [
+                    {
+                        "id": 2,
+                        "ticket_id": 1000,
+                        "updated_at": "2024-02-01T00:00:00Z",
+                        "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp,
+                    }
+                ],
+            ),
+        ],
     )
     def test_parse_response(self, requests_mock, start_date, response, expected):
         stream_args = copy.deepcopy(STREAM_ARGS)
@@ -1184,25 +1209,24 @@ class TestStatelessTicketMetrics:
         output = list(stream.parse_response(test_response, {}))
         assert expected == output
 
-    @pytest.mark.parametrize(
-            "has_more, expected",
-            [
-                (True, {"page[after]": "nextpagecursor"}),
-                (False, None)
-            ]
-    )
+    @pytest.mark.parametrize("has_more, expected", [(True, {"page[after]": "nextpagecursor"}), (False, None)])
     def test_next_page_token(self, mocker, has_more, expected):
         stream = StatelessTicketMetrics(**STREAM_ARGS)
         ticket_metrics_response = mocker.Mock()
-        ticket_metrics_response.json.return_value = {"meta": { "after_cursor": "nextpagecursor", "has_more": has_more}}
+        ticket_metrics_response.json.return_value = {"meta": {"after_cursor": "nextpagecursor", "has_more": has_more}}
         result = stream.next_page_token(response=ticket_metrics_response)
         assert expected == result
 
     def test_get_updated_state(self):
         stream = StatelessTicketMetrics(**STREAM_ARGS)
-        stream._most_recently_updated_record = {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+        stream._most_recently_updated_record = {
+            "id": 2,
+            "ticket_id": 1000,
+            "updated_at": "2024-02-01T00:00:00Z",
+            "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp,
+        }
         output_state = stream._get_updated_state(current_stream_state={}, latest_record={})
-        expected_state = { "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+        expected_state = {"_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
         assert output_state == expected_state
 
 
@@ -1244,13 +1268,7 @@ def test_validate_response_ticket_audits_handle_empty_response(audits_response, 
     assert stream._validate_response(response_mock, {}) == expected
 
 
-@pytest.mark.parametrize(
-        "initial_state_cursor_field",
-        [
-            "generated_timestamp",
-            "_ab_updated_at"
-        ]
-)
+@pytest.mark.parametrize("initial_state_cursor_field", ["generated_timestamp", "_ab_updated_at"])
 def test_ticket_metrics_state_migrataion(initial_state_cursor_field):
     state_migrator = TicketMetricsStateMigration()
     initial_state = {initial_state_cursor_field: 1672531200}

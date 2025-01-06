@@ -298,6 +298,9 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.5.16 | 2024-12-10 | [48804](https://github.com/airbytehq/airbyte/pull/48804) | Added reader options: skiprows & header for Excel files |
+| 0.5.15 | 2024-11-05 | [48317](https://github.com/airbytehq/airbyte/pull/48317) | Update dependencies |
+| 0.5.14 | 2024-10-29 | [47115](https://github.com/airbytehq/airbyte/pull/47115) | Update dependencies |
 | 0.5.13 | 2024-10-12 | [45795](https://github.com/airbytehq/airbyte/pull/45795) | Update dependencies |
 | 0.5.12 | 2024-09-14 | [45499](https://github.com/airbytehq/airbyte/pull/45499) | Update dependencies |
 | 0.5.11 | 2024-09-07 | [45261](https://github.com/airbytehq/airbyte/pull/45261) | Update dependencies |

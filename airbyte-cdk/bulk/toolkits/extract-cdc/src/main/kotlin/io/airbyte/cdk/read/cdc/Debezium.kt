@@ -6,7 +6,43 @@ package io.airbyte.cdk.read.cdc
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.NullNode
+import io.airbyte.cdk.util.Jsons
+import io.debezium.embedded.EmbeddedEngineChangeEvent
+import io.debezium.engine.ChangeEvent
 import io.debezium.relational.history.HistoryRecord
+import org.apache.kafka.connect.source.SourceRecord
+
+/** Convenience wrapper around [ChangeEvent]. */
+class DebeziumEvent(event: ChangeEvent<String?, String?>) {
+
+    /** This [SourceRecord] object is the preferred way to obtain the current position. */
+    val sourceRecord: SourceRecord? = (event as? EmbeddedEngineChangeEvent<*, *, *>)?.sourceRecord()
+
+    val key: DebeziumRecordKey? =
+        event
+            .key()
+            ?.let { runCatching { Jsons.readTree(it) }.getOrNull() }
+            ?.let(::DebeziumRecordKey)
+
+    val value: DebeziumRecordValue? =
+        event
+            .value()
+            ?.let { runCatching { Jsons.readTree(it) }.getOrNull() }
+            ?.let(::DebeziumRecordValue)
+
+    /**
+     * Debezium can output a tombstone event that has a value of null. This is an artifact of how it
+     * interacts with kafka. We want to ignore it. More on the tombstone:
+     * https://debezium.io/documentation/reference/stable/transformations/event-flattening.html
+     */
+    val isTombstone: Boolean = event.value() == null
+
+    /**
+     * True if this is a Debezium heartbeat event, or the equivalent thereof. In any case, such
+     * events are only used for their position value and for triggering timeouts.
+     */
+    val isHeartbeat: Boolean = value?.source?.isNull == true
+}
 
 /** [DebeziumRecordKey] wraps a Debezium change data event key. */
 @JvmInline
@@ -24,10 +60,6 @@ value class DebeziumRecordKey(val wrapped: JsonNode) {
 /** [DebeziumRecordValue] wraps a Debezium change data event value. */
 @JvmInline
 value class DebeziumRecordValue(val wrapped: JsonNode) {
-
-    /** True if this is a Debezium heartbeat event. These aren't passed to [DebeziumConsumer]. */
-    val isHeartbeat: Boolean
-        get() = source.isNull
 
     /** The datum prior to this event; null for insertions. */
     val before: JsonNode
