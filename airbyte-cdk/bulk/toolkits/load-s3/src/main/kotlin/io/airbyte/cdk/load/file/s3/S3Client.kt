@@ -231,7 +231,6 @@ class S3ClientFactory(
                     assumeRoleParameters = assumeRoleParams
                 )
             } else {
-                // Todo: fill in with a stubbed out credentials provider.
                 DefaultChainCredentialsProvider()
             }
 
