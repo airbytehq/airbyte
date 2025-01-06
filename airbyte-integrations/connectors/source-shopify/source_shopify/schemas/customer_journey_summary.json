@@ -196,7 +196,7 @@
           "description": "The events preceding a customer's order, such as shop sessions.",
           "type": ["null", "array"],
           "items": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
               "id": {
                 "description": "A globally-unique ID.",
