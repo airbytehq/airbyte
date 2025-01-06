@@ -23,12 +23,13 @@ class RangePartitionRouter(SinglePartitionRouter):
         super().__init__(parameters)
         self.parameters = parameters
         self.sheet_row_count = parameters.get("row_count", 0)
-        self.batch_size_manager = BatchSizeManager(parameters.get("batch_size", 200))
+        self._sheet_id = parameters.get("sheet_id")
+        self.batch_size_manager = BatchSizeManager(parameters.get("batch_size"))
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         start_range = 2
         while start_range <= self.sheet_row_count:
             end_range = start_range + self.batch_size_manager.get_batch_size()
-            logger.info(f"Fetching start_range: {start_range}, end_range: {end_range}")
+            logger.info(f"Fetching range {self._sheet_id}!{start_range}:{end_range}")
             yield StreamSlice(partition={"start_range": start_range, "end_range": end_range}, cursor_slice={})
             start_range = end_range + 1

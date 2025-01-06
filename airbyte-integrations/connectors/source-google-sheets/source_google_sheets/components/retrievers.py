@@ -14,5 +14,5 @@ class SheetsDataRetriever(SimpleRetriever):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.stream_slicer: StreamSlicer = RangePartitionRouter(
-            parameters={"batch_size": self.config.get("batch_size", 200), "row_count": parameters.get("row_count", 0)}
+            parameters= {"batch_size": self.config.get("batch_size"), **parameters }
         )

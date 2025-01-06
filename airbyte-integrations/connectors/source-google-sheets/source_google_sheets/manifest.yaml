@@ -17,6 +17,7 @@ dynamic_streams:
         class_name: "source_google_sheets.components.SheetsDataRetriever"
         $parameters:
           row_count: 0
+          sheet_id: ""
         paginator:
           type: NoPagination
         record_selector:
@@ -129,7 +130,13 @@ dynamic_streams:
             - row_count
           type: ComponentMappingDefinition
           value: "{{components_values['properties']['gridProperties']['rowCount']}}"
-          description: rows count for dynamic stream partition router (slicer).
+        - field_path:
+            - retriever
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['properties']['title']}}"
+          description: sheet_id for retriever.
         - field_path:
             - retriever
             - partition_router
