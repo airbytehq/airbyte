@@ -29,7 +29,7 @@ class SchemalessTypesToJsonStringTest {
                     StringValue("""{"foo":"bar"}""")
                 )
                 .with(
-                    addressJson.deserializeToNode().toAirbyteValue(ObjectTypeWithoutSchema),
+                    addressJson.deserializeToNode().toAirbyteValue(),
                     ObjectTypeWithEmptySchema,
                     StringValue(addressJson)
                 )
