@@ -1,0 +1,213 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "The unique identifier of the repository"
+    },
+    "node_id": {
+      "type": "string",
+      "description": "The GraphQL node ID of the repository"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the repository"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "The full name of the repository (owner/repo)"
+    },
+    "owner": {
+      "type": "object",
+      "description": "The owner of the repository",
+      "properties": {
+        "login": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "avatar_url": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["User", "Organization", "Bot"]
+        },
+        "site_admin": {
+          "type": "boolean"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": ["login", "id", "type", "url"]
+    },
+    "private": {
+      "type": "boolean",
+      "description": "Whether the repository is private"
+    },
+    "html_url": {
+      "type": "string",
+      "description": "The URL to view the repository on GitHub"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "The description of the repository"
+    },
+    "fork": {
+      "type": "boolean",
+      "description": "Whether the repository is a fork"
+    },
+    "url": {
+      "type": "string",
+      "description": "The API URL for the repository"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The creation timestamp"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The last update timestamp"
+    },
+    "pushed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The last push timestamp"
+    },
+    "size": {
+      "type": "integer",
+      "description": "The size of the repository in KB"
+    },
+    "language": {
+      "type": ["string", "null"],
+      "description": "The primary language of the repository"
+    },
+    "default_branch": {
+      "type": "string",
+      "description": "The default branch of the repository"
+    },
+    "permissions": {
+      "type": "object",
+      "description": "The permissions for the authenticated user",
+      "properties": {
+        "admin": {
+          "type": "boolean"
+        },
+        "maintain": {
+          "type": "boolean"
+        },
+        "push": {
+          "type": "boolean"
+        },
+        "triage": {
+          "type": "boolean"
+        },
+        "pull": {
+          "type": "boolean"
+        }
+      }
+    },
+    "security_and_analysis": {
+      "type": "object",
+      "description": "Security and analysis features settings",
+      "properties": {
+        "dependabot_security_updates": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["enabled", "disabled"]
+            }
+          }
+        },
+        "secret_scanning": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["enabled", "disabled"]
+            }
+          }
+        },
+        "secret_scanning_push_protection": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["enabled", "disabled"]
+            }
+          }
+        }
+      }
+    },
+    "visibility": {
+      "type": "string",
+      "enum": ["public", "private", "internal"],
+      "description": "The visibility level of the repository"
+    },
+    "forks_count": {
+      "type": "integer",
+      "description": "The number of forks"
+    },
+    "stargazers_count": {
+      "type": "integer",
+      "description": "The number of stars"
+    },
+    "watchers_count": {
+      "type": "integer",
+      "description": "The number of watchers"
+    },
+    "open_issues_count": {
+      "type": "integer",
+      "description": "The number of open issues"
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The repository topics"
+    },
+    "has_issues": {
+      "type": "boolean",
+      "description": "Whether issues are enabled"
+    },
+    "has_wiki": {
+      "type": "boolean",
+      "description": "Whether wiki is enabled"
+    },
+    "has_pages": {
+      "type": "boolean",
+      "description": "Whether GitHub Pages is enabled"
+    },
+    "has_downloads": {
+      "type": "boolean",
+      "description": "Whether downloads are enabled"
+    },
+    "has_projects": {
+      "type": "boolean",
+      "description": "Whether projects are enabled"
+    },
+    "has_discussions": {
+      "type": "boolean",
+      "description": "Whether discussions are enabled"
+    },
+    "archived": {
+      "type": "boolean",
+      "description": "Whether the repository is archived"
+    },
+    "disabled": {
+      "type": "boolean",
+      "description": "Whether the repository is disabled"
+    }
+  },
+  "additionalProperties": true
+}

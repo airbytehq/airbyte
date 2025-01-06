@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "owner": {
+      "type": "string",
+      "description": "Owner of the repo"
+    },
+    "org": {
+      "type": "string",
+      "description": "Name of the organization"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "URL of the user's avatar image"
+    },
+    "events_url": {
+      "type": "string",
+      "description": "URL template for user's events"
+    },
+    "followers_url": {
+      "type": "string",
+      "description": "URL for user's followers"
+    },
+    "following_url": {
+      "type": "string",
+      "description": "URL template for user's following"
+    },
+    "gists_url": {
+      "type": "string",
+      "description": "URL template for user's gists"
+    },
+    "gravatar_id": {
+      "type": ["string", "null"],
+      "description": "User's Gravatar ID"
+    },
+    "html_url": {
+      "type": "string",
+      "description": "URL to user's GitHub profile"
+    },
+    "id": {
+      "type": "integer",
+      "description": "The unique identifier of the user"
+    },
+    "login": {
+      "type": "string",
+      "description": "The user's GitHub username"
+    },
+    "node_id": {
+      "type": "string",
+      "description": "The Node ID of the user"
+    },
+    "organizations_url": {
+      "type": "string",
+      "description": "URL for user's organizations"
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Repository-specific permissions for the user",
+      "properties": {
+        "admin": {
+          "type": "boolean",
+          "description": "Whether user has admin permissions"
+        },
+        "maintain": {
+          "type": "boolean",
+          "description": "Whether user has maintain permissions"
+        },
+        "pull": {
+          "type": "boolean",
+          "description": "Whether user has pull permissions"
+        },
+        "push": {
+          "type": "boolean",
+          "description": "Whether user has push permissions"
+        },
+        "triage": {
+          "type": "boolean",
+          "description": "Whether user has triage permissions"
+        }
+      },
+      "required": ["admin", "maintain", "pull", "push", "triage"]
+    },
+    "role_name": {
+      "type": "string",
+      "description": "The role assigned to the user in the repository",
+      "enum": ["admin", "maintain", "write", "triage", "read"]
+    },
+    "received_events_url": {
+      "type": "string",
+      "description": "URL for events received by the user"
+    },
+    "repos_url": {
+      "type": "string",
+      "description": "URL for user's repositories"
+    },
+    "site_admin": {
+      "type": "boolean",
+      "description": "Whether the user is a GitHub site admin"
+    },
+    "starred_url": {
+      "type": "string",
+      "description": "URL template for repositories starred by user"
+    },
+    "subscriptions_url": {
+      "type": "string",
+      "description": "URL for user's subscriptions"
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of GitHub account",
+      "enum": ["User", "Organization", "Bot"]
+    },
+    "url": {
+      "type": "string",
+      "description": "The API URL for this user"
+    },
+    "user_view_type": {
+      "type": "string",
+      "description": "The visibility type of the user",
+      "enum": ["public", "private"]
+    }
+  },
+  "additionalProperties": true
+}

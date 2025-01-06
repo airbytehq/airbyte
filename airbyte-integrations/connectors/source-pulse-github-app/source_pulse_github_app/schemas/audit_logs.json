@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "@timestamp": {
+      "type": "integer",
+      "description": "Timestamp of the event in milliseconds since epoch"
+    },
+    "_document_id": {
+      "type": "string",
+      "description": "Unique identifier for the audit log entry"
+    },
+    "action": {
+      "type": "string",
+      "description": "The type of action performed"
+    },
+    "actor": {
+      "type": "string",
+      "description": "Username of the actor who performed the action"
+    },
+    "actor_id": {
+      "type": "integer",
+      "description": "GitHub user ID of the actor"
+    },
+    "actor_is_bot": {
+      "type": "boolean",
+      "description": "Whether the actor is a bot"
+    },
+    "actor_location": {
+      "type": "object",
+      "description": "Location information for the actor",
+      "properties": {
+        "country_code": {
+          "type": ["string", "null"],
+          "description": "Two-letter country code of the actor's location"
+        }
+      }
+    },
+    "business": {
+      "type": "string",
+      "description": "Name of the enterprise"
+    },
+    "business_id": {
+      "type": "integer",
+      "description": "ID of the enterprise"
+    },
+    "created_at": {
+      "type": "integer",
+      "description": "Timestamp when the event was created in milliseconds since epoch"
+    },
+    "external_identity_nameid": {
+      "type": ["string", "null"],
+      "description": "External identity identifier from SSO provider"
+    },
+    "issuer": {
+      "type": ["string", "null"],
+      "description": "The SSO provider's issuer URL"
+    },
+    "operation_type": {
+      "type": "string",
+      "description": "Type of operation performed",
+      "enum": ["authentication", "authorization", "configuration"]
+    },
+    "org": {
+      "type": "string",
+      "description": "Name of the organization"
+    },
+    "org_id": {
+      "type": "integer",
+      "description": "ID of the organization"
+    },
+    "request_access_security_header": {
+      "type": ["string", "null"],
+      "description": "Security-related request header information"
+    },
+    "user_agent": {
+      "type": ["string", "null"],
+      "description": "User agent string of the client"
+    }
+  },
+  "additionalProperties": true
+}

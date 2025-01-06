@@ -1,0 +1,210 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "org": {
+      "type": "string",
+      "description": "Name of the organization"
+    },
+    "id": {
+      "type": "integer",
+      "description": "The installation's unique identifier"
+    },
+    "app_id": {
+      "type": "integer",
+      "description": "The GitHub App's identifier"
+    },
+    "app_slug": {
+      "type": "string",
+      "description": "The slug name of the GitHub App"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "OAuth client ID of the GitHub App"
+    },
+    "access_tokens_url": {
+      "type": "string",
+      "description": "URL to generate access tokens for the installation"
+    },
+    "repositories_url": {
+      "type": "string",
+      "description": "URL to list accessible repositories"
+    },
+    "html_url": {
+      "type": "string",
+      "description": "URL to view the installation on GitHub"
+    },
+    "account": {
+      "type": "object",
+      "description": "The organization where the app is installed",
+      "properties": {
+        "login": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "avatar_url": {
+          "type": "string"
+        },
+        "gravatar_id": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "html_url": {
+          "type": "string"
+        },
+        "followers_url": {
+          "type": "string"
+        },
+        "following_url": {
+          "type": "string"
+        },
+        "gists_url": {
+          "type": "string"
+        },
+        "starred_url": {
+          "type": "string"
+        },
+        "subscriptions_url": {
+          "type": "string"
+        },
+        "organizations_url": {
+          "type": "string"
+        },
+        "repos_url": {
+          "type": "string"
+        },
+        "events_url": {
+          "type": "string"
+        },
+        "received_events_url": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Organization"]
+        },
+        "site_admin": {
+          "type": "boolean"
+        },
+        "user_view_type": {
+          "type": "string",
+          "enum": ["public", "private"]
+        }
+      },
+      "required": ["login", "id", "type", "url"]
+    },
+    "target_id": {
+      "type": "integer",
+      "description": "ID of the organization"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": ["Organization"],
+      "description": "Type of target (always Organization for this endpoint)"
+    },
+    "permissions": {
+      "type": "object",
+      "description": "The set of permissions granted to the app",
+      "properties": {
+        "administration": {
+          "type": "string",
+          "enum": ["read", "write"]
+        },
+        "checks": {
+          "type": "string",
+          "enum": ["read", "write"]
+        },
+        "contents": {
+          "type": "string",
+          "enum": ["read", "write"]
+        },
+        "deployments": {
+          "type": "string",
+          "enum": ["read", "write"]
+        },
+        "issues": {
+          "type": "string",
+          "enum": ["read", "write"]
+        },
+        "members": {
+          "type": "string",
+          "enum": ["read", "write"]
+        },
+        "metadata": {
+          "type": "string",
+          "enum": ["read", "write"]
+        },
+        "pull_requests": {
+          "type": "string",
+          "enum": ["read", "write"]
+        },
+        "repository_hooks": {
+          "type": "string",
+          "enum": ["read", "write"]
+        },
+        "statuses": {
+          "type": "string",
+          "enum": ["read", "write"]
+        }
+      },
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["read", "write"]
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of events the app can receive"
+    },
+    "single_file_name": {
+      "type": ["string", "null"],
+      "description": "Name of the single file the app has access to"
+    },
+    "has_multiple_single_files": {
+      "type": "boolean",
+      "description": "Whether the app has multiple single file paths configured"
+    },
+    "single_file_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Paths of single files the app has access to"
+    },
+    "repository_selection": {
+      "type": "string",
+      "enum": ["all", "selected"],
+      "description": "Describes whether all repositories are selected or only some"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the installation was created"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the installation was last updated"
+    },
+    "suspended_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Timestamp when the installation was suspended"
+    },
+    "suspended_by": {
+      "type": ["object", "null"],
+      "description": "User who suspended the installation"
+    }
+  },
+  "additionalProperties": true
+}

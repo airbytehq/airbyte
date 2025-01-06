@@ -1,0 +1,28 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-pulse-github-app"
+description = "Source implementation for pulse-github-app."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/pulse-github-app"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [ { include = "source_pulse_github_app" }, {include = "main.py" } ]
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^0"
+
+[tool.poetry.scripts]
+source-pulse-github-app = "source_pulse_github_app.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"
+

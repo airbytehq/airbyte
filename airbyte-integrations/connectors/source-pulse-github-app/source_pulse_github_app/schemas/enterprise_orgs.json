@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "advanced_security_enabled_for_new_repositories": {
+      "type": ["boolean", "null"],
+      "description": "Whether advanced security is enabled for new repositories"
+    },
+    "archived_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Timestamp when the organization was archived"
+    },
+    "billing_email": {
+      "type": ["string", "null"],
+      "description": "Organization's billing email address"
+    },
+    "collaborators": {
+      "type": "integer",
+      "description": "Number of collaborators in the organization"
+    },
+    "company": {
+      "type": ["string", "null"],
+      "description": "Organization's company name"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the organization was created"
+    },
+    "default_repository_permission": {
+      "type": "string",
+      "description": "Default permission level for repositories"
+    },
+    "dependabot_alerts_enabled_for_new_repositories": {
+      "type": "boolean",
+      "description": "Whether Dependabot alerts are enabled for new repositories"
+    },
+    "dependabot_security_updates_enabled_for_new_repositories": {
+      "type": "boolean",
+      "description": "Whether Dependabot security updates are enabled for new repositories"
+    },
+    "dependency_graph_enabled_for_new_repositories": {
+      "type": "boolean",
+      "description": "Whether dependency graph is enabled for new repositories"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Organization's description"
+    },
+    "disk_usage": {
+      "type": "integer",
+      "description": "Organization's disk usage in KB"
+    },
+    "email": {
+      "type": ["string", "null"],
+      "description": "Organization's public email"
+    },
+    "followers": {
+      "type": "integer",
+      "description": "Number of followers"
+    },
+    "following": {
+      "type": "integer",
+      "description": "Number of users/organizations being followed"
+    },
+    "has_organization_projects": {
+      "type": "boolean",
+      "description": "Whether organization projects are enabled"
+    },
+    "has_repository_projects": {
+      "type": "boolean",
+      "description": "Whether repository projects are enabled"
+    },
+    "id": {
+      "type": "integer",
+      "description": "Organization's unique identifier"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "description": "Whether the organization is verified"
+    },
+    "login": {
+      "type": "string",
+      "description": "Organization's login name"
+    },
+    "name": {
+      "type": ["string", "null"],
+      "description": "Organization's display name"
+    },
+    "node_id": {
+      "type": "string",
+      "description": "Organization's node identifier"
+    },
+    "plan": {
+      "type": "object",
+      "properties": {
+        "filled_seats": {
+          "type": "integer",
+          "description": "Number of filled seats in the plan"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the plan"
+        },
+        "private_repos": {
+          "type": "integer",
+          "description": "Number of private repositories allowed"
+        },
+        "seats": {
+          "type": "integer",
+          "description": "Total number of seats in the plan"
+        },
+        "space": {
+          "type": "integer",
+          "description": "Storage space included in the plan"
+        }
+      },
+      "required": ["name", "private_repos", "seats", "space", "filled_seats"]
+    },
+    "public_repos": {
+      "type": "integer",
+      "description": "Number of public repositories"
+    },
+    "total_private_repos": {
+      "type": "integer",
+      "description": "Total number of private repositories"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of GitHub account (Organization)"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last update"
+    },
+    "web_commit_signoff_required": {
+      "type": "boolean",
+      "description": "Whether web commit sign-off is required"
+    }
+  },
+  "additionalProperties": true
+}

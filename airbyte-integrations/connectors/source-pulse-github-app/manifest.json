@@ -1,0 +1,7 @@
+{
+  "name": "Source Pulse GitHub App",
+  "dockerRepository": "airbyte/source-pulse-github-app",
+  "dockerImageTag": "dev",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/github-identities",
+  "icon": "github.svg"
+}
