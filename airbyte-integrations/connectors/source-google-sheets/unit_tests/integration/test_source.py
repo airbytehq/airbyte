@@ -483,11 +483,12 @@ class TestSourceRead(GoogleSheetsBaseTest):
     @HttpMocker()
     def test_when_read_receives_429_and_increases_batch_size(self, http_mocker: HttpMocker) -> None:
         test_file_base_name = "read_by_batches"
+        stream_name = "d_stream_name"
         initial_batch_size = 10
         incremental_batch_size = initial_batch_size
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}_2")
         GoogleSheetsBaseTest.get_sheet_first_row(
-            http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}_2", stream_name="d_stream_name"
+            http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}_2", stream_name=stream_name
         )
         start_range = 2
         too_many_response_increase = 100
@@ -501,7 +502,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
                 ),
             ]
             GoogleSheetsBaseTest.get_stream_data(
-                http_mocker, request_range=request_range, responses=mocked_responses, stream_name="d_stream_name"
+                http_mocker, request_range=request_range, responses=mocked_responses, stream_name=stream_name
             )
             # after every 429 response we increase by 100 the batch size
             incremental_batch_size += too_many_response_increase
@@ -511,7 +512,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
             catalog_properties[expected_property] = {"type": ["null", "string"]}
         configured_catalog = (
             CatalogBuilder()
-            .with_stream(ConfiguredAirbyteStreamBuilder().with_name("d_stream_name").with_json_schema({"properties": catalog_properties}))
+            .with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_json_schema({"properties": catalog_properties}))
             .build()
         )
         self._config["batch_size"] = initial_batch_size
