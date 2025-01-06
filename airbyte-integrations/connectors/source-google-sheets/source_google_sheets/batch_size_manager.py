@@ -8,6 +8,7 @@ from typing import Optional, Union
 import requests
 from requests.status_codes import codes as status_codes
 
+
 logger = logging.getLogger("airbyte")
 
 

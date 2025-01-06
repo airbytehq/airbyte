@@ -487,9 +487,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
         initial_batch_size = 10
         incremental_batch_size = initial_batch_size
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}_2")
-        GoogleSheetsBaseTest.get_sheet_first_row(
-            http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}_2", stream_name=stream_name
-        )
+        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}_2", stream_name=stream_name)
         start_range = 2
         too_many_response_increase = 100
         for range_file_postfix in ("first_batch", "second_batch", "third_batch", "fourth_batch", "fifth_batch"):

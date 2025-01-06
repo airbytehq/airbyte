@@ -8,7 +8,9 @@ from airbyte_cdk.sources.declarative.partition_routers.single_partition_router i
 from airbyte_cdk.sources.types import StreamSlice
 from source_google_sheets.batch_size_manager import BatchSizeManager
 
+
 logger = logging.getLogger("airbyte")
+
 
 class RangePartitionRouter(SinglePartitionRouter):
     """
