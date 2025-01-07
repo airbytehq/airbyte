@@ -226,6 +226,8 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.10.0-rc.6  | 2024-12-18 | [49892](https://github.com/airbytehq/airbyte/pull/49892) | Use a base image: airbyte/java-connector-base:1.0.0 |
+
 | 3.10.0-rc.5 | 2025-01-03 | [50868](https://github.com/airbytehq/airbyte/pull/50868)   | Fix exception handling rules declaration.                                                                                                       |
 | 3.10.0-rc.4 | 2024-12-23 | [48587](https://github.com/airbytehq/airbyte/pull/48587)   | Fix minor state counting mechanism.                                                                                                                    |
 | 3.10.0-rc.3 | 2024-12-20 | [49918](https://github.com/airbytehq/airbyte/pull/49918)   | Fix minor datatype handling and conversion bugs, maintain big number precision.                                                                 |
