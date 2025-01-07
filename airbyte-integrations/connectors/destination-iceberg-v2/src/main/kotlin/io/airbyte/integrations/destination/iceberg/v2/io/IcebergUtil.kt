@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
@@ -23,7 +24,6 @@ import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
 import io.airbyte.integrations.destination.iceberg.v2.SECRET_ACCESS_KEY
 import io.airbyte.integrations.destination.iceberg.v2.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.time.Duration
 import org.apache.hadoop.conf.Configuration
@@ -52,17 +52,22 @@ import software.amazon.awssdk.services.glue.model.ConcurrentModificationExceptio
 private val logger = KotlinLogging.logger {}
 
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
+const val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
+const val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
+const val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
+
+data class AWSSystemCredentials(
+    @get:JsonProperty("AWS_ACCESS_KEY_ID")
+    val AWS_ACCESS_KEY_ID: String,
+    @get:JsonProperty("AWS_SECRET_ACCESS_KEY")
+    val AWS_SECRET_ACCESS_KEY: String,
+    @get:JsonProperty("AWS_ASSUME_ROLE_EXTERNAL_ID")
+    val AWS_ASSUME_ROLE_EXTERNAL_ID: String
+)
 
 /** Collection of Iceberg related utilities. */
 @Singleton
-class IcebergUtil(private val tableIdGenerator: TableIdGenerator,
-    @Value("\${airbyte.aws.external-id}") val externalId: String,
-    @Value("\${airbyte.aws.access-key-id}") val accessKeyId: String,
-    @Value("\${airbyte.aws.secret-access-key}") val secretAccessKey: String) {
-
-    init {
-        println(externalId)
-    }
+class IcebergUtil(private val tableIdGenerator: TableIdGenerator, val awsSystemCredentials: AWSSystemCredentials? = null) {
 
     internal class InvalidFormatException(message: String) : Exception(message)
 
@@ -283,6 +288,19 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator,
         config: IcebergV2Configuration
     ): Map<String, String> {
         val region = config.s3BucketConfiguration.s3BucketRegion.region
+        val (accessKeyId, secretAccessKey, externalId) = if (awsSystemCredentials != null) {
+            Triple(
+                awsSystemCredentials.AWS_ACCESS_KEY_ID,
+                awsSystemCredentials.AWS_SECRET_ACCESS_KEY,
+                awsSystemCredentials.AWS_ASSUME_ROLE_EXTERNAL_ID
+            )
+        } else {
+            Triple(
+                System.getenv(AWS_ACCESS_KEY_ID),
+                System.getenv(AWS_SECRET_ACCESS_KEY),
+                System.getenv(EXTERNAL_ID)
+            )
+        }
 
         return mapOf(
             AwsProperties.REST_ACCESS_KEY_ID to accessKeyId,

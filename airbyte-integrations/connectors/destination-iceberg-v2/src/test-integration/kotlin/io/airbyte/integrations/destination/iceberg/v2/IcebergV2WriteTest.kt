@@ -10,6 +10,9 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
+import io.airbyte.integrations.destination.iceberg.v2.io.EXTERNAL_ID
+import io.airbyte.integrations.destination.iceberg.v2.io.AWS_ACCESS_KEY_ID
+import io.airbyte.integrations.destination.iceberg.v2.io.AWS_SECRET_ACCESS_KEY
 import java.nio.file.Files
 import java.util.Base64
 import okhttp3.FormBody
@@ -88,7 +91,8 @@ class IcebergGlueWriteTest :
         Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
         IcebergDestinationCleaner(
             IcebergV2TestUtil.getCatalog(
-                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
+                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH),
+                IcebergV2TestUtil.getAWSSystemCredentials()
             )
         )
     ) {
@@ -107,19 +111,16 @@ class IcebergGlueAssumeRoleWriteTest :
         Files.readString(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
         IcebergDestinationCleaner(
             IcebergV2TestUtil.getCatalog(
-                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH)
+                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
+                IcebergV2TestUtil.getAWSSystemCredentials()
             )
         ),
+        IcebergV2TestUtil.getAWSSystemCredentialsAsMap()
     ) {
         @Test
-        override fun testBasicWrite() {
-            super.testBasicWrite()
-        }
-
-        @Test
-        @Disabled("dest iceberge-v2 doesn't support unknown types")
+        @Disabled("dest iceberg-v2 doesn't support unknown types")
         override fun testUnknownTypes() {}
-    }
+}
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
