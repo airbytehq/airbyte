@@ -5,7 +5,7 @@
 from dataclasses import dataclass
 from typing import Any, Mapping, Union
 
-import dpath.util
+import dpath
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
@@ -74,7 +74,7 @@ class ObjectDpathExtractor(DpathExtractor):
             extracted = response_body
         else:
             path = [path.eval(self.config) for path in self.field_path]
-            extracted = dpath.util.get(response_body, path, default=[])
+            extracted = dpath.get(next(response_body), path, default=[])
         if isinstance(extracted, list):
             return extracted
         elif isinstance(extracted, dict) and all(isinstance(v, dict) for v in extracted.values()):  # Ensure object is dict[Hashable, dict]
