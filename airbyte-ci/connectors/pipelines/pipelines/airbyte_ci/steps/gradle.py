@@ -6,9 +6,10 @@ from abc import ABC
 from datetime import datetime
 from typing import Any, ClassVar, List, Optional, Tuple, cast
 
-import pipelines.dagger.actions.system.docker
 import requests
 from dagger import CacheSharingMode, CacheVolume, Container, ExecError
+
+import pipelines.dagger.actions.system.docker
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import AIRBYTE_SUBMODULE_DIR_NAME, AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets

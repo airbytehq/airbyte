@@ -330,9 +330,9 @@ class SqlProcessorBase(RecordProcessorBase):
 
         if DEBUG_MODE:
             found_schemas = self._get_schemas_list()
-            assert (
-                schema_name in found_schemas
-            ), f"Schema {schema_name} was not created. Found: {found_schemas}"
+            assert schema_name in found_schemas, (
+                f"Schema {schema_name} was not created. Found: {found_schemas}"
+            )
 
     def _quote_identifier(self, identifier: str) -> str:
         """Return the given identifier, quoted."""
@@ -839,9 +839,8 @@ class SqlProcessorBase(RecordProcessorBase):
         _ = stream_name
         deletion_name = f"{final_table_name}_deleteme"
         commands = "\n".join([
-            f"ALTER TABLE {self._fully_qualified(final_table_name)} RENAME " f"TO {deletion_name};",
-            f"ALTER TABLE {self._fully_qualified(temp_table_name)} RENAME "
-            f"TO {final_table_name};",
+            f"ALTER TABLE {self._fully_qualified(final_table_name)} RENAME TO {deletion_name};",
+            f"ALTER TABLE {self._fully_qualified(temp_table_name)} RENAME TO {final_table_name};",
             f"DROP TABLE {self._fully_qualified(deletion_name)};",
         ])
         self._execute_sql(commands)
