@@ -21,10 +21,8 @@ from .request_builder import RequestBuilder, get_account_request
 from .response_builder import get_account_response
 from .utils import config, read_output
 
-_FIELDS = [
-    "id",
-    "instagram_business_account"
-]
+
+_FIELDS = ["id", "instagram_business_account"]
 
 _STREAM_NAME = "Api"
 
@@ -46,7 +44,6 @@ def _record() -> RecordBuilder:
 
 
 class TestFullRefresh(TestCase):
-
     @staticmethod
     def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
@@ -70,10 +67,7 @@ class TestFullRefresh(TestCase):
     def test_accounts_with_no_instagram_business_account_field(self, http_mocker: HttpMocker) -> None:
         test = "not_instagram_business_account"
         mocked_response = json.dumps(find_template(f"api_for_{test}", __file__))
-        http_mocker.get(
-            get_account_request().build(),
-            HttpResponse(mocked_response, 200)
-        )
+        http_mocker.get(get_account_request().build(), HttpResponse(mocked_response, 200))
         original_records = json.loads(mocked_response)
 
         output = self._read(config_=config())

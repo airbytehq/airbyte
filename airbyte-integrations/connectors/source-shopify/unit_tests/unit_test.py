@@ -100,8 +100,9 @@ def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_
         "Internal Server Error for slice (500)",
     ],
 )
-def test_unavailable_stream(requests_mock, auth_config, stream, slice: Optional[Mapping[str, Any]], status_code: int,
-                            json_response: Mapping[str, Any]):
+def test_unavailable_stream(
+    requests_mock, auth_config, stream, slice: Optional[Mapping[str, Any]], status_code: int, json_response: Mapping[str, Any]
+):
     stream = stream(auth_config)
     url = stream.url_base + stream.path(stream_slice=slice)
     requests_mock.get(url=url, json=json_response, status_code=status_code)

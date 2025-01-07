@@ -1,9 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 from datetime import datetime
 
+from source_gcs import Cursor
+
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
-from source_gcs import Cursor
 
 
 def test_add_file_successfully(cursor, remote_file, logger):
@@ -125,9 +126,6 @@ def test_add_file_zip_files(mocked_reader, zip_file, logger):
     cursor = Cursor(stream_config=FileBasedStreamConfig(name="test", globs=["**/*.zip"], format={"filetype": "csv"}))
     cursor.add_file(zip_file)
 
-    saved_history_cursor = datetime.strptime(
-        cursor._file_to_datetime_history[zip_file.displayed_uri],
-        cursor.DATE_TIME_FORMAT
-    )
+    saved_history_cursor = datetime.strptime(cursor._file_to_datetime_history[zip_file.displayed_uri], cursor.DATE_TIME_FORMAT)
 
     assert saved_history_cursor == zip_file.last_modified

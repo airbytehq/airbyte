@@ -133,6 +133,7 @@ class TestCheckPublishToPyPiIsDeclared:
         assert result.status == CheckStatus.PASSED
         assert "PyPi publishing is declared" in result.message
 
+
 class TestCheckConnectorLicense:
     def test_fail_when_license_is_missing(self, mocker):
         # Arrange

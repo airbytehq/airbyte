@@ -22,6 +22,7 @@ from pydash.objects import get
 from rich.console import Console
 from simpleeval import simple_eval
 
+
 console = Console()
 
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")

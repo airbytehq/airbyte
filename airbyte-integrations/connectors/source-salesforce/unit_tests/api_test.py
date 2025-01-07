@@ -13,6 +13,20 @@ from unittest.mock import Mock
 import freezegun
 import pytest
 import requests_mock
+from config_builder import ConfigBuilder
+from conftest import generate_stream
+from salesforce_job_response_builder import JobInfoResponseBuilder
+from source_salesforce.api import Salesforce
+from source_salesforce.source import SourceSalesforce
+from source_salesforce.streams import (
+    CSV_FIELD_SIZE_LIMIT,
+    BulkIncrementalSalesforceStream,
+    BulkSalesforceStream,
+    BulkSalesforceSubStream,
+    IncrementalRestSalesforceStream,
+    RestSalesforceStream,
+)
+
 from airbyte_cdk.models import (
     AirbyteStateBlob,
     AirbyteStream,
@@ -28,19 +42,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
-from config_builder import ConfigBuilder
-from conftest import generate_stream
-from salesforce_job_response_builder import JobInfoResponseBuilder
-from source_salesforce.api import Salesforce
-from source_salesforce.source import SourceSalesforce
-from source_salesforce.streams import (
-    CSV_FIELD_SIZE_LIMIT,
-    BulkIncrementalSalesforceStream,
-    BulkSalesforceStream,
-    BulkSalesforceSubStream,
-    IncrementalRestSalesforceStream,
-    RestSalesforceStream,
-)
+
 
 _A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
 _A_JSON_RESPONSE = {"id": "any id"}
@@ -100,9 +102,7 @@ def test_stream_slice_step_validation(stream_slice_step: str, expected_error_mes
         ),
     ],
 )
-def test_login_authentication_error_handler(
-    stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg
-):
+def test_login_authentication_error_handler(stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg):
     source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     logger = logging.getLogger("airbyte")
     requests_mock.register_uri(
@@ -557,13 +557,21 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=True)
 
     job_id_1 = "fake_job_1"
-    requests_mock.register_uri("GET", _bulk_stream_path() + f"/{job_id_1}", [{"json": JobInfoResponseBuilder().with_id(job_id_1).with_state("JobComplete").get_response()}])
+    requests_mock.register_uri(
+        "GET",
+        _bulk_stream_path() + f"/{job_id_1}",
+        [{"json": JobInfoResponseBuilder().with_id(job_id_1).with_state("JobComplete").get_response()}],
+    )
     requests_mock.register_uri("DELETE", _bulk_stream_path() + f"/{job_id_1}")
     requests_mock.register_uri("GET", _bulk_stream_path() + f"/{job_id_1}/results", text="Field1,LastModifiedDate,ID\ntest,2023-01-15,1")
     requests_mock.register_uri("PATCH", _bulk_stream_path() + f"/{job_id_1}")
 
     job_id_2 = "fake_job_2"
-    requests_mock.register_uri("GET", _bulk_stream_path() + f"/{job_id_2}", [{"json": JobInfoResponseBuilder().with_id(job_id_2).with_state("JobComplete").get_response()}])
+    requests_mock.register_uri(
+        "GET",
+        _bulk_stream_path() + f"/{job_id_2}",
+        [{"json": JobInfoResponseBuilder().with_id(job_id_2).with_state("JobComplete").get_response()}],
+    )
     requests_mock.register_uri("DELETE", _bulk_stream_path() + f"/{job_id_2}")
     requests_mock.register_uri(
         "GET", _bulk_stream_path() + f"/{job_id_2}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,2\ntest,2023-02-20,22"
@@ -574,7 +582,11 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     queries_history = requests_mock.register_uri(
         "POST", _bulk_stream_path(), [{"json": {"id": job_id_1}}, {"json": {"id": job_id_2}}, {"json": {"id": job_id_3}}]
     )
-    requests_mock.register_uri("GET", _bulk_stream_path() + f"/{job_id_3}", [{"json": JobInfoResponseBuilder().with_id(job_id_3).with_state("JobComplete").get_response()}])
+    requests_mock.register_uri(
+        "GET",
+        _bulk_stream_path() + f"/{job_id_3}",
+        [{"json": JobInfoResponseBuilder().with_id(job_id_3).with_state("JobComplete").get_response()}],
+    )
     requests_mock.register_uri("DELETE", _bulk_stream_path() + f"/{job_id_3}")
     requests_mock.register_uri("GET", _bulk_stream_path() + f"/{job_id_3}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,3")
     requests_mock.register_uri("PATCH", _bulk_stream_path() + f"/{job_id_3}")
@@ -586,18 +598,24 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
 
     # assert request params: has requests might not be performed in a specific order because of concurrent CDK, we match on any request
     all_requests = {request.text for request in queries_history.request_history}
-    assert any([
-        "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00"
-        in request for request in all_requests
-    ])
-    assert any([
-        "LastModifiedDate >= 2023-01-31T10:10:10.000+00:00 AND LastModifiedDate < 2023-03-02T10:10:10.000+00:00"
-        in request for request in all_requests
-    ])
-    assert any([
-        "LastModifiedDate >= 2023-03-02T10:10:10.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00"
-        in request for request in all_requests
-    ])
+    assert any(
+        [
+            "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00" in request
+            for request in all_requests
+        ]
+    )
+    assert any(
+        [
+            "LastModifiedDate >= 2023-01-31T10:10:10.000+00:00 AND LastModifiedDate < 2023-03-02T10:10:10.000+00:00" in request
+            for request in all_requests
+        ]
+    )
+    assert any(
+        [
+            "LastModifiedDate >= 2023-03-02T10:10:10.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00" in request
+            for request in all_requests
+        ]
+    )
 
     # as the execution is concurrent, we can only assert the last state message here
     last_actual_state = [item.state.stream.stream_state for item in result if item.type == Type.STATE][-1]

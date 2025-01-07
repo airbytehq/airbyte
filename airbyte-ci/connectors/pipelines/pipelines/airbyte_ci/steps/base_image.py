@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import yaml
 from base_images import version_registry  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME  # type: ignore
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
 from pipelines.models.steps import StepModifyingFiles, StepResult, StepStatus
@@ -22,7 +23,6 @@ class NoBaseImageAddressInMetadataError(Exception):
 
 
 class UpdateBaseImageMetadata(StepModifyingFiles):
-
     BASE_IMAGE_LIST_CACHE_TTL_SECONDS = 60 * 60 * 24  # 1 day
 
     context: ConnectorContext

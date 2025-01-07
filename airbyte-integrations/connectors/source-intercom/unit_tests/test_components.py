@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.streams import Stream
 
@@ -75,8 +76,8 @@ def test_sub_slicer(components_module, last_record, expected, records):
     ],
 )
 def test_rate_limiter(components_module, rate_limit_header, backoff_time):
-    
     IntercomRateLimiter = components_module.IntercomRateLimiter
+
     def check_backoff_time(t):
         """A replacer for original `IntercomRateLimiter.backoff_time`"""
         assert backoff_time == t, f"Expected {backoff_time}, got {t}"

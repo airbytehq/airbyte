@@ -59,7 +59,10 @@ open class MockPathFactory : PathFactory {
         }
     }
 
-    override fun getPathMatcher(stream: DestinationStream): PathMatcher {
+    override fun getPathMatcher(
+        stream: DestinationStream,
+        suffixPattern: String? // ignored
+    ): PathMatcher {
         return PathMatcher(
             regex =
                 Regex(
