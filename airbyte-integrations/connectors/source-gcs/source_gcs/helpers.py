@@ -5,9 +5,10 @@
 
 import json
 
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from google.cloud import storage
 from google.oauth2 import credentials, service_account
+
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 
 def get_gcs_client(config):

@@ -21,7 +21,7 @@ import io.airbyte.cdk.load.command.DestinationStream
  * the associated ranges have been persisted remotely, and that platform checkpoint messages can be
  * emitted.
  *
- * [State.LOCAL] is used internally to indicate that records have been spooled to disk for
+ * [State.STAGED] is used internally to indicate that records have been spooled to disk for
  * processing and should not be used by implementors.
  *
  * When a stream has been read to End-of-stream, and all ranges between 0 and End-of-stream are
@@ -54,7 +54,8 @@ interface Batch {
     val groupId: String?
 
     enum class State {
-        LOCAL,
+        PROCESSED,
+        STAGED,
         PERSISTED,
         COMPLETE
     }
@@ -93,11 +94,11 @@ data class BatchEnvelope<B : Batch>(
 ) {
     constructor(
         batch: B,
-        range: Range<Long>,
+        range: Range<Long>?,
         streamDescriptor: DestinationStream.Descriptor
     ) : this(
         batch = batch,
-        ranges = TreeRangeSet.create(listOf(range)),
+        ranges = range?.let { TreeRangeSet.create(listOf(range)) } ?: TreeRangeSet.create(),
         streamDescriptor = streamDescriptor
     )
 

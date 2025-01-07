@@ -11,12 +11,14 @@ from typing import TYPE_CHECKING, Callable, List
 
 import asyncclick as click
 from connector_ops.utils import ConnectorLanguage  # type: ignore
+
 from pipelines import consts
 from pipelines.airbyte_ci.steps.base_image import UpdateBaseImageMetadata
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL, is_automerge_pull_request, update_commit_status_check
 
 if TYPE_CHECKING:
     from dagger import Container
+
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
     from pipelines.models.steps import StepResult
 

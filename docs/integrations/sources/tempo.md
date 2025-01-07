@@ -49,6 +49,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.4.6 | 2024-12-28 | [50812](https://github.com/airbytehq/airbyte/pull/50812) | Update dependencies |
+| 0.4.5 | 2024-12-21 | [50359](https://github.com/airbytehq/airbyte/pull/50359) | Update dependencies |
 | 0.4.4 | 2024-12-14 | [49755](https://github.com/airbytehq/airbyte/pull/49755) | Update dependencies |
 | 0.4.3 | 2024-12-12 | [49417](https://github.com/airbytehq/airbyte/pull/49417) | Update dependencies |
 | 0.4.2 | 2024-12-11 | [47545](https://github.com/airbytehq/airbyte/pull/47545) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

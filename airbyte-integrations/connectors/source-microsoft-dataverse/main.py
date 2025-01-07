@@ -4,5 +4,6 @@
 
 from source_microsoft_dataverse.run import run
 
+
 if __name__ == "__main__":
     run()

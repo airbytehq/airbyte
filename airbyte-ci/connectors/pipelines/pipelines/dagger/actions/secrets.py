@@ -3,6 +3,7 @@
 #
 
 """This modules groups functions made to download/upload secrets from/to a remote secret service and provide these secret in a dagger Directory."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
     from typing import Callable, List
 
     from dagger import Container
+
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 

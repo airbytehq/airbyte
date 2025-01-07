@@ -10,11 +10,12 @@ from urllib.error import URLError
 
 import pytest
 import source_bing_ads.client
-from airbyte_cdk.utils import AirbyteTracedException
 from bingads.authorization import AuthorizationData, OAuthTokens
 from bingads.v13.bulk import BulkServiceManager
 from bingads.v13.reporting.exceptions import ReportingDownloadException
 from suds import sudsobject
+
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 def test_sudsobject_todict_primitive_types():

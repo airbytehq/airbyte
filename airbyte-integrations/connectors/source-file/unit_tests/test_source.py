@@ -8,6 +8,8 @@ from copy import deepcopy
 
 import jsonschema
 import pytest
+from source_file.source import SourceFile
+
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -22,7 +24,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models.airbyte_protocol import Type as MessageType
-from source_file.source import SourceFile
+
 
 logger = logging.getLogger("airbyte")
 
