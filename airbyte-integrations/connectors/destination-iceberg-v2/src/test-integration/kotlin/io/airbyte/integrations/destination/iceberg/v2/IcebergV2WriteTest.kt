@@ -92,9 +92,6 @@ class IcebergGlueWriteTest :
             )
         )
     ) {
-    @Test
-    @Disabled("dest iceberge-v2 doesn't support unknown types")
-    override fun testUnknownTypes() {}
 
     @Test
     override fun testBasicWrite() {
