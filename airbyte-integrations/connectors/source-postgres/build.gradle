@@ -2,8 +2,13 @@ import org.jsonschema2pojo.SourceType
 
 plugins {
     id 'airbyte-java-connector'
+    id 'java-library'
     id "org.jsonschema2pojo" version "1.2.1"
+    id 'maven-publish'
 }
+
+group = 'io.airbyte.connectors'
+version = '1.0.0-SNAPSHOT'
 
 java {
     compileJava {
@@ -50,4 +55,20 @@ compileKotlin {
     dependsOn {
         generateJsonSchema2Pojo
     }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            from components.java
+        }
+    }
+}
+
+tasks.named("sourcesJar") {
+    dependsOn("generateJsonSchema2Pojo")
 }

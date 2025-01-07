@@ -174,11 +174,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
   }
 
-  PostgresSource() {
+  public PostgresSource() {
     this(new EnvVariableFeatureFlags());
   }
 
-  PostgresSource(FeatureFlags featureFlags) {
+  public PostgresSource(FeatureFlags featureFlags) {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
     this.featureFlags = featureFlags;
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
