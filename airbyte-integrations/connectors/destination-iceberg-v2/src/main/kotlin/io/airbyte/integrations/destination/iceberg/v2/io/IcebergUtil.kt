@@ -65,7 +65,10 @@ data class AWSSystemCredentials(
     val AWS_ASSUME_ROLE_EXTERNAL_ID: String
 )
 
-/** Collection of Iceberg related utilities. */
+/** Collection of Iceberg related utilities.
+ * The awsSystemCredentials property is a temporary fix to allow us to run the integrations tests.
+ * This will be removed when we change all of this to use Micronaut
+ * */
 @Singleton
 class IcebergUtil(private val tableIdGenerator: TableIdGenerator, val awsSystemCredentials: AWSSystemCredentials? = null) {
 
