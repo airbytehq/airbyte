@@ -22,7 +22,7 @@ data:
   githubIssueLabel: destination-s3-data-lake
   icon: icon.svg
   license: ELv2
-  name: S3 Data Lake Destination
+  name: S3 Data Lake Destination (BETA)
   releaseStage: alpha
   supportLevel: community
   supportsRefreshes: true
