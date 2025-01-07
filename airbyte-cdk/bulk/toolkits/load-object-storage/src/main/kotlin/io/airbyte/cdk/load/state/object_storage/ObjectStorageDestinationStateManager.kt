@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.state.object_storage
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
@@ -21,18 +20,16 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.nio.file.Paths
-import kotlinx.coroutines.flow.map
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class ObjectStorageDestinationState(
     // (State -> (GenerationId -> (Key -> PartNumber)))
     @JsonProperty("generations_by_state")
-    var generationMap: MutableMap<State, MutableMap<Long, MutableMap<String, Long>>> =
-        mutableMapOf(),
+    var generationMap: ConcurrentHashMap<State, ConcurrentHashMap<Long, MutableMap<String, Long>>> =
+        ConcurrentHashMap(),
     @JsonProperty("count_by_key") var countByKey: MutableMap<String, Long> = mutableMapOf()
 ) : DestinationState {
     enum class State {
@@ -50,8 +47,6 @@ class ObjectStorageDestinationState(
             mapOf(METADATA_GENERATION_ID_KEY to stream.generationId.toString())
     }
 
-    @JsonIgnore private val accessLock = Mutex()
-
     suspend fun addObject(
         generationId: Long,
         key: String,
@@ -59,23 +54,19 @@ class ObjectStorageDestinationState(
         isStaging: Boolean = false
     ) {
         val state = if (isStaging) State.STAGED else State.FINALIZED
-        accessLock.withLock {
-            generationMap
-                .getOrPut(state) { mutableMapOf() }
-                .getOrPut(generationId) { mutableMapOf() }[key] = partNumber ?: 0L
-        }
+        generationMap
+            .getOrPut(state) { ConcurrentHashMap() }
+            .getOrPut(generationId) { ConcurrentHashMap() }[key] = partNumber ?: 0L
     }
 
     suspend fun removeObject(generationId: Long, key: String, isStaging: Boolean = false) {
         val state = if (isStaging) State.STAGED else State.FINALIZED
-        accessLock.withLock { generationMap[state]?.get(generationId)?.remove(key) }
+        generationMap[state]?.get(generationId)?.remove(key)
     }
 
     suspend fun dropGenerationsBefore(minimumGenerationId: Long) {
-        accessLock.withLock {
-            State.entries.forEach { state ->
-                (0 until minimumGenerationId).forEach { generationMap[state]?.remove(it) }
-            }
+        State.entries.forEach { state ->
+            (0 until minimumGenerationId).forEach { generationMap[state]?.remove(it) }
         }
     }
 
@@ -91,21 +82,19 @@ class ObjectStorageDestinationState(
     )
 
     suspend fun getGenerations(): Sequence<Generation> =
-        accessLock.withLock {
-            generationMap.entries
-                .asSequence()
-                .map { (state, gens) ->
-                    val isStaging = state == State.STAGED
-                    gens.map { (generationId, objects) ->
-                        Generation(
-                            isStaging,
-                            generationId,
-                            objects.map { (key, partNumber) -> ObjectAndPart(key, partNumber) }
-                        )
-                    }
+        generationMap.entries
+            .asSequence()
+            .map { (state, gens) ->
+                val isStaging = state == State.STAGED
+                gens.map { (generationId, objects) ->
+                    Generation(
+                        isStaging,
+                        generationId,
+                        objects.map { (key, partNumber) -> ObjectAndPart(key, partNumber) }
+                    )
                 }
-                .flatten()
-        }
+            }
+            .flatten()
 
     suspend fun getNextPartNumber(): Long =
         getGenerations().flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
@@ -132,9 +121,7 @@ class ObjectStorageDestinationState(
 
     /** Used to guarantee the uniqueness of a key */
     suspend fun ensureUnique(key: String): String {
-        val ordinal =
-            accessLock.withLock { countByKey.merge(key, 0L) { old, new -> maxOf(old + 1, new) } }
-                ?: 0L
+        val ordinal = countByKey.merge(key, 0L) { old, new -> maxOf(old + 1, new) } ?: 0L
         return if (ordinal > 0L) {
             "$key-$ordinal"
         } else {
@@ -215,7 +202,11 @@ class ObjectStorageFallbackPersister(
                     "Inferred state for generations with size: $generationSizes (minimum=${stream.minimumGenerationId}; current=${stream.generationId})"
                 }
                 return ObjectStorageDestinationState(
-                    mutableMapOf(ObjectStorageDestinationState.State.FINALIZED to it),
+                    ConcurrentHashMap(
+                        mutableMapOf(
+                            ObjectStorageDestinationState.State.FINALIZED to ConcurrentHashMap(it)
+                        )
+                    ),
                     countByKey
                 )
             }

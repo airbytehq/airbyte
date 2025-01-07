@@ -7,12 +7,16 @@ package io.airbyte.cdk.load.task
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.StreamManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTask
@@ -156,5 +160,23 @@ class DestinationTaskLauncherUTest {
 
         coVerify { failStreamTaskFactory.make(any(), e, any()) }
         coVerify { taskScopeProvider.launch(match { it.innerTask is FailStreamTask }) }
+    }
+
+    @Test
+    fun `test run close stream no more than once per stream`() = runTest {
+        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
+        val streamManager = mockk<StreamManager>(relaxed = true)
+        coEvery { syncManager.getStreamManager(any()) } returns streamManager
+        coEvery { streamManager.isBatchProcessingComplete() } returns true
+        val descriptor = DestinationStream.Descriptor("namespace", "name")
+        destinationTaskLauncher.handleNewBatch(
+            descriptor,
+            BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
+        )
+        destinationTaskLauncher.handleNewBatch(
+            descriptor,
+            BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
+        )
+        coVerify(exactly = 1) { closeStreamTaskFactory.make(any(), any()) }
     }
 }
