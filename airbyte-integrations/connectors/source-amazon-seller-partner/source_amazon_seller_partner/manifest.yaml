@@ -1447,6 +1447,53 @@ definitions:
             type: DpathExtractor
             field_path: [ ]
 
+    get_v2_settlement_report_data_flat_file:
+      type: DeclarativeStream
+      name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+      primary_key: [ ]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        #        replication_start_date_limit_in_days = 365
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        type: SimpleRetriever
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/flat_file_settlement_v2_helper"
+              parent_key: "reportId"
+              partition_field: "reportId"
+              incremental_dependency: true
+        requester:
+          type: HttpRequester
+          path: "reports/2021-06-30/{{ stream_slice['reportId'] }}"
+          url_base: "{{ config['endpoint'] }}"
+          http_method: GET
+          authenticator: "#/definitions/authenticator"
+          request_headers:
+            content-type: "application/json"
+        decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.decoder.GzipCsvDecoder
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.type_transformers.FlatFileSettlementV2ReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+
   basic_async_retriever:
     type: AsyncRetriever
     status_mapping:
@@ -1512,6 +1559,64 @@ definitions:
       type: DpathExtractor
       field_path: []
 
+  flat_file_settlement_v2_helper:
+    type: DeclarativeStream
+    name: flat_file_settlement_v2_helper
+    primary_key: [ ]
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: dataEndTime
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      #        replication_start_date_limit_in_days = 365
+      step: "P10Y"
+      cursor_granularity: "PT1S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        field_name: "createdSince"
+        inject_into: "request_parameter"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        field_name: "createdUntil"
+        inject_into: "request_parameter"
+    ignore_stream_slicer_parameters_on_paginated_requests: true
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "reports/2021-06-30/reports"
+        http_method: GET
+        request_headers:
+          content-type: "application/json"
+        request_parameters:
+          reportTypes: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["reports"]
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: nextToken
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: pageSize
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.NextToken }}"
+
 streams:
   - $ref: "#/definitions/streams/orders"
   - $ref: "#/definitions/streams/order_items"
@@ -1552,6 +1657,8 @@ streams:
   - $ref: "#/definitions/streams/get_merchant_listings_all_data"
   - $ref: "#/definitions/streams/get_merchant_listings_data"
   - $ref: "#/definitions/streams/get_merchant_listings_inactive_data"
+
+  - $ref: "#/definitions/streams/get_v2_settlement_report_data_flat_file"
 
 concurrency_level:
   type: ConcurrencyLevel
