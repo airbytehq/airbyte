@@ -18,7 +18,7 @@ class IcebergDestinationCleaner(private val catalog: Catalog) : DestinationClean
         val namespaces: List<Namespace> =
             (catalog as SupportsNamespaces).listNamespaces().filter {
                 val namespace = it.level(0)
-                randomizedNamespaceRegex.matches(namespace) && isNamespaceOld(namespace)
+                randomizedNamespaceRegex.matches(namespace) && isNamespaceqOld(namespace)
             }
 
         // we're passing explicit TableIdentifier to clearTable, so just use SimpleTableIdGenerator
