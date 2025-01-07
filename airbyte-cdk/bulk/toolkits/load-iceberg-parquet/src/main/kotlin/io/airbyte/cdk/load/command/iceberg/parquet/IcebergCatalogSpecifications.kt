@@ -36,9 +36,10 @@ interface IcebergCatalogSpecifications {
      * uses. For example: `s3://my-bucket/warehouse/`
      */
     @get:JsonSchemaTitle("Warehouse Location")
-    @get:JsonPropertyDescription(
-        "The root location of the data warehouse used by the Iceberg catalog."
+    @get:JsonSchemaDescription(
+        """The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. Must include the storage protocol (such as "s3://" for Amazon S3, or "gs://" for Google GCS)."""
     )
+    @get:JsonSchemaInject(json = """{"examples": ["s3://your-bucket/path/to/store/files/in"]}""")
     @get:JsonProperty("warehouse_location")
     val warehouseLocation: String
 
@@ -49,8 +50,10 @@ interface IcebergCatalogSpecifications {
      * Specifies the default or primary branch name in the catalog repository. For example: `main`
      */
     @get:JsonSchemaTitle("Main Branch Name")
-    @get:JsonPropertyDescription("The primary or default branch name in the catalog repository.")
-    @get:JsonProperty("main_branch_name")
+    @get:JsonPropertyDescription(
+        """The primary or default branch name in the catalog. Most query engines will use "main" by default. See [Iceberg documentation](https://iceberg.apache.org/docs/latest/branching/) for more information."""
+    )
+    @get:JsonProperty("main_branch_name", defaultValue = "main")
     val mainBranchName: String
 
     /**
