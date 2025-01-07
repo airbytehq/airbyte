@@ -10,7 +10,7 @@
       "access_key_id" : {
         "type" : "string",
         "description" : "The AWS Access Key ID with permissions for S3 and Glue operations.",
-        "title" : "AWS Access Key",
+        "title" : "AWS Access Key ID",
         "airbyte_secret" : true,
         "always_show" : true,
         "order" : 0
@@ -104,7 +104,7 @@
               "title" : "AWS Account ID",
               "order" : 1
             },
-            "roleArn" : {
+            "role_arn" : {
               "type" : "string",
               "description" : "The AWS ARN of the role that should be assumed for AWS authentication.",
               "title" : "AWS role ARN",
