@@ -20,23 +20,23 @@ The Docs team maintains a list of [good first issues](https://github.com/airbyte
 If you're new to GitHub and Markdown, complete [the First Contributions tutorial](https://github.com/firstcontributions/first-contributions) and learn [Markdown basics](https://guides.github.com/features/mastering-markdown/) before contributing to Airbyte documentation. Even if you're familiar with the basics, you may be interested in Airbyte's [custom markdown extensions for connector docs](#custom-markdown-extensions-for-connector-docs).
 :::
 
-### Editing directly on GitHub
+## Editing directly on GitHub
 
 To make minor changes (example: fixing typos) or edit a single file, you can edit the file directly on GitHub:
 
 1. Click **Edit this page** at the bottom of any published document on [docs.airbyte.com](https://docs.airbyte.com/). You'll be taken to the GitHub editor.
 2. [Edit the file directly on GitHub and open a Pull Request](https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files).
 
-### Editing on your local machine
+## Editing on your local machine
 
-#### Prerequisites
+### Prerequisites
 
 To contribute to our documentation, please ensure following required technologies are installed on your local machine:
 
 1. [`Node.js`](https://nodejs.org/en/learn/getting-started/how-to-install-nodejs)
 2. [`pnpm`](https://pnpm.io/installation)
 
-#### Setup and Making Changes
+### Setup and Making Changes
 
 To make complex changes or edit multiple files, edit the files on your local machine:
 
@@ -98,17 +98,13 @@ To make complex changes or edit multiple files, edit the files on your local mac
 
 6. Assign `airbytehq/docs` as a Reviewer for your pull request.
 
-### Custom markdown extensions for connector docs
+## Guide To Writing Connector Docs
 
-Airbyte's markdown documentation—particularly connector-specific documentation—needs to gracefully support multiple different contexts: key details may differ between open-source builds and Airbyte Cloud, and the more exhaustive explanations appropriate for https://docs.airbyte.com may bury key details when rendered as inline documentation within the Airbyte application. In order to support all these different contexts without resorting to multiple overlapping files that must be maintained in parallel, Airbyte's documentation tooling supports multiple nonstandard features.
+For instructions specific to connector configuration docs, please see the [Connector Documentation Guide](../connector-development/writing-connector-docs.md).
 
-Please familiarize yourself with all the tools available to you when writing documentation for a connector, so that you can provide appropriately tailored information to your readers in whichever context they see it.
+## Common Tools and Patterns
 
-:::note
-As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/developing-locally/#develop-on-airbyte-webapp), ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
-:::
-
-#### Select between mutually-exclusive content options with `<Tabs>`
+### Select between mutually-exclusive content options with `<Tabs>`
 
 Tabs are a built-in feature of Docusaurus, the tool we use to build `https://docs.airbyte.com`; please refer to [their documentation](https://docusaurus.io/docs/markdown-features/tabs) for their options and behavior in this context. For better site-agnostic documentation, and because we like the feature, we maintain a separate `Tabs` implementation with limited, one-way API compatibility: all usage options we document should behave the same in-app and on `https://docs.airbyte.com`. If you find a discrepancy or breakage, we would appreciate if you [report it as a bug](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2Carea%2Fdocumentation+needs-triage&projects=&template=8-documentation.yaml)! The reverse is not necessarily true, however: Docusaurus supports many use cases besides ours, so supporting its every usage pattern is a deliberate non-goal.
 
@@ -165,64 +161,7 @@ When configuring this hypothetical connector using OAuth authentication, you sho
 - **however**, due to bugs in our in-app markdown rendering library, you should be dilligent about using empty lines to separate different formatting-related things (surrounding tags and their contents, paragraphs vs lists, etc)
 - You should also avoid indenting `TabItem` tags and their content according to html conventions, since text indented by four spaces (common for html nested inside two levels of tags) can be interpreted as a code block; different markdown rendering tools can handle this inconsistently.
 
-#### Jump to the relevant documentation section when specific connector setup inputs are focused with `<FieldAnchor>`
-
-In the documentation, the relevant section needs to be wrapped in a `<FieldAnchor field="path.to.field" />` component. When a user focuses the field identified by the `field` attribute in the connector setup UI, the documentation pane will automatically scroll to the associated section of the documentation, highlighting all content contained inside the `<FieldAnchor></FieldAnchor>` tag. These are rendered as regular divs in the documentation site, so they have no effect in places other than the in-app documentation panel—however, note that there must be blank lines between a custom tag like `FieldAnchor` the content it wraps for the documentation site to render markdown syntax inside the custom tag to html.
-
-The `field` attribute must be a valid json path to one of the properties nested under `connectionSpecification.properties` in that connector's `spec.json` or `spec.yaml` file. For example, if the connector spec contains a `connectionSpecification.properties.replication_method.replication_slot`, you would mark the start of the related documentation section with `<FieldAnchor field="replication_method.replication_slot">` and its end with `</FieldAnchor>`. It's also possible to highlight the same section for multiple fields by separating them with commas, like `<FieldAnchor field="replication_method.replication_slot,replication_method.queue_size">`. To mark a section as highlighted after the user picks an option from a `oneOf`: use a `field` prop like `path.to.field[value-of-selection-key]`, where the `value-of-selection-key` is the value of a `const` field nested inside that `oneOf`. For example, if the specification of the `oneOf` field is:
-
-```json
-"replication_method": {
-  "type": "object",
-  "title": "Update Method",
-  "oneOf": [
-    {
-      "title": "Read Changes using Binary Log (CDC)",
-      "required": ["method"],
-      "properties": {
-        "method": {
-          "type": "string",
-          "const": "CDC",
-          "order": 0
-        },
-        "initial_waiting_seconds": {
-          "type": "integer",
-          "title": "Initial Waiting Time in Seconds (Advanced)",
-        },
-      }
-    },
-    {
-      "title": "Scan Changes with User Defined Cursor",
-      "required": ["method"],
-      "properties": {
-        "method": {
-          "type": "string",
-          "const": "STANDARD",
-          "order": 0
-        }
-      }
-    }
-  ]
-}
-```
-
-The selection keys are `CDC` and `STANDARD`, so you can wrap a specific replication method's documentation section with a `<FieldAnchor field="replication_method[CDC]">...</FieldAnchor>` tag, and it will be highlighted if the user selects CDC replication in the UI.
-
-:::tip
-Because of their close connection with the connector setup form fields, `<FieldAnchor>` tags are only enabled for the source and destination setup pages.
-:::
-
-#### Prevent specific content from rendering in the UI with `<HideInUI>`
-
-Certain content is important to document, but unhelpful in the context of the Airbyte UI's inline documentation views:
-
-- background information that helps users understand a connector but doesn't affect configuration
-- edge cases that are unusual but time-consuming to solve
-- context for readers on the documentation site about environment-specific content (see [below](#environment-specific-in-app-content-with-magic-html-comments))
-
-Wrapping such content in a pair of `<HideInUI>...</HideInUI>` tags will prevent it from being rendered within the Airbyte UI without affecting its presentation on https://docs.airbyte.com. This allows a single markdown file to be the source of truth for both a streamlined in-app reference and a more thorough treatment on the documentation website.
-
-#### Environment-specific in-app content with magic html comments
+### Environment-specific in-app content with magic html comments
 
 Sometimes, there are connector setup instructions which differ between open-source Airbyte builds and Airbyte Cloud. Document both cases, but wrap each in a pair of special HTML comments:
 
@@ -254,7 +193,7 @@ Content outside of the magic-comment-delimited blocks will be rendered everywher
 
 Note that the documentation site will render _all_ environment-specific content, so please introduce environment-specific variants with some documentation-site-only context (like the hidden subheadings in the example above) to disambiguate.
 
-#### Contextually-styled callouts with admonition blocks
+### Contextually-styled callouts with admonition blocks
 
 We have added support for [Docusaurus' admonition syntax](https://docusaurus.io/docs/markdown-features/admonitions) to Airbyte's in-app markdown renderer.
 
@@ -332,7 +271,7 @@ Some **dangerous** content with _Markdown_ `syntax`.
 
 :::
 
-#### Collapsible content with `<details>` and `<summary>`
+### Collapsible content with `<details>` and `<summary>`
 
 ```md
 ## Ordinary markdown content
@@ -347,7 +286,7 @@ Back to ordinary markdown content.
 
 Eagle-eyed readers may note that _all_ markdown should support this feature since it's part of the html spec. However, it's worth special mention since these dropdowns have been styled to be a graceful visual fit within our rendered documentation in all environments.
 
-#### Documenting PyAirbyte usage
+### Documenting PyAirbyte usage
 
 PyAirbyte is a Python library that allows to run syncs within a Python script for a subset of connectors. Documentation around PyAirbyte connectors is automatically generated from the connector's JSON schema spec. There are a few approaches to combine full control over the documentation with automatic generation for common cases:
 
@@ -370,7 +309,6 @@ The `PyAirbyteExample` component will generate a code example that can be run wi
 
 ## Additional guidelines
 
-- If you're updating a connector doc, follow the [Connector documentation template](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw)
 - If you're adding a new file, update the [sidebars.js file](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebars.js)
 - If you're adding a README to a code module, make sure the README has the following components:
   - A brief description of the module

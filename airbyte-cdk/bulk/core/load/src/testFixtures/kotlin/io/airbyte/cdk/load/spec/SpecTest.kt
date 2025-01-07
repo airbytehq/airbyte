@@ -5,11 +5,10 @@
 package io.airbyte.cdk.load.spec
 
 import com.deblock.jsondiff.DiffGenerator
-import com.deblock.jsondiff.diff.JsonDiff
 import com.deblock.jsondiff.matcher.CompositeJsonMatcher
 import com.deblock.jsondiff.matcher.JsonMatcher
-import com.deblock.jsondiff.matcher.LenientJsonObjectPartialMatcher
 import com.deblock.jsondiff.matcher.StrictJsonArrayPartialMatcher
+import com.deblock.jsondiff.matcher.StrictJsonObjectPartialMatcher
 import com.deblock.jsondiff.matcher.StrictPrimitivePartialMatcher
 import com.deblock.jsondiff.viewer.OnlyErrorDiffViewer
 import io.airbyte.cdk.command.FeatureFlag
@@ -17,7 +16,8 @@ import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToPrettyPrintedString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.file.Files
 import java.nio.file.Path
@@ -36,10 +36,12 @@ import org.junit.jupiter.api.assertAll
  */
 abstract class SpecTest :
     IntegrationTest(
-        FakeDataDumper,
-        NoopDestinationCleaner,
-        NoopExpectedRecordMapper,
+        dataDumper = FakeDataDumper,
+        destinationCleaner = NoopDestinationCleaner,
+        recordMangler = NoopExpectedRecordMapper,
     ) {
+    private val testResourcesPath = Path.of("src/test-integration/resources")
+
     @Test
     fun testSpecOss() {
         testSpec("expected-spec-oss.json")
@@ -54,14 +56,18 @@ abstract class SpecTest :
         expectedSpecFilename: String,
         vararg featureFlags: FeatureFlag,
     ) {
-        val expectedSpecPath = Path.of("src/test-integration/resources", expectedSpecFilename)
+        val expectedSpecPath = testResourcesPath.resolve(expectedSpecFilename)
 
         if (!Files.exists(expectedSpecPath)) {
+            Files.createDirectories(testResourcesPath)
             Files.createFile(expectedSpecPath)
         }
         val expectedSpec = Files.readString(expectedSpecPath)
         val process =
-            destinationProcessFactory.createDestinationProcess("spec", featureFlags = featureFlags)
+            destinationProcessFactory.createDestinationProcess(
+                "spec",
+                featureFlags = featureFlags,
+            )
         runBlocking { process.run() }
         val messages = process.readMessages()
         val specMessages = messages.filter { it.type == AirbyteMessage.Type.SPEC }
@@ -73,22 +79,34 @@ abstract class SpecTest :
         )
 
         val spec = specMessages.first().spec
-        val actualSpecPrettyPrint: String =
-            Jsons.writerWithDefaultPrettyPrinter().writeValueAsString(spec)
+        val actualSpecPrettyPrint: String = spec.deserializeToPrettyPrintedString()
         Files.write(expectedSpecPath, actualSpecPrettyPrint.toByteArray())
 
         val jsonMatcher: JsonMatcher =
             CompositeJsonMatcher(
                 StrictJsonArrayPartialMatcher(),
-                LenientJsonObjectPartialMatcher(),
+                StrictJsonObjectPartialMatcher(),
                 StrictPrimitivePartialMatcher(),
             )
-        val diff: JsonDiff =
-            DiffGenerator.diff(expectedSpec, Jsons.writeValueAsString(spec), jsonMatcher)
+        val diff =
+            OnlyErrorDiffViewer.from(
+                    DiffGenerator.diff(expectedSpec, Jsons.writeValueAsString(spec), jsonMatcher)
+                )
+                .toString()
         assertAll(
             "Spec snapshot test failed. Run this test locally and then `git diff <...>/$expectedSpecFilename` to see what changed, and commit the diff if that change was intentional.",
-            { Assertions.assertEquals("", OnlyErrorDiffViewer.from(diff).toString()) },
-            { Assertions.assertEquals(expectedSpec, actualSpecPrettyPrint) }
+            {
+                Assertions.assertTrue(
+                    diff.isEmpty(),
+                    "Detected semantic diff in JSON:\n" + diff.prependIndent("\t\t")
+                )
+            },
+            {
+                Assertions.assertTrue(
+                    expectedSpec == actualSpecPrettyPrint,
+                    "File contents did not equal generated spec, see git diff for details"
+                )
+            }
         )
     }
 }

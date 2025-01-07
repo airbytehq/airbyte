@@ -4,10 +4,17 @@
 
 package io.airbyte.cdk.load.data
 
-interface AirbyteSchemaIdentityMapper {
-    fun map(schema: AirbyteType): AirbyteType =
+interface AirbyteSchemaMapper {
+    fun map(schema: AirbyteType): AirbyteType
+}
+
+class AirbyteSchemaNoopMapper : AirbyteSchemaMapper {
+    override fun map(schema: AirbyteType): AirbyteType = schema
+}
+
+interface AirbyteSchemaIdentityMapper : AirbyteSchemaMapper {
+    override fun map(schema: AirbyteType): AirbyteType =
         when (schema) {
-            is NullType -> mapNull(schema)
             is StringType -> mapString(schema)
             is BooleanType -> mapBoolean(schema)
             is IntegerType -> mapInteger(schema)
@@ -26,7 +33,6 @@ interface AirbyteSchemaIdentityMapper {
             is UnknownType -> mapUnknown(schema)
         }
 
-    fun mapNull(schema: NullType): AirbyteType = schema
     fun mapString(schema: StringType): AirbyteType = schema
     fun mapBoolean(schema: BooleanType): AirbyteType = schema
     fun mapInteger(schema: IntegerType): AirbyteType = schema
@@ -43,13 +49,14 @@ interface AirbyteSchemaIdentityMapper {
     fun mapObjectWithoutSchema(schema: ObjectTypeWithoutSchema): AirbyteType = schema
     fun mapObjectWithEmptySchema(schema: ObjectTypeWithEmptySchema): AirbyteType = schema
     fun mapUnion(schema: UnionType): AirbyteType {
-        return UnionType(schema.options.map { map(it) })
+        return UnionType.of(schema.options.map { map(it) })
     }
     fun mapDate(schema: DateType): AirbyteType = schema
     fun mapTimeTypeWithTimezone(schema: TimeTypeWithTimezone): AirbyteType = schema
     fun mapTimeTypeWithoutTimezone(schema: TimeTypeWithoutTimezone): AirbyteType = schema
     fun mapTimestampTypeWithTimezone(schema: TimestampTypeWithTimezone): AirbyteType = schema
     fun mapTimestampTypeWithoutTimezone(schema: TimestampTypeWithoutTimezone): AirbyteType = schema
+
     fun mapUnknown(schema: UnknownType): AirbyteType = schema
     fun mapField(field: FieldType): FieldType = FieldType(map(field.type), field.nullable)
 }

@@ -12,6 +12,7 @@ import requests
 import toml
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from jinja2 import Environment, PackageLoader, select_autoescape
+
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
@@ -177,6 +178,7 @@ class PoetryInit(Step):
             self.context,
             base_container,
             str(self.context.connector.code_directory),
+            "airbyte",
         )
         with_egg_info = await connector_container.with_exec(["python", "setup.py", "egg_info"], use_entrypoint=True)
 

@@ -12,8 +12,10 @@ from typing import Dict
 
 import jsonschema
 import pandas as pd
+
 from airbyte_cdk.sources.streams.http import requests_native_auth as auth
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
+
 
 DATE_FORMAT = "%Y-%m-%d"
 

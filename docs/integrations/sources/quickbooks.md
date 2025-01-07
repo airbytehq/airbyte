@@ -108,6 +108,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 | :---------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 3.0.26 | 2024-11-01 | [48089](https://github.com/airbytehq/airbyte/pull/48089) | Promoting release candidate 3.0.26-rc.1 to a main version. |
 | 3.0.26-rc.1 | 2024-09-10 | [44560](https://github.com/airbytehq/airbyte/pull/44560) | Replace Custom Components with Airbyte CDK features                |
 | 3.0.25      | 2024-10-05 | [46424](https://github.com/airbytehq/airbyte/pull/46424) | Update dependencies                                                |
 | 3.0.24      | 2024-09-28 | [46142](https://github.com/airbytehq/airbyte/pull/46142) | Update dependencies                                                |

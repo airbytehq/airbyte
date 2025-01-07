@@ -4,10 +4,12 @@
 
 import getpass
 import os
+import time
 import uuid
 from typing import List, Tuple
 
 import dagger
+
 from base_images import console, published_image
 
 
@@ -30,21 +32,18 @@ def get_credentials() -> Tuple[str, str]:
 
 
 class CraneClient:
+    CRANE_IMAGE_ADDRESS = "gcr.io/go-containerregistry/crane/debug:c195f151efe3369874c72662cd69ad43ee485128@sha256:94f61956845714bea3b788445454ae4827f49a90dcd9dac28255c4cccb6220ad"
 
-    CRANE_IMAGE_ADDRESS = (
-        "gcr.io/go-containerregistry/crane/debug:v0.15.1@sha256:f6ddf8e2c47df889e06e33c3e83b84251ac19c8728a670ff39f2ca9e90c4f905"
-    )
-
-    def __init__(self, dagger_client: dagger.Client, docker_credentials: Tuple[str, str]):
+    def __init__(self, dagger_client: dagger.Client, docker_credentials: Tuple[str, str], cache_ttl_seconds: int = 0):
         self.docker_hub_username_secret = dagger_client.set_secret("DOCKER_HUB_USERNAME", docker_credentials[0])
         self.docker_hub_username_password = dagger_client.set_secret("DOCKER_HUB_PASSWORD", docker_credentials[1])
 
-        self.bare_container = (
-            dagger_client.container().from_(self.CRANE_IMAGE_ADDRESS)
-            # We don't want to cache any subsequent commands that might run in this container
-            # because we want to have fresh output data every time we run this command.
-            .with_env_variable("CACHE_BUSTER", str(uuid.uuid4()))
-        )
+        if cache_ttl_seconds == 0:
+            cache_buster = str(uuid.uuid4())
+        else:
+            cache_buster = str(int(time.time()) // cache_ttl_seconds)
+
+        self.bare_container = dagger_client.container().from_(self.CRANE_IMAGE_ADDRESS).with_env_variable("CACHE_BUSTER", cache_buster)
 
         self.authenticated_container = self.login()
 
@@ -56,7 +55,6 @@ class CraneClient:
         )
 
     async def digest(self, repository_and_tag: str) -> str:
-        console.log(f"Fetching digest for {repository_and_tag}...")
         return (await self.authenticated_container.with_exec(["digest", repository_and_tag], use_entrypoint=True).stdout()).strip()
 
     async def ls(self, registry_name: str, repository_name: str) -> List[str]:
@@ -87,7 +85,10 @@ class RemoteRepository:
         # We want the digest to uniquely identify the image, so we need to fetch it separately with `crane digest`
         available_addresses_without_digest = [f"{repository_address}:{tag}" for tag in all_tags]
         available_addresses_with_digest = []
+        console.log(f"Fetching digests for {len(available_addresses_without_digest)} images...")
+        # TODO: This is a bottleneck, we should parallelize this
         for address in available_addresses_without_digest:
             digest = await self.crane_client.digest(address)
             available_addresses_with_digest.append(f"{address}@{digest}")
+        console.log(f"Found digests for {len(available_addresses_with_digest)} images in {repository_address}")
         return [published_image.PublishedImage.from_address(address) for address in available_addresses_with_digest]

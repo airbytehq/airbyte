@@ -1,6 +1,9 @@
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml
 title: DeclarativeSource
+# Manually mirrored copy of the DeclarativeSource schema file from the Airbyte CDK:
+# https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L9
+# TODO: Find a way to make this DRY to prevent drift.
 type: object
 description: An API source that extracts data according to its declarative components.
 version: 1.0.0
@@ -1750,6 +1753,45 @@ definitions:
       type:
         type: string
         enum: [XmlDecoder]
+  CustomDecoder:
+    title: Custom Decoder
+    description: Use this to implement custom decoder logic.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomDecoder]
+      class_name:
+        title: Class Name
+        description: Fully-qualified name of the class that will be implementing the custom decoding. Has to be a sub class of Decoder. The format is `source_<name>.<package>.<class_name>`.
+        type: string
+        additionalProperties: true
+        examples:
+          - "source_amazon_ads.components.GzipJsonlDecoder"
+      $parameters:
+        type: object
+        additionalProperties: true
+  GzipJsonDecoder:
+    title: GzipJson Decoder
+    description: Use this if the response is Gzip compressed Json.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [GzipJsonDecoder]
+      encoding:
+        type: string
+        default: utf-8
+      $parameters:
+        type: object
+        additionalProperties: true
   ListPartitionRouter:
     title: List Partition Router
     description: A Partition router that specifies a list of attributes where each attribute describes a portion of the complete data set for a stream. During a sync, each value is iterated over and can be used as input to outbound API requests.
@@ -2404,10 +2446,12 @@ definitions:
         title: Decoder
         description: Component decoding the response so records can be extracted.
         anyOf:
+          - "$ref": "#/definitions/CustomDecoder"
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
           - "$ref": "#/definitions/XmlDecoder"
+          - "$ref": "#/definitions/GzipJsonDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -2520,10 +2564,12 @@ definitions:
         title: Decoder
         description: Component decoding the response so records can be extracted.
         anyOf:
+          - "$ref": "#/definitions/CustomDecoder"
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
           - "$ref": "#/definitions/XmlDecoder"
+          - "$ref": "#/definitions/GzipJsonDecoder"
       $parameters:
         type: object
         additionalProperties: true

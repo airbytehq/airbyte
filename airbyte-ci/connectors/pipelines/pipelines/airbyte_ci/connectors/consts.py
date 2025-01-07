@@ -14,7 +14,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     BUILD_TAR = "build_tar"
     BUILD = "build"
     INTEGRATION = "integration"
-    AIRBYTE_LIB_VALIDATION = "airbyte_lib_validation"
+    PYTHON_CLI_VALIDATION = "python_cli_validation"
     QA_CHECKS = "qa_checks"
     UNIT = "unit"
     VERSION_INC_CHECK = "version_inc_check"

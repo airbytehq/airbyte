@@ -6,7 +6,6 @@ import json
 import time
 
 import pytest
-from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from connector_acceptance_test import conftest
 from connector_acceptance_test.config import (
     BasicReadTestConfig,
@@ -15,6 +14,8 @@ from connector_acceptance_test.config import (
     ExpectedRecordsConfig,
     IgnoredFieldsConfiguration,
 )
+
+from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 
 @pytest.mark.parametrize(
