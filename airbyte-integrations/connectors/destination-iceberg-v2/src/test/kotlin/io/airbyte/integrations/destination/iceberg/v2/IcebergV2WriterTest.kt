@@ -95,7 +95,6 @@ internal class IcebergV2WriterTest {
                 ),
                 Types.NestedField.of(12, false, COLUMN_NAME_AB_GENERATION_ID, Types.LongType.get()),
             )
-        
         val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
