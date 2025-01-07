@@ -27,6 +27,13 @@ class PrivateKeyCredentials(BaseModel):
     private_key: str = Field(title="Private key", description="The Private key", multiline=True, order=4, airbyte_secret=True)
 
 
+class DeliveryOptions(BaseModel):
+    preserve_subdirectories_directories: bool = Field(
+        True,
+        description="Flag indicating we should preserve subdirectories directories",
+    )
+
+
 class SourceSFTPBulkSpec(AbstractFileBasedSpec):
     class Config:
         title = "SFTP Bulk Source Spec"
@@ -58,6 +65,12 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
         display_type="radio",
         group="advanced",
         default="use_records_transfer",
+    )
+
+    delivery_options: Optional[DeliveryOptions] = Field(
+        title="Delivery Options",
+        type="object",
+        order=8,
     )
 
     @classmethod

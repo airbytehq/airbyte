@@ -124,6 +124,27 @@ def config_fixture_use_all_files_transfer(docker_client) -> Mapping[str, Any]:
     yield config
 
 
+@pytest.fixture(name="config_fixture_not_duplicates", scope="session")
+def config_fixture_not_duplicates(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_not_duplicates.json")
+    config["host"] = get_docker_ip()
+    yield config
+
+
+@pytest.fixture(name="config_fixture_not_mirroring_paths_not_duplicates", scope="session")
+def config_fixture_not_mirroring_paths_not_duplicates(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_not_preserve_subdirectories_not_duplicates.json")
+    config["host"] = get_docker_ip()
+    yield config
+
+
+@pytest.fixture(name="config_fixture_not_mirroring_paths_with_duplicates", scope="session")
+def config_fixture_not_mirroring_paths_with_duplicates(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_not_preserve_subdirectories_with_duplicates.json")
+    config["host"] = get_docker_ip()
+    yield config
+
+
 @pytest.fixture(name="config_private_key", scope="session")
 def config_fixture_private_key(docker_client) -> Mapping[str, Any]:
     config = load_config("config_private_key.json") | {
