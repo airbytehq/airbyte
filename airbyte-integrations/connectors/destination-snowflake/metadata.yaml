@@ -2,118 +2,7 @@ data:
   ab_internal:
     ql: 300
     sl: 300
-  connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - fileName: copy_azure_blob_config.json
-          name: SECRET_DESTINATION-SNOWFLAKE_COPY_AZURE_BLOB__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: copy_gcs_config.json
-          name: SECRET_DESTINATION-SNOWFLAKE_COPY_GCS__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: copy_s3_encrypted_config.json
-          name: SECRET_DESTINATION-SNOWFLAKE_COPY_S3_ENCRYPTED__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: copy_s3_config.json
-          name: SECRET_DESTINATION-SNOWFLAKE_COPY_S3__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: insert_config.json
-          name: SECRET_DESTINATION-SNOWFLAKE_INSERT__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: copy_insufficient_gcs_roles_config.json
-          name: SECRET_DESTINATION-SNOWFLAKE_INSUFFICIENT_GCS_ROLE__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: 1s1t_disabletd_internal_staging_config.json
-          name: SECRET_DESTINATION-SNOWFLAKE_INTERNAL_STAGING_CONFIG_DISABLETD
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: 1s1t_disabletd_internal_staging_config_raw_schema_override.json
-          name: SECRET_DESTINATION-SNOWFLAKE_INTERNAL_STAGING_CONFIG_RAW_SCHEMA_OVERRIDE_DISABLETD
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: insert_ip_not_in_whitelist_config.json
-          name: SECRET_DESTINATION-SNOWFLAKE_IP_NOT_IN_WHITELIST_CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: copy_s3_wrong_location_config.json
-          name: SECRET_DESTINATION-SNOWFLAKE_S3_WRONG_LOCATION__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: copy_insufficient_staging_roles_config.json
-          name: SECRET_DESTINATION-SNOWFLAKE_WITHOUT_INTERNAL_STAGING__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: 1s1t_internal_staging_config.json
-          name: SECRET_DESTINATION_SNOWFLAKE_1S1T_INTERNAL_STAGING_CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: 1s1t_internal_staging_config_raw_schema_override.json
-          name: SECRET_DESTINATION_SNOWFLAKE_1S1T_INTERNAL_STAGING_CREDS_RAW_SCHEMA_OVERRIDE
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: config.json
-          name: SECRET_DESTINATION_SNOWFLAKE_INSUFFICIENT_PERMISSIONS_CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: internal_staging_config.json
-          name: SECRET_DESTINATION_SNOWFLAKE_INTERNAL_STAGING_CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: config_key_pair_encrypted.json
-          name: SECRET_DESTINATION_SNOWFLAKE_KEY_PAIR_ENCRYPTED__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: config_key_pair.json
-          name: SECRET_DESTINATION_SNOWFLAKE_KEY_PAIR__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: internal_staging_config_no_active_warehouse.json
-          name: SECRET_DESTINATION_SNOWFLAKE_NO_ACTIVE_WAREHOUSE_CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: no_create_schema_privilege.json
-          name: SECRET_DESTINATION_SNOWFLAKE_NO_CREATE_SCHEMA_PRIVILEGE
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: 1s1t_case_insensitive.json
-          name: SECRET_DESTINATION_SNOWFLAKE_QUOTED_IDENTIFIERS_IGNORE_CASE_CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: config_no_text_schema_permission.json
-          name: SECRET_DESTINATION_SNOWFLAKE_TESTUSER_WITHOUT_TEXT_SCHEMA_PERMISSION_CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerImageTag: 3.15.3
@@ -123,6 +12,8 @@ data:
   icon: snowflake.svg
   license: ELv2
   name: Snowflake
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   registryOverrides:
     cloud:
       enabled: true
@@ -135,21 +26,7 @@ data:
         message: Remove GCS/S3 loading method support.
         upgradeDeadline: "2023-08-31"
       3.0.0:
-        message:
-          "**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.
-
-          This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
-          which provides better error handling, incremental delivery of data for large
-          syncs, and improved final table structures. To review the breaking changes,
-          and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
-          These changes will likely require updates to downstream dbt / SQL models,
-          which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
-
-          Selecting `Upgrade` will upgrade **all** connections using this destination
-          at their next sync. You can manually sync existing connections prior to
-          the next scheduled sync to start the upgrade early.
-
-          "
+        message: "**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.\nThis version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures. To review the breaking changes, and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading). These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).\nSelecting `Upgrade` will upgrade **all** connections using this destination at their next sync. You can manually sync existing connections prior to the next scheduled sync to start the upgrade early.\n"
         upgradeDeadline: "2023-11-07"
   resourceRequirements:
     jobSpecific:
@@ -162,4 +39,38 @@ data:
   supportsRefreshes: true
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-SNOWFLAKE_INTERNAL_STAGING_CONFIG_DISABLETD
+          fileName: 1s1t_disabletd_internal_staging_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-SNOWFLAKE_INTERNAL_STAGING_CONFIG_RAW_SCHEMA_OVERRIDE_DISABLETD
+          fileName: 1s1t_disabletd_internal_staging_config_raw_schema_override.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION_SNOWFLAKE_1S1T_INTERNAL_STAGING_CREDS
+          fileName: 1s1t_internal_staging_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION_SNOWFLAKE_1S1T_INTERNAL_STAGING_CREDS_RAW_SCHEMA_OVERRIDE
+          fileName: 1s1t_internal_staging_config_raw_schema_override.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION_SNOWFLAKE_INSUFFICIENT_PERMISSIONS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION_SNOWFLAKE_QUOTED_IDENTIFIERS_IGNORE_CASE_CREDS
+          fileName: 1s1t_case_insensitive.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
