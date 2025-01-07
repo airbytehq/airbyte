@@ -4,89 +4,62 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 import time
 import json
 import logging
 import requests
-from airbyte_cdk.models import SyncMode
+import pendulum
+from airbyte_cdk.models import SyncMode, FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-
+from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 
 class TotangoStream(HttpStream, ABC):
     # Base URL for the Totango API
     url_base = "https://api-gw-us.totango.com"
 
-class TotangoAuthenticator(Oauth2Authenticator):
-    """
-    Custom Authenticator that handles token validation, refresh, and rotation.
-    """
-    url_base = "https://api-gw-us.totango.com"
-    token_url = f"{url_base}/oauth/token"
-
-    def __init__(self, config: Mapping[str, Any]):
-        if not config.get("client_id") or not config.get("client_secret"):
-            raise ValueError("Client ID or secret is missing in the configuration.")
-
-        super().__init__(
-            token_refresh_endpoint=self.token_url,
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"],
-        )
-        self.config = config
-        self.logger = logging.getLogger("TotangoAuthenticator")
-
-    def is_token_expired(self) -> bool:
-        """
-        Check if the access token is expired based on the current time and expiry time.
-
-        TODO: can check if the access token is getting expired within 3 hours, refresh the token
-        """
-        current_time =  int(time.time() * 1000)
-        access_token_expiry = self.config.get("access_token_expiry", 0)
-        expired = current_time >= access_token_expiry
-        self.logger.info(f"Checking if token is expired. Current time: {current_time}, Expiry: {access_token_expiry}, Expired: {expired}")
-        return expired
-
-    def refresh_access_token(self) -> str:
-        """
-        Refresh the access token and update the config with the new token and expiry times.
-        """
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        data = {
-            "client_id": self.config["client_id"],
-            "client_secret": self.config["client_secret"],
-            "refresh_token": self.config["refresh_token"],
-            "grant_type": "refresh_token",
+class TotangoOAuth(SingleUseRefreshTokenOauth2Authenticator):
+    def build_refresh_request_headers(self) -> Mapping[str, Any]:
+        return {
+            "Content-Type": "application/x-www-form-urlencoded",
         }
 
-        response = requests.post(self.token_url, headers=headers, data=data)
+    def build_refresh_request_body(self) -> Mapping[str, Any]:
+        return {
+            "grant_type": "refresh_token",
+            "refresh_token": self.get_refresh_token(),
+            "client_id": self.get_client_id(),
+            "client_secret": self.get_client_secret()
+        }
+    
+    def _get_refresh_access_token_response(self) -> Mapping[str, Any]:
+        response = requests.post(
+            url=self.get_token_refresh_endpoint(),
+            data=self.build_refresh_request_body(),
+            headers=self.build_refresh_request_headers(),
+        )
+        content = response.json()
+        content["access_token_expiration"] = str(content["access_token_expiration"])
+        print("content in refresh token: ", content)
 
-        if response.status_code == 200:
-            token_data = response.json()
-            self.config["access_token"] = token_data["access_token"]
-            self.config["access_token_expiry"] = token_data["access_token_expiration"]
-            self.config["refresh_token"] = token_data["refresh_token"]
-            self.config["refresh_token_expiry"] = token_data["refresh_token_expiration"]
-            self.logger.info("Access token and refresh token updated successfully.")
-            return self.config["access_token"]
-        else:
-            self.logger.error(f"Failed to refresh access token: {response.text}")
-            response.raise_for_status()
+        if response.status_code == 400 and content.get("error") == "invalid_grant":
+            raise AirbyteTracedException(
+                internal_message=content.get("error_description"),
+                message="Refresh token is invalid or expired. Please re-authenticate to restore access to Airtable.",
+                failure_type=FailureType.config_error,
+            )
 
-    def get_access_token(self) -> str:
-        """
-        Get the current valid access token or refresh it if expired.
-        """
-        if self.is_token_expired():
-            self.logger.info("Access token expired. Refreshing token...")
-            return self.refresh_access_token()
-        self.logger.info("Using existing access token.")
-        return self.config["access_token"]
+        response.raise_for_status()
+        return content
+    
+    @staticmethod
+    def get_new_token_expiry_date(access_token_expires_in: str, token_expiry_date_format: str = None) -> pendulum.DateTime:
+        # Convert millisecond timestamp to seconds and return the parsed date
+        timestamp = int(access_token_expires_in) / 1000
+        return pendulum.from_timestamp(timestamp)
     
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         """
@@ -96,6 +69,24 @@ class TotangoAuthenticator(Oauth2Authenticator):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.get_access_token()}"
         }
+
+
+class TotangoAuthenticator:
+    url_base = "https://api-gw-us.totango.com"
+    token_url = f"{url_base}/oauth/token"
+
+    def __new__(self, config: dict) -> Union[TokenAuthenticator, TotangoOAuth]:
+        print("getting new authenticator!")
+        print("config in authenticator: ", config)
+        return TotangoOAuth(
+            connector_config=config,
+            token_refresh_endpoint=self.token_url,
+            access_token_name="access_token",
+            expires_in_name="access_token_expiration",
+            refresh_token_name="refresh_token",
+            token_expiry_date_format=None,
+            token_expiry_is_time_of_expiration=True)
+
 
 class Account(TotangoStream):
 
@@ -147,7 +138,9 @@ class Account(TotangoStream):
         return fields
 
     def request_body_json(self, stream_state=None, stream_slice=None, next_page_token=None) ->  MutableMapping[str, Any]:
-        """Constructs the form-encoded body for the POST request."""
+        """
+        Constructs the form-encoded body for the POST request.
+        """
         query = {
             "terms": [],
             "count": self.record_count,
@@ -164,13 +157,17 @@ class Account(TotangoStream):
         return data
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        """Returns the headers required for making requests."""
+        """
+        Returns the headers required for making requests.
+        """
         headers = super().request_headers(**kwargs)  # Inherit default headers from HttpStream
         headers["Content-Type"] = "application/json"  # Add custom header
         return headers
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """Handles pagination based on the API response."""
+        """
+        Handles pagination based on the API response.
+        """
         total_hits = response.json().get("response", {}).get("stats", {}).get("total_hits", 0)
         current_offset = response.json().get("response", {}).get("accounts", {}).get("offset", 0)
         count = self.record_count
@@ -228,7 +225,9 @@ class Tasks(HttpSubStream, TotangoStream):
         return "tasks"
 
     def path(self, stream_state=None, stream_slice=None, next_page_token=None) -> str:
-        """Returns the endpoint path for this stream."""
+        """
+        Returns the endpoint path for this stream.
+        """
         account_id = stream_slice["account_id"]
         return f"/api/v2/events?account_id={account_id}"
 
@@ -261,37 +260,11 @@ class Tasks(HttpSubStream, TotangoStream):
             yield task
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """Handles pagination based on the API response."""
+        """
+        Handles pagination based on the API response.
+        """
         return None
 
-
-# Basic incremental stream
-class IncrementalTotangoStream(TotangoStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
-
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
 
 
 class SourceTotango(AbstractSource):

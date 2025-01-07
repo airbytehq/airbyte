@@ -1,38 +1,44 @@
 documentationUrl: https://docsurl.com
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Totango Spec
+  title: Totango Source Spec
   type: object
   required:
-    - client_id
-    - client_secret
-    - refresh_token
+    - credentials
   properties:
-    client_id:
-      type: string
-      title: Client ID
-      description: The Client ID of your Totango OAuth application.
-      airbyte_secret: true
-    client_secret:
-      type: string
-      title: Client Secret
-      description: The Client Secret of your Totango OAuth application.
-      airbyte_secret: true
-    refresh_token:
-      type: string
-      title: Refresh Token
-      description: The refresh token obtained from Totango OAuth flow. Used to obtain new access tokens.
-      airbyte_secret: true
-    access_token:
-      type: string
-      title: Access Token
-      description: The access token obtained from Totango OAuth flow. Used to authenticate requests to the Totango API.
-      airbyte_secret: true
-    access_token_expiry:
-      type: number
-      title: Access Token Expiry
-      description: The expiry time of the access token in seconds.
-    refresh_token_expiry:
-      type: number
-      title: Refresh Token Expiry
-      description: The expiry time of the refresh token in seconds.
+    credentials:
+      type: object
+      title: OAuth2.0
+      required:
+        - client_id
+        - client_secret
+        - refresh_token
+      properties:
+        client_id:
+          type: string
+          title: Client ID
+          description: The Client ID of your Totango OAuth application.
+          airbyte_secret: true
+        client_secret:
+          type: string
+          title: Client Secret
+          description: The Client Secret of your Totango OAuth application.
+          airbyte_secret: true
+        refresh_token:
+          type: string
+          title: Refresh Token
+          description: The refresh token obtained from Totango OAuth flow. Used to obtain new access tokens.
+          airbyte_secret: true
+        access_token:
+          type: string
+          title: Access Token
+          description: The access token obtained from Totango OAuth flow. Used to authenticate requests to the Totango API.
+          airbyte_secret: true
+        access_token_expiry:
+          type: number
+          title: Access Token Expiry
+          description: The expiry time of the access token in seconds.
+        refresh_token_expiry:
+          type: number
+          title: Refresh Token Expiry
+          description: The expiry time of the refresh token in seconds.
