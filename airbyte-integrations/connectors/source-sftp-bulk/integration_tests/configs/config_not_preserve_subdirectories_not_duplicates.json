@@ -1,6 +1,6 @@
 {
   "delivery_method": { "delivery_type": "use_file_transfer" },
-  "delivery_options": {"preserve_subdirectories_directories": false},
+  "delivery_options": { "preserve_subdirectories_directories": false },
   "host": "localhost",
   "port": 2222,
   "username": "foo",

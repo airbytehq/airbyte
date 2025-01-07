@@ -6,7 +6,12 @@ from typing import Literal, Optional, Union
 from pydantic.v1 import BaseModel, Field
 
 from airbyte_cdk import OneOfOptionConfig
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
+    AbstractFileBasedSpec,
+    DeliverRawFiles,
+    DeliverRecords,
+    DeliveryOptions,
+)
 
 
 class PasswordCredentials(BaseModel):
@@ -25,13 +30,6 @@ class PrivateKeyCredentials(BaseModel):
 
     auth_type: Literal["private_key"] = Field("private_key", const=True)
     private_key: str = Field(title="Private key", description="The Private key", multiline=True, order=4, airbyte_secret=True)
-
-
-class DeliveryOptions(BaseModel):
-    preserve_subdirectories_directories: bool = Field(
-        True,
-        description="Flag indicating we should preserve subdirectories directories",
-    )
 
 
 class SourceSFTPBulkSpec(AbstractFileBasedSpec):

@@ -13,9 +13,6 @@ import pytest
 from source_sftp_bulk import SourceSFTPBulk
 
 from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, Status
-from airbyte_cdk.sources.declarative.models import FailureType
-from airbyte_cdk.sources.file_based.exceptions import format_duplicate_files_error_message
-from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.exception_handler import generate_failed_streams_error_message
 from airbyte_cdk.models import (
     AirbyteErrorTraceMessage,
@@ -26,6 +23,10 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
+from airbyte_cdk.sources.declarative.models import FailureType
+from airbyte_cdk.sources.file_based.exceptions import format_duplicate_files_error_message
+from airbyte_cdk.test.entrypoint_wrapper import read
+
 
 logger = logging.getLogger("airbyte")
 
