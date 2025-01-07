@@ -38,7 +38,6 @@ object IcebergV2TestUtil {
 
     fun getAWSSystemCredentialsAsMap(): Map<String, String> {
         val credentials = getAWSSystemCredentials()
-        // Convert the data class to a Map using Jackson
         return mapper.convertValue(credentials, object : TypeReference<Map<String, String>>() {})
     }
 
