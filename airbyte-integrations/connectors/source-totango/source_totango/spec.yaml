@@ -34,11 +34,11 @@ connectionSpecification:
           title: Access Token
           description: The access token obtained from Totango OAuth flow. Used to authenticate requests to the Totango API.
           airbyte_secret: true
-        access_token_expiry:
+        access_token_expiration:
           type: number
           title: Access Token Expiry
           description: The expiry time of the access token in seconds.
-        refresh_token_expiry:
+        refresh_token_expiration:
           type: number
           title: Refresh Token Expiry
           description: The expiry time of the refresh token in seconds.

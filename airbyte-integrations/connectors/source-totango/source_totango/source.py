@@ -9,6 +9,7 @@ import time
 import json
 import logging
 import requests
+import dpath
 import pendulum
 from airbyte_cdk.models import SyncMode, FailureType
 from airbyte_cdk.sources import AbstractSource
@@ -34,7 +35,7 @@ class TotangoOAuth(SingleUseRefreshTokenOauth2Authenticator):
             "client_id": self.get_client_id(),
             "client_secret": self.get_client_secret()
         }
-    
+
     def _get_refresh_access_token_response(self) -> Mapping[str, Any]:
         response = requests.post(
             url=self.get_token_refresh_endpoint(),
@@ -43,24 +44,23 @@ class TotangoOAuth(SingleUseRefreshTokenOauth2Authenticator):
         )
         content = response.json()
         content["access_token_expiration"] = str(content["access_token_expiration"])
-        print("content in refresh token: ", content)
 
         if response.status_code == 400 and content.get("error") == "invalid_grant":
             raise AirbyteTracedException(
                 internal_message=content.get("error_description"),
-                message="Refresh token is invalid or expired. Please re-authenticate to restore access to Airtable.",
+                message="Refresh token is invalid or expired. Please re-authenticate to restore access to Totango.",
                 failure_type=FailureType.config_error,
             )
 
         response.raise_for_status()
         return content
-    
+
     @staticmethod
     def get_new_token_expiry_date(access_token_expires_in: str, token_expiry_date_format: str = None) -> pendulum.DateTime:
         # Convert millisecond timestamp to seconds and return the parsed date
         timestamp = int(access_token_expires_in) / 1000
         return pendulum.from_timestamp(timestamp)
-    
+
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         """
         Returns the headers required for making requests to the Totango API.
@@ -69,6 +69,11 @@ class TotangoOAuth(SingleUseRefreshTokenOauth2Authenticator):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.get_access_token()}"
         }
+    
+    def get_token_expiry_date(self) -> pendulum.DateTime:
+        expiry_date = dpath.util.get(self._connector_config, self._token_expiry_date_config_path, default="")
+        expiry_date_seconds = int(expiry_date) / 1000
+        return pendulum.from_timestamp(expiry_date_seconds)
 
 
 class TotangoAuthenticator:
@@ -76,14 +81,13 @@ class TotangoAuthenticator:
     token_url = f"{url_base}/oauth/token"
 
     def __new__(self, config: dict) -> Union[TokenAuthenticator, TotangoOAuth]:
-        print("getting new authenticator!")
-        print("config in authenticator: ", config)
         return TotangoOAuth(
             connector_config=config,
             token_refresh_endpoint=self.token_url,
             access_token_name="access_token",
             expires_in_name="access_token_expiration",
             refresh_token_name="refresh_token",
+            token_expiry_date_config_path=("credentials", "access_token_expiration"),
             token_expiry_date_format=None,
             token_expiry_is_time_of_expiration=True)
 
