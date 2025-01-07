@@ -6,9 +6,9 @@ package io.airbyte.integrations.destination.iceberg.v2
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.airbyte.integrations.destination.iceberg.v2.io.AWSSystemCredentials
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
 import java.nio.file.Files
@@ -17,7 +17,8 @@ import java.nio.file.Path
 object IcebergV2TestUtil {
     val GLUE_CONFIG_PATH: Path = Path.of("secrets/glue.json")
     val GLUE_ASSUME_ROLE_CONFIG_PATH: Path = Path.of("secrets/glue_assume_role.json")
-    private val GLUE_AWS_ASSUME_ROLE_CONFIG_PATH: Path = Path.of("secrets/glue_aws_assume_role.json")
+    private val GLUE_AWS_ASSUME_ROLE_CONFIG_PATH: Path =
+        Path.of("secrets/glue_aws_assume_role.json")
 
     fun parseConfig(path: Path) =
         getConfig(
@@ -25,16 +26,12 @@ object IcebergV2TestUtil {
         )
 
     fun getAWSSystemCredentials(): AWSSystemCredentials {
-        val mapper = ObjectMapper().registerModule(
-            KotlinModule.Builder().build()
-        )
+        val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         val configFile = GLUE_AWS_ASSUME_ROLE_CONFIG_PATH.toFile()
         return mapper.readValue(configFile, AWSSystemCredentials::class.java)
     }
 
-    private val mapper = ObjectMapper().registerModule(
-        KotlinModule.Builder().build()
-    )
+    private val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
 
     fun getAWSSystemCredentialsAsMap(): Map<String, String> {
         val credentials = getAWSSystemCredentials()
@@ -48,6 +45,5 @@ object IcebergV2TestUtil {
         IcebergUtil(SimpleTableIdGenerator(), awsSystemCredentials).let { icebergUtil ->
             val props = icebergUtil.toCatalogProperties(config)
             icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)
-    }
-
+        }
 }

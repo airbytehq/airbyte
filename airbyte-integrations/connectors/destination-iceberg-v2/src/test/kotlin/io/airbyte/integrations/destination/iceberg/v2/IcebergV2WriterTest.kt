@@ -32,7 +32,6 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
-import org.apache.iceberg.aws.AwsClientProperties
 import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.Namespace
@@ -58,14 +57,14 @@ internal class IcebergV2WriterTest {
         fun createCatalog(catalogName: String): Catalog {
             logger.info("Creating catalog with name: $catalogName, region: $region, role: $roleArn")
 
-//            System.setProperty("aws.accessKeyId", baseAccessKeyId)
-//            System.setProperty("aws.secretAccessKey", baseSecretKey)
+            //            System.setProperty("aws.accessKeyId", baseAccessKeyId)
+            //            System.setProperty("aws.secretAccessKey", baseSecretKey)
 
             val properties = buildCatalogProperties()
             logProperties(properties)
 
             val hadoopConfig = Configuration()
-//            hadoopConfig.set("aws.region", region)
+            //            hadoopConfig.set("aws.region", region)
 
             return CatalogUtil.buildIcebergCatalog(catalogName, properties, hadoopConfig)
         }
@@ -144,7 +143,7 @@ internal class IcebergV2WriterTest {
     @Test
     fun mainTest() {
         val region = "us-east-2"
-//        System.setProperty("aws.region", region)
+        //        System.setProperty("aws.region", region)
 
         try {
             val catalog =

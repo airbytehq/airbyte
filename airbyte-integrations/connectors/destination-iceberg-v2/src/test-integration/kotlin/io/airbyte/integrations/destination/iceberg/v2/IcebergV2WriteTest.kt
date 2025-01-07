@@ -10,9 +10,6 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
-import io.airbyte.integrations.destination.iceberg.v2.io.EXTERNAL_ID
-import io.airbyte.integrations.destination.iceberg.v2.io.AWS_ACCESS_KEY_ID
-import io.airbyte.integrations.destination.iceberg.v2.io.AWS_SECRET_ACCESS_KEY
 import java.nio.file.Files
 import java.util.Base64
 import okhttp3.FormBody
@@ -114,9 +111,9 @@ class IcebergGlueAssumeRoleWriteTest :
         ),
         IcebergV2TestUtil.getAWSSystemCredentialsAsMap()
     ) {
-        @Test
-        @Disabled("dest iceberg-v2 doesn't support unknown types")
-        override fun testUnknownTypes() {}
+    @Test
+    @Disabled("dest iceberg-v2 doesn't support unknown types")
+    override fun testUnknownTypes() {}
 }
 
 @Disabled(

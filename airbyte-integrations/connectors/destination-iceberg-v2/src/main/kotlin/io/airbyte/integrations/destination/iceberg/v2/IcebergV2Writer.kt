@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
-import io.micronaut.context.annotation.Value
 import javax.inject.Singleton
 import org.apache.iceberg.Schema
 

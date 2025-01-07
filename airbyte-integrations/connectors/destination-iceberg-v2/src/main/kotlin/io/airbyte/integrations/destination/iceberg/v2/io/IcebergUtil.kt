@@ -57,20 +57,21 @@ const val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
 const val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
 
 data class AWSSystemCredentials(
-    @get:JsonProperty("AWS_ACCESS_KEY_ID")
-    val AWS_ACCESS_KEY_ID: String,
-    @get:JsonProperty("AWS_SECRET_ACCESS_KEY")
-    val AWS_SECRET_ACCESS_KEY: String,
-    @get:JsonProperty("AWS_ASSUME_ROLE_EXTERNAL_ID")
-    val AWS_ASSUME_ROLE_EXTERNAL_ID: String
+    @get:JsonProperty("AWS_ACCESS_KEY_ID") val AWS_ACCESS_KEY_ID: String,
+    @get:JsonProperty("AWS_SECRET_ACCESS_KEY") val AWS_SECRET_ACCESS_KEY: String,
+    @get:JsonProperty("AWS_ASSUME_ROLE_EXTERNAL_ID") val AWS_ASSUME_ROLE_EXTERNAL_ID: String
 )
 
-/** Collection of Iceberg related utilities.
- * @param awsSystemCredentials is a temporary fix to allow us to run the integrations tests.
- * This will be removed when we change all of this to use Micronaut
- * */
+/**
+ * Collection of Iceberg related utilities.
+ * @param awsSystemCredentials is a temporary fix to allow us to run the integrations tests. This
+ * will be removed when we change all of this to use Micronaut
+ */
 @Singleton
-class IcebergUtil(private val tableIdGenerator: TableIdGenerator, val awsSystemCredentials: AWSSystemCredentials? = null) {
+class IcebergUtil(
+    private val tableIdGenerator: TableIdGenerator,
+    val awsSystemCredentials: AWSSystemCredentials? = null
+) {
 
     internal class InvalidFormatException(message: String) : Exception(message)
 
@@ -213,11 +214,14 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator, val awsSystemC
         System.setProperty("aws.region", region)
 
         return when (catalogConfig) {
-            is NessieCatalogConfiguration -> buildNessieProperties(config, catalogConfig, s3Properties)
-            is GlueCatalogConfiguration -> buildGlueProperties(config, catalogConfig, icebergCatalogConfig)
-            else -> throw IllegalArgumentException(
-                "Unsupported catalog type: ${catalogConfig::class.java.name}"
-            )
+            is NessieCatalogConfiguration ->
+                buildNessieProperties(config, catalogConfig, s3Properties)
+            is GlueCatalogConfiguration ->
+                buildGlueProperties(config, catalogConfig, icebergCatalogConfig)
+            else ->
+                throw IllegalArgumentException(
+                    "Unsupported catalog type: ${catalogConfig::class.java.name}"
+                )
         }
     }
 
@@ -242,17 +246,22 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator, val awsSystemC
         catalogConfig: NessieCatalogConfiguration,
         s3Properties: Map<String, String>
     ): Map<String, String> {
-        val awsAccessKeyId = requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
-            "AWS Access Key ID is required for Nessie configuration"
-        }
-        val awsSecretAccessKey = requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
-            "AWS Secret Access Key is required for Nessie configuration"
-        }
+        val awsAccessKeyId =
+            requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
+                "AWS Access Key ID is required for Nessie configuration"
+            }
+        val awsSecretAccessKey =
+            requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
+                "AWS Secret Access Key is required for Nessie configuration"
+            }
 
         val nessieProperties = buildMap {
             put(CatalogUtil.ICEBERG_CATALOG_TYPE, ICEBERG_CATALOG_TYPE_NESSIE)
             put(URI, catalogConfig.serverUri)
-            put(NessieConfigConstants.CONF_NESSIE_REF, config.icebergCatalogConfiguration.mainBranchName)
+            put(
+                NessieConfigConstants.CONF_NESSIE_REF,
+                config.icebergCatalogConfiguration.mainBranchName
+            )
             put(S3FileIOProperties.ACCESS_KEY_ID, awsAccessKeyId)
             put(S3FileIOProperties.SECRET_ACCESS_KEY, awsSecretAccessKey)
 
@@ -271,17 +280,19 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator, val awsSystemC
         catalogConfig: GlueCatalogConfiguration,
         icebergCatalogConfig: IcebergCatalogConfiguration
     ): Map<String, String> {
-        val baseGlueProperties = mapOf(
-            CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_GLUE,
-            CatalogProperties.WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
-            AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId
-        )
+        val baseGlueProperties =
+            mapOf(
+                CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_GLUE,
+                CatalogProperties.WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
+                AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId
+            )
 
-        val clientProperties = if (catalogConfig.roleArn != null) {
-            buildRoleBasedClientProperties(catalogConfig.roleArn!!, config)
-        } else {
-            buildKeyBasedClientProperties(config)
-        }
+        val clientProperties =
+            if (catalogConfig.roleArn != null) {
+                buildRoleBasedClientProperties(catalogConfig.roleArn!!, config)
+            } else {
+                buildKeyBasedClientProperties(config)
+            }
 
         return baseGlueProperties + clientProperties
     }
@@ -291,19 +302,20 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator, val awsSystemC
         config: IcebergV2Configuration
     ): Map<String, String> {
         val region = config.s3BucketConfiguration.s3BucketRegion.region
-        val (accessKeyId, secretAccessKey, externalId) = if (awsSystemCredentials != null) {
-            Triple(
-                awsSystemCredentials.AWS_ACCESS_KEY_ID,
-                awsSystemCredentials.AWS_SECRET_ACCESS_KEY,
-                awsSystemCredentials.AWS_ASSUME_ROLE_EXTERNAL_ID
-            )
-        } else {
-            Triple(
-                System.getenv(AWS_ACCESS_KEY_ID),
-                System.getenv(AWS_SECRET_ACCESS_KEY),
-                System.getenv(EXTERNAL_ID)
-            )
-        }
+        val (accessKeyId, secretAccessKey, externalId) =
+            if (awsSystemCredentials != null) {
+                Triple(
+                    awsSystemCredentials.AWS_ACCESS_KEY_ID,
+                    awsSystemCredentials.AWS_SECRET_ACCESS_KEY,
+                    awsSystemCredentials.AWS_ASSUME_ROLE_EXTERNAL_ID
+                )
+            } else {
+                Triple(
+                    System.getenv(AWS_ACCESS_KEY_ID),
+                    System.getenv(AWS_SECRET_ACCESS_KEY),
+                    System.getenv(EXTERNAL_ID)
+                )
+            }
 
         return mapOf(
             AwsProperties.REST_ACCESS_KEY_ID to accessKeyId,
@@ -311,25 +323,29 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator, val awsSystemC
             AwsProperties.CLIENT_FACTORY to AssumeRoleAwsClientFactory::class.java.name,
             AwsProperties.CLIENT_ASSUME_ROLE_ARN to roleArn,
             AwsProperties.CLIENT_ASSUME_ROLE_REGION to region,
-            AwsProperties.CLIENT_ASSUME_ROLE_TIMEOUT_SEC to Duration.ofHours(1).toSeconds().toString(),
+            AwsProperties.CLIENT_ASSUME_ROLE_TIMEOUT_SEC to
+                Duration.ofHours(1).toSeconds().toString(),
             AwsProperties.CLIENT_ASSUME_ROLE_EXTERNAL_ID to externalId
         )
     }
 
     private fun buildKeyBasedClientProperties(config: IcebergV2Configuration): Map<String, String> {
-        val awsAccessKeyId = requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
-            "AWS Access Key ID is required for key-based authentication"
-        }
-        val awsSecretAccessKey = requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
-            "AWS Secret Access Key is required for key-based authentication"
-        }
+        val awsAccessKeyId =
+            requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
+                "AWS Access Key ID is required for key-based authentication"
+            }
+        val awsSecretAccessKey =
+            requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
+                "AWS Secret Access Key is required for key-based authentication"
+            }
         val clientCredentialsProviderPrefix = "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}."
 
         return mapOf(
             S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
             S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
             AwsClientProperties.CLIENT_REGION to config.s3BucketConfiguration.s3BucketRegion.region,
-            AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to GlueCredentialsProvider::class.java.name,
+            AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
+                GlueCredentialsProvider::class.java.name,
             "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
             "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to awsSecretAccessKey
         )
