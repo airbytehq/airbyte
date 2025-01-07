@@ -10,7 +10,3 @@ airbyte:
     window-ms: 900000 # 15 minutes
   destination:
     record-batch-size-override: ${AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE:null}
-  aws:
-    external-id: ${AWS_ASSUME_ROLE_EXTERNAL_ID}
-    access-key-id: ${AWS_ACCESS_KEY_ID}
-    secret-access-key: ${AWS_SECRET_ACCESS_KEY}
