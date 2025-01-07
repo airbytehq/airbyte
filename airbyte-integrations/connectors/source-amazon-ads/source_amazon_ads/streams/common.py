@@ -7,12 +7,14 @@ from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
+from pydantic.v1 import BaseModel, ValidationError
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
-from pydantic.v1 import BaseModel, ValidationError
 from source_amazon_ads.constants import URL_MAPPING
+
 
 """
 This class hierarchy may seem overcomplicated so here is a visualization of

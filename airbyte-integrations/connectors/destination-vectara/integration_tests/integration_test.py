@@ -7,6 +7,9 @@ import logging
 import unittest
 from typing import Any, Dict
 
+from destination_vectara.client import VectaraClient
+from destination_vectara.destination import DestinationVectara
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -19,8 +22,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_vectara.client import VectaraClient
-from destination_vectara.destination import DestinationVectara
 
 
 class VectaraIntegrationTest(unittest.TestCase):
@@ -45,6 +46,7 @@ class VectaraIntegrationTest(unittest.TestCase):
         return AirbyteMessage(
             type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0)
         )
+
     def _clean(self):
         self._client.delete_doc_by_metadata(metadata_field_name="_ab_stream", metadata_field_values=["None_mystream"])
 

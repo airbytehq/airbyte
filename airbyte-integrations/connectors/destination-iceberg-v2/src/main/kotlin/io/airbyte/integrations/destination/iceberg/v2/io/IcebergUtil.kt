@@ -15,11 +15,12 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.integrations.destination.iceberg.v2.ACCESS_KEY_ID
 import io.airbyte.integrations.destination.iceberg.v2.GlueCredentialsProvider
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
 import io.airbyte.integrations.destination.iceberg.v2.SECRET_ACCESS_KEY
+import io.airbyte.integrations.destination.iceberg.v2.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import org.apache.hadoop.conf.Configuration
@@ -40,30 +41,19 @@ import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.aws.s3.S3FileIO
 import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Catalog
-import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.SupportsNamespaces
-import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.exceptions.AlreadyExistsException
 import org.projectnessie.client.NessieConfigConstants
+import software.amazon.awssdk.services.glue.model.ConcurrentModificationException
 
 private val logger = KotlinLogging.logger {}
 
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
-/**
- * Extension function for the[DestinationStream.Descriptor] class that converts the descriptor to an
- * Iceberg [TableIdentifier].
- *
- * @return An Iceberg [TableIdentifier] representation of the stream descriptor.
- */
-fun DestinationStream.Descriptor.toIcebergTableIdentifier(): TableIdentifier {
-    return TableIdentifier.of(Namespace.of(this.namespace), this.name)
-}
-
 /** Collection of Iceberg related utilities. */
 @Singleton
-class IcebergUtil {
+class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     internal class InvalidFormatException(message: String) : Exception(message)
 
     private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
@@ -117,7 +107,7 @@ class IcebergUtil {
         schema: Schema,
         properties: Map<String, String>
     ): Table {
-        val tableIdentifier = streamDescriptor.toIcebergTableIdentifier()
+        val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         synchronized(tableIdentifier.namespace()) {
             if (
                 catalog is SupportsNamespaces &&
@@ -132,6 +122,11 @@ class IcebergUtil {
                     // One thread may create the namespace successfully, causing the other threads
                     // to encounter this exception
                     // when they also try to create the namespace.
+                    logger.info {
+                        "Namespace '${tableIdentifier.namespace()}' was likely created by another thread during parallel operations."
+                    }
+                } catch (e: ConcurrentModificationException) {
+                    // do the same for AWS Glue
                     logger.info {
                         "Namespace '${tableIdentifier.namespace()}' was likely created by another thread during parallel operations."
                     }
@@ -154,18 +149,19 @@ class IcebergUtil {
     }
 
     /**
-     * Converts an Airbyte [DestinationRecord] into an Iceberg [Record]. The converted record will
-     * be wrapped to include [Operation] information, which is used by the writer to determine how
-     * to write the data to the underlying Iceberg files.
+     * Converts an Airbyte [DestinationRecordAirbyteValue] into an Iceberg [Record]. The converted
+     * record will be wrapped to include [Operation] information, which is used by the writer to
+     * determine how to write the data to the underlying Iceberg files.
      *
-     * @param record The Airbyte [DestinationRecord] record to be converted for writing by Iceberg.
+     * @param record The Airbyte [DestinationRecordAirbyteValue] record to be converted for writing
+     * by Iceberg.
      * @param stream The Airbyte [DestinationStream] that contains information about the stream.
      * @param tableSchema The Iceberg [Table] [Schema].
      * @param pipeline The [MapperPipeline] used to convert the Airbyte record to an Iceberg record.
-     * @return An Iceberg [Record] representation of the Airbyte [DestinationRecord].
+     * @return An Iceberg [Record] representation of the Airbyte [DestinationRecordAirbyteValue].
      */
     fun toRecord(
-        record: DestinationRecord,
+        record: DestinationRecordAirbyteValue,
         stream: DestinationStream,
         tableSchema: Schema,
         pipeline: MapperPipeline
@@ -280,7 +276,7 @@ class IcebergUtil {
     }
 
     private fun getOperation(
-        record: DestinationRecord,
+        record: DestinationRecordAirbyteValue,
         importType: ImportType,
     ): Operation =
         if (
