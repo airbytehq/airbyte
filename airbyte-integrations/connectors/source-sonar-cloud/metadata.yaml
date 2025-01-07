@@ -6,11 +6,11 @@ data:
     hosts:
       - sonarcloud.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.11.1@sha256:0d0f562a70c0ed19ab605f0c83802a2e052712587692e2f3a1cc794fe7cd7007
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.4@sha256:b73460101d4ff373826b56f00ef2012b635f5eab04c429892547dd055cd779dc
   connectorSubtype: api
   connectorType: source
   definitionId: 3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-sonar-cloud
   documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
   githubIssueLabel: source-sonar-cloud

@@ -8,6 +8,7 @@ import datetime
 
 import semver
 from dagger import Directory
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.changelog import Changelog
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
@@ -33,7 +34,6 @@ class AddChangelogEntry(StepModifyingFiles):
         self.pull_request_number = pull_request_number or "*PR_NUMBER_PLACEHOLDER*"
 
     async def _run(self, pull_request_number: int | str | None = None) -> StepResult:
-
         if pull_request_number is None:
             # this allows passing it dynamically from a result of another action (like creating a pull request)
             pull_request_number = self.pull_request_number

@@ -327,7 +327,7 @@ class StreamManagerTest {
         val range1 = Range.closed(0L, 9L)
         val batch1 =
             BatchEnvelope(
-                SimpleBatch(Batch.State.LOCAL, groupId = "foo"),
+                SimpleBatch(Batch.State.STAGED, groupId = "foo"),
                 range1,
                 stream1.descriptor
             )
@@ -352,7 +352,7 @@ class StreamManagerTest {
         val range1 = Range.closed(0L, 9L)
         val batch1 =
             BatchEnvelope(
-                SimpleBatch(Batch.State.LOCAL, groupId = "foo"),
+                SimpleBatch(Batch.State.STAGED, groupId = "foo"),
                 range1,
                 stream1.descriptor
             )
@@ -380,7 +380,7 @@ class StreamManagerTest {
         val range1 = Range.closed(0L, 9L)
         val batch1 =
             BatchEnvelope(
-                SimpleBatch(Batch.State.LOCAL, groupId = null),
+                SimpleBatch(Batch.State.STAGED, groupId = null),
                 range1,
                 stream1.descriptor
             )
@@ -416,7 +416,7 @@ class StreamManagerTest {
         val range2 = Range.closed(10, 19L)
         val batch2 =
             BatchEnvelope(
-                SimpleBatch(Batch.State.LOCAL, groupId = "foo"),
+                SimpleBatch(Batch.State.STAGED, groupId = "foo"),
                 range2,
                 stream1.descriptor
             )

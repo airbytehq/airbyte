@@ -37,7 +37,6 @@ class DestinationSqlite(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
@@ -65,9 +64,7 @@ class DestinationSqlite(Destination):
                     # delete the tables
                     query = """
                     DROP TABLE IF EXISTS {}
-                    """.format(
-                        table_name
-                    )
+                    """.format(table_name)
                     con.execute(query)
                 # create the table if needed
                 query = """
@@ -76,9 +73,7 @@ class DestinationSqlite(Destination):
                     _airbyte_emitted_at TEXT,
                     _airbyte_data TEXT
                 )
-                """.format(
-                    table_name=table_name
-                )
+                """.format(table_name=table_name)
                 con.execute(query)
 
             buffer = defaultdict(list)
@@ -87,13 +82,10 @@ class DestinationSqlite(Destination):
                 if message.type == Type.STATE:
                     # flush the buffer
                     for stream_name in buffer.keys():
-
                         query = """
                         INSERT INTO {table_name}
                         VALUES (?,?,?)
-                        """.format(
-                            table_name=f"_airbyte_raw_{stream_name}"
-                        )
+                        """.format(table_name=f"_airbyte_raw_{stream_name}")
 
                         con.executemany(query, buffer[stream_name])
 
@@ -113,13 +105,10 @@ class DestinationSqlite(Destination):
 
             # flush any remaining messages
             for stream_name in buffer.keys():
-
                 query = """
                 INSERT INTO {table_name}
                 VALUES (?,?,?)
-                """.format(
-                    table_name=f"_airbyte_raw_{stream_name}"
-                )
+                """.format(table_name=f"_airbyte_raw_{stream_name}")
 
                 con.executemany(query, buffer[stream_name])
 

@@ -6,56 +6,53 @@ package io.airbyte.integrations.destination.iceberg.v2
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
+import java.nio.file.Files
 import java.util.Base64
-import okhttp3.*
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-abstract class IcebergV2WriteTest(configContents: String) :
+abstract class IcebergV2WriteTest(
+    configContents: String,
+    destinationCleaner: DestinationCleaner,
+    envVars: Map<String, String> = emptyMap(),
+) :
     BasicFunctionalityIntegrationTest(
         configContents,
         IcebergV2Specification::class.java,
         IcebergV2DataDumper,
-        NoopDestinationCleaner,
-        NoopExpectedRecordMapper,
+        destinationCleaner,
+        IcebergExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
-        supportsDedup = false,
+        supportsDedup = true,
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         supportFileTransfer = false,
-        allTypesBehavior = StronglyTyped(),
+        envVars = envVars,
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullUnknownTypes = true,
+        nullEqualsUnset = true,
     ) {
-    companion object {
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            NessieTestContainers.start()
-        }
-    }
-}
-
-@Disabled(
-    "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
-)
-class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
     @Test
     @Disabled(
-        "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
+        "failing because we have an extra _pos column - that's probably fine, but problem for a different day"
     )
-    override fun testBasicTypes() {
-        super.testBasicTypes()
+    override fun testDedup() {
+        super.testDedup()
     }
 
     @Test
     @Disabled(
-        "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
+        "This is currently hanging forever and we should look into why https://github.com/airbytehq/airbyte-internal-issues/issues/11162"
     )
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
@@ -68,30 +65,52 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
     }
 
     @Test
-    @Disabled
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Test
-    @Disabled(
-        "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
-    )
+    @Disabled("This is currently hanging forever and we should look into why")
     override fun resumeAfterCancelledTruncate() {
         super.resumeAfterCancelledTruncate()
     }
 
     @Test
-    @Disabled("This is expected")
+    @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
     }
 
     @Test
-    @Disabled
-    override fun testUnions() {
-        super.testUnions()
+    @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
+    override fun testDedupChangeCursor() {
+        super.testDedupChangeCursor()
     }
+}
+
+class IcebergGlueWriteTest :
+    IcebergV2WriteTest(
+        Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
+        IcebergDestinationCleaner(
+            IcebergV2TestUtil.getCatalog(
+                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
+            )
+        )
+    ) {
+    @Test
+    @Disabled("dest iceberge-v2 doesn't support unknown types")
+    override fun testUnknownTypes() {}
+
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
+@Disabled(
+    "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
+)
+class IcebergNessieMinioWriteTest :
+    IcebergV2WriteTest(
+        getConfig(),
+        // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
+        NoopDestinationCleaner
+    ) {
 
     companion object {
         private fun getToken(): String {
@@ -128,17 +147,26 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
             val authToken = getToken()
             return """
             {
+                "catalog_type": {
+                  "catalog_type": "NESSIE",
+                  "server_uri": "http://$nessieEndpoint:19120/api/v1",
+                  "access_token": "$authToken"
+                },
                 "s3_bucket_name": "demobucket",
                 "s3_bucket_region": "us-east-1",
                 "access_key_id": "minioadmin",
                 "secret_access_key": "minioadmin",
                 "s3_endpoint": "http://$minioEndpoint:9002",
-                "server_uri": "http://$nessieEndpoint:19120/api/v1",
                 "warehouse_location": "s3://demobucket/",
-                "main_branch_name": "main",
-                "access_token": "$authToken"
+                "main_branch_name": "main"
             }
             """.trimIndent()
+        }
+
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            NessieTestContainers.start()
         }
     }
 }

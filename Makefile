@@ -39,11 +39,11 @@ tools.pre-commit.install.Darwin:
 	@brew install pre-commit
 	@echo "Pre-commit installation complete"
 
-tools.pre-commit.setup: tools.airbyte-ci.install tools.pre-commit.install.$(OS) tools.git-hooks.clean ## Setup pre-commit hooks
+tools.git-hooks.install: tools.airbyte-ci.install tools.pre-commit.install.$(OS) tools.git-hooks.clean ## Setup pre-commit hooks
 	@echo "Installing pre-commit hooks..."
 	@pre-commit install --hook-type pre-push
 	@echo "Pre-push hooks installed."
 
-tools.install: tools.airbyte-ci.install tools.pre-commit.setup
+tools.install: tools.airbyte-ci.install tools.pre-commit.install.$(OS)
 
-.PHONY: tools.install tools.pre-commit.setup tools.airbyte-ci.install tools.airbyte-ci-dev.install tools.airbyte-ci.check tools.airbyte-ci.clean
+.PHONY: tools.install tools.pre-commit.install tools.git-hooks.install tools.git-hooks.clean tools.airbyte-ci.install tools.airbyte-ci-dev.install tools.airbyte-ci.check tools.airbyte-ci.clean

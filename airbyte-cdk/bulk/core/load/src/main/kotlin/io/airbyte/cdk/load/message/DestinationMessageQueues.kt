@@ -30,7 +30,7 @@ sealed class DestinationStreamEvent : Sized
 data class StreamRecordEvent(
     val index: Long,
     override val sizeBytes: Long,
-    val record: DestinationRecord
+    val payload: DestinationRecordSerialized
 ) : DestinationStreamEvent()
 
 /**

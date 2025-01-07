@@ -15,11 +15,12 @@ from urllib.parse import urljoin
 import backoff
 import pendulum
 import requests
+from pendulum import Date
+
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from pendulum import Date
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 from source_amazon_ads.utils import get_typed_env, iterate_one_by_one
 
