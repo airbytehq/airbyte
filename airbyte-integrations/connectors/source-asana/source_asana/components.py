@@ -7,10 +7,11 @@ from dataclasses import dataclass
 from pkgutil import get_data
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
+from yaml import safe_load
+
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from yaml import safe_load
 
 
 @dataclass

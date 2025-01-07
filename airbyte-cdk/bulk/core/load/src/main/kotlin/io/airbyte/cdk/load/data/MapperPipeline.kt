@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.DestinationRecord.Change
+import io.airbyte.cdk.load.message.Meta.Change
 
 class MapperPipeline(
     inputSchema: AirbyteType,

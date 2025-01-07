@@ -1,29 +1,45 @@
 data:
-  registryOverrides:
-    cloud:
-      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
-    oss:
-      enabled: false # strict encrypt connectors are not used on OSS.
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
   connectorType: destination
   definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.3
   dockerRepository: airbyte/destination-mysql-strict-encrypt
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mysql
   githubIssueLabel: destination-mysql
   icon: mysql.svg
   license: ELv2
   name: MySQL
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/mysql
-  supportsDbt: true
-  tags:
-    - language:java
   releases:
     breakingChanges:
       1.0.0:
-        message: "**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.\nThis version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures. To review the breaking changes, and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading). These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).\nSelecting `Upgrade` will upgrade **all** connections using this destination at their next sync. You can manually sync existing connections prior to the next scheduled sync to start the upgrade early.\n"
+        message:
+          "**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.
+
+          This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
+          which provides better error handling, incremental delivery of data for large
+          syncs, and improved final table structures. To review the breaking changes,
+          and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
+          These changes will likely require updates to downstream dbt / SQL models,
+          which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
+
+          Selecting `Upgrade` will upgrade **all** connections using this destination
+          at their next sync. You can manually sync existing connections prior to
+          the next scheduled sync to start the upgrade early.
+
+          "
         upgradeDeadline: "2024-05-15"
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
+  supportsDbt: true
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

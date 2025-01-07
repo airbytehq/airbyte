@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-front
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.11.1@sha256:0d0f562a70c0ed19ab605f0c83802a2e052712587692e2f3a1cc794fe7cd7007
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.3@sha256:9214270d83304213977c08e91fd9c55a98819543dbbf0df25a4356299af4f3ab
   connectorSubtype: api
   connectorType: source
   definitionId: ae390de9-bdd5-4bfa-9d14-34010b44ca50
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/source-front
   githubIssueLabel: source-front
   icon: icon.svg

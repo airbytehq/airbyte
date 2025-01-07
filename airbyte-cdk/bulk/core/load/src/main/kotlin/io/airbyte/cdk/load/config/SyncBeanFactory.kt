@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
+import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
@@ -78,5 +79,14 @@ class SyncBeanFactory {
     ): MultiProducerChannel<BatchEnvelope<*>> {
         val channel = Channel<BatchEnvelope<*>>(config.batchQueueDepth)
         return MultiProducerChannel(config.numProcessRecordsWorkers.toLong(), channel, "batchQueue")
+    }
+
+    @Singleton
+    @Named("fileMessageQueue")
+    fun fileMessageQueue(
+        config: DestinationConfiguration,
+    ): MultiProducerChannel<FileTransferQueueMessage> {
+        val channel = Channel<FileTransferQueueMessage>(config.batchQueueDepth)
+        return MultiProducerChannel(1, channel, "fileMessageQueue")
     }
 }
