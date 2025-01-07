@@ -66,7 +66,7 @@ data class AWSSystemCredentials(
 )
 
 /** Collection of Iceberg related utilities.
- * The awsSystemCredentials property is a temporary fix to allow us to run the integrations tests.
+ * @param awsSystemCredentials is a temporary fix to allow us to run the integrations tests.
  * This will be removed when we change all of this to use Micronaut
  * */
 @Singleton
