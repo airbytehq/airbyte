@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLDataSourceFactory
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import javax.sql.DataSource
 

@@ -12,6 +12,8 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import javax.sql.DataSource
 
+private val log = KotlinLogging.logger {}
+
 class MSSQLStreamLoader(
     private val dataSource: DataSource,
     override val stream: DestinationStream,
@@ -51,7 +53,7 @@ class MSSQLStreamLoader(
                 }
             }
         } catch (ex: Exception) {
-            KotlinLogging.logger {}.error(ex) { ex.message }
+            log.error(ex) { ex.message }
             throw ex
         }
     }
