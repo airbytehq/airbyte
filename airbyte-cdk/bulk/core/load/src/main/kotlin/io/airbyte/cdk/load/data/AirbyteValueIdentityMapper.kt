@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 
@@ -12,8 +12,8 @@ interface AirbyteValueMapper {
     fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        changes: List<DestinationRecord.Change> = emptyList()
-    ): Pair<AirbyteValue, List<DestinationRecord.Change>>
+        changes: List<Meta.Change> = emptyList()
+    ): Pair<AirbyteValue, List<Meta.Change>>
 }
 
 /** An optimized identity mapper that just passes through. */
@@ -21,22 +21,22 @@ class AirbyteValueNoopMapper : AirbyteValueMapper {
     override fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        changes: List<DestinationRecord.Change>
-    ): Pair<AirbyteValue, List<DestinationRecord.Change>> = value to changes
+        changes: List<Meta.Change>
+    ): Pair<AirbyteValue, List<Meta.Change>> = value to changes
 }
 
 open class AirbyteValueIdentityMapper : AirbyteValueMapper {
     data class Context(
         val nullable: Boolean = false,
         val path: List<String> = emptyList(),
-        val changes: MutableSet<DestinationRecord.Change> = mutableSetOf(),
+        val changes: MutableSet<Meta.Change> = mutableSetOf(),
     )
 
     override fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        changes: List<DestinationRecord.Change>
-    ): Pair<AirbyteValue, List<DestinationRecord.Change>> =
+        changes: List<Meta.Change>
+    ): Pair<AirbyteValue, List<Meta.Change>> =
         mapInner(value, schema, Context(changes = changes.toMutableSet())).let {
             it.first to it.second.changes.toList()
         }
@@ -46,9 +46,7 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         context: Context,
         reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
     ): Pair<AirbyteValue, Context> {
-        context.changes.add(
-            DestinationRecord.Change(context.path.joinToString("."), Change.NULLED, reason)
-        )
+        context.changes.add(Meta.Change(context.path.joinToString("."), Change.NULLED, reason))
         return mapInner(NullValue, schema, context)
     }
 
@@ -67,40 +65,35 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         } else
             try {
                 when (schema) {
-                    is ObjectType -> mapObject(value as ObjectValue, schema, context)
+                    is ObjectType -> mapObject(value, schema, context)
                     is ObjectTypeWithoutSchema -> mapObjectWithoutSchema(value, schema, context)
                     is ObjectTypeWithEmptySchema -> mapObjectWithEmptySchema(value, schema, context)
-                    is ArrayType -> mapArray(value as ArrayValue, schema, context)
+                    is ArrayType -> mapArray(value, schema, context)
                     is ArrayTypeWithoutSchema -> mapArrayWithoutSchema(value, schema, context)
                     is UnionType -> mapUnion(value, schema, context)
-                    is BooleanType -> mapBoolean(value as BooleanValue, context)
-                    is NumberType -> mapNumber(value as NumberValue, context)
-                    is StringType -> mapString(value as StringValue, context)
-                    is IntegerType -> mapInteger(value as IntegerValue, context)
+                    is BooleanType -> mapBoolean(value, context)
+                    is NumberType -> mapNumber(value, context)
+                    is StringType -> mapString(value, context)
+                    is IntegerType -> mapInteger(value, context)
                     is DateType -> mapDate(value, context)
-                    is TimeTypeWithTimezone ->
-                        mapTimeWithTimezone(
-                            value,
-                            context,
-                        )
-                    is TimeTypeWithoutTimezone ->
-                        mapTimeWithoutTimezone(
-                            value,
-                            context,
-                        )
+                    is TimeTypeWithTimezone -> mapTimeWithTimezone(value, context)
+                    is TimeTypeWithoutTimezone -> mapTimeWithoutTimezone(value, context)
                     is TimestampTypeWithTimezone -> mapTimestampWithTimezone(value, context)
                     is TimestampTypeWithoutTimezone -> mapTimestampWithoutTimezone(value, context)
-                    is UnknownType -> mapUnknown(value as UnknownValue, context)
+                    is UnknownType -> mapUnknown(value, context)
                 }
             } catch (e: Exception) {
                 nulledOut(schema, context)
             }
 
     open fun mapObject(
-        value: ObjectValue,
+        value: AirbyteValue,
         schema: ObjectType,
         context: Context
     ): Pair<AirbyteValue, Context> {
+        if (value !is ObjectValue) {
+            return value to context
+        }
         val values = LinkedHashMap<String, AirbyteValue>()
         schema.properties.forEach { (name, field) ->
             values[name] =
@@ -127,10 +120,13 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapArray(
-        value: ArrayValue,
+        value: AirbyteValue,
         schema: ArrayType,
         context: Context
     ): Pair<AirbyteValue, Context> {
+        if (value !is ArrayValue) {
+            return value to context
+        }
         val mapped =
             value.values.mapIndexed { index, element ->
                 mapInner(
@@ -156,18 +152,52 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         value: AirbyteValue,
         schema: UnionType,
         context: Context
-    ): Pair<AirbyteValue, Context> = value to context
+    ): Pair<AirbyteValue, Context> {
+        /*
+           This mapper should not perform validation, so make a best-faith effort to recurse,
+           but if nothing matches the union, pass the value through unchanged. If clients validated
+           upstream, then this must match. If they did not, they won't have anything any more
+           wrong than they started with.
+        */
+        schema.options.forEach {
+            if (optionMatches(it, value)) {
+                return mapInner(value, it, context)
+            }
+        }
+        return value to context
+    }
 
-    open fun mapBoolean(value: BooleanValue, context: Context): Pair<AirbyteValue, Context> =
+    private fun optionMatches(schema: AirbyteType, value: AirbyteValue): Boolean {
+        return when (schema) {
+            is StringType -> value is StringValue
+            is BooleanType -> value is BooleanValue
+            is IntegerType -> value is IntegerValue
+            is NumberType -> value is NumberValue
+            is ArrayTypeWithoutSchema,
+            is ArrayType -> value is ArrayValue
+            is ObjectType,
+            is ObjectTypeWithoutSchema,
+            is ObjectTypeWithEmptySchema -> value is ObjectValue
+            is DateType -> value is DateValue
+            is TimeTypeWithTimezone -> value is TimeWithTimezoneValue
+            is TimeTypeWithoutTimezone -> value is TimeWithoutTimezoneValue
+            is TimestampTypeWithTimezone -> value is TimestampWithTimezoneValue
+            is TimestampTypeWithoutTimezone -> value is TimestampWithoutTimezoneValue
+            is UnionType -> schema.options.any { optionMatches(it, value) }
+            is UnknownType -> false
+        }
+    }
+
+    open fun mapBoolean(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 
-    open fun mapNumber(value: NumberValue, context: Context): Pair<AirbyteValue, Context> =
+    open fun mapNumber(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 
-    open fun mapString(value: StringValue, context: Context): Pair<AirbyteValue, Context> =
+    open fun mapString(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 
-    open fun mapInteger(value: IntegerValue, context: Context): Pair<AirbyteValue, Context> =
+    open fun mapInteger(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 
     /**
@@ -199,6 +229,6 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
 
     open fun mapNull(context: Context): Pair<AirbyteValue, Context> = NullValue to context
 
-    open fun mapUnknown(value: UnknownValue, context: Context): Pair<AirbyteValue, Context> =
+    open fun mapUnknown(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 }

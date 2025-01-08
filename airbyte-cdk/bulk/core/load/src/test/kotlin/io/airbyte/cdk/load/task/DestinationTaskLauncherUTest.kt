@@ -7,20 +7,24 @@ package io.airbyte.cdk.load.task
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
-import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationStreamEvent
+import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.StreamManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
+import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
-import io.airbyte.cdk.load.task.implementor.ProcessFileTask
 import io.airbyte.cdk.load.task.implementor.ProcessFileTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
@@ -28,7 +32,7 @@ import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
-import io.airbyte.cdk.load.task.internal.SizedInputFlow
+import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
@@ -74,12 +78,13 @@ class DestinationTaskLauncherUTest {
     private val failSyncTaskFactory: FailSyncTaskFactory = mockk(relaxed = true)
 
     // Input Comsumer requirements
-    private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>> = mockk(relaxed = true)
+    private val inputFlow: ReservingDeserializingInputFlow = mockk(relaxed = true)
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>> =
         mockk(relaxed = true)
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>> =
         mockk(relaxed = true)
+    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage> = mockk(relaxed = true)
     private fun getDefaultDestinationTaskLauncher(
         useFileTranfer: Boolean
     ): DefaultDestinationTaskLauncher {
@@ -107,6 +112,7 @@ class DestinationTaskLauncherUTest {
             inputFlow,
             recordQueueSupplier,
             checkpointQueue,
+            fileTransferQueue,
         )
     }
 
@@ -144,21 +150,6 @@ class DestinationTaskLauncherUTest {
         coVerify { spillToDiskTaskFactory.make(any(), any()) }
     }
 
-    class MockedTaskWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
-        override suspend fun execute() {}
-    }
-
-    @Test
-    fun `test handle file`() = runTest {
-        val processFileTask = mockk<ProcessFileTask>(relaxed = true)
-        every { processFileTaskFactory.make(any(), any(), any(), any()) } returns processFileTask
-
-        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
-        destinationTaskLauncher.handleFile(mockk(), mockk(), 1L)
-
-        coVerify { taskScopeProvider.launch(match { it.innerTask is ProcessFileTask }) }
-    }
-
     @Test
     fun `test handle exception`() = runTest {
         val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
@@ -169,5 +160,23 @@ class DestinationTaskLauncherUTest {
 
         coVerify { failStreamTaskFactory.make(any(), e, any()) }
         coVerify { taskScopeProvider.launch(match { it.innerTask is FailStreamTask }) }
+    }
+
+    @Test
+    fun `test run close stream no more than once per stream`() = runTest {
+        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
+        val streamManager = mockk<StreamManager>(relaxed = true)
+        coEvery { syncManager.getStreamManager(any()) } returns streamManager
+        coEvery { streamManager.isBatchProcessingComplete() } returns true
+        val descriptor = DestinationStream.Descriptor("namespace", "name")
+        destinationTaskLauncher.handleNewBatch(
+            descriptor,
+            BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
+        )
+        destinationTaskLauncher.handleNewBatch(
+            descriptor,
+            BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
+        )
+        coVerify(exactly = 1) { closeStreamTaskFactory.make(any(), any()) }
     }
 }
