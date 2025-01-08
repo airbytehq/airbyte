@@ -1207,6 +1207,14 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.MerchantReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
 
     get_stranded_inventory_ui_data:
       type: DeclarativeStream
