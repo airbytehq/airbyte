@@ -7,6 +7,10 @@ on:
         - 'airbyte-integrations/connectors/source-shopify/**'  # Trigger only on changes within this directory
   workflow_dispatch:  # Manually triggerable from GitHub UI
 
+env:
+  DOCKER_TAG: |
+    ${{ github.event.pull_request.head.ref }}-${{ github.event.pull_request.head.sha }}
+    
 jobs:
   build_and_push:
     if: ${{ (github.event_name == 'pull_request' && !github.event.pull_request.draft) }}    
