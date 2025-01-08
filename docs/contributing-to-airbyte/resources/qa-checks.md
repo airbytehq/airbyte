@@ -8,7 +8,7 @@ They do not replace the need for a manual review of the connector codebase and t
 
 ## 📄 Documentation
 
-### Breaking changes must be accompanied by a migration guide
+### Major version upgrades must be accompanied by a migration guide
 
 _Applies to the following connector types: source, destination_
 
@@ -16,12 +16,9 @@ _Applies to the following connector languages: java, low-code, python, manifest-
 
 _Applies to connector with any support level_
 
-_Applies to connector with 100 internal support level_
-
 _Applies to connector with any Airbyte usage level_
 
-When a breaking change is introduced, we check that a migration guide is available. It should be stored under `./docs/integrations/<connector-type>s/<connector-name>-migrations.md`.
-This document should contain a section for each breaking change, in order of the version descending. It must explain users which action to take to migrate to the new version.
+When a connector experiences a major version upgrade, we check that a migration guide is available. It should be stored under `./docs/integrations/<connector-type>s/<connector-name>-migrations.md`. This document should contain a section for each major change, ordered by descending version. It must explain which action to take to migrate to the new version.
 
 ### Connectors must have user facing documentation
 
@@ -30,8 +27,6 @@ _Applies to the following connector types: source, destination_
 _Applies to the following connector languages: java, low-code, python, manifest-only_
 
 _Applies to connector with any support level_
-
-_Applies to connector with 100 internal support level_
 
 _Applies to connector with any Airbyte usage level_
 
@@ -45,8 +40,6 @@ _Applies to the following connector languages: python, low-code_
 
 _Applies to connector with any support level_
 
-_Applies to connector with 300 internal support level_
-
 _Applies to connector with any Airbyte usage level_
 
 The user facing connector documentation should update invalid links in connector documentation. For links that are used as example and return 404 status code, use `example: ` before link to skip it.
@@ -58,8 +51,6 @@ _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
 
 _Applies to connector with any support level_
-
-_Applies to connector with 300 internal support level_
 
 _Applies to connector with any Airbyte usage level_
 
@@ -136,8 +127,6 @@ _Applies to the following connector languages: python, low-code_
 
 _Applies to connector with any support level_
 
-_Applies to connector with 300 internal support level_
-
 _Applies to connector with any Airbyte usage level_
 
 The user facing connector documentation should update `Prerequisites` section with description for all required fields from source specification. Having described all required fields in a one place helps Airbyte users easily set up the source connector. 
@@ -150,8 +139,6 @@ _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
 
 _Applies to connector with any support level_
-
-_Applies to connector with 300 internal support level_
 
 _Applies to connector with any Airbyte usage level_
 
@@ -175,8 +162,6 @@ _Applies to the following connector languages: python, low-code_
 
 _Applies to connector with any support level_
 
-_Applies to connector with 300 internal support level_
-
 _Applies to connector with any Airbyte usage level_
 
 The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
@@ -198,8 +183,6 @@ _Applies to the following connector languages: python, low-code_
 
 _Applies to connector with any support level_
 
-_Applies to connector with 300 internal support level_
-
 _Applies to connector with any Airbyte usage level_
 
 The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
@@ -217,8 +200,6 @@ _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
 
 _Applies to connector with any support level_
-
-_Applies to connector with 300 internal support level_
 
 _Applies to connector with any Airbyte usage level_
 
@@ -238,8 +219,6 @@ _Applies to the following connector languages: python, low-code_
 
 _Applies to connector with any support level_
 
-_Applies to connector with 300 internal support level_
-
 _Applies to connector with any Airbyte usage level_
 
 The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
@@ -257,8 +236,6 @@ _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
 
 _Applies to connector with any support level_
-
-_Applies to connector with 300 internal support level_
 
 _Applies to connector with any Airbyte usage level_
 
@@ -279,8 +256,6 @@ _Applies to the following connector types: source, destination_
 _Applies to the following connector languages: java, low-code, python, manifest-only_
 
 _Applies to connector with any support level_
-
-_Applies to connector with 100 internal support level_
 
 _Applies to connector with any Airbyte usage level_
 
@@ -318,7 +293,7 @@ _Applies to connector with any Airbyte usage level_
 
 Python connectors must have a CDK tag in their metadata. It must be set in the `tags` field in metadata.yaml. The values can be `cdk:low-code`, `cdk:python`, or `cdk:file`.
 
-### Breaking change deadline should be a week in the future
+### Major version upgrade deadline should be a week in the future
 
 _Applies to the following connector types: source, destination_
 _Applies to the following connector languages: java, low-code, python, manifest-only_
@@ -326,7 +301,7 @@ _Applies to connector with any support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
-If the connector version has a breaking change, the deadline field must be set to at least a week in the future.
+If this is a major version upgrade, the deadline field must be set to at least a week in the future.
 
 ### Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata
 

@@ -187,7 +187,7 @@ To enable badges, include `products` in the Markdown metadata. The following val
 - `all`: Self-Managed Community, Self-Managed Enterprise, and Cloud
 - `oss-community`: Self-Managed Community only
 - `oss-enterprise`: Self-Managed Enterprise only
-- `cloud`: Cloud, including Cloud Teams, only
+- `cloud`: Cloud only
 - `cloud-teams`: Cloud Teams only
 
 In this example, the Self-Managed Community badge is highlighted, and Cloud and Self-Managed Enterprise badges are grayed out.
