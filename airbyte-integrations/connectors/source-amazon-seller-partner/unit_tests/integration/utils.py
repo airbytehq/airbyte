@@ -15,6 +15,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import _get_unit_test_folder
+from test.state_builder import StateBuilder
 
 from .config import ACCESS_TOKEN, ConfigBuilder
 from .request_builder import RequestBuilder
@@ -29,8 +30,8 @@ def catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(stream_name, sync_mode).build()
 
 
-def source() -> SourceAmazonSellerPartner:
-    return SourceAmazonSellerPartner()
+def source(catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]) -> SourceAmazonSellerPartner:
+    return SourceAmazonSellerPartner(catalog=catalog, config=config, state=StateBuilder().build())
 
 
 def read_output(
@@ -42,11 +43,11 @@ def read_output(
 ) -> EntrypointOutput:
     _catalog = catalog(stream_name, sync_mode)
     _config = config_builder.build()
-    return read(source(), _config, _catalog, state, expecting_exception)
+    return read(source(_catalog, _config), _config, _catalog, state, expecting_exception)
 
 
 def get_stream_by_name(stream_name: str, config_: Mapping[str, Any]) -> Stream:
-    streams = [stream for stream in source().streams(config_) if stream.name == stream_name]
+    streams = [stream for stream in source(catalog=catalog(stream_name, SyncMode.full_refresh), config=config().build()).streams(config_) if stream.name == stream_name]
     if not streams:
         raise ValueError("Please provide a valid stream name")
     return streams[0]
