@@ -1,6 +1,11 @@
 plugins {
     id 'airbyte-java-connector'
+    id 'java-library'
+    id 'maven-publish'
 }
+
+group = 'io.airbyte.connectors'
+version = '1.0.0-SNAPSHOT'
 
 airbyteJavaConnector {
     cdkVersionRequired = '0.20.4'
@@ -17,4 +22,16 @@ dependencies {
     // https://github.com/airbytehq/jsongenerator
     implementation 'net.jimblackler.jsonschemafriend:core:0.12.4'
     implementation group: 'com.github.airbytehq', name: 'jsongenerator', version: '1.0.2'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            from components.java
+        }
+    }
 }

@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.e2e_test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.AbstractIterator;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -36,6 +37,7 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
     numRecordsEmitted = 0;
   }
 
+  @Trace
   @CheckForNull
   @Override
   protected AirbyteMessage computeNext() {

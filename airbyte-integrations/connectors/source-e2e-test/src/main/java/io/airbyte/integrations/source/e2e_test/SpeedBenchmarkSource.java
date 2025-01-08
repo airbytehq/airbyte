@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.e2e_test;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import datadog.trace.api.Trace;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -36,6 +37,7 @@ public class SpeedBenchmarkSource extends BaseConnector implements Source {
     return sourceConfig.getCatalog();
   }
 
+  @Trace
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
