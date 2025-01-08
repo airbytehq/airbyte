@@ -12,6 +12,9 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
+import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
+import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
 
 /**
  * Interface defining the specifications for configuring an Iceberg catalog.
@@ -74,7 +77,7 @@ interface IcebergCatalogSpecifications {
                 is GlueCatalogSpecification ->
                     GlueCatalogConfiguration(
                         (catalogType as GlueCatalogSpecification).glueId,
-                        (catalogType as GlueCatalogSpecification).roleArn
+                        (catalogType as GlueCatalogSpecification).toAWSArnRoleConfiguration(),
                     )
                 is NessieCatalogSpecification ->
                     NessieCatalogConfiguration(
@@ -187,17 +190,9 @@ class GlueCatalogSpecification(
     @JsonProperty("glue_id")
     @JsonSchemaInject(json = """{"order":1}""")
     val glueId: String,
-    @get:JsonSchemaTitle("AWS role ARN")
-    @get:JsonPropertyDescription(
-        "The AWS ARN of the role that should be assumed for AWS authentication."
-    )
-    @JsonProperty("role_arn")
-    @get:JsonSchemaInject(
-        json =
-            """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"], "always_show": true, "order":2}"""
-    )
-    val roleArn: String? = null
-) : CatalogType(catalogType)
+
+    override val roleArn: String? = null,
+) : CatalogType(catalogType), AWSArnRoleSpecification
 
 /**
  * Represents a unified Iceberg catalog configuration.
@@ -242,16 +237,10 @@ data class GlueCatalogConfiguration(
     @JsonSchemaTitle("AWS Account ID")
     @JsonPropertyDescription("The AWS Account ID associated with the Glue service.")
     val glueId: String,
-    @get:JsonSchemaTitle("AWS role ARN")
-    @get:JsonPropertyDescription(
-        "The AWS ARN of the role that should be assumed for AWS authentication."
-    )
-    @get:JsonSchemaInject(
-        json =
-            """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"], "always_show": true, "order":2}"""
-    )
-    val roleArn: String? = null
-) : CatalogConfiguration
+
+    override val awsArnRoleConfiguration: AWSArnRoleConfiguration,
+
+    ) : CatalogConfiguration, AWSArnRoleConfigurationProvider
 
 /**
  * Nessie catalog configuration details.
