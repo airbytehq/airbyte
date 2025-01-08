@@ -289,7 +289,10 @@ class IcebergUtil(
 
         val clientProperties =
             if (catalogConfig.awsArnRoleConfiguration.roleArn != null) {
-                buildRoleBasedClientProperties(catalogConfig.awsArnRoleConfiguration.roleArn!!, config)
+                buildRoleBasedClientProperties(
+                    catalogConfig.awsArnRoleConfiguration.roleArn!!,
+                    config
+                )
             } else {
                 buildKeyBasedClientProperties(config)
             }
