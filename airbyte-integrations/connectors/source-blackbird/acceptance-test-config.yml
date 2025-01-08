@@ -1,0 +1,60 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-blackbird:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "integration_tests/spec.json"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: cmdb_ci_lb_bigip
+            bypass_reason: Empty data
+          - name: cmdb_ci_chassis_server
+            bypass_reason: Empty data
+          - name: cmdb_ci_comm
+            bypass_reason: Empty data
+          - name: cmdb_ci_solaris_server
+            bypass_reason: Empty data
+          - name: sam_sw_product_lifecycle
+            bypass_reason: Empty data
+          - name: cmdb_ci_ucs_chassis
+            bypass_reason: Empty data
+          - name: cmdb_ci_net_app_server
+            bypass_reason: Empty data
+          - name: cmdb_ci_scanner
+            bypass_reason: Empty data
+          - name: cmdb_ci_ip_firewall
+            bypass_reason: Empty data
+          - name: cmdb_ci_pc_hardware
+            bypass_reason: Empty data
+          - name: cmdb_ci_esx_server
+            bypass_reason: Empty data
+          - name: cmdb_ci_wap_network
+            bypass_reason: Empty data
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
+  # TODO uncomment this block this block if your connector implements incremental sync:
+  #    tests:
+  #      - config_path: "secrets/config.json"
+  #        configured_catalog_path: "integration_tests/configured_catalog.json"
+  #        future_state:
+  #          future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

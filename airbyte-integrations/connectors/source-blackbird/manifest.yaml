@@ -1,0 +1,6935 @@
+version: 6.12.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - cmdb_ci_esx_server
+
+definitions:
+  streams:
+    cmdb_ci_wap_network:
+      type: DeclarativeStream
+      name: cmdb_ci_wap_network
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_wap_network?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_wap_network"
+    cmdb_ci_ip_router:
+      type: DeclarativeStream
+      name: cmdb_ci_ip_router
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_ip_router?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10000
+            inject_on_first_request: false
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - company
+              value: "{{record.company.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_ip_router"
+    cmdb_ci_ip_switch:
+      type: DeclarativeStream
+      name: cmdb_ci_ip_switch
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_ip_switch?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - company
+              value: "{{record.company.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_ip_switch"
+    cmdb_ci_lb_bigip:
+      type: DeclarativeStream
+      name: cmdb_ci_lb_bigip
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_lb_bigip?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_lb_bigip"
+    cmdb_ci_ip_firewall:
+      type: DeclarativeStream
+      name: cmdb_ci_ip_firewall
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_ip_firewall?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - company
+              value: "{{record.company.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_ip_firewall"
+    cmdb_ci_printer:
+      type: DeclarativeStream
+      name: cmdb_ci_printer
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_printer?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - location
+              value: "{{record.location.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_printer"
+    cmdb_ci_scanner:
+      type: DeclarativeStream
+      name: cmdb_ci_scanner
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_scanner?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - location
+              value: "{{record.location.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_scanner"
+    cmdb_ci_linux_server:
+      type: DeclarativeStream
+      name: cmdb_ci_linux_server
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_linux_server?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_linux_server"
+    cmdb_ci_comm:
+      type: DeclarativeStream
+      name: cmdb_ci_comm
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_comm?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - location
+              value: "{{record.location.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - assigned_to
+              value: "{{record.assigned_to.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_comm"
+    cmdb_ci_win_server:
+      type: DeclarativeStream
+      name: cmdb_ci_win_server
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_win_server?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10000
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_win_server"
+    cmdb_ci_ucs_chassis:
+      type: DeclarativeStream
+      name: cmdb_ci_ucs_chassis
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_ucs_chassis?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_ucs_chassis"
+    cmdb_ci_storage_switch:
+      type: DeclarativeStream
+      name: cmdb_ci_storage_switch
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_storage_switch?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - location
+              value: "{{record.location.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_storage_switch"
+    cmdb_ci_pc_hardware:
+      type: DeclarativeStream
+      name: cmdb_ci_pc_hardware
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_pc_hardware
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_pc_hardware"
+    cmdb_ci_esx_server:
+      type: DeclarativeStream
+      name: cmdb_ci_esx_server
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_esx_server?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_esx_server"
+    cmdb_ci_aix_server:
+      type: DeclarativeStream
+      name: cmdb_ci_aix_server
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_aix_server?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - company
+              value: "{{record.company.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_aix_server"
+    cmdb_ci_solaris_server:
+      type: DeclarativeStream
+      name: cmdb_ci_solaris_server
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_solaris_server?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 99
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_solaris_server"
+    cmdb_ci_chassis_server:
+      type: DeclarativeStream
+      name: cmdb_ci_chassis_server
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_chassis_server?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_chassis_server"
+    cmdb_ci_server:
+      type: DeclarativeStream
+      name: cmdb_ci_server
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_server?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_server"
+    cmdb_ci_net_app_server:
+      type: DeclarativeStream
+      name: cmdb_ci_net_app_server
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_ci_net_app_server?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - model_id
+              value: "{{record.model_id.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - company
+              value: "{{record.company.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_ci_net_app_server"
+    cmdb_software_product_model:
+      type: DeclarativeStream
+      name: cmdb_software_product_model
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /api/now/table/cmdb_software_product_model?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - manufacturer
+              value: "{{record.manufacturer.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - sys_domain
+              value: "{{record.sys_domain.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_software_product_model"
+    cmdb_model_category:
+      type: DeclarativeStream
+      name: cmdb_model_category
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/cmdb_model_category?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sys_domain
+              value: "{{record.sys_domain.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - parent_cateogry
+              value: "{{record.parent_cateogry.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cmdb_model_category"
+    sam_sw_product_lifecycle:
+      type: DeclarativeStream
+      name: sam_sw_product_lifecycle
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/sam_sw_product_lifecycle?sysparm_display_value=true
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - norm_product
+              value: "{{record.norm_product.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - publisher
+              value: "{{record.publisher.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - sys_domain
+              value: "{{record.sys_domain.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sam_sw_product_lifecycle"
+    alm_license:
+      type: DeclarativeStream
+      name: alm_license
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/alm_license
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sysparm_offset
+          page_size_option:
+            type: RequestOption
+            field_name: sysparm_limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 32000
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - model
+              value: "{{record.model.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - request_line
+              value: "{{record.request_line.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - model_category
+              value: "{{record.model_category.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - cost_center
+              value: "{{record.cost_center.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - sys_domain
+              value: "{{record.sys_domain.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - company
+              value: "{{record.company.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - department
+              value: "{{record.department.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - assigned_to
+              value: "{{record.assigned_to.display_value}}"
+        - type: AddFields
+          fields:
+            - path:
+                - owned_by
+              value: "{{record.owned_by.display_value}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/alm_license"
+    Contracts:
+      type: DeclarativeStream
+      name: Contracts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/now/table/ast_contract
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Contracts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{config['base_url']}}
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: '{{ config["username"] }}'
+      password: '{{ config["password"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/cmdb_ci_wap_network"
+  - $ref: "#/definitions/streams/cmdb_ci_ip_router"
+  - $ref: "#/definitions/streams/cmdb_ci_ip_switch"
+  - $ref: "#/definitions/streams/cmdb_ci_lb_bigip"
+  - $ref: "#/definitions/streams/cmdb_ci_ip_firewall"
+  - $ref: "#/definitions/streams/cmdb_ci_printer"
+  - $ref: "#/definitions/streams/cmdb_ci_scanner"
+  - $ref: "#/definitions/streams/cmdb_ci_linux_server"
+  - $ref: "#/definitions/streams/cmdb_ci_comm"
+  - $ref: "#/definitions/streams/cmdb_ci_win_server"
+  - $ref: "#/definitions/streams/cmdb_ci_ucs_chassis"
+  - $ref: "#/definitions/streams/cmdb_ci_storage_switch"
+  - $ref: "#/definitions/streams/cmdb_ci_pc_hardware"
+  - $ref: "#/definitions/streams/cmdb_ci_esx_server"
+  - $ref: "#/definitions/streams/cmdb_ci_aix_server"
+  - $ref: "#/definitions/streams/cmdb_ci_solaris_server"
+  - $ref: "#/definitions/streams/cmdb_ci_chassis_server"
+  - $ref: "#/definitions/streams/cmdb_ci_server"
+  - $ref: "#/definitions/streams/cmdb_ci_net_app_server"
+  - $ref: "#/definitions/streams/cmdb_software_product_model"
+  - $ref: "#/definitions/streams/cmdb_model_category"
+  - $ref: "#/definitions/streams/sam_sw_product_lifecycle"
+  - $ref: "#/definitions/streams/alm_license"
+  - $ref: "#/definitions/streams/Contracts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - base_url
+      - username
+    properties:
+      base_url:
+        type: string
+        order: 0
+        title: Base URL
+      username:
+        type: string
+        title: Username
+        order: 1
+      password:
+        type: string
+        title: Password
+        always_show: true
+        airbyte_secret: true
+        order: 2
+    additionalProperties: true
+
+schemas:
+  cmdb_ci_wap_network:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      install_date:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      u_ownership_code:
+        type:
+          - string
+          - "null"
+      u_primary_ip_address:
+        type:
+          - string
+          - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_ci_ip_router:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asset:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      asset_tag:
+        type:
+          - string
+          - "null"
+      assigned:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        type:
+          - string
+          - "null"
+      assignment_group:
+        type:
+          - string
+          - "null"
+      attestation_score:
+        type:
+          - string
+          - "null"
+      attested:
+        type:
+          - string
+          - "null"
+      attested_by:
+        type:
+          - string
+          - "null"
+      attested_date:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      bandwidth:
+        type:
+          - string
+          - "null"
+      business_unit:
+        type:
+          - string
+          - "null"
+      can_hub:
+        type:
+          - string
+          - "null"
+      can_partitionvlans:
+        type:
+          - string
+          - "null"
+      can_print:
+        type:
+          - string
+          - "null"
+      can_route:
+        type:
+          - string
+          - "null"
+      can_switch:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      change_control:
+        type:
+          - string
+          - "null"
+      channels:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      checked_out:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      correlation_id:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      cost_cc:
+        type:
+          - string
+          - "null"
+      cost_center:
+        type:
+          - string
+          - "null"
+      cpu_count:
+        type:
+          - string
+          - "null"
+      cpu_manufacturer:
+        type:
+          - string
+          - "null"
+      cpu_speed:
+        type:
+          - string
+          - "null"
+      cpu_type:
+        type:
+          - string
+          - "null"
+      default_gateway:
+        type:
+          - string
+          - "null"
+      delivery_date:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      device_type:
+        type:
+          - string
+          - "null"
+      discovery_proto_id:
+        type:
+          - string
+          - "null"
+      disk_space:
+        type:
+          - string
+          - "null"
+      dns_domain:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      duplicate_of:
+        type:
+          - string
+          - "null"
+      fault_count:
+        type:
+          - string
+          - "null"
+      firmware_manufacturer:
+        type:
+          - string
+          - "null"
+      firmware_version:
+        type:
+          - string
+          - "null"
+      first_discovered:
+        type:
+          - string
+          - "null"
+      fqdn:
+        type:
+          - string
+          - "null"
+      gl_account:
+        type:
+          - string
+          - "null"
+      hardware_status:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      internet_facing:
+        type:
+          - string
+          - "null"
+      invoice_number:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      justification:
+        type:
+          - string
+          - "null"
+      last_discovered:
+        type:
+          - string
+          - "null"
+      lease_id:
+        type:
+          - string
+          - "null"
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      mac_address:
+        type:
+          - string
+          - "null"
+      maintenance_schedule:
+        type:
+          - string
+          - "null"
+      managed_by:
+        type:
+          - string
+          - "null"
+      managed_by_group:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      model_number:
+        type:
+          - string
+          - "null"
+      monitor:
+        type:
+          - string
+          - "null"
+      most_frequent_user:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      order_date:
+        type:
+          - string
+          - "null"
+      owned_by:
+        type:
+          - string
+          - "null"
+      physical_interface_count:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      ports:
+        type:
+          - string
+          - "null"
+      product_instance_id:
+        type:
+          - string
+          - "null"
+      purchase_date:
+        type:
+          - string
+          - "null"
+      ram:
+        type:
+          - string
+          - "null"
+      range:
+        type:
+          - string
+          - "null"
+      schedule:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      skip_sync:
+        type:
+          - string
+          - "null"
+      snmp_sys_location:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      support_group:
+        type:
+          - string
+          - "null"
+      supported_by:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_class_path:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      unverified:
+        type:
+          - string
+          - "null"
+      vendor:
+        type:
+          - string
+          - "null"
+      warranty_expiration:
+        type:
+          - string
+          - "null"
+  cmdb_ci_ip_switch:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asset:
+        type:
+          - string
+          - "null"
+      asset_tag:
+        type:
+          - string
+          - "null"
+      assigned:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        type:
+          - string
+          - "null"
+      assignment_group:
+        type:
+          - string
+          - "null"
+      attestation_score:
+        type:
+          - string
+          - "null"
+      attested:
+        type:
+          - string
+          - "null"
+      attested_by:
+        type:
+          - string
+          - "null"
+      attested_date:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      bandwidth:
+        type:
+          - string
+          - "null"
+      business_unit:
+        type:
+          - string
+          - "null"
+      can_hub:
+        type:
+          - string
+          - "null"
+      can_partitionvlans:
+        type:
+          - string
+          - "null"
+      can_print:
+        type:
+          - string
+          - "null"
+      can_route:
+        type:
+          - string
+          - "null"
+      can_switch:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      change_control:
+        type:
+          - string
+          - "null"
+      channels:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      checked_out:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      correlation_id:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      cost_cc:
+        type:
+          - string
+          - "null"
+      cost_center:
+        type:
+          - string
+          - "null"
+      cpu_count:
+        type:
+          - string
+          - "null"
+      cpu_manufacturer:
+        type:
+          - string
+          - "null"
+      cpu_speed:
+        type:
+          - string
+          - "null"
+      cpu_type:
+        type:
+          - string
+          - "null"
+      default_gateway:
+        type:
+          - string
+          - "null"
+      delivery_date:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      device_type:
+        type:
+          - string
+          - "null"
+      discovery_proto_id:
+        type:
+          - string
+          - "null"
+      disk_space:
+        type:
+          - string
+          - "null"
+      dns_domain:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      duplicate_of:
+        type:
+          - string
+          - "null"
+      fault_count:
+        type:
+          - string
+          - "null"
+      firmware_manufacturer:
+        type:
+          - string
+          - "null"
+      firmware_version:
+        type:
+          - string
+          - "null"
+      first_discovered:
+        type:
+          - string
+          - "null"
+      fqdn:
+        type:
+          - string
+          - "null"
+      gl_account:
+        type:
+          - string
+          - "null"
+      hardware_status:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      internet_facing:
+        type:
+          - string
+          - "null"
+      invoice_number:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      justification:
+        type:
+          - string
+          - "null"
+      last_discovered:
+        type:
+          - string
+          - "null"
+      lease_id:
+        type:
+          - string
+          - "null"
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      mac_address:
+        type:
+          - string
+          - "null"
+      maintenance_schedule:
+        type:
+          - string
+          - "null"
+      managed_by:
+        type:
+          - string
+          - "null"
+      managed_by_group:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      model_number:
+        type:
+          - string
+          - "null"
+      monitor:
+        type:
+          - string
+          - "null"
+      most_frequent_user:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      order_date:
+        type:
+          - string
+          - "null"
+      owned_by:
+        type:
+          - string
+          - "null"
+      physical_interface_count:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      ports:
+        type:
+          - string
+          - "null"
+      product_instance_id:
+        type:
+          - string
+          - "null"
+      purchase_date:
+        type:
+          - string
+          - "null"
+      ram:
+        type:
+          - string
+          - "null"
+      range:
+        type:
+          - string
+          - "null"
+      schedule:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      skip_sync:
+        type:
+          - string
+          - "null"
+      snmp_sys_location:
+        type:
+          - string
+          - "null"
+      stack:
+        type:
+          - string
+          - "null"
+      stack_mode:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      support_group:
+        type:
+          - string
+          - "null"
+      supported_by:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_class_path:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      unverified:
+        type:
+          - string
+          - "null"
+      vendor:
+        type:
+          - string
+          - "null"
+      warranty_expiration:
+        type:
+          - string
+          - "null"
+  cmdb_ci_lb_bigip:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      u_managing_company:
+        type:
+          - string
+          - "null"
+      u_ownership_code:
+        type:
+          - string
+          - "null"
+      used_for:
+        type:
+          - string
+          - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_ci_ip_firewall:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - number
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      u_is_virtual:
+        type:
+          - string
+          - "null"
+      u_primary_ip_address:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_ci_printer:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asset:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      asset_tag:
+        type:
+          - string
+          - "null"
+      assigned:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      assignment_group:
+        type:
+          - string
+          - "null"
+      attestation_score:
+        type:
+          - string
+          - "null"
+      attested:
+        type:
+          - string
+          - "null"
+      attested_by:
+        type:
+          - string
+          - "null"
+      attested_date:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      business_unit:
+        type:
+          - string
+          - "null"
+      can_print:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      change_control:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      checked_out:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      colors:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      correlation_id:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      cost_cc:
+        type:
+          - string
+          - "null"
+      cost_center:
+        type:
+          - string
+          - "null"
+      default_gateway:
+        type:
+          - string
+          - "null"
+      delivery_date:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      dns_domain:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      duplicate_of:
+        type:
+          - string
+          - "null"
+      fault_count:
+        type:
+          - string
+          - "null"
+      first_discovered:
+        type:
+          - string
+          - "null"
+      fqdn:
+        type:
+          - string
+          - "null"
+      gl_account:
+        type:
+          - string
+          - "null"
+      hardware_status:
+        type:
+          - string
+          - "null"
+      hardware_substatus:
+        type:
+          - string
+          - "null"
+      horizontal_resolution:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      internet_facing:
+        type:
+          - string
+          - "null"
+      invoice_number:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      justification:
+        type:
+          - string
+          - "null"
+      last_discovered:
+        type:
+          - string
+          - "null"
+      lease_id:
+        type:
+          - string
+          - "null"
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      mac_address:
+        type:
+          - string
+          - "null"
+      maintenance_schedule:
+        type:
+          - string
+          - "null"
+      managed_by:
+        type:
+          - string
+          - "null"
+      managed_by_group:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      model_number:
+        type:
+          - string
+          - "null"
+      monitor:
+        type:
+          - string
+          - "null"
+      most_frequent_user:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      order_date:
+        type:
+          - string
+          - "null"
+      owned_by:
+        type:
+          - string
+          - "null"
+      pcl:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      postscript:
+        type:
+          - string
+          - "null"
+      ppm:
+        type:
+          - string
+          - "null"
+      print_type:
+        type:
+          - string
+          - "null"
+      product_instance_id:
+        type:
+          - string
+          - "null"
+      purchase_date:
+        type:
+          - string
+          - "null"
+      resolution_units:
+        type:
+          - string
+          - "null"
+      schedule:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      skip_sync:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      support_group:
+        type:
+          - string
+          - "null"
+      supported_by:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_class_path:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      unverified:
+        type:
+          - string
+          - "null"
+      use_count:
+        type:
+          - string
+          - "null"
+      use_units:
+        type:
+          - string
+          - "null"
+      vendor:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      vertical_resolution:
+        type:
+          - string
+          - "null"
+      warranty_expiration:
+        type:
+          - string
+          - "null"
+  cmdb_ci_scanner:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      install_date:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      u_primary_ip_address:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_ci_linux_server:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asset:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      asset_tag:
+        type:
+          - string
+          - "null"
+      assigned:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        type:
+          - string
+          - "null"
+      assignment_group:
+        type:
+          - string
+          - "null"
+      attestation_score:
+        type:
+          - string
+          - "null"
+      attested:
+        type:
+          - string
+          - "null"
+      attested_by:
+        type:
+          - string
+          - "null"
+      attested_date:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      business_unit:
+        type:
+          - string
+          - "null"
+      can_print:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      cd_rom:
+        type:
+          - string
+          - "null"
+      cd_speed:
+        type:
+          - string
+          - "null"
+      change_control:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      checked_out:
+        type:
+          - string
+          - "null"
+      classification:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      correlation_id:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      cost_cc:
+        type:
+          - string
+          - "null"
+      cost_center:
+        type:
+          - string
+          - "null"
+      cpu_core_count:
+        type:
+          - string
+          - "null"
+      cpu_core_thread:
+        type:
+          - string
+          - "null"
+      cpu_count:
+        type:
+          - string
+          - "null"
+      cpu_manufacturer:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      cpu_name:
+        type:
+          - string
+          - "null"
+      cpu_speed:
+        type:
+          - string
+          - "null"
+      cpu_type:
+        type:
+          - string
+          - "null"
+      default_gateway:
+        type:
+          - string
+          - "null"
+      delivery_date:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      disk_space:
+        type:
+          - string
+          - "null"
+      dns_domain:
+        type:
+          - string
+          - "null"
+      dr_backup:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      duplicate_of:
+        type:
+          - string
+          - "null"
+      fault_count:
+        type:
+          - string
+          - "null"
+      firewall_status:
+        type:
+          - string
+          - "null"
+      first_discovered:
+        type:
+          - string
+          - "null"
+      fqdn:
+        type:
+          - string
+          - "null"
+      gl_account:
+        type:
+          - string
+          - "null"
+      host_name:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      internet_facing:
+        type:
+          - string
+          - "null"
+      invoice_number:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      justification:
+        type:
+          - string
+          - "null"
+      kernel_release:
+        type:
+          - string
+          - "null"
+      last_discovered:
+        type:
+          - string
+          - "null"
+      lease_id:
+        type:
+          - string
+          - "null"
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      mac_address:
+        type:
+          - string
+          - "null"
+      maintenance_schedule:
+        type:
+          - string
+          - "null"
+      managed_by:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      managed_by_group:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      model_number:
+        type:
+          - string
+          - "null"
+      monitor:
+        type:
+          - string
+          - "null"
+      most_frequent_user:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object_id:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      order_date:
+        type:
+          - string
+          - "null"
+      os:
+        type:
+          - string
+          - "null"
+      os_address_width:
+        type:
+          - string
+          - "null"
+      os_domain:
+        type:
+          - string
+          - "null"
+      os_service_pack:
+        type:
+          - string
+          - "null"
+      os_version:
+        type:
+          - string
+          - "null"
+      owned_by:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      product_instance_id:
+        type:
+          - string
+          - "null"
+      purchase_date:
+        type:
+          - string
+          - "null"
+      ram:
+        type:
+          - string
+          - "null"
+      schedule:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      skip_sync:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      support_group:
+        type:
+          - string
+          - "null"
+      supported_by:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_class_path:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      unverified:
+        type:
+          - string
+          - "null"
+      used_for:
+        type:
+          - string
+          - "null"
+      vendor:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      warranty_expiration:
+        type:
+          - string
+          - "null"
+  cmdb_ci_comm:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        anyOf:
+          - type: string
+          - type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                display_value:
+                  type:
+                    - string
+                    - "null"
+                link:
+                  type:
+                    - string
+                    - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      location:
+        anyOf:
+          - type: string
+          - type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                display_value:
+                  type:
+                    - string
+                    - "null"
+                link:
+                  type:
+                    - string
+                    - "null"
+      manufacturer:
+        anyOf:
+          - type: string
+          - type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                display_value:
+                  type:
+                    - string
+                    - "null"
+                link:
+                  type:
+                    - string
+                    - "null"
+      model_id:
+        anyOf:
+          - type: string
+          - type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                display_value:
+                  type:
+                    - string
+                    - "null"
+                link:
+                  type:
+                    - string
+                    - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        anyOf:
+          - type: string
+          - type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                display_value:
+                  type:
+                    - string
+                    - "null"
+                link:
+                  type:
+                    - string
+                    - "null"
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_ci_win_server:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asset:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      asset_tag:
+        type:
+          - string
+          - "null"
+      assigned:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        type:
+          - string
+          - "null"
+      assignment_group:
+        type:
+          - string
+          - "null"
+      attestation_score:
+        type:
+          - string
+          - "null"
+      attested:
+        type:
+          - string
+          - "null"
+      attested_by:
+        type:
+          - string
+          - "null"
+      attested_date:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      business_unit:
+        type:
+          - string
+          - "null"
+      can_print:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      cd_rom:
+        type:
+          - string
+          - "null"
+      cd_speed:
+        type:
+          - string
+          - "null"
+      change_control:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      checked_out:
+        type:
+          - string
+          - "null"
+      classification:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      correlation_id:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      cost_cc:
+        type:
+          - string
+          - "null"
+      cost_center:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      cpu_core_count:
+        type:
+          - string
+          - "null"
+      cpu_core_thread:
+        type:
+          - string
+          - "null"
+      cpu_count:
+        type:
+          - string
+          - "null"
+      cpu_manufacturer:
+        type:
+          - string
+          - "null"
+      cpu_name:
+        type:
+          - string
+          - "null"
+      cpu_speed:
+        type:
+          - string
+          - "null"
+      cpu_type:
+        type:
+          - string
+          - "null"
+      default_gateway:
+        type:
+          - string
+          - "null"
+      delivery_date:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      disk_space:
+        type:
+          - string
+          - "null"
+      dns_domain:
+        type:
+          - string
+          - "null"
+      dr_backup:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      duplicate_of:
+        type:
+          - string
+          - "null"
+      fault_count:
+        type:
+          - string
+          - "null"
+      firewall_status:
+        type:
+          - string
+          - "null"
+      first_discovered:
+        type:
+          - string
+          - "null"
+      fqdn:
+        type:
+          - string
+          - "null"
+      gl_account:
+        type:
+          - string
+          - "null"
+      host_name:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      internet_facing:
+        type:
+          - string
+          - "null"
+      invoice_number:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      justification:
+        type:
+          - string
+          - "null"
+      last_discovered:
+        type:
+          - string
+          - "null"
+      lease_id:
+        type:
+          - string
+          - "null"
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      mac_address:
+        type:
+          - string
+          - "null"
+      maintenance_schedule:
+        type:
+          - string
+          - "null"
+      managed_by:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      managed_by_group:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      model_number:
+        type:
+          - string
+          - "null"
+      monitor:
+        type:
+          - string
+          - "null"
+      most_frequent_user:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object_id:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      order_date:
+        type:
+          - string
+          - "null"
+      os:
+        type:
+          - string
+          - "null"
+      os_address_width:
+        type:
+          - string
+          - "null"
+      os_domain:
+        type:
+          - string
+          - "null"
+      os_service_pack:
+        type:
+          - string
+          - "null"
+      os_version:
+        type:
+          - string
+          - "null"
+      owned_by:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      product_instance_id:
+        type:
+          - string
+          - "null"
+      purchase_date:
+        type:
+          - string
+          - "null"
+      ram:
+        type:
+          - string
+          - "null"
+      schedule:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      skip_sync:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      support_group:
+        type:
+          - string
+          - "null"
+      supported_by:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_class_path:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      unverified:
+        type:
+          - string
+          - "null"
+      used_for:
+        type:
+          - string
+          - "null"
+      vendor:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      warranty_expiration:
+        type:
+          - string
+          - "null"
+  cmdb_ci_ucs_chassis:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_ci_storage_switch:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asset:
+        type:
+          - string
+          - "null"
+      asset_tag:
+        type:
+          - string
+          - "null"
+      assigned:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        type:
+          - string
+          - "null"
+      assignment_group:
+        type:
+          - string
+          - "null"
+      attestation_score:
+        type:
+          - string
+          - "null"
+      attested:
+        type:
+          - string
+          - "null"
+      attested_by:
+        type:
+          - string
+          - "null"
+      attested_date:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      business_unit:
+        type:
+          - string
+          - "null"
+      can_print:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      cd_rom:
+        type:
+          - string
+          - "null"
+      cd_speed:
+        type:
+          - string
+          - "null"
+      change_control:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      checked_out:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      correlation_id:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      cost_cc:
+        type:
+          - string
+          - "null"
+      cost_center:
+        type:
+          - string
+          - "null"
+      cpu_core_count:
+        type:
+          - string
+          - "null"
+      cpu_core_thread:
+        type:
+          - string
+          - "null"
+      cpu_count:
+        type:
+          - string
+          - "null"
+      cpu_manufacturer:
+        type:
+          - string
+          - "null"
+      cpu_name:
+        type:
+          - string
+          - "null"
+      cpu_speed:
+        type:
+          - string
+          - "null"
+      cpu_type:
+        type:
+          - string
+          - "null"
+      default_gateway:
+        type:
+          - string
+          - "null"
+      delivery_date:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      device_id:
+        type:
+          - string
+          - "null"
+      disk_space:
+        type:
+          - string
+          - "null"
+      dns_domain:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      duplicate_of:
+        type:
+          - string
+          - "null"
+      fault_count:
+        type:
+          - string
+          - "null"
+      first_discovered:
+        type:
+          - string
+          - "null"
+      fqdn:
+        type:
+          - string
+          - "null"
+      gl_account:
+        type:
+          - string
+          - "null"
+      hardware_status:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      internet_facing:
+        type:
+          - string
+          - "null"
+      invoice_number:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      justification:
+        type:
+          - string
+          - "null"
+      last_discovered:
+        type:
+          - string
+          - "null"
+      lease_id:
+        type:
+          - string
+          - "null"
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      mac_address:
+        type:
+          - string
+          - "null"
+      maintenance_schedule:
+        type:
+          - string
+          - "null"
+      managed_by:
+        type:
+          - string
+          - "null"
+      managed_by_group:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      model_number:
+        type:
+          - string
+          - "null"
+      monitor:
+        type:
+          - string
+          - "null"
+      most_frequent_user:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object_id:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      order_date:
+        type:
+          - string
+          - "null"
+      os_address_width:
+        type:
+          - string
+          - "null"
+      os_domain:
+        type:
+          - string
+          - "null"
+      os_service_pack:
+        type:
+          - string
+          - "null"
+      os_version:
+        type:
+          - string
+          - "null"
+      owned_by:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      product_instance_id:
+        type:
+          - string
+          - "null"
+      purchase_date:
+        type:
+          - string
+          - "null"
+      ram:
+        type:
+          - string
+          - "null"
+      san:
+        type:
+          - string
+          - "null"
+      schedule:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      skip_sync:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      support_group:
+        type:
+          - string
+          - "null"
+      supported_by:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_class_path:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      unverified:
+        type:
+          - string
+          - "null"
+      vendor:
+        type:
+          - string
+          - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      warranty_expiration:
+        type:
+          - string
+          - "null"
+      wwnn:
+        type:
+          - string
+          - "null"
+  cmdb_ci_pc_hardware:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      u_primary_ip_address:
+        type:
+          - string
+          - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_ci_esx_server:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      os:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      u_managing_company:
+        type:
+          - string
+          - "null"
+      u_ownership_code:
+        type:
+          - string
+          - "null"
+      u_primary_ip_address:
+        type:
+          - string
+          - "null"
+      used_for:
+        type:
+          - string
+          - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_ci_aix_server:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asset:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      asset_tag:
+        type:
+          - string
+          - "null"
+      assigned:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        type:
+          - string
+          - "null"
+      assignment_group:
+        type:
+          - string
+          - "null"
+      attestation_score:
+        type:
+          - string
+          - "null"
+      attested:
+        type:
+          - string
+          - "null"
+      attested_by:
+        type:
+          - string
+          - "null"
+      attested_date:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      business_unit:
+        type:
+          - string
+          - "null"
+      can_print:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      cd_rom:
+        type:
+          - string
+          - "null"
+      cd_speed:
+        type:
+          - string
+          - "null"
+      change_control:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      checked_out:
+        type:
+          - string
+          - "null"
+      classification:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      correlation_id:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      cost_cc:
+        type:
+          - string
+          - "null"
+      cost_center:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      cpu_core_count:
+        type:
+          - string
+          - "null"
+      cpu_core_thread:
+        type:
+          - string
+          - "null"
+      cpu_count:
+        type:
+          - string
+          - "null"
+      cpu_manufacturer:
+        type:
+          - string
+          - "null"
+      cpu_name:
+        type:
+          - string
+          - "null"
+      cpu_speed:
+        type:
+          - string
+          - "null"
+      cpu_type:
+        type:
+          - string
+          - "null"
+      default_gateway:
+        type:
+          - string
+          - "null"
+      delivery_date:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      disk_space:
+        type:
+          - string
+          - "null"
+      dns_domain:
+        type:
+          - string
+          - "null"
+      dr_backup:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      duplicate_of:
+        type:
+          - string
+          - "null"
+      fault_count:
+        type:
+          - string
+          - "null"
+      firewall_status:
+        type:
+          - string
+          - "null"
+      first_discovered:
+        type:
+          - string
+          - "null"
+      fqdn:
+        type:
+          - string
+          - "null"
+      gl_account:
+        type:
+          - string
+          - "null"
+      host_name:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      internet_facing:
+        type:
+          - string
+          - "null"
+      invoice_number:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      justification:
+        type:
+          - string
+          - "null"
+      last_discovered:
+        type:
+          - string
+          - "null"
+      lease_id:
+        type:
+          - string
+          - "null"
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      mac_address:
+        type:
+          - string
+          - "null"
+      mainframe:
+        type:
+          - string
+          - "null"
+      maintenance_schedule:
+        type:
+          - string
+          - "null"
+      managed_by:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      managed_by_group:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      model_number:
+        type:
+          - string
+          - "null"
+      monitor:
+        type:
+          - string
+          - "null"
+      most_frequent_user:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object_id:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      order_date:
+        type:
+          - string
+          - "null"
+      os:
+        type:
+          - string
+          - "null"
+      os_address_width:
+        type:
+          - string
+          - "null"
+      os_domain:
+        type:
+          - string
+          - "null"
+      os_service_pack:
+        type:
+          - string
+          - "null"
+      os_version:
+        type:
+          - string
+          - "null"
+      owned_by:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      product_instance_id:
+        type:
+          - string
+          - "null"
+      purchase_date:
+        type:
+          - string
+          - "null"
+      ram:
+        type:
+          - string
+          - "null"
+      schedule:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      skip_sync:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      support_group:
+        type:
+          - string
+          - "null"
+      supported_by:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_class_path:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      unverified:
+        type:
+          - string
+          - "null"
+      used_for:
+        type:
+          - string
+          - "null"
+      vendor:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      warranty_expiration:
+        type:
+          - string
+          - "null"
+  cmdb_ci_solaris_server:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      os:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      u_managing_company:
+        type:
+          - string
+          - "null"
+      u_ownership_code:
+        type:
+          - string
+          - "null"
+      u_primary_ip_address:
+        type:
+          - string
+          - "null"
+      used_for:
+        type:
+          - string
+          - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_ci_chassis_server:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      used_for:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_ci_server:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      asset:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      asset_tag:
+        type:
+          - string
+          - "null"
+      assigned:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        type:
+          - string
+          - "null"
+      assignment_group:
+        type:
+          - string
+          - "null"
+      attestation_score:
+        type:
+          - string
+          - "null"
+      attested:
+        type:
+          - string
+          - "null"
+      attested_by:
+        type:
+          - string
+          - "null"
+      attested_date:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - string
+          - "null"
+      business_unit:
+        type:
+          - string
+          - "null"
+      can_print:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      cd_rom:
+        type:
+          - string
+          - "null"
+      cd_speed:
+        type:
+          - string
+          - "null"
+      change_control:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      checked_out:
+        type:
+          - string
+          - "null"
+      classification:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      correlation_id:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      cost_cc:
+        type:
+          - string
+          - "null"
+      cost_center:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      cpu_core_count:
+        type:
+          - string
+          - "null"
+      cpu_core_thread:
+        type:
+          - string
+          - "null"
+      cpu_count:
+        type:
+          - string
+          - "null"
+      cpu_manufacturer:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      cpu_name:
+        type:
+          - string
+          - "null"
+      cpu_speed:
+        type:
+          - string
+          - "null"
+      cpu_type:
+        type:
+          - string
+          - "null"
+      default_gateway:
+        type:
+          - string
+          - "null"
+      delivery_date:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      disk_space:
+        type:
+          - string
+          - "null"
+      dns_domain:
+        type:
+          - string
+          - "null"
+      dr_backup:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      duplicate_of:
+        type:
+          - string
+          - "null"
+      fault_count:
+        type:
+          - string
+          - "null"
+      firewall_status:
+        type:
+          - string
+          - "null"
+      first_discovered:
+        type:
+          - string
+          - "null"
+      fqdn:
+        type:
+          - string
+          - "null"
+      gl_account:
+        type:
+          - string
+          - "null"
+      hardware_status:
+        type:
+          - string
+          - "null"
+      host_name:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      internet_facing:
+        type:
+          - string
+          - "null"
+      invoice_number:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      justification:
+        type:
+          - string
+          - "null"
+      last_discovered:
+        type:
+          - string
+          - "null"
+      lease_id:
+        type:
+          - string
+          - "null"
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      mac_address:
+        type:
+          - string
+          - "null"
+      maintenance_schedule:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      managed_by:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      managed_by_group:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      model_number:
+        type:
+          - string
+          - "null"
+      monitor:
+        type:
+          - string
+          - "null"
+      most_frequent_user:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object_id:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      order_date:
+        type:
+          - string
+          - "null"
+      os:
+        type:
+          - string
+          - "null"
+      os_address_width:
+        type:
+          - string
+          - "null"
+      os_domain:
+        type:
+          - string
+          - "null"
+      os_service_pack:
+        type:
+          - string
+          - "null"
+      os_version:
+        type:
+          - string
+          - "null"
+      owned_by:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      product_instance_id:
+        type:
+          - string
+          - "null"
+      purchase_date:
+        type:
+          - string
+          - "null"
+      ram:
+        type:
+          - string
+          - "null"
+      schedule:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      skip_sync:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      subcategory:
+        type:
+          - string
+          - "null"
+      support_group:
+        type:
+          - string
+          - "null"
+      supported_by:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_class_path:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      unverified:
+        type:
+          - string
+          - "null"
+      used_for:
+        type:
+          - string
+          - "null"
+      vendor:
+        type:
+          - object
+          - "null"
+        properties:
+          display_value:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      warranty_expiration:
+        type:
+          - string
+          - "null"
+  cmdb_ci_net_app_server:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operational_status:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      u_managing_company:
+        type:
+          - string
+          - "null"
+      u_ownership_code:
+        type:
+          - string
+          - "null"
+      u_primary_ip_address:
+        type:
+          - string
+          - "null"
+      used_for:
+        type:
+          - string
+          - "null"
+      virtual:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_normalized_model_id:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      x_fls_flexeraone_normalized_model_number:
+        type:
+          - string
+          - "null"
+  cmdb_software_product_model:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      activation_status:
+        type:
+          - string
+          - "null"
+      application_model:
+        type:
+          - string
+          - "null"
+      asset_tracking_strategy:
+        type:
+          - string
+          - "null"
+      asset_tracking_unit:
+        type:
+          - string
+          - "null"
+      barcode:
+        type:
+          - string
+          - "null"
+      build_version:
+        type:
+          - string
+          - "null"
+      bundle:
+        type:
+          - string
+          - "null"
+      certified:
+        type:
+          - string
+          - "null"
+      cmdb_ci_class:
+        type:
+          - string
+          - "null"
+      cmdb_model_category:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      current:
+        type:
+          - string
+          - "null"
+      depreciation:
+        type:
+          - string
+          - "null"
+      depth:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      edition:
+        type:
+          - string
+          - "null"
+      end_of_life_date:
+        type:
+          - string
+          - "null"
+      energy_star:
+        type:
+          - string
+          - "null"
+      energy_use:
+        type:
+          - string
+          - "null"
+      expected_lifetime_co2e:
+        type:
+          - string
+          - "null"
+      flow_rate:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      ga_release_date:
+        type:
+          - string
+          - "null"
+      height:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      inference:
+        type:
+          - string
+          - "null"
+      is_option:
+        type:
+          - string
+          - "null"
+      length:
+        type:
+          - string
+          - "null"
+      license_type:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      main_component:
+        type:
+          - string
+          - "null"
+      major_version:
+        type:
+          - string
+          - "null"
+      manufacturer:
+        type:
+          - string
+          - "null"
+      max_sockets:
+        type:
+          - string
+          - "null"
+      max_users:
+        type:
+          - string
+          - "null"
+      min_users:
+        type:
+          - string
+          - "null"
+      minor_version:
+        type:
+          - string
+          - "null"
+      model_number:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      next_version:
+        type:
+          - string
+          - "null"
+      owner:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      picture:
+        type:
+          - string
+          - "null"
+      power_consumption:
+        type:
+          - string
+          - "null"
+      product_catalog_item:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              display_value:
+                type: string
+              link:
+                type: string
+      rack_units:
+        type:
+          - string
+          - "null"
+      rated_power:
+        type:
+          - string
+          - "null"
+      review_version:
+        type:
+          - string
+          - "null"
+      rights:
+        type:
+          - string
+          - "null"
+      salvage_value:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      sla:
+        type:
+          - string
+          - "null"
+      software_category:
+        type:
+          - string
+          - "null"
+      sound_power:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - string
+          - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      track:
+        type:
+          - string
+          - "null"
+      voltage:
+        type:
+          - string
+          - "null"
+      volume:
+        type:
+          - string
+          - "null"
+      weight:
+        type:
+          - string
+          - "null"
+      weight_decimal:
+        type:
+          - string
+          - "null"
+      width:
+        type:
+          - string
+          - "null"
+  cmdb_model_category:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      allow_as_master:
+        type:
+          - string
+          - "null"
+      allow_in_bundle:
+        type:
+          - string
+          - "null"
+      allow_pre_allocation:
+        type:
+          - string
+          - "null"
+      asset_class:
+        type:
+          - string
+          - "null"
+      bundle:
+        type:
+          - string
+          - "null"
+      cmdb_ci_class:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      enforce_verification:
+        type:
+          - string
+          - "null"
+      is_product_instance:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      ootb_category:
+        type:
+          - string
+          - "null"
+      parent_cateogry:
+        type:
+          - string
+          - "null"
+      picture:
+        type:
+          - string
+          - "null"
+      product_model_class:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - string
+          - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+  sam_sw_product_lifecycle:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - string
+          - "null"
+      content_active:
+        type:
+          - string
+          - "null"
+      content_version:
+        type:
+          - string
+          - "null"
+      lifecycle_phase:
+        type:
+          - string
+          - "null"
+      lifecycle_type:
+        type:
+          - string
+          - "null"
+      norm_edition:
+        type:
+          - string
+          - "null"
+      norm_full_version:
+        type:
+          - string
+          - "null"
+      norm_product:
+        type:
+          - number
+          - string
+          - "null"
+      norm_version:
+        type:
+          - string
+          - "null"
+      product_name:
+        type:
+          - string
+          - "null"
+      publisher:
+        type:
+          - string
+          - "null"
+      risk:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      u_end_of_support_manual:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_calculated_phase_start_date:
+        type:
+          - string
+          - "null"
+      x_fls_flexeraone_technopedia_id:
+        type:
+          - string
+          - "null"
+  alm_license:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      acquisition_method:
+        type:
+          - string
+          - "null"
+      asset_function:
+        type:
+          - string
+          - "null"
+      asset_tag:
+        type:
+          - string
+          - "null"
+      assigned:
+        type:
+          - string
+          - "null"
+      assigned_condition:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        type:
+          - string
+          - "null"
+      beneficiary:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      checked_out:
+        type:
+          - string
+          - "null"
+      ci:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - string
+          - "null"
+      cost_center:
+        type:
+          - string
+          - "null"
+      delivery_date:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      depreciated_amount:
+        type:
+          - string
+          - "null"
+      depreciation:
+        type:
+          - string
+          - "null"
+      depreciation_date:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      disposal_reason:
+        type:
+          - string
+          - "null"
+      due:
+        type:
+          - string
+          - "null"
+      due_in:
+        type:
+          - string
+          - "null"
+      entitlement_condition:
+        type:
+          - string
+          - "null"
+      expenditure_type:
+        type:
+          - string
+          - "null"
+      gl_account:
+        type:
+          - string
+          - "null"
+      install_date:
+        type:
+          - string
+          - "null"
+      install_status:
+        type:
+          - string
+          - "null"
+      invoice_number:
+        type:
+          - string
+          - "null"
+      is_merged_license:
+        type:
+          - string
+          - "null"
+      justification:
+        type:
+          - string
+          - "null"
+      lease_id:
+        type:
+          - string
+          - "null"
+      license_key:
+        type:
+          - string
+          - "null"
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      location:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              link:
+                type: string
+              value:
+                type: string
+      managed_by:
+        type:
+          - string
+          - "null"
+      merged_into:
+        type:
+          - string
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      model_category:
+        type:
+          - string
+          - "null"
+      model_component_id:
+        type:
+          - string
+          - "null"
+      old_status:
+        type:
+          - string
+          - "null"
+      old_substatus:
+        type:
+          - string
+          - "null"
+      order_date:
+        type:
+          - string
+          - "null"
+      owned_by:
+        type:
+          - string
+          - "null"
+      parent:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      pre_allocated:
+        type:
+          - string
+          - "null"
+      product_instance_id:
+        type:
+          - string
+          - "null"
+      purchase_date:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - string
+          - "null"
+      request_line:
+        type:
+          - string
+          - "null"
+      resale_price:
+        type:
+          - string
+          - "null"
+      reserved_for:
+        type:
+          - string
+          - "null"
+      residual:
+        type:
+          - string
+          - "null"
+      residual_date:
+        type:
+          - string
+          - "null"
+      resold_value:
+        type:
+          - string
+          - "null"
+      retired:
+        type:
+          - string
+          - "null"
+      retirement_date:
+        type:
+          - string
+          - "null"
+      rights:
+        type:
+          - string
+          - "null"
+      salvage_value:
+        type:
+          - string
+          - "null"
+      serial_number:
+        type:
+          - string
+          - "null"
+      skip_sync:
+        type:
+          - string
+          - "null"
+      stockroom:
+        type:
+          - string
+          - "null"
+      substatus:
+        type:
+          - string
+          - "null"
+      support_group:
+        type:
+          - string
+          - "null"
+      supported_by:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - string
+          - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      vendor:
+        type:
+          - object
+          - "null"
+        properties:
+          link:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      warranty_expiration:
+        type:
+          - string
+          - "null"
+      work_notes:
+        type:
+          - string
+          - "null"
+  Contracts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - string
+          - "null"
+      applicable_taxes:
+        type:
+          - string
+          - "null"
+      application_model:
+        type:
+          - string
+          - "null"
+      approval_history:
+        type:
+          - string
+          - "null"
+      approver:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              link:
+                type: string
+              value:
+                type: string
+      business_owner:
+        type:
+          - string
+          - "null"
+      commitment:
+        type:
+          - string
+          - "null"
+      contract_administrator:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              link:
+                type: string
+              value:
+                type: string
+      contract_model:
+        type:
+          - object
+          - "null"
+        properties:
+          link:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      cost_adjustment:
+        type:
+          - string
+          - "null"
+      cost_adjustment_percentage:
+        type:
+          - string
+          - "null"
+      cost_adjustment_reason:
+        type:
+          - string
+          - "null"
+      cost_adjustment_type:
+        type:
+          - string
+          - "null"
+      cost_center:
+        type:
+          - string
+          - "null"
+      cost_per_unit:
+        type:
+          - string
+          - "null"
+      covers:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - string
+          - "null"
+      ends:
+        type:
+          - string
+          - "null"
+      expiration:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              link:
+                type: string
+              value:
+                type: string
+      invoice_payment_terms:
+        type:
+          - string
+          - "null"
+      license_quantity_entitled:
+        type:
+          - string
+          - "null"
+      license_type:
+        type:
+          - string
+          - "null"
+      life_cycle_stage:
+        type:
+          - string
+          - "null"
+      life_cycle_stage_status:
+        type:
+          - string
+          - "null"
+      lifetime_cost:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      monthly_cost:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      parent_contract:
+        type:
+          - string
+          - "null"
+      payment_amount:
+        type:
+          - string
+          - "null"
+      payment_schedule:
+        type:
+          - string
+          - "null"
+      po_number:
+        type:
+          - string
+          - "null"
+      process:
+        type:
+          - string
+          - "null"
+      process_non_contractual_slas:
+        type:
+          - string
+          - "null"
+      ratecard:
+        type:
+          - string
+          - "null"
+      renewable:
+        type:
+          - string
+          - "null"
+      renewal_contact:
+        type:
+          - string
+          - "null"
+      renewal_date:
+        type:
+          - string
+          - "null"
+      renewal_end_date:
+        type:
+          - string
+          - "null"
+      renewal_options:
+        type:
+          - string
+          - "null"
+      sales_tax:
+        type:
+          - string
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      starts:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      sub_total_cost:
+        type:
+          - string
+          - "null"
+      substate:
+        type:
+          - string
+          - "null"
+      sys_class_name:
+        type:
+          - string
+          - "null"
+      sys_created_by:
+        type:
+          - string
+          - "null"
+      sys_created_on:
+        type:
+          - string
+          - "null"
+      sys_domain:
+        type:
+          - object
+          - "null"
+        properties:
+          link:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      sys_domain_path:
+        type:
+          - string
+          - "null"
+      sys_id:
+        type:
+          - string
+          - "null"
+      sys_mod_count:
+        type:
+          - string
+          - "null"
+      sys_tags:
+        type:
+          - string
+          - "null"
+      sys_updated_by:
+        type:
+          - string
+          - "null"
+      sys_updated_on:
+        type:
+          - string
+          - "null"
+      tax_cost:
+        type:
+          - string
+          - "null"
+      tax_exempt:
+        type:
+          - string
+          - "null"
+      tax_rate:
+        type:
+          - string
+          - "null"
+      terms_and_conditions:
+        type:
+          - string
+          - "null"
+      total_cost:
+        type:
+          - string
+          - "null"
+      vendor:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              link:
+                type: string
+              value:
+                type: string
+      vendor_account:
+        type:
+          - string
+          - "null"
+      vendor_contract:
+        type:
+          - string
+          - "null"
+      yearly_cost:
+        type:
+          - string
+          - "null"
