@@ -156,12 +156,6 @@ class MagniteStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return {}
 
-    # def should_retry(self, response: requests.Response) -> bool:
-    #     if response.status_code == 412 and self.max_retries > 0:
-    #         self.max_retries -= 1
-    #         return True
-    #     return super().should_retry(response)
-    
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if isinstance(response, Exception):
             self.logger.warning(f"Back off due to {type(response)}.")
@@ -171,17 +165,6 @@ class MagniteStream(HttpStream, ABC):
             return POLLING_IN_SECONDS * 2
         return super().backoff_time(response)
 
-    # def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-    #     response_json = response.json()
-    #     if self._data_field:
-    #         result_url = f"{self.url_base}{self.path()}/{response_json[self._data_field]}"
-    #         self.logger.info(f"Retrieving report {response_json[self._data_field]}...")
-    #         # yield from self._poll_for_results(result_url, **kwargs)
-    #         yield from self._poll_for_results(result_url, **kwargs)
-    #         # self.logger.info(f"Query results are yielded")
-    #     else:
-    #         print("here")
-    #         yield from response_json
     def fetch_csv_rows(self, api_url):
         # Open a connection to the API with streaming enabled
         response = requests.get(api_url, headers=self.authenticator.get_auth_header(), stream=True)
@@ -218,55 +201,12 @@ class MagniteStream(HttpStream, ABC):
                         raise ValueError("The CSV response is empty or invalid.")
                     for row in csv_reader:
                         yield dict(zip(header, row))
-                    # with requests.get(f"{result_url}/results", headers=self.authenticator.get_auth_header(), stream=True) as data_response:
-                    #     response.raise_for_status()  # Raise an exception for HTTP errors
-
-                        # decoded_stream = codecs.getreader("utf-8")(data_response.raw)
-
-                        # for item in data_response.raw:
-                        #     print(item)
-                        #     print()
-                        # for item in data_response:
-                        #     print(item)
-                        #     print()
-                        # # try:
-                        # for item in ijson.items(decoded_stream, 'item', use_float=True):
-                            
-                        #     print(item)
-                        #     yield item
-                    # except Exception as e:
-                    #    self.logger.info(f"{e}, ")
-
-                        
                     break
                 else: # error(4) or cancelled(5) query
                     self.logger.error(f"Failed to fetch results: {result_response.status_code} - {result_response.text}")
                     raise Exception(f"Failed to fetch results: {result_response.status_code} - {result_response.text}")
         else:
             yield from response_json
-
-    # def _poll_for_results(self, result_url: str, **kwargs) -> Iterable[Mapping]:
-    #     while True:
-    #         result_response = requests.get(result_url, headers=self.authenticator.get_auth_header())
-    #         query_status = result_response.json()['status']
-            
-    #         if result_response.status_code == 412:
-    #             self.logger.warning("Precondition failed! A query is already running")
-    #             return
-    #         if query_status in [1, 2]:  # created or running queries
-    #             self.logger.info(f"Query results are not ready yet. Checking again in {POLLING_IN_SECONDS} seconds...")
-    #             time.sleep(POLLING_IN_SECONDS)
-    #         elif query_status == 3:  # completed query
-    #             self.logger.info(f"Query results are ready")
-    #             data_response = requests.get(f"{result_url}/results", headers=self.authenticator.get_auth_header())
-    #             self.logger.info(f"Query results are fetched")
-    #             self.logger.info(f"{sys.getsizeof(data_response)}")
-    #             yield from data_response.json()[:3]
-    #             break
-    #         else:  # error(4) or cancelled(5) query
-    #             error_message = f"Failed to fetch results: {result_response.status_code} - {result_response.text}"
-    #             self.logger.error(error_message)
-    #             raise Exception(error_message)
 
     def request_body_json(
         self,
@@ -288,38 +228,6 @@ class MagniteStream(HttpStream, ABC):
             "range": date_range,
         }
         return request_payload
-
-    # def chunk_dates(self, start_date: int, end_date: int) -> Iterable[Tuple[int, int]]:
-    #     after = start_date
-    #     while after < end_date:
-    #         before = min(end_date, after + timedelta(days=WINDOW_IN_DAYS))
-    #         yield after, before
-    #         after = before
-    
-    # def stream_slices(
-    #         self, sync_mode, cursor_field: Optional[str] = None, stream_state: Mapping[str, Any] = None
-    # ) -> Iterable[Optional[Mapping[str, Any]]]:
-    #     today = date.today()
-    #     start_date = None
-    #     end_date = max(string_to_date(self.config.get("toDate", date_to_string(today))), today)
-    #     print(self.cursor_field)
-    #     if stream_state and self.cursor_field and self.cursor_field in stream_state:
-    #         start_date = string_to_date(stream_state[self.cursor_field], DATE_FORMAT)
-    #     else:
-    #         start_date = string_to_date(self.config["fromDate"], DATE_FORMAT)
-    #     start_date = max(start_date, string_to_date(self.config["fromDate"], DATE_FORMAT))
-
-    #     print(start_date, end_date)
-    #     if start_date > end_date:
-    #         yield from []
-    #         return
-    #     for start, end in self.chunk_dates(start_date, end_date):
-    #         print(start, end)
-    #         yield {
-    #             "fromDate": date_to_string(start, DATE_FORMAT),
-    #             "toDate": date_to_string(end, DATE_FORMAT),
-    #         }
-
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
