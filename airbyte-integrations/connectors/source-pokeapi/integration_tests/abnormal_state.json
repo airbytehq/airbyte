@@ -1,5 +1,8 @@
 {
   "todo-stream-name": {
     "todo-field-name": "todo-abnormal-value"
+  },
+  "fake-stream-name": {
+    "fake-field": "fake-value"
   }
 }
