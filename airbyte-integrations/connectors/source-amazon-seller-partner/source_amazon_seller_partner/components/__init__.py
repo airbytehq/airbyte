@@ -1,7 +1,7 @@
 from .auth import AmazonSPOauthAuthenticator
 from .backoff_strategy import AmazonSPWaitTimeFromHeaderBackoffStrategy
 
-from .decoder import GzipCsvDecoder
+from .decoder import GzipCsvDecoder, GzipXmlDecoder, SellerFeedbackReportsGzipCsvDecoder, GetXmlBrowseTreeDataDecoder
 
 from .type_transformers import LedgerDetailedViewReportsTypeTransformer, MerchantListingsFypReportTypeTransformer, FlatFileSettlementV2ReportsTypeTransformer, \
     MerchantReportsTypeTransformer, SellerFeedbackReportsTypeTransformer
@@ -9,7 +9,7 @@ from .type_transformers import LedgerDetailedViewReportsTypeTransformer, Merchan
 __all__ = [
     "AmazonSPOauthAuthenticator",
     "AmazonSPWaitTimeFromHeaderBackoffStrategy",
-    "GzipCsvDecoder",
+    "GzipCsvDecoder",  "GzipXmlDecoder", "SellerFeedbackReportsGzipCsvDecoder", "GetXmlBrowseTreeDataDecoder",
     "LedgerDetailedViewReportsTypeTransformer",
     "MerchantListingsFypReportTypeTransformer",
     "FlatFileSettlementV2ReportsTypeTransformer",

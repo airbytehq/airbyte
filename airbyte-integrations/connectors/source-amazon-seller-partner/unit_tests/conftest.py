@@ -7,6 +7,7 @@ import os
 from typing import Any, Dict
 
 import pytest
+
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 
 
@@ -27,11 +28,7 @@ def init_kwargs() -> Dict[str, Any]:
 
 @pytest.fixture
 def report_init_kwargs(init_kwargs) -> Dict[str, Any]:
-    return {
-        "stream_name": "GET_TEST_REPORT",
-        "authenticator": NoAuth({}),
-        **init_kwargs
-    }
+    return {"stream_name": "GET_TEST_REPORT", "authenticator": NoAuth({}), **init_kwargs}
 
 
 @pytest.fixture

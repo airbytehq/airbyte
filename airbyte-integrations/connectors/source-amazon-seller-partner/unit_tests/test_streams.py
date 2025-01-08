@@ -8,14 +8,15 @@ from unittest.mock import patch
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.utils import AirbyteTracedException
 from source_amazon_seller_partner.streams import (
     IncrementalReportsAmazonSPStream,
     ReportProcessingStatus,
     ReportsAmazonSPStream,
     VendorDirectFulfillmentShipping,
 )
+
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class SomeReportStream(ReportsAmazonSPStream):
@@ -245,15 +246,7 @@ class TestReportsAmazonSPStream:
             "POST",
             "https://test.url/reports/2021-06-30/reports",
             status_code=429,
-            json={
-                "errors": [
-                    {
-                        "code": "QuotaExceeded",
-                        "message": "You exceeded your quota for the requested resource.",
-                        "details": ""
-                    }
-                ]
-            },
+            json={"errors": [{"code": "QuotaExceeded", "message": "You exceeded your quota for the requested resource.", "details": ""}]},
             reason="Forbidden",
         )
 

@@ -11,16 +11,18 @@ from typing import List, Optional
 import freezegun
 import pytest
 import requests_mock
+from source_amazon_seller_partner.streams import ReportProcessingStatus
+
 from airbyte_cdk.models import AirbyteStateMessage, FailureType, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
-from source_amazon_seller_partner.streams import ReportProcessingStatus
 
 from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, VENDOR_TRAFFIC_REPORT_CONFIG_END_DATE, ConfigBuilder
 from .request_builder import RequestBuilder
 from .response_builder import build_response, response_with_status
 from .utils import assert_message_in_log_output, config, find_template, get_stream_by_name, mock_auth, read_output
+
 
 _DOCUMENT_DOWNLOAD_URL = "https://test.com/download"
 _REPORT_ID = "6789087632"
@@ -458,15 +460,17 @@ class TestFullRefresh:
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
     def test_given_http_error_not_support_account_id_of_type_vendor_when_read_then_no_records_and_error_logged(
-            self, stream_name: str, data_format: str, http_mocker: HttpMocker
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ):
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         response_body = {
             "errors": [
-                {"code": "InvalidInput",
-                 "message": "Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.",
-                 "details": ""}
+                {
+                    "code": "InvalidInput",
+                    "message": "Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.",
+                    "details": "",
+                }
             ]
         }
         http_mocker.post(
