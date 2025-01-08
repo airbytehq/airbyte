@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -14,6 +15,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_airtable.airtable_backoff_strategy import AirtableBackoffStrategy
 from source_airtable.airtable_error_handler import AirtableErrorHandler
 from source_airtable.schema_helpers import SchemaHelpers
+
 
 URL_BASE: str = "https://api.airtable.com/v0/"
 
@@ -97,7 +99,6 @@ class AirtableTables(AirtableBases):
 
 class AirtableStream(HttpStream, ABC):
     def __init__(self, stream_path: str, stream_name: str, stream_schema, table_name: str, **kwargs):
-
         self.stream_name = stream_name
         self.stream_path = stream_path
         self.stream_schema = stream_schema

@@ -1,13 +1,22 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - ${host}
       - ${tunnel_method.tunnel_host}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
   connectorType: source
   definitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   dockerRepository: airbyte/source-tidb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tidb
   githubIssueLabel: source-tidb
   icon: tidb.svg
   license: MIT
@@ -18,14 +27,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/tidb
+  supportLevel: community
   tags:
     - language:java
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
 metadataSpecVersion: "1.0"

@@ -126,6 +126,17 @@ This connector outputs the following incremental streams:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
+### Streams on I/O Usage
+
+In the list above, there is a subset of streams which requires to make one HTTP request per issue. Those streams can significantly slow down that a sync given a high number of issues. If you have one or many of those streams and experience slowness, we recommend filtering the list of issues using the list of projects in the configuration or simply removing those streams from the sync.
+* Issue comments
+* Issue properties
+* Issue remote links
+* Issue transactions
+* Issue votes
+* Issue watchers
+* Issue worklogs
+
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
@@ -154,6 +165,10 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.7 | 2025-01-04 | [50886](https://github.com/airbytehq/airbyte/pull/50886) | Update dependencies |
+| 3.4.6 | 2024-12-28 | [50625](https://github.com/airbytehq/airbyte/pull/50625) | Update dependencies |
+| 3.4.5 | 2024-12-21 | [50108](https://github.com/airbytehq/airbyte/pull/50108) | Update dependencies |
+| 3.4.4 | 2024-12-14 | [49224](https://github.com/airbytehq/airbyte/pull/49224) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 3.4.3 | 2024-12-12 | [47087](https://github.com/airbytehq/airbyte/pull/47087) | Update dependencies |
 | 3.4.2 | 2024-12-09 | [48838](https://github.com/airbytehq/airbyte/pull/48838) | Fixing timezone gaps with state |
 | 3.4.1 | 2024-12-09 | [48859](https://github.com/airbytehq/airbyte/pull/48859) | Add a couple of fixes regarding memory usage |

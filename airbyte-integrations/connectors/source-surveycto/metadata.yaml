@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dd4632f4-15e0-4649-9b71-41719fb1fdee
-  dockerImageTag: 0.1.27
+  dockerImageTag: 0.1.31
   dockerRepository: airbyte/source-surveycto
   githubIssueLabel: source-surveycto
   icon: surveycto.svg

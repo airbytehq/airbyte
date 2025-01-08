@@ -6,6 +6,7 @@
 from typing import Any, Mapping
 
 import pendulum
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 

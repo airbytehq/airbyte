@@ -64,6 +64,10 @@ The Fastbill source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.5 | 2025-01-04 | [50523](https://github.com/airbytehq/airbyte/pull/50523) | Update dependencies |
+| 0.3.4 | 2024-12-21 | [50019](https://github.com/airbytehq/airbyte/pull/50019) | Update dependencies |
+| 0.3.3 | 2024-12-14 | [49481](https://github.com/airbytehq/airbyte/pull/49481) | Update dependencies |
+| 0.3.2 | 2024-12-12 | [48955](https://github.com/airbytehq/airbyte/pull/48955) | Update dependencies |
 | 0.3.1 | 2024-12-11 | [47089](https://github.com/airbytehq/airbyte/pull/47089) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.0 | 2024-10-31 | [47297](https://github.com/airbytehq/airbyte/pull/47297) | Migrate to manifest only format |
 | 0.2.24 | 2024-10-12 | [46777](https://github.com/airbytehq/airbyte/pull/46777) | Update dependencies |

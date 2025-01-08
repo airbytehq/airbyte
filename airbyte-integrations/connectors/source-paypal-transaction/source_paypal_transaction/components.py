@@ -10,10 +10,12 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import backoff
 import requests
+
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+
 
 logger = logging.getLogger("airbyte")
 

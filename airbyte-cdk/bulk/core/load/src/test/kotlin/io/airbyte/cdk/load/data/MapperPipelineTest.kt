@@ -35,10 +35,10 @@ class MapperPipelineTest {
 
     class TurnIntegersIntoStrings : AirbyteValueIdentityMapper() {
         override fun mapInteger(
-            value: IntegerValue,
+            value: AirbyteValue,
             context: Context
         ): Pair<AirbyteValue, Context> {
-            if (value.value.toLong() == 2L) {
+            if ((value as IntegerValue).value.toLong() == 2L) {
                 throw IllegalStateException("Arbitrarily reject 2")
             }
             return StringValue(value.value.toString()) to context
