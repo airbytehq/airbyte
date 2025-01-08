@@ -7,10 +7,13 @@ from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+from airbyte_cdk import TState
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
+from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
 from requests import HTTPError
 from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
@@ -18,57 +21,15 @@ from source_amazon_seller_partner.streams import (
     BrandAnalyticsMarketBasketReports,
     BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
-    FbaAfnInventoryByCountryReports,
-    FbaAfnInventoryReports,
-    FbaCustomerReturnsReports,
-    FbaEstimatedFbaFeesTxtReport,
-    FbaFulfillmentCustomerShipmentPromotionReport,
-    FbaInventoryPlaningReport,
-    FbaMyiUnsuppressedInventoryReport,
-    FbaOrdersReports,
-    FbaReimbursementsReports,
-    FbaReplacementsReports,
-    FbaShipmentsReports,
-    FbaSnsForecastReport,
-    FbaSnsPerformanceReport,
-    FbaStorageFeesReports,
-    FlatFileActionableOrderDataShipping,
-    FlatFileArchivedOrdersDataByOrderDate,
-    FlatFileOpenListingsReports,
-    FlatFileOrdersReports,
-    FlatFileOrdersReportsByLastUpdate,
-    FlatFileReturnsDataByReturnDate,
-    FlatFileSettlementV2Reports,
-    FulfilledShipmentsReports,
-    GetXmlBrowseTreeData,
-    LedgerDetailedViewReports,
-    LedgerSummaryViewReport,
-    ListFinancialEventGroups,
-    ListFinancialEvents,
-    MerchantCancelledListingsReport,
-    MerchantListingsFypReport,
-    MerchantListingsInactiveData,
-    MerchantListingsReport,
-    MerchantListingsReportBackCompat,
-    MerchantListingsReports,
     NetPureProductMarginReport,
-    OrderItems,
-    OrderReportDataShipping,
-    Orders,
     RapidRetailAnalyticsInventoryReport,
     ReportsAmazonSPStream,
-    RestockInventoryReports,
     SellerAnalyticsSalesAndTrafficReports,
-    SellerFeedbackReports,
-    StrandedInventoryUiReport,
-    VendorDirectFulfillmentShipping,
     VendorForecastingFreshReport,
     VendorForecastingRetailReport,
     VendorInventoryReports,
-    VendorOrders,
     VendorSalesReports,
-    VendorTrafficReport,
-    XmlAllOrdersDataByOrderDataGeneral,
+    VendorTrafficReport
 )
 from source_amazon_seller_partner.utils import AmazonConfigException
 
@@ -138,12 +99,14 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
             stream_kwargs = self._get_stream_kwargs(config)
 
             if config.get("account_type", "Seller") == "Seller":
-                stream_to_check = Orders(**stream_kwargs)
-                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
+                pass
+                # stream_to_check = Orders(**stream_kwargs)
+                # next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
             else:
-                stream_to_check = VendorOrders(**stream_kwargs)
-                stream_slices = list(stream_to_check.stream_slices(sync_mode=SyncMode.full_refresh))
-                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
+                pass
+                # stream_to_check = VendorOrders(**stream_kwargs)
+                # stream_slices = list(stream_to_check.stream_slices(sync_mode=SyncMode.full_refresh))
+                # next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
 
             return True, None
         except Exception as e:
@@ -161,52 +124,13 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+        config.update(self.get_aws_config_settings(config))
+        streams = super().streams(config)
+        # return low_code_streams
         self.validate_stream_report_options(config)
-        streams = []
+        # streams = []
         stream_kwargs = self._get_stream_kwargs(config)
         stream_list = [
-            FbaCustomerReturnsReports,
-            FbaAfnInventoryReports,
-            FbaAfnInventoryByCountryReports,
-            FbaOrdersReports,
-            FbaShipmentsReports,
-            FbaReplacementsReports,
-            FbaStorageFeesReports,
-            RestockInventoryReports,
-            FlatFileActionableOrderDataShipping,
-            FlatFileOpenListingsReports,
-            FlatFileOrdersReports,
-            FlatFileOrdersReportsByLastUpdate,
-            FlatFileSettlementV2Reports,
-            FulfilledShipmentsReports,
-            MerchantListingsReports,
-            VendorDirectFulfillmentShipping,
-            Orders,
-            OrderItems,
-            OrderReportDataShipping,
-            SellerFeedbackReports,
-            GetXmlBrowseTreeData,
-            ListFinancialEventGroups,
-            ListFinancialEvents,
-            LedgerDetailedViewReports,
-            FbaEstimatedFbaFeesTxtReport,
-            FbaFulfillmentCustomerShipmentPromotionReport,
-            FbaMyiUnsuppressedInventoryReport,
-            MerchantCancelledListingsReport,
-            MerchantListingsReport,
-            MerchantListingsReportBackCompat,
-            MerchantListingsInactiveData,
-            StrandedInventoryUiReport,
-            XmlAllOrdersDataByOrderDataGeneral,
-            MerchantListingsFypReport,
-            FbaSnsForecastReport,
-            FbaSnsPerformanceReport,
-            FlatFileArchivedOrdersDataByOrderDate,
-            FlatFileReturnsDataByReturnDate,
-            FbaInventoryPlaningReport,
-            LedgerSummaryViewReport,
-            FbaReimbursementsReports,
-            VendorOrders,
             VendorForecastingFreshReport,
             VendorForecastingRetailReport,
         ]
