@@ -318,7 +318,7 @@ class IcebergUtil(
             }
 
         // The AssumeRoleAwsClientFactory doesn't respect the access / secret key properties from
-        // the map. Instead it always uses the default AWS cred provider chain.
+        // the map. Instead, it always uses the default AWS cred provider chain.
         // So we need to manually set the secrets as system properties here.
         System.setProperty("aws.region", region)
         System.setProperty("aws.accessKeyId", accessKeyId)
