@@ -1212,6 +1212,13 @@ definitions:
     type: HttpRequester
     url_base: https://api.linkedin.com/rest/
     authenticator: "#/definitions/authenticator"
+    error_handler:
+      type: CustomErrorHandler
+      class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      
   # Authenticators
   bearer_authenticator:
     type: BearerAuthenticator
