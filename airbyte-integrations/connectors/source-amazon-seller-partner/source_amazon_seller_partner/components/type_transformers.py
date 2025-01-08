@@ -68,6 +68,8 @@ class MerchantReportsTypeTransformer(TypeTransformer):
 
 
 class SellerFeedbackReportsTypeTransformer(TypeTransformer):
+    config: Dict[str, Any] = None
+
     MARKETPLACE_DATE_FORMAT_MAP = dict(
         # eu
         A2VIGQ35RCS4UG="D/M/YY",  # AE
@@ -95,8 +97,8 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
         A1AM78C64UM0Y8="D/M/YY",  # MX
     )
 
-    def __init__(self, *args, **kwargs):
-        self.marketplace_id = kwargs.get("config").get("marketplace_id")
+    def __init__(self, *args, config, **kwargs):
+        self.marketplace_id = config.get("marketplace_id")
         config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
         super().__init__(config)
         self.registerCustomTransform(self.get_transform_function())
