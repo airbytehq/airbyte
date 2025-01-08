@@ -23,4 +23,5 @@
 
 from .source import SourceAmazonSellerPartner
 
+
 __all__ = ["SourceAmazonSellerPartner"]
