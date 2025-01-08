@@ -74,7 +74,8 @@ runs:
         pipx ensurepath
         pipx install ${{ inputs.path_to_airbyte_ci_source }}
 
-    - name: Debug `airbyte-ci` installed version
+    - name: Print installed `airbyte-ci` version
+      shell: bash
       run: |
         airbyte-ci --version
 
