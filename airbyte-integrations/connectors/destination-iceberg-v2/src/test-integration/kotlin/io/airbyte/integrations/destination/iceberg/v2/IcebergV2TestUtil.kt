@@ -5,10 +5,9 @@
 package io.airbyte.integrations.destination.iceberg.v2
 
 import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.iceberg.v2.io.AWSSystemCredentials
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
 import java.nio.file.Files
@@ -26,16 +25,13 @@ object IcebergV2TestUtil {
         )
 
     fun getAWSSystemCredentials(): AWSSystemCredentials {
-        val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
         val configFile = GLUE_AWS_ASSUME_ROLE_CONFIG_PATH.toFile()
-        return mapper.readValue(configFile, AWSSystemCredentials::class.java)
+        return Jsons.readValue(configFile, AWSSystemCredentials::class.java)
     }
-
-    private val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
 
     fun getAWSSystemCredentialsAsMap(): Map<String, String> {
         val credentials = getAWSSystemCredentials()
-        return mapper.convertValue(credentials, object : TypeReference<Map<String, String>>() {})
+        return Jsons.convertValue(credentials, object : TypeReference<Map<String, String>>() {})
     }
 
     fun getConfig(spec: ConfigurationSpecification) =

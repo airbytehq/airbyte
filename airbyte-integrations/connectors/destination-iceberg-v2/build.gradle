@@ -60,7 +60,6 @@ dependencies {
     integrationTestImplementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
     integrationTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
     integrationTestImplementation("org.projectnessie.nessie:nessie-minio-testcontainer:0.101.1")
-    integrationTestImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 }
 
 test {
