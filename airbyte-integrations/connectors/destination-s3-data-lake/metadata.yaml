@@ -23,6 +23,11 @@ data:
   icon: icon.svg
   license: ELv2
   name: S3 Data Lake
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportLevel: community
   supportsRefreshes: true
