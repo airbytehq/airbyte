@@ -8,12 +8,14 @@ from typing import Any, Mapping, Union
 
 import backoff
 import requests
+
 from airbyte_cdk import InterpolatedString
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
+
 
 logger = logging.getLogger("airbyte")
 import pendulum

@@ -13,6 +13,7 @@ import xmltodict
 
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 
+
 logger = logging.getLogger("airbyte")
 
 
@@ -93,7 +94,6 @@ class SellerFeedbackReportsGzipCsvDecoder(Decoder):
 class GetXmlBrowseTreeDataDecoder(Decoder):
     parameters: InitVar[Mapping[str, Any]]
     NORMALIZED_FIELD_NAMES = ["date", "rating", "comments", "response", "order_id", "rater_email"]
-
 
     def is_stream_response(self) -> bool:
         return False

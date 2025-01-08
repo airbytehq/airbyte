@@ -7,14 +7,15 @@ from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
+from requests import HTTPError
+
 from airbyte_cdk import TState
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
-from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
-from requests import HTTPError
 from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.streams import (
@@ -29,9 +30,10 @@ from source_amazon_seller_partner.streams import (
     VendorForecastingRetailReport,
     VendorInventoryReports,
     VendorSalesReports,
-    VendorTrafficReport
+    VendorTrafficReport,
 )
 from source_amazon_seller_partner.utils import AmazonConfigException
+
 
 # given the retention period: 730
 DEFAULT_RETENTION_PERIOD_IN_DAYS = 730

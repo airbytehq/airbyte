@@ -16,6 +16,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+from sources.streams.http.error_handlers import HttpStatusErrorHandler
+
 from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
@@ -27,7 +29,7 @@ from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handl
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_amazon_seller_partner.utils import threshold_period_decorator
-from sources.streams.http.error_handlers import HttpStatusErrorHandler
+
 
 REPORTS_API_VERSION = "2021-06-30"
 ORDERS_API_VERSION = "v0"

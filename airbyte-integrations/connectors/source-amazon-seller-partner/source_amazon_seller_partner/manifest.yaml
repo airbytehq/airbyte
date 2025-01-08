@@ -17,7 +17,6 @@ definitions:
     token_refresh_endpoint: "https://api.amazon.com/auth/o2/token"
     host: "{{ config['endpoint'].replace('https://', '') }}"
 
-
   base_requester:
     type: HttpRequester
     url_base: "{{ config['endpoint'] }}"
@@ -114,11 +113,11 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - path: [ "AmazonOrderId" ]
+            - path: ["AmazonOrderId"]
               value: "{{ stream_slice['AmazonOrderId'] }}"
         - type: AddFields
           fields:
-            - path: [ "LastUpdateDate" ]
+            - path: ["LastUpdateDate"]
               value: '{{ stream_slice.extra_fields["LastUpdateDate"] }}'
       retriever:
         type: SimpleRetriever
@@ -145,7 +144,7 @@ definitions:
               stream: "#/definitions/streams/orders"
               partition_field: "AmazonOrderId"
               extra_fields:
-                - [ "LastUpdateDate" ]
+                - ["LastUpdateDate"]
         record_selector:
           type: RecordSelector
           extractor:
@@ -196,7 +195,7 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - path: [ "createdBefore" ]
+            - path: ["createdBefore"]
               value: "{{ stream_slice['end_time'] }}"
       retriever:
         type: SimpleRetriever
@@ -221,22 +220,21 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [ "payload", "shippingLabels" ]
+            field_path: ["payload", "shippingLabels"]
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: nextToken
-#          page_size_option:
-#            type: RequestOption
-#            inject_into: request_parameter
-#            field_name: MaxResultsPerPage
+          #          page_size_option:
+          #            type: RequestOption
+          #            inject_into: request_parameter
+          #            field_name: MaxResultsPerPage
           pagination_strategy:
             type: CursorPagination
-#            page_size: 100
+            #            page_size: 100
             cursor_value: "{{ response.payload.pagination.nextToken }}"
-
 
     vendor_orders:
       type: DeclarativeStream
@@ -268,7 +266,7 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - path: [ "changedBefore" ]
+            - path: ["changedBefore"]
               value: "{{ stream_slice['end_time'] }}"
       retriever:
         type: SimpleRetriever
@@ -293,23 +291,23 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [ "payload", "orders" ]
+            field_path: ["payload", "orders"]
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: nextToken
-#          page_size_option:
-#            type: RequestOption
-#            inject_into: request_parameter
-#            field_name: MaxResultsPerPage
+          #          page_size_option:
+          #            type: RequestOption
+          #            inject_into: request_parameter
+          #            field_name: MaxResultsPerPage
           pagination_strategy:
             type: CursorPagination
-#            page_size: 100
+            #            page_size: 100
             cursor_value: "{{ response.payload.pagination.nextToken }}"
 
-# FinanceStream
+    # FinanceStream
     list_financial_event_groups:
       type: DeclarativeStream
       name: ListFinancialEventGroups
@@ -359,7 +357,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [ "payload", "FinancialEventGroupList" ]
+            field_path: ["payload", "FinancialEventGroupList"]
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -404,7 +402,7 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - path: [ "PostedBefore" ]
+            - path: ["PostedBefore"]
               value: "{{ stream_slice['end_time'] }}"
       retriever:
         type: SimpleRetriever
@@ -427,7 +425,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [ "payload", "FinancialEvents" ]
+            field_path: ["payload", "FinancialEvents"]
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -453,7 +451,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-#        replication_start_date_limit_in_days = 30
+        #        replication_start_date_limit_in_days = 30
         step: "P{{ min( config.get('period_in_days', 365), 30 ) }}D"
         cursor_granularity: "PT1S"
         start_datetime:
@@ -478,7 +476,7 @@ definitions:
     get_flat_file_all_orders_data_by_last_update_general:
       type: DeclarativeStream
       name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
-      primary_key: [ "amazon-order-id" ]
+      primary_key: ["amazon-order-id"]
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: last-updated-date
@@ -509,7 +507,7 @@ definitions:
     get_fba_storage_fee_charges_data:
       type: DeclarativeStream
       name: GET_FBA_STORAGE_FEE_CHARGES_DATA
-      primary_key: [  ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -540,7 +538,7 @@ definitions:
     get_amazon_fulfilled_shipments_data_general:
       type: DeclarativeStream
       name: GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
-      primary_key: [  ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -571,7 +569,7 @@ definitions:
     get_flat_file_open_listings_data:
       type: DeclarativeStream
       name: GET_FLAT_FILE_OPEN_LISTINGS_DATA
-      primary_key: [  ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -602,7 +600,7 @@ definitions:
     get_fba_fulfillment_removal_order_detail_data:
       type: DeclarativeStream
       name: GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA
-      primary_key: [  ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: last-updated-date
@@ -633,7 +631,7 @@ definitions:
     get_flat_file_actionable_order_data_shipping:
       type: DeclarativeStream
       name: GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING
-      primary_key: [  ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -664,7 +662,7 @@ definitions:
     get_order_report_data_shipping:
       type: DeclarativeStream
       name: GET_ORDER_REPORT_DATA_SHIPPING
-      primary_key: [  ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -699,7 +697,7 @@ definitions:
     get_ledger_detail_view_data:
       type: DeclarativeStream
       name: GET_LEDGER_DETAIL_VIEW_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: Date
@@ -734,11 +732,11 @@ definitions:
             class_name: "source_amazon_seller_partner.components.type_transformers.LedgerDetailedViewReportsTypeTransformer"
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
     get_ledger_summary_view_data:
       type: DeclarativeStream
       name: get_ledger_summary_view_data
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: Date
@@ -773,12 +771,12 @@ definitions:
             class_name: "source_amazon_seller_partner.components.type_transformers.LedgerDetailedViewReportsTypeTransformer"
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
 
     get_fba_reimbursements_data:
       type: DeclarativeStream
       name: GET_FBA_REIMBURSEMENTS_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -810,7 +808,7 @@ definitions:
     get_fba_fulfillment_customer_returns_data:
       type: DeclarativeStream
       name: get_fba_fulfillment_customer_returns_data
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -842,7 +840,7 @@ definitions:
     get_seller_feedback_data:
       type: DeclarativeStream
       name: GET_SELLER_FEEDBACK_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
@@ -880,12 +878,12 @@ definitions:
             class_name: "source_amazon_seller_partner.components.type_transformers.SellerFeedbackReportsTypeTransformer"
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
 
     get_afn_inventory_data:
       type: DeclarativeStream
       name: GET_AFN_INVENTORY_DATA
-      primary_key: [  ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -917,7 +915,7 @@ definitions:
     get_afn_inventory_data_by_country:
       type: DeclarativeStream
       name: GET_AFN_INVENTORY_DATA_BY_COUNTRY
-      primary_key: [  ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -949,7 +947,7 @@ definitions:
     get_fba_inventory_planning_data:
       type: DeclarativeStream
       name: GET_FBA_INVENTORY_PLANNING_DATA
-      primary_key: [  ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -981,7 +979,7 @@ definitions:
     get_flat_file_returns_data_by_return_date:
       type: DeclarativeStream
       name: GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE
-      primary_key: [  ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1013,7 +1011,7 @@ definitions:
     get_flat_file_archived_orders_data_by_order_date:
       type: DeclarativeStream
       name: GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1045,7 +1043,7 @@ definitions:
     get_fba_sns_performance_data:
       type: DeclarativeStream
       name: GET_FBA_SNS_PERFORMANCE_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1077,7 +1075,7 @@ definitions:
     get_fba_sns_forecast_data:
       type: DeclarativeStream
       name: GET_FBA_SNS_FORECAST_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1109,7 +1107,7 @@ definitions:
     get_merchants_listings_fyp_report:
       type: DeclarativeStream
       name: GET_MERCHANTS_LISTINGS_FYP_REPORT
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1144,12 +1142,12 @@ definitions:
             class_name: "source_amazon_seller_partner.components.type_transformers.MerchantListingsFypReportTypeTransformer"
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
 
     get_merchant_cancelled_listings_data:
       type: DeclarativeStream
       name: GET_MERCHANT_CANCELLED_LISTINGS_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1181,7 +1179,7 @@ definitions:
     get_merchant_listings_data_back_compat:
       type: DeclarativeStream
       name: GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT
-      primary_key: [ "listing-id" ]
+      primary_key: ["listing-id"]
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1213,7 +1211,7 @@ definitions:
     get_stranded_inventory_ui_data:
       type: DeclarativeStream
       name: GET_STRANDED_INVENTORY_UI_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1245,7 +1243,7 @@ definitions:
     get_fba_myi_unsuppressed_inventory_data:
       type: DeclarativeStream
       name: GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1277,7 +1275,7 @@ definitions:
     get_fba_fulfillment_customer_shipment_promotion_data:
       type: DeclarativeStream
       name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1309,7 +1307,7 @@ definitions:
     get_fba_estimated_fba_fees_txt_data:
       type: DeclarativeStream
       name: GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1341,7 +1339,7 @@ definitions:
     get_restock_inventory_recommendations_report:
       type: DeclarativeStream
       name: GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1373,7 +1371,7 @@ definitions:
     get_fba_fulfillment_customer_shipment_replacement_data:
       type: DeclarativeStream
       name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1405,7 +1403,7 @@ definitions:
     get_fba_fulfillment_removal_shipment_detail_data:
       type: DeclarativeStream
       name: GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1437,7 +1435,7 @@ definitions:
     get_xml_browse_tree_data:
       type: DeclarativeStream
       name: GET_XML_BROWSE_TREE_DATA
-      primary_key: [ "browseNodeId" ]
+      primary_key: ["browseNodeId"]
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1473,7 +1471,7 @@ definitions:
     get_merchant_listings_all_data:
       type: DeclarativeStream
       name: GET_MERCHANT_LISTINGS_ALL_DATA
-      primary_key: [ "listing-id" ]
+      primary_key: ["listing-id"]
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1508,12 +1506,12 @@ definitions:
             class_name: "source_amazon_seller_partner.components.type_transformers.MerchantReportsTypeTransformer"
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
 
     get_merchant_listings_data:
       type: DeclarativeStream
       name: GET_MERCHANT_LISTINGS_DATA
-      primary_key: [ "listing-id" ]
+      primary_key: ["listing-id"]
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1548,13 +1546,12 @@ definitions:
             class_name: "source_amazon_seller_partner.components.type_transformers.MerchantReportsTypeTransformer"
           extractor:
             type: DpathExtractor
-            field_path: [ ]
-
+            field_path: []
 
     get_merchant_listings_inactive_data:
       type: DeclarativeStream
       name: GET_MERCHANT_LISTINGS_INACTIVE_DATA
-      primary_key: [ "listing-id" ]
+      primary_key: ["listing-id"]
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1589,12 +1586,12 @@ definitions:
             class_name: "source_amazon_seller_partner.components.type_transformers.MerchantReportsTypeTransformer"
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
 
     get_v2_settlement_report_data_flat_file:
       type: DeclarativeStream
       name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
-      primary_key: [ ]
+      primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
@@ -1649,7 +1646,7 @@ definitions:
       timeout:
         - CANCELLED
       completed:
-          - DONE
+        - DONE
     urls_extractor:
       type: DpathExtractor
       field_path:
@@ -1706,7 +1703,7 @@ definitions:
   flat_file_settlement_v2_helper:
     type: DeclarativeStream
     name: flat_file_settlement_v2_helper
-    primary_key: [ ]
+    primary_key: []
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: dataEndTime

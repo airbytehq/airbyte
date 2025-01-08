@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )

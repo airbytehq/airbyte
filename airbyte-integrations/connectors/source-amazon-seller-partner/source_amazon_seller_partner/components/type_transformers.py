@@ -1,14 +1,14 @@
-from typing import Dict, Any
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+from typing import Any, Dict
 
 import dateparser
 import pendulum
 
-from airbyte_cdk.sources.utils.transform import TypeTransformer, TransformConfig
-
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class LedgerDetailedViewReportsTypeTransformer(TypeTransformer):
-
     def __init__(self, *args, **kwargs):
         config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
         super().__init__(config)
@@ -28,8 +28,8 @@ class LedgerDetailedViewReportsTypeTransformer(TypeTransformer):
 
         return transform_function
 
-class MerchantListingsFypReportTypeTransformer(TypeTransformer):
 
+class MerchantListingsFypReportTypeTransformer(TypeTransformer):
     def __init__(self, *args, **kwargs):
         config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
         super().__init__(config)
@@ -48,8 +48,8 @@ class MerchantListingsFypReportTypeTransformer(TypeTransformer):
 
         return transform_function
 
-class MerchantReportsTypeTransformer(TypeTransformer):
 
+class MerchantReportsTypeTransformer(TypeTransformer):
     def __init__(self, *args, **kwargs):
         config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
         super().__init__(config)
@@ -65,7 +65,6 @@ class MerchantReportsTypeTransformer(TypeTransformer):
             return original_value
 
         return transform_function
-
 
 
 class SellerFeedbackReportsTypeTransformer(TypeTransformer):
@@ -120,7 +119,6 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
 
 
 class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
-
     def __init__(self, *args, **kwargs):
         config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
         super().__init__(config)
@@ -134,4 +132,3 @@ class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
             return original_value
 
         return transform_function
-
