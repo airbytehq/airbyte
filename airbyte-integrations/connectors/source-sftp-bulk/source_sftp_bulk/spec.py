@@ -9,8 +9,7 @@ from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
     AbstractFileBasedSpec,
     DeliverRawFiles,
-    DeliverRecords,
-    DeliveryOptions,
+    DeliverRecords
 )
 
 
@@ -63,19 +62,6 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
         display_type="radio",
         group="advanced",
         default="use_records_transfer",
-    )
-
-    delivery_options: Optional[DeliveryOptions] = Field(
-        title="Delivery Options",
-        type="object",
-        order=8,
-    )
-
-    preserve_subdirectories_directories: bool = Field(
-        title="Preserve Subdirectories Directories",
-        description="Flag indicating we should preserve subdirectories directories",
-        default=True,
-        order=9,
     )
 
     @classmethod
