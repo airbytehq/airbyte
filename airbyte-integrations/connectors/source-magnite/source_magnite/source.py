@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import csv
+import re
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 import json
@@ -144,7 +145,7 @@ class MagniteStream(HttpStream, ABC):
         self.dimensions
         self.metrics
         for record in self.dimensions_data + self.metrics_data:
-            schema["properties"][record["id"]] = {"type": record["type"]}
+            schema["properties"][re.sub(r'[(). ]', "_", record["name"])] = {"type": record["type"]}
         return schema
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
