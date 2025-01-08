@@ -465,10 +465,10 @@
                 "type": "string"
               },
               "preserve_subdirectories_directories": {
-                  "default": true,
-                  "description": "Flag indicating we should preserve subdirectories directories",
-                  "title": "Preserve Subdirectories Directories",
-                  "type": "boolean"
+                "default": true,
+                "description": "Flag indicating we should preserve subdirectories directories",
+                "title": "Preserve Subdirectories Directories",
+                "type": "boolean"
               }
             },
             "description": "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.",
@@ -477,10 +477,10 @@
         ]
       },
       "preserve_subdirectories_directories": {
-          "default": true,
-          "description": "Flag indicating we should preserve subdirectories directories",
-          "title": "Preserve Subdirectories Directories",
-          "type": "boolean"
+        "default": true,
+        "description": "Flag indicating we should preserve subdirectories directories",
+        "title": "Preserve Subdirectories Directories",
+        "type": "boolean"
       },
       "host": {
         "title": "Host Address",
