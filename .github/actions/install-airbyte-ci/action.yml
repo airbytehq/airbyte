@@ -30,21 +30,26 @@ runs:
     - name: "Determine how Airbyte CI should be installed"
       shell: bash
       id: determine-install-mode
+      run:
+        echo "install-mode=source" >> $GITHUB_OUTPUT
+        echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
+
       # When the PR is from a fork, we always install from binary
-      if: inputs.is_fork == 'false'
-      run: |
-        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
-          echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
-          echo "install-mode=source" >> $GITHUB_OUTPUT
-          echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
-        else
-          echo "install-mode=binary" >> $GITHUB_OUTPUT
-          echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
-        fi
+      # if: inputs.is_fork == 'false'
+      # run: |
+      #   if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
+      #     echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
+      #     echo "install-mode=source" >> $GITHUB_OUTPUT
+      #     echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
+      #   else
+      #     echo "install-mode=binary" >> $GITHUB_OUTPUT
+      #     echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
+      #   fi
 
     - name: Install Airbyte CI from binary
       id: install-airbyte-ci-binary
-      if: steps.determine-install-mode.outputs.install-mode == 'binary' || ${{ inputs.is_fork }} == 'true'
+      if: false
+      # if: steps.determine-install-mode.outputs.install-mode == 'binary' || ${{ inputs.is_fork }} == 'true'
       shell: bash
       run: |
         curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
@@ -68,6 +73,10 @@ runs:
         pip install pipx
         pipx ensurepath
         pipx install ${{ inputs.path_to_airbyte_ci_source }}
+
+    - name: Debug `airbyte-ci` installed version
+      run: |
+        airbyte-ci --version
 
     - name: Get dagger engine image name
       id: get-dagger-engine-image-name
