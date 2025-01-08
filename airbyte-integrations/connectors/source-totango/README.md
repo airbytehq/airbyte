@@ -16,6 +16,7 @@ For information about how to use this connector within Airbyte, see [the documen
 
 From this connector directory, run:
 ```bash
+poetry env use python3.9
 poetry install --with dev
 ```
 
@@ -34,7 +35,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-totango spec
 poetry run source-totango check --config secrets/config.json
 poetry run source-totango discover --config secrets/config.json
-poetry run source-totango read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-totango read --config secrets/config.json --catalog source_totango/configured_catalog.json
 ```
 
 ### Running tests
@@ -50,7 +51,7 @@ poetry run pytest tests
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
 ```bash
-airbyte-ci connectors --name=source-totango build
+airbyte-ci connectors --name source-totango build --architecture=linux/amd64
 ```
 
 An image will be available on your host with the tag `airbyte/source-totango:dev`.
