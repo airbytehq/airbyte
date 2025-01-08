@@ -466,8 +466,8 @@
               },
               "preserve_subdirectories_directories": {
                 "default": true,
-                "description": "Flag indicating we should preserve subdirectories directories",
-                "title": "Preserve Subdirectories Directories",
+                "description": "If enabled replicate source folder structure",
+                "title": "Preserve Subdirectories in File Paths",
                 "type": "boolean"
               }
             },
@@ -475,12 +475,6 @@
             "required": ["delivery_type"]
           }
         ]
-      },
-      "preserve_subdirectories_directories": {
-        "default": true,
-        "description": "Flag indicating we should preserve subdirectories directories",
-        "title": "Preserve Subdirectories Directories",
-        "type": "boolean"
       },
       "host": {
         "title": "Host Address",
