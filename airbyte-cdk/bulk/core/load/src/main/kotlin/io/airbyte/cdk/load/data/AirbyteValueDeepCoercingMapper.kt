@@ -21,15 +21,25 @@ import java.time.format.DateTimeFormatter
  * This mapper performs common-sense type coercions. For example, it will promote IntegerValue to
  * NumberValue, or parse StringValue to TimestampValue.
  */
-class AirbyteValueDeepCoercingMapper : AirbyteValueIdentityMapper() {
+class AirbyteValueDeepCoercingMapper(
+    private val recurseIntoObjects: Boolean,
+    private val recurseIntoArrays: Boolean,
+) : AirbyteValueIdentityMapper() {
     override fun mapObject(
         value: AirbyteValue,
         schema: ObjectType,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
-        // force to object, and then use the superclass recursion
-        AirbyteValueCoercer.coerceObject(value)?.let { super.mapObject(it, schema, context) }
-            ?: nulledOut(schema, context)
+        // We should inspect the object's fields if we're doing full recursion,
+        // or if this is the root object.
+        if (recurseIntoObjects || context.path.isEmpty()) {
+            // force to object, and then use the superclass recursion
+            AirbyteValueCoercer.coerceObject(value)?.let { super.mapObject(it, schema, context) }
+                ?: nulledOut(schema, context)
+        } else {
+            // otherwise, try to get an ObjectValue out of this value, but don't recurse.
+            withContext(AirbyteValueCoercer.coerceObject(value), context)
+        }
 
     override fun mapObjectWithEmptySchema(
         value: AirbyteValue,
@@ -48,9 +58,17 @@ class AirbyteValueDeepCoercingMapper : AirbyteValueIdentityMapper() {
         schema: ArrayType,
         context: Context
     ): Pair<AirbyteValue, Context> =
-        // force to array, and then use the superclass recursion
-        AirbyteValueCoercer.coerceArray(value)?.let { super.mapArray(it, schema, context) }
-            ?: nulledOut(schema, context)
+        // similar to mapObject, recurse if needed.
+        // Realistically, the root node is _never_ an array, i.e. `context.path.isEmpty()` is
+        // always false.
+        // But might as well be consistent.
+        if (recurseIntoArrays || context.path.isEmpty()) {
+            // force to array, and then use the superclass recursion
+            AirbyteValueCoercer.coerceArray(value)?.let { super.mapArray(it, schema, context) }
+                ?: nulledOut(schema, context)
+        } else {
+            withContext(AirbyteValueCoercer.coerceArray(value), context)
+        }
 
     override fun mapArrayWithoutSchema(
         value: AirbyteValue,

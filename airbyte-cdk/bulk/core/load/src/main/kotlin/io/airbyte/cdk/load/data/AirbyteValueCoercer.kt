@@ -18,9 +18,11 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 /**
- * Coerces an output of [JsonToAirbyteValue] to a strongly-typed [AirbyteValue]. In particular, this
- * class will parse temporal types, and performs some common-sense conversions among numeric types,
- * as well as upcasting any value to StringValue.
+ * Utility class to coerce AirbyteValue to specific types. Does **not** support recursive coercion.
+ *
+ * More specifically: This class coerces the output of [JsonToAirbyteValue] to strongly-typed
+ * [AirbyteValue]. In particular, this class will parse temporal types, and performs some
+ * common-sense conversions among numeric types, as well as upcasting any value to StringValue.
  */
 object AirbyteValueCoercer {
     fun coerceBoolean(value: AirbyteValue): BooleanValue? = requireType<BooleanValue>(value)
@@ -112,6 +114,8 @@ object AirbyteValueCoercer {
         return odt
     }
 
+    // In theory, we could e.g. Jsons.readTree((value as StringValue).value).
+    // But for now, just require that the source emits an actual ObjectNode.
     fun coerceObject(value: AirbyteValue): ObjectValue? = requireType<ObjectValue>(value)
 
     fun coerceArray(value: AirbyteValue): ArrayValue? = requireType<ArrayValue>(value)
