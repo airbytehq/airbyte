@@ -197,6 +197,7 @@ class MagniteStream(HttpStream, ABC):
                     # Pass the lines to csv.reader to handle CSV parsing
                     csv_reader = csv.reader(rows)
                     header = next(csv_reader, None)  # Get the first row as the header
+                    header = [re.sub(r'[(). ]', "_", column) for column in header]
                     if not header:
                         raise ValueError("The CSV response is empty or invalid.")
                     for row in csv_reader:
