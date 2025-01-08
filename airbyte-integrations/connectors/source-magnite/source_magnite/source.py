@@ -22,7 +22,7 @@ from .utils import (
 )
 
 DATE_FORMAT = "%Y-%m-%d"
-WINDOW_IN_DAYS = 1 #max is 45
+WINDOW_IN_DAYS = 45 #max is 45
 POLLING_IN_SECONDS = 30
 
 class BaseResourceStream(HttpStream, ABC):
