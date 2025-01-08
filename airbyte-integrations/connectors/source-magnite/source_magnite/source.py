@@ -24,6 +24,10 @@ from .utils import (
 DATE_FORMAT = "%Y-%m-%d"
 WINDOW_IN_DAYS = 45 #max is 45
 POLLING_IN_SECONDS = 30
+column_type_dict = {
+    "percent": "number",
+    "currency": "number"
+}
 
 class BaseResourceStream(HttpStream, ABC):
     http_method = "GET"
@@ -145,7 +149,8 @@ class MagniteStream(HttpStream, ABC):
         self.dimensions
         self.metrics
         for record in self.dimensions_data + self.metrics_data:
-            schema["properties"][re.sub(r'[(). ]', "_", record["name"])] = {"type": record["type"]}
+            schema["properties"][re.sub(r'[(). ]', "_", record["name"])] = {"type": column_type_dict.get(record["type"], record["type"])}
+
         return schema
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
