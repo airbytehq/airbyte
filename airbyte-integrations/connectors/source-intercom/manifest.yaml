@@ -669,6 +669,7 @@ definitions:
             - path:
                 - conversation_id
               value: "{{ stream_slice.id }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
