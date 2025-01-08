@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.write.StreamLoader
+import io.github.oshai.kotlinlogging.KotlinLogging
 import javax.sql.DataSource
 
 class MSSQLStreamLoader(
@@ -16,6 +17,10 @@ class MSSQLStreamLoader(
     override val stream: DestinationStream,
     private val sqlBuilder: MSSQLQueryBuilder,
 ) : StreamLoader {
+
+    override suspend fun start() {
+        ensureTableExists(dataSource)
+    }
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecordAirbyteValue>,
@@ -33,6 +38,22 @@ class MSSQLStreamLoader(
             connection.commit()
         }
         return SimpleBatch(Batch.State.COMPLETE)
+    }
+
+    private fun ensureTableExists(dataSource: DataSource) {
+        try {
+            dataSource.connection.use { connection ->
+                connection.createStatement().use { statement ->
+                    statement.executeUpdate(sqlBuilder.createFinalSchemaIfNotExists())
+                }
+                connection.createStatement().use { statement ->
+                    statement.executeUpdate(sqlBuilder.createFinalTableIfNotExists())
+                }
+            }
+        } catch (ex: Exception) {
+            KotlinLogging.logger {}.error(ex) { ex.message }
+            throw ex
+        }
     }
 
 }

@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.state.DestinationFailure
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
@@ -18,26 +19,25 @@ class MSSQLWriter(
     private val config: MSSQLConfiguration,
     private val dataSourceFactory: MSSQLDataSourceFactory
 ) : DestinationWriter {
+    private var dataSource: DataSource? = null
+
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        val dataSource = dataSourceFactory.getDataSource(config)
         val sqlBuilder = MSSQLQueryBuilder(config, stream)
-        ensureTableExists(dataSource, sqlBuilder)
-        return MSSQLStreamLoader(dataSource = dataSource, stream = stream, sqlBuilder = sqlBuilder)
+        return MSSQLStreamLoader(
+            dataSource = dataSource ?: throw IllegalStateException("dataSource hasn't been initialized"),
+            stream = stream,
+            sqlBuilder = sqlBuilder,
+        )
     }
 
-    private fun ensureTableExists(dataSource: DataSource, sqlBuilder: MSSQLQueryBuilder) {
-        try {
-            dataSource.connection.use { connection ->
-                connection.createStatement().use { statement ->
-                    statement.executeUpdate(sqlBuilder.createFinalSchemaIfNotExists())
-                }
-                connection.createStatement().use { statement ->
-                    statement.executeUpdate(sqlBuilder.createFinalTableIfNotExists())
-                }
-            }
-        } catch (ex: Exception) {
-            KotlinLogging.logger {}.error(ex) { ex.message }
-            throw ex
-        }
+    override suspend fun setup() {
+        super.setup()
+        dataSource = dataSourceFactory.getDataSource(config)
     }
+
+    override suspend fun teardown(destinationFailure: DestinationFailure?) {
+        dataSource?.let { dataSourceFactory.disposeDataSource(it) }
+        super.teardown(destinationFailure)
+    }
+
 }

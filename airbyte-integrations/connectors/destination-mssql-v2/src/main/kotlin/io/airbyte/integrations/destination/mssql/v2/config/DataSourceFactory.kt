@@ -69,4 +69,8 @@ fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
 class MSSQLDataSourceFactory(private val applicationContext: ApplicationContext) {
     fun getDataSource(config: MSSQLConfiguration): DataSource =
         applicationContext.createBean(DataSource::class.java, config)
+
+    fun disposeDataSource(dataSource: DataSource) {
+        applicationContext.destroyBean(dataSource)
+    }
 }
