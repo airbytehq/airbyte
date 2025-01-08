@@ -43,6 +43,8 @@ jobs:
       - name: Install Poetry
         id: install_poetry
         uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
 
       - name: Install Dependencies
         id: install_dependencies
