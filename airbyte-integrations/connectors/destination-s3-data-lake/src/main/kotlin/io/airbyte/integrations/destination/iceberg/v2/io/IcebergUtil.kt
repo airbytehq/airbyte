@@ -289,11 +289,11 @@ class IcebergUtil(
 
         println(config)
         val clientProperties = emptyMap<String, String>()
-            if (catalogConfig.awsArnRoleConfiguration.roleArn != null) {
-                buildRoleBasedClientProperties(catalogConfig.awsArnRoleConfiguration.roleArn!!, config)
-            } else {
-                buildKeyBasedClientProperties(config)
-            }
+        if (catalogConfig.awsArnRoleConfiguration.roleArn != null) {
+            buildRoleBasedClientProperties(catalogConfig.awsArnRoleConfiguration.roleArn!!, config)
+        } else {
+            buildKeyBasedClientProperties(config)
+        }
 
         return baseGlueProperties + clientProperties
     }

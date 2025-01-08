@@ -190,7 +190,6 @@ class GlueCatalogSpecification(
     @JsonProperty("glue_id")
     @JsonSchemaInject(json = """{"order":1}""")
     val glueId: String,
-
     override val roleArn: String? = null,
 ) : CatalogType(catalogType), AWSArnRoleSpecification
 
@@ -237,10 +236,8 @@ data class GlueCatalogConfiguration(
     @JsonSchemaTitle("AWS Account ID")
     @JsonPropertyDescription("The AWS Account ID associated with the Glue service.")
     val glueId: String,
-
     override val awsArnRoleConfiguration: AWSArnRoleConfiguration,
-
-    ) : CatalogConfiguration, AWSArnRoleConfigurationProvider
+) : CatalogConfiguration, AWSArnRoleConfigurationProvider
 
 /**
  * Nessie catalog configuration details.
