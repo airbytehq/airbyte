@@ -15,19 +15,14 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorType: destination
-  definitionId: 37a928c1-2d5c-431a-a97d-ae236bd1ea0c
-  dockerImageTag: 0.2.5
-  dockerRepository: airbyte/destination-iceberg-v2
+  definitionId: 716ca874-520b-4902-9f80-9fad66754b89
+  dockerImageTag: 0.2.6
+  dockerRepository: airbyte/destination-s3-data-lake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
-  githubIssueLabel: destination-iceberg-v2
+  githubIssueLabel: destination-s3-data-lake
   icon: icon.svg
   license: ELv2
-  name: S3 Data Lake Destination
-  registryOverrides:
-    cloud:
-      enabled: false
-    oss:
-      enabled: false
+  name: S3 Data Lake Destination (BETA)
   releaseStage: alpha
   supportLevel: community
   supportsRefreshes: true
