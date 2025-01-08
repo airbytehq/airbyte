@@ -12,7 +12,6 @@ from source_amazon_seller_partner.streams import (
     IncrementalReportsAmazonSPStream,
     ReportProcessingStatus,
     ReportsAmazonSPStream,
-    VendorDirectFulfillmentShipping,
 )
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -254,73 +253,3 @@ class TestReportsAmazonSPStream:
         with pytest.raises(AirbyteTracedException) as exception:
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
         assert exception.value.failure_type == FailureType.transient_error
-
-
-class TestVendorFulfillment:
-    @pytest.mark.parametrize(
-        ("start_date", "end_date", "stream_state", "expected_slices"),
-        (
-            (
-                "2022-09-01T00:00:00Z",
-                None,
-                None,
-                [{"createdAfter": "2022-09-01T00:00:00Z", "createdBefore": "2022-09-05T00:00:00Z"}],
-            ),
-            (
-                "2022-08-01T00:00:00Z",
-                "2022-08-16T00:00:00Z",
-                None,
-                [
-                    {"createdAfter": "2022-08-01T00:00:00Z", "createdBefore": "2022-08-08T00:00:00Z"},
-                    {"createdAfter": "2022-08-08T00:00:00Z", "createdBefore": "2022-08-15T00:00:00Z"},
-                    {"createdAfter": "2022-08-15T00:00:00Z", "createdBefore": "2022-08-16T00:00:00Z"},
-                ],
-            ),
-            (
-                "2022-08-01T00:00:00Z",
-                "2022-08-05T00:00:00Z",
-                None,
-                [{"createdAfter": "2022-08-01T00:00:00Z", "createdBefore": "2022-08-05T00:00:00Z"}],
-            ),
-            (
-                "2022-08-01T00:00:00Z",
-                "2022-08-11T00:00:00Z",
-                {"createdBefore": "2022-08-05T00:00:00Z"},
-                [{"createdAfter": "2022-08-05T00:00:00Z", "createdBefore": "2022-08-11T00:00:00Z"}],
-            ),
-            ("2022-08-01T00:00:00Z", "2022-08-05T00:00:00Z", {"createdBefore": "2022-08-06T00:00:00Z"}, []),
-        ),
-    )
-    def test_stream_slices(self, init_kwargs, start_date, end_date, stream_state, expected_slices):
-        init_kwargs["replication_start_date"] = start_date
-        init_kwargs["replication_end_date"] = end_date
-        init_kwargs["period_in_days"] = 365
-
-        stream = VendorDirectFulfillmentShipping(**init_kwargs)
-        with patch("pendulum.now", return_value=pendulum.parse("2022-09-05T00:00:00Z")):
-            assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)) == expected_slices
-
-    @pytest.mark.parametrize(
-        ("stream_slice", "next_page_token", "expected_params"),
-        (
-            (
-                {"createdAfter": "2022-08-05T00:00:00Z", "createdBefore": "2022-08-11T00:00:00Z"},
-                None,
-                {"createdAfter": "2022-08-05T00:00:00Z", "createdBefore": "2022-08-11T00:00:00Z"},
-            ),
-            (
-                {"createdAfter": "2022-08-05T00:00:00Z", "createdBefore": "2022-08-11T00:00:00Z"},
-                {"nextToken": "123123123"},
-                {
-                    "createdAfter": "2022-08-05T00:00:00Z",
-                    "createdBefore": "2022-08-11T00:00:00Z",
-                    "nextToken": "123123123",
-                },
-            ),
-            (None, {"nextToken": "123123123"}, {"nextToken": "123123123"}),
-            (None, None, {}),
-        ),
-    )
-    def test_request_params(self, init_kwargs, stream_slice, next_page_token, expected_params):
-        stream = VendorDirectFulfillmentShipping(**init_kwargs)
-        assert stream.request_params(stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token) == expected_params

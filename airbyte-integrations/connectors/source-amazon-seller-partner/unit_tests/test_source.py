@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 import pytest
 from source_amazon_seller_partner import SourceAmazonSellerPartner
-from source_amazon_seller_partner.streams import VendorOrders
 from source_amazon_seller_partner.utils import AmazonConfigException
 
 from airbyte_cdk.sources.streams import Stream
@@ -73,19 +72,6 @@ def connector_config_without_start_date():
         "aws_environment": "SANDBOX",
         "region": "US",
     }
-
-
-def test_check_connection_with_vendor_report(mocker, requests_mock, connector_vendor_config_with_report_options):
-    mocker.patch("time.sleep", lambda x: None)
-    requests_mock.register_uri(
-        "POST",
-        "https://api.amazon.com/auth/o2/token",
-        status_code=200,
-        json={"access_token": "access_token", "expires_in": "3600"},
-    )
-
-    with patch.object(VendorOrders, "read_records", return_value=iter([{"some_key": "some_value"}])):
-        assert SourceAmazonSellerPartner().check_connection(logger, connector_vendor_config_with_report_options) == (True, None)
 
 
 def test_check_connection_with_orders_stop_iteration(requests_mock, connector_config_with_report_options):
