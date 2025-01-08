@@ -15,6 +15,7 @@ DATE_FORMAT = "%Y-%m-%d"
 def string_to_date(d: str, f: str = DATE_FORMAT, old_format=None) -> datetime.date:
     # To convert the old STATE date format "YYYY-MM-DD" to the new format "YYYYMMDD" we need this `old_format` additional param.
     # As soon as all current cloud sync will be converted to the new format we can remove this double format support.
+    if not d: return None
     if old_format:
         try:
             return datetime.datetime.strptime(d, old_format).date()
