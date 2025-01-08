@@ -12,39 +12,8 @@ from source_amazon_seller_partner.components import (
     SellerFeedbackReportsTypeTransformer,
 )
 
-from airbyte_cdk.test.state_builder import StateBuilder
+from integration.utils import get_stream_by_name, config
 
-
-@pytest.fixture(name="config")
-def config_fixture():
-    config = {
-        "replication_start_date": "2021-07-01T00:00:00Z",
-        "refresh_token": "<refresh_token>",
-        "lwa_app_id": "<lwa_app_id>",
-        "lwa_client_secret": "<lwa_client_secret>",
-        "aws_access_key": "<aws_access_key>",
-        "aws_secret_key": "<aws_secret_key>",
-        "role_arn": "<role_arn>",
-        "aws_environment": "PRODUCTION",
-        "region": "US",
-    }
-
-    return config
-
-
-@pytest.fixture()
-def stream_by_name(config):
-    # use local import in favour of global because we need to make imports after setting the env variables
-    from source_amazon_seller_partner.source import SourceAmazonSellerPartner
-
-    def mocker(stream_name, source_config=config):
-        source = SourceAmazonSellerPartner(None, source_config, StateBuilder().build())
-        streams = source.streams(source_config)
-        for stream in streams:
-            if stream.name == stream_name:
-                return stream
-
-    return mocker
 
 
 INPUT_DATES = {
@@ -74,9 +43,9 @@ def parametrize_seller_feedback():
 
 
 @pytest.mark.parametrize("marketplace_id,input_data,expected_data", parametrize_seller_feedback())
-def test_transform_seller_feedback(marketplace_id, input_data, expected_data, stream_by_name):
+def test_transform_seller_feedback(marketplace_id, input_data, expected_data):
     transformer = SellerFeedbackReportsTypeTransformer(config={"marketplace_id": marketplace_id})
-    schema = stream_by_name("GET_SELLER_FEEDBACK_DATA").get_json_schema()
+    schema = get_stream_by_name("GET_SELLER_FEEDBACK_DATA", config().build()).get_json_schema()
     transformer.transform(input_data, schema)
 
     assert input_data == expected_data
@@ -95,9 +64,9 @@ def test_transform_seller_feedback(marketplace_id, input_data, expected_data, st
         ),
     ),
 )
-def test_transform_merchant_reports(input_data, expected_data, stream_by_name):
+def test_transform_merchant_reports(input_data, expected_data):
     transformer = MerchantReportsTypeTransformer()
-    schema = stream_by_name("GET_MERCHANT_LISTINGS_ALL_DATA").get_json_schema()
+    schema = get_stream_by_name("GET_MERCHANT_LISTINGS_ALL_DATA", config().build()).get_json_schema()
     transformer.transform(input_data, schema)
     assert input_data == expected_data
 
@@ -115,9 +84,9 @@ def test_transform_merchant_reports(input_data, expected_data, stream_by_name):
         ),
     ),
 )
-def test_transform_merchant_fyp_reports(input_data, expected_data, stream_by_name):
+def test_transform_merchant_fyp_reports(input_data, expected_data):
     transformer = MerchantListingsFypReportTypeTransformer()
-    schema = stream_by_name("GET_MERCHANTS_LISTINGS_FYP_REPORT").get_json_schema()
+    schema = get_stream_by_name("GET_MERCHANTS_LISTINGS_FYP_REPORT", config().build()).get_json_schema()
     transformer.transform(input_data, schema)
     assert input_data == expected_data
 
@@ -132,9 +101,9 @@ def test_transform_merchant_fyp_reports(input_data, expected_data, stream_by_nam
         ({"Date": "", "dataEndTime": "2022-07-31"}, {"Date": "", "dataEndTime": "2022-07-31"}),
     ),
 )
-def test_transform_ledger_reports(input_data, expected_data, stream_by_name):
+def test_transform_ledger_reports(input_data, expected_data):
     transformer = LedgerDetailedViewReportsTypeTransformer()
-    schema = stream_by_name("GET_LEDGER_DETAIL_VIEW_DATA").get_json_schema()
+    schema = get_stream_by_name("GET_LEDGER_DETAIL_VIEW_DATA", config().build()).get_json_schema()
     transformer.transform(input_data, schema)
     assert input_data == expected_data
 
@@ -149,8 +118,8 @@ def test_transform_ledger_reports(input_data, expected_data, stream_by_name):
         ({"posted-date": "", "dataEndTime": "2022-07-31"}, {"posted-date": None, "dataEndTime": "2022-07-31"}),
     ),
 )
-def test_transform_settlement_reports(report_init_kwargs, input_data, expected_data, stream_by_name):
+def test_transform_settlement_reports(report_init_kwargs, input_data, expected_data):
     transformer = FlatFileSettlementV2ReportsTypeTransformer()
-    schema = stream_by_name("GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE").get_json_schema()
+    schema = get_stream_by_name("GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE", config().build()).get_json_schema()
     transformer.transform(input_data, schema)
     assert input_data == expected_data
