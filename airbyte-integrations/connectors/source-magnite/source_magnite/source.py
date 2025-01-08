@@ -162,6 +162,9 @@ class MagniteStream(HttpStream, ABC):
     #     return super().should_retry(response)
     
     def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if isinstance(response, Exception):
+            self.logger.warning(f"Back off due to {type(response)}.")
+            return POLLING_IN_SECONDS * 2
         if response.status_code == 412:
             self.logger.warning("Precondition failed! A query is already running.")
             return POLLING_IN_SECONDS * 2
