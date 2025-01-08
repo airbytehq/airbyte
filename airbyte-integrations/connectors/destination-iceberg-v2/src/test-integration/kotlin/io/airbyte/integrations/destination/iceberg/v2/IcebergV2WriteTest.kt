@@ -104,11 +104,7 @@ class IcebergGlueAssumeRoleWriteTest :
             )
         ),
         IcebergV2TestUtil.getAWSSystemCredentialsAsMap()
-    ) {
-    @Test
-    @Disabled("dest iceberg-v2 doesn't support unknown types")
-    override fun testUnknownTypes() {}
-}
+    )
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
