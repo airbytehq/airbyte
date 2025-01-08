@@ -71,6 +71,13 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
         order=8,
     )
 
+    preserve_subdirectories_directories: bool = Field(
+        title="Preserve Subdirectories Directories",
+        description="Flag indicating we should preserve subdirectories directories",
+        default=True,
+        order=9,
+    )
+
     @classmethod
     def documentation_url(cls) -> str:
         return "https://docs.airbyte.com/integrations/sources/sftp-bulk"
