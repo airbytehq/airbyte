@@ -321,12 +321,13 @@ class MagniteStream(HttpStream, ABC):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         today: date = date.today()
+        end_date = string_to_date(self.config.get("toDate", None)) or today
         start_date = string_to_date(self.config["fromDate"])
 
-        while start_date <= today:
+        while start_date <= end_date:
             yield {
                 "fromDate": date_to_string(start_date),
-                "toDate": date_to_string(min(start_date + timedelta(days=WINDOW_IN_DAYS - 1), today)),
+                "toDate": date_to_string(min(start_date + timedelta(days=WINDOW_IN_DAYS - 1), end_date)),
             }
             start_date += timedelta(days=WINDOW_IN_DAYS)
 
