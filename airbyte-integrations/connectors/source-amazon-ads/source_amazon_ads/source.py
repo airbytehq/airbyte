@@ -7,6 +7,7 @@ import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+
 from airbyte_cdk import TState
 from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -15,6 +16,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 
 from .spec import SourceAmazonAdsSpec
 from .streams import Profiles, SponsoredBrandsV3ReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream
+
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
