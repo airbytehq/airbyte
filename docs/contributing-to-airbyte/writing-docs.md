@@ -166,7 +166,9 @@ We maintain a separate `Tabs` implementation to support rendering tabs in Airbyt
 
 ### Code blocks
 
-Code blocks are used to represent sample code and command line input and output with easy-to-read syntax highlighting. See [Code blocks](https://docusaurus.io/docs/markdown-features/code-blocks).
+Code blocks are used to represent sample code and command line input and output with easy-to-read syntax highlighting. See [Code blocks](https://docusaurus.io/docs/markdown-features/code-blocks). 
+
+Not all languages are turned on. If syntax highlighting doesn't work for your language, add it to `docusaurus/docusaurus.config.js`'s `module.exports.themeConfig.prism.additionalLanguages` property. Then, restart your local server to test the new language.
 
 ### Admonitions (notes, warnings, tips, etc.)
 
