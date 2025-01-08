@@ -54,7 +54,7 @@ runs:
     - name: Install Python 3.10
       id: install-python-3-10
       uses: actions/setup-python@v4
-      if: steps.determine-install-mode.outputs.install-mode == 'source'
+      # if: steps.determine-install-mode.outputs.install-mode == 'source'
       with:
         python-version: "3.10"
         token: ${{ inputs.github_token }}
