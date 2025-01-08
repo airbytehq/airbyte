@@ -165,6 +165,150 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.payload.NextToken }}"
+
+    vendor_direct_fulfillment_shipping:
+      type: DeclarativeStream
+      name: VendorDirectFulfillmentShipping
+      primary_key:
+        - purchaseOrderNumber
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdBefore
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P7D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: createdAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: createdBefore
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [ "createdBefore" ]
+              value: "{{ stream_slice['end_time'] }}"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "vendor/directFulfillment/shipping/v1/shippingLabels"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          request_parameters:
+            MarketplaceIds: '{{ config["marketplace_id"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.backoff_strategy.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [ "payload", "shippingLabels" ]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: nextToken
+#          page_size_option:
+#            type: RequestOption
+#            inject_into: request_parameter
+#            field_name: MaxResultsPerPage
+          pagination_strategy:
+            type: CursorPagination
+#            page_size: 100
+            cursor_value: "{{ response.payload.pagination.nextToken }}"
+
+
+    vendor_orders:
+      type: DeclarativeStream
+      name: VendorOrders
+      primary_key:
+        - purchaseOrderNumber
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: changedBefore
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P7D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: changedAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: changedBefore
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [ "changedBefore" ]
+              value: "{{ stream_slice['end_time'] }}"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "vendor/orders/v1/purchaseOrders"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          request_parameters:
+            MarketplaceIds: '{{ config["marketplace_id"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.backoff_strategy.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [ "payload", "orders" ]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: nextToken
+#          page_size_option:
+#            type: RequestOption
+#            inject_into: request_parameter
+#            field_name: MaxResultsPerPage
+          pagination_strategy:
+            type: CursorPagination
+#            page_size: 100
+            cursor_value: "{{ response.payload.pagination.nextToken }}"
+
 # FinanceStream
     list_financial_event_groups:
       type: DeclarativeStream
@@ -1659,6 +1803,9 @@ streams:
   - $ref: "#/definitions/streams/get_merchant_listings_inactive_data"
 
   - $ref: "#/definitions/streams/get_v2_settlement_report_data_flat_file"
+
+  - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
+  - $ref: "#/definitions/streams/vendor_orders"
 
 concurrency_level:
   type: ConcurrencyLevel
