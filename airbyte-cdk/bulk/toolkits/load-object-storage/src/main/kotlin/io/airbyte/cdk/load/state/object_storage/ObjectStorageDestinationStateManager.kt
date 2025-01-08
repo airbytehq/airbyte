@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.state.object_storage
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
@@ -23,6 +24,8 @@ import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class ObjectStorageDestinationState(
@@ -36,6 +39,8 @@ class ObjectStorageDestinationState(
         STAGED,
         FINALIZED
     }
+
+    @JsonIgnore private val countByKeyLock = Mutex()
 
     companion object {
         const val METADATA_GENERATION_ID_KEY = "ab-generation-id"
@@ -121,7 +126,11 @@ class ObjectStorageDestinationState(
 
     /** Used to guarantee the uniqueness of a key */
     suspend fun ensureUnique(key: String): String {
-        val ordinal = countByKey.merge(key, 0L) { old, new -> maxOf(old + 1, new) } ?: 0L
+        val ordinal =
+            countByKeyLock.withLock {
+                countByKey.merge(key, 0L) { old, new -> maxOf(old + 1, new) }
+            }
+                ?: 0L
         return if (ordinal > 0L) {
             "$key-$ordinal"
         } else {
