@@ -32,7 +32,7 @@ class PartitionedDeltaWriter(
     schema: Schema,
     identifierFieldIds: Set<Int>,
 ) :
-    io.airbyte.integrations.destination.s3_data_lake.io.BaseDeltaTaskWriter(
+    BaseDeltaTaskWriter(
         spec,
         format,
         appenderFactory,

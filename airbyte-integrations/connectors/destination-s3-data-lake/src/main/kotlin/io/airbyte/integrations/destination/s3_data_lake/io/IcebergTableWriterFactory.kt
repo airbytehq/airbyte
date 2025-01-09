@@ -117,7 +117,7 @@ class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
         targetFileSize: Long
     ): BaseTaskWriter<Record> {
         return if (table.spec().isUnpartitioned) {
-            io.airbyte.integrations.destination.s3_data_lake.io.UnpartitionedAppendWriter(
+            UnpartitionedAppendWriter(
                 spec = table.spec(),
                 format = format,
                 appenderFactory = appenderFactory,
@@ -147,7 +147,7 @@ class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
         identifierFieldIds: Set<Int>
     ): BaseTaskWriter<Record> {
         return if (table.spec().isUnpartitioned) {
-            io.airbyte.integrations.destination.s3_data_lake.io.UnpartitionedDeltaWriter(
+            UnpartitionedDeltaWriter(
                 spec = table.spec(),
                 format = format,
                 appenderFactory = appenderFactory,
