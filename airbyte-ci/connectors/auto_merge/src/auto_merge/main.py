@@ -60,7 +60,7 @@ def check_if_pr_is_auto_mergeable(head_commit: GithubCommit, pr: PullRequest, re
     return True
 
 
-def get_pr_validators(pr: PullRequest) -> list[Callable]:
+def get_pr_validators(pr: PullRequest) -> set[Callable]:
     """
     Get the validator for a PR based on its labels
 
