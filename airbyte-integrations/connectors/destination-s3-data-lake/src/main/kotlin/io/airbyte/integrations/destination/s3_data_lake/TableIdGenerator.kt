@@ -32,7 +32,7 @@ class GlueTableIdGenerator : TableIdGenerator {
 }
 
 @Factory
-class TableIdGeneratorFactory(private val icebergConfiguration: IcebergV2Configuration) {
+class TableIdGeneratorFactory(private val icebergConfiguration: S3DataLakeConfiguration) {
     @Singleton
     fun create() =
         when (icebergConfiguration.icebergCatalogConfiguration.catalogConfiguration) {

@@ -20,7 +20,7 @@ import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.integrations.destination.s3_data_lake.ACCESS_KEY_ID
 import io.airbyte.integrations.destination.s3_data_lake.GlueCredentialsProvider
-import io.airbyte.integrations.destination.s3_data_lake.IcebergV2Configuration
+import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.SECRET_ACCESS_KEY
 import io.airbyte.integrations.destination.s3_data_lake.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -68,7 +68,7 @@ data class AWSSystemCredentials(
  * will be removed when we change all of this to use Micronaut
  */
 @Singleton
-class IcebergUtil(
+class S3DataLakeUtil(
     private val tableIdGenerator: TableIdGenerator,
     val awsSystemCredentials: AWSSystemCredentials? = null
 ) {
@@ -202,7 +202,7 @@ class IcebergUtil(
      * @param config The destination's configuration
      * @return The Iceberg [Catalog] configuration properties.
      */
-    fun toCatalogProperties(config: IcebergV2Configuration): Map<String, String> {
+    fun toCatalogProperties(config: S3DataLakeConfiguration): Map<String, String> {
         val icebergCatalogConfig = config.icebergCatalogConfiguration
         val catalogConfig = icebergCatalogConfig.catalogConfiguration
         val region = config.s3BucketConfiguration.s3BucketRegion.region
@@ -226,7 +226,7 @@ class IcebergUtil(
     }
 
     private fun buildS3Properties(
-        config: IcebergV2Configuration,
+        config: S3DataLakeConfiguration,
         icebergCatalogConfig: IcebergCatalogConfiguration
     ): Map<String, String> {
         return buildMap {
@@ -242,7 +242,7 @@ class IcebergUtil(
     }
 
     private fun buildNessieProperties(
-        config: IcebergV2Configuration,
+        config: S3DataLakeConfiguration,
         catalogConfig: NessieCatalogConfiguration,
         s3Properties: Map<String, String>
     ): Map<String, String> {
@@ -276,7 +276,7 @@ class IcebergUtil(
     }
 
     private fun buildGlueProperties(
-        config: IcebergV2Configuration,
+        config: S3DataLakeConfiguration,
         catalogConfig: GlueCatalogConfiguration,
         icebergCatalogConfig: IcebergCatalogConfiguration
     ): Map<String, String> {
@@ -302,7 +302,7 @@ class IcebergUtil(
 
     private fun buildRoleBasedClientProperties(
         roleArn: String,
-        config: IcebergV2Configuration
+        config: S3DataLakeConfiguration
     ): Map<String, String> {
         val region = config.s3BucketConfiguration.s3BucketRegion.region
         val (accessKeyId, secretAccessKey, externalId) =
@@ -339,7 +339,9 @@ class IcebergUtil(
         )
     }
 
-    private fun buildKeyBasedClientProperties(config: IcebergV2Configuration): Map<String, String> {
+    private fun buildKeyBasedClientProperties(
+        config: S3DataLakeConfiguration
+    ): Map<String, String> {
         val awsAccessKeyId =
             requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
                 "AWS Access Key ID is required for key-based authentication"
