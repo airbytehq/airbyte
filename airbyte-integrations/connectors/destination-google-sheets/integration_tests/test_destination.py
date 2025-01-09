@@ -7,12 +7,14 @@ import sys
 from io import StringIO
 
 import pytest
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from destination_google_sheets.destination import DestinationGoogleSheets
 from integration_tests.test_buffer import read_input_messages
 from integration_tests.test_helpers import TEST_CONFIG
 from integration_tests.test_writer import TEST_CATALOG, TEST_SPREADSHEET, TEST_STREAM
+
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteConnectionStatus, Status
+
 
 # ----- PREPARE ENV -----
 
@@ -63,7 +65,6 @@ def test_check():
     ],
 )
 def test_write(expected, raised):
-
     # clean worksheet after previous test
     TEST_SPREADSHEET.clean_worksheet(TEST_STREAM)
 

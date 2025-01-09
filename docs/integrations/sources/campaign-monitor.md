@@ -59,6 +59,8 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2024-12-28 | [50476](https://github.com/airbytehq/airbyte/pull/50476) | Update dependencies |
+| 0.0.6 | 2024-12-21 | [50185](https://github.com/airbytehq/airbyte/pull/50185) | Update dependencies |
 | 0.0.5 | 2024-12-14 | [49581](https://github.com/airbytehq/airbyte/pull/49581) | Update dependencies |
 | 0.0.4 | 2024-12-12 | [49002](https://github.com/airbytehq/airbyte/pull/49002) | Update dependencies |
 | 0.0.3 | 2024-11-04 | [48232](https://github.com/airbytehq/airbyte/pull/48232) | Update dependencies |

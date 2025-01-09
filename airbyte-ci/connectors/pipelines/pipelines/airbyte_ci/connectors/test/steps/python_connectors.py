@@ -8,9 +8,10 @@ from abc import ABC, abstractmethod
 from typing import List, Sequence, Tuple
 
 import dpath.util
+from dagger import Container, File
+
 import pipelines.dagger.actions.python.common
 import pipelines.dagger.actions.system.docker
-from dagger import Container, File
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
