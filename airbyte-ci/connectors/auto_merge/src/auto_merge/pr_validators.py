@@ -66,12 +66,11 @@ def head_commit_passes_all_required_checks(
 # PLEASE BE CAREFUL OF THE VALIDATOR ORDERING
 # Let's declare faster checks first as the check_if_pr_is_auto_mergeable function fails fast.
 COMMON_VALIDATORS = {
-  has_auto_merge_label,
-  targets_main_branch,
-  only_modifies_connectors,
+    targets_main_branch,
+    only_modifies_connectors,
 }
 # Let's declare faster checks first as the check_if_pr_is_auto_mergeable function fails fast.
 VALIDATOR_MAPPING: dict[str, set[Callable]] = {
-    AUTO_MERGE_LABEL: COMMON_VALIDATORS + {head_commit_passes_all_required_checks},
-    AUTO_MERGE_BYPASS_CI_CHECKS_LABEL: COMMON_VALIDATORS,
+    AUTO_MERGE_LABEL: COMMON_VALIDATORS + {has_auto_merge_label, head_commit_passes_all_required_checks},
+    AUTO_MERGE_BYPASS_CI_CHECKS_LABEL: COMMON_VALIDATORS + {has_auto_merge_bypass_ci_checks_label},
 }
