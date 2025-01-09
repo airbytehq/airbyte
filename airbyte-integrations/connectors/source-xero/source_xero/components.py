@@ -59,7 +59,7 @@ class ParseDates:
                 if isinstance(value, str):
                     parsed_value = ParseDates.parse_date(value)
                     if parsed_value:
-                        if isinstance(parsed_value, date):
+                        if type(parsed_value) == date:
                             parsed_value = datetime.combine(parsed_value, time.min)
                         parsed_value = parsed_value.replace(tzinfo=timezone.utc)
                         obj[key] = datetime.isoformat(parsed_value, timespec="seconds")
