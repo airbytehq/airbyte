@@ -17,7 +17,7 @@ import org.apache.iceberg.Schema
 class IcebergV2Writer(
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val icebergConfiguration: IcebergV2Configuration,
-    private val icebergUtil: IcebergUtil,
+    private val icebergUtil: IcebergUtil
 ) : DestinationWriter {
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {

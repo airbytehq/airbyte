@@ -88,16 +88,23 @@ class IcebergGlueWriteTest :
         Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
         IcebergDestinationCleaner(
             IcebergV2TestUtil.getCatalog(
-                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
+                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH),
+                IcebergV2TestUtil.getAWSSystemCredentials()
             )
         )
-    ) {
+    )
 
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-}
+class IcebergGlueAssumeRoleWriteTest :
+    IcebergV2WriteTest(
+        Files.readString(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
+        IcebergDestinationCleaner(
+            IcebergV2TestUtil.getCatalog(
+                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
+                IcebergV2TestUtil.getAWSSystemCredentials()
+            )
+        ),
+        IcebergV2TestUtil.getAWSSystemCredentialsAsMap()
+    )
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
