@@ -127,7 +127,7 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
         }
         val queryId = UUID.randomUUID()
         val statement = java.lang.String.join("\n", transactions)
-        LOGGER.debug("Executing sql {}: {}", queryId, statement)
+        LOGGER.info("Executing sql {}: {}", queryId, statement.replace("\n", "\\n"))
 
         /*
          * If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery
