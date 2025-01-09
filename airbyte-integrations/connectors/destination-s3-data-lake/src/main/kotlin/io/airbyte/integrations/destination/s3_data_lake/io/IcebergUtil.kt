@@ -21,6 +21,7 @@ import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.integrations.destination.s3_data_lake.ACCESS_KEY_ID
 import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_ARN
 import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_EXTERNAL_ID
+import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_REGION
 import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE
 import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE_ASSUME_ROLE
 import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE_STATIC_CREDS
@@ -214,14 +215,11 @@ class IcebergUtil(
         // Build base S3 properties
         val s3Properties = buildS3Properties(config, icebergCatalogConfig)
 
-        // Set AWS region as system property
-        System.setProperty("aws.region", region)
-
         return when (catalogConfig) {
             is NessieCatalogConfiguration ->
                 buildNessieProperties(config, catalogConfig, s3Properties)
             is GlueCatalogConfiguration ->
-                buildGlueProperties(config, catalogConfig, icebergCatalogConfig)
+                buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region)
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"
@@ -231,7 +229,7 @@ class IcebergUtil(
 
     private fun buildS3Properties(
         config: IcebergV2Configuration,
-        icebergCatalogConfig: IcebergCatalogConfiguration
+        icebergCatalogConfig: IcebergCatalogConfiguration,
     ): Map<String, String> {
         return buildMap {
             put(CatalogProperties.FILE_IO_IMPL, S3FileIO::class.java.name)
@@ -282,13 +280,15 @@ class IcebergUtil(
     private fun buildGlueProperties(
         config: IcebergV2Configuration,
         catalogConfig: GlueCatalogConfiguration,
-        icebergCatalogConfig: IcebergCatalogConfiguration
+        icebergCatalogConfig: IcebergCatalogConfiguration,
+        region: String,
     ): Map<String, String> {
         val baseGlueProperties =
             mapOf(
                 CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_GLUE,
                 CatalogProperties.WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
-                AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId
+                AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId,
+                AwsClientProperties.CLIENT_REGION to region,
             )
 
         val clientProperties =
@@ -345,6 +345,7 @@ class IcebergUtil(
             "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ASSUME_ROLE_ARN" to roleArn,
             "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ASSUME_ROLE_EXTERNAL_ID" to
                 externalId,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ASSUME_ROLE_REGION" to region,
         )
     }
 

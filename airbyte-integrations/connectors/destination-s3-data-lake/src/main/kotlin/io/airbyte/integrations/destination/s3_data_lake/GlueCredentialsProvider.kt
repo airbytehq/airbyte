@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sts.StsClient
 import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider
 import software.amazon.awssdk.services.sts.model.AssumeRoleRequest
@@ -20,6 +21,7 @@ const val SECRET_ACCESS_KEY = "secret-access-key"
 
 const val ASSUME_ROLE_EXTERNAL_ID = "external-id"
 const val ASSUME_ROLE_ARN = "role-arn"
+const val ASSUME_ROLE_REGION = "region"
 
 // This class is required to implement the interface.
 // Technically, we don't _need_ to actually return instances of GlueCredentialsProvider,
@@ -50,6 +52,7 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
                                             AwsBasicCredentials.create(accessKey, secretKey)
                                         )
                                     )
+                                    .region(Region.of(properties[ASSUME_ROLE_REGION]))
                                     .build()
                             )
                             .refreshRequest(
