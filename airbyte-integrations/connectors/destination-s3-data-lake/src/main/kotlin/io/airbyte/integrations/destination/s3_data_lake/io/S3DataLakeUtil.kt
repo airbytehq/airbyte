@@ -339,7 +339,9 @@ class S3DataLakeUtil(
         )
     }
 
-    private fun buildKeyBasedClientProperties(config: S3DataLakeConfiguration): Map<String, String> {
+    private fun buildKeyBasedClientProperties(
+        config: S3DataLakeConfiguration
+    ): Map<String, String> {
         val awsAccessKeyId =
             requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
                 "AWS Access Key ID is required for key-based authentication"

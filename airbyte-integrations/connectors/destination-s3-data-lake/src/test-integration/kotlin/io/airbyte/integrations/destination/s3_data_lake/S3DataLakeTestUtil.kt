@@ -35,7 +35,8 @@ object S3DataLakeTestUtil {
     }
 
     fun getConfig(spec: ConfigurationSpecification) =
-        S3DataLakeConfigurationFactory().makeWithoutExceptionHandling(spec as S3DataLakeSpecification)
+        S3DataLakeConfigurationFactory()
+            .makeWithoutExceptionHandling(spec as S3DataLakeSpecification)
 
     fun getCatalog(config: S3DataLakeConfiguration, awsSystemCredentials: AWSSystemCredentials) =
         S3DataLakeUtil(SimpleTableIdGenerator(), awsSystemCredentials).let { icebergUtil ->

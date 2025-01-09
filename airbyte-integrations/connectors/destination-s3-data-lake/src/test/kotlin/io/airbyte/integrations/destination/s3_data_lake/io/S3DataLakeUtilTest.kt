@@ -70,7 +70,8 @@ internal class S3DataLakeUtilTest {
                 URI to "http://localhost:19120/api/v1",
                 WAREHOUSE_LOCATION to "s3://test/"
             )
-        val catalog = s3DataLakeUtil.createCatalog(catalogName = catalogName, properties = properties)
+        val catalog =
+            s3DataLakeUtil.createCatalog(catalogName = catalogName, properties = properties)
         assertNotNull(catalog)
         assertEquals(catalogName, catalog.name())
         assertEquals(NessieCatalog::class.java, catalog.javaClass)
