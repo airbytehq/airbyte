@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.integrations.destination.s3_data_lake.IcebergV2TestUtil.GLUE_CONFIG_PATH
 
 class IcebergV2CheckTest :
-    CheckIntegrationTest<IcebergV2Specification>(
+    CheckIntegrationTest<S3DataLakeSpecification>(
         successConfigFilenames =
             listOf(
                 CheckTestConfig(GLUE_CONFIG_PATH),

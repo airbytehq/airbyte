@@ -21,7 +21,7 @@ object IcebergV2TestUtil {
 
     fun parseConfig(path: Path) =
         getConfig(
-            ValidatedJsonUtils.parseOne(IcebergV2Specification::class.java, Files.readString(path))
+            ValidatedJsonUtils.parseOne(S3DataLakeSpecification::class.java, Files.readString(path))
         )
 
     fun getAWSSystemCredentials(): AWSSystemCredentials {
@@ -35,9 +35,9 @@ object IcebergV2TestUtil {
     }
 
     fun getConfig(spec: ConfigurationSpecification) =
-        IcebergV2ConfigurationFactory().makeWithoutExceptionHandling(spec as IcebergV2Specification)
+        S3DataLakeConfigurationFactory().makeWithoutExceptionHandling(spec as S3DataLakeSpecification)
 
-    fun getCatalog(config: IcebergV2Configuration, awsSystemCredentials: AWSSystemCredentials) =
+    fun getCatalog(config: S3DataLakeConfiguration, awsSystemCredentials: AWSSystemCredentials) =
         IcebergUtil(SimpleTableIdGenerator(), awsSystemCredentials).let { icebergUtil ->
             val props = icebergUtil.toCatalogProperties(config)
             icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)

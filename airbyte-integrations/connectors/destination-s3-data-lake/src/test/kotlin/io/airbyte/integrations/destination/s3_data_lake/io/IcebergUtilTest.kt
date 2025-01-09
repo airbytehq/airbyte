@@ -27,7 +27,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.integrations.destination.s3_data_lake.IcebergV2Configuration
+import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.SimpleTableIdGenerator
 import io.mockk.every
 import io.mockk.mockk
@@ -351,7 +351,7 @@ internal class IcebergUtilTest {
                 NessieCatalogConfiguration(nessieServerUri, nessieAccessToken)
             )
         val configuration =
-            IcebergV2Configuration(
+            S3DataLakeConfiguration(
                 awsAccessKeyConfiguration = awsAccessKeyConfiguration,
                 icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,

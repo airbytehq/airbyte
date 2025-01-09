@@ -13,16 +13,16 @@ import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Types
 
 @Singleton
-class IcebergV2Checker(
+class S3DataLakeChecker(
     private val icebergTableCleaner: IcebergTableCleaner,
     private val icebergUtil: IcebergUtil,
     private val tableIdGenerator: TableIdGenerator,
-) : DestinationChecker<IcebergV2Configuration> {
+) : DestinationChecker<S3DataLakeConfiguration> {
 
-    override fun check(config: IcebergV2Configuration) {
+    override fun check(config: S3DataLakeConfiguration) {
         catalogValidation(config)
     }
-    private fun catalogValidation(config: IcebergV2Configuration) {
+    private fun catalogValidation(config: S3DataLakeConfiguration) {
         val catalogProperties = icebergUtil.toCatalogProperties(config)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, catalogProperties)
 

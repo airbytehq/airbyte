@@ -16,7 +16,7 @@ import org.apache.iceberg.Schema
 @Singleton
 class S3DataLakeWriter(
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
-    private val icebergConfiguration: IcebergV2Configuration,
+    private val icebergConfiguration: S3DataLakeConfiguration,
     private val icebergUtil: IcebergUtil
 ) : DestinationWriter {
 

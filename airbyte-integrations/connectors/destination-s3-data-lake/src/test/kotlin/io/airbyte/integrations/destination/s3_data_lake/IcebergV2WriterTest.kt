@@ -112,7 +112,7 @@ internal class IcebergV2WriterTest {
             every { catalogConfiguration } returns
                 NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
         }
-        val icebergConfiguration: IcebergV2Configuration = mockk {
+        val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
@@ -177,7 +177,7 @@ internal class IcebergV2WriterTest {
             every { catalogConfiguration } returns
                 NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
         }
-        val icebergConfiguration: IcebergV2Configuration = mockk {
+        val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
@@ -284,7 +284,7 @@ internal class IcebergV2WriterTest {
             every { catalogConfiguration } returns
                 NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
         }
-        val icebergConfiguration: IcebergV2Configuration = mockk {
+        val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration

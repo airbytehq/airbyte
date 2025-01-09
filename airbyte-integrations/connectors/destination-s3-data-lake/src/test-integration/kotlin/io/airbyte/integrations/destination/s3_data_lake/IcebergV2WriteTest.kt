@@ -26,7 +26,7 @@ abstract class IcebergV2WriteTest(
 ) :
     BasicFunctionalityIntegrationTest(
         configContents,
-        IcebergV2Specification::class.java,
+        S3DataLakeSpecification::class.java,
         IcebergV2DataDumper,
         destinationCleaner,
         IcebergExpectedRecordMapper,
