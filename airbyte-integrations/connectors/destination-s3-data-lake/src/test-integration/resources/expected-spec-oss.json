@@ -106,11 +106,8 @@
             },
             "role_arn" : {
               "type" : "string",
-              "description" : "The AWS ARN of the role that should be assumed for AWS authentication.",
-              "title" : "AWS role ARN",
-              "examples" : [ "arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId" ],
-              "always_show" : true,
-              "order" : 2
+              "description" : "The Role ARN.",
+              "title" : "Role ARN"
             }
           },
           "required" : [ "catalog_type", "glue_id" ]
