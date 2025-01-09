@@ -28,8 +28,16 @@ not supported.
 #### Requirements
 
 1. SingleStore instance
-2. Allow connections from Airbyte to your SingleStore database \(if they exist in separate VPCs\)
-3. Create a dedicated Airbyte user with CREATE, INSERT, SELECT, DROP permissions
+2. Allow connections from Airbyte to your SingleStore database \(if they exist in separate VPCs\) 
+3. Create a dedicated Airbyte user with the minimum required permissions to CRUD tables and CREATE/EXECUTE functions
+
+Here is an example of an SQL query to grant minimum required permissions for an Airbyte user:
+
+```sql
+CREATE USER airbyte IDENTIFIED BY 'password';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, EXECUTE, CREATE ROUTINE, ALTER ROUTINE, CREATE DATABASE ON db.* TO 'airbyte'@'%';
+```
+
 4. Before setting up SingleStore destination in Airbyte, you need to set the 'local_infile' system variable to true. You
    can do this by running the query `SET GLOBAL local_infile = true`. This is required cause Airbyte
    uses `LOAD DATA LOCAL INFILE` to load data into raw table.
