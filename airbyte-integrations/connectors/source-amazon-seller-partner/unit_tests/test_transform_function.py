@@ -4,6 +4,7 @@
 
 
 import pytest
+from integration.utils import config, get_stream_by_name
 from source_amazon_seller_partner.components import (
     FlatFileSettlementV2ReportsTypeTransformer,
     LedgerDetailedViewReportsTypeTransformer,
@@ -11,9 +12,6 @@ from source_amazon_seller_partner.components import (
     MerchantReportsTypeTransformer,
     SellerFeedbackReportsTypeTransformer,
 )
-
-from integration.utils import get_stream_by_name, config
-
 
 
 INPUT_DATES = {
