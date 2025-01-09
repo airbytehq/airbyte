@@ -614,7 +614,6 @@ module.exports = {
         id: "operator-guides/configuring-airbyte",
       },
       items: [
-        "operator-guides/configuring-airbyte-db",
         "operator-guides/configuring-connector-resources",
         "operator-guides/telemetry",
       ],
