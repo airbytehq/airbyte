@@ -8,6 +8,7 @@ from http import HTTPStatus
 from typing import Any, List, Mapping, Optional
 
 from source_amazon_seller_partner import SourceAmazonSellerPartner
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, Level, SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -15,7 +16,6 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import _get_unit_test_folder
-from test.state_builder import StateBuilder
 
 from .config import ACCESS_TOKEN, ConfigBuilder
 from .request_builder import RequestBuilder
@@ -47,7 +47,11 @@ def read_output(
 
 
 def get_stream_by_name(stream_name: str, config_: Mapping[str, Any]) -> Stream:
-    streams = [stream for stream in source(catalog=catalog(stream_name, SyncMode.full_refresh), config=config().build()).streams(config_) if stream.name == stream_name]
+    streams = [
+        stream
+        for stream in source(catalog=catalog(stream_name, SyncMode.full_refresh), config=config().build()).streams(config_)
+        if stream.name == stream_name
+    ]
     if not streams:
         raise ValueError("Please provide a valid stream name")
     return streams[0]

@@ -12,10 +12,25 @@ from source_amazon_seller_partner.source import SourceAmazonSellerPartner
 
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 CMD = "check"
-SOURCE: Source = SourceAmazonSellerPartner()
+SOURCE: Source = SourceAmazonSellerPartner(
+    None,
+    {
+        "replication_start_date": "2021-07-01T00:00:00Z",
+        "refresh_token": "<refresh_token>",
+        "lwa_app_id": "<lwa_app_id>",
+        "lwa_client_secret": "<lwa_client_secret>",
+        "aws_access_key": "<aws_access_key>",
+        "aws_secret_key": "<aws_secret_key>",
+        "role_arn": "<role_arn>",
+        "aws_environment": "PRODUCTION",
+        "region": "US",
+    },
+    StateBuilder().build(),
+)
 
 
 def load_config(config_path: str) -> Mapping[str, Any]:
