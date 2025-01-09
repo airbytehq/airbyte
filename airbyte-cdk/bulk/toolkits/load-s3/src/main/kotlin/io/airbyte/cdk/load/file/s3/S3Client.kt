@@ -246,10 +246,9 @@ class S3ClientFactory(
                             Url.parse(it)
                         } else null
                     }
-                // Should fix connection reset issue: https://github.com/awslabs/aws-sdk-kotlin/issues/1214#issuecomment-2464831817
-                httpClient(OkHttpEngine) {
-                    connectionIdlePollingInterval = 200.milliseconds
-                }
+                // Fix for connection reset issue:
+                // https://github.com/awslabs/aws-sdk-kotlin/issues/1214#issuecomment-2464831817
+                httpClient(OkHttpEngine) { connectionIdlePollingInterval = 200.milliseconds }
             }
 
         return S3Client(
