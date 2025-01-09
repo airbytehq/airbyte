@@ -35,7 +35,7 @@ class S3DataLakeWriter(
 
         existingAndIncomingSchemaShouldBeSame(catalogSchema = schema, tableSchema = table.schema())
 
-        return IcebergStreamLoader(
+        return S3DataLakeStreamLoader(
             stream = stream,
             table = table,
             icebergTableWriterFactory = icebergTableWriterFactory,

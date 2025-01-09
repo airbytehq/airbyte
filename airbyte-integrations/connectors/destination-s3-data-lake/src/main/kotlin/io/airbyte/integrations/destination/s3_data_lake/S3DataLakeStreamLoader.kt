@@ -19,7 +19,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Table
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
-class IcebergStreamLoader(
+class S3DataLakeStreamLoader(
     override val stream: DestinationStream,
     private val table: Table,
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
