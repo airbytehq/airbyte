@@ -89,7 +89,7 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3.0   | 2025-01-06 | [49812](https://github.com/airbytehq/airbyte/pull/49812) | Make async job `contacts` stream concurrent                                                                                                                                                                                                       |
+| 1.3.0   | 2025-01-10 | [49812](https://github.com/airbytehq/airbyte/pull/49812) | Make async job `contacts` stream concurrent                                                                                                                                                                                                       |
 | 1.2.2   | 2024-10-29 | [47836](https://github.com/airbytehq/airbyte/pull/47836) | Update dependencies |
 | 1.2.1   | 2024-10-28 | [47588](https://github.com/airbytehq/airbyte/pull/47588) | Update dependencies |
 | 1.2.0   | 2024-10-13 | [46870](https://github.com/airbytehq/airbyte/pull/46870) | Migrate to Manifest-only |
