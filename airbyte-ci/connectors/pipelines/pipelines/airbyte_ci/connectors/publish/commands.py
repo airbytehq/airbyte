@@ -172,7 +172,7 @@ async def publish(
                 docker_hub_username=Secret("docker_hub_username", ctx.obj["secret_stores"]["in_memory"]),
                 docker_hub_password=Secret("docker_hub_password", ctx.obj["secret_stores"]["in_memory"]),
                 slack_webhook=slack_webhook,
-                ci_report_bucket=ctx.obj["ci_report_bucket_name"],
+                public_artifacts_bucket=ctx.obj["public_artifacts_bucket"],
                 report_output_prefix=ctx.obj["report_output_prefix"],
                 is_local=ctx.obj["is_local"],
                 git_branch=ctx.obj["git_branch"],

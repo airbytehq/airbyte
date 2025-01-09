@@ -302,7 +302,7 @@ def click_context_obj(in_memory_secret_store):
         "select_modified_connectors": False,
         "selected_connectors_with_modified_files": {},
         "gha_workflow_run_url": None,
-        "ci_report_bucket_name": None,
+        "public_artifacts_bucket": None,
         "ci_gcp_credentials": None,
         "execute_timeout": 0,
         "concurrency": 1,

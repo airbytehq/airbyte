@@ -31,6 +31,8 @@ from pipelines.models.secrets import Secret, SecretStore
 if TYPE_CHECKING:
     from typing import List, Optional
 
+    from pipelines.models.artifacts import ArtifactsBucket
+
 
 class PipelineContext:
     """The pipeline context is used to store configuration for a specific pipeline run."""
@@ -79,7 +81,9 @@ class PipelineContext:
         is_ci_optional: bool = False,
         slack_webhook: Optional[str] = None,
         pull_request: Optional[PullRequest.PullRequest] = None,
-        ci_report_bucket: Optional[str] = None,
+        public_artifacts_bucket: Optional[ArtifactBucket] = None,
+        private_artifacts_bucket: Optional[ArtifactBucket] = None,
+        publish_artifacts: bool = True,
         ci_gcp_credentials: Optional[Secret] = None,
         ci_git_user: Optional[str] = None,
         ci_github_access_token: Optional[Secret] = None,
@@ -126,7 +130,8 @@ class PipelineContext:
         self._report = None
         self.dockerd_service = None
         self.ci_gcp_credentials = ci_gcp_credentials
-        self.ci_report_bucket = ci_report_bucket
+        self.public_artifacts_bucket = public_artifacts_bucket
+        self.private_artifacts_bucket = private_artifacts_bucket
         self.ci_git_user = ci_git_user
         self.ci_github_access_token = ci_github_access_token
         self.started_at = None
@@ -213,7 +218,7 @@ class PipelineContext:
 
     @property
     def remote_storage_enabled(self) -> bool:
-        return bool(self.ci_report_bucket) and bool(self.ci_gcp_credentials)
+        return (bool(self.private_artifacts_bucket) or bool(self.public_artifacts_bucket)) and bool(self.ci_gcp_credentials)
 
     def _should_send_status_check(self) -> bool:
         should_send = self.is_pr or any(

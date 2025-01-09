@@ -26,8 +26,12 @@ inputs:
     description: "Whether to run in production mode"
     required: false
     default: "True"
-  report_bucket_name:
-    description: "Bucket name for CI reports"
+  public_artifacts_bucket:
+    description: "Bucket name where public artifacts, like reports, will be uploaded"
+    required: false
+    default: " airbyte-ci-public-artifacts"
+  private_artifacts_bucket:
+    description: "Bucket name where private/sensitive artifacts, will be uploaded"
     required: false
     default: "airbyte-ci-reports-multi"
   gcp_gsm_credentials:
@@ -144,7 +148,8 @@ runs:
         CI_GIT_REVISION: ${{ inputs.git_revision || github.sha }}
         CI_GITHUB_ACCESS_TOKEN: ${{ inputs.github_token }}
         CI_JOB_KEY: ${{ inputs.ci_job_key }}
-        CI_REPORT_BUCKET_NAME: ${{ inputs.report_bucket_name }}
+        PUBLIC_ARTIFACTS_BUCKET: ${{ inputs.public_artifacts_bucket }}
+        PRIVATE_ARTIFACTS_BUCKET: ${{ inputs.private_artifacts_bucket }}
         DAGGER_CLOUD_TOKEN: "${{ inputs.dagger_cloud_token }}"
         DOCKER_HUB_PASSWORD: ${{ inputs.docker_hub_password }}
         DOCKER_HUB_USERNAME: ${{ inputs.docker_hub_username }}

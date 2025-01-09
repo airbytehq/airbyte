@@ -42,7 +42,7 @@ class DaggerPipelineCommand(click.Command):
                 ctx.obj["dagger_logs_path"] = dagger_log_path
                 main_logger.info(f"Saving dagger logs to: {dagger_log_path}")
                 if ctx.obj["is_ci"]:
-                    ctx.obj["dagger_logs_url"] = f"{GCS_PUBLIC_DOMAIN}/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
+                    ctx.obj["dagger_logs_url"] = f"{GCS_PUBLIC_DOMAIN}/{ctx.obj['public_artifacts_bucket'].name}/{dagger_logs_gcs_key}"
                 else:
                     ctx.obj["dagger_logs_url"] = None
             else:
@@ -56,10 +56,10 @@ class DaggerPipelineCommand(click.Command):
         finally:
             if ctx.obj.get("dagger_logs_path"):
                 main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
-                if ctx.obj["is_ci"] and ctx.obj["ci_gcp_credentials"] and ctx.obj["ci_report_bucket_name"]:
+                if ctx.obj["is_ci"] and ctx.obj["ci_gcp_credentials"] and ctx.obj["public_artifacts_bucket"]:
                     gcs_uri, public_url = upload_to_gcs(
                         ctx.obj["dagger_logs_path"],
-                        ctx.obj["ci_report_bucket_name"],
+                        ctx.obj["public_artifacts_bucket"].name,
                         dagger_logs_gcs_key,
                         ctx.obj["ci_gcp_credentials"].value,
                     )
