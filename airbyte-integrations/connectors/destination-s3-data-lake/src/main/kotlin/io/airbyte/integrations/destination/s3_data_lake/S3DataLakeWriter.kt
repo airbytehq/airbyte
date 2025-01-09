@@ -14,7 +14,7 @@ import javax.inject.Singleton
 import org.apache.iceberg.Schema
 
 @Singleton
-class IcebergV2Writer(
+class S3DataLakeWriter(
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val icebergConfiguration: IcebergV2Configuration,
     private val icebergUtil: IcebergUtil

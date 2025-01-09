@@ -129,13 +129,13 @@ internal class IcebergV2WriterTest {
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
-        val icebergV2Writer =
-            IcebergV2Writer(
+        val s3DataLakeWriter =
+            S3DataLakeWriter(
                 icebergTableWriterFactory = icebergTableWriterFactory,
                 icebergConfiguration = icebergConfiguration,
                 icebergUtil = icebergUtil,
             )
-        val streamLoader = icebergV2Writer.createStreamLoader(stream = stream)
+        val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
         assertNotNull(streamLoader)
     }
 
@@ -194,15 +194,15 @@ internal class IcebergV2WriterTest {
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
-        val icebergV2Writer =
-            IcebergV2Writer(
+        val s3DataLakeWriter =
+            S3DataLakeWriter(
                 icebergTableWriterFactory = icebergTableWriterFactory,
                 icebergConfiguration = icebergConfiguration,
                 icebergUtil = icebergUtil,
             )
         val e =
             assertThrows<IllegalArgumentException> {
-                icebergV2Writer.createStreamLoader(stream = stream)
+                s3DataLakeWriter.createStreamLoader(stream = stream)
             }
         assertTrue(
             e.message?.startsWith("Table schema fields are different than catalog schema") ?: false
@@ -301,15 +301,15 @@ internal class IcebergV2WriterTest {
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
         }
-        val icebergV2Writer =
-            IcebergV2Writer(
+        val s3DataLakeWriter =
+            S3DataLakeWriter(
                 icebergTableWriterFactory = icebergTableWriterFactory,
                 icebergConfiguration = icebergConfiguration,
                 icebergUtil = icebergUtil,
             )
         val e =
             assertThrows<IllegalArgumentException> {
-                icebergV2Writer.createStreamLoader(stream = stream)
+                s3DataLakeWriter.createStreamLoader(stream = stream)
             }
         assertTrue(e.message?.startsWith("Identifier fields are different") ?: false)
     }
