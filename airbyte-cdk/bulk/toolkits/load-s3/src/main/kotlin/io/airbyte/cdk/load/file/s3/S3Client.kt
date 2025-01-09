@@ -18,7 +18,6 @@ import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toInputStream
-import aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine
 import aws.smithy.kotlin.runtime.net.url.Url
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
@@ -39,7 +38,6 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.flow
 
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
@@ -246,9 +244,6 @@ class S3ClientFactory(
                             Url.parse(it)
                         } else null
                     }
-                // Fix for connection reset issue:
-                // https://github.com/awslabs/aws-sdk-kotlin/issues/1214#issuecomment-2464831817
-                httpClient(OkHttpEngine) { connectionIdlePollingInterval = 200.milliseconds }
             }
 
         return S3Client(
