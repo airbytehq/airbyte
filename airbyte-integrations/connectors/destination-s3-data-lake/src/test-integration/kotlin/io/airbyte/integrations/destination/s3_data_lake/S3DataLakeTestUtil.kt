@@ -9,7 +9,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.s3_data_lake.io.AWSSystemCredentials
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
+import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -38,7 +38,7 @@ object S3DataLakeTestUtil {
         S3DataLakeConfigurationFactory().makeWithoutExceptionHandling(spec as S3DataLakeSpecification)
 
     fun getCatalog(config: S3DataLakeConfiguration, awsSystemCredentials: AWSSystemCredentials) =
-        IcebergUtil(SimpleTableIdGenerator(), awsSystemCredentials).let { icebergUtil ->
+        S3DataLakeUtil(SimpleTableIdGenerator(), awsSystemCredentials).let { icebergUtil ->
             val props = icebergUtil.toCatalogProperties(config)
             icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)
         }

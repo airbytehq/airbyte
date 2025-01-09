@@ -68,7 +68,7 @@ data class AWSSystemCredentials(
  * will be removed when we change all of this to use Micronaut
  */
 @Singleton
-class IcebergUtil(
+class S3DataLakeUtil(
     private val tableIdGenerator: TableIdGenerator,
     val awsSystemCredentials: AWSSystemCredentials? = null
 ) {

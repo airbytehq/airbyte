@@ -23,8 +23,8 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableWriterFactory
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
+import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
+import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.mockk.every
 import io.mockk.mockk
 import org.apache.iceberg.Schema
@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class IcebergV2WriterTest {
+internal class S3DataLakeWriterTest {
 
     @Test
     fun testCreateStreamLoader() {
@@ -95,7 +95,7 @@ internal class IcebergV2WriterTest {
                 ),
                 Types.NestedField.of(12, false, COLUMN_NAME_AB_GENERATION_ID, Types.LongType.get()),
             )
-        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
+        val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory = mockk()
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -119,7 +119,7 @@ internal class IcebergV2WriterTest {
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
-        val icebergUtil: IcebergUtil = mockk {
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
             every { toCatalogProperties(any()) } returns mapOf()
@@ -131,9 +131,9 @@ internal class IcebergV2WriterTest {
         }
         val s3DataLakeWriter =
             S3DataLakeWriter(
-                icebergTableWriterFactory = icebergTableWriterFactory,
+                s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
                 icebergConfiguration = icebergConfiguration,
-                icebergUtil = icebergUtil,
+                s3DataLakeUtil = s3DataLakeUtil,
             )
         val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
         assertNotNull(streamLoader)
@@ -161,7 +161,7 @@ internal class IcebergV2WriterTest {
             Schema(
                 Types.NestedField.of(2, true, "name", Types.StringType.get()),
             )
-        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
+        val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory = mockk()
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -184,7 +184,7 @@ internal class IcebergV2WriterTest {
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
-        val icebergUtil: IcebergUtil = mockk {
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
             every { toCatalogProperties(any()) } returns mapOf()
@@ -196,9 +196,9 @@ internal class IcebergV2WriterTest {
         }
         val s3DataLakeWriter =
             S3DataLakeWriter(
-                icebergTableWriterFactory = icebergTableWriterFactory,
+                s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
                 icebergConfiguration = icebergConfiguration,
-                icebergUtil = icebergUtil,
+                s3DataLakeUtil = s3DataLakeUtil,
             )
         val e =
             assertThrows<IllegalArgumentException> {
@@ -268,7 +268,7 @@ internal class IcebergV2WriterTest {
                 Types.NestedField.of(12, false, COLUMN_NAME_AB_GENERATION_ID, Types.LongType.get()),
             )
         val icebergSchema = Schema(columns, emptySet())
-        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
+        val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory = mockk()
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -291,7 +291,7 @@ internal class IcebergV2WriterTest {
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
-        val icebergUtil: IcebergUtil = mockk {
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
             every { toCatalogProperties(any()) } returns mapOf()
@@ -303,9 +303,9 @@ internal class IcebergV2WriterTest {
         }
         val s3DataLakeWriter =
             S3DataLakeWriter(
-                icebergTableWriterFactory = icebergTableWriterFactory,
+                s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
                 icebergConfiguration = icebergConfiguration,
-                icebergUtil = icebergUtil,
+                s3DataLakeUtil = s3DataLakeUtil,
             )
         val e =
             assertThrows<IllegalArgumentException> {

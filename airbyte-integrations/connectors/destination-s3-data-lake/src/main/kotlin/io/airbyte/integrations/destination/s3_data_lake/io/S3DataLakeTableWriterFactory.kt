@@ -29,7 +29,7 @@ import org.apache.iceberg.util.PropertyUtil
  * and whether primary keys are configured on the destination table's schema.
  */
 @Singleton
-class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
+class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
     /**
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
      *
@@ -39,7 +39,7 @@ class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
      * @return The [BaseTaskWriter] that writes records to the target [Table].
      */
     fun create(table: Table, generationId: String, importType: ImportType): BaseTaskWriter<Record> {
-        icebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationId)
+        s3DataLakeUtil.assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
             FileFormat.valueOf(
                 table
