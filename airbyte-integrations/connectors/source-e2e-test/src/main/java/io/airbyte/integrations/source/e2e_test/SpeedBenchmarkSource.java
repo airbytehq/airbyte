@@ -15,6 +15,9 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 
 /**
  * This source is optimized for creating records very fast. It optimizes for speed over flexibility.
@@ -37,12 +40,14 @@ public class SpeedBenchmarkSource extends BaseConnector implements Source {
     return sourceConfig.getCatalog();
   }
 
-  @Trace
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
-      throws Exception {
-    final SpeedBenchmarkConfig sourceConfig = SpeedBenchmarkConfig.parseFromConfig(jsonConfig);
-    return AutoCloseableIterators.fromIterator(new SpeedBenchmarkGeneratorIterator(sourceConfig.maxRecords()));
+  @SuppressWarnings("try")
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
+    final Span span = GlobalTracer.get().buildSpan("read").asChildOf(GlobalTracer.get().activeSpan()).start();
+    try (final Scope ignored = GlobalTracer.get().activateSpan(span)) {
+      final SpeedBenchmarkConfig sourceConfig = SpeedBenchmarkConfig.parseFromConfig(jsonConfig);
+      return AutoCloseableIterators.fromIterator(new SpeedBenchmarkGeneratorIterator(sourceConfig.maxRecords()));
+    }
   }
 
 }

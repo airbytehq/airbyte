@@ -12,6 +12,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
+
 import java.time.Instant;
 import javax.annotation.CheckForNull;
 
@@ -37,23 +41,26 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
     numRecordsEmitted = 0;
   }
 
-  @Trace
   @CheckForNull
   @Override
+  @SuppressWarnings("try")
   protected AirbyteMessage computeNext() {
-    if (numRecordsEmitted == maxRecords) {
-      return endOfData();
+    final Span span = GlobalTracer.get().buildSpan("computeNext").asChildOf(GlobalTracer.get().activeSpan()).start();
+    try (final Scope ignored = GlobalTracer.get().activateSpan(span)) {
+      if (numRecordsEmitted == maxRecords) {
+        return endOfData();
+      }
+
+      numRecordsEmitted++;
+
+      for (int j = 1; j <= 5; ++j) {
+        // do % 10 so that all records are same length.
+        ((ObjectNode) jsonNode).put(fieldBase + j, valueBase + numRecordsEmitted % 10);
+      }
+
+      message.getRecord().withData(jsonNode);
+      return Jsons.clone(message);
     }
-
-    numRecordsEmitted++;
-
-    for (int j = 1; j <= 5; ++j) {
-      // do % 10 so that all records are same length.
-      ((ObjectNode) jsonNode).put(fieldBase + j, valueBase + numRecordsEmitted % 10);
-    }
-
-    message.getRecord().withData(jsonNode);
-    return Jsons.clone(message);
   }
 
 }
