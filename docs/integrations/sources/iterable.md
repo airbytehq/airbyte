@@ -83,6 +83,7 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.0 | 2025-01-08 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Upgrade Python CDK v3 -> CDK v4 |
 | 0.6.18 | 2024-11-04 | [48294](https://github.com/airbytehq/airbyte/pull/48294) | Update dependencies |
 | 0.6.17 | 2024-10-29 | [47803](https://github.com/airbytehq/airbyte/pull/47803) | Update dependencies |
 | 0.6.16 | 2024-10-28 | [47487](https://github.com/airbytehq/airbyte/pull/47487) | Update dependencies |
