@@ -25,6 +25,7 @@ import io.airbyte.integrations.destination.s3_data_lake.GlueCredentialsProvider
 import io.airbyte.integrations.destination.s3_data_lake.IcebergV2Configuration
 import io.airbyte.integrations.destination.s3_data_lake.MODE
 import io.airbyte.integrations.destination.s3_data_lake.MODE_ASSUME_ROLE
+import io.airbyte.integrations.destination.s3_data_lake.MODE_STATIC_CREDS
 import io.airbyte.integrations.destination.s3_data_lake.SECRET_ACCESS_KEY
 import io.airbyte.integrations.destination.s3_data_lake.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -363,6 +364,7 @@ class IcebergUtil(
             AwsClientProperties.CLIENT_REGION to config.s3BucketConfiguration.s3BucketRegion.region,
             AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
                 GlueCredentialsProvider::class.java.name,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$MODE" to MODE_STATIC_CREDS,
             "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
             "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to awsSecretAccessKey
         )
