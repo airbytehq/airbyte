@@ -12,10 +12,10 @@ from typing import TYPE_CHECKING, Optional
 
 from github import Auth, Github
 
-from .consts import AIRBYTE_REPO, AUTO_MERGE_LABEL, AUTO_MERGE_PROMOTED_RC_LABEL, BASE_BRANCH, MERGE_METHOD
+from .consts import AIRBYTE_REPO, AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, AUTO_MERGE_LABEL, BASE_BRANCH, MERGE_METHOD
 from .env import GITHUB_TOKEN, PRODUCTION
 from .helpers import generate_job_summary_as_markdown
-from .pr_validators import DEFAULT_ENABLED_VALIDATORS, PROMOTED_RC_PR_VALIDATORS
+from .pr_validators import VALIDATOR_MAPPING
 
 if TYPE_CHECKING:
     from github.Commit import Commit as GithubCommit
@@ -50,16 +50,31 @@ def check_if_pr_is_auto_mergeable(head_commit: GithubCommit, pr: PullRequest, re
         bool: True if the PR is auto-mergeable, False otherwise
     """
 
-    validators = PROMOTED_RC_PR_VALIDATORS if any(label.name == AUTO_MERGE_PROMOTED_RC_LABEL for label in pr.labels) else DEFAULT_ENABLED_VALIDATORS
-    logger.info(f"{AUTO_MERGE_PROMOTED_RC_LABEL} in {pr.labels}? {any(label.name == AUTO_MERGE_PROMOTED_RC_LABEL for label in pr.labels)}.")
+    validators = get_pr_validators(pr)
     for validator in validators:
-        logger.info(f"Validating test: {validator.__repr__()}")
         is_valid, error = validator(head_commit, pr, required_checks)
         if not is_valid:
             if error:
                 logger.info(f"PR #{pr.number} - {error}")
             return False
     return True
+
+
+def get_pr_validators(pr: PullRequest) -> list[callable]:
+    """
+    Get the validator for a PR based on its labels
+
+    Args:
+        pr (PullRequest): The PR to get the validator for
+
+    Returns:
+        list[callable]: The validators
+    """
+
+    for label in pr.labels:
+        if label.name in VALIDATOR_MAPPING:
+            return VALIDATOR_MAPPING[label.name]
+    return VALIDATOR_MAPPING[AUTO_MERGE_LABEL]
 
 
 def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 60) -> Optional[PullRequest]:
