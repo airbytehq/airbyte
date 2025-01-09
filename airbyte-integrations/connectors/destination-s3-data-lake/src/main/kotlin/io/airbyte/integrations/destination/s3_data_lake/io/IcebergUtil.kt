@@ -31,7 +31,6 @@ import io.airbyte.integrations.destination.s3_data_lake.SECRET_ACCESS_KEY
 import io.airbyte.integrations.destination.s3_data_lake.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.time.Duration
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.CatalogProperties.URI
@@ -330,11 +329,14 @@ class IcebergUtil(
             // If you set S3FileIOProperties.ACCESS_KEY_ID, it causes the iceberg SDK to use those
             // credentials
             // _instead_ of the explicit GlueCredentialsProvider.
-            AwsProperties.CLIENT_ASSUME_ROLE_ARN to roleArn,
-            AwsProperties.CLIENT_ASSUME_ROLE_REGION to region,
-            AwsProperties.CLIENT_ASSUME_ROLE_TIMEOUT_SEC to
-                Duration.ofHours(1).toSeconds().toString(),
-            AwsProperties.CLIENT_ASSUME_ROLE_EXTERNAL_ID to externalId,
+            // Note that we are _not_ setting any of the AwsProperties.CLIENT_ASSUME_ROLE_XYZ
+            // properties - this is because we're manually handling the assume role stuff within
+            // GlueCredentialsProvider.
+            // And we're doing it ourselves because the built-in handling (i.e. setting
+            // `AwsProperties.CLIENT_FACTORY to AssumeRoleAwsClientFactory::class.java.name`)
+            // has some bad behavior (there's no way to actually set the bootstrap credentials
+            // on the STS client, so you have to do a
+            // `System.setProperty(access key, secret key, external ID)`)
             AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
                 GlueCredentialsProvider::class.java.name,
             "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$AWS_CREDENTIALS_MODE" to
