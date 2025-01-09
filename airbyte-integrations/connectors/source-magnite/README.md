@@ -27,6 +27,14 @@ to generate the necessary credentials. Then create a file `secrets/config.json` 
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
+### Generating Schemas
+
+```
+sudo docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-magnite:dev discover --config /secrets/config.json | schema_generator --configure-catalog
+
+sudo docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-magnite:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json | schema_generator --infer-schemas
+
+```
 
 ### Locally running the connector
 
