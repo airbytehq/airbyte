@@ -13,7 +13,7 @@ import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
 import java.nio.file.Files
 import java.nio.file.Path
 
-object IcebergV2TestUtil {
+object S3DataLakeTestUtil {
     val GLUE_CONFIG_PATH: Path = Path.of("secrets/glue.json")
     val GLUE_ASSUME_ROLE_CONFIG_PATH: Path = Path.of("secrets/glue_assume_role.json")
     private val GLUE_AWS_ASSUME_ROLE_CONFIG_PATH: Path =
