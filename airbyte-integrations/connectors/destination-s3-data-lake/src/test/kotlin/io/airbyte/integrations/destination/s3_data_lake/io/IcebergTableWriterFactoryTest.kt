@@ -141,7 +141,7 @@ internal class IcebergTableWriterFactoryTest {
                     )
             )
         assertNotNull(writer)
-        assertEquals(io.airbyte.integrations.destination.s3_data_lake.io.UnpartitionedDeltaWriter::class.java, writer.javaClass)
+        assertEquals(UnpartitionedDeltaWriter::class.java, writer.javaClass)
     }
 
     @Test
@@ -247,6 +247,6 @@ internal class IcebergTableWriterFactoryTest {
                 importType = Append
             )
         assertNotNull(writer)
-        assertEquals(io.airbyte.integrations.destination.s3_data_lake.io.UnpartitionedAppendWriter::class.java, writer.javaClass)
+        assertEquals(UnpartitionedAppendWriter::class.java, writer.javaClass)
     }
 }

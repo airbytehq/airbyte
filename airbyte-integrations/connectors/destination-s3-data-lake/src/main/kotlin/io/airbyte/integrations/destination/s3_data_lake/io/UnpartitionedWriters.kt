@@ -27,7 +27,7 @@ class UnpartitionedDeltaWriter(
     schema: Schema,
     identifierFieldIds: Set<Int>,
 ) :
-    io.airbyte.integrations.destination.s3_data_lake.io.BaseDeltaTaskWriter(
+    BaseDeltaTaskWriter(
         spec,
         format,
         appenderFactory,
@@ -40,7 +40,7 @@ class UnpartitionedDeltaWriter(
 
     private val writer = RowDataDeltaWriter(null)
 
-    override fun route(row: Record): io.airbyte.integrations.destination.s3_data_lake.io.BaseDeltaTaskWriter.RowDataDeltaWriter {
+    override fun route(row: Record): BaseDeltaTaskWriter.RowDataDeltaWriter {
         return writer
     }
 

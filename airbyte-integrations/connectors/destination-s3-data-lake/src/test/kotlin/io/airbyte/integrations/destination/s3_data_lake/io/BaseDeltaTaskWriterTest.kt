@@ -48,7 +48,7 @@ internal class BaseDeltaTaskWriterTest {
         }
         val record = RecordWrapper(delegate = mockk(), operation = operation)
         every { record.delegate.getField(any()) } returns mockk()
-        val writer: io.airbyte.integrations.destination.s3_data_lake.io.BaseDeltaTaskWriter =
+        val writer: BaseDeltaTaskWriter =
             TestDeltaWriter(
                 spec = spec,
                 format = format,
@@ -97,7 +97,7 @@ internal class BaseDeltaTaskWriterTest {
             every { write(any()) } returns Unit
         }
         val record: Record = mockk()
-        val writer: io.airbyte.integrations.destination.s3_data_lake.io.BaseDeltaTaskWriter =
+        val writer: BaseDeltaTaskWriter =
             TestDeltaWriter(
                 spec = spec,
                 format = format,
@@ -125,7 +125,7 @@ internal class BaseDeltaTaskWriterTest {
         primaryKeyIds: Set<Int>,
         val deltaWriter: RowDataDeltaWriter,
     ) :
-        io.airbyte.integrations.destination.s3_data_lake.io.BaseDeltaTaskWriter(
+        BaseDeltaTaskWriter(
             spec,
             format,
             appenderFactory,

@@ -86,7 +86,7 @@ abstract class IcebergV2WriteTest(
 class IcebergGlueWriteTest :
     IcebergV2WriteTest(
         Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
-        io.airbyte.integrations.destination.s3_data_lake.IcebergDestinationCleaner(
+        IcebergDestinationCleaner(
             IcebergV2TestUtil.getCatalog(
                 IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH),
                 IcebergV2TestUtil.getAWSSystemCredentials()
@@ -97,7 +97,7 @@ class IcebergGlueWriteTest :
 class IcebergGlueAssumeRoleWriteTest :
     IcebergV2WriteTest(
         Files.readString(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-        io.airbyte.integrations.destination.s3_data_lake.IcebergDestinationCleaner(
+        IcebergDestinationCleaner(
             IcebergV2TestUtil.getCatalog(
                 IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
                 IcebergV2TestUtil.getAWSSystemCredentials()

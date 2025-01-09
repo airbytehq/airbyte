@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.s3_data_lake
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.isNamespaceOld
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.randomizedNamespaceRegex
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableCleaner
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableCleaner
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.SupportsNamespaces
@@ -22,7 +22,7 @@ class IcebergDestinationCleaner(private val catalog: Catalog) : DestinationClean
             }
 
         // we're passing explicit TableIdentifier to clearTable, so just use SimpleTableIdGenerator
-        val tableCleaner = IcebergTableCleaner(IcebergUtil(io.airbyte.integrations.destination.s3_data_lake.SimpleTableIdGenerator()))
+        val tableCleaner = IcebergTableCleaner(IcebergUtil(SimpleTableIdGenerator()))
 
         namespaces.forEach { namespace ->
             catalog.listTables(namespace).forEach { tableId ->
