@@ -72,7 +72,8 @@ object IcebergV2DataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = IcebergV2TestUtil.getConfig(spec)
-        val catalog = IcebergV2TestUtil.getCatalog(config)
+        val catalog =
+            IcebergV2TestUtil.getCatalog(config, IcebergV2TestUtil.getAWSSystemCredentials())
         val table =
             catalog.loadTable(
                 TableIdGeneratorFactory(config).create().toTableIdentifier(stream.descriptor)
