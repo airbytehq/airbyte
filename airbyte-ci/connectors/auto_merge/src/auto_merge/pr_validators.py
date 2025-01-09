@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, Optional, Tuple
 
 from .consts import AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, AUTO_MERGE_LABEL, BASE_BRANCH, CONNECTOR_PATH_PREFIXES
 
@@ -65,7 +65,7 @@ def head_commit_passes_all_required_checks(
 
 # PLEASE BE CAREFUL OF THE VALIDATOR ORDERING
 # Let's declare faster checks first as the check_if_pr_is_auto_mergeable function fails fast.
-VALIDATOR_MAPPING: dict[str, list[callable]] = {
+VALIDATOR_MAPPING: dict[str, list[Callable]] = {
     AUTO_MERGE_LABEL: [has_auto_merge_label, targets_main_branch, only_modifies_connectors, head_commit_passes_all_required_checks],
     AUTO_MERGE_BYPASS_CI_CHECKS_LABEL: [has_auto_merge_bypass_ci_checks_label, targets_main_branch, only_modifies_connectors],
 }

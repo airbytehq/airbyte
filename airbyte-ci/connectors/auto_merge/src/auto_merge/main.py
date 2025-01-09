@@ -8,7 +8,7 @@ import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 from github import Auth, Github
 
@@ -60,7 +60,7 @@ def check_if_pr_is_auto_mergeable(head_commit: GithubCommit, pr: PullRequest, re
     return True
 
 
-def get_pr_validators(pr: PullRequest) -> list[callable]:
+def get_pr_validators(pr: PullRequest) -> list[Callable]:
     """
     Get the validator for a PR based on its labels
 

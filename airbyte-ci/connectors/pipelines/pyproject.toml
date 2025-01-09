@@ -40,7 +40,7 @@ pygithub = "^2.3.0"
 pydash = "6.0.2"
 python-slugify = ">=8.0.4"
 deepdiff = "^7.0.1"
-"auto_merge" = { path = "../auto_merge", develop = true }
+auto-merge = { path = "../auto_merge", develop = false }
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"

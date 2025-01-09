@@ -136,7 +136,7 @@ description = ""
 optional = false
 python-versions = "^3.10"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 anyio = "^4.3.0"
@@ -3241,4 +3241,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-content-hash = "84388a7a87517dde1836398325a7800990bcbec79d6aa09ce48026da7ad5a04e"
+content-hash = "51c20a0d24bd3d1c4aa7b698355ba1f72380f031b404090303613e2eb76f1262"
