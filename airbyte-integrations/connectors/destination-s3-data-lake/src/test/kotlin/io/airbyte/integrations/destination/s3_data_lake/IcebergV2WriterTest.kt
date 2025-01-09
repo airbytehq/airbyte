@@ -23,8 +23,8 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableWriterFactory
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
 import io.mockk.every
 import io.mockk.mockk
 import org.apache.iceberg.Schema

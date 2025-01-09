@@ -27,8 +27,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
-import io.airbyte.integrations.destination.iceberg.v2.SimpleTableIdGenerator
+import io.airbyte.integrations.destination.s3_data_lake.IcebergV2Configuration
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -37,6 +36,7 @@ import org.apache.iceberg.CatalogProperties.URI
 import org.apache.iceberg.CatalogProperties.WAREHOUSE_LOCATION
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE
+import io.airbyte.integrations.destination.s3_data_lake.SimpleTableIdGenerator
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
