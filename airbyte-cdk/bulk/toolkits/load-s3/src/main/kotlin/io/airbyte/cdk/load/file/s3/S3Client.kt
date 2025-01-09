@@ -251,7 +251,6 @@ class S3ClientFactory(
                 httpClient(CrtHttpEngine)
             }
 
-
         return S3Client(
             s3SdkClient,
             bucketConfig.s3BucketConfiguration,
