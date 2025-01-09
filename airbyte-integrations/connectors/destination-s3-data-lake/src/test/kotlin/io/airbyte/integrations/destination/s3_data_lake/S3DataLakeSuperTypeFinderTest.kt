@@ -15,7 +15,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
 /** Comprehensive test suite for [IcebergSuperTypeFinder]. */
-class IcebergSuperTypeFinderTest {
+class S3DataLakeSuperTypeFinderTest {
 
     private val superTypeFinder = IcebergSuperTypeFinder(IcebergTypesComparator())
 
