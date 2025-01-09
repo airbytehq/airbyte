@@ -19,12 +19,12 @@ import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.integrations.destination.iceberg.v2.ACCESS_KEY_ID
-import io.airbyte.integrations.destination.iceberg.v2.ASDF_EXTERNAL_ID
-import io.airbyte.integrations.destination.iceberg.v2.ASSUME_ROLE_ACCESS_KEY_ID
-import io.airbyte.integrations.destination.iceberg.v2.ASSUME_ROLE_SECRET_ACCESS_KEY
+import io.airbyte.integrations.destination.iceberg.v2.ASSUME_ROLE_ARN
+import io.airbyte.integrations.destination.iceberg.v2.ASSUME_ROLE_EXTERNAL_ID
 import io.airbyte.integrations.destination.iceberg.v2.GlueCredentialsProvider
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
-import io.airbyte.integrations.destination.iceberg.v2.ROLE_ARN
+import io.airbyte.integrations.destination.iceberg.v2.MODE
+import io.airbyte.integrations.destination.iceberg.v2.MODE_ASSUME_ROLE
 import io.airbyte.integrations.destination.iceberg.v2.SECRET_ACCESS_KEY
 import io.airbyte.integrations.destination.iceberg.v2.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -41,7 +41,6 @@ import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
-import org.apache.iceberg.aws.AssumeRoleAwsClientFactory
 import org.apache.iceberg.aws.AwsClientProperties
 import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.aws.s3.S3FileIO
@@ -52,7 +51,6 @@ import org.apache.iceberg.data.Record
 import org.apache.iceberg.exceptions.AlreadyExistsException
 import org.projectnessie.client.NessieConfigConstants
 import software.amazon.awssdk.services.glue.model.ConcurrentModificationException
-import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider
 
 private val logger = KotlinLogging.logger {}
 
@@ -325,23 +323,23 @@ class IcebergUtil(
                 )
             }
 
-        val clientCredentialsProviderPrefix = "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}."
         return mapOf(
             AwsProperties.REST_ACCESS_KEY_ID to accessKeyId,
             AwsProperties.REST_SECRET_ACCESS_KEY to secretAccessKey,
-            S3FileIOProperties.ACCESS_KEY_ID to accessKeyId,
-            S3FileIOProperties.SECRET_ACCESS_KEY to secretAccessKey,
-//            AwsProperties.CLIENT_FACTORY to AssumeRoleAwsClientFactory::class.java.name,
             AwsProperties.CLIENT_ASSUME_ROLE_ARN to roleArn,
             AwsProperties.CLIENT_ASSUME_ROLE_REGION to region,
             AwsProperties.CLIENT_ASSUME_ROLE_TIMEOUT_SEC to
                 Duration.ofHours(1).toSeconds().toString(),
             AwsProperties.CLIENT_ASSUME_ROLE_EXTERNAL_ID to externalId,
-            AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to GlueCredentialsProvider::class.java.name,
-            "${clientCredentialsProviderPrefix}${ASSUME_ROLE_ACCESS_KEY_ID}" to accessKeyId,
-            "${clientCredentialsProviderPrefix}${ASSUME_ROLE_SECRET_ACCESS_KEY}" to secretAccessKey,
-            "${clientCredentialsProviderPrefix}${ROLE_ARN}" to roleArn,
-            "${clientCredentialsProviderPrefix}${ASDF_EXTERNAL_ID}" to externalId,
+            AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
+                GlueCredentialsProvider::class.java.name,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$MODE" to MODE_ASSUME_ROLE,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ACCESS_KEY_ID" to accessKeyId,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$SECRET_ACCESS_KEY" to
+                secretAccessKey,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ASSUME_ROLE_ARN" to roleArn,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ASSUME_ROLE_EXTERNAL_ID" to
+                externalId,
         )
     }
 

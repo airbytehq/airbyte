@@ -96,7 +96,8 @@ class IcebergGlueWriteTest :
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
-    }}
+    }
+}
 
 class IcebergGlueAssumeRoleWriteTest :
     IcebergV2WriteTest(
