@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.postgres.typing_deduping
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
+import io.airbyte.commons.features.FeatureFlagsWrapper
 import io.airbyte.integrations.destination.postgres.PostgresDestination
 import io.airbyte.integrations.destination.postgres.PostgresTestDatabase
 import javax.sql.DataSource
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.Test
 // TODO: This test is added to ensure coverage missed by disabling DATs. Redundant when DATs
 // enabled.
 class PostgresStrictEncryptTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
+    override var featureFlags =
+        FeatureFlagsWrapper.overridingDeploymentMode(super.featureFlags, "CLOUD")
     override fun getBaseConfig(): ObjectNode {
         return testContainer!!
             .configBuilder()
@@ -57,7 +60,7 @@ class PostgresStrictEncryptTypingDedupingTest : AbstractPostgresTypingDedupingTe
     }
 
     override val imageName: String
-        get() = "airbyte/destination-postgres-strict-encrypt:dev"
+        get() = "airbyte/destination-postgres:dev"
 
     @Test
     override fun testDropCascade() {
