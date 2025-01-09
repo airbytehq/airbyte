@@ -24,6 +24,12 @@ definitions:
             q: search
           request_headers:
             Linkedin-Version: "202404"
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5  
         record_selector:
           type: RecordSelector
           extractor:
@@ -68,6 +74,12 @@ definitions:
             accounts: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
           request_headers:
             Linkedin-Version: "202404"
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5             
         record_selector:
           type: RecordSelector
           extractor:
@@ -128,6 +140,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5             
         record_selector:
           type: RecordSelector
           extractor:
@@ -194,6 +212,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5             
         record_selector:
           type: RecordSelector
           extractor:
@@ -255,8 +279,8 @@ definitions:
             q: criteria
           request_headers:
             Linkedin-Version: "202404"
-            X-RestLi-Method: FINDER
-          error_handler:
+            X-RestLi-Method: FINDER      
+          error_handlers:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
@@ -279,6 +303,11 @@ definitions:
                     http_codes:
                       - 500
                       - 503
+              - type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5     
         record_selector:
           type: RecordSelector
           extractor:
@@ -342,6 +371,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           extractor:
@@ -410,6 +445,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -485,6 +526,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -560,6 +607,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -635,6 +688,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -710,6 +769,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -785,6 +850,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -860,6 +931,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -935,6 +1012,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1010,6 +1093,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1085,6 +1174,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1160,6 +1255,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1236,6 +1337,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5                
         record_selector:
           type: RecordSelector
           $parameters:

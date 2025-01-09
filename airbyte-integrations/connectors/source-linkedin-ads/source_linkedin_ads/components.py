@@ -12,6 +12,7 @@ from urllib.parse import urlencode
 
 import pendulum
 import requests
+from requests.exceptions import InvalidURL
 from isodate import Duration, parse_duration
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -33,6 +34,9 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 
 from .utils import ANALYTICS_FIELDS_V2, FIELDS_CHUNK_SIZE, transform_data
 
@@ -291,3 +295,21 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
 
         if transformations:
             self.record_selector.transformations = transformations
+@dataclass
+class LinkedInAdsErrorHandler(DefaultErrorHandler):
+    """
+    An error handler for LinkedIn Ads that interprets responses, providing custom error resolutions
+    for specific exceptions like `InvalidURL`.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        """
+        Interprets responses and exceptions, providing custom error resolutions for specific exceptions.
+        """
+        if isinstance(response_or_exception, InvalidURL):
+            return ErrorResolution(
+                response_action=ResponseAction.RETRY,
+                failure_type=FailureType.transient_error,
+                error_message="source-linkedin-ads has faced a temporary DNS resolution issue. Retrying...",
+            )
+        return super().interpret_response(response_or_exception)
