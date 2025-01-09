@@ -11,9 +11,9 @@ import software.amazon.awssdk.services.sts.StsClient
 import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider
 import software.amazon.awssdk.services.sts.model.AssumeRoleRequest
 
-const val MODE = "mode"
-const val MODE_STATIC_CREDS = "static-creds"
-const val MODE_ASSUME_ROLE = "assume-role"
+const val AWS_CREDENTIALS_MODE = "aws-creds-mode"
+const val AWS_CREDENTIALS_MODE_STATIC_CREDS = "aws-creds-static-creds"
+const val AWS_CREDENTIALS_MODE_ASSUME_ROLE = "aws-creds-assume-role"
 
 const val ACCESS_KEY_ID = "access-key-id"
 const val SECRET_ACCESS_KEY = "secret-access-key"
@@ -31,17 +31,17 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
     companion object {
         @JvmStatic
         fun create(properties: Map<String, String>): AwsCredentialsProvider {
-            val mode = properties[MODE]
+            val mode = properties[AWS_CREDENTIALS_MODE]
             val accessKey = properties[ACCESS_KEY_ID]
             val secretKey = properties[SECRET_ACCESS_KEY]
             val provider =
                 when (mode) {
-                    MODE_STATIC_CREDS -> {
+                    AWS_CREDENTIALS_MODE_STATIC_CREDS -> {
                         StaticCredentialsProvider.create(
                             AwsBasicCredentials.create(accessKey, secretKey)
                         )
                     }
-                    MODE_ASSUME_ROLE -> {
+                    AWS_CREDENTIALS_MODE_ASSUME_ROLE -> {
                         StsAssumeRoleCredentialsProvider.builder()
                             .stsClient(
                                 StsClient.builder()

@@ -21,11 +21,11 @@ import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.integrations.destination.s3_data_lake.ACCESS_KEY_ID
 import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_ARN
 import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_EXTERNAL_ID
+import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE
+import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE_ASSUME_ROLE
+import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE_STATIC_CREDS
 import io.airbyte.integrations.destination.s3_data_lake.GlueCredentialsProvider
 import io.airbyte.integrations.destination.s3_data_lake.IcebergV2Configuration
-import io.airbyte.integrations.destination.s3_data_lake.MODE
-import io.airbyte.integrations.destination.s3_data_lake.MODE_ASSUME_ROLE
-import io.airbyte.integrations.destination.s3_data_lake.MODE_STATIC_CREDS
 import io.airbyte.integrations.destination.s3_data_lake.SECRET_ACCESS_KEY
 import io.airbyte.integrations.destination.s3_data_lake.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -337,7 +337,8 @@ class IcebergUtil(
             AwsProperties.CLIENT_ASSUME_ROLE_EXTERNAL_ID to externalId,
             AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
                 GlueCredentialsProvider::class.java.name,
-            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$MODE" to MODE_ASSUME_ROLE,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$AWS_CREDENTIALS_MODE" to
+                AWS_CREDENTIALS_MODE_ASSUME_ROLE,
             "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ACCESS_KEY_ID" to accessKeyId,
             "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$SECRET_ACCESS_KEY" to
                 secretAccessKey,
@@ -364,7 +365,8 @@ class IcebergUtil(
             AwsClientProperties.CLIENT_REGION to config.s3BucketConfiguration.s3BucketRegion.region,
             AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
                 GlueCredentialsProvider::class.java.name,
-            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$MODE" to MODE_STATIC_CREDS,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$AWS_CREDENTIALS_MODE" to
+                AWS_CREDENTIALS_MODE_STATIC_CREDS,
             "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
             "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to awsSecretAccessKey
         )
