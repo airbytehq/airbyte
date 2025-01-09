@@ -13,7 +13,7 @@ import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.SupportsNamespaces
 
-class IcebergDestinationCleaner(private val catalog: Catalog) : DestinationCleaner {
+class S3DataLakeDestinationCleaner(private val catalog: Catalog) : DestinationCleaner {
     override fun cleanup() {
         val namespaces: List<Namespace> =
             (catalog as SupportsNamespaces).listNamespaces().filter {
