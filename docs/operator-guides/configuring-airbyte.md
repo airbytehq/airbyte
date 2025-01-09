@@ -4,7 +4,7 @@ products: oss-*
 
 # Configuring Airbyte
 
-This section covers the various configuration Airbyte accepts. [Airbyte runs on Kubernetes](../deploying-airbyte/deploying-airbyte.md). To configure the Airbyte Kubernetes deployment, modify the `values.yaml` file. If you want to manage your own Kube manifests, refer to the `Helm Chart`.
+This section covers the various configuration options Airbyte accepts. [Airbyte runs on Kubernetes](../deploying-airbyte/deploying-airbyte.md). To configure the Airbyte Kubernetes deployment, modify the `values.yaml` file. If you want to manage your own Kube manifests, refer to the `Helm Chart`.
 
 The following configuration options are possible, organized by service. Internal-only variables are omitted for clarity. See `Configs.java` for a full list of variables.
 
