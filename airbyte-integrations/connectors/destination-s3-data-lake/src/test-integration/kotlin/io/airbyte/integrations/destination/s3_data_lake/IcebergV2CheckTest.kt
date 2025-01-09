@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
-import io.airbyte.integrations.destination.iceberg.v2.IcebergV2TestUtil.GLUE_CONFIG_PATH
+import io.airbyte.integrations.destination.s3_data_lake.IcebergV2TestUtil.GLUE_CONFIG_PATH
 
 class IcebergV2CheckTest :
     CheckIntegrationTest<IcebergV2Specification>(

@@ -8,8 +8,8 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableWriterFactory
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
 import javax.inject.Singleton
 import org.apache.iceberg.Schema
 

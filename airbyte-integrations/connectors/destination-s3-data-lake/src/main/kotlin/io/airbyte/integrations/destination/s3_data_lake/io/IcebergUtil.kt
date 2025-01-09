@@ -18,11 +18,11 @@ import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
-import io.airbyte.integrations.destination.iceberg.v2.ACCESS_KEY_ID
-import io.airbyte.integrations.destination.iceberg.v2.GlueCredentialsProvider
-import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
-import io.airbyte.integrations.destination.iceberg.v2.SECRET_ACCESS_KEY
-import io.airbyte.integrations.destination.iceberg.v2.TableIdGenerator
+import io.airbyte.integrations.destination.s3_data_lake.ACCESS_KEY_ID
+import io.airbyte.integrations.destination.s3_data_lake.GlueCredentialsProvider
+import io.airbyte.integrations.destination.s3_data_lake.IcebergV2Configuration
+import io.airbyte.integrations.destination.s3_data_lake.SECRET_ACCESS_KEY
+import io.airbyte.integrations.destination.s3_data_lake.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.time.Duration

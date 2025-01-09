@@ -8,8 +8,8 @@ import com.fasterxml.jackson.core.type.TypeReference
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.integrations.destination.iceberg.v2.io.AWSSystemCredentials
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
+import io.airbyte.integrations.destination.s3_data_lake.io.AWSSystemCredentials
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
 import java.nio.file.Files
 import java.nio.file.Path
 

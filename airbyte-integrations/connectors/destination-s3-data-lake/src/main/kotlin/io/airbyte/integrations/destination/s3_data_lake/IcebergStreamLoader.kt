@@ -12,9 +12,9 @@ import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableCleaner
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableCleaner
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableWriterFactory
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Table
 
