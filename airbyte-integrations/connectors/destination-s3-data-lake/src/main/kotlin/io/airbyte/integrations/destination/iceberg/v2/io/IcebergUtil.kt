@@ -324,8 +324,11 @@ class IcebergUtil(
             }
 
         return mapOf(
-            AwsProperties.REST_ACCESS_KEY_ID to accessKeyId,
-            AwsProperties.REST_SECRET_ACCESS_KEY to secretAccessKey,
+            // Note: no explicit credentials, whether on AwsProperties.REST_ACCESS_KEY_ID, or on
+            // S3FileIOProperties.ACCESS_KEY_ID.
+            // If you set S3FileIOProperties.ACCESS_KEY_ID, it causes the iceberg SDK to use those
+            // credentials
+            // _instead_ of the explicit GlueCredentialsProvider.
             AwsProperties.CLIENT_ASSUME_ROLE_ARN to roleArn,
             AwsProperties.CLIENT_ASSUME_ROLE_REGION to region,
             AwsProperties.CLIENT_ASSUME_ROLE_TIMEOUT_SEC to
