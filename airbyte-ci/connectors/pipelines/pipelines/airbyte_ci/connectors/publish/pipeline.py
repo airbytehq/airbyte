@@ -8,12 +8,12 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
-from auto_merge.consts import AUTO_MERGE_BYPASS_CI_CHECKS_LABEL
 
 import anyio
 import semver
 import yaml
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
+from auto_merge.consts import AUTO_MERGE_BYPASS_CI_CHECKS_LABEL  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage  # type: ignore
 from dagger import Container, Directory, ExecError, File, ImageLayerCompression, Platform, QueryError
 from pydantic import BaseModel, ValidationError
