@@ -12,15 +12,17 @@ from urllib.parse import urlencode
 
 import pendulum
 import requests
-from requests.exceptions import InvalidURL
 from isodate import Duration, parse_duration
+from requests.exceptions import InvalidURL
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
     RequestInput,
@@ -32,11 +34,9 @@ from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFiel
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 
 from .utils import ANALYTICS_FIELDS_V2, FIELDS_CHUNK_SIZE, transform_data
 
@@ -295,6 +295,8 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
 
         if transformations:
             self.record_selector.transformations = transformations
+
+
 @dataclass
 class LinkedInAdsErrorHandler(DefaultErrorHandler):
     """

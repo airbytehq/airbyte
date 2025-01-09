@@ -29,7 +29,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5  
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -79,7 +79,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5             
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -145,7 +145,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5             
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -217,7 +217,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5             
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -279,7 +279,7 @@ definitions:
             q: criteria
           request_headers:
             Linkedin-Version: "202404"
-            X-RestLi-Method: FINDER      
+            X-RestLi-Method: FINDER
           error_handlers:
             type: CompositeErrorHandler
             error_handlers:
@@ -307,7 +307,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5     
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -376,7 +376,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -450,7 +450,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -531,7 +531,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -612,7 +612,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -693,7 +693,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -774,7 +774,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -855,7 +855,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -936,7 +936,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1017,7 +1017,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1098,7 +1098,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1179,7 +1179,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1260,7 +1260,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1342,7 +1342,7 @@ definitions:
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: 5                
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
