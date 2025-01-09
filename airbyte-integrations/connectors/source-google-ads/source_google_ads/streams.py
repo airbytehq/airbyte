@@ -52,7 +52,7 @@ class GoogleAdsStream(Stream, ABC):
         ),
         interval=1,
     )
-    @detached(timeout_minutes=5)
+    @detached(timeout_minutes=30)
     def request_records_job(self, customer_id, login_customer_id, query, stream_slice):
         response_records = self.google_ads_client.send_request(query=query, customer_id=customer_id, login_customer_id=login_customer_id)
         yield from self.parse_records_with_backoff(response_records, stream_slice)
