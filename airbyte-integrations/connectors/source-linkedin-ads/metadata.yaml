@@ -30,7 +30,7 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
-    rolloutConfiguration: 
+    rolloutConfiguration:
       enableProgressiveRollout: true
     breakingChanges:
       1.0.0:
