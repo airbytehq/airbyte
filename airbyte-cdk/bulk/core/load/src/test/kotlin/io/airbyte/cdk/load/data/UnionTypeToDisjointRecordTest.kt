@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 class UnionTypeToDisjointRecordTest {
     @Test
     fun testBasicSchemaBehavior() {
-        val disjoinRecord =
+        val disjointRecord =
             ObjectType(
                 linkedMapOf(
                     "type" to FieldType(StringType, nullable = false),
@@ -22,16 +22,8 @@ class UnionTypeToDisjointRecordTest {
             )
         val (inputSchema, expectedOutput) =
             SchemaRecordBuilder<Root>()
-                .with(UnionType(listOf(StringType))) // union of 1 => ignore
-                .with(UnionType(listOf(StringType, NullType))) // union of 1 w/ null => ignore
-                .with(
-                    UnionType(listOf(StringType, IntegerType)),
-                    expected = disjoinRecord
-                ) // union of 2 => disjoint
-                .with(
-                    UnionType(listOf(StringType, IntegerType, NullType)),
-                    expected = UnionType(listOf(NullType, disjoinRecord))
-                ) // union of 2 w/ null => disjoint
+                .with(UnionType.of(StringType)) // union of 1 => ignore
+                .with(UnionType.of(StringType, IntegerType), expected = disjointRecord)
                 .build()
         val output = UnionTypeToDisjointRecord().map(inputSchema)
         Assertions.assertEquals(expectedOutput, output)
@@ -41,7 +33,8 @@ class UnionTypeToDisjointRecordTest {
     fun testUnionOfTypesWithSameNameThrows() {
         val (inputSchema, _) =
             SchemaRecordBuilder<Root>()
-                .with(UnionType(listOf(ObjectType(linkedMapOf()), ObjectTypeWithoutSchema)))
+                // Both are mapped to `string`
+                .with(UnionType.of(ObjectTypeWithEmptySchema, ObjectTypeWithoutSchema))
                 .build()
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             UnionTypeToDisjointRecord().map(inputSchema)

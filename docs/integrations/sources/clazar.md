@@ -112,6 +112,12 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.4.8 | 2024-12-28 | [50473](https://github.com/airbytehq/airbyte/pull/50473) | Update dependencies |
+| 0.4.7 | 2024-12-21 | [50214](https://github.com/airbytehq/airbyte/pull/50214) | Update dependencies |
+| 0.4.6 | 2024-12-14 | [49570](https://github.com/airbytehq/airbyte/pull/49570) | Update dependencies |
+| 0.4.5 | 2024-12-12 | [49009](https://github.com/airbytehq/airbyte/pull/49009) | Update dependencies |
+| 0.4.4 | 2024-11-04 | [48187](https://github.com/airbytehq/airbyte/pull/48187) | Update dependencies |
+| 0.4.3 | 2024-10-30 | [46949](https://github.com/airbytehq/airbyte/pull/46949) | Updated the logo |
 | 0.4.2 | 2024-10-29 | [47843](https://github.com/airbytehq/airbyte/pull/47843) | Update dependencies |
 | 0.4.1 | 2024-10-28 | [47598](https://github.com/airbytehq/airbyte/pull/47598) | Update dependencies |
 | 0.4.0 | 2024-08-30 | [44855](https://github.com/airbytehq/airbyte/pull/44855) | Using incremental APIs for online data |

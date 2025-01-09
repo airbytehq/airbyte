@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-statsig
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.4@sha256:b73460101d4ff373826b56f00ef2012b635f5eab04c429892547dd055cd779dc
   connectorSubtype: api
   connectorType: source
   definitionId: c8f77358-755a-4778-a1fc-c23c3cee7d83
-  dockerImageTag: 0.0.2
+  dockerImageTag: 0.0.6
   dockerRepository: airbyte/source-statsig
   githubIssueLabel: source-statsig
   icon: icon.svg

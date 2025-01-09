@@ -43,17 +43,16 @@ Kestra UI provides a wide range of Blueprints to help you get started.
 
 Navigate to Blueprints. Then type "Airbyte" in the search bar to find the desired integration. This way, you can easily accomplish fairly standardized data orchestration tasks, such as the following:
 
-1. [Run a single Airbyte sync](https://demo.kestra.io/ui/blueprints/community/61) on a schedule
-2. [Run multiple Airbyte syncs in parallel](https://demo.kestra.io/ui/blueprints/community/18)
-3. [Run multiple Airbyte syncs in parallel, then clone a Git repository with dbt code and trigger dbt CLI commands](https://demo.kestra.io/ui/blueprints/community/30)
-4. [Run a single Airbyte Cloud sync](https://demo.kestra.io/ui/blueprints/community/62) on a schedule
-5. [Run multiple Airbyte Cloud syncs in parallel](https://demo.kestra.io/ui/blueprints/community/63)
-6. [Run multiple Airbyte Cloud syncs in parallel, then clone a Git repository with dbt code and trigger dbt CLI commands](https://demo.kestra.io/ui/blueprints/community/64)
-7. [Run multiple Airbyte Cloud syncs in parallel, then run a dbt Cloud job](https://demo.kestra.io/ui/blueprints/community/31)
+1. [Run a single Airbyte sync](https://kestra.io/blueprints/airbyte-sync) on a schedule
+2. [Run multiple Airbyte syncs in parallel](https://kestra.io/blueprints/airbyte-sync-parallel)
+3. [Run multiple Airbyte syncs in parallel, then clone a Git repository with dbt code and trigger dbt CLI commands](https://kestra.io/blueprints/airbyte-sync-parallel-with-dbt)
+4. [Run a single Airbyte Cloud sync](https://kestra.io/blueprints/airbyte-cloud-sync) on a schedule
+5. [Run multiple Airbyte Cloud syncs in parallel, then clone a Git repository with dbt code and trigger dbt CLI commands](https://kestra.io/blueprints/airbyte-cloud-dbt)
+6. [Run multiple Airbyte Cloud syncs in parallel, then run a dbt Cloud job](https://kestra.io/blueprints/airbyte-cloud-dbt-cloud)
 
 Select a blueprint matching your use case and click "Use".
 
-![airbyte_kestra_UI](../.gitbook/assets/airbyte_kestra_2.gif)
+![airbyte_kestra_blueprints](../.gitbook/assets/airbyte_kestra_2.png)
 
 Then, within the editor, adjust the connection ID and task names and click "Save". Finally, trigger your flow.
 
@@ -62,12 +61,12 @@ Then, within the editor, adjust the connection ID and task names and click "Save
 Here is an example flow that triggers multiple Airbyte connections in parallel to sync data for multiple **Pokémon**.
 
 ```yaml
-id: airbyteSyncs
-namespace: dev
+id: airbyte_syncs
+namespace: company.team
 description: Gotta catch ‘em all!
 
 tasks:
-  - id: data-ingestion
+  - id: data_ingestion
     type: io.kestra.core.tasks.flows.Parallel
     tasks:
       - id: charizard
@@ -84,11 +83,11 @@ taskDefaults:
   - type: io.kestra.plugin.airbyte.connections.Sync
     values:
       url: http://host.docker.internal:8000/
-      username: "{{envs.airbyte_username}}"
-      password: "{{envs.airbyte_password}}"
+      username: "{{ secret('AIRBYTE_USERNAME') }}"
+      password: "{{ secret('AIRBYTE_PASSWORD') }}"
 
 triggers:
-  - id: everyMinute
+  - id: every_minute
     type: io.kestra.core.models.triggers.types.Schedule
     cron: "*/1 * * * *"
 ```

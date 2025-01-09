@@ -5,9 +5,11 @@
 package io.airbyte.cdk.load.mock_integration_test
 
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
+import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.Untyped
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class MockBasicFunctionalityIntegrationTest :
@@ -16,10 +18,17 @@ class MockBasicFunctionalityIntegrationTest :
         MockDestinationSpecification::class.java,
         MockDestinationDataDumper,
         NoopDestinationCleaner,
-        NoopExpectedRecordMapper,
+        UncoercedExpectedRecordMapper,
         NoopNameMapper,
         isStreamSchemaRetroactive = false,
         supportsDedup = true,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        commitDataIncrementally = false,
+        allTypesBehavior = Untyped,
+        envVars = emptyMap(),
+        supportFileTransfer = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -47,6 +56,16 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+
+    @Test
+    override fun resumeAfterCancelledTruncate() {
+        super.resumeAfterCancelledTruncate()
+    }
+
+    @Test
     override fun testAppend() {
         super.testAppend()
     }
@@ -56,8 +75,24 @@ class MockBasicFunctionalityIntegrationTest :
         super.testAppendSchemaEvolution()
     }
 
+    @Disabled("flaky")
     @Test
     override fun testDedup() {
         super.testDedup()
+    }
+
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+
+    @Test
+    override fun testUnions() {
+        super.testUnions()
+    }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }

@@ -5,14 +5,8 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
-import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -51,59 +45,6 @@ data class DestinationStream(
      * what actually exists, as many destinations have legacy data from before this schema was
      * adopted.
      */
-    val schemaWithMeta: ObjectType
-        get() =
-            ObjectType(
-                linkedMapOf(
-                    DestinationRecord.Meta.COLUMN_NAME_AB_RAW_ID to
-                        FieldType(StringType, nullable = false),
-                    DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT to
-                        FieldType(IntegerType, nullable = false),
-                    DestinationRecord.Meta.COLUMN_NAME_AB_META to
-                        FieldType(
-                            nullable = false,
-                            type =
-                                ObjectType(
-                                    linkedMapOf(
-                                        "sync_id" to FieldType(IntegerType, nullable = false),
-                                        "changes" to
-                                            FieldType(
-                                                nullable = false,
-                                                type =
-                                                    ArrayType(
-                                                        FieldType(
-                                                            nullable = false,
-                                                            type =
-                                                                ObjectType(
-                                                                    linkedMapOf(
-                                                                        "field" to
-                                                                            FieldType(
-                                                                                StringType,
-                                                                                nullable = false
-                                                                            ),
-                                                                        "change" to
-                                                                            FieldType(
-                                                                                StringType,
-                                                                                nullable = false
-                                                                            ),
-                                                                        "reason" to
-                                                                            FieldType(
-                                                                                StringType,
-                                                                                nullable = false
-                                                                            ),
-                                                                    )
-                                                                )
-                                                        )
-                                                    )
-                                            )
-                                    )
-                                )
-                        ),
-                    DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID to
-                        FieldType(IntegerType, nullable = false),
-                    DestinationRecord.Meta.COLUMN_NAME_DATA to FieldType(schema, nullable = false),
-                )
-            )
 
     /**
      * This is not fully round-trippable. Destinations don't care about most of the stuff in an

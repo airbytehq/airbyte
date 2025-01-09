@@ -1,0 +1,6691 @@
+version: 5.16.0
+
+type: DeclarativeSource
+
+description: >-
+  The Akeneo Airbyte connector enables seamless data synchronization between
+  Akeneo PIM (Product Information Management) and other platforms. It allows you
+  to easily extract, transform, and load product information from Akeneo to a
+  desired data destination, facilitating efficient management and integration of
+  product catalogs across systems. This connector supports bidirectional data
+  flows, helping businesses maintain accurate and up-to-date product information
+  for various sales channels.
+
+check:
+  type: CheckStream
+  stream_names:
+    - products
+
+definitions:
+  streams:
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products-uuid
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    "categories ":
+      type: DeclarativeStream
+      name: "categories "
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories "
+    families:
+      type: DeclarativeStream
+      name: families
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /families
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/families"
+    family_variants:
+      type: DeclarativeStream
+      name: family_variants
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /families/{{ stream_partition.family_code }}/variants
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: code
+              partition_field: family_code
+              stream:
+                $ref: "#/definitions/streams/families"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/family_variants"
+    attributes:
+      type: DeclarativeStream
+      name: attributes
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /attributes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attributes"
+    attribute_groups:
+      type: DeclarativeStream
+      name: attribute_groups
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /attribute-groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attribute_groups"
+    association_types:
+      type: DeclarativeStream
+      name: association_types
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /association-types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/association_types"
+    channels:
+      type: DeclarativeStream
+      name: channels
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /channels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+    locales:
+      type: DeclarativeStream
+      name: locales
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /locales
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locales"
+    currencies:
+      type: DeclarativeStream
+      name: currencies
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /currencies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/currencies"
+    measure_families:
+      type: DeclarativeStream
+      name: measure_families
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /measure-families
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/measure_families"
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config[\"host\"] }}/api/rest/v1"
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: "{{ config[\"host\"] }}/api/oauth/v1"
+        path: token
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config[\"secret\"] }}"
+          username: "{{ config[\"client_id\"] }}"
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+        request_body_json:
+          password: "{{ config['password'] }}"
+          username: "{{ config['api_username'] }}"
+          grant_type: password
+      session_token_path:
+        - access_token
+      expiration_duration: PT1H
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/categories "
+  - $ref: "#/definitions/streams/families"
+  - $ref: "#/definitions/streams/family_variants"
+  - $ref: "#/definitions/streams/attributes"
+  - $ref: "#/definitions/streams/attribute_groups"
+  - $ref: "#/definitions/streams/association_types"
+  - $ref: "#/definitions/streams/channels"
+  - $ref: "#/definitions/streams/locales"
+  - $ref: "#/definitions/streams/currencies"
+  - $ref: "#/definitions/streams/measure_families"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - host
+      - api_username
+      - password
+      - client_id
+    properties:
+      host:
+        type: string
+        description: https://cb8715249e.trial.akeneo.cloud
+        order: 0
+        title: Host
+      api_username:
+        type: string
+        order: 1
+        title: API Username
+      password:
+        type: string
+        order: 2
+        title: Password
+        airbyte_secret: true
+      client_id:
+        type: string
+        order: 3
+        title: Client ID
+      secret:
+        type: string
+        order: 4
+        title: Secret
+        always_show: true
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    products: true
+    "categories ": true
+    families: true
+    family_variants: true
+    attributes: true
+    attribute_groups: true
+    association_types: true
+    channels: true
+    locales: true
+    currencies: true
+    measure_families: true
+  testedStreams:
+    products:
+      streamHash: d8f7bdfec50fe02408812c2c01f8555de9c21cc9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    "categories ":
+      streamHash: 0a6a99847156f87fe4ebf0d71cb8f5c9bd83977b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    families:
+      streamHash: 452cd2f922d7607f777254ee34b449386cb98943
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    family_variants:
+      streamHash: e4029a5e91f267a5eb2199653dd28eef9fe372c2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    attributes:
+      streamHash: 8ad57ccffc7bdf3f92cee698c0d48ab90b9c5886
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    attribute_groups:
+      streamHash: ca3773e295515bdc0a0d8d48fddddc4bd442629b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    association_types:
+      streamHash: 984fa922d3728e1a55a026aecdb165f800af1d6a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    channels:
+      streamHash: 03f3f97fbf23ccbef66b414c0bf2ac3972423538
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    locales:
+      streamHash: fa6e0c3364ac475d91e4a8479ed21fef68062831
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    currencies:
+      streamHash: 5216fc38b15fcfbf35153bafd306f0d05ac29e00
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    measure_families:
+      hasRecords: true
+      streamHash: d3c6dc38392923b83ea70d6fc791ac46d53f08af
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://api.akeneo.com/api-reference.html
+    openapiSpecUrl: >-
+      https://storage.googleapis.com/akecld-prd-sdk-aep-prd-api-assets/openapi_specification.yml
+
+schemas:
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          workflow_status:
+            type:
+              - string
+              - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      associations:
+        type:
+          - object
+          - "null"
+        properties:
+          PACK:
+            type:
+              - object
+              - "null"
+            properties:
+              groups:
+                type:
+                  - array
+                  - "null"
+              product_models:
+                type:
+                  - array
+                  - "null"
+              products:
+                type:
+                  - array
+                  - "null"
+          SUBSTITUTION:
+            type:
+              - object
+              - "null"
+            properties:
+              groups:
+                type:
+                  - array
+                  - "null"
+              product_models:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              products:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          UPSELL:
+            type:
+              - object
+              - "null"
+            properties:
+              groups:
+                type:
+                  - array
+                  - "null"
+              product_models:
+                type:
+                  - array
+                  - "null"
+              products:
+                type:
+                  - array
+                  - "null"
+          X_SELL:
+            type:
+              - object
+              - "null"
+            properties:
+              groups:
+                type:
+                  - array
+                  - "null"
+              product_models:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              products:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      created:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      family:
+        type:
+          - string
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
+      parent:
+        type:
+          - string
+          - "null"
+      quantified_associations:
+        type:
+          - object
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+      values:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+                scope:
+                  type:
+                    - string
+                    - "null"
+          3d_technology:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          adjustable_stand_width:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          amp_hours:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          app_aesthetics:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          app_awards:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          app_base_material:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          app_body_material:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          app_edition_text:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          app_finishing:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          app_slices:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          app_top_material:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          app_voltage:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          app_wattage:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          aspect_ratio_tires:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          atmosphere:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          atmosphere_2:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          authorized_countries:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          auto_exposure:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          auto_focus_assist_beam:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          auto_focus_lock:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          automatic_document_feeder:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          automatic_reduction_enlargement:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          automatic_two_sided_printing:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          backlight_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          bags_all_hardware_colors:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          bags_closure_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          bags_inner_description:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          bags_strap_description:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          bags_typespecific_details:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          battery_included:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          battery_power_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          bluetooth_enabled:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          bluetooth_version:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          brand:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          brief_product:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          built_in_speakers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          bw_print_speed:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          cable_s_included:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          camera_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          category_code_description:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          certification_logo_1:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          certification_logo_2:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          certification_logo_3:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          certifications:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          chuck_size:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          chuck_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          clothing_care_instructions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          clothing_material:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          clothing_material_text:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          clothing_size:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          color:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          color_category:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          color_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          color_pattern:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          color_print_speed:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          color_scanning:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          connector_type_1:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          connector_type_2:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          cord_length_ft:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          cornering_stability:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          cosmetic_allergenes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          cosmetic_aromatic_components:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          cosmetic_authorized_claim:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          cosmetic_benefits:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          cosmetic_clinical_evaluation:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          cosmetic_cvolume:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          cosmetic_format:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          cosmetic_web_fp_picto1:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          cosmetics_text_bapplication:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          cosmetics_text_benefit:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          cosmetics_text_formula:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          curved_screen:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          customs_description:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          customs_material:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          depth:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          designer:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          designer_color_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          designer_id:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          display_color:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          display_diagonal:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          display_screen:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          display_srgb:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          display_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          drill_bit_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          driving_comfort:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          dry_traction:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          durability_treadwear:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          duty_cycle:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          ean:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          energy_star_certified:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          epeat_qualified:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          erp_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          estimated_annual_electricity_use:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          estimated_annual_operating_cost_usd:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          ethernet_port_s:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          exclusive:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          featured_streaming_services:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          features:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          food_allergens:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          food_coeliac:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          food_energy_kcal:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          food_energy_kj:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          food_fat_g:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          food_halal:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          food_ingredients:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          food_kosher:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          food_lactose:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          food_protein_g:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          food_vegan:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          food_vegetarian:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          forme_galenique:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          furniture_fabric_composition:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          furniture_packaging_dimensions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          furniture_yarn_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          gender_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          go_live_date:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          green_tire_technology:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          handling:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          hdmi_audio_return_channel_arc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          height:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          high_dynamic_range_format:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          high_dynamic_range_hdr:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          hydroplaning_resistance:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          ice_traction:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          image_1:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          image_2:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          image_3:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          image_4:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          image_5:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          image_dimension:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          image_instagram_1:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          image_material_detail:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          includes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          integrated_fax:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          language_s_displayed:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          led_panel_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          leg_height:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          length:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          load_index:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          load_range:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          long_description:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          made_in:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          main_market:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          material:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          maximum_frame_rate:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          maximum_print_size:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          maximum_speed_rpm:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          maximum_video_resolution:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          measuring_rim_width:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          meta_description:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          meta_keywords:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          meta_title:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          mobile_device_printing:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          model_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          model_number:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          model_year:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          motion_enhancement_technology:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          motor_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          multifunctional_functions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          network_compatibility:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          noise_level:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          non_textile_part:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          number_of_black_cartridges_included:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_color_cartridges_included:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_component_video_inputs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_composite_video_inputs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_digital_optical_audio_outputs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_dvi_inputs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_hdmi_hdcp:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_hdmi_inputs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_ink_bottles_tanks_included:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_ink_bottles_tanks_required:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_pieces:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_usb_2_0_ports:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          number_of_usb_port_s_total:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          optical_zoom:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          original_equipment:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          overall_diameter:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          overall_summer_all_seasons:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          overall_winter:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          peremption:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          pharmaceutical_form:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          picture_quality_enhancement_technology:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          power_requirements:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          power_tool_features:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          power_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          price:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      amount:
+                        type:
+                          - string
+                          - "null"
+                      currency:
+                        type:
+                          - string
+                          - "null"
+          printer_connectivity:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          printer_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          product_data_pdf:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          product_depth_with_stand:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          product_depth_without_stand:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          product_heading:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          product_height_with_stand:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          product_height_without_stand:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          product_weight_with_stand:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          product_weight_without_stand:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          product_width:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          rechargeable:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          rechargeable_battery_remote_control:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          recommended_cure_days:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          recycled_material:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          refresh_rate:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          reinforced_tire:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          remote_control_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          resolution:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          response_time:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          rf_antenna_input:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          rim_width_approved:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          runflat_tire_technology:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          runway:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          runway_image:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    download:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          scanner_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          screen_mirroring:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          screen_mirroring_technology:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          screen_size:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          sensor_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          series:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          shank_style:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          short_description:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          sidewall_lettering:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          sidewall_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          sku:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          smart_capable:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          smart_platform:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          snow_traction:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          speaker_output:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          specific_manufacturer_technologies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          speed_rating:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          stand_depth:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          stand_included:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          stand_width:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          studdable_tire:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          style_family_code:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          style_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          tire_qualities:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          tire_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          tmall_categories:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          tmall_descripton:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          tmall_title:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          total_megapixels:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          touch_screen:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          tray_capacity:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - number
+                    - "null"
+          tread_depth:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          tread_width:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          tv_tuner:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          uniform_tire_quality_grading_utqg:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          upc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          usage:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          usage_indicaion:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+          uses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          v_chip:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          variant_name:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          vendor_item_number:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          vesa_wall_mount_standard:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          voltage:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          weight:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          wet_traction:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - string
+                    - "null"
+          wheel_diameter:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          wheel_width:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          wide_format_printing:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          wide_format_scanning:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          width:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    unit:
+                      type:
+                        - string
+                        - "null"
+          winter_designed_tire:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - boolean
+                    - "null"
+          works_with:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attribute_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - uuid
+  "categories ":
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      code:
+        type: string
+      labels:
+        type:
+          - object
+          - "null"
+        properties:
+          en_US:
+            type:
+              - string
+              - "null"
+          es_ES:
+            type:
+              - string
+              - "null"
+          zh_CN:
+            type:
+              - string
+              - "null"
+      parent:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - code
+  families:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      attribute_as_image:
+        type:
+          - string
+          - "null"
+      attribute_as_label:
+        type:
+          - string
+          - "null"
+      attribute_requirements:
+        type:
+          - object
+          - "null"
+        properties:
+          ecommerce:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          marketplaces:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          pos:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      code:
+        type: string
+      labels:
+        type:
+          - object
+          - "null"
+        properties:
+          en_US:
+            type:
+              - string
+              - "null"
+          es_ES:
+            type:
+              - string
+              - "null"
+          zh_CN:
+            type:
+              - string
+              - "null"
+    required:
+      - code
+  family_variants:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      code:
+        type: string
+      labels:
+        type:
+          - object
+          - "null"
+        properties:
+          en_US:
+            type:
+              - string
+              - "null"
+      variant_attribute_sets:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            attributes:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            axes:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            level:
+              type:
+                - number
+                - "null"
+    required:
+      - code
+  attributes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      allowed_extensions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      auto_option_sorting:
+        type:
+          - boolean
+          - "null"
+      available_locales:
+        type:
+          - array
+          - "null"
+      code:
+        type: string
+      date_min:
+        type:
+          - string
+          - "null"
+      decimals_allowed:
+        type:
+          - boolean
+          - "null"
+      default_metric_unit:
+        type:
+          - string
+          - "null"
+      group:
+        type:
+          - string
+          - "null"
+      group_labels:
+        type:
+          - object
+          - "null"
+        properties:
+          en_US:
+            type:
+              - string
+              - "null"
+          es_ES:
+            type:
+              - string
+              - "null"
+          zh_CN:
+            type:
+              - string
+              - "null"
+      guidelines:
+        type:
+          - object
+          - "null"
+        properties:
+          en_US:
+            type:
+              - string
+              - "null"
+      is_main_identifier:
+        type:
+          - boolean
+          - "null"
+      labels:
+        type:
+          - object
+          - "null"
+        properties:
+          en_US:
+            type:
+              - string
+              - "null"
+          es_ES:
+            type:
+              - string
+              - "null"
+          zh_CN:
+            type:
+              - string
+              - "null"
+      localizable:
+        type:
+          - boolean
+          - "null"
+      metric_family:
+        type:
+          - string
+          - "null"
+      minimum_input_length:
+        type:
+          - number
+          - "null"
+      negative_allowed:
+        type:
+          - boolean
+          - "null"
+      number_min:
+        type:
+          - string
+          - "null"
+      scopable:
+        type:
+          - boolean
+          - "null"
+      sort_order:
+        type:
+          - number
+          - "null"
+      unique:
+        type:
+          - boolean
+          - "null"
+      useable_as_grid_filter:
+        type:
+          - boolean
+          - "null"
+      validation_regexp:
+        type:
+          - string
+          - "null"
+      validation_rule:
+        type:
+          - string
+          - "null"
+      wysiwyg_enabled:
+        type:
+          - boolean
+          - "null"
+    required:
+      - code
+  attribute_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      code:
+        type: string
+      labels:
+        type:
+          - object
+          - "null"
+        properties:
+          en_US:
+            type:
+              - string
+              - "null"
+          es_ES:
+            type:
+              - string
+              - "null"
+          zh_CN:
+            type:
+              - string
+              - "null"
+      sort_order:
+        type:
+          - number
+          - "null"
+    required:
+      - code
+  association_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      code:
+        type: string
+      is_quantified:
+        type:
+          - boolean
+          - "null"
+      is_two_way:
+        type:
+          - boolean
+          - "null"
+      labels:
+        type:
+          - object
+          - "null"
+        properties:
+          en_US:
+            type:
+              - string
+              - "null"
+          es_ES:
+            type:
+              - string
+              - "null"
+          zh_CN:
+            type:
+              - string
+              - "null"
+    required:
+      - code
+  channels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      category_tree:
+        type:
+          - string
+          - "null"
+      code:
+        type: string
+      conversion_units:
+        type:
+          - object
+          - "null"
+      currencies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      labels:
+        type:
+          - object
+          - "null"
+        properties:
+          en_US:
+            type:
+              - string
+              - "null"
+          es_ES:
+            type:
+              - string
+              - "null"
+          zh_CN:
+            type:
+              - string
+              - "null"
+      locales:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - code
+  locales:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      code:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+  currencies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      code:
+        type: string
+      enabled:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+    required:
+      - code
+  measure_families:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - object
+              - "null"
+            properties:
+              href:
+                type:
+                  - string
+                  - "null"
+      code:
+        type: string
+      standard:
+        type:
+          - string
+          - "null"
+      units:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            convert:
+              type:
+                - object
+                - "null"
+              properties:
+                add:
+                  type:
+                    - string
+                    - "null"
+                div:
+                  type:
+                    - string
+                    - "null"
+                mul:
+                  type:
+                    - string
+                    - "null"
+                sub:
+                  type:
+                    - string
+                    - "null"
+            symbol:
+              type:
+                - string
+                - "null"
+    required:
+      - code

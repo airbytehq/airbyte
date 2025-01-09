@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 import asyncer
 import dagger
 import toml
+
 from pipelines.airbyte_ci.test.models import deserialize_airbyte_ci_config
 from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_VERSION, POETRY_CACHE_VOLUME_NAME, PYPROJECT_TOML_FILE_PATH
 from pipelines.dagger.actions.system import docker
@@ -238,7 +239,7 @@ def prepare_container_for_poe_tasks(
                 ],
                 use_entrypoint=True,
             )
-            .with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True)
+            .with_exec(["poetry", "lock"], use_entrypoint=True)
         )
 
     # Install the poetry package

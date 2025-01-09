@@ -37,8 +37,6 @@ class CdcPartitionsCreatorTest {
 
     @MockK lateinit var concurrencyResource: ConcurrencyResource
 
-    @MockK(relaxUnitFun = true) lateinit var globalLockResource: CdcGlobalLockResource
-
     @MockK lateinit var creatorOps: CdcPartitionsCreatorDebeziumOperations<CreatorPosition>
 
     @MockK lateinit var readerOps: CdcPartitionReaderDebeziumOperations<CreatorPosition>
@@ -58,16 +56,17 @@ class CdcPartitionsCreatorTest {
 
     val global = Global(listOf(stream))
 
+    val lowerBoundReference = AtomicReference<CreatorPosition>(null)
     val upperBoundReference = AtomicReference<CreatorPosition>(null)
 
     val creator: CdcPartitionsCreator<CreatorPosition>
         get() =
             CdcPartitionsCreator(
                 concurrencyResource,
-                globalLockResource,
                 globalFeedBootstrap,
                 creatorOps,
                 readerOps,
+                lowerBoundReference,
                 upperBoundReference,
             )
 
