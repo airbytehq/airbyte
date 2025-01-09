@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.iceberg.v2
+package io.airbyte.integrations.destination.s3_data_lake
 
 import jakarta.inject.Singleton
 import org.apache.iceberg.Schema
@@ -17,7 +17,7 @@ import org.apache.iceberg.types.Types
  * - Columns that changed from required to optional.
  */
 @Singleton
-class IcebergTypesComparator {
+class S3DataLakeTypesComparator {
 
     companion object {
         /** Separator used to represent nested field paths: parent~child. */

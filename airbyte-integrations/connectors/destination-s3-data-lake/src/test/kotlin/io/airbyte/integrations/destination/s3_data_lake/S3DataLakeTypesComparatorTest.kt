@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.integrations.destination.iceberg.v2
+package io.airbyte.integrations.destination.s3_data_lake
 
-import io.airbyte.integrations.destination.iceberg.v2.IcebergTypesComparator.Companion.splitIntoParentAndLeaf
+import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeTypesComparator.Companion.splitIntoParentAndLeaf
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
@@ -11,10 +11,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
-/** Comprehensive test suite for [IcebergTypesComparator]. */
-class IcebergTypesComparatorTest {
+/** Comprehensive test suite for [S3DataLakeTypesComparator]. */
+class S3DataLakeTypesComparatorTest {
 
-    private val comparator = IcebergTypesComparator()
+    private val comparator = S3DataLakeTypesComparator()
 
     /**
      * Helper function to create a simple Iceberg [Types.NestedField].
