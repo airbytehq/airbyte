@@ -26,8 +26,8 @@ class S3DataLakeSuperTypeFinder(private val s3DataLakeTypesComparator: S3DataLak
 
     /**
      * Returns a supertype for [existingType] and [incomingType] if one exists.
-     * - If they are deeply equal (according to [S3DataLakeTypesComparator.typesAreEqual]), returns the
-     * [existingType] as-is.
+     * - If they are deeply equal (according to [S3DataLakeTypesComparator.typesAreEqual]), returns
+     * the [existingType] as-is.
      * - Otherwise, attempts to combine them into a valid supertype.
      * - Throws [IllegalArgumentException] if no valid supertype can be found.
      */
