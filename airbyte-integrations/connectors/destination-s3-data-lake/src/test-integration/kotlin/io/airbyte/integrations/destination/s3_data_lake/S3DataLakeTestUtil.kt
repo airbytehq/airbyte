@@ -9,11 +9,11 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.s3_data_lake.io.AWSSystemCredentials
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
+import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import java.nio.file.Files
 import java.nio.file.Path
 
-object IcebergV2TestUtil {
+object S3DataLakeTestUtil {
     val GLUE_CONFIG_PATH: Path = Path.of("secrets/glue.json")
     val GLUE_ASSUME_ROLE_CONFIG_PATH: Path = Path.of("secrets/glue_assume_role.json")
     private val GLUE_AWS_ASSUME_ROLE_CONFIG_PATH: Path =
@@ -21,7 +21,7 @@ object IcebergV2TestUtil {
 
     fun parseConfig(path: Path) =
         getConfig(
-            ValidatedJsonUtils.parseOne(IcebergV2Specification::class.java, Files.readString(path))
+            ValidatedJsonUtils.parseOne(S3DataLakeSpecification::class.java, Files.readString(path))
         )
 
     fun getAWSSystemCredentials(): AWSSystemCredentials {
@@ -35,10 +35,11 @@ object IcebergV2TestUtil {
     }
 
     fun getConfig(spec: ConfigurationSpecification) =
-        IcebergV2ConfigurationFactory().makeWithoutExceptionHandling(spec as IcebergV2Specification)
+        S3DataLakeConfigurationFactory()
+            .makeWithoutExceptionHandling(spec as S3DataLakeSpecification)
 
-    fun getCatalog(config: IcebergV2Configuration, awsSystemCredentials: AWSSystemCredentials) =
-        IcebergUtil(SimpleTableIdGenerator(), awsSystemCredentials).let { icebergUtil ->
+    fun getCatalog(config: S3DataLakeConfiguration, awsSystemCredentials: AWSSystemCredentials) =
+        S3DataLakeUtil(SimpleTableIdGenerator(), awsSystemCredentials).let { icebergUtil ->
             val props = icebergUtil.toCatalogProperties(config)
             icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)
         }

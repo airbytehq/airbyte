@@ -16,7 +16,7 @@ import org.apache.iceberg.io.SupportsPrefixOperations
  * catalog implementations do not clear the underlying files written to table storage.
  */
 @Singleton
-class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
+class S3DataLakeTableCleaner(private val s3DataLakeUtil: S3DataLakeUtil) {
 
     /**
      * Clears the table identified by the provided [TableIdentifier]. This removes all data and
@@ -49,7 +49,7 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
         val genIdsToDelete =
             generationIdSuffix
                 .filter {
-                    icebergUtil.assertGenerationIdSuffixIsOfValidFormat(it)
+                    s3DataLakeUtil.assertGenerationIdSuffixIsOfValidFormat(it)
                     true
                 }
                 .toSet()

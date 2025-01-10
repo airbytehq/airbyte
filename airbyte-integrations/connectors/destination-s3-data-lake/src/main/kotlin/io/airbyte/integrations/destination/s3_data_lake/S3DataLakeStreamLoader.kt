@@ -12,18 +12,18 @@ import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableCleaner
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableWriterFactory
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
+import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableCleaner
+import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
+import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Table
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
-class IcebergStreamLoader(
+class S3DataLakeStreamLoader(
     override val stream: DestinationStream,
     private val table: Table,
-    private val icebergTableWriterFactory: IcebergTableWriterFactory,
-    private val icebergUtil: IcebergUtil,
+    private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
+    private val s3DataLakeUtil: S3DataLakeUtil,
     private val pipeline: MapperPipeline,
     private val stagingBranchName: String,
     private val mainBranchName: String
@@ -35,17 +35,17 @@ class IcebergStreamLoader(
         totalSizeBytes: Long,
         endOfStream: Boolean
     ): Batch {
-        icebergTableWriterFactory
+        s3DataLakeTableWriterFactory
             .create(
                 table = table,
-                generationId = icebergUtil.constructGenerationIdSuffix(stream),
+                generationId = s3DataLakeUtil.constructGenerationIdSuffix(stream),
                 importType = stream.importType
             )
             .use { writer ->
                 log.info { "Writing records to branch $stagingBranchName" }
                 records.forEach { record ->
                     val icebergRecord =
-                        icebergUtil.toRecord(
+                        s3DataLakeUtil.toRecord(
                             record = record,
                             stream = stream,
                             tableSchema = table.schema(),
@@ -84,10 +84,10 @@ class IcebergStreamLoader(
                 }
                 val generationIdsToDelete =
                     (0 until stream.minimumGenerationId).map(
-                        icebergUtil::constructGenerationIdSuffix
+                        s3DataLakeUtil::constructGenerationIdSuffix
                     )
-                val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
-                icebergTableCleaner.deleteGenerationId(
+                val s3DataLakeTableCleaner = S3DataLakeTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+                s3DataLakeTableCleaner.deleteGenerationId(
                     table,
                     stagingBranchName,
                     generationIdsToDelete

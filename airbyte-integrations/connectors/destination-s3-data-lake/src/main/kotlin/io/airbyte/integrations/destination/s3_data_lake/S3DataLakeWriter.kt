@@ -8,25 +8,25 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableWriterFactory
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
+import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
+import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import javax.inject.Singleton
 import org.apache.iceberg.Schema
 
 @Singleton
-class IcebergV2Writer(
-    private val icebergTableWriterFactory: IcebergTableWriterFactory,
-    private val icebergConfiguration: IcebergV2Configuration,
-    private val icebergUtil: IcebergUtil
+class S3DataLakeWriter(
+    private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
+    private val icebergConfiguration: S3DataLakeConfiguration,
+    private val s3DataLakeUtil: S3DataLakeUtil
 ) : DestinationWriter {
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        val properties = icebergUtil.toCatalogProperties(config = icebergConfiguration)
-        val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
+        val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
+        val catalog = s3DataLakeUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
         val pipeline = IcebergParquetPipelineFactory().create(stream)
-        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+        val schema = s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
         val table =
-            icebergUtil.createTable(
+            s3DataLakeUtil.createTable(
                 streamDescriptor = stream.descriptor,
                 catalog = catalog,
                 schema = schema,
@@ -35,11 +35,11 @@ class IcebergV2Writer(
 
         existingAndIncomingSchemaShouldBeSame(catalogSchema = schema, tableSchema = table.schema())
 
-        return IcebergStreamLoader(
+        return S3DataLakeStreamLoader(
             stream = stream,
             table = table,
-            icebergTableWriterFactory = icebergTableWriterFactory,
-            icebergUtil = icebergUtil,
+            s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
+            s3DataLakeUtil = s3DataLakeUtil,
             pipeline = pipeline,
             stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,

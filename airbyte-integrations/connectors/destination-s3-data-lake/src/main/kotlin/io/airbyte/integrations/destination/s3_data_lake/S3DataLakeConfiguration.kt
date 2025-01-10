@@ -20,7 +20,7 @@ const val DEFAULT_STAGING_BRANCH = "airbyte_staging"
 const val TEST_NAMESPACE = "airbyte_test_namespace"
 const val TEST_TABLE = "airbyte_test_table"
 
-data class IcebergV2Configuration(
+data class S3DataLakeConfiguration(
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration
@@ -31,12 +31,12 @@ data class IcebergV2Configuration(
     S3BucketConfigurationProvider
 
 @Singleton
-class IcebergV2ConfigurationFactory :
-    DestinationConfigurationFactory<IcebergV2Specification, IcebergV2Configuration> {
+class S3DataLakeConfigurationFactory :
+    DestinationConfigurationFactory<S3DataLakeSpecification, S3DataLakeConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: IcebergV2Specification
-    ): IcebergV2Configuration {
-        return IcebergV2Configuration(
+        pojo: S3DataLakeSpecification
+    ): S3DataLakeConfiguration {
+        return S3DataLakeConfiguration(
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
@@ -45,9 +45,9 @@ class IcebergV2ConfigurationFactory :
 }
 
 @Factory
-class IcebergV2ConfigurationProvider(private val config: DestinationConfiguration) {
+class S3DataLakeConfigurationProvider(private val config: DestinationConfiguration) {
     @Singleton
-    fun get(): IcebergV2Configuration {
-        return config as IcebergV2Configuration
+    fun get(): S3DataLakeConfiguration {
+        return config as S3DataLakeConfiguration
     }
 }
