@@ -192,6 +192,8 @@ class S3ClientFactory(
     private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
 ) {
     companion object {
+        const val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
+
         fun <T> make(config: T) where
         T : S3BucketConfigurationProvider,
         T : AWSAccessKeyConfigurationProvider,
@@ -200,7 +202,6 @@ class S3ClientFactory(
             S3ClientFactory(config, config, config, config).make()
     }
 
-    private val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
     private val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
     private val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
     private val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
