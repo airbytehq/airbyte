@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 import io.airbyte.cdk.load.file.s3.S3ClientFactory
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sts.StsClient
@@ -40,9 +41,13 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
             val provider =
                 when (mode) {
                     AWS_CREDENTIALS_MODE_STATIC_CREDS -> {
-                        StaticCredentialsProvider.create(
-                            AwsBasicCredentials.create(accessKey, secretKey)
-                        )
+                        if (accessKey != null && secretKey != null) {
+                            StaticCredentialsProvider.create(
+                                AwsBasicCredentials.create(accessKey, secretKey)
+                            )
+                        } else {
+                            DefaultCredentialsProvider.create()
+                        }
                     }
                     AWS_CREDENTIALS_MODE_ASSUME_ROLE -> {
                         StsAssumeRoleCredentialsProvider.builder()
