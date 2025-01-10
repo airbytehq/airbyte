@@ -302,6 +302,7 @@ class LinkedInAdsErrorHandler(DefaultErrorHandler):
     """
     An error handler for LinkedIn Ads that interprets responses, providing custom error resolutions
     for specific exceptions like `InvalidURL`.
+    This is a temporary workaround untill we update this in the CDK. https://github.com/airbytehq/airbyte-internal-issues/issues/11320
     """
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
