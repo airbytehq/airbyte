@@ -351,7 +351,7 @@ definitions:
       authenticator:
         type: NoAuth
       http_method: POST
-      request_parameters: { }
+      request_parameters: {}
       request_headers:
         Content-Type: application/x-www-form-urlencoded
       request_body_data: >-
