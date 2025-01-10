@@ -1105,6 +1105,29 @@ class CustomerJourney(ShopifyBulkQuery):
                                     term
                                 }
                             }
+                            customerJourney {
+                                moments {
+                                    ... on CustomerVisit {
+                                        id
+                                        landingPage
+                                        landingPageHtml
+                                        occurredAt
+                                        referralCode
+                                        referralInfoHtml
+                                        referrerUrl
+                                        source
+                                        sourceDescription
+                                        sourceType
+                                        utmParameters {
+                                            campaign
+                                            content
+                                            medium
+                                            source
+                                            term
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1127,6 +1150,16 @@ class CustomerJourney(ShopifyBulkQuery):
         "sourceDescription",
         Field(name="utmParameters", fields=["campaign", "content", "medium", "source", "term"]),
     ]
+
+    customer_visit_fragment: List[InlineFragment] = [
+        InlineFragment(type="CustomerVisit", fields=visit_fields),
+    ]
+
+    # # use this in the next version
+    # moments_fields: List[Field] = [
+    #     Field(name="edges", fields=[Field(name="node", fields=customer_visit_fragment)]),
+    # ]
+
     customer_journey_summary_fields: List[Field] = [
         "ready",
         Field(name="momentsCount", fields=["count", "precision"]),
@@ -1134,6 +1167,8 @@ class CustomerJourney(ShopifyBulkQuery):
         "daysToConversion",
         Field(name="firstVisit", fields=visit_fields),
         Field(name="lastVisit", fields=visit_fields),
+        # # use this in the next version
+        # Field(name="moments", fields=moments_fields),
     ]
 
     query_nodes: List[Field] = [
@@ -1142,6 +1177,12 @@ class CustomerJourney(ShopifyBulkQuery):
         "createdAt",
         "updatedAt",
         Field(name="customerJourneySummary", fields=customer_journey_summary_fields),
+        Field(
+            name="customerJourney",
+            fields=[
+                Field(name="moments", fields=customer_visit_fragment),
+            ],
+        ),
     ]
 
     record_composition = {
@@ -1152,6 +1193,9 @@ class CustomerJourney(ShopifyBulkQuery):
         self,
         visit_data: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
+        if not visit_data:
+            return {}
+
         # save the id before it's resolved
         visit_data["admin_graphql_api_id"] = visit_data.get("id")
         # resolve the order_id to str
@@ -1162,14 +1206,24 @@ class CustomerJourney(ShopifyBulkQuery):
         visit_data = self.tools.fields_names_to_snake_case(visit_data)
         return visit_data
 
+    def process_moments(self, entity: List[Mapping[str, Any]]) -> List[MutableMapping[str, Any]]:
+        moments = []
+        for item in entity:
+            moments.append(self.process_visit(item))
+        return moments
+
     def process_customer_journey(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         customer_journey_summary = record.get("customerJourneySummary", {})
         if customer_journey_summary:
             # process first, last visit data
-            first_visit = customer_journey_summary.get("firstVisit", {})
-            last_visit = customer_journey_summary.get("lastVisit", {})
-            customer_journey_summary["firstVisit"] = self.process_visit(first_visit) if first_visit else {}
-            customer_journey_summary["lastVisit"] = self.process_visit(last_visit) if last_visit else {}
+            customer_journey_summary["firstVisit"] = self.process_visit(customer_journey_summary.get("firstVisit"))
+            customer_journey_summary["lastVisit"] = self.process_visit(customer_journey_summary.get("lastVisit"))
+
+            # # this will be a part of summary in the next api version
+            if customer_journey := record.get("customerJourney", {}):
+                moments = customer_journey.get("moments", [])
+                customer_journey_summary["moments"] = self.process_moments(moments)
+
         # cast field names to snake_case
         customer_journey_summary = self.tools.fields_names_to_snake_case(customer_journey_summary)
         return customer_journey_summary

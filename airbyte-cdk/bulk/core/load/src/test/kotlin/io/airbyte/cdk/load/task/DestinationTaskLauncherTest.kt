@@ -76,8 +76,8 @@ import org.junit.jupiter.api.Test
             "MockScopeProvider",
         ]
 )
-class DestinationTaskLauncherTest<T : ScopedTask> {
-    @Inject lateinit var mockScopeProvider: MockScopeProvider
+class DestinationTaskLauncherTest {
+    @Inject lateinit var taskScopeProvider: TaskScopeProvider
     @Inject lateinit var taskLauncher: DestinationTaskLauncher
     @Inject lateinit var syncManager: SyncManager
 
@@ -445,42 +445,6 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
         // This should run teardown unconditionally.
         launch { taskLauncher.handleStreamClosed(MockDestinationCatalogFactory.stream1.descriptor) }
         teardownTaskFactory.hasRun.receive()
-    }
-
-    @Test
-    fun testHandleTeardownComplete() = runTest {
-        // This should close the scope provider.
-        launch {
-            taskLauncher.run()
-            Assertions.assertTrue(mockScopeProvider.didClose)
-        }
-        taskLauncher.handleTeardownComplete()
-    }
-
-    @Test
-    fun testHandleCallbackWithFailure() = runTest {
-        launch {
-            taskLauncher.run()
-            Assertions.assertTrue(mockScopeProvider.didKill)
-        }
-        taskLauncher.handleTeardownComplete(success = false)
-    }
-
-    @Test
-    fun `test exceptions in tasks throw`(catalog: DestinationCatalog) = runTest {
-        mockSpillToDiskTaskFactory.forceFailure.getAndSet(true)
-
-        val job = launch { taskLauncher.run() }
-        taskLauncher.handleTeardownComplete()
-        job.join()
-
-        mockFailStreamTaskFactory.didRunFor.close()
-
-        Assertions.assertEquals(
-            catalog.streams.map { it.descriptor }.toSet(),
-            mockFailStreamTaskFactory.didRunFor.toList().toSet(),
-            "FailStreamTask was run for each stream"
-        )
     }
 
     @Test

@@ -19,7 +19,7 @@ class DestinationUncleanExitException(
 ) :
     Exception(
         """
-        Destination process exited uncleanly: $exitCode
+        Connector process exited uncleanly: $exitCode
         Trace messages:
         """.trimIndent()
         // explicit concat because otherwise trimIndent behaves badly

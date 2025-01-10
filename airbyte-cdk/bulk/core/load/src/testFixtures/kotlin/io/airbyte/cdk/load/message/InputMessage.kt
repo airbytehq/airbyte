@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
@@ -35,7 +34,7 @@ data class InputRecord(
         changes: MutableList<Meta.Change> = mutableListOf(),
     ) : this(
         stream = DestinationStream.Descriptor(namespace, name),
-        data = JsonToAirbyteValue().convert(data.deserializeToNode(), ObjectTypeWithoutSchema),
+        data = JsonToAirbyteValue().convert(data.deserializeToNode()),
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
         serialized = "",

@@ -159,6 +159,24 @@ class MySqlSourceCursorBasedIntegrationTest {
         assertTrue(run2.records().isEmpty())
     }
 
+    @Test
+    fun testCursorBasedViewRead() {
+        provisionView(connectionFactory)
+        val catalog = getConfiguredCatalog()
+        catalog.streams[0].stream.name = viewName
+        val run1: BufferingOutputConsumer = CliRunner.source("read", config, catalog).run()
+        val lastStateMessageFromRun1 = run1.states().last()
+        val lastStreamStateFromRun1 = lastStateMessageFromRun1.stream.streamState
+
+        assertEquals("20", lastStreamStateFromRun1.get("cursor").textValue())
+        assertEquals(2, lastStreamStateFromRun1.get("version").intValue())
+        assertEquals("cursor_based", lastStreamStateFromRun1.get("state_type").asText())
+        assertEquals(viewName, lastStreamStateFromRun1.get("stream_name").asText())
+        assertEquals(listOf("k"), lastStreamStateFromRun1.get("cursor_field").map { it.asText() })
+        assertEquals("test", lastStreamStateFromRun1.get("stream_namespace").asText())
+        assertEquals(0, lastStreamStateFromRun1.get("cursor_record_count").asInt())
+    }
+
     companion object {
         val log = KotlinLogging.logger {}
         val dbContainer: MySQLContainer<*> = MySqlContainerFactory.shared(imageName = "mysql:8.0")
@@ -203,6 +221,17 @@ class MySqlSourceCursorBasedIntegrationTest {
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
                     stmt.execute("CREATE TABLE test.$tableName(k INT PRIMARY KEY, v VARCHAR(80))")
+                }
+            }
+        }
+
+        lateinit var viewName: String
+        fun provisionView(targetConnectionFactory: JdbcConnectionFactory) {
+            viewName = "$tableName-view"
+            targetConnectionFactory.get().use { connection: Connection ->
+                connection.isReadOnly = false
+                connection.createStatement().use { stmt: Statement ->
+                    stmt.execute("CREATE VIEW test.`$viewName` AS SELECT * FROM test.`$tableName`")
                 }
             }
         }

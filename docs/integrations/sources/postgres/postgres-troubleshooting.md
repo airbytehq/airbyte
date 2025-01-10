@@ -7,7 +7,6 @@ import TabItem from '@theme/TabItem';
 
 ### General Limitations
 
-- The Postgres source connector currently does not handle schemas larger than 4MB.
 - The Postgres source connector does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 - The following two schema evolution actions are currently supported:
   - Adding/removing tables without resetting the entire connection at the destination

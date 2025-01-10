@@ -239,7 +239,7 @@ def prepare_container_for_poe_tasks(
                 ],
                 use_entrypoint=True,
             )
-            .with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True)
+            .with_exec(["poetry", "lock"], use_entrypoint=True)
         )
 
     # Install the poetry package

@@ -5,7 +5,7 @@ Airbyte Enterprise Connectors are a selection of premium connectors available ex
 :::
 
 
-Airbyte's incubating Oracle enterprise source connector offers the following features:
+Airbyte's Oracle enterprise source connector offers the following features:
 
 - Incremental as well as Full Refresh
   [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing

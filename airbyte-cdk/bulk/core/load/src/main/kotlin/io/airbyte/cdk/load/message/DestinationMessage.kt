@@ -10,6 +10,10 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
@@ -27,6 +31,8 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStre
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
+import java.math.BigInteger
+import java.time.OffsetDateTime
 
 /**
  * Internal representation of destination messages. These are intended to be specialized for
@@ -61,6 +67,43 @@ data class Meta(
                 COLUMN_NAME_AB_META,
                 COLUMN_NAME_AB_GENERATION_ID,
             )
+
+        fun getMetaValue(metaColumnName: String, value: String): AirbyteValue {
+            if (!COLUMN_NAMES.contains(metaColumnName)) {
+                throw IllegalArgumentException("Invalid meta column name: $metaColumnName")
+            }
+            fun toObjectValue(value: JsonNode): AirbyteValue {
+                if (value.isTextual) {
+                    return toObjectValue(value.textValue().deserializeToNode())
+                }
+                return value.toAirbyteValue()
+            }
+            return when (metaColumnName) {
+                COLUMN_NAME_AB_RAW_ID -> StringValue(value)
+                COLUMN_NAME_AB_EXTRACTED_AT -> {
+                    // Some destinations represent extractedAt as a long epochMillis,
+                    // and others represent it as a timestamp string.
+                    // Handle both cases here.
+                    try {
+                        IntegerValue(BigInteger(value))
+                    } catch (e: Exception) {
+                        TimestampWithTimezoneValue(
+                            OffsetDateTime.parse(
+                                value,
+                                AirbyteValueDeepCoercingMapper.DATE_TIME_FORMATTER
+                            )
+                        )
+                    }
+                }
+                COLUMN_NAME_AB_META -> toObjectValue(value.deserializeToNode())
+                COLUMN_NAME_AB_GENERATION_ID -> IntegerValue(BigInteger(value))
+                COLUMN_NAME_DATA -> toObjectValue(value.deserializeToNode())
+                else ->
+                    throw NotImplementedError(
+                        "Column name $metaColumnName is not yet supported. This is probably a bug."
+                    )
+            }
+        }
     }
 
     fun asProtocolObject(): AirbyteRecordMessageMeta =
@@ -91,7 +134,7 @@ data class DestinationRecord(
     fun asRecordMarshaledToAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
             stream,
-            message.record.data.toAirbyteValue(schema),
+            message.record.data.toAirbyteValue(),
             message.record.emittedAt,
             Meta(
                 message.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }

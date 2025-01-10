@@ -100,9 +100,7 @@ class GenerateDbml(Step):
             .with_workdir("/app")
         )
 
-        return container.with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True).with_exec(
-            ["poetry", "install"], use_entrypoint=True
-        )
+        return container.with_exec(["poetry", "lock"], use_entrypoint=True).with_exec(["poetry", "install"], use_entrypoint=True)
 
 
 class UploadDbmlSchema(Step):

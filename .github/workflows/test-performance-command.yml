@@ -131,7 +131,7 @@ jobs:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Archive test reports artifacts
         if: github.event.inputs.comment-id && failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: |
@@ -145,7 +145,7 @@ jobs:
 
       - name: Test coverage reports artifacts
         if: github.event.inputs.comment-id && success()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: |

@@ -1,0 +1,67 @@
+plugins {
+    id 'application'
+    id 'airbyte-bulk-connector'
+}
+
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = ['load-iceberg-parquet']
+    cdk = 'local'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.s3_data_lake.S3DataLakeDestination'
+
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+
+    // Uncomment and replace to run locally
+    //applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/sun.security.action=ALL-UNNAMED', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+ext {
+    apacheIcebergVersion = '1.7.0'
+    awsSdkVersion = '2.29.9'
+    junitVersion = '5.11.3'
+}
+
+configurations.configureEach {
+    // Exclude additional SLF4J providers from all classpaths
+    exclude group:"org.slf4j", module:"slf4j-reload4j"
+}
+
+// Uncomment to run locally
+//run {
+//    standardInput = System.in
+//}
+
+dependencies {
+    implementation("org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-aws:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}")
+    implementation("software.amazon.awssdk:s3:${project.ext.awsSdkVersion}")
+    implementation("software.amazon.awssdk:sts:${project.ext.awsSdkVersion}")
+    implementation("software.amazon.awssdk:glue:${project.ext.awsSdkVersion}")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
+    implementation("org.apache.hadoop:hadoop-common:3.4.1")
+    implementation("org.projectnessie.nessie:nessie-client:0.99.0")
+    implementation("org.apache.hadoop:hadoop-client-api:3.4.1")
+    implementation("jakarta.inject:jakarta.inject-api:2.0.1")
+    implementation("com.github.spotbugs:spotbugs-annotations:4.8.6")
+    implementation("io.micronaut:micronaut-inject:4.6.1")
+    implementation("com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39")
+
+    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${project.ext.junitVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:${project.ext.junitVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.ext.junitVersion}")
+
+    integrationTestImplementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
+    integrationTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
+    integrationTestImplementation("org.projectnessie.nessie:nessie-minio-testcontainer:0.101.1")
+}
+
+test {
+    systemProperties(["mockk.junit.extension.keepmocks":"true", "mockk.junit.extension.requireParallelTesting":"true"])
+}

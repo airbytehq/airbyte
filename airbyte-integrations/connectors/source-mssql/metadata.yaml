@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 4.1.17
+  dockerImageTag: 4.1.18
   dockerRepository: airbyte/source-mssql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   githubIssueLabel: source-mssql
@@ -38,7 +38,7 @@ data:
         message: "Add default cursor for cdc"
         upgradeDeadline: "2023-08-23"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
