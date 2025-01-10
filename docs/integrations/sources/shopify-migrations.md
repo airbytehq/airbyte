@@ -1,5 +1,17 @@
 # Shopify Migration Guide
 
+## Upgrading to 2.6.0
+This version completely deprecates the following streams:
+- `Products Graph QL`
+- `Customer Saved Search` 
+
+To replace the old `Products Graph QL` use the `Products` instead.
+There is no effective replacement for the `Customer Saved Search`. This stream would be re-implemented using `GraphQL BULK` soon.
+
+### Action items required for 2.6.0
+Please, disable the affected streams to continue syncing the data. Use the stream equivalent instead.
+
+
 ## Upgrading to 2.2.0
 This version updates the schema for countries as our testing caught that `provinces.tax_percentage` is a number and not an integer.
 
