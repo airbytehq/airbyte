@@ -76,9 +76,9 @@ data:
           - scopeType: stream
             impactedScopes: ["countries"]
       2.6.0:
-        message: 
+        message:
           "The `ProductsGraphQL` and the `CustomerSavedSearch` streams are now deprecated and removed. Use the `Products` stream instead.
-          More details here: ____ ."
+          More details here: https://github.com/airbytehq/airbyte/pull/51037."
         upgradeDeadline: "2025-02-15"
         scopedImpact:
           - scopeType: stream

@@ -5,7 +5,6 @@
 
 from typing import Any, Mapping, MutableMapping
 
-
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
     CustomerAddresses,
