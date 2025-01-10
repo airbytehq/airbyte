@@ -673,6 +673,13 @@ definitions:
                 type:
                   - "null"
                   - string
+          details:
+            description: Additional details or context related to the incident.
+            type:
+              - "null"
+              - object
+            properties: {}
+            additionalProperties: true
           extraProperties:
             description:
               Map of key-value pairs of custom properties of the incident.
@@ -2809,6 +2816,13 @@ streams:
                 type:
                   - "null"
                   - string
+          details:
+            description: Additional details or context related to the incident.
+            type:
+              - "null"
+              - object
+            properties: {}
+            additionalProperties: true
           extraProperties:
             description:
               Map of key-value pairs of custom properties of the incident.
