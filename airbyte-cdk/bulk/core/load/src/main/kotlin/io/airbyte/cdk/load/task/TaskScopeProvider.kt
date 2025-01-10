@@ -54,8 +54,7 @@ interface WrappedTask<T : Task> : Task {
 
 @Singleton
 @Secondary
-class DestinationTaskScopeProvider(config: DestinationConfiguration) :
-    TaskScopeProvider<WrappedTask<ScopedTask>> {
+class TaskScopeProvider(config: DestinationConfiguration) {
     private val log = KotlinLogging.logger {}
 
     private val timeoutMs = config.gracefulCancellationTimeoutMs
@@ -81,7 +80,7 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
 
     private val failFastScope = ControlScope("input", Job(), Dispatchers.IO)
 
-    override suspend fun launch(task: WrappedTask<ScopedTask>) {
+    suspend fun launch(task: WrappedTask<ScopedTask>) {
         val scope =
             when (task.innerTask) {
                 is InternalScope -> internalScope
@@ -97,7 +96,7 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
         }
     }
 
-    override suspend fun close() {
+    suspend fun close() {
         // Under normal operation, all tasks should be complete
         // (except things like force flush, which loop). So
         // - it's safe to force cancel the internal tasks
@@ -126,7 +125,7 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
         internalScope.job.cancel()
     }
 
-    override suspend fun kill() {
+    suspend fun kill() {
         log.info { "Killing task scopes" }
         // Terminate tasks which should be immediately terminated
         failFastScope.job.cancel()

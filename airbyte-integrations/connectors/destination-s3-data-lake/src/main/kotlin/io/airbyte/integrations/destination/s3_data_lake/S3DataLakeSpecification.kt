@@ -20,7 +20,7 @@ import jakarta.inject.Singleton
 
 @Singleton
 @JsonSchemaTitle("Iceberg V2 Destination Specification")
-class IcebergV2Specification :
+class S3DataLakeSpecification :
     ConfigurationSpecification(),
     AWSAccessKeySpecification,
     S3BucketSpecification,
@@ -61,7 +61,7 @@ class IcebergV2Specification :
 }
 
 @Singleton
-class IcebergV2SpecificationExtension : DestinationSpecificationExtension {
+class S3DataLakeSpecificationExtension : DestinationSpecificationExtension {
     override val supportedSyncModes =
         listOf(
             DestinationSyncMode.OVERWRITE,

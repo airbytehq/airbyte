@@ -17,7 +17,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
  * Iceberg doesn't have a TimeWithTimezone type. So map expectedRecords' TimeWithTimezone to
  * TimeWithoutTimezone.
  */
-object IcebergExpectedRecordMapper : ExpectedRecordMapper {
+object S3DataLakeExpectedRecordMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
         val mappedData = mapTimeTzToTimeNtz(expectedRecord.data)
         return expectedRecord.copy(data = mappedData as ObjectValue)

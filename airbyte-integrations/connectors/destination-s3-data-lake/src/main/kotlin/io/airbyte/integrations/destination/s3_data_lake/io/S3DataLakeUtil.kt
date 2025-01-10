@@ -19,13 +19,18 @@ import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.integrations.destination.s3_data_lake.ACCESS_KEY_ID
+import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_ARN
+import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_EXTERNAL_ID
+import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_REGION
+import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE
+import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE_ASSUME_ROLE
+import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE_STATIC_CREDS
 import io.airbyte.integrations.destination.s3_data_lake.GlueCredentialsProvider
-import io.airbyte.integrations.destination.s3_data_lake.IcebergV2Configuration
+import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.SECRET_ACCESS_KEY
 import io.airbyte.integrations.destination.s3_data_lake.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.time.Duration
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.CatalogProperties.URI
@@ -37,7 +42,6 @@ import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
-import org.apache.iceberg.aws.AssumeRoleAwsClientFactory
 import org.apache.iceberg.aws.AwsClientProperties
 import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.aws.s3.S3FileIO
@@ -68,7 +72,7 @@ data class AWSSystemCredentials(
  * will be removed when we change all of this to use Micronaut
  */
 @Singleton
-class IcebergUtil(
+class S3DataLakeUtil(
     private val tableIdGenerator: TableIdGenerator,
     val awsSystemCredentials: AWSSystemCredentials? = null
 ) {
@@ -202,7 +206,7 @@ class IcebergUtil(
      * @param config The destination's configuration
      * @return The Iceberg [Catalog] configuration properties.
      */
-    fun toCatalogProperties(config: IcebergV2Configuration): Map<String, String> {
+    fun toCatalogProperties(config: S3DataLakeConfiguration): Map<String, String> {
         val icebergCatalogConfig = config.icebergCatalogConfiguration
         val catalogConfig = icebergCatalogConfig.catalogConfiguration
         val region = config.s3BucketConfiguration.s3BucketRegion.region
@@ -210,14 +214,11 @@ class IcebergUtil(
         // Build base S3 properties
         val s3Properties = buildS3Properties(config, icebergCatalogConfig)
 
-        // Set AWS region as system property
-        System.setProperty("aws.region", region)
-
         return when (catalogConfig) {
             is NessieCatalogConfiguration ->
                 buildNessieProperties(config, catalogConfig, s3Properties)
             is GlueCatalogConfiguration ->
-                buildGlueProperties(config, catalogConfig, icebergCatalogConfig)
+                buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region)
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"
@@ -226,8 +227,8 @@ class IcebergUtil(
     }
 
     private fun buildS3Properties(
-        config: IcebergV2Configuration,
-        icebergCatalogConfig: IcebergCatalogConfiguration
+        config: S3DataLakeConfiguration,
+        icebergCatalogConfig: IcebergCatalogConfiguration,
     ): Map<String, String> {
         return buildMap {
             put(CatalogProperties.FILE_IO_IMPL, S3FileIO::class.java.name)
@@ -242,7 +243,7 @@ class IcebergUtil(
     }
 
     private fun buildNessieProperties(
-        config: IcebergV2Configuration,
+        config: S3DataLakeConfiguration,
         catalogConfig: NessieCatalogConfiguration,
         s3Properties: Map<String, String>
     ): Map<String, String> {
@@ -276,15 +277,17 @@ class IcebergUtil(
     }
 
     private fun buildGlueProperties(
-        config: IcebergV2Configuration,
+        config: S3DataLakeConfiguration,
         catalogConfig: GlueCatalogConfiguration,
-        icebergCatalogConfig: IcebergCatalogConfiguration
+        icebergCatalogConfig: IcebergCatalogConfiguration,
+        region: String,
     ): Map<String, String> {
         val baseGlueProperties =
             mapOf(
                 CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_GLUE,
                 CatalogProperties.WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
-                AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId
+                AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId,
+                AwsClientProperties.CLIENT_REGION to region,
             )
 
         val clientProperties =
@@ -302,7 +305,7 @@ class IcebergUtil(
 
     private fun buildRoleBasedClientProperties(
         roleArn: String,
-        config: IcebergV2Configuration
+        config: S3DataLakeConfiguration
     ): Map<String, String> {
         val region = config.s3BucketConfiguration.s3BucketRegion.region
         val (accessKeyId, secretAccessKey, externalId) =
@@ -320,26 +323,37 @@ class IcebergUtil(
                 )
             }
 
-        // The AssumeRoleAwsClientFactory doesn't respect the access / secret key properties from
-        // the map. Instead, it always uses the default AWS cred provider chain.
-        // So we need to manually set the secrets as system properties here.
-        System.setProperty("aws.region", region)
-        System.setProperty("aws.accessKeyId", accessKeyId)
-        System.setProperty("aws.secretAccessKey", secretAccessKey)
-
         return mapOf(
-            AwsProperties.REST_ACCESS_KEY_ID to accessKeyId,
-            AwsProperties.REST_SECRET_ACCESS_KEY to secretAccessKey,
-            AwsProperties.CLIENT_FACTORY to AssumeRoleAwsClientFactory::class.java.name,
-            AwsProperties.CLIENT_ASSUME_ROLE_ARN to roleArn,
-            AwsProperties.CLIENT_ASSUME_ROLE_REGION to region,
-            AwsProperties.CLIENT_ASSUME_ROLE_TIMEOUT_SEC to
-                Duration.ofHours(1).toSeconds().toString(),
-            AwsProperties.CLIENT_ASSUME_ROLE_EXTERNAL_ID to externalId
+            // Note: no explicit credentials, whether on AwsProperties.REST_ACCESS_KEY_ID, or on
+            // S3FileIOProperties.ACCESS_KEY_ID.
+            // If you set S3FileIOProperties.ACCESS_KEY_ID, it causes the iceberg SDK to use those
+            // credentials
+            // _instead_ of the explicit GlueCredentialsProvider.
+            // Note that we are _not_ setting any of the AwsProperties.CLIENT_ASSUME_ROLE_XYZ
+            // properties - this is because we're manually handling the assume role stuff within
+            // GlueCredentialsProvider.
+            // And we're doing it ourselves because the built-in handling (i.e. setting
+            // `AwsProperties.CLIENT_FACTORY to AssumeRoleAwsClientFactory::class.java.name`)
+            // has some bad behavior (there's no way to actually set the bootstrap credentials
+            // on the STS client, so you have to do a
+            // `System.setProperty(access key, secret key, external ID)`)
+            AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
+                GlueCredentialsProvider::class.java.name,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$AWS_CREDENTIALS_MODE" to
+                AWS_CREDENTIALS_MODE_ASSUME_ROLE,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ACCESS_KEY_ID" to accessKeyId,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$SECRET_ACCESS_KEY" to
+                secretAccessKey,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ASSUME_ROLE_ARN" to roleArn,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ASSUME_ROLE_EXTERNAL_ID" to
+                externalId,
+            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$ASSUME_ROLE_REGION" to region,
         )
     }
 
-    private fun buildKeyBasedClientProperties(config: IcebergV2Configuration): Map<String, String> {
+    private fun buildKeyBasedClientProperties(
+        config: S3DataLakeConfiguration
+    ): Map<String, String> {
         val clientCredentialsProviderPrefix = "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}."
 
         val properties =
@@ -348,6 +362,8 @@ class IcebergUtil(
                     config.s3BucketConfiguration.s3BucketRegion.region,
                 AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
                     GlueCredentialsProvider::class.java.name,
+                "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$AWS_CREDENTIALS_MODE" to
+                    AWS_CREDENTIALS_MODE_STATIC_CREDS,
             )
 
         // If we don't have explicit S3 creds, fall back to the default creds provider chain.

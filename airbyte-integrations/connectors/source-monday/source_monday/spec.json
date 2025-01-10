@@ -117,14 +117,10 @@
         }
       },
       "oauth_connector_input_specification": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "consent_url": "https://auth.monday.com/oauth2/authorize?{client_id_key}={{client_id_key}}&{redirect_uri_key}={urlEncoder:{{redirect_uri_key}}}&{scope_key}={urlEncoder:{{scope_key}}}&{state_key}={{state_key}}&subdomain={subdomain}",
-          "scope": "me:read boards:read workspaces:read users:read account:read updates:read assets:read tags:read teams:read",
-          "access_token_url": "https://auth.monday.com/oauth2/token?{client_id_key}={{client_id_key}}&{client_secret_key}={{client_secret_key}}&{auth_code_key}={{auth_code_key}}&{redirect_uri_key}={urlEncoder:{{redirect_uri_key}}}",
-          "extract_output": ["access_token"]
-        }
+        "scope": "me:read boards:read workspaces:read users:read account:read updates:read assets:read tags:read teams:read",
+        "consent_url": "https://auth.monday.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}&subdomain={{subdomain}}",
+        "access_token_url": "https://auth.monday.com/oauth2/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}",
+        "extract_output": ["access_token"]
       },
       "oauth_user_input_from_connector_config_specification": {
         "type": "object",

@@ -17,7 +17,7 @@ import java.util.UUID
 import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.data.Record
 
-object IcebergV2DataDumper : DestinationDataDumper {
+object S3DataLakeDataDumper : DestinationDataDumper {
 
     private fun toAirbyteValue(record: Record): ObjectValue {
         return ObjectValue(
@@ -71,9 +71,9 @@ object IcebergV2DataDumper : DestinationDataDumper {
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        val config = IcebergV2TestUtil.getConfig(spec)
+        val config = S3DataLakeTestUtil.getConfig(spec)
         val catalog =
-            IcebergV2TestUtil.getCatalog(config, IcebergV2TestUtil.getAWSSystemCredentials())
+            S3DataLakeTestUtil.getCatalog(config, S3DataLakeTestUtil.getAWSSystemCredentials())
         val table =
             catalog.loadTable(
                 TableIdGeneratorFactory(config).create().toTableIdentifier(stream.descriptor)

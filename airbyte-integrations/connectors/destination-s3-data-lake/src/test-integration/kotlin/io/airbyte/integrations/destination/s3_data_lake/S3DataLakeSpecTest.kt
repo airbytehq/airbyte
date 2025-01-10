@@ -6,4 +6,4 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.spec.SpecTest
 
-class IcebergV2SpecTest : SpecTest()
+class S3DataLakeSpecTest : SpecTest()

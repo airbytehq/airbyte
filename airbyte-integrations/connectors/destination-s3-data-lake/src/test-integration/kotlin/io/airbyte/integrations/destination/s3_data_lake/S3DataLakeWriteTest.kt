@@ -19,17 +19,17 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-abstract class IcebergV2WriteTest(
+abstract class S3DataLakeWriteTest(
     configContents: String,
     destinationCleaner: DestinationCleaner,
     envVars: Map<String, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
         configContents,
-        IcebergV2Specification::class.java,
-        IcebergV2DataDumper,
+        S3DataLakeSpecification::class.java,
+        S3DataLakeDataDumper,
         destinationCleaner,
-        IcebergExpectedRecordMapper,
+        S3DataLakeExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
         supportsDedup = true,
         stringifySchemalessObjects = true,
@@ -83,34 +83,34 @@ abstract class IcebergV2WriteTest(
     }
 }
 
-class IcebergGlueWriteTest :
-    IcebergV2WriteTest(
-        Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
+class GlueWriteTest :
+    S3DataLakeWriteTest(
+        Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
         S3DataLakeDestinationCleaner(
-            IcebergV2TestUtil.getCatalog(
-                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH),
-                IcebergV2TestUtil.getAWSSystemCredentials()
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
+                S3DataLakeTestUtil.getAWSSystemCredentials()
             )
         )
     )
 
-class IcebergGlueAssumeRoleWriteTest :
-    IcebergV2WriteTest(
-        Files.readString(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
+class GlueAssumeRoleWriteTest :
+    S3DataLakeWriteTest(
+        Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
         S3DataLakeDestinationCleaner(
-            IcebergV2TestUtil.getCatalog(
-                IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-                IcebergV2TestUtil.getAWSSystemCredentials()
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
+                S3DataLakeTestUtil.getAWSSystemCredentials()
             )
         ),
-        IcebergV2TestUtil.getAWSSystemCredentialsAsMap()
+        S3DataLakeTestUtil.getAWSSystemCredentialsAsMap()
     )
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
 )
-class IcebergNessieMinioWriteTest :
-    IcebergV2WriteTest(
+class NessieMinioWriteTest :
+    S3DataLakeWriteTest(
         getConfig(),
         // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
         NoopDestinationCleaner
