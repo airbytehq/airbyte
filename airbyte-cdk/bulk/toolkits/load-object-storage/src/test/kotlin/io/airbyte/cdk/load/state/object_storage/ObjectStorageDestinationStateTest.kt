@@ -210,7 +210,7 @@ class ObjectStorageDestinationStateTest {
         ): List<Triple<Int, String, Long>> {
             val genIdKey = ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY
             val prefix =
-                "${d.pathFactory.prefix}/${stream.descriptor.namespace}/${stream.descriptor.name}"
+                "${d.pathFactory.finalPrefix}/${stream.descriptor.namespace}/${stream.descriptor.name}"
             val generations =
                 listOf(
                     Triple(0, "$prefix/key1-0", 0L),
