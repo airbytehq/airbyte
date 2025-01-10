@@ -20,7 +20,7 @@ on:
 jobs:
   publish_connectors:
     name: Publish connectors
-    runs-on: ubuntu-20.04-4core
+    runs-on: ubuntu-22.04-4core
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
