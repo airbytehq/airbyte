@@ -10,7 +10,6 @@ import requests
 import requests_mock
 
 
-
 def test_field_transformation(components_module):
     CustomFieldTransformation = components_module.CustomFieldTransformation
     with (
@@ -24,6 +23,7 @@ def test_field_transformation(components_module):
         # print(initial_record)
         # print("-------------------------------------")
         assert transformed_record == record_transformation.transform(initial_record)
+
 
 @pytest.fixture
 def req_mock():
@@ -46,7 +46,6 @@ def test_facebook_url_params(components_module, req_mock):
     prepared_request.method = "GET"
     prepared_request.url = "https://graph.facebook.com/"
     assert "access_token=page_access_token" in authenticator(prepared_request).path_url
-
 
 
 # @pytest.mark.parametrize("error_code", (400, 429, 500))
