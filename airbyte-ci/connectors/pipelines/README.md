@@ -854,6 +854,11 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.48.5  | [#49827](https://github.com/airbytehq/airbyte/pull/49827)  | Bypasses CI checks for promoted release candidate PRs.                                                         |
+| 4.48.4  | [#51003](https://github.com/airbytehq/airbyte/pull/51003)  | Install git in the build / test connector container when `--use-cdk-ref` is passed. |
+| 4.48.3  | [#50988](https://github.com/airbytehq/airbyte/pull/50988)  | Remove deprecated `--no-update` flag from poetry commands |
+| 4.48.2  | [#50871](https://github.com/airbytehq/airbyte/pull/50871)  | Speed up connector modification detection.                                                                                   |
+| 4.48.1  | [#50410](https://github.com/airbytehq/airbyte/pull/50410)  | Java connector build: give ownership of built artifacts to the current image user.                                                                                          |
 | 4.48.0  | [#49960](https://github.com/airbytehq/airbyte/pull/49960)  | Deprecate airbyte-ci format command                                                                                          |
 | 4.47.0  | [#49832](https://github.com/airbytehq/airbyte/pull/49462)  | Build java connectors from the base image declared in `metadata.yaml`.                                                       |
 | 4.46.5  | [#49835](https://github.com/airbytehq/airbyte/pull/49835)  | Fix connector language discovery for projects with Kotlin Gradle build scripts.                                              |
