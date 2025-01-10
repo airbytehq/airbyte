@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.iceberg.v2
+package io.airbyte.integrations.destination.s3_data_lake
 
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Type.TypeID.DOUBLE
@@ -14,10 +14,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
-/** Comprehensive test suite for [IcebergSuperTypeFinder]. */
+/** Comprehensive test suite for [S3DataLakeSuperTypeFinder]. */
 class S3DataLakeSuperTypeFinderTest {
 
-    private val superTypeFinder = IcebergSuperTypeFinder(IcebergTypesComparator())
+    private val superTypeFinder = S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator())
 
     @Test
     fun testIdenticalPrimitiveTypes() {
