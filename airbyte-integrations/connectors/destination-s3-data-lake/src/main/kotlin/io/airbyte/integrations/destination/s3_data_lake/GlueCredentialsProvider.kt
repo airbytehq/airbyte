@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
+import io.airbyte.cdk.load.file.s3.S3ClientFactory
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
@@ -59,7 +60,7 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
                                 AssumeRoleRequest.builder()
                                     .externalId(properties[ASSUME_ROLE_EXTERNAL_ID])
                                     .roleArn(properties[ASSUME_ROLE_ARN])
-                                    .roleSessionName("airbyte-sts-session")
+                                    .roleSessionName(S3ClientFactory.AIRBYTE_STS_SESSION_NAME)
                                     .build()
                             )
                             .build()
