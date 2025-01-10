@@ -1658,7 +1658,7 @@ definitions:
     urls_extractor:
       type: DpathExtractor
       field_path:
-        - reportDocumentId
+        - url
     record_selector:
       type: RecordSelector
       extractor:
