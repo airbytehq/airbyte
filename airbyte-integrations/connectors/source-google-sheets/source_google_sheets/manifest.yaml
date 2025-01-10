@@ -321,9 +321,17 @@ definitions:
       - formattedValue
     schema_pointer:
       - values
-  bearer_authenticator:
-    type: BearerAuthenticator
-    api_token: "{{ config['credentials']['access_token'] }}"
+  jwt_authenticator:
+    type: JwtAuthenticator
+    secret_key: "{{ config['credentials']['private_key'] }}"
+    algorithm: "RS256"
+    token_duration: 3600
+    header_prefix: "Bearer"
+    jwt_payload:
+      aud: "https://oauth2.googleapis.com/token"
+      iss: '{{ config["credentials"]["client_email"] }}'
+    additional_jwt_payload:
+      scope: "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly"
   oauth_authenticator:
     type: OAuthAuthenticator
     refresh_request_body: {}
@@ -332,12 +340,35 @@ definitions:
     client_id: '{{ config["credentials"]["client_id"] }}'
     client_secret: '{{ config["credentials"]["client_secret"] }}'
     refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+  session_token_authenticator:
+    type: SessionTokenAuthenticator
+    $parameters:
+      name: "session_token_authenticator"
+    login_requester:
+      type: HttpRequester
+      url_base: https://oauth2.googleapis.com
+      path: token
+      authenticator:
+        type: NoAuth
+      http_method: POST
+      request_parameters: { }
+      request_headers:
+        Content-Type: application/x-www-form-urlencoded
+      request_body_data: >-
+        grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=heregoesthetokenassertion
+    session_token_path:
+      - access_token
+    expiration_duration: PT1H
+    request_authentication:
+      type: Bearer
   authenticator:
+    $parameters:
+      name: "session_token_authenticator"
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
     authenticators:
       Client: "#/definitions/oauth_authenticator"
-      Service: "#/definitions/bearer_authenticator"
+      Service: "#/definitions/session_token_authenticator"
 
 schemas:
   sheets:
