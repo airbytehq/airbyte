@@ -276,8 +276,6 @@ definitions:
           http_method: GET
           request_headers:
             content-type: "application/json"
-          request_parameters:
-            MarketplaceIds: '{{ config["marketplace_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
