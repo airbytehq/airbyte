@@ -30,6 +30,7 @@ import java.time.OffsetTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 
 class AirbyteValueToJsonTest {
     @Test
@@ -83,7 +84,9 @@ class AirbyteValueToJsonTest {
                 UnknownValue(Jsons.readTree("""{"foo": "bar"}""")) to """{"foo":"bar"}"""
             )
         testCases.forEach { (value, expectedSerialization) ->
-            assertEquals(expectedSerialization, Jsons.writeValueAsString(value))
+            val actual =
+                assertDoesNotThrow("Failed to serialize $value") { Jsons.writeValueAsString(value) }
+            assertEquals(expectedSerialization, actual, "Incorrect serialization for $value")
         }
     }
 }
