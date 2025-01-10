@@ -1698,9 +1698,8 @@ definitions:
       url_base: "{{ config['endpoint'] }}"
       http_method: GET
       authenticator: "#/definitions/authenticator"
-      request_headers:
-        Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
-        Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+#      request_headers:
+#        content-type: "application/json"
     download_decoder:
       type: CustomDecoder
       class_name: source_amazon_seller_partner.components.GzipCsvDecoder
