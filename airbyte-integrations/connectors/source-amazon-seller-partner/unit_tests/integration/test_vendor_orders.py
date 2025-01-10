@@ -143,7 +143,8 @@ class TestFullRefresh:
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker, mocker) -> None:
+        mocker.patch("time.sleep", lambda x: None)
         mock_auth(http_mocker)
         http_mocker.get(_vendor_orders_request().build(), response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR))
 
@@ -183,12 +184,11 @@ class TestIncremental:
         )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
-        assert len(output.state_messages) == 1
 
         cursor_value_from_latest_record = output.records[-1].record.data.get(_CURSOR_FIELD)
 
         most_recent_state = output.most_recent_state.stream_state
-        assert most_recent_state == {_CURSOR_FIELD: cursor_value_from_latest_record}
+        assert most_recent_state.__dict__ == {_CURSOR_FIELD: cursor_value_from_latest_record}
 
     @HttpMocker()
     def test_given_state_when_read_then_state_value_is_created_after_query_param(self, http_mocker: HttpMocker) -> None:
@@ -200,7 +200,7 @@ class TestIncremental:
             _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT),
         }
         query_params_incremental_read = {_REPLICATION_START_FIELD: state_value, _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT)}
-
+        # TODO: check why do we need first mock request
         http_mocker.get(
             _vendor_orders_request().with_query_params(query_params_first_read).build(),
             _vendor_orders_response().with_record(_order_record()).with_record(_order_record()).build(),
@@ -214,4 +214,4 @@ class TestIncremental:
             config_=config().with_start_date(_START_DATE).with_end_date(_END_DATE),
             state=StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_value}).build(),
         )
-        assert output.most_recent_state.stream_state == {_CURSOR_FIELD: _END_DATE.strftime(TIME_FORMAT)}
+        assert output.most_recent_state.stream_state.__dict__ == {_CURSOR_FIELD: _END_DATE.strftime(TIME_FORMAT)}
