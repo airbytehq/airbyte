@@ -1,4 +1,4 @@
-version: 4.3.0
+version: 0.4.6
 type: DeclarativeSource
 definitions:
   selector:
