@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 import requests
+from source_shopify.run import run
 from source_shopify.source import ConnectionCheckTest, SourceShopify
 from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules
 from source_shopify.utils import ShopifyNonRetryableErrors
@@ -130,3 +131,9 @@ def test_filter_records_newer_than_state(auth_config):
     expected = [{"id": 2}, {"id": 3, "updated_at": "null"}, {"id": 4, "updated_at": None}]
     result = list(stream.filter_records_newer_than_state(state, records_slice))
     assert result == expected
+
+
+def test_run_module_emits_spec():
+    with patch("sys.argv", ["", "spec"]):
+        # dummy test for the spec
+        assert run() is None
