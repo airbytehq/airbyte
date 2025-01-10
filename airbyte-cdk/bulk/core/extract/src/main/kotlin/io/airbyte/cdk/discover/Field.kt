@@ -91,7 +91,7 @@ data object CdcOffsetDateTimeMetaFieldType : LosslessFieldType {
     override val jsonDecoder: JsonDecoder<OffsetDateTime> = OffsetDateTimeCodec
 }
 
-data object  CdcNumberMetaFieldType : LosslessFieldType {
+data object CdcNumberMetaFieldType : LosslessFieldType {
     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.NUMBER
     override val jsonEncoder: JsonEncoder<Double> = DoubleCodec
     override val jsonDecoder: JsonDecoder<Double> = DoubleCodec
