@@ -48,4 +48,41 @@ class ObjectStoragePathFactoryUTest {
         assertNotNull(match2)
         assertEquals(match2?.customSuffix, "-1")
     }
+
+    @Test
+    fun `test file pattern with variable in prefix`() {
+        every { pathConfigProvider.objectStoragePathConfiguration } returns
+            ObjectStoragePathConfiguration(
+                "prefix-\${NAMESPACE}",
+                "staging-\${NAMESPACE}",
+                "\${STREAM_NAME}/",
+                "any_filename",
+                true,
+            )
+        val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
+        assertEquals(
+            "prefix-test/stream/any_filename",
+            factory.getPathToFile(stream, 0L, isStaging = false)
+        )
+        assertEquals(
+            "staging-test/stream/any_filename",
+            factory.getPathToFile(stream, 0L, isStaging = true)
+        )
+    }
+
+    @Test
+    fun `test pattern matcher with variable in prefix`() {
+        every { pathConfigProvider.objectStoragePathConfiguration } returns
+            ObjectStoragePathConfiguration(
+                "prefix-\${NAMESPACE}",
+                "staging-\${NAMESPACE}",
+                "\${STREAM_NAME}/",
+                "any_filename",
+                true,
+            )
+        val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
+        val matcher = factory.getPathMatcher(stream, "(-foo)?")
+        assertNotNull(matcher.match("prefix-test/stream/any_filename"))
+        assertNotNull(matcher.match("prefix-test/stream/any_filename-foo"))
+    }
 }

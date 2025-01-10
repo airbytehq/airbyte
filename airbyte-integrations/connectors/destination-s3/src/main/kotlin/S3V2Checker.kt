@@ -50,8 +50,7 @@ class S3V2Checker<T : OutputStream>(private val timeProvider: TimeProvider) :
                 log.info { "Successfully wrote test file: $results" }
             } finally {
                 s3Object?.also { s3Client.delete(it) }
-                val results = s3Client.list(path).toList()
-                log.info { "Successfully removed test tile: $results" }
+                log.info { "Successfully removed test file" }
             }
         }
     }

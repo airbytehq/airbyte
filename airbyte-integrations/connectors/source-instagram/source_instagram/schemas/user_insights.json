@@ -19,32 +19,12 @@
       "description": "The total number of followers for the user's account.",
       "type": ["null", "integer"]
     },
-    "get_directions_clicks": {
-      "description": "The number of clicks to get directions to the user's business location.",
-      "type": ["null", "integer"]
-    },
     "impressions": {
       "description": "The total number of times the user's content has been displayed.",
       "type": ["null", "integer"]
     },
-    "phone_call_clicks": {
-      "description": "The number of clicks to call the user's business phone number.",
-      "type": ["null", "integer"]
-    },
-    "profile_views": {
-      "description": "The total number of views on the user's profile.",
-      "type": ["null", "integer"]
-    },
     "reach": {
       "description": "The total number of unique accounts that have seen the user's content.",
-      "type": ["null", "integer"]
-    },
-    "text_message_clicks": {
-      "description": "The number of clicks to send text messages to the user.",
-      "type": ["null", "integer"]
-    },
-    "website_clicks": {
-      "description": "The number of clicks on the website link in the user's profile.",
       "type": ["null", "integer"]
     },
     "impressions_week": {
@@ -66,10 +46,6 @@
     "online_followers": {
       "description": "The number of followers who are currently online.",
       "type": ["null", "object"]
-    },
-    "email_contacts": {
-      "description": "The number of email contacts associated with the user's account.",
-      "type": ["null", "integer"]
     }
   }
 }
