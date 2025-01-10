@@ -82,7 +82,7 @@ data:
         upgradeDeadline: "2025-02-15"
         scopedImpact:
           - scopeType: stream
-            impactedScopes: ["product_graph_ql", "customer_saved_search"]
+            impactedScopes: ["products_graph_ql", "customer_saved_search"]
   suggestedStreams:
     streams:
       - customers

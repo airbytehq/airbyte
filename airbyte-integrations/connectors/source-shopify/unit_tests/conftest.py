@@ -1122,7 +1122,7 @@ def customer_address_parse_response_expected_result():
             "shop_url": "test_shop",
         },
     ]
-    
+
 
 @pytest.fixture
 def customer_journey_parse_response_expected_result():
@@ -1133,10 +1133,7 @@ def customer_journey_parse_response_expected_result():
             "updated_at": "2024-01-10T13:05:29+00:00",
             "customer_journey_summary": {
                 "ready": True,
-                "moments_count": {
-                    "count": 3,
-                    "precision": "EXACT"
-                },
+                "moments_count": {"count": 3, "precision": "EXACT"},
                 "customer_order_index": 0,
                 "days_to_conversion": 1,
                 "first_visit": {
@@ -1150,7 +1147,7 @@ def customer_journey_parse_response_expected_result():
                     "source_type": None,
                     "source_description": "1st session was direct to your store",
                     "utm_parameters": None,
-                    "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589450429"
+                    "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589450429",
                 },
                 "last_visit": {
                     "id": 11282589515965,
@@ -1163,7 +1160,7 @@ def customer_journey_parse_response_expected_result():
                     "source_type": None,
                     "source_description": "Converted after a direct visit",
                     "utm_parameters": None,
-                    "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589515965"
+                    "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589515965",
                 },
                 "moments": [
                     {
@@ -1177,7 +1174,7 @@ def customer_journey_parse_response_expected_result():
                         "source_type": None,
                         "source_description": "1st session was direct to your store",
                         "utm_parameters": None,
-                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589450429"
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589450429",
                     },
                     {
                         "id": 11282589483197,
@@ -1194,9 +1191,9 @@ def customer_journey_parse_response_expected_result():
                             "content": None,
                             "medium": "referral",
                             "source": "analytics_test",
-                            "term": None
+                            "term": None,
                         },
-                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589483197"
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589483197",
                     },
                     {
                         "id": 11282589515965,
@@ -1209,9 +1206,9 @@ def customer_journey_parse_response_expected_result():
                         "source_type": None,
                         "source_description": "Converted after a direct visit",
                         "utm_parameters": None,
-                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589515965"
-                    }
-                ]
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589515965",
+                    },
+                ],
             },
             "customer_journey": {
                 "moments": [
@@ -1226,7 +1223,7 @@ def customer_journey_parse_response_expected_result():
                         "sourceType": None,
                         "sourceDescription": "1st session was direct to your store",
                         "utmParameters": None,
-                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589450429"
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589450429",
                     },
                     {
                         "id": 11282589483197,
@@ -1243,9 +1240,9 @@ def customer_journey_parse_response_expected_result():
                             "content": None,
                             "medium": "referral",
                             "source": "analytics_test",
-                            "term": None
+                            "term": None,
                         },
-                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589483197"
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589483197",
                     },
                     {
                         "id": 11282589515965,
@@ -1258,12 +1255,12 @@ def customer_journey_parse_response_expected_result():
                         "sourceType": None,
                         "sourceDescription": "Converted after a direct visit",
                         "utmParameters": None,
-                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589515965"
-                    }
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589515965",
+                    },
                 ]
             },
             "admin_graphql_api_id": "gid://shopify/Order/4563761987773",
-            "shop_url": "test_shop"
+            "shop_url": "test_shop",
         }
     ]
 

@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from source_shopify.auth import ShopifyAuthenticator
-from source_shopify.source import ConnectionCheckTest, SourceShopify, ShopifyScopes
+from source_shopify.source import ConnectionCheckTest, ShopifyScopes, SourceShopify
 from source_shopify.streams.streams import (
     AbandonedCheckouts,
     Articles,
@@ -183,6 +183,7 @@ def test_check_connection(config, mocker) -> None:
     logger_mock = MagicMock()
     assert source.check_connection(logger_mock, config) == (True, None)
 
+
 def test_read_records(config, mocker) -> None:
     records = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
     stream_slice = records[0]
@@ -306,7 +307,7 @@ def test_get_shop_id(config, read_records, expected_shop_id, expected_error):
         else:
             actual_shop_id = check_test.get_shop_id()
             assert actual_shop_id == expected_shop_id
-            
+
 
 def test_test_connection(config):
     config.pop("shop", None)
@@ -322,7 +323,7 @@ def test_format_stream_name() -> None:
 
 def test_user_scopes_generate_full_list_of_streams(config, mocker):
     source = SourceShopify()
-    
+
     # the list of the scopes we expect user to have
     expected_user_scopes = [
         "read_customers",
