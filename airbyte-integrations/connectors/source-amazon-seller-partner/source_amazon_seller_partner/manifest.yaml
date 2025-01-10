@@ -205,8 +205,6 @@ definitions:
           http_method: GET
           request_headers:
             content-type: "application/json"
-          request_parameters:
-            MarketplaceIds: '{{ config["marketplace_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -248,7 +246,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: "P7D"
-        cursor_granularity: "PT1S"
+        cursor_granularity: "PT0S" # TODO: check if it is valid?
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -303,6 +301,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             #            page_size: 100
+            stop_condition: '{{ not response.get("payload", {}).get("pagination", {}).get("nextToken") }}'
             cursor_value: "{{ response.payload.pagination.nextToken }}"
 
     # FinanceStream
