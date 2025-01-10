@@ -264,9 +264,9 @@ class ObjectStoragePathFactory(
      * * path: "{STREAM_NAME}/foo/" + "{part_number}{format_extension}" => "my_stream/foo/1.json"
      * * path: "{STREAM_NAME}/foo" + "{part_number}{format_extension}" => "my_stream/foo1.json"
      */
-    private fun resolveRetainingTerminalSlash(prefix: String, path: String): String {
-        val asPath = Paths.get(prefix, path)
-        return if (path.endsWith('/')) {
+    private fun resolveRetainingTerminalSlash(prefix: String, suffix: String = ""): String {
+        val asPath = Paths.get(prefix, suffix)
+        return if ("$prefix$suffix".endsWith('/')) {
             "$asPath/"
         } else {
             asPath.toString()
@@ -277,24 +277,28 @@ class ObjectStoragePathFactory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean
     ): String {
-        return getFormattedPath(
-            stream,
-            if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
-            else PATH_VARIABLES,
-            isStaging = true
-        )
+        val path =
+            getFormattedPath(
+                stream,
+                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
+                else PATH_VARIABLES,
+                isStaging = true
+            )
+        return resolveRetainingTerminalSlash(path)
     }
 
     override fun getFinalDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean
     ): String {
-        return getFormattedPath(
-            stream,
-            if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
-            else PATH_VARIABLES,
-            isStaging = false
-        )
+        val path =
+            getFormattedPath(
+                stream,
+                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
+                else PATH_VARIABLES,
+                isStaging = false
+            )
+        return resolveRetainingTerminalSlash(path)
     }
 
     override fun getLongestStreamConstantPrefix(
@@ -401,7 +405,7 @@ class ObjectStoragePathFactory(
         // NOTE the old code does not actually resolve the path + filename,
         // even tho the documentation says it does.
         val replacedForPathWithEmptyVariablesRemoved =
-            resolveRetainingTerminalSlash("", replacedForPath)
+            resolveRetainingTerminalSlash(replacedForPath)
         val combined = "$replacedForPathWithEmptyVariablesRemoved$replacedForFile"
         val withSuffix =
             if (suffixPattern != null) {
