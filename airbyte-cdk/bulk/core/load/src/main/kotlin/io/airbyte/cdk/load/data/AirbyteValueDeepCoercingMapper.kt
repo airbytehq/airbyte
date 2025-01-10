@@ -22,9 +22,15 @@ import java.time.format.DateTimeFormatter
  * NumberValue, or parse StringValue to TimestampValue.
  */
 class AirbyteValueDeepCoercingMapper(
-    private val recurseIntoObjects: Boolean,
-    private val recurseIntoArrays: Boolean,
-) : AirbyteValueIdentityMapper() {
+    recurseIntoObjects: Boolean,
+    recurseIntoArrays: Boolean,
+    recurseIntoUnions: Boolean,
+) :
+    AirbyteValueIdentityMapper(
+        recurseIntoObjects = recurseIntoObjects,
+        recurseIntoArrays = recurseIntoArrays,
+        recurseIntoUnions = recurseIntoUnions,
+    ) {
     override fun mapObject(
         value: AirbyteValue,
         schema: ObjectType,
@@ -118,7 +124,9 @@ class AirbyteValueDeepCoercingMapper(
         schema: UnionType,
         context: Context
     ): Pair<AirbyteValue, Context> =
-        if (schema.options.isEmpty()) {
+        if (!recurseIntoUnions) {
+            value to context
+        } else if (schema.options.isEmpty()) {
             nulledOut(schema, context)
         } else {
             val option =

@@ -26,6 +26,7 @@ class AirbyteValueDeepCoercingMapperTest {
         AirbyteValueDeepCoercingMapper(
             recurseIntoObjects = false,
             recurseIntoArrays = false,
+            recurseIntoUnions = false,
         )
 
     @Test
@@ -349,7 +350,11 @@ class AirbyteValueDeepCoercingMapperTest {
     @Test
     fun testCoerceNestedValueRecursing() {
         val mapper =
-            AirbyteValueDeepCoercingMapper(recurseIntoObjects = true, recurseIntoArrays = true)
+            AirbyteValueDeepCoercingMapper(
+                recurseIntoObjects = true,
+                recurseIntoArrays = true,
+                recurseIntoUnions = true,
+            )
         val (mappedValue, changes) =
             mapper.map(
                 Jsons.readTree(

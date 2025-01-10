@@ -8,6 +8,9 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.Root
 import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import io.airbyte.cdk.load.test.util.ValueTestBuilder
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -62,4 +65,75 @@ class AirbyteValueIdentityMapperTest {
             { Assertions.assertEquals(IntegerValue(1000), (values as ObjectValue).values["bad"]) },
         )
     }
+
+    @Test
+    fun testNonRecursiveMapping() {
+        val type =
+            ObjectType(
+                linkedMapOf(
+                    "int" to f(IntegerType),
+                    "object" to
+                        f(
+                            ObjectType(
+                                linkedMapOf("sub_int" to FieldType(IntegerType, nullable = true))
+                            ),
+                        ),
+                    "array" to f(ArrayType(f(IntegerType))),
+                    "union" to f(UnionType(setOf(IntegerType, BooleanType))),
+                )
+            )
+        val value =
+            ObjectValue(
+                linkedMapOf(
+                    "int" to StringValue("invalid1"),
+                    "object" to ObjectValue(linkedMapOf("sub_int" to StringValue("invalid2"))),
+                    "array" to ArrayValue(listOf(StringValue("invalid3"))),
+                    "union" to IntegerValue(42),
+                )
+            )
+
+        // Dumb mapper, which nulls all root-level integer fields
+        val mapper =
+            object :
+                AirbyteValueIdentityMapper(
+                    recurseIntoObjects = false,
+                    recurseIntoArrays = false,
+                    recurseIntoUnions = false,
+                ) {
+                override fun mapInteger(
+                    value: AirbyteValue,
+                    context: Context
+                ): Pair<AirbyteValue, Context> = nulledOut(IntegerType, context)
+            }
+
+        val (mappedValue, changes) = mapper.map(value, type)
+        assertAll(
+            {
+                assertEquals(
+                    ObjectValue(
+                        linkedMapOf(
+                            // The root int was nulled
+                            "int" to NullValue,
+                            // The nested ints were not nulled
+                            "object" to
+                                ObjectValue(linkedMapOf("sub_int" to StringValue("invalid2"))),
+                            "array" to ArrayValue(listOf(StringValue("invalid3"))),
+                            "union" to IntegerValue(42),
+                        )
+                    ),
+                    mappedValue
+                )
+            },
+            {
+                assertEquals(
+                    listOf(
+                        Meta.Change("int", Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                    ),
+                    changes
+                )
+            }
+        )
+    }
+
+    private fun f(type: AirbyteType) = FieldType(type, nullable = true)
 }
