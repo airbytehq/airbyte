@@ -1,0 +1,18 @@
+plugins {
+    id 'airbyte-bulk-connector'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc']
+    cdk = '0.238'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.netsuite.NetsuiteSource'
+}
+
+dependencies {
+    // Add jdbc driver for netsuite. This could be tricky because it's a jar file and we need to somehow put that into
+    // a local repo.
+}

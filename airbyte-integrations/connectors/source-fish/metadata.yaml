@@ -1,0 +1,29 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 0
+  allowedHosts:
+    hosts:
+      - ${host}
+      - ${tunnel_method.tunnel_host}
+  connectorSubtype: database
+  connectorType: source
+  definitionId: b979cb59-34b3-4f8b-9bf7-ae82d6371e2a
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-fish
+  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-netsuite
+  githubIssueLabel: source-fish
+  icon: netsuite.svg
+  license: Airbyte Enterprise
+  maxSecondsBetweenMessages: 7200
+  name: Fish Source
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
