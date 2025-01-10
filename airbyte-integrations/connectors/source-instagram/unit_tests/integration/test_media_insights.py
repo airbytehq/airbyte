@@ -74,7 +74,7 @@ _MEDIA_IDS = {
     GENERAL_MEDIA: MEDIA_ID_GENERAL_MEDIA,
 }
 
-METRICS_GENERAL_MEDIA = ["impressions", "reach", "saved", "video_views", "likes", "comments", "shares", "follows", "profile_visits"]
+METRICS_GENERAL_MEDIA = ["impressions", "reach", "saved", "likes", "comments", "shares", "follows", "profile_visits"]
 
 _METRICS = {
     MEDIA_ID_REELS: [
@@ -89,9 +89,9 @@ _METRICS = {
         "ig_reels_aggregated_all_plays_count",
         "clips_replays_count",
     ],
-    MEDIA_ID_VIDEO_FEED: ["impressions", "reach", "saved", "video_views"],
-    MEDIA_ID_VIDEO: ["impressions", "reach", "saved", "video_views", "likes", "comments", "shares", "follows", "profile_visits"],
-    MEDIA_ID_CAROUSEL_ALBUM: ["impressions", "reach", "saved", "video_views", "shares", "follows", "profile_visits"],
+    MEDIA_ID_VIDEO_FEED: ["impressions", "reach", "saved"],
+    MEDIA_ID_VIDEO: ["impressions", "reach", "saved", "likes", "comments", "shares", "follows", "profile_visits"],
+    MEDIA_ID_CAROUSEL_ALBUM: ["impressions", "reach", "saved", "shares", "follows", "profile_visits"],
     MEDIA_ID_GENERAL_MEDIA: METRICS_GENERAL_MEDIA,
     # Reusing general media metrics for error scenarios
     MEDIA_ID_ERROR_POSTED_BEFORE_BUSINESS: METRICS_GENERAL_MEDIA,
