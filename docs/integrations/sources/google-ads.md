@@ -335,15 +335,16 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version   | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 3.7.9     | 2024-10-14 | [46893](https://github.com/airbytehq/airbyte/pull/46893) | Update getting customers logic                                                                                                       |
-| 3.7.8     | 2024-10-12 | [46120](https://github.com/airbytehq/airbyte/pull/46120) | Update dependencies                                                                                                                  |
-| 3.7.7     | 2024-10-07 | [45852](https://github.com/airbytehq/airbyte/pull/45852) | Change to the objects serialization in lists to JSON                                                                                 |
-| 3.7.6     | 2024-09-21 | [46543](https://github.com/airbytehq/airbyte/pull/46543) | Raise exception on missing stream                                                                                                    |
-| 3.7.5     | 2024-09-21 | [45801](https://github.com/airbytehq/airbyte/pull/45801) | Update dependencies                                                                                                                  |
-| 3.7.4     | 2024-09-20 | [44600](https://github.com/airbytehq/airbyte/pull/44600) | Update API documentation URLs                                                                                                        |
-| 3.7.3     | 2024-09-14 | [45497](https://github.com/airbytehq/airbyte/pull/45497) | Update dependencies                                                                                                                  |
-| 3.7.2     | 2024-09-07 | [45263](https://github.com/airbytehq/airbyte/pull/45263) | Update dependencies                                                                                                                  |
-| 3.7.1     | 2024-08-31 | [44326](https://github.com/airbytehq/airbyte/pull/44326) | Update dependencies                                                                                                                  |
+| 3.7.10 | 2025-01-11 | [47090](https://github.com/airbytehq/airbyte/pull/47090) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 3.7.9 | 2024-10-14 | [46893](https://github.com/airbytehq/airbyte/pull/46893) | Update getting customers logic |
+| 3.7.8 | 2024-10-12 | [46120](https://github.com/airbytehq/airbyte/pull/46120) | Update dependencies |
+| 3.7.7 | 2024-10-07 | [45852](https://github.com/airbytehq/airbyte/pull/45852) | Change to the objects serialization in lists to JSON |
+| 3.7.6 | 2024-09-21 | [46543](https://github.com/airbytehq/airbyte/pull/46543) | Raise exception on missing stream |
+| 3.7.5 | 2024-09-21 | [45801](https://github.com/airbytehq/airbyte/pull/45801) | Update dependencies |
+| 3.7.4 | 2024-09-20 | [44600](https://github.com/airbytehq/airbyte/pull/44600) | Update API documentation URLs |
+| 3.7.3 | 2024-09-14 | [45497](https://github.com/airbytehq/airbyte/pull/45497) | Update dependencies |
+| 3.7.2 | 2024-09-07 | [45263](https://github.com/airbytehq/airbyte/pull/45263) | Update dependencies |
+| 3.7.1 | 2024-08-31 | [44326](https://github.com/airbytehq/airbyte/pull/44326) | Update dependencies |
 | `3.7.0  ` | 2024-08-15 | [44095](https://github.com/airbytehq/airbyte/pull/44095) | Migrate to google-ads v17                                                                                                            |
 | `3.6.5  ` | 2024-08-12 | [43882](https://github.com/airbytehq/airbyte/pull/43882) | Update dependencies                                                                                                                  |
 | `3.6.4`   | 2024-08-10 | [43628](https://github.com/airbytehq/airbyte/pull/43628) | Update dependencies                                                                                                                  |
