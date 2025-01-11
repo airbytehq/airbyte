@@ -33,7 +33,7 @@ jobs:
   start-test-runner:
     name: Start Build EC2 Runner
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
@@ -131,7 +131,7 @@ jobs:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Archive test reports artifacts
         if: github.event.inputs.comment-id && failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: |
@@ -145,7 +145,7 @@ jobs:
 
       - name: Test coverage reports artifacts
         if: github.event.inputs.comment-id && success()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: |
@@ -174,7 +174,7 @@ jobs:
     needs:
       - start-test-runner # required to get output from the start-runner job
       - performance-test # required to wait when the main job is done
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
       - name: Configure AWS credentials

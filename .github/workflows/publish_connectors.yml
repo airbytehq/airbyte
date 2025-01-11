@@ -20,7 +20,7 @@ on:
 jobs:
   publish_connectors:
     name: Publish connectors
-    runs-on: connector-publish-large
+    runs-on: ubuntu-24.04-4core
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -72,7 +72,7 @@ jobs:
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - publish_connectors
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
@@ -101,7 +101,7 @@ jobs:
 
   notify-failure-pager-duty:
     name: "Notify PagerDuty on Publish Failures"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - publish_connectors
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}

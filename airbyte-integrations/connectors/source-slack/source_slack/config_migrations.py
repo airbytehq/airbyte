@@ -8,6 +8,7 @@ from airbyte_cdk.config_observation import create_connector_config_control_messa
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from source_slack import SourceSlack
 
+
 logger = logging.getLogger("airbyte_logger")
 
 
