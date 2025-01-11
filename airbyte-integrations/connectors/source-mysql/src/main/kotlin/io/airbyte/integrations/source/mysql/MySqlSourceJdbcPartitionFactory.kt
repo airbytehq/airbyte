@@ -175,6 +175,11 @@ class MySqlSourceJdbcPartitionFactory(
             return coldStart(streamState)
         }
 
+        // For PlanetScale, we have to limit the chunk to 100k rows to avoid the query being killed by the server
+        if (sharedState.configuration.jdbcUrlFmt.contains("psdb.cloud")) {
+            streamState.limit = 100000
+        }
+
         val opaqueStateValue: OpaqueStateValue = streamFeedBootstrap.currentState!!
 
         val isCursorBased: Boolean = !sharedState.configuration.global
