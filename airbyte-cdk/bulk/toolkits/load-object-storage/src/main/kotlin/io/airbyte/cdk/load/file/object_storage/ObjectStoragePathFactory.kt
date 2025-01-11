@@ -39,7 +39,7 @@ interface PathFactory {
     fun getPathMatcher(stream: DestinationStream, suffixPattern: String? = null): PathMatcher
 
     val supportsStaging: Boolean
-    val prefix: String
+    val finalPrefix: String
 }
 
 data class PathMatcher(val regex: Regex, val variableToIndex: Map<String, Int>) {
@@ -63,23 +63,14 @@ class ObjectStoragePathFactory(
     compressionConfigProvider: ObjectStorageCompressionConfigurationProvider<*>? = null,
     private val timeProvider: TimeProvider,
 ) : PathFactory {
+    // Resolved configuration
     private val pathConfig = pathConfigProvider.objectStoragePathConfiguration
+    override val supportsStaging: Boolean = pathConfig.usesStagingDirectory
+
+    // Resolved bucket path prefixes
     private val stagingPrefixResolved =
         pathConfig.stagingPrefix
             ?: Paths.get(pathConfig.prefix, DEFAULT_STAGING_PREFIX_SUFFIX).toString()
-    private val pathPatternResolved = pathConfig.pathSuffixPattern ?: DEFAULT_PATH_FORMAT
-    private val filePatternResolved = pathConfig.fileNamePattern ?: DEFAULT_FILE_FORMAT
-    private val fileFormatExtension =
-        formatConfigProvider?.objectStorageFormatConfiguration?.extension
-    private val compressionExtension =
-        compressionConfigProvider?.objectStorageCompressionConfiguration?.compressor?.extension
-    private val defaultExtension =
-        if (fileFormatExtension != null && compressionExtension != null) {
-            "$fileFormatExtension.$compressionExtension"
-        } else {
-            fileFormatExtension ?: compressionExtension
-        }
-
     private val stagingPrefix: String
         get() =
             if (!pathConfig.usesStagingDirectory) {
@@ -89,13 +80,27 @@ class ObjectStoragePathFactory(
             } else {
                 stagingPrefixResolved
             }
-
-    override val supportsStaging: Boolean = pathConfig.usesStagingDirectory
-    override val prefix: String =
+    override val finalPrefix: String =
         if (pathConfig.prefix.endsWith('/')) {
             pathConfig.prefix.take(pathConfig.prefix.length - 1)
         } else {
             pathConfig.prefix
+        }
+
+    // Resolved path and filename patterns
+    private val pathPatternResolved = pathConfig.pathSuffixPattern ?: DEFAULT_PATH_FORMAT
+    private val filePatternResolved = pathConfig.fileNamePattern ?: DEFAULT_FILE_FORMAT
+
+    // Resolved file extensions
+    private val fileFormatExtension =
+        formatConfigProvider?.objectStorageFormatConfiguration?.extension
+    private val compressionExtension =
+        compressionConfigProvider?.objectStorageCompressionConfiguration?.compressor?.extension
+    private val defaultExtension =
+        if (fileFormatExtension != null && compressionExtension != null) {
+            "$fileFormatExtension.$compressionExtension"
+        } else {
+            fileFormatExtension ?: compressionExtension
         }
 
     /**
@@ -252,10 +257,17 @@ class ObjectStoragePathFactory(
         }
     }
 
-    private fun resolveRetainingTerminalSlash(prefix: String, path: String): String {
-        val asPath = Paths.get(prefix, path)
-        return if (path.endsWith('/')) {
-            asPath.toString() + "/"
+    /**
+     * This is to maintain parity with legacy code. Whether the path pattern ends with "/" is
+     * significant.
+     *
+     * * path: "{STREAM_NAME}/foo/" + "{part_number}{format_extension}" => "my_stream/foo/1.json"
+     * * path: "{STREAM_NAME}/foo" + "{part_number}{format_extension}" => "my_stream/foo1.json"
+     */
+    private fun resolveRetainingTerminalSlash(prefix: String, suffix: String = ""): String {
+        val asPath = Paths.get(prefix, suffix)
+        return if ("$prefix$suffix".endsWith('/')) {
+            "$asPath/"
         } else {
             asPath.toString()
         }
@@ -269,9 +281,10 @@ class ObjectStoragePathFactory(
             getFormattedPath(
                 stream,
                 if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
-                else PATH_VARIABLES
+                else PATH_VARIABLES,
+                isStaging = true
             )
-        return resolveRetainingTerminalSlash(stagingPrefix, path)
+        return resolveRetainingTerminalSlash(path)
     }
 
     override fun getFinalDirectory(
@@ -282,9 +295,10 @@ class ObjectStoragePathFactory(
             getFormattedPath(
                 stream,
                 if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
-                else PATH_VARIABLES
+                else PATH_VARIABLES,
+                isStaging = false
             )
-        return resolveRetainingTerminalSlash(prefix, path)
+        return resolveRetainingTerminalSlash(path)
     }
 
     override fun getLongestStreamConstantPrefix(
@@ -323,9 +337,11 @@ class ObjectStoragePathFactory(
 
     private fun getFormattedPath(
         stream: DestinationStream,
-        variables: List<PathVariable> = PATH_VARIABLES
+        variables: List<PathVariable> = PATH_VARIABLES,
+        isStaging: Boolean
     ): String {
-        val pattern = pathPatternResolved
+        val selectedPrefix = if (isStaging) stagingPrefix else finalPrefix
+        val pattern = resolveRetainingTerminalSlash(selectedPrefix, pathPatternResolved)
         val context = VariableContext(stream)
         return variables.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
     }
@@ -375,13 +391,10 @@ class ObjectStoragePathFactory(
         val pathVariableToPattern = getPathVariableToPattern(stream)
         val variableToIndex = mutableMapOf<String, Int>()
 
+        val pathPattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
+
         val replacedForPath =
-            buildPattern(
-                pathPatternResolved,
-                """\\\$\{(\w+)}""",
-                pathVariableToPattern,
-                variableToIndex
-            )
+            buildPattern(pathPattern, """\\\$\{(\w+)}""", pathVariableToPattern, variableToIndex)
         val replacedForFile =
             buildPattern(
                 filePatternResolved,
@@ -391,12 +404,9 @@ class ObjectStoragePathFactory(
             )
         // NOTE the old code does not actually resolve the path + filename,
         // even tho the documentation says it does.
-        val combined =
-            if (replacedForPath.startsWith('/')) {
-                "${prefix}$replacedForPath$replacedForFile"
-            } else {
-                "$prefix/$replacedForPath$replacedForFile"
-            }
+        val replacedForPathWithEmptyVariablesRemoved =
+            resolveRetainingTerminalSlash(replacedForPath)
+        val combined = "$replacedForPathWithEmptyVariablesRemoved$replacedForFile"
         val withSuffix =
             if (suffixPattern != null) {
                 variableToIndex["suffix"] = variableToIndex.size + 1
