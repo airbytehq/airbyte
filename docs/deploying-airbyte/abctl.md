@@ -13,19 +13,19 @@ abctl is Airbyte's open source command line tool to create and manage local inst
 
 ## Overview of abctl
 
-Airbyte runs on Kubernetes. People need to run Airbyte in a diverse set of environments like a local machine, a bare metal server, or a virtual machine. However, you might not be running Kubernetes and might not even know much about it. abctl makes it easy to run Airbyte anywhere Docker is running with just a few commands.
-
-### What abctl does
-
-abctl uses [kind](https://kind.sigs.k8s.io/) to create a [Kubernetes](https://kubernetes.io/) cluster inside a [Docker](https://www.docker.com/) container. Then, it uses [helm](https://helm.sh/) to install (or upgrade to) the latest Airbyte and [NGINX Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/) helm charts (or whatever version you instruct).
-
-![](abctl/abctl-diagram.png)
+Airbyte runs on Kubernetes. People run Airbyte in a diverse set of environments like a local machine, a bare metal server, or a virtual machine. However, you might not be running Kubernetes and might not even know much about it. abctl makes it easy to run Airbyte anywhere Docker is running with just a few commands.
 
 ### When to use abctl
 
 You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. This could be your local machine, a bare metal server, or a virtual machine. Generally, you do *not* use abctl to manage enterprise deployments, which typically use dedicated Kubernetes infrastructure.
 
 abctl is not relevant to Airbyte Cloud.
+
+### What abctl does
+
+abctl uses [kind](https://kind.sigs.k8s.io/) to create a [Kubernetes](https://kubernetes.io/) cluster inside a [Docker](https://www.docker.com/) container. Then, it uses [helm](https://helm.sh/) to install (or upgrade to) the latest Airbyte and [NGINX Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/) helm charts. It also helps you manage and understand that infrastructure.
+
+![](abctl/abctl-diagram.png)
 
 ## Before you start
 
@@ -240,12 +240,145 @@ abctl returns something like this:
 
 ### Manage your local Kubernetes instance
 
+To display Kubernetes deployment information, run:
+
+```bash
+abctl local deployments
+```
+
+If you need to restart Kubernetes, run:
+
+```bash
+abctl local deployments --restart
+```
+
 ### Uninstall Airbyte
+
+To stop running all containers, but keep your data, run:
+
+```shell
+abctl local uninstall
+```
+
+To stop running containers and delete all data:
+
+1. Uninstall Airbyte with the `--persisted` flag.
+
+    ```shell
+    abctl local uninstall --persisted
+    ```
+
+2. Clear any remaining information abctl created.
+
+    ```shell
+    rm -rf ~/.airbyte/abctl
+    ```
 
 ## Manage Docker images
 
+To get a manifest of the images used by Airbyte and abctl, run:
+
+```bash
+abctl images manifest
+```
+
+<!-- I need more clarification about what these flags are doing -->
+
 ## Get abctl version information
+
+To display version information about the abctl tool, run `abctl version`.
+
+```bash
+$ abctl version
+version: v0.19.0
+```
 
 ## Help and debugging
 
+All abctl commands and sub-commands support two flags:
+
+- `--help`: Displays help information, describing the available options for this command.
+- `--verbose`: Enables verbose/debug output. This is useful when debugging unexpected behavior.
+
+## Disable telemetry
+
+You can disable telemetry tracking on the abctl tool by setting the environment variable `DO_NOT_TRACK` to any value.
+
+<!-- Need further elaboration. Is this like the env variable in values.yaml? I think this disables telemetry on Airbyte itself, but abctl is probably different.
+
+```yml title="values.yaml"
+global:
+    env_vars:
+        DO_NOT_TRACK: 1
+```
+
+I think in this case we mean an actual environment variable for the command line that runs abctl.
+
+-->
 ## Full abctl reference {#reference}
+
+abctl has three commands: `local`, `images`, and `version`. Most commands have sub-commands and support various flags.
+
+<details>
+    <summary>`local`</summary>
+
+    Local sub-commands are focused on managing the local Airbyte installation.
+    
+    <details>
+        <summary>`credentials`</summary>
+
+        Display the credentials required to login to the local Airbyte installation.
+
+        When `abctl local install` is first executed, a random `password`, `client-id`, and `client-secret` are generated. Returns the `email`, `password`, `client-id`, and `client-secret` credentials. The `email` and  `password` are required to login to Airbyte. The `client-id` and `client-secret` are necessary to create an [Access Token for interacting with the Airbyte API](https://reference.airbyte.com/reference/createaccesstoken).
+
+        `credentials` has the following flags.
+
+        | Name       | Default | Description                               | Example          |
+        | ---------- | ------- | ----------------------------------------- | ---------------- |
+        | --email    | ""      | Changes the authentication email address. | you@example.com  |
+        | --password | ""      | Changes the authentication password.      | MyStrongPassword |
+    </details>
+
+    <details>
+    <summary>`deployments`</summary>
+
+    Display version information about the abctl tool.
+
+    </details>
+
+    <details>
+    <summary>`install`</summary>
+
+    Display version information about the abctl tool.
+
+    </details>
+
+    <details>
+    <summary>`status`</summary>
+
+    Display version information about the abctl tool.
+
+    </details>
+
+    <details>
+    <summary>`uninstall`</summary>
+
+    Display version information about the abctl tool.
+
+    </details>
+
+</details>
+
+<details>
+    <summary>`images`</summary>
+
+    Display a manifest of images used by Airbyte and abctl.
+
+</details>
+
+<details>
+    <summary>`version`</summary>
+
+    Display version information about the abctl tool.
+
+</details>

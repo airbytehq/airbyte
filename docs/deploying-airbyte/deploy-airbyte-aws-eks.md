@@ -53,7 +53,6 @@ It's easiest if they're all running in the [same virtual private cloud](https://
 
 Things to keep in mind.
 
-- [AWS Fargate](https://aws.amazon.com/fargate/) is not supported.
 - It's easiest if all your customizations run in the [same virtual private cloud](https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html).
 
 ## What involved in an EKS deployment
@@ -188,13 +187,15 @@ Airbyte has everything you need to use the product. In some cases, Airbyte's def
 
 ### Configure external logging
 
+### Configure audit logging (Self-Managed Enterprise only)
+
 ### Configure external connector secret management
 
 ### Configure ingress
 
 ### Configure authentication
 
-### Configure custom image repositories
+### Configure a custom image registry
 
 ### Configure your service account
 

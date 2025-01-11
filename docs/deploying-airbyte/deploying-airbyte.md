@@ -45,3 +45,8 @@ Choose the deployment guide that's right for you.
 - [AWS EC2](deploy-airbyte-aws-ec2)
 - [Google Cloud GKE](https://www.example.com)
 - [Google Cloud GCE](https://www.example.com)
+
+:::note
+- [AWS Fargate](https://aws.amazon.com/fargate/) is not currently supported.
+- [AWS ECS](https://aws.amazon.com/ecs/) is not currently supported.
+:::
