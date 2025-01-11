@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
-  dockerImageTag: 1.0.27
+  dockerImageTag: 1.0.28
   dockerRepository: airbyte/source-facebook-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   githubIssueLabel: source-facebook-pages
