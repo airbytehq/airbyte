@@ -12,7 +12,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 python = "^3.10,<3.13"
 airbyte-cdk = "6.10.0"
 pytest = "^8"
-requests_mock = "*"
+requests-mock = "*"
 
 [tool.pytest.ini_options]
 filterwarnings = [
