@@ -572,6 +572,10 @@ Implementing Airbyte this way has several advantages.
 - **Access control**: You have more control over who can access and modify images.
 - **Compliance**: By keeping images in a controlled environment, it's easier to prove compliance with regulatory requirements for data storage and handling.
 
+:::note
+[Custom internal connectors](../operator-guides/using-custom-connectors) that specify an image using a fully qualified domain name (for example, example.com/airbyte/source-postgres) ignore your configured image registry and pull images from the domain specified by that connector.
+:::
+
 <details>
 <summary>Before you start</summary>
 

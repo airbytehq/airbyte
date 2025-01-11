@@ -20,6 +20,10 @@ Set up your custom image registry. The examples in this article use GitHub, but 
 
 <ContainerProviders/>
 
+## Custom connectors using fully qualified domain names
+
+[Custom internal connectors](../../operator-guides/using-custom-connectors) that specify an image using a fully qualified domain name (for example, example.com/airbyte/source-postgres) ignore your configured image registry and pull images from the domain specified by that connector.
+
 ## Get a list of all Airbyte images
 
 To get a list of Airbyte images for the latest version, use abctl.
