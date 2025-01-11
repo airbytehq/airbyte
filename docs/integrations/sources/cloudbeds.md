@@ -30,6 +30,7 @@ You can learn more about the API here https://hotels.cloudbeds.com/api/v1.2/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.6 | 2025-01-11 | [51074](https://github.com/airbytehq/airbyte/pull/51074) | Update dependencies |
 | 0.0.5 | 2024-12-28 | [50555](https://github.com/airbytehq/airbyte/pull/50555) | Update dependencies |
 | 0.0.4 | 2024-12-21 | [49992](https://github.com/airbytehq/airbyte/pull/49992) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49487](https://github.com/airbytehq/airbyte/pull/49487) | Update dependencies |
