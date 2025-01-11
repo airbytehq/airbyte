@@ -22,7 +22,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 6eb1198a-6d38-43e5-aaaa-dccd8f71db2b
-  dockerImageTag: 0.1.25
+  dockerImageTag: 0.1.26
   dockerRepository: airbyte/destination-qdrant
   githubIssueLabel: destination-qdrant
   icon: qdrant.svg
