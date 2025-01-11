@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.11.8"
+version = "2.11.9"
 name = "source-klaviyo"
 description = "Source implementation for Klaviyo."
 authors = [ "Airbyte <contact@airbyte.io>",]
