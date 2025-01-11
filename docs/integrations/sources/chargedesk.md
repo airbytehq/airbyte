@@ -30,6 +30,7 @@ You can find more about the API here https://chargedesk.com/api-docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-01-11 | [51278](https://github.com/airbytehq/airbyte/pull/51278) | Update dependencies |
 | 0.0.9 | 2024-12-28 | [50448](https://github.com/airbytehq/airbyte/pull/50448) | Update dependencies |
 | 0.0.8 | 2024-12-21 | [50170](https://github.com/airbytehq/airbyte/pull/50170) | Update dependencies |
 | 0.0.7 | 2024-12-14 | [49554](https://github.com/airbytehq/airbyte/pull/49554) | Update dependencies |
