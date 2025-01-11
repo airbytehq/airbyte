@@ -56,6 +56,7 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.7 | 2025-01-11 | [51096](https://github.com/airbytehq/airbyte/pull/51096) | Update dependencies |
 | 0.4.6 | 2024-12-28 | [50540](https://github.com/airbytehq/airbyte/pull/50540) | Update dependencies |
 | 0.4.5 | 2024-12-21 | [50007](https://github.com/airbytehq/airbyte/pull/50007) | Update dependencies |
 | 0.4.4 | 2024-12-14 | [49484](https://github.com/airbytehq/airbyte/pull/49484) | Update dependencies |
