@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.3.24"
+version = "1.3.25"
 name = "source-typeform"
 description = "Source implementation for Typeform."
 authors = [ "Airbyte <contact@airbyte.io>",]
