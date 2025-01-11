@@ -205,7 +205,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 systemProperties = project.test.systemProperties + [
                         'junit.jupiter.execution.parallel.enabled': 'true',
                         'junit.jupiter.execution.parallel.config.strategy': 'fixed',
-                        'junit.jupiter.execution.parallel.config.fixed.parallelism': 8.toString()
+                        'junit.jupiter.execution.parallel.config.fixed.parallelism': 10.toString()
                 ]
                 maxParallelForks = project.test.maxParallelForks
                 maxHeapSize = project.test.maxHeapSize
