@@ -41,6 +41,7 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                             | Subject                       |
 |:--------|:-----------| :------------------------------------------------------- | :---------------------------- |
+| 0.2.7 | 2025-01-11 | [51337](https://github.com/airbytehq/airbyte/pull/51337) | Update dependencies |
 | 0.2.6 | 2024-12-28 | [50720](https://github.com/airbytehq/airbyte/pull/50720) | Update dependencies |
 | 0.2.5 | 2024-12-21 | [50229](https://github.com/airbytehq/airbyte/pull/50229) | Update dependencies |
 | 0.2.4 | 2024-12-14 | [49664](https://github.com/airbytehq/airbyte/pull/49664) | Update dependencies |
