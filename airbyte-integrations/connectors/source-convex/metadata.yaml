@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c332628c-f55c-4017-8222-378cfafda9b2
-  dockerImageTag: 0.4.25
+  dockerImageTag: 0.4.26
   dockerRepository: airbyte/source-convex
   githubIssueLabel: source-convex
   icon: convex.svg
