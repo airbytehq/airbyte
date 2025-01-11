@@ -212,7 +212,7 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
             systemProperties = project.test.systemProperties + [
                 'junit.jupiter.execution.parallel.enabled': 'true',
                 'junit.jupiter.execution.parallel.config.strategy': 'fixed',
-                'junit.jupiter.execution.parallel.config.fixed.parallelism': Math.min((Runtime.runtime.availableProcessors() / 2).toInteger(), 1).toString()
+                'junit.jupiter.execution.parallel.config.fixed.parallelism': 1.toString()
             ]
 
             // Tone down the JIT when running the containerized connector to improve overall performance.
