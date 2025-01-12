@@ -9,6 +9,7 @@ from typing import Any, Mapping, Optional
 
 import dpath
 import requests
+
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -72,7 +73,9 @@ class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
         for i, _slice in enumerate(date_range):
             start_time = self._parser.parse(get_start_time(_slice), self._start_datetime.datetime_format)
             end_time = self._parser.parse(get_end_time(_slice), self._end_datetime.datetime_format)
-            _slice._stream_slice[self.stream_slice_field_step.eval(self.config)] = (end_time + datetime.timedelta(days=int(bool(i))) - start_time).days
+            _slice._stream_slice[self.stream_slice_field_step.eval(self.config)] = (
+                end_time + datetime.timedelta(days=int(bool(i))) - start_time
+            ).days
         return date_range
 
 

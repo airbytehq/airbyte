@@ -36,7 +36,6 @@ def test_datetime_slicer(components_module):
     assert slicer.stream_slices() == expected_slices
 
 
-
 def test_string_to_dict_transformation(components_module):
     """
     Test that given string record transforms to dict with given name and value as a record itself.
