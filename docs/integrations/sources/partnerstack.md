@@ -2,8 +2,6 @@
 
 ## Sync overview
 
-The Partnerstack source supports both Full Refresh only.
-
 This source can sync data for the [Partnerstack API](https://docs.partnerstack.com/reference).
 
 ### Output schema
@@ -23,7 +21,7 @@ This Source is capable of syncing the following core Streams:
 | Feature                   | Supported?\(Yes/No\) | Notes |
 | :------------------------ | :------------------- | :---- |
 | Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | No                   |       |
+| Incremental - Append Sync | Yes                  |       |
 | Namespaces                | No                   |       |
 
 ### Performance considerations
@@ -41,6 +39,16 @@ The Partnerstack connector should not run into Partnerstack API limitations unde
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 0.2.6 | 2025-01-11 | [51344](https://github.com/airbytehq/airbyte/pull/51344) | Update dependencies |
+| 0.2.5 | 2025-01-04 | [50934](https://github.com/airbytehq/airbyte/pull/50934) | Update dependencies |
+| 0.2.4 | 2024-12-28 | [50723](https://github.com/airbytehq/airbyte/pull/50723) | Update dependencies |
+| 0.2.3 | 2024-12-21 | [50246](https://github.com/airbytehq/airbyte/pull/50246) | Update dependencies |
+| 0.2.2 | 2024-12-14 | [49675](https://github.com/airbytehq/airbyte/pull/49675) | Update dependencies |
+| 0.2.1 | 2024-12-11 | [49085](https://github.com/airbytehq/airbyte/pull/49085) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.0 | 2024-12-03 | [48782](https://github.com/airbytehq/airbyte/pull/48782) | Add Incremental feature |
+| 0.1.25 | 2024-11-04 | [48184](https://github.com/airbytehq/airbyte/pull/48184) | Update dependencies |
+| 0.1.24 | 2024-10-29 | [47762](https://github.com/airbytehq/airbyte/pull/47762) | Update dependencies |
+| 0.1.23 | 2024-10-28 | [47045](https://github.com/airbytehq/airbyte/pull/47045) | Update dependencies |
 | 0.1.22 | 2024-10-12 | [46808](https://github.com/airbytehq/airbyte/pull/46808) | Update dependencies |
 | 0.1.21 | 2024-10-05 | [46452](https://github.com/airbytehq/airbyte/pull/46452) | Update dependencies |
 | 0.1.20 | 2024-09-28 | [46111](https://github.com/airbytehq/airbyte/pull/46111) | Update dependencies |

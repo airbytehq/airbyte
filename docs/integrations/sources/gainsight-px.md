@@ -74,6 +74,13 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- |:----------------------------------------|
+| 0.2.7 | 2025-01-11 | [51090](https://github.com/airbytehq/airbyte/pull/51090) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50511](https://github.com/airbytehq/airbyte/pull/50511) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50041](https://github.com/airbytehq/airbyte/pull/50041) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49533](https://github.com/airbytehq/airbyte/pull/49533) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [48195](https://github.com/airbytehq/airbyte/pull/48195) | Update dependencies |
+| 0.2.2 | 2024-10-29 | [47864](https://github.com/airbytehq/airbyte/pull/47864) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47626](https://github.com/airbytehq/airbyte/pull/47626) | Update dependencies |
 | 0.2.0 | 2024-08-19 | [44414](https://github.com/airbytehq/airbyte/pull/44414) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-17 | [44248](https://github.com/airbytehq/airbyte/pull/44248) | Update dependencies |
 | 0.1.13 | 2024-08-12 | [43902](https://github.com/airbytehq/airbyte/pull/43902) | Update dependencies |

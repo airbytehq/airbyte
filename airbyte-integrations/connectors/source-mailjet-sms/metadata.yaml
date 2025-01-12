@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
   connectorSubtype: api
   connectorType: source
   definitionId: 6ec2acea-7fd1-4378-b403-41a666e0c028
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.8
   dockerRepository: airbyte/source-mailjet-sms
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-sms
   githubIssueLabel: source-mailjet-sms

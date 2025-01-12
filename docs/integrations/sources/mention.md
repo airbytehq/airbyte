@@ -33,6 +33,14 @@ Docs: https://dev.mention.com/current/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2025-01-11 | [51180](https://github.com/airbytehq/airbyte/pull/51180) | Update dependencies |
+| 0.0.8 | 2024-12-28 | [50607](https://github.com/airbytehq/airbyte/pull/50607) | Update dependencies |
+| 0.0.7 | 2024-12-21 | [50107](https://github.com/airbytehq/airbyte/pull/50107) | Update dependencies |
+| 0.0.6 | 2024-12-14 | [49601](https://github.com/airbytehq/airbyte/pull/49601) | Update dependencies |
+| 0.0.5 | 2024-12-12 | [48998](https://github.com/airbytehq/airbyte/pull/48998) | Update dependencies |
+| 0.0.4 | 2024-11-04 | [48258](https://github.com/airbytehq/airbyte/pull/48258) | Update dependencies |
+| 0.0.3 | 2024-10-29 | [47841](https://github.com/airbytehq/airbyte/pull/47841) | Update dependencies |
+| 0.0.2 | 2024-10-28 | [47538](https://github.com/airbytehq/airbyte/pull/47538) | Update dependencies |
 | 0.0.1 | 2024-10-23 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

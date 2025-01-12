@@ -5,9 +5,11 @@ import struct
 import zipfile
 from typing import IO, List, Optional, Tuple, Union
 
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
+
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_s3.v4.config import Config
+
 
 # Buffer constants
 BUFFER_SIZE_DEFAULT = 1024 * 1024

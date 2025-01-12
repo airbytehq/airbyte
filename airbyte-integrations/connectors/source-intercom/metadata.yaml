@@ -6,11 +6,11 @@ data:
     hosts:
       - api.intercom.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
-  dockerImageTag: 0.8.0
+  dockerImageTag: 0.9.0-rc.1
   dockerRepository: airbyte/source-intercom
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   githubIssueLabel: source-intercom
@@ -18,9 +18,12 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 60
   name: Intercom
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-intercom
   registryOverrides:
     cloud:
@@ -37,14 +40,16 @@ data:
       - companies
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
         - name: intercom_config_dev_null
           id: 09ebd6bb-2756-4cd3-8ad5-7120088cc553
-    - suite: unitTests
+    # We should enable unit tests once the connector has been updated to CDK version >= 6.10.0
+    # Until then, the test suites won't be able to run successfully in CI as the fixtures are not present in earlier versions
+    # - suite: unitTests
     - suite: integrationTests
       testSecrets:
         - name: SECRET_SOURCE-INTERCOM_APIKEY__CREDS

@@ -43,6 +43,13 @@ Please read [How to find your API key](https://apidocs.persistiq.com/#introducti
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------|
+| 0.3.9 | 2025-01-11 | [51320](https://github.com/airbytehq/airbyte/pull/51320) | Update dependencies |
+| 0.3.8 | 2024-12-28 | [50729](https://github.com/airbytehq/airbyte/pull/50729) | Update dependencies |
+| 0.3.7 | 2024-12-21 | [50247](https://github.com/airbytehq/airbyte/pull/50247) | Update dependencies |
+| 0.3.6 | 2024-12-14 | [49676](https://github.com/airbytehq/airbyte/pull/49676) | Update dependencies |
+| 0.3.5 | 2024-12-12 | [48266](https://github.com/airbytehq/airbyte/pull/48266) | Update dependencies |
+| 0.3.4 | 2024-10-29 | [47851](https://github.com/airbytehq/airbyte/pull/47851) | Update dependencies |
+| 0.3.3 | 2024-10-28 | [47579](https://github.com/airbytehq/airbyte/pull/47579) | Update dependencies |
 | 0.3.2 | 2024-10-21 | [47193](https://github.com/airbytehq/airbyte/pull/47193) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44098](https://github.com/airbytehq/airbyte/pull/44098) | Refactor connector to manifest-only format |

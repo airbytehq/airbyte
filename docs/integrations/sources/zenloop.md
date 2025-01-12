@@ -77,6 +77,12 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.40 | 2025-01-11 | [51465](https://github.com/airbytehq/airbyte/pull/51465) | Update dependencies |
+| 0.1.39 | 2024-12-28 | [50827](https://github.com/airbytehq/airbyte/pull/50827) | Update dependencies |
+| 0.1.38 | 2024-12-21 | [50383](https://github.com/airbytehq/airbyte/pull/50383) | Update dependencies |
+| 0.1.37 | 2024-12-14 | [49801](https://github.com/airbytehq/airbyte/pull/49801) | Update dependencies |
+| 0.1.36 | 2024-12-12 | [49443](https://github.com/airbytehq/airbyte/pull/49443) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.35 | 2024-11-04 | [47107](https://github.com/airbytehq/airbyte/pull/47107) | Update dependencies |
 | 0.1.34 | 2024-10-12 | [46780](https://github.com/airbytehq/airbyte/pull/46780) | Update dependencies |
 | 0.1.33 | 2024-10-05 | [46431](https://github.com/airbytehq/airbyte/pull/46431) | Update dependencies |
 | 0.1.32 | 2024-09-28 | [46141](https://github.com/airbytehq/airbyte/pull/46141) | Update dependencies |

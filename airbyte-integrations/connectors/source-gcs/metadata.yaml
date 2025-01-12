@@ -1,17 +1,17 @@
 data:
   ab_internal:
     ql: 200
-    sl: 100
+    sl: 300
   allowedHosts:
     hosts:
       - storage.googleapis.com
       - accounts.google.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
-  dockerImageTag: 0.7.4
+  dockerImageTag: 0.8.2
   dockerRepository: airbyte/source-gcs
   documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
   githubIssueLabel: source-gcs
@@ -29,7 +29,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: certified
   tags:
     - language:python
     - cdk:python-file-based
@@ -61,6 +61,11 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-GCS_GLOB__CREDS
           fileName: config_glob.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GCS_OAUTH
+          fileName: config_oauth.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

@@ -6,8 +6,6 @@
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
@@ -35,6 +33,9 @@ from source_shopify.shopify_graphql.bulk.query import (
 from source_shopify.shopify_graphql.graphql import get_query_products
 from source_shopify.utils import ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
+
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from .base_streams import (
     IncrementalShopifyGraphQlBulkStream,
@@ -249,7 +250,6 @@ class MetafieldCollections(IncrementalShopifyGraphQlBulkStream):
 
 
 class BalanceTransactions(IncrementalShopifyStream):
-
     """
     PaymentsTransactions stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
     https://shopify.dev/api/admin-rest/2021-07/resources/transactions

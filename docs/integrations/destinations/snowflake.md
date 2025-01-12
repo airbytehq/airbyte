@@ -131,7 +131,7 @@ to role identifier($airbyte_role);
 commit;
 ```
 
-3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). 
+3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
   Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
 
 ### Step 2: Set up a data loading method
@@ -266,8 +266,11 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 | :-------------- | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.15.0          | 2024-09-18 | [\#45437](https://github.com/airbytehq/airbyte/pull/45437)   | upgrade all dependencies                                                                                                                                          |
-| 3.14.0          | 2024-09-18 | [\#45431](https://github.com/airbytehq/airbyte/pull/45431) | truncate large records queries                                                                                                                                                        |
+| 3.15.3 | 2024-12-18 | [49913](https://github.com/airbytehq/airbyte/pull/49913) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 3.15.2          | 2024-10-31 | [\#48070](https://github.com/airbytehq/airbyte/pull/48070) | upgrade JDBC driver to 3.20.0                                                                                                                                                    |
+| 3.15.1          | 2024-10-20 | [\#46989](https://github.com/airbytehq/airbyte/pull/46989) | add snowflake transaction wrapper for rollback support                                                                                                                           |
+| 3.15.0          | 2024-09-18 | [\#45437](https://github.com/airbytehq/airbyte/pull/45437) | upgrade all dependencies                                                                                                                                                         |
+| 3.14.0          | 2024-09-18 | [\#45431](https://github.com/airbytehq/airbyte/pull/45431) | truncate large records queries                                                                                                                                                   |
 | 3.13.0          | 2024-09-17 | [\#45422](https://github.com/airbytehq/airbyte/pull/45422) | speed up metadata queries                                                                                                                                                        |
 | 3.12.0          | 2024-09-17 | [\#38585](https://github.com/airbytehq/airbyte/pull/38585) | force UTF8 collation when creating schemas and tables                                                                                                                            |
 | 3.11.12         | 2024-09-12 | [\#45370](https://github.com/airbytehq/airbyte/pull/45370) | fix a race condition in our orphanedThreadFilter                                                                                                                                 |

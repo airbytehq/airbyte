@@ -5,6 +5,7 @@
 import pathlib
 
 import yaml
+
 from metadata_service.models import transform
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 

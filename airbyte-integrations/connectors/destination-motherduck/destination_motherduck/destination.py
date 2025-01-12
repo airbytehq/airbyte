@@ -2,31 +2,73 @@
 from __future__ import annotations
 
 import datetime
+import io
 import json
 import logging
 import os
 import re
 import uuid
 from collections import defaultdict
+from dataclasses import dataclass
 from logging import getLogger
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import Any, Dict, Iterable, List, Mapping, cast
 from urllib.parse import urlparse
+
+import orjson
+from serpyco_rs import Serializer
+from typing_extensions import override
 
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
-from airbyte_cdk.sql._processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
-from airbyte_cdk.sql._processors.motherduck import MotherDuckConfig, MotherDuckSqlProcessor
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStateStats,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
+from airbyte_cdk.models.airbyte_protocol_serializers import custom_type_resolver
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_INTERNAL_COLUMNS, AB_META_COLUMN, AB_RAW_ID_COLUMN
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_cdk.sql.types import SQLTypeConverter
+from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
+from destination_motherduck.processors.motherduck import MotherDuckConfig, MotherDuckSqlProcessor
+
 
 logger = getLogger("airbyte")
 
 CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
 CONFIG_DEFAULT_SCHEMA = "main"
+MAX_STREAM_BATCH_SIZE = 50_000
+
+
+@dataclass
+class PatchedAirbyteStateMessage(AirbyteStateMessage):
+    """Declare the `id` attribute that platform sends."""
+
+    id: int | None = None
+    """Injected by the platform."""
+
+
+@dataclass
+class PatchedAirbyteMessage(AirbyteMessage):
+    """Keep all defaults but override the type used in `state`."""
+
+    state: PatchedAirbyteStateMessage | None = None
+    """Override class for the state message only."""
+
+
+PatchedAirbyteMessageSerializer = Serializer(
+    PatchedAirbyteMessage,
+    omit_none=True,
+    custom_type_resolver=custom_type_resolver,
+)
+"""Redeclared SerDes class using the patched dataclass."""
 
 
 def validated_sql_name(sql_name: Any) -> str:
@@ -122,52 +164,51 @@ class DestinationMotherDuck(Destination):
         streams = {s.stream.name for s in configured_catalog.streams}
         logger.info(f"Starting write to DuckDB with {len(streams)} streams")
 
-        path = str(config.get("destination_path"))
+        path = str(config.get("destination_path", "md:"))
         path = self._get_destination_path(path)
         schema_name = validated_sql_name(config.get("schema", CONFIG_DEFAULT_SCHEMA))
         motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
+        processor = self._get_sql_processor(
+            configured_catalog=configured_catalog,
+            schema_name=schema_name,
+            db_path=path,
+            motherduck_token=motherduck_api_key,
+        )
 
         for configured_stream in configured_catalog.streams:
-            stream_name = configured_stream.stream.name
-            # TODO: we're calling private methods on processor, should move this to write_stream_data or similar
-            processor = self._get_sql_processor(
-                configured_catalog=configured_catalog,
-                schema_name=schema_name,
-                db_path=path,
-                motherduck_token=motherduck_api_key,
-            )
-            processor._ensure_schema_exists()
-
-            table_name = f"_airbyte_raw_{stream_name}"
-            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                # delete the tables
-                logger.info(f"Dropping tables for overwrite: {table_name}")
-
-                processor._drop_temp_table(table_name, if_exists=True)
-
-            # Get the SQL column definitions
-            sql_columns = processor._get_sql_column_definitions(stream_name)
-            column_definition_str = ",\n                ".join(
-                f"{self._quote_identifier(column_name)} {sql_type}" for column_name, sql_type in sql_columns.items()
-            )
-
-            # create the table if needed
-            catalog_provider = CatalogProvider(configured_catalog)
-            primary_keys = catalog_provider.get_primary_keys(stream_name)
-            processor._create_table_if_not_exists(
-                table_name=table_name,
-                column_definition_str=column_definition_str,
-                primary_keys=primary_keys,
-            )
-
-            processor._ensure_compatible_table_schema(stream_name=stream_name, table_name=table_name)
+            processor.prepare_stream_table(stream_name=configured_stream.stream.name, sync_mode=configured_stream.destination_sync_mode)
 
         buffer: dict[str, dict[str, list[Any]]] = defaultdict(lambda: defaultdict(list))
+        records_buffered: dict[str, int] = defaultdict(int)
+        records_processed: dict[str, int] = defaultdict(int)
+        records_since_last_checkpoint: dict[str, int] = defaultdict(int)
+        legacy_state_messages: list[AirbyteMessage] = []
         for message in input_messages:
-            if message.type == Type.STATE:
+            if message.type == Type.STATE and message.state is not None:
+                if message.state.stream is None:
+                    logger.warning("Cannot process legacy state message, skipping.")
+                    # Hold until the end of the stream, and then yield them all at once.
+                    legacy_state_messages.append(message)
+                    continue
+                stream_name = message.state.stream.stream_descriptor.name
+                _ = message.state.stream.stream_descriptor.namespace  # Unused currently
                 # flush the buffer
-                self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
+                self._flush_buffer(
+                    buffer=buffer,
+                    configured_catalog=configured_catalog,
+                    db_path=path,
+                    schema_name=schema_name,
+                    motherduck_api_key=motherduck_api_key,
+                    stream_name=stream_name,
+                )
                 buffer = defaultdict(lambda: defaultdict(list))
+                records_buffered[stream_name] = 0
+
+                # Annotate the state message with the number of records processed
+                message.state.destinationStats = AirbyteStateStats(
+                    recordCount=records_since_last_checkpoint[stream_name],
+                )
+                records_since_last_checkpoint[stream_name] = 0
 
                 yield message
             elif message.type == Type.RECORD and message.record is not None:
@@ -178,20 +219,45 @@ class DestinationMotherDuck(Destination):
                     continue
                 # add to buffer
                 record_meta: dict[str, str] = {}
-                for column_name in sql_columns:
+                for column_name in processor._get_sql_column_definitions(stream_name):
                     if column_name in data:
                         buffer[stream_name][column_name].append(data[column_name])
                     elif column_name not in AB_INTERNAL_COLUMNS:
                         buffer[stream_name][column_name].append(None)
+
                 buffer[stream_name][AB_RAW_ID_COLUMN].append(str(uuid.uuid4()))
                 buffer[stream_name][AB_EXTRACTED_AT_COLUMN].append(datetime.datetime.now().isoformat())
                 buffer[stream_name][AB_META_COLUMN].append(json.dumps(record_meta))
+                records_buffered[stream_name] += 1
+                records_since_last_checkpoint[stream_name] += 1
+
+                if records_buffered[stream_name] >= MAX_STREAM_BATCH_SIZE:
+                    logger.info(
+                        f"Loading {records_buffered[stream_name]:,} records from '{stream_name}' stream buffer...",
+                    )
+                    self._flush_buffer(
+                        buffer=buffer,
+                        configured_catalog=configured_catalog,
+                        db_path=path,
+                        schema_name=schema_name,
+                        motherduck_api_key=motherduck_api_key,
+                        stream_name=stream_name,
+                    )
+                    buffer = defaultdict(lambda: defaultdict(list))
+                    records_processed[stream_name] += records_buffered[stream_name]
+                    records_buffered[stream_name] = 0
+                    logger.info(
+                        f"Records loaded successfully. Total '{stream_name}' records processed: {records_processed[stream_name]:,}",
+                    )
 
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
 
         # flush any remaining messages
         self._flush_buffer(buffer, configured_catalog, path, schema_name, motherduck_api_key)
+        if legacy_state_messages:
+            # Save to emit these now, since we've finished processing the stream.
+            yield from legacy_state_messages
 
     def _flush_buffer(
         self,
@@ -200,17 +266,19 @@ class DestinationMotherDuck(Destination):
         db_path: str,
         schema_name: str,
         motherduck_api_key: str,
+        stream_name: str | None = None,
     ) -> None:
         """
-        Flush the buffer to the destination
+        Flush the buffer to the destination.
+
+        If no stream name is provided, then all streams will be flushed.
         """
         for configured_stream in configured_catalog.streams:
-            stream_name = configured_stream.stream.name
-            if stream_name in buffer:
+            if (stream_name is None or stream_name == configured_stream.stream.name) and buffer.get(configured_stream.stream.name):
                 processor = self._get_sql_processor(
                     configured_catalog=configured_catalog, schema_name=schema_name, db_path=db_path, motherduck_token=motherduck_api_key
                 )
-                processor.write_stream_data_from_buffer(buffer, stream_name, configured_stream.destination_sync_mode)
+                processor.write_stream_data_from_buffer(buffer, configured_stream.stream.name, configured_stream.destination_sync_mode)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -260,3 +328,34 @@ class DestinationMotherDuck(Destination):
 
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+
+    @override
+    def run(self, args: list[str]) -> None:
+        """Overridden from CDK base class in order to use the patched SerDes class."""
+        init_uncaught_exception_handler(logger)
+        parsed_args = self.parse_args(args)
+        output_messages = self.run_cmd(parsed_args)
+        for message in output_messages:
+            print(
+                orjson.dumps(
+                    PatchedAirbyteMessageSerializer.dump(
+                        cast(PatchedAirbyteMessage, message),
+                    )
+                ).decode()
+            )
+
+    @override
+    def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
+        """Reads from stdin, converting to Airbyte messages.
+
+        Includes overrides that should be in the CDK but we need to test it in the wild first.
+
+        Rationale:
+            The platform injects `id` but our serializer classes don't support
+            `additionalProperties`.
+        """
+        for line in input_stream:
+            try:
+                yield PatchedAirbyteMessageSerializer.load(orjson.loads(line))
+            except orjson.JSONDecodeError:
+                logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")

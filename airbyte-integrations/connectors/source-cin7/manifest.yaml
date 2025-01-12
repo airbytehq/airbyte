@@ -1,0 +1,2288 @@
+version: 5.17.0
+
+type: DeclarativeSource
+
+description: >
+  This is the Cin7 source that ingests data from the Cin7 API.
+
+
+  Cin7 (Connector Inventory Performance), If you’re a business that wants to
+  grow, you need an inventory solution you can count on - both now and in the
+  future. With Cin7 you get a real-time picture of your products across systems,
+  channels, marketplaces and regions, plus NEW ForesightAI advanced inventory
+  forecasting that empowers you to see around corners and stay three steps ahead
+  of demand! https://www.cin7.com/
+
+
+  To use this source, you must first create an account. Once logged in, head to
+  Integrations -> API -> Cin7 Core API.
+
+  Create an application and note down the Account Id and the API key, you will
+  need to enter these in the input fields. You can find more information about
+  the API here https://dearinventory.docs.apiary.io/#reference
+
+check:
+  type: CheckStream
+  stream_names:
+    - bank_accounts
+
+definitions:
+  streams:
+    bank_accounts:
+      type: DeclarativeStream
+      name: bank_accounts
+      primary_key:
+        - AccountID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/ref/accountBank
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - BankAccountsList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bank_accounts"
+    attribute_sets:
+      type: DeclarativeStream
+      name: attribute_sets
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/ref/attributeset
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - AttributeSetList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attribute_sets"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - Code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/ref/account
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - AccountsList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    brands:
+      type: DeclarativeStream
+      name: brands
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/ref/brand
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - BrandList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/brands"
+    carriers:
+      type: DeclarativeStream
+      name: carriers
+      primary_key:
+        - CarrierID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/ref/carrier
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - CarrierList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/carriers"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/customer
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - CustomerList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    deals:
+      type: DeclarativeStream
+      name: deals
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/reference/deals
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Deals
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/ref/location
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Products
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    purchases:
+      type: DeclarativeStream
+      name: purchases
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: purchaselist
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - PurchaseList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchases"
+    suppliers:
+      type: DeclarativeStream
+      name: suppliers
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: suppliers
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Suppliers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suppliers"
+    sales:
+      type: DeclarativeStream
+      name: sales
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/crm/opportunity
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - opportunityList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sales"
+    sale_list:
+      type: DeclarativeStream
+      name: sale_list
+      primary_key:
+        - SaleID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/saleList
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - SaleList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sale_list"
+    taxes:
+      type: DeclarativeStream
+      name: taxes
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/ref/tax
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - TaxRuleList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taxes"
+    product_categories:
+      type: DeclarativeStream
+      name: product_categories
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/ref/category
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - CategoryList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_categories"
+    product_family:
+      type: DeclarativeStream
+      name: product_family
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/productFamily
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ProductFamilies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_family"
+  base_requester:
+    type: HttpRequester
+    url_base: https://inventory.dearsystems.com/externalapi/
+
+streams:
+  - $ref: "#/definitions/streams/bank_accounts"
+  - $ref: "#/definitions/streams/attribute_sets"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/brands"
+  - $ref: "#/definitions/streams/carriers"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/deals"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/purchases"
+  - $ref: "#/definitions/streams/suppliers"
+  - $ref: "#/definitions/streams/sales"
+  - $ref: "#/definitions/streams/sale_list"
+  - $ref: "#/definitions/streams/taxes"
+  - $ref: "#/definitions/streams/product_categories"
+  - $ref: "#/definitions/streams/product_family"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - accountid
+      - api_key
+    properties:
+      accountid:
+        type: string
+        description: The ID associated with your account.
+        order: 0
+        title: Account ID
+      api_key:
+        type: string
+        description: The API key associated with your account.
+        order: 1
+        title: API Key
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    bank_accounts: true
+    attribute_sets: true
+    accounts: true
+    brands: true
+    carriers: true
+    customers: true
+    deals: true
+    locations: true
+    products: true
+    purchases: true
+    suppliers: true
+    sales: true
+    sale_list: true
+    taxes: true
+    product_categories: true
+    product_family: true
+  testedStreams:
+    bank_accounts:
+      hasRecords: true
+      streamHash: f7dd65eb1f8a795e710813293bccdf70380226ff
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    attribute_sets:
+      hasRecords: true
+      streamHash: a477de0eca518a4c300f0581fabe1d00ae87cb1d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    accounts:
+      hasRecords: true
+      streamHash: f544371a8538ec73c072dbfd3241c64aba21124f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    brands:
+      hasRecords: true
+      streamHash: 73573fb44c4417e98dbe0650e1782df7c57ae6d7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    carriers:
+      hasRecords: true
+      streamHash: 4d049420bb231781198df96e94f555db8922970e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      hasRecords: true
+      streamHash: 8ebcdd2288269655b2b926a08b3ff13de4830701
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    deals:
+      streamHash: 3091c0f345e8e31f88ed309fbc5d000ec7eca4b3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    locations:
+      hasRecords: true
+      streamHash: e49c3d38646053ba45575de9669e6f163187fbbb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: c5379cda41ba035523eaa33f17107d772e25f1d3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    purchases:
+      hasRecords: true
+      streamHash: 751de6d6cfbfcfb538a62a15db61f2ea8dcc6f63
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    suppliers:
+      streamHash: 58f238049ce5031d00fee8b5b562c6110541afd8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sales:
+      streamHash: d09addf97ad0ae0453e42ff9f3e8f66bb71616aa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sale_list:
+      hasRecords: true
+      streamHash: 63f057d9b8a830772b5e0ae35c44c189821a21c5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    taxes:
+      hasRecords: true
+      streamHash: 67b527295ad75865bbf0f651f8faf1d461839e85
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_categories:
+      streamHash: 60ce930da7366da26fdc07296bcc6b7f9601882d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_family:
+      streamHash: 7e9a93bb48fe322bac0d4db56acc9e46c63534b0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  bank_accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AccountCode:
+        type:
+          - string
+          - "null"
+      AccountID:
+        type: string
+      AccountName:
+        type:
+          - string
+          - "null"
+      AccountNumber:
+        type:
+          - string
+          - "null"
+      Bank:
+        type:
+          - string
+          - "null"
+      Currency:
+        type:
+          - string
+          - "null"
+      InitialBalance:
+        type:
+          - number
+          - "null"
+      StatementBalance:
+        type:
+          - number
+          - "null"
+    required:
+      - AccountID
+  attribute_sets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Attribute10Name:
+        type:
+          - string
+          - "null"
+      Attribute10Type:
+        type:
+          - string
+          - "null"
+      Attribute1Name:
+        type:
+          - string
+          - "null"
+      Attribute1Type:
+        type:
+          - string
+          - "null"
+      Attribute2Name:
+        type:
+          - string
+          - "null"
+      Attribute2Type:
+        type:
+          - string
+          - "null"
+      Attribute2Values:
+        type:
+          - string
+          - "null"
+      Attribute3Name:
+        type:
+          - string
+          - "null"
+      Attribute3Type:
+        type:
+          - string
+          - "null"
+      Attribute4Name:
+        type:
+          - string
+          - "null"
+      Attribute4Type:
+        type:
+          - string
+          - "null"
+      Attribute5Name:
+        type:
+          - string
+          - "null"
+      Attribute5Type:
+        type:
+          - string
+          - "null"
+      Attribute6Name:
+        type:
+          - string
+          - "null"
+      Attribute6Type:
+        type:
+          - string
+          - "null"
+      Attribute7Name:
+        type:
+          - string
+          - "null"
+      Attribute7Type:
+        type:
+          - string
+          - "null"
+      Attribute8Name:
+        type:
+          - string
+          - "null"
+      Attribute8Type:
+        type:
+          - string
+          - "null"
+      Attribute9Name:
+        type:
+          - string
+          - "null"
+      Attribute9Type:
+        type:
+          - string
+          - "null"
+      Attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            Name:
+              type:
+                - string
+                - "null"
+            Type:
+              type:
+                - string
+                - "null"
+            Values:
+              type:
+                - string
+                - "null"
+      ID:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+    required:
+      - ID
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      BankAccountId:
+        type:
+          - string
+          - "null"
+      BankAccountNumber:
+        type:
+          - string
+          - "null"
+      Class:
+        type:
+          - string
+          - "null"
+      Code:
+        type: string
+      Description:
+        type:
+          - string
+          - "null"
+      DisplayName:
+        type:
+          - string
+          - "null"
+      ForPayments:
+        type:
+          - boolean
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      SystemAccount:
+        type:
+          - string
+          - "null"
+      SystemAccountCode:
+        type:
+          - string
+          - "null"
+      Type:
+        type:
+          - string
+          - "null"
+    required:
+      - Code
+  brands:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ID:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+    required:
+      - ID
+  carriers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CarrierID:
+        type: string
+      Description:
+        type:
+          - string
+          - "null"
+    required:
+      - CarrierID
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AccountReceivable:
+        type:
+          - string
+          - "null"
+      Addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            City:
+              type:
+                - string
+                - "null"
+            DefaultForType:
+              type:
+                - boolean
+                - "null"
+            ID:
+              type:
+                - string
+                - "null"
+            Line1:
+              type:
+                - string
+                - "null"
+            Line2:
+              type:
+                - string
+                - "null"
+            Postcode:
+              type:
+                - string
+                - "null"
+            State:
+              type:
+                - string
+                - "null"
+            Type:
+              type:
+                - string
+                - "null"
+      Carrier:
+        type:
+          - string
+          - "null"
+      Contacts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            Comment:
+              type:
+                - string
+                - "null"
+            Default:
+              type:
+                - boolean
+                - "null"
+            Email:
+              type:
+                - string
+                - "null"
+            Fax:
+              type:
+                - string
+                - "null"
+            ID:
+              type:
+                - string
+                - "null"
+            IncludeInEmail:
+              type:
+                - boolean
+                - "null"
+            JobTitle:
+              type:
+                - string
+                - "null"
+            MarketingConsent:
+              type:
+                - number
+                - "null"
+            MobilePhone:
+              type:
+                - string
+                - "null"
+            Name:
+              type:
+                - string
+                - "null"
+            Phone:
+              type:
+                - string
+                - "null"
+            Website:
+              type:
+                - string
+                - "null"
+      CreditLimit:
+        type:
+          - number
+          - "null"
+      Currency:
+        type:
+          - string
+          - "null"
+      Discount:
+        type:
+          - number
+          - "null"
+      ID:
+        type: string
+      IsOnCreditHold:
+        type:
+          - boolean
+          - "null"
+      LastModifiedOn:
+        type:
+          - string
+          - "null"
+      Location:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      PaymentTerm:
+        type:
+          - string
+          - "null"
+      PriceTier:
+        type:
+          - string
+          - "null"
+      ProductPrices:
+        type:
+          - array
+          - "null"
+      RevenueAccount:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      TaxRule:
+        type:
+          - string
+          - "null"
+    required:
+      - ID
+  deals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AllowCoupons:
+        type:
+          - boolean
+          - "null"
+      CouponCodes:
+        type:
+          - string
+          - "null"
+      CustomersGroup:
+        type:
+          - string
+          - "null"
+      DateFrom:
+        type:
+          - string
+          - "null"
+      DateTo:
+        type:
+          - string
+          - "null"
+      DealCustomerTags:
+        type:
+          - array
+          - "null"
+      DealCustomers:
+        type:
+          - array
+          - "null"
+      DealDiscounts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            BuyMore:
+              type:
+                - boolean
+                - "null"
+            DealDiscountBrands:
+              type:
+                - array
+                - "null"
+            DealDiscountCategories:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  CategoryID:
+                    type:
+                      - string
+                      - "null"
+                  CategoryName:
+                    type:
+                      - string
+                      - "null"
+                  ID:
+                    type:
+                      - string
+                      - "null"
+            DealDiscountProducts:
+              type:
+                - array
+                - "null"
+            DealDiscountTags:
+              type:
+                - array
+                - "null"
+            DiscountID:
+              type:
+                - string
+                - "null"
+            DiscountName:
+              type:
+                - string
+                - "null"
+            DiscountType:
+              type:
+                - string
+                - "null"
+            ID:
+              type:
+                - string
+                - "null"
+            IsOrderLevel:
+              type:
+                - boolean
+                - "null"
+            Sequence:
+              type:
+                - number
+                - "null"
+      ID:
+        type: string
+      IsActive:
+        type:
+          - boolean
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      SingleCouponCodeUsage:
+        type:
+          - boolean
+          - "null"
+    required:
+      - ID
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      LocationList:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            Bins:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  ID:
+                    type:
+                      - string
+                      - "null"
+                  IsDeprecated:
+                    type:
+                      - boolean
+                      - "null"
+                  IsStaging:
+                    type:
+                      - boolean
+                      - "null"
+                  Name:
+                    type:
+                      - string
+                      - "null"
+            FixedAssetsLocation:
+              type:
+                - boolean
+                - "null"
+            ID:
+              type:
+                - string
+                - "null"
+            IsCoMan:
+              type:
+                - boolean
+                - "null"
+            IsDefault:
+              type:
+                - boolean
+                - "null"
+            IsDeprecated:
+              type:
+                - boolean
+                - "null"
+            IsShopFloor:
+              type:
+                - boolean
+                - "null"
+            IsStaging:
+              type:
+                - boolean
+                - "null"
+            Name:
+              type:
+                - string
+                - "null"
+            ParentID:
+              type:
+                - string
+                - "null"
+      Page:
+        type:
+          - number
+          - "null"
+      Total:
+        type:
+          - number
+          - "null"
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AdditionalAttribute1:
+        type:
+          - string
+          - "null"
+      AdditionalAttribute10:
+        type:
+          - string
+          - "null"
+      AdditionalAttribute2:
+        type:
+          - string
+          - "null"
+      AdditionalAttribute3:
+        type:
+          - string
+          - "null"
+      AdditionalAttribute4:
+        type:
+          - string
+          - "null"
+      AdditionalAttribute5:
+        type:
+          - string
+          - "null"
+      AdditionalAttribute6:
+        type:
+          - string
+          - "null"
+      AdditionalAttribute7:
+        type:
+          - string
+          - "null"
+      AdditionalAttribute8:
+        type:
+          - string
+          - "null"
+      AdditionalAttribute9:
+        type:
+          - string
+          - "null"
+      AttributeSet:
+        type:
+          - string
+          - "null"
+      AverageCost:
+        type:
+          - number
+          - "null"
+      Barcode:
+        type:
+          - string
+          - "null"
+      Brand:
+        type:
+          - string
+          - "null"
+      Category:
+        type:
+          - string
+          - "null"
+      CostingMethod:
+        type:
+          - string
+          - "null"
+      DefaultLocation:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      DropShipMode:
+        type:
+          - string
+          - "null"
+      ExpenseAccount:
+        type:
+          - string
+          - "null"
+      Height:
+        type:
+          - number
+          - "null"
+      ID:
+        type: string
+      InventoryAccount:
+        type:
+          - string
+          - "null"
+      LastModifiedOn:
+        type:
+          - string
+          - "null"
+      Length:
+        type:
+          - number
+          - "null"
+      MinimumBeforeReorder:
+        type:
+          - number
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      PickZones:
+        type:
+          - string
+          - "null"
+      PriceTier1:
+        type:
+          - number
+          - "null"
+      PriceTier10:
+        type:
+          - number
+          - "null"
+      PriceTier2:
+        type:
+          - number
+          - "null"
+      PriceTier3:
+        type:
+          - number
+          - "null"
+      PriceTier4:
+        type:
+          - number
+          - "null"
+      PriceTier5:
+        type:
+          - number
+          - "null"
+      PriceTier6:
+        type:
+          - number
+          - "null"
+      PriceTier7:
+        type:
+          - number
+          - "null"
+      PriceTier8:
+        type:
+          - number
+          - "null"
+      PriceTier9:
+        type:
+          - number
+          - "null"
+      PriceTiers:
+        type:
+          - object
+          - "null"
+        properties:
+          Tier 1:
+            type:
+              - number
+              - "null"
+          Tier 10:
+            type:
+              - number
+              - "null"
+          Tier 2:
+            type:
+              - number
+              - "null"
+          Tier 3:
+            type:
+              - number
+              - "null"
+          Tier 4:
+            type:
+              - number
+              - "null"
+          Tier 5:
+            type:
+              - number
+              - "null"
+          Tier 6:
+            type:
+              - number
+              - "null"
+          Tier 7:
+            type:
+              - number
+              - "null"
+          Tier 8:
+            type:
+              - number
+              - "null"
+          Tier 9:
+            type:
+              - number
+              - "null"
+      PurchaseTaxRule:
+        type:
+          - string
+          - "null"
+      ReorderQuantity:
+        type:
+          - number
+          - "null"
+      RevenueAccount:
+        type:
+          - string
+          - "null"
+      SKU:
+        type:
+          - string
+          - "null"
+      SaleTaxRule:
+        type:
+          - string
+          - "null"
+      Sellable:
+        type:
+          - boolean
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      StockLocator:
+        type:
+          - string
+          - "null"
+      Tags:
+        type:
+          - string
+          - "null"
+      Type:
+        type:
+          - string
+          - "null"
+      UOM:
+        type:
+          - string
+          - "null"
+      Weight:
+        type:
+          - number
+          - "null"
+      Width:
+        type:
+          - number
+          - "null"
+    required:
+      - ID
+  purchases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      BaseCurrency:
+        type:
+          - string
+          - "null"
+      BlindReceipt:
+        type:
+          - boolean
+          - "null"
+      CreditNoteNumber:
+        type:
+          - string
+          - "null"
+      CreditNoteStatus:
+        type:
+          - string
+          - "null"
+      ID:
+        type: string
+      InvoiceAmount:
+        type:
+          - number
+          - "null"
+      InvoiceDate:
+        type:
+          - string
+          - "null"
+      InvoiceDueDate:
+        type:
+          - string
+          - "null"
+      InvoiceNumber:
+        type:
+          - string
+          - "null"
+      InvoiceStatus:
+        type:
+          - string
+          - "null"
+      LastUpdatedDate:
+        type:
+          - string
+          - "null"
+      OrderDate:
+        type:
+          - string
+          - "null"
+      OrderNumber:
+        type:
+          - string
+          - "null"
+      OrderStatus:
+        type:
+          - string
+          - "null"
+      PaidAmount:
+        type:
+          - number
+          - "null"
+      RequiredBy:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      StockReceivedStatus:
+        type:
+          - string
+          - "null"
+      Supplier:
+        type:
+          - string
+          - "null"
+      SupplierCurrency:
+        type:
+          - string
+          - "null"
+      SupplierID:
+        type:
+          - string
+          - "null"
+      UnstockStatus:
+        type:
+          - string
+          - "null"
+    required:
+      - ID
+  suppliers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AccountPayable:
+        type:
+          - string
+          - "null"
+      Addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            City:
+              type:
+                - string
+                - "null"
+            Country:
+              type:
+                - string
+                - "null"
+            DefaultForType:
+              type:
+                - boolean
+                - "null"
+            Line1:
+              type:
+                - string
+                - "null"
+            Line2:
+              type:
+                - string
+                - "null"
+            Postcode:
+              type:
+                - string
+                - "null"
+            State:
+              type:
+                - string
+                - "null"
+            Type:
+              type:
+                - string
+                - "null"
+      Contacts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            Default:
+              type:
+                - boolean
+                - "null"
+            Email:
+              type:
+                - string
+                - "null"
+            Fax:
+              type:
+                - string
+                - "null"
+            IncludeInEmail:
+              type:
+                - boolean
+                - "null"
+            MobilePhone:
+              type:
+                - string
+                - "null"
+            Name:
+              type:
+                - string
+                - "null"
+            Phone:
+              type:
+                - string
+                - "null"
+      Currency:
+        type:
+          - string
+          - "null"
+      Discount:
+        type:
+          - number
+          - "null"
+      ID:
+        type: string
+      LastModifiedOn:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      PaymentTerm:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      TaxRule:
+        type:
+          - string
+          - "null"
+    required:
+      - ID
+  sales:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Page:
+        type:
+          - number
+          - "null"
+      Total:
+        type:
+          - number
+          - "null"
+      opportunityList:
+        type:
+          - array
+          - "null"
+  sale_list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      BaseCurrency:
+        type:
+          - string
+          - "null"
+      CombinedInvoiceStatus:
+        type:
+          - string
+          - "null"
+      CombinedPackingStatus:
+        type:
+          - string
+          - "null"
+      CombinedPaymentStatus:
+        type:
+          - string
+          - "null"
+      CombinedPickingStatus:
+        type:
+          - string
+          - "null"
+      CombinedShippingStatus:
+        type:
+          - string
+          - "null"
+      CombinedTrackingNumbers:
+        type:
+          - string
+          - "null"
+      CreditNoteStatus:
+        type:
+          - string
+          - "null"
+      Customer:
+        type:
+          - string
+          - "null"
+      CustomerCurrency:
+        type:
+          - string
+          - "null"
+      CustomerID:
+        type:
+          - string
+          - "null"
+      CustomerReference:
+        type:
+          - string
+          - "null"
+      ExternalID:
+        type:
+          - string
+          - "null"
+      FulFilmentStatus:
+        type:
+          - string
+          - "null"
+      InvoiceAmount:
+        type:
+          - number
+          - "null"
+      InvoiceDate:
+        type:
+          - string
+          - "null"
+      InvoiceDueDate:
+        type:
+          - string
+          - "null"
+      InvoiceNumber:
+        type:
+          - string
+          - "null"
+      OrderDate:
+        type:
+          - string
+          - "null"
+      OrderLocationID:
+        type:
+          - string
+          - "null"
+      OrderNumber:
+        type:
+          - string
+          - "null"
+      OrderStatus:
+        type:
+          - string
+          - "null"
+      PaidAmount:
+        type:
+          - number
+          - "null"
+      QuoteStatus:
+        type:
+          - string
+          - "null"
+      RestockStatus:
+        type:
+          - string
+          - "null"
+      SaleID:
+        type: string
+      ShipBy:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      Type:
+        type:
+          - string
+          - "null"
+      Updated:
+        type:
+          - string
+          - "null"
+    required:
+      - SaleID
+  taxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Account:
+        type:
+          - string
+          - "null"
+      Components:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            ComponentOrder:
+              type:
+                - number
+                - "null"
+            Compound:
+              type:
+                - boolean
+                - "null"
+            Name:
+              type:
+                - string
+                - "null"
+      ID:
+        type: string
+      IsActive:
+        type:
+          - boolean
+          - "null"
+      IsTaxForPurchase:
+        type:
+          - boolean
+          - "null"
+      IsTaxForSale:
+        type:
+          - boolean
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      TaxInclusive:
+        type:
+          - boolean
+          - "null"
+      TaxPercent:
+        type:
+          - number
+          - "null"
+    required:
+      - ID
+  product_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ID:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+    required:
+      - ID
+  product_family:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Attachments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            ContentType:
+              type:
+                - string
+                - "null"
+            DownloadUrl:
+              type:
+                - string
+                - "null"
+            FileName:
+              type:
+                - string
+                - "null"
+            ID:
+              type:
+                - string
+                - "null"
+            IsDefault:
+              type:
+                - boolean
+                - "null"
+      AttributeSet:
+        type:
+          - string
+          - "null"
+      Brand:
+        type:
+          - string
+          - "null"
+      Category:
+        type:
+          - string
+          - "null"
+      CostingMethod:
+        type:
+          - string
+          - "null"
+      DefaultLocation:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      DropShipMode:
+        type:
+          - string
+          - "null"
+      ID:
+        type: string
+      LastModifiedOn:
+        type:
+          - string
+          - "null"
+      MinimumBeforeReorder:
+        type:
+          - number
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Option1Name:
+        type:
+          - string
+          - "null"
+      Option1Values:
+        type:
+          - string
+          - "null"
+      Option2Name:
+        type:
+          - string
+          - "null"
+      Option2Values:
+        type:
+          - string
+          - "null"
+      Option3Name:
+        type:
+          - string
+          - "null"
+      Option3Values:
+        type:
+          - string
+          - "null"
+      PriceTier1:
+        type:
+          - number
+          - "null"
+      PriceTier10:
+        type:
+          - number
+          - "null"
+      PriceTier2:
+        type:
+          - number
+          - "null"
+      PriceTier3:
+        type:
+          - number
+          - "null"
+      PriceTier4:
+        type:
+          - number
+          - "null"
+      PriceTier5:
+        type:
+          - number
+          - "null"
+      PriceTier6:
+        type:
+          - number
+          - "null"
+      PriceTier7:
+        type:
+          - number
+          - "null"
+      PriceTier8:
+        type:
+          - number
+          - "null"
+      PriceTier9:
+        type:
+          - number
+          - "null"
+      Products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            ID:
+              type:
+                - string
+                - "null"
+            Name:
+              type:
+                - string
+                - "null"
+            Option1:
+              type:
+                - string
+                - "null"
+            Option2:
+              type:
+                - string
+                - "null"
+            Option3:
+              type:
+                - string
+                - "null"
+            SKU:
+              type:
+                - string
+                - "null"
+      ReorderQuantity:
+        type:
+          - number
+          - "null"
+      SKU:
+        type:
+          - string
+          - "null"
+      ShortDescription:
+        type:
+          - string
+          - "null"
+      Tags:
+        type:
+          - string
+          - "null"
+      UOM:
+        type:
+          - string
+          - "null"
+    required:
+      - ID

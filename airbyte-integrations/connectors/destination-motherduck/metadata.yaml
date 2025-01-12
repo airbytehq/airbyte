@@ -4,7 +4,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 042ee9b5-eb98-4e99-a4e5-3f0d573bee66
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.17
   dockerRepository: airbyte/destination-motherduck
   githubIssueLabel: destination-motherduck
   icon: duckdb.svg
@@ -18,12 +18,16 @@ data:
   releaseStage: alpha
   releases:
     breakingChanges: []
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-destination-motherduck
   resourceRequirements:
     jobSpecific:
       - jobType: check_connection
         resourceRequirements:
-          memory_limit: 2Gi
-          memory_request: 2Gi
+          memory_limit: 800Mi
+          memory_request: 800Mi
       - jobType: sync
         resourceRequirements:
           memory_limit: 2Gi

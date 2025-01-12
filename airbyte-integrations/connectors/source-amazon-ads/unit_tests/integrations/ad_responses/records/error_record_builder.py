@@ -11,7 +11,7 @@ class ErrorRecordBuilder(RecordBuilder):
         template: Dict[str, Any],
         id_path: Optional[Path] = None,
         cursor_path: Optional[Union[FieldPath, NestedPath]] = None,
-        error_message_path: Optional[Path] = None
+        error_message_path: Optional[Path] = None,
     ):
         super().__init__(template, id_path, cursor_path)
         self._error_message_path = error_message_path

@@ -13,8 +13,6 @@ import io.micronaut.context.env.yaml.YamlPropertySourceLoader
 import java.nio.file.Files
 import java.nio.file.Path
 
-const val DOCKERIZED_TEST_ENV = "DOCKERIZED_INTEGRATION_TEST"
-
 /**
  * Represents a destination process, whether running in-JVM via micronaut, or as a separate Docker
  * container. The general lifecycle is:
@@ -31,6 +29,7 @@ interface DestinationProcess {
      */
     suspend fun run()
 
+    fun sendMessage(string: String)
     fun sendMessage(message: AirbyteMessage)
     fun sendMessages(vararg messages: AirbyteMessage) {
         messages.forEach { sendMessage(it) }
@@ -46,6 +45,8 @@ interface DestinationProcess {
 
     /** Terminate the destination as immediately as possible. */
     fun kill()
+
+    fun verifyFileDeleted()
 }
 
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
@@ -61,6 +62,8 @@ abstract class DestinationProcessFactory {
         command: String,
         configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
+        useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 

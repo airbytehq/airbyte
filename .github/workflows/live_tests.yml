@@ -44,7 +44,7 @@ on:
 jobs:
   live_tests:
     name: Live Tests
-    runs-on: connector-test-large
+    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 360 # 6 hours
     steps:
       - name: Checkout Airbyte
@@ -63,6 +63,8 @@ jobs:
       - name: Install Poetry
         id: install_poetry
         uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
 
       - name: Make poetry venv in project
         id: poetry_venv
@@ -116,7 +118,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

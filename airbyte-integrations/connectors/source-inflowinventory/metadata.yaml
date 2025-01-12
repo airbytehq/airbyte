@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "cloudapi.inflowinventory.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-inflowinventory
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 139e24a8-6439-4606-8b1b-32bf6817b07d
+  dockerImageTag: 0.0.6
+  dockerRepository: airbyte/source-inflowinventory
+  githubIssueLabel: source-inflowinventory
+  icon: icon.svg
+  license: MIT
+  name: Inflowinventory
+  releaseDate: 2024-10-29
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/inflowinventory
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

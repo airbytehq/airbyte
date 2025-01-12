@@ -28,6 +28,15 @@ MailerSend has a default [rate limit](https://developers.mailersend.com/general.
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
+| 0.2.9 | 2025-01-11 | [51156](https://github.com/airbytehq/airbyte/pull/51156) | Update dependencies |
+| 0.2.8 | 2024-12-28 | [50650](https://github.com/airbytehq/airbyte/pull/50650) | Update dependencies |
+| 0.2.7 | 2024-12-21 | [50080](https://github.com/airbytehq/airbyte/pull/50080) | Update dependencies |
+| 0.2.6 | 2024-12-14 | [49614](https://github.com/airbytehq/airbyte/pull/49614) | Update dependencies |
+| 0.2.5 | 2024-12-12 | [49262](https://github.com/airbytehq/airbyte/pull/49262) | Update dependencies |
+| 0.2.4 | 2024-12-11 | [48947](https://github.com/airbytehq/airbyte/pull/48947) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.3 | 2024-11-04 | [48203](https://github.com/airbytehq/airbyte/pull/48203) | Update dependencies |
+| 0.2.2 | 2024-10-29 | [47785](https://github.com/airbytehq/airbyte/pull/47785) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47592](https://github.com/airbytehq/airbyte/pull/47592) | Update dependencies |
 | 0.2.0 | 2024-08-26 | [44766](https://github.com/airbytehq/airbyte/pull/44766) | Refactor connector to manifest-only format |
 | 0.1.15 | 2024-08-24 | [44697](https://github.com/airbytehq/airbyte/pull/44697) | Update dependencies |
 | 0.1.14 | 2024-08-17 | [44258](https://github.com/airbytehq/airbyte/pull/44258) | Update dependencies |

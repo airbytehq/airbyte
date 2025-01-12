@@ -31,6 +31,15 @@ The Sage HR Airbyte Connector enables seamless data integration, allowing you to
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-01-11 | [51323](https://github.com/airbytehq/airbyte/pull/51323) | Update dependencies |
+| 0.0.9 | 2024-12-28 | [50687](https://github.com/airbytehq/airbyte/pull/50687) | Update dependencies |
+| 0.0.8 | 2024-12-21 | [50300](https://github.com/airbytehq/airbyte/pull/50300) | Update dependencies |
+| 0.0.7 | 2024-12-14 | [49687](https://github.com/airbytehq/airbyte/pull/49687) | Update dependencies |
+| 0.0.6 | 2024-12-12 | [49353](https://github.com/airbytehq/airbyte/pull/49353) | Update dependencies |
+| 0.0.5 | 2024-12-11 | [49089](https://github.com/airbytehq/airbyte/pull/49089) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.0.4 | 2024-11-05 | [48353](https://github.com/airbytehq/airbyte/pull/48353) | Revert to source-declarative-manifest v5.17.0 |
+| 0.0.3 | 2024-11-05 | [48328](https://github.com/airbytehq/airbyte/pull/48328) | Update dependencies |
+| 0.0.2 | 2024-10-28 | [47581](https://github.com/airbytehq/airbyte/pull/47581) | Update dependencies |
 | 0.0.1 | 2024-10-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

@@ -6,13 +6,14 @@ import json
 from typing import Any, Dict, Mapping
 
 import boto3
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status
 
 # from airbyte_cdk.sources.source import Source
 from moto import mock_iam, mock_sqs
 from moto.core import set_initial_no_auth_action_count
 from source_amazon_sqs import SourceAmazonSqs
+
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status
 
 
 @mock_iam

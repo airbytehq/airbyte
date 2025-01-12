@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "classroom.googleapis.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-google-classroom
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2c3aa088-396d-4ee6-8096-971ecd11598c
+  dockerImageTag: 0.0.6
+  dockerRepository: airbyte/source-google-classroom
+  githubIssueLabel: source-google-classroom
+  icon: icon.svg
+  license: MIT
+  name: Google Classroom
+  releaseDate: 2024-10-26
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-classroom
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

@@ -2,12 +2,14 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
-  dockerImageTag: 1.3.0
+  dockerImageTag: 1.5.0-rc.8
   dockerRepository: airbyte/destination-s3
   githubIssueLabel: destination-s3
   icon: s3.svg
   license: ELv2
   name: S3
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   registryOverrides:
     cloud:
       enabled: true
@@ -20,6 +22,8 @@ data:
         message: >
           **This release includes breaking changes, including major revisions to the schema of stored data. Do not upgrade without reviewing the migration guide.**
         upgradeDeadline: "2024-10-08"
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -34,10 +38,66 @@ data:
     ql: 300
   supportLevel: certified
   supportsRefreshes: true
+  supportsFileTransfer: true
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
+        - name: SECRET_DESTINATION-S3-V2-MINIMAL-REQUIRED-CONFIG
+          fileName: s3_dest_v2_minimal_required_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-JSONL-ROOT-LEVEL-FLATTENING
+          fileName: s3_dest_v2_jsonl_root_level_flattening_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-JSONL-GZIP
+          fileName: s3_dest_v2_jsonl_gzip_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-JSONL-STAGING
+          fileName: s3_dest_v2_jsonl_staging_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-CSV
+          fileName: s3_dest_v2_csv_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-CSV-ROOT-LEVEL-FLATTENING
+          fileName: s3_dest_v2_csv_root_level_flattening_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-CSV-GZIP
+          fileName: s3_dest_v2_csv_gzip_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-AVRO
+          fileName: s3_dest_v2_avro_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-AVRO-BZIP2
+          fileName: s3_dest_v2_avro_bzip2_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-PARQUET
+          fileName: s3_dest_v2_parquet_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-PARQUET-SNAPPY
+          fileName: s3_dest_v2_parquet_snappy_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-S3-ASSUME-ROLE-CONFIG
           fileName: s3_dest_assume_role_config.json
           secretStore:
@@ -60,6 +120,21 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-S3_DEST_IAM_ROLE_CREDENTIALS_FOR_ASSUME_ROLE_AUTH
           fileName: s3_dest_iam_role_credentials_for_assume_role_auth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-ENDPOINT_URL
+          fileName: s3_dest_v2_endpoint_url_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2-ENDPOINT_EMPTY_URL
+          fileName: s3_dest_v2_endpoint_empty_url_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-V2_AMBIGUOUS_FILEPATH
+          fileName: s3_dest_v2_ambiguous_filepath_config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
