@@ -34,6 +34,7 @@ You need to generate the `auth_token` to get started. Personal Auth Tokens can b
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.6 | 2025-01-11 | [51233](https://github.com/airbytehq/airbyte/pull/51233) | Update dependencies |
 | 0.0.5 | 2024-12-28 | [50452](https://github.com/airbytehq/airbyte/pull/50452) | Update dependencies |
 | 0.0.4 | 2024-12-21 | [50163](https://github.com/airbytehq/airbyte/pull/50163) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49562](https://github.com/airbytehq/airbyte/pull/49562) | Update dependencies |

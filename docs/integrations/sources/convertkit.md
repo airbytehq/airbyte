@@ -36,6 +36,7 @@ The connector has a rate limit of no more than 120 requests over a rolling 60 se
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.2.9 | 2025-01-11 | [51107](https://github.com/airbytehq/airbyte/pull/51107) | Update dependencies |
 | 0.2.8 | 2024-12-28 | [50522](https://github.com/airbytehq/airbyte/pull/50522) | Update dependencies |
 | 0.2.7 | 2024-12-21 | [50066](https://github.com/airbytehq/airbyte/pull/50066) | Update dependencies |
 | 0.2.6 | 2024-12-14 | [49510](https://github.com/airbytehq/airbyte/pull/49510) | Update dependencies |
