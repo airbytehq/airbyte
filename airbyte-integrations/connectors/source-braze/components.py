@@ -34,7 +34,7 @@ class TransformToRecordComponent(AddFields):
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
         for parsed_field in self._parsed_fields:
             value = parsed_field.value.eval(config, **kwargs)
-            dpath.util.new(_record, parsed_field.path, value)
+            dpath.new(_record, parsed_field.path, value)
         return _record
 
 
@@ -62,17 +62,17 @@ class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
         """
         Puts a step to each stream slice. `step` is a difference between start/end date in days.
         """
-        get_start_time = operator.itemgetter(self.partition_field_start.eval(self.config))
-        get_end_time = operator.itemgetter(self.partition_field_end.eval(self.config))
+        get_start_time = operator.itemgetter(self._partition_field_start.eval(self.config))
+        get_end_time = operator.itemgetter(self._partition_field_end.eval(self.config))
         date_range = [
             dr
             for dr in super(DatetimeIncrementalSyncComponent, self)._partition_daterange(start, end, step)
             if get_start_time(dr) < get_end_time(dr)
         ]
         for i, _slice in enumerate(date_range):
-            start_time = self._parser.parse(get_start_time(_slice), self.start_datetime.datetime_format)
-            end_time = self._parser.parse(get_end_time(_slice), self.end_datetime.datetime_format)
-            _slice[self.stream_slice_field_step.eval(self.config)] = (end_time + datetime.timedelta(days=int(bool(i))) - start_time).days
+            start_time = self._parser.parse(get_start_time(_slice), self._start_datetime.datetime_format)
+            end_time = self._parser.parse(get_end_time(_slice), self._end_datetime.datetime_format)
+            _slice._stream_slice[self.stream_slice_field_step.eval(self.config)] = (end_time + datetime.timedelta(days=int(bool(i))) - start_time).days
         return date_range
 
 
