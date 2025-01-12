@@ -1,11 +1,11 @@
 # Shopify Migration Guide
 
 ## Upgrading to 2.6.0
-This version completely deprecates the following streams, because of the outdated `api version` which is not supported anymore:
+This version completely deprecates the following streams, because Shopify no longer supports them after Shopify API version `2024-04`:
 - `Products Graph QL`
 - `Customer Saved Search`
 
-To replace the old `Products Graph QL` use the `Products` instead.
+Please use `Products` to replace the old `Products Graph QL` stream.
 
 
 ## Upgrading to 2.2.0
