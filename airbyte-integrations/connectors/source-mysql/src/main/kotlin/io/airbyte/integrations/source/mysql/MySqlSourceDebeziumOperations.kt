@@ -40,6 +40,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.sql.Statement
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -244,7 +245,7 @@ class MySqlSourceDebeziumOperations(
         val gtidsField = "Executed_Gtid_Set"
         val queries = listOf("SHOW BINARY LOG STATUS", "SHOW MASTER STATUS")
 
-        jdbcConnectionFactory.get().use { connection ->
+        return jdbcConnectionFactory.get().use { connection ->
             connection.createStatement().use { stmt ->
                 queries.firstNotNullOfOrNull { sql ->
                     try {
