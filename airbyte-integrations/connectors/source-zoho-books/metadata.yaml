@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-zoho-books
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.4@sha256:b73460101d4ff373826b56f00ef2012b635f5eab04c429892547dd055cd779dc
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
   connectorSubtype: api
   connectorType: source
   definitionId: b67f9de8-177d-4d48-9c5c-8a767d845885
-  dockerImageTag: 0.0.6
+  dockerImageTag: 0.0.7
   dockerRepository: airbyte/source-zoho-books
   githubIssueLabel: source-zoho-books
   icon: icon.svg
