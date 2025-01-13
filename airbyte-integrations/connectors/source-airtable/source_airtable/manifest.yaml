@@ -252,6 +252,7 @@ definitions:
               current_type: rollup
       transformations:
         - type: FlattenFields
+          flatten_lists: false
         - type: KeysToLower
         - type: KeysReplace
           old: " "
