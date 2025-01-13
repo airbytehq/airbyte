@@ -1,7 +1,7 @@
 ##@ Makefile
 
 ##@ Define the default airbyte-ci version
-AIRBYTE_CI_VERSION ?= latest
+AIRBYTE_CI_VERSION ?= 4.48.1
 
 ## Detect the operating system
 OS := $(shell uname)
