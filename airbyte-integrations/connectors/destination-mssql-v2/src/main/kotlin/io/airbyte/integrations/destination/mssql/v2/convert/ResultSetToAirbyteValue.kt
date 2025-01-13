@@ -59,7 +59,7 @@ class ResultSetToAirbyteValue {
                 TimestampTypeWithTimezone -> getTimestampWithTimezoneValue(field.name)
                 TimestampTypeWithoutTimezone -> getTimestampWithoutTimezoneValue(field.name)
                 is UnionType -> getObjectValue(field.name)
-                is UnknownType -> TODO()
+                is UnknownType -> getStringValue(field.name)
             }
 
         private fun ResultSet.getArrayValue(name: String): NamedValue =
