@@ -193,6 +193,9 @@ class MSSQLQueryBuilder(
             }
         }
         airbyteMetaStatementIndex?.let { statementIndex ->
+            if (airbyteMeta.changes.isEmpty()) {
+                airbyteMeta.changes = null
+            }
             statement.setString(statementIndex, Jsons.serialize(airbyteMeta))
         }
     }
