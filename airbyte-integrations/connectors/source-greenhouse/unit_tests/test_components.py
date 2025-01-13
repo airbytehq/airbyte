@@ -3,16 +3,11 @@
 #
 
 
-from unittest.mock import MagicMock, Mock
-
-import pytest
-from airbyte_cdk.sources.streams import Stream
 # from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
-
-
 from unittest.mock import MagicMock, Mock
 
 import pytest
+
 from airbyte_cdk.sources.streams import Stream
 
 
@@ -27,11 +22,20 @@ def greenhouse_slicer(components_module):
 def greenhouse_substream_slicer(components_module):
     GreenHouseSubstreamSlicer = components_module.GreenHouseSubstreamSlicer
     parent_stream = MagicMock(spec=Stream)
-    return GreenHouseSubstreamSlicer(cursor_field='cursor_field', stream_slice_field='slice_field', parent_stream=parent_stream, parent_key='parent_key', parameters={}, request_cursor_field=None)
+    return GreenHouseSubstreamSlicer(
+        cursor_field="cursor_field",
+        stream_slice_field="slice_field",
+        parent_stream=parent_stream,
+        parent_key="parent_key",
+        parameters={},
+        request_cursor_field=None,
+    )
+
 
 from unittest.mock import MagicMock, Mock
 
 import pytest
+
 from airbyte_cdk.sources.streams import Stream
 
 
@@ -46,7 +50,15 @@ def greenhouse_slicer(components_module):
 def greenhouse_substream_slicer(components_module):
     GreenHouseSubstreamSlicer = components_module.GreenHouseSubstreamSlicer
     parent_stream = MagicMock(spec=Stream)
-    return GreenHouseSubstreamSlicer(cursor_field='cursor_field', stream_slice_field='slice_field', parent_stream=parent_stream, parent_key='parent_key', parameters={}, request_cursor_field=None)
+    return GreenHouseSubstreamSlicer(
+        cursor_field="cursor_field",
+        stream_slice_field="slice_field",
+        parent_stream=parent_stream,
+        parent_key="parent_key",
+        parameters={},
+        request_cursor_field=None,
+    )
+
 
 def test_slicer(greenhouse_slicer):
     date_time = "2022-09-05T10:10:10.000000Z"
