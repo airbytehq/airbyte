@@ -136,37 +136,38 @@ See information about rate limits [here](https://airtable.com/developers/web/api
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
-|:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
-| 4.4.0 | 2024-07-16 | [41160](https://github.com/airbytehq/airbyte/pull/41160) | Update CDK version to v3.5.2 |
-| 4.3.1 | 2024-07-16 | [41536](https://github.com/airbytehq/airbyte/pull/41536) | Update dependencies |
-| 4.3.0 | 2024-07-16 | [41072](https://github.com/airbytehq/airbyte/pull/41072) | Update CDK version to v2.4.0 |
-| 4.2.6 | 2024-07-09 | [41080](https://github.com/airbytehq/airbyte/pull/41080) | Update dependencies |
-| 4.2.5 | 2024-07-06 | [40789](https://github.com/airbytehq/airbyte/pull/40789) | Update dependencies |
-| 4.2.4 | 2024-06-25 | [40290](https://github.com/airbytehq/airbyte/pull/40290) | Update dependencies |
-| 4.2.3 | 2024-06-22 | [40085](https://github.com/airbytehq/airbyte/pull/40085) | Update dependencies |
-| 4.2.2 | 2024-06-04 | [39089](https://github.com/airbytehq/airbyte/pull/39089) | [autopull] Upgrade base image to v1.2.1 |
-| 4.2.1 | 2024-05-29 | [38765](https://github.com/airbytehq/airbyte/pull/38765) | Fix next_page_token() to correctly adhere to HttpStream interface |
-| 4.2.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
-| 4.1.6 | 2024-02-12 | [35149](https://github.com/airbytehq/airbyte/pull/35149) | Manage dependencies with Poetry. |
-| 4.1.5 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 4.1.4 | 2023-10-19 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update docstings |
-| 4.1.3 | 2023-10-13 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update error message for invalid permissions |
-| 4.1.2 | 2023-10-10 | [31215](https://github.com/airbytehq/airbyte/pull/31215) | Exclude bases without permission |
-| 4.1.1 | 2023-10-10 | [31119](https://github.com/airbytehq/airbyte/pull/31119) | Add user-friendly error message when refresh token has expired |
-| 4.1.0 | 2023-10-10 | [31044](https://github.com/airbytehq/airbyte/pull/31044) | Add source table name to output records |
-| 4.0.0 | 2023-10-09 | [31181](https://github.com/airbytehq/airbyte/pull/31181) | Additional schema processing for the FORMULA schema type: Convert to simple data types |
-| 3.0.1 | 2023-05-10 | [25946](https://github.com/airbytehq/airbyte/pull/25946) | Skip stream if it does not appear in catalog |
-| 3.0.0 | 2023-03-20 | [22704](https://github.com/airbytehq/airbyte/pull/22704) | Fix for stream name uniqueness |
-| 2.0.4 | 2023-03-15 | [24093](https://github.com/airbytehq/airbyte/pull/24093) | Update spec and doc |
-| 2.0.3 | 2023-02-02 | [22311](https://github.com/airbytehq/airbyte/pull/22311) | Fix for `singleSelect` types when discovering the schema |
-| 2.0.2 | 2023-02-01 | [22245](https://github.com/airbytehq/airbyte/pull/22245) | Fix for empty `result` object when discovering the schema |
-| 2.0.1 | 2023-02-01 | [22224](https://github.com/airbytehq/airbyte/pull/22224) | Fixed broken `API Key` authentication |
-| 2.0.0 | 2023-01-27 | [21962](https://github.com/airbytehq/airbyte/pull/21962) | Added casting of native Airtable data types to JsonSchema types |
-| 1.0.2 | 2023-01-25 | [20934](https://github.com/airbytehq/airbyte/pull/20934) | Added `OAuth2.0` authentication support |
-| 1.0.1 | 2023-01-10 | [21215](https://github.com/airbytehq/airbyte/pull/21215) | Fix field names |
-| 1.0.0 | 2022-12-22 | [20846](https://github.com/airbytehq/airbyte/pull/20846) | Migrated to Metadata API for dynamic schema generation |
-| 0.1.3 | 2022-10-26 | [18491](https://github.com/airbytehq/airbyte/pull/18491) | Improve schema discovery logic |
-| 0.1.2 | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy |
-| 0.1.1 | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------|
+| 4.5.0   | 2025-01-13 | [49813](https://github.com/airbytehq/airbyte/pull/49813) | Update to low-code                                                                     |
+| 4.4.0   | 2024-07-16 | [41160](https://github.com/airbytehq/airbyte/pull/41160) | Update CDK version to v3.5.2                                                           |
+| 4.3.1   | 2024-07-16 | [41536](https://github.com/airbytehq/airbyte/pull/41536) | Update dependencies                                                                    |
+| 4.3.0   | 2024-07-16 | [41072](https://github.com/airbytehq/airbyte/pull/41072) | Update CDK version to v2.4.0                                                           |
+| 4.2.6   | 2024-07-09 | [41080](https://github.com/airbytehq/airbyte/pull/41080) | Update dependencies                                                                    |
+| 4.2.5   | 2024-07-06 | [40789](https://github.com/airbytehq/airbyte/pull/40789) | Update dependencies                                                                    |
+| 4.2.4   | 2024-06-25 | [40290](https://github.com/airbytehq/airbyte/pull/40290) | Update dependencies                                                                    |
+| 4.2.3   | 2024-06-22 | [40085](https://github.com/airbytehq/airbyte/pull/40085) | Update dependencies                                                                    |
+| 4.2.2   | 2024-06-04 | [39089](https://github.com/airbytehq/airbyte/pull/39089) | [autopull] Upgrade base image to v1.2.1                                                |
+| 4.2.1   | 2024-05-29 | [38765](https://github.com/airbytehq/airbyte/pull/38765) | Fix next_page_token() to correctly adhere to HttpStream interface                      |
+| 4.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                        |
+| 4.1.6   | 2024-02-12 | [35149](https://github.com/airbytehq/airbyte/pull/35149) | Manage dependencies with Poetry.                                                       |
+| 4.1.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image        |
+| 4.1.4   | 2023-10-19 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update docstings                                                                       |
+| 4.1.3   | 2023-10-13 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update error message for invalid permissions                                           |
+| 4.1.2   | 2023-10-10 | [31215](https://github.com/airbytehq/airbyte/pull/31215) | Exclude bases without permission                                                       |
+| 4.1.1   | 2023-10-10 | [31119](https://github.com/airbytehq/airbyte/pull/31119) | Add user-friendly error message when refresh token has expired                         |
+| 4.1.0   | 2023-10-10 | [31044](https://github.com/airbytehq/airbyte/pull/31044) | Add source table name to output records                                                |
+| 4.0.0   | 2023-10-09 | [31181](https://github.com/airbytehq/airbyte/pull/31181) | Additional schema processing for the FORMULA schema type: Convert to simple data types |
+| 3.0.1   | 2023-05-10 | [25946](https://github.com/airbytehq/airbyte/pull/25946) | Skip stream if it does not appear in catalog                                           |
+| 3.0.0   | 2023-03-20 | [22704](https://github.com/airbytehq/airbyte/pull/22704) | Fix for stream name uniqueness                                                         |
+| 2.0.4   | 2023-03-15 | [24093](https://github.com/airbytehq/airbyte/pull/24093) | Update spec and doc                                                                    |
+| 2.0.3   | 2023-02-02 | [22311](https://github.com/airbytehq/airbyte/pull/22311) | Fix for `singleSelect` types when discovering the schema                               |
+| 2.0.2   | 2023-02-01 | [22245](https://github.com/airbytehq/airbyte/pull/22245) | Fix for empty `result` object when discovering the schema                              |
+| 2.0.1   | 2023-02-01 | [22224](https://github.com/airbytehq/airbyte/pull/22224) | Fixed broken `API Key` authentication                                                  |
+| 2.0.0   | 2023-01-27 | [21962](https://github.com/airbytehq/airbyte/pull/21962) | Added casting of native Airtable data types to JsonSchema types                        |
+| 1.0.2   | 2023-01-25 | [20934](https://github.com/airbytehq/airbyte/pull/20934) | Added `OAuth2.0` authentication support                                                |
+| 1.0.1   | 2023-01-10 | [21215](https://github.com/airbytehq/airbyte/pull/21215) | Fix field names                                                                        |
+| 1.0.0   | 2022-12-22 | [20846](https://github.com/airbytehq/airbyte/pull/20846) | Migrated to Metadata API for dynamic schema generation                                 |
+| 0.1.3   | 2022-10-26 | [18491](https://github.com/airbytehq/airbyte/pull/18491) | Improve schema discovery logic                                                         |
+| 0.1.2   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                       |
+| 0.1.1   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                               |
 
 </details>
