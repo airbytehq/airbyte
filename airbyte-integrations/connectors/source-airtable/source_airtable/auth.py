@@ -54,6 +54,14 @@ class AirtableOAuth(DeclarativeSingleUseRefreshTokenOauth2Authenticator):
                 message="Refresh token is invalid or expired. Please re-authenticate to restore access to Airtable.",
                 failure_type=FailureType.config_error,
             )
+
+        if response.status_code == 401 and content.get("error") == "invalid_client":
+            raise AirbyteTracedException(
+                internal_message=content.get("error_description"),
+                message="Invalid credentials were provided. Please re-authenticate to restore access to Airtable.",
+                failure_type=FailureType.config_error,
+            )
+
         response.raise_for_status()
         return content
 
