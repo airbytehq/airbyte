@@ -152,7 +152,41 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         value: AirbyteValue,
         schema: UnionType,
         context: Context
-    ): Pair<AirbyteValue, Context> = value to context
+    ): Pair<AirbyteValue, Context> {
+        /*
+           This mapper should not perform validation, so make a best-faith effort to recurse,
+           but if nothing matches the union, pass the value through unchanged. If clients validated
+           upstream, then this must match. If they did not, they won't have anything any more
+           wrong than they started with.
+        */
+        schema.options.forEach {
+            if (optionMatches(it, value)) {
+                return mapInner(value, it, context)
+            }
+        }
+        return value to context
+    }
+
+    private fun optionMatches(schema: AirbyteType, value: AirbyteValue): Boolean {
+        return when (schema) {
+            is StringType -> value is StringValue
+            is BooleanType -> value is BooleanValue
+            is IntegerType -> value is IntegerValue
+            is NumberType -> value is NumberValue
+            is ArrayTypeWithoutSchema,
+            is ArrayType -> value is ArrayValue
+            is ObjectType,
+            is ObjectTypeWithoutSchema,
+            is ObjectTypeWithEmptySchema -> value is ObjectValue
+            is DateType -> value is DateValue
+            is TimeTypeWithTimezone -> value is TimeWithTimezoneValue
+            is TimeTypeWithoutTimezone -> value is TimeWithoutTimezoneValue
+            is TimestampTypeWithTimezone -> value is TimestampWithTimezoneValue
+            is TimestampTypeWithoutTimezone -> value is TimestampWithoutTimezoneValue
+            is UnionType -> schema.options.any { optionMatches(it, value) }
+            is UnknownType -> false
+        }
+    }
 
     open fun mapBoolean(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
