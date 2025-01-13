@@ -1,51 +1,50 @@
 # deepset Cloud
 
-## General
+deepset Cloud is a SaaS platform for building LLM applications and managing them across the whole lifecycle - from early prototyping to large-scale production. For details, see [deepset Cloud documentation](https://docs.cloud.deepset.ai/docs/getting-started).
 
-The Airbyte deepset destination connector allows you to stream data into deepset Cloud from [any Airbyte Source](https://airbyte.io/connectors?connector-type=Sources) emitting records that match the Document File Type.
+## Data Integration with Airbyte
 
-deepset Cloud is a **[SaaS platform for building LLM applications](https://docs.cloud.deepset.ai/docs/getting-started)** and managing them across the whole lifecycle - from early prototyping to large-scale production.
+To make it possible to synchronize data to deepset Cloud using Airbyte, we've added an Airbyte deepset destination connector. You can use it to stream data into deepset Cloud from any Airbyte source that emits records matching the document file type. The synchronized data are available in deepset Cloud on the Files page as Markdown files.
 
-## Getting started
+_Note_: The deepset destination connector writes data to your deepset Cloud workspace, but does not delete any data from the workspace. If a file with the same name already exists in the destination workspace, it is overwritten.
 
-In order to use the deepset destination, you'll first need to log into your account and generate an API key. If you do not already have an account you can **[find out more here](https://www.deepset.ai/deepset-cloud-product)**
+### Supported Sync Modes
 
-To set up the destination connector in Airbyte, you'll need to provide the following properties:
+The deepset destination connector supports the following sync modes:
 
-- **Base URL**: The API host URL for the **deepset Cloud environment** where your account resides. That is,
-  `https://api.cloud.deepset.ai` or `https://api.us.deepset.ai` for EU or US multi-tenant users respectively, or the custom API
-  host URL of your on-prem deployment. Defaults to `https://api.cloud.deepset.ai`.
-- **API Key**: A deepset Cloud API key (see above how to generate an API key-token pair)
-- **Workspace Name**: The name of the deepset Cloud workspace where the data will be stored.
-- **Retry Count**: The number of times to retry syncing a record before marking it as failed. Defaults to 5 times.
+* [Full refresh - append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append/)
+* [Full refresh - overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+* [Incremental sync - append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/)
+* [Incremental sync - append + deduped ](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-As soon as you've connected a source and the **first stream synchronization** has **succeeded**, the
-desired records will be available in deepset Cloud [Files Page](https://cloud.deepset.ai/files) as Markdown files.
+## Syncing Data to deepset Cloud
 
-Visit our [Getting Started](https://docs.cloud.deepset.ai/docs/getting-started) page for more information about
+To use the deepset destination in Airbyte:
 
-## Connector overview
+1. Log in to deepset Cloud.
 
-### Features
+2. Generate the deepset Cloud API key:
 
-| Feature                                                                                                                   | Support|
-| :---------------------------------------------------------------------------------------------------------------------- | :------- |
-| [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append/)                |   ✅     |
-| [Full Refresh - Replace](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)            |   ✅     |
-| [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/)             |   ✅     |
-| [Incremental - Append + Deduped ](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)|   ✅     |
+    - Click your initials in the top right corner and choose Connections.
+    - Scroll down the Connections page to the API Keys section and click _Add new key_. If you need help, see [Generate an API Key](https://docs.cloud.deepset.ai/docs/generate-api-key).
 
-### Notes
+3. Set up the destination connector in Airbyte providing the following details:
 
-The connector only ever writes data to the workspace but never deletes. If a file already exists in the destination workspace it is overwritten.
+    - `Base URL`: This is the URL for the deepset Cloud environment with your account. Possible options are: `https://api.cloud.deepset.ai` (default) for EU users , `https://api.us.deepset.ai` for US users, or custom URL for on-premise deployments.
+    - `API key`: Your deepset Cloud API key (generated in step 2 above).
+    - `Workspace name`: The name of the deepset Cloud workspace where you want to store the data.
+    - `Retry count`: The number of times to retry syncing a record before marking it as failed. Defaults to 5 times.
 
-## Changelog
+After you connect a source and the first stream synchronization succeeds, your records are available in deepset Cloud on the Files page as Markdown files.
+
+# Changelog
+
 
 <details>
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------- |
-| 0.1.0   | 2025-01-05 | [48875](https://github.com/airbytehq/airbyte/pull/48875) | Initial release                        |
+| 0.1.0   | 2025-01-10 | [48875](https://github.com/airbytehq/airbyte/pull/48875) | Initial release                        |
 
 </details>
