@@ -16,7 +16,14 @@ class SourceAirtable(YamlDeclarativeSource):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        stream = self.streams(config)[0]
+        if len(self.streams(config)) > 0:
+            stream = self.streams(config)[0]
+        else:
+            return (
+                False,
+                "Provided source configuration does not contain any streams. "
+                "Please check that you have permissions to pull available tables and bases using `Metadata API` for a given authenticated user",
+            )
         availability_strategy = HttpAvailabilityStrategy()
         try:
             stream_is_available, reason = availability_strategy.check_availability(stream, logger)
