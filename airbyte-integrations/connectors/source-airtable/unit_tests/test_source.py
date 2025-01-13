@@ -55,3 +55,16 @@ class TestSourceAirtable:
     def test_check_connection_failed(self, tables_requests_mock, airtable_streams_403_status_code_requests_mock):
         status = SourceAirtable(catalog={}, config=self.config, state={}).check_connection(logger=MagicMock(), config=self.config)
         assert status == (False, "Permission denied or entity is unprocessable.")
+
+    def test_check_connection_no_streams_available(self, requests_mock):
+        requests_mock.get(
+            "https://api.airtable.com/v0/meta/bases",
+            status_code=200,
+            json={"bases": []},
+        )
+        status = SourceAirtable(catalog={}, config=self.config, state={}).check_connection(logger=MagicMock(), config=self.config)
+        assert status == (
+            False,
+            "Provided source configuration does not contain any streams."
+            " Please check that you have permissions to pull available tables and bases using `Metadata API` for a given authenticated user",
+        )

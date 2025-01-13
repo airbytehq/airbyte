@@ -37,7 +37,7 @@ def test_airtable_oauth():
     assert auth_instance.build_refresh_request_body() == {"grant_type": "refresh_token", "refresh_token": ""}
 
 
-def test_airtable_oauth_token_refresh_exception(requests_mock):
+def test_airtable_oauth_token_refresh_exception_400_status_code(requests_mock):
     auth_instance = AirtableAuth(CONFIG_OAUTH)
     requests_mock.post(
         "https://airtable.com/oauth2/v1/token", status_code=400, json={"error": "invalid_grant", "error_description": "grant invalid"}
@@ -45,3 +45,15 @@ def test_airtable_oauth_token_refresh_exception(requests_mock):
     with pytest.raises(AirbyteTracedException) as e:
         auth_instance._get_refresh_access_token_response()
     assert e.value.message == "Refresh token is invalid or expired. Please re-authenticate to restore access to Airtable."
+
+
+def test_airtable_oauth_token_refresh_exception_401_status_code(requests_mock):
+    auth_instance = AirtableAuth(CONFIG_OAUTH)
+    requests_mock.post(
+        "https://airtable.com/oauth2/v1/token",
+        status_code=401,
+        json={"error": "invalid_client", "error_description": "Invalid client credentials."},
+    )
+    with pytest.raises(AirbyteTracedException) as e:
+        auth_instance._get_refresh_access_token_response()
+    assert e.value.message == "Invalid credentials were provided. Please re-authenticate to restore access to Airtable."
