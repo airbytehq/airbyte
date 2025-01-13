@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-meilisearch"
-version = "1.0.11"
+version = "1.0.12"
 description = "Airbyte destination implementation for Meilisearch."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
