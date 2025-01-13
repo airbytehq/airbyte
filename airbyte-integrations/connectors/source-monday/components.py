@@ -11,6 +11,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import dpath.util
 import requests
+
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
@@ -25,6 +26,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
+
 
 RequestInput = Union[str, Mapping[str, str]]
 logger = logging.getLogger("airbyte")

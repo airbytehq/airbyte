@@ -179,6 +179,7 @@ def test_set_initial_state(components_module):
     slicer.set_initial_state(initial_stream_state)
     assert slicer._state == expected_state
 
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -431,6 +432,7 @@ def test_item_cursor_pagination_strategy(components_module, response_json, last_
     response.json.return_value = response_json
 
     assert strategy.next_page_token(response, last_records) == expected
+
 
 from unittest.mock import MagicMock
 
