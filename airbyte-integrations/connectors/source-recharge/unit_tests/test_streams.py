@@ -8,8 +8,9 @@ from typing import Any, List, Mapping, MutableMapping, Union
 
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from source_recharge.source import Orders, RechargeTokenAuthenticator, SourceRecharge
+
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 
 def use_orders_deprecated_api_config(
@@ -30,7 +31,7 @@ def test_get_auth_header(config) -> None:
 
 def test_streams(config) -> None:
     streams = SourceRecharge().streams(config)
-    assert len(streams) == 11
+    assert len(streams) == 13
 
 
 class TestCommon:
@@ -87,6 +88,7 @@ class TestCommon:
         stream = Orders(config, authenticator=None)
         error_resolution = stream.get_error_handler().interpret_response(response)
         error_resolution.response_action == expected_action
+
 
 class TestFullRefreshStreams:
     def generate_records(self, stream_name, count) -> Union[Mapping[str, List[Mapping[str, Any]]], Mapping[str, Any]]:

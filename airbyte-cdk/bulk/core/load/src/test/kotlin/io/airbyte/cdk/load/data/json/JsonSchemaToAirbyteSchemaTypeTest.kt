@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NullType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
@@ -23,20 +22,13 @@ import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class JsonSchemaToAirbyteSchemaTypeTest {
     private fun ofType(type: String): ObjectNode {
         return JsonNodeFactory.instance.objectNode().put("type", type)
-    }
-
-    @Test
-    fun testNull() {
-        val nullType = ofType("null")
-        val airbyteType = JsonSchemaToAirbyteType().convert(nullType)
-        Assertions.assertTrue(airbyteType is NullType)
     }
 
     @Test
@@ -56,6 +48,14 @@ class JsonSchemaToAirbyteSchemaTypeTest {
     @Test
     fun testInteger() {
         val integerType = ofType("integer")
+        val airbyteType = JsonSchemaToAirbyteType().convert(integerType)
+        Assertions.assertTrue(airbyteType is IntegerType)
+    }
+
+    /** Note: this is nonstandard, but some sources apparently use it. */
+    @Test
+    fun testInt() {
+        val integerType = ofType("int")
         val airbyteType = JsonSchemaToAirbyteType().convert(integerType)
         Assertions.assertTrue(airbyteType is IntegerType)
     }
@@ -236,8 +236,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
     @Test
     fun testHandleNonstandardFields() {
         val inputSchema =
-            Jsons.readTree(
-                """
+            """
                     {
                       "type": [
                         "string",
@@ -246,9 +245,17 @@ class JsonSchemaToAirbyteSchemaTypeTest {
                       "description": "foo",
                       "some_random_other_property": "lol, lmao, isn't jsonschema great"
                     }
-                """.trimIndent()
-            ) as ObjectNode
+                """
+                .trimIndent()
+                .deserializeToNode() as ObjectNode
         val airbyteType = JsonSchemaToAirbyteType().convert(inputSchema)
-        Assertions.assertEquals(UnionType(listOf(StringType, IntegerType)), airbyteType)
+        Assertions.assertEquals(UnionType.of(StringType, IntegerType), airbyteType)
+    }
+
+    @Test
+    fun testUnrecognizedStringFormats() {
+        val schemaNode = ofType("string").put("format", "foo")
+        val airbyteType = JsonSchemaToAirbyteType().convert(schemaNode)
+        Assertions.assertTrue(airbyteType is StringType)
     }
 }

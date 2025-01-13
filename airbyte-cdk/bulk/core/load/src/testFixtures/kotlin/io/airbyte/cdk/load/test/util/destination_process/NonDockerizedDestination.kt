@@ -8,9 +8,12 @@ import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.FeatureFlag
-import io.airbyte.protocol.models.Jsons
+import io.airbyte.cdk.load.test.util.IntegrationTest
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
@@ -19,11 +22,16 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.junit.jupiter.api.Assertions.assertFalse
+
+private val logger = KotlinLogging.logger {}
 
 class NonDockerizedDestination(
     command: String,
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
+    useFileTransfer: Boolean,
+    envVars: Map<String, String>,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
@@ -34,8 +42,21 @@ class NonDockerizedDestination(
     // So we start our own thread pool, which we can forcibly kill if needed.
     private val executor = Executors.newSingleThreadExecutor()
     private val coroutineDispatcher = executor.asCoroutineDispatcher()
+    private val file = File("/tmp/test_file")
 
     init {
+        envVars.forEach { (key, value) ->
+            IntegrationTest.nonDockerMockEnvVars.set(key, value)
+            logger.info { "Env vars: $key loaded" }
+        }
+
+        if (useFileTransfer) {
+            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "true")
+            val fileContentStr = "123"
+            file.writeText(fileContentStr)
+        } else {
+            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "false")
+        }
         val destinationStdin = PipedInputStream()
         // This could probably be a channel, somehow. But given the current structure,
         // it's easier to just use the pipe stuff.
@@ -63,7 +84,8 @@ class NonDockerizedDestination(
                     } catch (e: ConnectorUncleanExitException) {
                         throw DestinationUncleanExitException.of(
                             e.exitCode,
-                            destination.results.traces()
+                            destination.results.traces(),
+                            destination.results.states(),
                         )
                     }
                     destinationComplete.complete(Unit)
@@ -73,7 +95,11 @@ class NonDockerizedDestination(
     }
 
     override fun sendMessage(message: AirbyteMessage) {
-        destinationStdinPipe.println(Jsons.serialize(message))
+        destinationStdinPipe.println(message.serializeToString())
+    }
+
+    override fun sendMessage(string: String) {
+        destinationStdinPipe.println(string)
     }
 
     override fun readMessages(): List<AirbyteMessage> = destination.results.newMessages()
@@ -89,6 +115,10 @@ class NonDockerizedDestination(
         // Coroutines interpret this as a cancellation.
         executor.shutdownNow()
     }
+
+    override fun verifyFileDeleted() {
+        assertFalse(file.exists())
+    }
 }
 
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
@@ -96,9 +126,18 @@ class NonDockerizedDestinationFactory : DestinationProcessFactory() {
         command: String,
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
+        useFileTransfer: Boolean,
+        envVars: Map<String, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, configContents, catalog, *featureFlags)
+        return NonDockerizedDestination(
+            command,
+            configContents,
+            catalog,
+            useFileTransfer,
+            envVars,
+            *featureFlags
+        )
     }
 }

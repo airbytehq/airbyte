@@ -1,0 +1,173 @@
+{
+  "connectionSpecification": {
+    "title": "Source Amazon Ads",
+    "type": "object",
+    "properties": {
+      "auth_type": {
+        "title": "Auth Type",
+        "default": "oauth2.0",
+        "const": "oauth2.0",
+        "order": 0,
+        "type": "string"
+      },
+      "client_id": {
+        "title": "Client ID",
+        "description": "The client ID of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
+        "airbyte_secret": true,
+        "order": 1,
+        "type": "string"
+      },
+      "client_secret": {
+        "title": "Client Secret",
+        "description": "The client secret of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
+        "airbyte_secret": true,
+        "order": 2,
+        "type": "string"
+      },
+      "refresh_token": {
+        "title": "Refresh Token",
+        "description": "Amazon Ads refresh token. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens\">docs</a> for more information on how to obtain this token.",
+        "airbyte_secret": true,
+        "order": 3,
+        "type": "string"
+      },
+      "region": {
+        "title": "Region",
+        "description": "Region to pull data from (EU/NA/FE). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">docs</a> for more details.",
+        "default": "NA",
+        "enum": ["NA", "EU", "FE"],
+        "order": 4,
+        "type": "string"
+      },
+      "start_date": {
+        "title": "Start Date",
+        "description": "The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
+        "examples": ["2022-10-10", "2022-10-22"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 5,
+        "type": "string",
+        "format": "date"
+      },
+      "profiles": {
+        "title": "Profile IDs",
+        "description": "Profile IDs you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details. Note: If Marketplace IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.",
+        "order": 6,
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      },
+      "marketplace_ids": {
+        "title": "Marketplace IDs",
+        "description": "Marketplace IDs you want to fetch data for. Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.",
+        "order": 7,
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "state_filter": {
+        "title": "State Filter",
+        "description": "Reflects the state of the Display, Product, and Brand Campaign streams as enabled, paused, or archived. If you do not populate this field, it will be ignored completely.",
+        "default": [],
+        "order": 8,
+        "type": "array",
+        "items": {
+          "title": "StateFilterEnum",
+          "description": "An enumeration.",
+          "enum": ["enabled", "paused", "archived"],
+          "type": "string"
+        },
+        "uniqueItems": true
+      },
+      "look_back_window": {
+        "title": "Look Back Window",
+        "description": "The amount of days to go back in time to get the updated data from Amazon Ads",
+        "default": 3,
+        "examples": [3, 10],
+        "order": 9,
+        "type": "integer"
+      },
+      "report_record_types": {
+        "title": "Report Record Types",
+        "description": "Optional configuration which accepts an array of string of record types. Leave blank for default behaviour to pull all report types. Use this config option only if you want to pull specific report type(s). See <a href=\"https://advertising.amazon.com/API/docs/en-us/reporting/v2/report-types\">docs</a> for more details",
+        "default": [],
+        "order": 10,
+        "type": "array",
+        "items": {
+          "title": "ReportRecordTypeEnum",
+          "description": "An enumeration.",
+          "enum": [
+            "adGroups",
+            "asins",
+            "asins_keywords",
+            "asins_targets",
+            "campaigns",
+            "keywords",
+            "productAds",
+            "targets"
+          ],
+          "type": "string"
+        },
+        "uniqueItems": true
+      }
+    },
+    "required": ["client_id", "client_secret", "refresh_token"]
+  },
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["auth_type"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "region": {
+            "type": "string",
+            "path_in_connector_config": ["region"]
+          }
+        }
+      },
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["client_secret"]
+          }
+        }
+      }
+    }
+  }
+}

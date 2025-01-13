@@ -9,10 +9,12 @@ from .constants import BASE_URL
 class ProfilesRequestBuilder(AmazonAdsRequestBuilder):
     @classmethod
     def profiles_endpoint(cls, client_id: str, client_access_token: str) -> "ProfilesRequestBuilder":
-        return cls("v2/profiles") \
-            .with_client_id(client_id) \
-            .with_client_access_token(client_access_token) \
+        return (
+            cls("v2/profiles")
+            .with_client_id(client_id)
+            .with_client_access_token(client_access_token)
             .with_profile_type_filter(["seller", "vendor"])
+        )
 
     def __init__(self, resource: str) -> None:
         self._resource: str = resource
@@ -24,7 +26,7 @@ class ProfilesRequestBuilder(AmazonAdsRequestBuilder):
     def url(self) -> str:
         url = f"{BASE_URL}/{self._resource}"
         if self._profile_type_filter:
-             url = f"{url}?profileTypeFilter={','.join(self._profile_type_filter)}"
+            url = f"{url}?profileTypeFilter={','.join(self._profile_type_filter)}"
         return url
 
     @property

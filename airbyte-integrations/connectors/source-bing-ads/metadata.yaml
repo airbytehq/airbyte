@@ -12,11 +12,11 @@ data:
       - api.ads.microsoft.com
       - clientcenter.api.bingads.microsoft.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.8.2
+  dockerImageTag: 2.8.9
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   erdUrl: https://dbdocs.io/airbyteio/source-bing-ads?view=relationships

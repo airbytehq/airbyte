@@ -10,13 +10,15 @@ from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
+from pendulum.datetime import DateTime
+from requests.auth import AuthBase
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pendulum.datetime import DateTime
-from requests.auth import AuthBase
+
 
 TWILIO_CHAT_BASE = "https://chat.twilio.com/v2/"
 TWILIO_CONVERSATION_BASE = "https://conversations.twilio.com/v1/"

@@ -30,7 +30,7 @@ class TestAirbytePythonConnectorBaseImage:
     async def test_pip_cache_volume(self, dagger_client, current_platform, dummy_version):
         base_image_version = bases.AirbytePythonConnectorBaseImage(dagger_client, dummy_version)
         container = base_image_version.get_container(current_platform)
-        assert "/root/.cache/pip" in await container.mounts()
+        assert "/custom_cache/pip" in await container.mounts()
 
     async def test_is_using_bookworm(self, dagger_client, current_platform, dummy_version):
         base_image_version = bases.AirbytePythonConnectorBaseImage(dagger_client, dummy_version)

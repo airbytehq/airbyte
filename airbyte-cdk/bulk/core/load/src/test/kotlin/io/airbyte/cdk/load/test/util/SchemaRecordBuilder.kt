@@ -34,14 +34,15 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
     fun with(
         given: AirbyteType,
         expected: AirbyteType = given,
-        nameOverride: String? = null
+        nameOverride: String? = null,
     ): SchemaRecordBuilder<T> {
         return with(FieldType(given, false), FieldType(expected, false), nameOverride)
     }
 
     fun withRecord(
         nullable: Boolean = false,
-        nameOverride: String? = null
+        nameOverride: String? = null,
+        expectedInstead: ObjectType? = null
     ): SchemaRecordBuilder<SchemaRecordBuilder<T>> {
         val name = nameOverride ?: UUID.randomUUID().toString()
         val inputRecord = ObjectType(properties = LinkedHashMap())
@@ -50,7 +51,7 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
         expectedSchema.properties[name] = FieldType(outputRecord, nullable = nullable)
         return SchemaRecordBuilder(
             inputSchema = inputRecord,
-            expectedSchema = outputRecord,
+            expectedSchema = expectedInstead ?: outputRecord,
             parent = this
         )
     }
@@ -61,10 +62,10 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
         expectedInstead: FieldType? = null
     ): SchemaTestUnionBuilder<T> {
         val name = nameOverride ?: UUID.randomUUID().toString()
-        val inputOptions = mutableListOf<AirbyteType>()
+        val inputOptions = mutableSetOf<AirbyteType>()
         val expectedOptions =
             if (expectedInstead == null) {
-                mutableListOf<AirbyteType>()
+                mutableSetOf<AirbyteType>()
             } else {
                 null
             }
@@ -91,8 +92,8 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
 
 class SchemaTestUnionBuilder<T : SchemaRecordBuilderType>(
     private val parent: SchemaRecordBuilder<T>,
-    private val options: MutableList<AirbyteType>,
-    private val expectedOptions: MutableList<AirbyteType>?
+    private val options: MutableSet<AirbyteType>,
+    private val expectedOptions: MutableSet<AirbyteType>?
 ) : SchemaRecordBuilderType {
     fun with(option: AirbyteType, expected: AirbyteType? = null): SchemaTestUnionBuilder<T> {
         options.add(option)

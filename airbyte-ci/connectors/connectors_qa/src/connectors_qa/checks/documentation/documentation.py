@@ -7,8 +7,9 @@ from typing import List
 
 import requests  # type: ignore
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
-from connectors_qa.models import Check, CheckCategory, CheckResult
 from pydash.objects import get  # type: ignore
+
+from connectors_qa.models import Check, CheckCategory, CheckResult
 
 from .helpers import (
     generate_description,

@@ -52,6 +52,12 @@ The SurveyCTO source connector supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | ------- | ---------- | -------------------------------------------------------- | -------------------------- |
+| 0.1.32 | 2025-01-11 | [51455](https://github.com/airbytehq/airbyte/pull/51455) | Update dependencies |
+| 0.1.31 | 2024-12-28 | [50804](https://github.com/airbytehq/airbyte/pull/50804) | Update dependencies |
+| 0.1.30 | 2024-12-21 | [50303](https://github.com/airbytehq/airbyte/pull/50303) | Update dependencies |
+| 0.1.29 | 2024-12-14 | [49765](https://github.com/airbytehq/airbyte/pull/49765) | Update dependencies |
+| 0.1.28 | 2024-12-12 | [49385](https://github.com/airbytehq/airbyte/pull/49385) | Update dependencies |
+| 0.1.27 | 2024-11-25 | [48658](https://github.com/airbytehq/airbyte/pull/48658) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.1.26 | 2024-10-29 | [47725](https://github.com/airbytehq/airbyte/pull/47725) | Update dependencies |
 | 0.1.25 | 2024-10-28 | [47036](https://github.com/airbytehq/airbyte/pull/47036) | Update dependencies |
 | 0.1.24 | 2024-10-12 | [46834](https://github.com/airbytehq/airbyte/pull/46834) | Update dependencies |

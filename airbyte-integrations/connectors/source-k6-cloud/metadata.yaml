@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
   connectorSubtype: api
   connectorType: source
   definitionId: e300ece7-b073-43a3-852e-8aff36a57f13
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.9
   dockerRepository: airbyte/source-k6-cloud
   documentationUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
   githubIssueLabel: source-k6-cloud

@@ -5,6 +5,7 @@
 package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReader
@@ -16,7 +17,6 @@ import java.util.concurrent.atomic.AtomicReference
 /** [PartitionsCreator] implementation for CDC with Debezium. */
 class CdcPartitionsCreator<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
-    val globalLockResource: CdcGlobalLockResource,
     val feedBootstrap: GlobalFeedBootstrap,
     val creatorOps: CdcPartitionsCreatorDebeziumOperations<T>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
@@ -25,6 +25,8 @@ class CdcPartitionsCreator<T : Comparable<T>>(
 ) : PartitionsCreator {
     private val log = KotlinLogging.logger {}
     private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
+
+    class OffsetInvalidNeedsResyncIllegalStateException() : IllegalStateException()
 
     override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
         val acquiredThread: ConcurrencyResource.AcquiredThread =
@@ -39,6 +41,11 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     }
 
     override suspend fun run(): List<PartitionReader> {
+        if (CDCNeedsRestart) {
+            throw TransientErrorException(
+                "Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch."
+            )
+        }
         val activeStreams: List<Stream> by lazy {
             feedBootstrap.feed.streams.filter { feedBootstrap.stateQuerier.current(it) != null }
         }
@@ -58,8 +65,14 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                         creatorOps.deserialize(incumbentOpaqueStateValue, activeStreams)
                     } catch (ex: ConfigErrorException) {
                         log.error(ex) { "Existing state is invalid." }
-                        globalLockResource.markCdcAsComplete()
                         throw ex
+                    } catch (_: OffsetInvalidNeedsResyncIllegalStateException) {
+                        // If deserialization concludes we need a re-sync we rollback stream states
+                        // and put the creator in a Need Restart mode.
+                        // The next round will throw a transient error to kickoff the resync
+                        feedBootstrap.stateQuerier.resetFeedStates()
+                        CDCNeedsRestart = true
+                        syntheticInput
                     }
                 }
             }
@@ -86,7 +99,6 @@ class CdcPartitionsCreator<T : Comparable<T>>(
             log.info {
                 "Current position '$lowerBound' equals or exceeds target position '$upperBound'."
             }
-            globalLockResource.markCdcAsComplete()
             return emptyList()
         }
         if (lowerBoundInPreviousRound != null && lowerBound <= lowerBoundInPreviousRound) {
@@ -95,11 +107,14 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                 "Current position '$lowerBound' has not increased in the last round, " +
                     "prior to which is was '$lowerBoundInPreviousRound'."
             }
-            globalLockResource.markCdcAsComplete()
             return emptyList()
         }
         // Handle common case.
         log.info { "Current position '$lowerBound' does not exceed target position '$upperBound'." }
         return listOf(partitionReader)
+    }
+
+    companion object {
+        var CDCNeedsRestart: Boolean = false
     }
 }

@@ -524,6 +524,7 @@
               "private_key": {
                 "title": "Private key",
                 "description": "The Private key",
+                "airbyte_secret": true,
                 "multiline": true,
                 "order": 4,
                 "type": "string"

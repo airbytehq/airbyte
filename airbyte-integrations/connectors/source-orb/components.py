@@ -23,7 +23,6 @@ class SubscriptionUsageTransformation(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
-
         # for each top level response record, there can be multiple sub-records depending
         # on granularity and other input params. This function yields one transformed record
         # for each subrecord in the response.
@@ -63,7 +62,6 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
     config: Config
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-
         """
         This stream is sliced per `subscription_id` and day, as well as `billable_metric_id`
         if a grouping key is provided. This is because the API only supports a

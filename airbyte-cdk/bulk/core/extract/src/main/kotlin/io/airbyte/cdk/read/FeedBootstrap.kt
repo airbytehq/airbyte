@@ -57,7 +57,8 @@ sealed class FeedBootstrap<T : Feed>(
      * to the next. Not doing this generates a lot of garbage and the increased GC activity has a
      * measurable impact on performance.
      */
-    private inner class EfficientStreamRecordConsumer(val stream: Stream) : StreamRecordConsumer {
+    private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
+        StreamRecordConsumer {
 
         override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
@@ -214,7 +215,10 @@ sealed class FeedBootstrap<T : Feed>(
  *    b) field value changes and the motivating reason for these in the record metadata.
  * ```
  */
-fun interface StreamRecordConsumer {
+interface StreamRecordConsumer {
+
+    val stream: Stream
+
     fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?)
 }
 

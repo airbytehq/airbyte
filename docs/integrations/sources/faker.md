@@ -103,8 +103,9 @@ None!
   <summary>Expand to review</summary>
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
-|:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 6.2.20 | 2024-10-30 | [48013](https://github.com/airbytehq/airbyte/pull/48013) | Promoting release candidate 6.2.20-rc.1 to a main version. |
+|:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 6.2.21-rc.1 | 2024-11-13 | [48013](https://github.com/airbytehq/airbyte/pull/48013) | Update for testing.                                                                                             |
+| 6.2.20      | 2024-10-30 | [48013](https://github.com/airbytehq/airbyte/pull/48013) | Promoting release candidate 6.2.20-rc.1 to a main version.                                                      |
 | 6.2.20-rc.1 | 2024-10-21 | [47221](https://github.com/airbytehq/airbyte/pull/46678)                                                              | Testing release candidate with RC suffix versioning.                                                            |
 | 6.2.19-rc.1 | 2024-10-21 | [47221](https://github.com/airbytehq/airbyte/pull/47221)                                                              | Testing release candidate with RC suffix versioning.                                                            |
 | 6.2.18-rc.1 | 2024-10-09 | [46678](https://github.com/airbytehq/airbyte/pull/46678)                                                              | Testing release candidate with RC suffix versioning.                                                            |
