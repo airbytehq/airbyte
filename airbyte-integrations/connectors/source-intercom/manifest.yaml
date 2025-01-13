@@ -1,753 +1,2411 @@
-version: 5.7.0
-
-type: DeclarativeSource
-
-check:
-  type: CheckStream
-  stream_names:
-    - tags
+version: 5.14.0
 
 definitions:
-  streams:
-    activity_logs:
-      type: DeclarativeStream
-      name: activity_logs
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: admins/activity_logs
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-            response_filters:
-              - type: HttpResponseFilter
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - activity_logs
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: created_at
-        lookback_window: P{{ config.get('lookback_window', 0) }}D
-        cursor_datetime_formats:
-          - "%s"
-        datetime_format: "%s"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          field_name: created_at_after
-          inject_into: request_parameter
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/activity_logs"
-    admins:
-      type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-admins
-      name: admins
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: admins
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-            response_filters:
-              - type: HttpResponseFilter
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - admins
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/admins"
-    tags:
-      type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-tags-for-an-app
-      name: tags
-      primary_key:
-        - name
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: tags
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-            response_filters:
-              - type: HttpResponseFilter
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/tags"
-    teams:
-      type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-teams
-      name: teams
-      primary_key:
-        - name
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: teams
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-            response_filters:
-              - type: HttpResponseFilter
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - teams
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/teams"
-    segments:
-      type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-segments
-      name: segments
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: segments
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-            response_filters:
-              - type: HttpResponseFilter
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - segments
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= ( stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400) if stream_state else stream_slice.get('prior_state',
-              {}).get('updated_at', 0) ) - (config.get('lookback_window', 0) *
-              86400) }}
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
-      incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
-        cursor_field: updated_at
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/segments"
-    companies:
-      type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies
-      name: companies
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: companies/scroll
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 400
-                    error_message: >-
-                      A scroll (export) job is already in progress for this
-                      Intercom account, causing the request to fail. Only one
-                      active scroll per           Intercom account is allowed;
-                      ensure no overlap by limiting active connections or
-                      scheduling jobs appropriately.
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= ( stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400) if stream_state else stream_slice.get('prior_state',
-              {}).get('updated_at', 0) ) - (config.get('lookback_window', 0) *
-              86400) }}
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: scroll_param
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('scroll_param') }}"
-            stop_condition: "{{ not response.get('data') }}"
-      incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
-        cursor_field: updated_at
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/companies"
-    company_attributes:
-      type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes
-      name: company_attributes
-      primary_key:
-        - name
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: data_attributes
-          http_method: GET
-          request_parameters:
-            model: company
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-            response_filters:
-              - type: HttpResponseFilter
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/company_attributes"
-    contact_attributes:
-      type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes
-      name: contact_attributes
-      primary_key:
-        - name
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: data_attributes
-          http_method: GET
-          request_parameters:
-            model: contact
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-            response_filters:
-              - type: HttpResponseFilter
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/contact_attributes"
-    contacts:
-      type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search
-      name: contacts
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: contacts/search
-          http_method: POST
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          request_body_json:
-            sort: "{'field': 'updated_at', 'order': 'ascending'}"
-            query: >-
-              { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_slice.get('prior_state',
-              stream_state.get('prior_state', {})).get('updated_at') or
-              format_datetime(config['start_date'], '%s') }} }, { 'field':
-              'updated_at', 'operator': '=', 'value': {{
-              stream_slice.get('prior_state', stream_state.get('prior_state',
-              {})).get('updated_at') or format_datetime(config['start_date'],
-              '%s') }} }, ], }
-            pagination: >-
-              { 'per_page': {{ parameters.get('page_size') }}, 'page': {{
-              next_page_token.get('next_page_token').get('page') }},
-              'starting_after': '{{
-              next_page_token.get('next_page_token').get('starting_after') }}' }
-          error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-            response_filters:
-              - type: HttpResponseFilter
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= ( stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400) if stream_state else stream_slice.get('prior_state',
-              {}).get('updated_at', 0) ) - (config.get('lookback_window', 0) *
-              86400)}}
-        paginator:
-          type: DefaultPaginator
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
-      incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
-        cursor_field: updated_at
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/contacts"
-    conversations:
-      type: DeclarativeStream
-      description: >-
-        https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search
-      name: conversations
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: conversations/search
-          http_method: POST
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          request_body_json:
-            sort: "{'field': 'updated_at', 'order': 'ascending'}"
-            query: >-
-              { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_slice.get('prior_state',
-              stream_state.get('prior_state', {})).get('updated_at') or
-              format_datetime(config['start_date'], '%s') }} }, { 'field':
-              'updated_at', 'operator': '=', 'value': {{
-              stream_slice.get('prior_state', stream_state.get('prior_state',
-              {})).get('updated_at') or format_datetime(config['start_date'],
-              '%s') }} }, ], }
-            pagination: >-
-              { 'per_page': {{ parameters.get('page_size') }}, 'page': {{
-              next_page_token.get('next_page_token').get('page') }},
-              'starting_after': '{{
-              next_page_token.get('next_page_token').get('starting_after') }}' }
-          error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-            response_filters:
-              - type: HttpResponseFilter
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - conversations
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= ( stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400) if stream_state else stream_slice.get('prior_state',
-              {}).get('updated_at', 0) ) - (config.get('lookback_window', 0) *
-              86400)}}
-        paginator:
-          type: DefaultPaginator
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
-      incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
-        cursor_field: updated_at
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/conversations"
-    conversation_parts:
-      type: DeclarativeStream
-      name: conversation_parts
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /conversations/{{ stream_slice.id }}
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - conversation_parts
-              - conversation_parts
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400)}}
-      incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
-        cursor_field: updated_at
-        parent_complete_fetch: true
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream:
-              $ref: "#/definitions/streams/conversations"
-            parent_key: id
-            partition_field: id
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - conversation_id
-              value: "{{ stream_slice.id }}"
-              value_type: string
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/conversation_parts"
-    company_segments:
-      type: DeclarativeStream
-      name: company_segments
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /companies/{{ stream_slice.id }}/segments
-          http_method: GET
-          request_headers:
-            Accept: application/json
-            Intercom-Version: "2.11"
-          error_handler:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-            response_filters:
-              - type: HttpResponseFilter
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
-                error_message_contains: Active subscription needed
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400)}}
-      incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
-        cursor_field: updated_at
-        parent_complete_fetch: true
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream:
-              $ref: "#/definitions/streams/companies"
-            parent_key: id
-            partition_field: id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/company_segments"
-  base_requester:
+  ## bases
+  selector:
+    description: "Base records selector for Full Refresh streams"
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{ parameters.get('data_field', 'data')}}"]
+  requester:
+    description: "Base Requester for Full Refresh streams"
     type: HttpRequester
-    url_base: https://api.intercom.io/
+    url_base: "https://api.intercom.io/"
+    http_method: "GET"
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"access_token\"] }}"
+      api_token: "{{ config['access_token'] }}"
+    request_headers:
+      # There is a bug in interpolation, causing the `2.10` string to be evaluated to `2.1`, cutting off the `0`.
+      # the workaround is to put the `string` inside the `string`, then it's evaluated properly to `2.10`
+      Intercom-Version: "'2.10'"
+      Accept: "application/json"
+    error_handler:
+      type: CustomErrorHandler
+      class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
+      response_filters:
+        - type: HttpResponseFilter
+          error_message_contains: "Active subscription needed"
+          action: FAIL
+          failure_type: config_error
+          error_message: "Failed to perform request. Error: Active subscription needed. Please, validate your current Intercom plan to continue using API."
+  retriever:
+    description: "Base Retriever for Full Refresh streams"
+    record_selector:
+      $ref: "#/definitions/selector"
+    requester:
+      $ref: "#/definitions/requester"
+    paginator:
+      type: "DefaultPaginator"
+      url_base: "#/definitions/requester/url_base"
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.get('pages', {}).get('next') }}"
+        stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+        page_size: 150
+      page_size_option:
+        inject_into: request_parameter
+        field_name: per_page
+      page_token_option:
+        type: RequestPath
+  requester_incremental_search:
+    $ref: "#/definitions/requester"
+    http_method: "POST"
+    request_body_json:
+      query:
+        "{ 'operator': 'OR', 'value': [ { 'field': 'updated_at', 'operator':
+        '>', 'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state',
+        {})).get('updated_at') or format_datetime(config['start_date'], '%s') }} },
+        { 'field': 'updated_at', 'operator': '=', 'value': {{ stream_slice.get('prior_state',
+        stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'],
+        '%s') }} }, ], }"
+      sort: "{'field': 'updated_at', 'order': 'ascending'}"
+      pagination:
+        "{ 'per_page': {{ parameters.get('page_size') }}, 'page': {{ next_page_token.get('next_page_token').get('page')
+        }}, 'starting_after': '{{ next_page_token.get('next_page_token').get('starting_after')
+        }}' }"
 
+  ## streams
+  # full-refresh
+  stream_full_refresh:
+    retriever:
+      $ref: "#/definitions/retriever"
+  admins:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-admins"
+    $ref: "#/definitions/stream_full_refresh"
+    $parameters:
+      name: "admins"
+      primary_key: "id"
+      path: "admins"
+      data_field: "admins"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          admin_ids:
+            description: Array of unique identifiers for admins
+            anyOf:
+              - type: array
+                items:
+                  type: integer
+              - type: "null"
+          avatar:
+            description: Admin avatar details
+            type:
+              - "null"
+              - object
+            properties:
+              image_url:
+                description: URL of the admin's avatar image
+                type:
+                  - "null"
+                  - string
+          away_mode_enabled:
+            description: Flag indicating if away mode is enabled for the admin
+            type:
+              - "null"
+              - boolean
+          away_mode_reassign:
+            description:
+              Flag indicating if away mode reassignment is enabled for
+              the admin
+            type:
+              - "null"
+              - boolean
+          email:
+            description: Email address of the admin
+            type:
+              - "null"
+              - string
+          has_inbox_seat:
+            description: Flag indicating if the admin has a seat in the inbox
+            type:
+              - "null"
+              - boolean
+          id:
+            description: Unique identifier for the admin
+            type:
+              - "null"
+              - string
+          job_title:
+            description: Job title of the admin
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the admin
+            type:
+              - "null"
+              - string
+          team_ids:
+            description: Array of team identifiers the admin belongs to
+            anyOf:
+              - type: array
+                items:
+                  type: integer
+              - type: "null"
+          type:
+            description: Type of the admin (e.g., full-time, part-time)
+            type:
+              - "null"
+              - string
+          team_priority_level:
+            description: Detailed team priority level information for the admin
+            type:
+              - "null"
+              - object
+            properties:
+              primary_team_ids:
+                description: Array of primary team identifiers for the admin
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - integer
+              secondary_team_ids:
+                description: Array of secondary team identifiers for the admin
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - integer
+  tags:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-tags-for-an-app"
+    $ref: "#/definitions/stream_full_refresh"
+    $parameters:
+      name: "tags"
+      primary_key: "name"
+      path: "tags"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the tag.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the tag used for identification.
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of the tag indicating its purpose or category.
+            type:
+              - "null"
+              - string
+  teams:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-teams"
+    $ref: "#/definitions/stream_full_refresh"
+    $parameters:
+      name: "teams"
+      primary_key: "name"
+      path: "teams"
+      data_field: "teams"
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          admin_ids:
+            description: Array of user IDs representing the admins of the team.
+            anyOf:
+              - type: array
+                items:
+                  type: integer
+              - type: "null"
+          id:
+            description: Unique identifier for the team.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the team.
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of team (e.g., 'internal', 'external').
+            type:
+              - "null"
+              - string
+  stream_data_attributes:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes"
+    $ref: "#/definitions/stream_full_refresh"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          model: "{{ parameters.get('model') }}"
+  company_attributes:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes"
+    $ref: "#/definitions/stream_data_attributes"
+    $parameters:
+      name: "company_attributes"
+      primary_key: "name"
+      path: "data_attributes"
+      model: "company"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique ID assigned to the company attribute.
+            type:
+              - "null"
+              - integer
+          admin_id:
+            description: The ID of the admin user associated with the company.
+            type:
+              - "null"
+              - string
+          api_writable:
+            description: Indicates whether the field is writable through the API.
+            type:
+              - "null"
+              - boolean
+          archived:
+            description: Flag to indicate if the company data is archived.
+            type:
+              - "null"
+              - boolean
+          created_at:
+            description: Timestamp when the company data was created.
+            type:
+              - "null"
+              - integer
+          custom:
+            description: Custom attribute specific to the company.
+            type:
+              - "null"
+              - boolean
+          data_type:
+            description: Type of data stored in the attribute field.
+            type:
+              - "null"
+              - string
+          description:
+            description: Description or details about the company attribute.
+            type:
+              - "null"
+              - string
+          full_name:
+            description: Full name associated with the company.
+            type:
+              - "null"
+              - string
+          label:
+            description: Label or display name for the company attribute.
+            type:
+              - "null"
+              - string
+          model:
+            description: Model or schema used for storing the company attribute.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the company attribute.
+            type:
+              - "null"
+              - string
+          options:
+            description: Available options or values for the company attribute.
+            anyOf:
+              - type: array
+                items:
+                  type: string
+              - type: "null"
+          type:
+            description: Type of data structure for the company attribute.
+            type:
+              - "null"
+              - string
+          ui_writable:
+            description: Indicates whether the field is writable through the UI.
+            type:
+              - "null"
+              - boolean
+          updated_at:
+            description: Timestamp when the company data was last updated.
+            type:
+              - "null"
+              - integer
+          messenger_writable:
+            description: Indicates whether the field is writable through the messenger.
+            type:
+              - "null"
+              - boolean
+  contact_attributes:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes"
+    $ref: "#/definitions/stream_data_attributes"
+    $parameters:
+      name: "contact_attributes"
+      primary_key: "name"
+      path: "data_attributes"
+      model: "contact"
+
+    # semi-incremental
+    # (full-refresh and emit records >= *prior state)
+    # (prior state - frozen state from previous sync, it automatically updates with next sync)
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the contact attribute.
+            type:
+              - "null"
+              - integer
+          type:
+            description: The type of contact attribute (e.g., text, number, boolean).
+            type:
+              - "null"
+              - string
+          model:
+            description: Model to which the contact attribute is associated.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the contact attribute.
+            type:
+              - "null"
+              - string
+          full_name:
+            description: The full name associated with the contact attribute.
+            type:
+              - "null"
+              - string
+          label:
+            description: Label representing the attribute in user interfaces.
+            type:
+              - "null"
+              - string
+          description:
+            description: Description of the contact attribute for better understanding.
+            type:
+              - "null"
+              - string
+          data_type:
+            description: The data type of the contact attribute value.
+            type:
+              - "null"
+              - string
+          options:
+            description: List of available options for the attribute.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          api_writable:
+            description: Indicates whether the attribute is writable via API.
+            type:
+              - "null"
+              - boolean
+          ui_writable:
+            description: Indicates whether the attribute is writable via user interface.
+            type:
+              - "null"
+              - boolean
+          custom:
+            description: Indicates if the attribute is a custom user-defined field.
+            type:
+              - "null"
+              - boolean
+          archived:
+            description: Flag to signify if the contact attribute is archived.
+            type:
+              - "null"
+              - boolean
+          admin_id:
+            description:
+              Unique identifier for the admin associated with the contact
+              attribute.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Timestamp of when the contact attribute was created.
+            type:
+              - "null"
+              - integer
+          updated_at:
+            description: Timestamp of when the contact attribute was last updated.
+            type:
+              - "null"
+              - integer
+          messenger_writable:
+            description: Indicates whether the attribute is writable via messenger.
+            type:
+              - "null"
+              - boolean
+  stream_semi_incremental:
+    $ref: "#/definitions/stream_full_refresh"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+      cursor_field: "updated_at"
+    retriever:
+      $ref: "#/definitions/stream_full_refresh/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition:
+            "{{ record['updated_at'] >= ( stream_state.get('prior_state',
+            {}).get('updated_at', 0) - (config.get('lookback_window', 0) * 86400) if stream_state else stream_slice.get('prior_state',
+            {}).get('updated_at', 0) ) - (config.get('lookback_window', 0) * 86400) }}"
+  segments:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-segments"
+    $ref: "#/definitions/stream_semi_incremental"
+    $parameters:
+      name: "segments"
+      primary_key: "id"
+      path: "segments"
+      data_field: "segments"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          created_at:
+            description: The date and time when the segment was created
+            type:
+              - "null"
+              - integer
+          count:
+            description: The number of items in the segment
+            type:
+              - "null"
+              - integer
+          id:
+            description: Unique identifier for the segment
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the segment
+            type:
+              - "null"
+              - string
+          type:
+            description: The type or category of the segment
+            type:
+              - "null"
+              - string
+          person_type:
+            description: Type of persons included in the segment
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The date and time when the segment was last updated
+            type:
+              - "null"
+              - integer
+  companies:
+    description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
+    $ref: "#/definitions/stream_semi_incremental"
+    $parameters:
+      name: "companies"
+      primary_key: "id"
+      path: "companies/scroll"
+    retriever:
+      $ref: "#/definitions/stream_semi_incremental/retriever"
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "#/definitions/requester/url_base"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response.get('scroll_param') }}"
+          stop_condition: "{{ not response.get('data') }}"
+          page_size: 150
+        page_size_option:
+          inject_into: request_parameter
+          field_name: per_page
+        page_token_option:
+          type: RequestOption
+          field_name: scroll_param
+          inject_into: request_parameter
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              description:
+                " 400 - existing scroll_param, need to wait at least 60 sec
+                to continue and retry 500 - server-side error, should retry after 60
+                sec. "
+              response_filters:
+                - http_codes: [400]
+                  action: RETRY
+                  failure_type: transient_error
+                  error_message: "A scroll (export) job is already in progress for this Intercom account, causing the request to fail. Only one active scroll per Intercom account is allowed; ensure no overlap by limiting active connections or scheduling jobs appropriately."
+                - http_codes: [500]
+                  action: RETRY
+                  failure_type: transient_error
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 60
+            - type: DefaultErrorHandler
+              description:
+                "404 - scroll_param is expired or not found while requesting,
+                ignore"
+              response_filters:
+                - http_codes: [404]
+                  action: IGNORE
+
+    # semi-incremental substreams
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          type:
+            description: The type of the company
+            type:
+              - "null"
+              - string
+          company_id:
+            description: The unique identifier of the company
+            type:
+              - "null"
+              - string
+          id:
+            description: The ID of the company
+            type:
+              - "null"
+              - string
+          app_id:
+            description: The ID of the application associated with the company
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the company
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the company was created
+            type:
+              - "null"
+              - integer
+          updated_at:
+            description: The date and time when the company was last updated
+            type:
+              - "null"
+              - integer
+          monthly_spend:
+            description: The monthly spend of the company
+            type:
+              - "null"
+              - number
+            multipleOf: 0.00000001
+          session_count:
+            description: The number of sessions related to the company
+            type:
+              - "null"
+              - integer
+          user_count:
+            description: The number of users associated with the company
+            type:
+              - "null"
+              - integer
+          size:
+            description: The size of the company
+            type:
+              - "null"
+              - integer
+          tags:
+            description: Tags associated with the company
+            type: object
+            properties:
+              type:
+                description: The type of tags associated with the company
+                type: string
+              tags:
+                description: List of tags
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: The type of the tag
+                      type: string
+                    name:
+                      description: The name of the tag
+                      type: string
+                    id:
+                      description: The ID of the tag
+                      oneOf:
+                        - type:
+                            - "null"
+                            - string
+                        - type:
+                            - "null"
+                            - integer
+          segments:
+            description: Segments associated with the company
+            type: object
+            properties:
+              type:
+                description: The type of segments associated with the company
+                type: string
+              segments:
+                description: List of segments
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: The type of the segment
+                      type: string
+                    id:
+                      description: The ID of the segment
+                      type: string
+          plan:
+            description: Details of the company's subscription plan
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The ID of the subscription plan
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the subscription plan
+                type:
+                  - "null"
+                  - string
+              type:
+                description: The type of the subscription plan
+                type:
+                  - "null"
+                  - string
+          custom_attributes:
+            description: Custom attributes specific to the company
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          industry:
+            description: The industry in which the company operates
+            type:
+              - "null"
+              - string
+          remote_created_at:
+            description: The remote date and time when the company was created
+            type:
+              - "null"
+              - integer
+          website:
+            description: The website of the company
+            type:
+              - "null"
+              - string
+  substream_semi_incremental:
+    $ref: "#/definitions/stream_full_refresh"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
+      cursor_field: "updated_at"
+    retriever:
+      $ref: "#/definitions/stream_full_refresh/retriever"
+      paginator:
+        type: "NoPagination"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition:
+            "{{ record['updated_at'] >= stream_state.get('prior_state', {}).get('updated_at',
+            0) - (config.get('lookback_window', 0) * 86400)}}"
+  conversation_parts:
+    $ref: "#/definitions/substream_semi_incremental"
+    incremental_sync:
+      $ref: "#/definitions/substream_semi_incremental/incremental_sync"
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream: "#/definitions/conversations"
+          parent_key: "id"
+          partition_field: "id"
+    $parameters:
+      name: "conversation_parts"
+      primary_key: "id"
+      path: "/conversations/{{ stream_slice.id }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["conversation_id"]
+            value: "'{{ stream_slice.id }}'"
+    retriever:
+      $ref: "#/definitions/substream_semi_incremental/retriever"
+      record_selector:
+        $ref: "#/definitions/substream_semi_incremental/retriever/record_selector"
+        extractor:
+          field_path: ["conversation_parts", "conversation_parts"]
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: DefaultErrorHandler
+          description: "404 - conversation is not found while requesting, ignore"
+          response_filters:
+            - http_codes: [404]
+              action: IGNORE
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          assigned_to:
+            description:
+              The user or team member who is assigned to handle this conversation
+              part.
+            oneOf:
+              - type: object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - string
+              - type: string
+              - type: "null"
+          attachments:
+            description:
+              Represents the attachments associated with the conversation
+              part.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  description: The type or category of the attachment.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: The filename or name of the attachment.
+                  type:
+                    - "null"
+                    - string
+                url:
+                  description: The URL or location where the attachment can be accessed.
+                  type:
+                    - "null"
+                    - string
+                content_type:
+                  description: The MIME type of the attachment content.
+                  type:
+                    - "null"
+                    - string
+                filesize:
+                  description: The size of the attachment file in bytes.
+                  type:
+                    - "null"
+                    - integer
+                height:
+                  description: The height dimension of the attachment in pixels.
+                  type:
+                    - "null"
+                    - integer
+                width:
+                  description: The width dimension of the attachment in pixels.
+                  type:
+                    - "null"
+                    - integer
+          author:
+            description: Represents the author of the conversation part.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the conversation author.
+                type:
+                  - "null"
+                  - string
+              type:
+                description: The type of author, such as customer or agent.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the conversation author.
+                type:
+                  - "null"
+                  - string
+              email:
+                description: The email address of the conversation author.
+                type:
+                  - "null"
+                  - string
+          body:
+            description: The main content or message body of the conversation part.
+            type:
+              - "null"
+              - string
+          conversation_id:
+            description: The unique identifier of the conversation.
+            type:
+              - "null"
+              - string
+          conversation_created_at:
+            description: The date and time when the conversation was created.
+            type:
+              - "null"
+              - integer
+          conversation_updated_at:
+            description: The date and time when the conversation was last updated.
+            type:
+              - "null"
+              - integer
+          conversation_total_parts:
+            description: The total number of parts in the conversation.
+            type:
+              - "null"
+              - integer
+          created_at:
+            description: The date and time when the conversation part was created.
+            type:
+              - "null"
+              - integer
+          external_id:
+            description: An external identifier associated with the conversation part.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier of the conversation part.
+            type:
+              - "null"
+              - string
+          notified_at:
+            description: The date and time when the conversation part was last notified.
+            type:
+              - "null"
+              - integer
+          part_type:
+            description: The type or category of the conversation part.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of conversation part, such as message or note.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The date and time when the conversation part was last updated.
+            type:
+              - "null"
+              - integer
+          redacted:
+            description: Indicates if the conversation part has been redacted or censored.
+            type:
+              - "null"
+              - boolean
+  company_segments:
+    $ref: "#/definitions/substream_semi_incremental"
+    $parameters:
+      name: "company_segments"
+      primary_key: "id"
+      path: "/companies/{{ stream_slice.id }}/segments"
+    incremental_sync:
+      $ref: "#/definitions/substream_semi_incremental/incremental_sync"
+      parent_complete_fetch: true
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream: "#/definitions/companies"
+          parent_key: "id"
+          partition_field: "id"
+    retriever:
+      $ref: "#/definitions/substream_semi_incremental/retriever"
+
+    # incremental search
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          created_at:
+            description: The timestamp when the company segment was created.
+            type:
+              - "null"
+              - integer
+          count:
+            description: The count of company segments returned in the response.
+            type:
+              - "null"
+              - integer
+          id:
+            description: The unique identifier associated with the company segment.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the company segment.
+            type:
+              - "null"
+              - string
+          type:
+            description: The category or type of the company segment.
+            type:
+              - "null"
+              - string
+          person_type:
+            description: The type of person associated with the company segment.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The timestamp when the company segment was last updated.
+            type:
+              - "null"
+              - integer
+  stream_incremental_search:
+    description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search"
+    $ref: "#/definitions/stream_full_refresh"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+      cursor_field: "updated_at"
+    retriever:
+      $ref: "#/definitions/stream_full_refresh/retriever"
+      requester:
+        $ref: "#/definitions/requester_incremental_search"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search#pagination"
+          condition:
+            "{{ record['updated_at'] >= ( stream_state.get('prior_state',
+            {}).get('updated_at', 0) - (config.get('lookback_window', 0) * 86400) if stream_state else stream_slice.get('prior_state',
+            {}).get('updated_at', 0) ) - (config.get('lookback_window', 0) * 86400)}}"
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "#/definitions/requester/url_base"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response.get('pages', {}).get('next') }}"
+          stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+  contacts:
+    $ref: "#/definitions/stream_incremental_search"
+    $parameters:
+      name: "contacts"
+      path: "contacts/search"
+      page_size: 150
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          type:
+            description: Type of contact.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier of the contact.
+            type:
+              - "null"
+              - string
+          workspace_id:
+            description:
+              The unique identifier of the workspace associated with the
+              contact.
+            type:
+              - "null"
+              - string
+          external_id:
+            description: External identifier for the contact.
+            type:
+              - "null"
+              - string
+          role:
+            description: Role or position of the contact.
+            type:
+              - "null"
+              - string
+          email:
+            description: The email address of the contact.
+            type:
+              - "null"
+              - string
+          phone:
+            description: The phone number of the contact.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the contact.
+            type:
+              - "null"
+              - string
+          avatar:
+            description: URL pointing to the contact's avatar image.
+            type:
+              - "null"
+              - string
+          owner_id:
+            description: The unique identifier of the contact's owner.
+            type:
+              - "null"
+              - integer
+          social_profiles:
+            description: Social profiles associated with the contact.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: Type of social profile connection.
+                type:
+                  - "null"
+                  - string
+              data:
+                description: Array of social profile data associated with the contact.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of social profile.
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the social profile.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: URL of the social profile.
+                      type:
+                        - "null"
+                        - string
+          has_hard_bounced:
+            description: Flag indicating if the contact has hard bounced.
+            type:
+              - "null"
+              - boolean
+          marked_email_as_spam:
+            description: Flag indicating if the contact's email was marked as spam.
+            type:
+              - "null"
+              - boolean
+          unsubscribed_from_emails:
+            description: Flag indicating if the contact unsubscribed from emails.
+            type:
+              - "null"
+              - boolean
+          unsubscribed_from_sms:
+            description: Flag indicating if the contact unsubscribed from SMS.
+            type:
+              - "null"
+              - boolean
+          created_at:
+            description: The date and time when the contact was created.
+            type:
+              - "null"
+              - integer
+          updated_at:
+            description: The date and time when the contact was last updated.
+            type:
+              - "null"
+              - integer
+          signed_up_at:
+            description: The date and time when the contact signed up.
+            type:
+              - "null"
+              - integer
+          sms_consent:
+            description: Consent status for SMS communication.
+            type:
+              - "null"
+              - boolean
+          last_seen_at:
+            description: The date and time when the contact was last seen overall.
+            type:
+              - "null"
+              - integer
+          last_replied_at:
+            description: The date and time when the contact last replied.
+            type:
+              - "null"
+              - integer
+          last_contacted_at:
+            description: The date and time when the contact was last contacted.
+            type:
+              - "null"
+              - integer
+          last_email_opened_at:
+            description: The date and time when the contact last opened an email.
+            type:
+              - "null"
+              - integer
+          last_email_clicked_at:
+            description: The date and time when the contact last clicked an email.
+            type:
+              - "null"
+              - integer
+          language_override:
+            description: Language override set for the contact.
+            type:
+              - "null"
+              - string
+          browser:
+            description: The browser used by the contact.
+            type:
+              - "null"
+              - string
+          browser_version:
+            description: The version of the browser used by the contact.
+            type:
+              - "null"
+              - string
+          browser_language:
+            description: The language preference set in the contact's browser.
+            type:
+              - "null"
+              - string
+          os:
+            description: Operating system of the contact's device.
+            type:
+              - "null"
+              - string
+          location:
+            description: Location details of the contact.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: Type of location.
+                type:
+                  - "null"
+                  - string
+              country:
+                description: Country of the contact's location.
+                type:
+                  - "null"
+                  - string
+              region:
+                description: Region of the contact's location.
+                type:
+                  - "null"
+                  - string
+              city:
+                description: City of the contact's location.
+                type:
+                  - "null"
+                  - string
+              continent_code:
+                description: Continent code of the contact's location.
+                type:
+                  - "null"
+                  - string
+              country_code:
+                description: Country code of the contact's location.
+                type:
+                  - "null"
+                  - string
+          android_app_name:
+            description: The name of the Android app associated with the contact.
+            type:
+              - "null"
+              - string
+          android_app_version:
+            description: The version of the Android app associated with the contact.
+            type:
+              - "null"
+              - string
+          android_device:
+            description: The device used by the contact for Android.
+            type:
+              - "null"
+              - string
+          android_os_version:
+            description: The operating system version of the Android device.
+            type:
+              - "null"
+              - string
+          android_sdk_version:
+            description: The SDK version of the Android device.
+            type:
+              - "null"
+              - string
+          android_last_seen_at:
+            description: The date and time when the contact was last seen on Android.
+            type:
+              - "null"
+              - string
+            format: date-time
+          ios_app_name:
+            description: The name of the iOS app associated with the contact.
+            type:
+              - "null"
+              - string
+          ios_app_version:
+            description: The version of the iOS app associated with the contact.
+            type:
+              - "null"
+              - string
+          ios_device:
+            description: The device used by the contact for iOS.
+            type:
+              - "null"
+              - string
+          ios_os_version:
+            description: The operating system version of the iOS device.
+            type:
+              - "null"
+              - string
+          ios_sdk_version:
+            description: The SDK version of the iOS device.
+            type:
+              - "null"
+              - string
+          ios_last_seen_at:
+            description: The date and time when the contact was last seen on iOS.
+            type:
+              - "null"
+              - integer
+          custom_attributes:
+            description: Custom attributes defined for the contact.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          tags:
+            description: Tags associated with the contact.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: Type of connection with the tags.
+                type:
+                  - "null"
+                  - string
+              data:
+                description: Array of tag data associated with the contact.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of tag.
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: The unique identifier of the tag.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: URL of the tag.
+                      type:
+                        - "null"
+                        - string
+              url:
+                description: URL to access more tag information.
+                type:
+                  - "null"
+                  - string
+              total_count:
+                description: Total count of tags associated with the contact.
+                type:
+                  - "null"
+                  - integer
+              has_more:
+                description: Flag indicating if there are more tags to load.
+                type:
+                  - "null"
+                  - boolean
+          notes:
+            description: Notes associated with the contact.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: Type of connection with the notes.
+                type:
+                  - "null"
+                  - string
+              data:
+                description: Array of note data associated with the contact.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of note.
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: The unique identifier of the note.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: URL of the note.
+                      type:
+                        - "null"
+                        - string
+              url:
+                description: URL to access more note information.
+                type:
+                  - "null"
+                  - string
+              total_count:
+                description: Total count of notes associated with the contact.
+                type:
+                  - "null"
+                  - integer
+              has_more:
+                description: Flag indicating if there are more notes to load.
+                type:
+                  - "null"
+                  - boolean
+          companies:
+            description: Companies associated with the contact.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: Type of connection with the companies.
+                type:
+                  - "null"
+                  - string
+              data:
+                description: Array of company data associated with the contact.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of company.
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: The unique identifier of the company.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: URL of the company.
+                      type:
+                        - "null"
+                        - string
+              url:
+                description: URL to access more company information.
+                type:
+                  - "null"
+                  - string
+              total_count:
+                description: Total count of companies associated with the contact.
+                type:
+                  - "null"
+                  - integer
+              has_more:
+                description: Flag indicating if there are more companies to load.
+                type:
+                  - "null"
+                  - boolean
+          opted_out_subscription_types:
+            description: Subscription types the contact opted out from.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: Type of connection with the subscription types.
+                type:
+                  - "null"
+                  - string
+              data:
+                description:
+                  Array of subscription type data opted out from by the
+                  contact.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of subscription.
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: The unique identifier of the subscription type.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: URL of the subscription type.
+                      type:
+                        - "null"
+                        - string
+              url:
+                description: URL to access more subscription type information.
+                type:
+                  - "null"
+                  - string
+              total_count:
+                description:
+                  Total count of subscription types the contact opted out
+                  from.
+                type:
+                  - "null"
+                  - integer
+              has_more:
+                description:
+                  Flag indicating if there are more subscription types
+                  to load.
+                type:
+                  - "null"
+                  - boolean
+          opted_in_subscription_types:
+            description: Subscription types the contact opted into.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: Type of connection with the subscription types.
+                type:
+                  - "null"
+                  - string
+              data:
+                description: Array of subscription type data opted into by the contact.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of subscription.
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: The unique identifier of the subscription type.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: URL of the subscription type.
+                      type:
+                        - "null"
+                        - string
+              url:
+                description: URL to access more subscription type information.
+                type:
+                  - "null"
+                  - string
+              total_count:
+                description: Total count of subscription types the contact opted into.
+                type:
+                  - "null"
+                  - integer
+              has_more:
+                description:
+                  Flag indicating if there are more subscription types
+                  to load.
+                type:
+                  - "null"
+                  - boolean
+          utm_content:
+            description: Content data from UTM parameters.
+            type:
+              - "null"
+              - string
+          utm_campaign:
+            description: Campaign data from UTM parameters.
+            type:
+              - "null"
+              - string
+          utm_source:
+            description: Source data from UTM parameters.
+            type:
+              - "null"
+              - string
+          referrer:
+            description: Referrer information related to the contact.
+            type:
+              - "null"
+              - string
+          utm_term:
+            description: Term data from UTM parameters.
+            type:
+              - "null"
+              - string
+          utm_medium:
+            description: Medium data from UTM parameters.
+            type:
+              - "null"
+              - string
+  conversations:
+    $ref: "#/definitions/stream_incremental_search"
+    retriever:
+      $ref: "#/definitions/stream_incremental_search/retriever"
+      requester:
+        $ref: "#/definitions/requester_incremental_search"
+        request_headers:
+          # API version header
+          # There are 404 - User Not Found issue, when `2.10` is used, for certain users:
+          # https://github.com/airbytehq/oncall/issues/4514
+          Intercom-Version: "2.9"
+          Accept: "application/json"
+    $parameters:
+      name: "conversations"
+      path: "conversations/search"
+      data_field: "conversations"
+      page_size: 150
+
+    # activity logs stream is incremental based on created_at field
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          assignee:
+            description: The assigned user responsible for the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The ID of the assignee
+                type:
+                  - "null"
+                  - string
+              type:
+                description: The type of the assignee (e.g., admin, agent)
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the assignee
+                type:
+                  - "null"
+                  - string
+              email:
+                description: The email of the assignee
+                type:
+                  - "null"
+                  - string
+          source:
+            description: Source details of the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the source
+                type:
+                  - "null"
+                  - string
+              id:
+                description: The ID of the source
+                type:
+                  - "null"
+                  - string
+              redacted:
+                description: Indicates if the source is redacted
+                type:
+                  - "null"
+                  - boolean
+              delivered_as:
+                description: The delivery status of the source
+                type:
+                  - "null"
+                  - string
+              subject:
+                description: The subject of the source
+                type:
+                  - "null"
+                  - string
+              body:
+                description: The body/content of the source
+                type:
+                  - "null"
+                  - string
+              author:
+                description: Author of the source.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: The ID of the source author
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    description: The type of the source author (e.g., admin, customer)
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: The name of the source author
+                    type:
+                      - "null"
+                      - string
+                  email:
+                    description: The email of the source author
+                    type:
+                      - "null"
+                      - string
+              attachments:
+                description: Attachments related to the conversation.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties: {}
+              url:
+                description: The URL of the source
+                type:
+                  - "null"
+                  - string
+          contacts:
+            description: List of contacts involved in the conversation.
+            type:
+              - "null"
+              - object
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  description: The type of the contact
+                  type:
+                    - "null"
+                    - string
+                id:
+                  description: The ID of the contact
+                  type:
+                    - "null"
+                    - string
+          teammates:
+            description: List of teammates involved in the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              admins:
+                description: Admin teammates involved in the conversation.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The ID of the teammate admin
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      description: The type of the teammate (admin)
+                      type:
+                        - "null"
+                        - string
+              type:
+                description: The type of teammates
+                type:
+                  - "null"
+                  - string
+          first_contact_reply:
+            description: Timestamp indicating when the first contact replied.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the first contact reply
+                type:
+                  - "null"
+                  - string
+              url:
+                description: The URL of the first contact reply
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: The timestamp of the first contact's reply
+                type:
+                  - "null"
+                  - integer
+          custom_attributes:
+            description: Custom attributes associated with the conversation
+            type:
+              - "null"
+              - object
+          priority:
+            description: The priority level of the conversation
+            type:
+              - "null"
+              - string
+          conversation_message:
+            description: The main message content of the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              attachments:
+                description: Attachments in the conversation message
+                anyOf:
+                  - type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        url:
+                          type:
+                            - "null"
+                            - string
+                        content_type:
+                          type:
+                            - "null"
+                            - string
+                        filesize:
+                          type:
+                            - "null"
+                            - integer
+                        height:
+                          type:
+                            - "null"
+                            - integer
+                        width:
+                          type:
+                            - "null"
+                            - integer
+                  - type: "null"
+              author:
+                description: The author of the conversation message.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: The ID of the author of the message
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    description: The type of the author (e.g., admin, customer)
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: The name of the author of the message
+                    type:
+                      - "null"
+                      - string
+                  email:
+                    description: The email of the author of the message
+                    type:
+                      - "null"
+                      - string
+              body:
+                description: The body/content of the conversation message
+                type:
+                  - "null"
+                  - string
+              delivered_as:
+                description: The delivery status of the message
+                type:
+                  - "null"
+                  - string
+              id:
+                description: The ID of the conversation message
+                type:
+                  - "null"
+                  - string
+              subject:
+                description: The subject of the conversation message
+                type:
+                  - "null"
+                  - string
+              type:
+                description: The type of the conversation message
+                type:
+                  - "null"
+                  - string
+              url:
+                description: The URL of the conversation message
+                type:
+                  - "null"
+                  - string
+          conversation_rating:
+            description: Ratings given to the conversation by the customer and teammate.
+            type:
+              - "null"
+              - object
+            properties:
+              created_at:
+                description: The timestamp when the rating was created
+                type:
+                  - "null"
+                  - integer
+              customer:
+                description: Rating given by the customer.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: The ID of the customer who provided the rating
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    description: The type of the customer providing the rating
+                    type:
+                      - "null"
+                      - string
+              rating:
+                description: The rating given to the conversation
+                type:
+                  - "null"
+                  - integer
+              remark:
+                description: Any remarks provided with the rating
+                type:
+                  - "null"
+                  - string
+              teammate:
+                description: Rating given by the teammate.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: The ID of the teammate being rated
+                    type:
+                      - "null"
+                      - integer
+                  type:
+                    description: The type of the teammate being rated
+                    type:
+                      - "null"
+                      - string
+          created_at:
+            description: The timestamp when the conversation was created
+            type:
+              - "null"
+              - integer
+          customer_first_reply:
+            description: Timestamp indicating when the customer first replied.
+            type:
+              - "null"
+              - object
+            properties:
+              created_at:
+                description: The timestamp of the customer's first reply
+                type:
+                  - "null"
+                  - integer
+              type:
+                description: The type of the first customer reply
+                type:
+                  - "null"
+                  - string
+              url:
+                description: The URL of the first customer reply
+                type:
+                  - "null"
+                  - string
+          customers:
+            description: List of customers involved in the conversation
+            anyOf:
+              - type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      type:
+                        - "null"
+                        - string
+              - type: "null"
+          id:
+            description: The unique ID of the conversation
+            type:
+              - "null"
+              - string
+          open:
+            description: Indicates if the conversation is open or closed
+            type:
+              - "null"
+              - boolean
+          read:
+            description: Indicates if the conversation has been read
+            type:
+              - "null"
+              - boolean
+          sent_at:
+            description: The timestamp when the conversation was sent
+            type:
+              - "null"
+              - integer
+          snoozed_until:
+            description: Timestamp until the conversation is snoozed
+            type:
+              - "null"
+              - integer
+          sla_applied:
+            description: Service Level Agreement details applied to the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              sla_name:
+                description: The name of the SLA applied
+                type:
+                  - "null"
+                  - string
+              sla_status:
+                description: The status of the SLA applied
+                type:
+                  - "null"
+                  - string
+          state:
+            description: The state of the conversation (e.g., new, in progress)
+            type:
+              - "null"
+              - string
+          statistics:
+            description: Statistics related to the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of conversation statistics
+                type:
+                  - "null"
+                  - string
+              time_to_assignment:
+                description: Time taken for assignment
+                type:
+                  - "null"
+                  - integer
+              time_to_admin_reply:
+                description: Time taken to reply by admin
+                type:
+                  - "null"
+                  - integer
+              time_to_first_close:
+                description: Time taken to first close the conversation
+                type:
+                  - "null"
+                  - integer
+              time_to_last_close:
+                description: Time taken to last close the conversation
+                type:
+                  - "null"
+                  - integer
+              median_time_to_reply:
+                description: The median time taken to reply to the conversation
+                type:
+                  - "null"
+                  - integer
+              first_contact_reply_at:
+                description: Timestamp of the first contact reply
+                type:
+                  - "null"
+                  - integer
+              first_assignment_at:
+                description: Timestamp of the first assignment
+                type:
+                  - "null"
+                  - integer
+              first_admin_reply_at:
+                description: Timestamp of the first admin reply
+                type:
+                  - "null"
+                  - integer
+              first_close_at:
+                description: Timestamp of the first conversation close
+                type:
+                  - "null"
+                  - integer
+              last_assignment_at:
+                description: Timestamp of the last assignment
+                type:
+                  - "null"
+                  - integer
+              last_assignment_admin_reply_at:
+                description: Timestamp of the last assignment admin reply
+                type:
+                  - "null"
+                  - integer
+              last_contact_reply_at:
+                description: Timestamp of the last contact reply
+                type:
+                  - "null"
+                  - integer
+              last_admin_reply_at:
+                description: Timestamp of the last admin reply
+                type:
+                  - "null"
+                  - integer
+              last_close_at:
+                description: Timestamp of the last conversation close
+                type:
+                  - "null"
+                  - integer
+              last_closed_by_id:
+                description: The ID of the last user who closed the conversation
+                type:
+                  - "null"
+                  - integer
+              count_reopens:
+                description: The total count of conversation reopens
+                type:
+                  - "null"
+                  - integer
+              count_assignments:
+                description: The total count of assignments for the conversation
+                type:
+                  - "null"
+                  - integer
+              count_conversation_parts:
+                description: The total count of conversation parts
+                type:
+                  - "null"
+                  - integer
+          tags:
+            description: Tags applied to the conversation.
+            type:
+              - "null"
+              - object
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                applied_at:
+                  description: Timestamp when the tag was applied
+                  type:
+                    - "null"
+                    - integer
+                applied_by:
+                  description: User who applied the tag.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The ID of the user who applied the tag
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      description: The type of the user who applied the tag
+                      type:
+                        - "null"
+                        - string
+                id:
+                  description: The ID of the tag
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: The name of the tag
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: The type of the tag
+                  type:
+                    - "null"
+                    - string
+          type:
+            description: The type of the conversation
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The timestamp when the conversation was last updated
+            type:
+              - "null"
+              - integer
+          user:
+            description: The user related to the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The ID of the user associated with the conversation
+                type:
+                  - "null"
+                  - string
+              type:
+                description: The type of the user
+                type:
+                  - "null"
+                  - string
+          waiting_since:
+            description: Timestamp since waiting for a response
+            type:
+              - "null"
+              - integer
+          admin_assignee_id:
+            description: The ID of the administrator assigned to the conversation
+            type:
+              - "null"
+              - integer
+          title:
+            description: The title of the conversation
+            type:
+              - "null"
+              - string
+          team_assignee_id:
+            description: The ID of the team assigned to the conversation
+            type:
+              - "null"
+              - integer
+          redacted:
+            description: Indicates if the conversation is redacted
+            type:
+              - "null"
+              - boolean
+          topics:
+            description: Topics associated with the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of topics
+                type:
+                  - "null"
+                  - string
+              topics:
+                description: List of topics related to the conversation.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: The type of the topic
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: The ID of the topic
+                      type:
+                        - "null"
+                        - integer
+                    name:
+                      description: The name of the topic
+                      type:
+                        - "null"
+                        - string
+              total_count:
+                description: The total count of topics
+                type:
+                  - "null"
+                  - integer
+  activity_logs:
+    $ref: "#/definitions/stream_full_refresh"
+    primary_key: id
+    $parameters:
+      name: "activity_logs"
+      path: "admins/activity_logs"
+      data_field: "activity_logs"
+    retriever:
+      $ref: "#/definitions/retriever"
+      description: "The Retriever without passing page size option"
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "#/definitions/requester/url_base"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response.get('pages', {}).get('next') }}"
+          stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+        page_token_option:
+          type: RequestPath
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      cursor_granularity: "PT1S"
+      step: "P{{ config.get('activity_logs_time_step', 30) }}D"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        field_name: "created_at_before"
+        inject_into: "request_parameter"
+      start_time_option:
+        field_name: "created_at_after"
+        inject_into: "request_parameter"
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          performed_by:
+            description: The user who performed the activity
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier of the user who performed the activity
+                type:
+                  - "null"
+                  - string
+              type:
+                description:
+                  Type of the user who performed the activity (e.g., admin,
+                  user)
+                type:
+                  - "null"
+                  - string
+              ip:
+                description: IP address from where the activity was performed
+                type:
+                  - "null"
+                  - string
+              email:
+                description: Email of the user who performed the activity
+                type:
+                  - "null"
+                  - string
+          id:
+            description: Unique identifier for the activity log entry
+            type:
+              - "null"
+              - string
+          metadata:
+            description: Additional data or information related to the activity
+            type:
+              - "null"
+              - object
+          activity_type:
+            description: The type or category of the activity
+            type:
+              - "null"
+              - string
+          activity_description:
+            description: A description of the activity that took place
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp when the activity occurred
+            type:
+              - "null"
+              - integer
 streams:
-  - $ref: "#/definitions/streams/activity_logs"
-  - $ref: "#/definitions/streams/admins"
-  - $ref: "#/definitions/streams/tags"
-  - $ref: "#/definitions/streams/teams"
-  - $ref: "#/definitions/streams/segments"
-  - $ref: "#/definitions/streams/companies"
-  - $ref: "#/definitions/streams/company_attributes"
-  - $ref: "#/definitions/streams/contact_attributes"
-  - $ref: "#/definitions/streams/contacts"
-  - $ref: "#/definitions/streams/conversations"
-  - $ref: "#/definitions/streams/conversation_parts"
-  - $ref: "#/definitions/streams/company_segments"
+  - "#/definitions/activity_logs"
+  - "#/definitions/admins"
+  - "#/definitions/tags"
+  - "#/definitions/teams"
+  - "#/definitions/segments"
+  - "#/definitions/companies"
+  - "#/definitions/company_attributes"
+  - "#/definitions/contact_attributes"
+  - "#/definitions/contacts"
+  - "#/definitions/conversations"
+  - "#/definitions/conversation_parts"
+  - "#/definitions/company_segments"
+
+check:
+  stream_names:
+    - "tags"
 
 spec:
   type: Spec
@@ -814,2135 +2472,3 @@ spec:
         examples:
           - "2020-11-16T00:00:00Z"
     additionalProperties: true
-
-metadata:
-  autoImportSchema:
-    activity_logs: false
-    admins: false
-    tags: false
-    teams: false
-    segments: false
-    companies: false
-    company_attributes: false
-    contact_attributes: false
-    contacts: false
-    conversations: false
-    conversation_parts: false
-    company_segments: false
-  yamlComponents:
-    streams:
-      activity_logs:
-        - errorHandler
-      admins:
-        - errorHandler
-      tags:
-        - errorHandler
-      teams:
-        - errorHandler
-      segments:
-        - errorHandler
-        - incrementalSync
-      companies:
-        - incrementalSync
-      company_attributes:
-        - errorHandler
-      contact_attributes:
-        - errorHandler
-      contacts:
-        - errorHandler
-        - incrementalSync
-      conversations:
-        - errorHandler
-        - incrementalSync
-      conversation_parts:
-        - incrementalSync
-      company_segments:
-        - errorHandler
-        - incrementalSync
-  testedStreams:
-    activity_logs:
-      hasRecords: true
-      streamHash: dae54ab01efc8a7c580121de6902d67a82a87775
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    admins:
-      hasRecords: true
-      streamHash: 62fdd12c98bec28f09edd3a34cd16bc5c1afedb6
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    tags:
-      hasRecords: true
-      streamHash: 53f9b051b3d5c8747598b848c006c80f3ffc5957
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    teams:
-      hasRecords: true
-      streamHash: d27cc586e29ddf6347d6356ea4970af99b7980c1
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    segments:
-      hasRecords: true
-      streamHash: 96ba554609834b986e20813cedf03a96183196fd
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    companies:
-      hasRecords: true
-      streamHash: 801c62e3a0a4028608efc4bf5f1ad5119b986973
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    company_attributes:
-      hasRecords: true
-      streamHash: e59558fb65b2c762d2b3f6b67e9071db2773cf13
-      hasResponse: true
-      primaryKeysAreUnique: false
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    contact_attributes:
-      hasRecords: true
-      streamHash: 70d4afa7c3ad63877ab1fd9c185bd58c27ce06bc
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    contacts:
-      hasRecords: false
-      streamHash: e796494e6a861bce39d40f66e78e19b9ec633e29
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    conversations:
-      hasRecords: false
-      streamHash: 5838b59eba7d58cae3fe42eca72062bc9d29e1c4
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    conversation_parts:
-      streamHash: 67469544cde547846d7636a110f775313d6e04fc
-    company_segments:
-      hasRecords: true
-      streamHash: 41220115640c54deccc0e5a421991a60aa808d3c
-      hasResponse: true
-      primaryKeysAreUnique: false
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-  assist: {}
-
-schemas:
-  activity_logs:
-    type: object
-    additionalProperties: true
-    properties:
-      metadata:
-        type:
-          - "null"
-          - object
-        description: Additional data or information related to the activity
-      activity_description:
-        type:
-          - "null"
-          - string
-        description: A description of the activity that took place
-      activity_type:
-        type:
-          - "null"
-          - string
-        description: The type or category of the activity
-      created_at:
-        type:
-          - "null"
-          - integer
-        description: The timestamp when the activity occurred
-      id:
-        type:
-          - "null"
-          - string
-        description: Unique identifier for the activity log entry
-      performed_by:
-        type:
-          - "null"
-          - object
-        description: The user who performed the activity
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: Type of the user who performed the activity (e.g., admin, user)
-          email:
-            type:
-              - "null"
-              - string
-            description: Email of the user who performed the activity
-          id:
-            type:
-              - "null"
-              - string
-            description: Unique identifier of the user who performed the activity
-          ip:
-            type:
-              - "null"
-              - string
-            description: IP address from where the activity was performed
-  admins:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: Type of the admin (e.g., full-time, part-time)
-      admin_ids:
-        description: Array of unique identifiers for admins
-        anyOf:
-          - type: array
-            items:
-              type: integer
-          - type: "null"
-      avatar:
-        type:
-          - "null"
-          - object
-        description: Admin avatar details
-        properties:
-          image_url:
-            type:
-              - "null"
-              - string
-            description: URL of the admin's avatar image
-      away_mode_enabled:
-        type:
-          - "null"
-          - boolean
-        description: Flag indicating if away mode is enabled for the admin
-      away_mode_reassign:
-        type:
-          - "null"
-          - boolean
-        description: Flag indicating if away mode reassignment is enabled for the admin
-      email:
-        type:
-          - "null"
-          - string
-        description: Email address of the admin
-      has_inbox_seat:
-        type:
-          - "null"
-          - boolean
-        description: Flag indicating if the admin has a seat in the inbox
-      id:
-        type:
-          - "null"
-          - string
-        description: Unique identifier for the admin
-      job_title:
-        type:
-          - "null"
-          - string
-        description: Job title of the admin
-      name:
-        type:
-          - "null"
-          - string
-        description: Name of the admin
-      team_ids:
-        description: Array of team identifiers the admin belongs to
-        anyOf:
-          - type: array
-            items:
-              type: integer
-          - type: "null"
-      team_priority_level:
-        type:
-          - "null"
-          - object
-        description: Detailed team priority level information for the admin
-        properties:
-          primary_team_ids:
-            type:
-              - "null"
-              - array
-            description: Array of primary team identifiers for the admin
-            items:
-              type:
-                - "null"
-                - integer
-          secondary_team_ids:
-            type:
-              - "null"
-              - array
-            description: Array of secondary team identifiers for the admin
-            items:
-              type:
-                - "null"
-                - integer
-  tags:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: Type of the tag indicating its purpose or category.
-      id:
-        type:
-          - "null"
-          - string
-        description: Unique identifier for the tag.
-      name:
-        type:
-          - "null"
-          - string
-        description: Name of the tag used for identification.
-  teams:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: Type of team (e.g., 'internal', 'external').
-      admin_ids:
-        description: Array of user IDs representing the admins of the team.
-        anyOf:
-          - type: array
-            items:
-              type: integer
-          - type: "null"
-      id:
-        type:
-          - "null"
-          - string
-        description: Unique identifier for the team.
-      name:
-        type:
-          - "null"
-          - string
-        description: Name of the team.
-  segments:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: The type or category of the segment
-      count:
-        type:
-          - "null"
-          - integer
-        description: The number of items in the segment
-      created_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the segment was created
-      id:
-        type:
-          - "null"
-          - string
-        description: Unique identifier for the segment
-      name:
-        type:
-          - "null"
-          - string
-        description: The name or title of the segment
-      person_type:
-        type:
-          - "null"
-          - string
-        description: Type of persons included in the segment
-      updated_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the segment was last updated
-  companies:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: The type of the company
-      app_id:
-        type:
-          - "null"
-          - string
-        description: The ID of the application associated with the company
-      company_id:
-        type:
-          - "null"
-          - string
-        description: The unique identifier of the company
-      created_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the company was created
-      custom_attributes:
-        type:
-          - "null"
-          - object
-        description: Custom attributes specific to the company
-        additionalProperties: true
-      id:
-        type:
-          - "null"
-          - string
-        description: The ID of the company
-      industry:
-        type:
-          - "null"
-          - string
-        description: The industry in which the company operates
-      monthly_spend:
-        type:
-          - "null"
-          - number
-        description: The monthly spend of the company
-        multipleOf: 1.e-8
-      name:
-        type:
-          - "null"
-          - string
-        description: The name of the company
-      plan:
-        type:
-          - "null"
-          - object
-        description: Details of the company's subscription plan
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of the subscription plan
-          id:
-            type:
-              - "null"
-              - string
-            description: The ID of the subscription plan
-          name:
-            type:
-              - "null"
-              - string
-            description: The name of the subscription plan
-      remote_created_at:
-        type:
-          - "null"
-          - integer
-        description: The remote date and time when the company was created
-      segments:
-        type: object
-        description: Segments associated with the company
-        properties:
-          type:
-            type: string
-            description: The type of segments associated with the company
-          segments:
-            type: array
-            description: List of segments
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type: string
-                  description: The type of the segment
-                id:
-                  type: string
-                  description: The ID of the segment
-      session_count:
-        type:
-          - "null"
-          - integer
-        description: The number of sessions related to the company
-      size:
-        type:
-          - "null"
-          - integer
-        description: The size of the company
-      tags:
-        type: object
-        description: Tags associated with the company
-        properties:
-          type:
-            type: string
-            description: The type of tags associated with the company
-          tags:
-            type: array
-            description: List of tags
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type: string
-                  description: The type of the tag
-                id:
-                  description: The ID of the tag
-                  oneOf:
-                    - type:
-                        - "null"
-                        - string
-                    - type:
-                        - "null"
-                        - integer
-                name:
-                  type: string
-                  description: The name of the tag
-      updated_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the company was last updated
-      user_count:
-        type:
-          - "null"
-          - integer
-        description: The number of users associated with the company
-      website:
-        type:
-          - "null"
-          - string
-        description: The website of the company
-  company_attributes:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: Type of data structure for the company attribute.
-      description:
-        type:
-          - "null"
-          - string
-        description: Description or details about the company attribute.
-      admin_id:
-        type:
-          - "null"
-          - string
-        description: The ID of the admin user associated with the company.
-      api_writable:
-        type:
-          - "null"
-          - boolean
-        description: Indicates whether the field is writable through the API.
-      archived:
-        type:
-          - "null"
-          - boolean
-        description: Flag to indicate if the company data is archived.
-      created_at:
-        type:
-          - "null"
-          - integer
-        description: Timestamp when the company data was created.
-      custom:
-        type:
-          - "null"
-          - boolean
-        description: Custom attribute specific to the company.
-      data_type:
-        type:
-          - "null"
-          - string
-        description: Type of data stored in the attribute field.
-      full_name:
-        type:
-          - "null"
-          - string
-        description: Full name associated with the company.
-      id:
-        type:
-          - "null"
-          - integer
-        description: Unique ID assigned to the company attribute.
-      label:
-        type:
-          - "null"
-          - string
-        description: Label or display name for the company attribute.
-      messenger_writable:
-        type:
-          - "null"
-          - boolean
-        description: Indicates whether the field is writable through the messenger.
-      model:
-        type:
-          - "null"
-          - string
-        description: Model or schema used for storing the company attribute.
-      name:
-        type:
-          - "null"
-          - string
-        description: Name of the company attribute.
-      options:
-        description: Available options or values for the company attribute.
-        anyOf:
-          - type: array
-            items:
-              type: string
-          - type: "null"
-      ui_writable:
-        type:
-          - "null"
-          - boolean
-        description: Indicates whether the field is writable through the UI.
-      updated_at:
-        type:
-          - "null"
-          - integer
-        description: Timestamp when the company data was last updated.
-  contact_attributes:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: The type of contact attribute (e.g., text, number, boolean).
-      description:
-        type:
-          - "null"
-          - string
-        description: Description of the contact attribute for better understanding.
-      admin_id:
-        type:
-          - "null"
-          - string
-        description: Unique identifier for the admin associated with the contact attribute.
-      api_writable:
-        type:
-          - "null"
-          - boolean
-        description: Indicates whether the attribute is writable via API.
-      archived:
-        type:
-          - "null"
-          - boolean
-        description: Flag to signify if the contact attribute is archived.
-      created_at:
-        type:
-          - "null"
-          - integer
-        description: Timestamp of when the contact attribute was created.
-      custom:
-        type:
-          - "null"
-          - boolean
-        description: Indicates if the attribute is a custom user-defined field.
-      data_type:
-        type:
-          - "null"
-          - string
-        description: The data type of the contact attribute value.
-      full_name:
-        type:
-          - "null"
-          - string
-        description: The full name associated with the contact attribute.
-      id:
-        type:
-          - "null"
-          - integer
-        description: Unique identifier for the contact attribute.
-      label:
-        type:
-          - "null"
-          - string
-        description: Label representing the attribute in user interfaces.
-      messenger_writable:
-        type:
-          - "null"
-          - boolean
-        description: Indicates whether the attribute is writable via messenger.
-      model:
-        type:
-          - "null"
-          - string
-        description: Model to which the contact attribute is associated.
-      name:
-        type:
-          - "null"
-          - string
-        description: The name of the contact attribute.
-      options:
-        type:
-          - "null"
-          - array
-        description: List of available options for the attribute.
-        items:
-          type:
-            - "null"
-            - string
-      ui_writable:
-        type:
-          - "null"
-          - boolean
-        description: Indicates whether the attribute is writable via user interface.
-      updated_at:
-        type:
-          - "null"
-          - integer
-        description: Timestamp of when the contact attribute was last updated.
-  contacts:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: Type of contact.
-      android_app_name:
-        type:
-          - "null"
-          - string
-        description: The name of the Android app associated with the contact.
-      android_app_version:
-        type:
-          - "null"
-          - string
-        description: The version of the Android app associated with the contact.
-      android_device:
-        type:
-          - "null"
-          - string
-        description: The device used by the contact for Android.
-      android_last_seen_at:
-        type:
-          - "null"
-          - string
-        description: The date and time when the contact was last seen on Android.
-        format: date-time
-      android_os_version:
-        type:
-          - "null"
-          - string
-        description: The operating system version of the Android device.
-      android_sdk_version:
-        type:
-          - "null"
-          - string
-        description: The SDK version of the Android device.
-      avatar:
-        type:
-          - "null"
-          - string
-        description: URL pointing to the contact's avatar image.
-      browser:
-        type:
-          - "null"
-          - string
-        description: The browser used by the contact.
-      browser_language:
-        type:
-          - "null"
-          - string
-        description: The language preference set in the contact's browser.
-      browser_version:
-        type:
-          - "null"
-          - string
-        description: The version of the browser used by the contact.
-      companies:
-        type:
-          - "null"
-          - object
-        description: Companies associated with the contact.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: Type of connection with the companies.
-          data:
-            type:
-              - "null"
-              - array
-            description: Array of company data associated with the contact.
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type:
-                    - "null"
-                    - string
-                  description: Type of company.
-                id:
-                  type:
-                    - "null"
-                    - string
-                  description: The unique identifier of the company.
-                url:
-                  type:
-                    - "null"
-                    - string
-                  description: URL of the company.
-          has_more:
-            type:
-              - "null"
-              - boolean
-            description: Flag indicating if there are more companies to load.
-          total_count:
-            type:
-              - "null"
-              - integer
-            description: Total count of companies associated with the contact.
-          url:
-            type:
-              - "null"
-              - string
-            description: URL to access more company information.
-      created_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the contact was created.
-      custom_attributes:
-        type:
-          - "null"
-          - object
-        description: Custom attributes defined for the contact.
-        additionalProperties: true
-        properties: {}
-      email:
-        type:
-          - "null"
-          - string
-        description: The email address of the contact.
-      external_id:
-        type:
-          - "null"
-          - string
-        description: External identifier for the contact.
-      has_hard_bounced:
-        type:
-          - "null"
-          - boolean
-        description: Flag indicating if the contact has hard bounced.
-      id:
-        type:
-          - "null"
-          - string
-        description: The unique identifier of the contact.
-      ios_app_name:
-        type:
-          - "null"
-          - string
-        description: The name of the iOS app associated with the contact.
-      ios_app_version:
-        type:
-          - "null"
-          - string
-        description: The version of the iOS app associated with the contact.
-      ios_device:
-        type:
-          - "null"
-          - string
-        description: The device used by the contact for iOS.
-      ios_last_seen_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the contact was last seen on iOS.
-      ios_os_version:
-        type:
-          - "null"
-          - string
-        description: The operating system version of the iOS device.
-      ios_sdk_version:
-        type:
-          - "null"
-          - string
-        description: The SDK version of the iOS device.
-      language_override:
-        type:
-          - "null"
-          - string
-        description: Language override set for the contact.
-      last_contacted_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the contact was last contacted.
-      last_email_clicked_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the contact last clicked an email.
-      last_email_opened_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the contact last opened an email.
-      last_replied_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the contact last replied.
-      last_seen_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the contact was last seen overall.
-      location:
-        type:
-          - "null"
-          - object
-        description: Location details of the contact.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: Type of location.
-          city:
-            type:
-              - "null"
-              - string
-            description: City of the contact's location.
-          continent_code:
-            type:
-              - "null"
-              - string
-            description: Continent code of the contact's location.
-          country:
-            type:
-              - "null"
-              - string
-            description: Country of the contact's location.
-          country_code:
-            type:
-              - "null"
-              - string
-            description: Country code of the contact's location.
-          region:
-            type:
-              - "null"
-              - string
-            description: Region of the contact's location.
-      marked_email_as_spam:
-        type:
-          - "null"
-          - boolean
-        description: Flag indicating if the contact's email was marked as spam.
-      name:
-        type:
-          - "null"
-          - string
-        description: The name of the contact.
-      notes:
-        type:
-          - "null"
-          - object
-        description: Notes associated with the contact.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: Type of connection with the notes.
-          data:
-            type:
-              - "null"
-              - array
-            description: Array of note data associated with the contact.
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type:
-                    - "null"
-                    - string
-                  description: Type of note.
-                id:
-                  type:
-                    - "null"
-                    - string
-                  description: The unique identifier of the note.
-                url:
-                  type:
-                    - "null"
-                    - string
-                  description: URL of the note.
-          has_more:
-            type:
-              - "null"
-              - boolean
-            description: Flag indicating if there are more notes to load.
-          total_count:
-            type:
-              - "null"
-              - integer
-            description: Total count of notes associated with the contact.
-          url:
-            type:
-              - "null"
-              - string
-            description: URL to access more note information.
-      opted_in_subscription_types:
-        type:
-          - "null"
-          - object
-        description: Subscription types the contact opted into.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: Type of connection with the subscription types.
-          data:
-            type:
-              - "null"
-              - array
-            description: Array of subscription type data opted into by the contact.
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type:
-                    - "null"
-                    - string
-                  description: Type of subscription.
-                id:
-                  type:
-                    - "null"
-                    - string
-                  description: The unique identifier of the subscription type.
-                url:
-                  type:
-                    - "null"
-                    - string
-                  description: URL of the subscription type.
-          has_more:
-            type:
-              - "null"
-              - boolean
-            description: Flag indicating if there are more subscription types to load.
-          total_count:
-            type:
-              - "null"
-              - integer
-            description: Total count of subscription types the contact opted into.
-          url:
-            type:
-              - "null"
-              - string
-            description: URL to access more subscription type information.
-      opted_out_subscription_types:
-        type:
-          - "null"
-          - object
-        description: Subscription types the contact opted out from.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: Type of connection with the subscription types.
-          data:
-            type:
-              - "null"
-              - array
-            description: Array of subscription type data opted out from by the contact.
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type:
-                    - "null"
-                    - string
-                  description: Type of subscription.
-                id:
-                  type:
-                    - "null"
-                    - string
-                  description: The unique identifier of the subscription type.
-                url:
-                  type:
-                    - "null"
-                    - string
-                  description: URL of the subscription type.
-          has_more:
-            type:
-              - "null"
-              - boolean
-            description: Flag indicating if there are more subscription types to load.
-          total_count:
-            type:
-              - "null"
-              - integer
-            description: Total count of subscription types the contact opted out from.
-          url:
-            type:
-              - "null"
-              - string
-            description: URL to access more subscription type information.
-      os:
-        type:
-          - "null"
-          - string
-        description: Operating system of the contact's device.
-      owner_id:
-        type:
-          - "null"
-          - integer
-        description: The unique identifier of the contact's owner.
-      phone:
-        type:
-          - "null"
-          - string
-        description: The phone number of the contact.
-      referrer:
-        type:
-          - "null"
-          - string
-        description: Referrer information related to the contact.
-      role:
-        type:
-          - "null"
-          - string
-        description: Role or position of the contact.
-      signed_up_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the contact signed up.
-      sms_consent:
-        type:
-          - "null"
-          - boolean
-        description: Consent status for SMS communication.
-      social_profiles:
-        type:
-          - "null"
-          - object
-        description: Social profiles associated with the contact.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: Type of social profile connection.
-          data:
-            type:
-              - "null"
-              - array
-            description: Array of social profile data associated with the contact.
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type:
-                    - "null"
-                    - string
-                  description: Type of social profile.
-                name:
-                  type:
-                    - "null"
-                    - string
-                  description: Name of the social profile.
-                url:
-                  type:
-                    - "null"
-                    - string
-                  description: URL of the social profile.
-      tags:
-        type:
-          - "null"
-          - object
-        description: Tags associated with the contact.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: Type of connection with the tags.
-          data:
-            type:
-              - "null"
-              - array
-            description: Array of tag data associated with the contact.
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type:
-                    - "null"
-                    - string
-                  description: Type of tag.
-                id:
-                  type:
-                    - "null"
-                    - string
-                  description: The unique identifier of the tag.
-                url:
-                  type:
-                    - "null"
-                    - string
-                  description: URL of the tag.
-          has_more:
-            type:
-              - "null"
-              - boolean
-            description: Flag indicating if there are more tags to load.
-          total_count:
-            type:
-              - "null"
-              - integer
-            description: Total count of tags associated with the contact.
-          url:
-            type:
-              - "null"
-              - string
-            description: URL to access more tag information.
-      unsubscribed_from_emails:
-        type:
-          - "null"
-          - boolean
-        description: Flag indicating if the contact unsubscribed from emails.
-      unsubscribed_from_sms:
-        type:
-          - "null"
-          - boolean
-        description: Flag indicating if the contact unsubscribed from SMS.
-      updated_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the contact was last updated.
-      utm_campaign:
-        type:
-          - "null"
-          - string
-        description: Campaign data from UTM parameters.
-      utm_content:
-        type:
-          - "null"
-          - string
-        description: Content data from UTM parameters.
-      utm_medium:
-        type:
-          - "null"
-          - string
-        description: Medium data from UTM parameters.
-      utm_source:
-        type:
-          - "null"
-          - string
-        description: Source data from UTM parameters.
-      utm_term:
-        type:
-          - "null"
-          - string
-        description: Term data from UTM parameters.
-      workspace_id:
-        type:
-          - "null"
-          - string
-        description: The unique identifier of the workspace associated with the contact.
-  conversations:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: The type of the conversation
-      admin_assignee_id:
-        type:
-          - "null"
-          - integer
-        description: The ID of the administrator assigned to the conversation
-      assignee:
-        type:
-          - "null"
-          - object
-        description: The assigned user responsible for the conversation.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of the assignee (e.g., admin, agent)
-          email:
-            type:
-              - "null"
-              - string
-            description: The email of the assignee
-          id:
-            type:
-              - "null"
-              - string
-            description: The ID of the assignee
-          name:
-            type:
-              - "null"
-              - string
-            description: The name of the assignee
-      contacts:
-        type:
-          - "null"
-          - object
-        description: List of contacts involved in the conversation.
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            type:
-              type:
-                - "null"
-                - string
-              description: The type of the contact
-            id:
-              type:
-                - "null"
-                - string
-              description: The ID of the contact
-      conversation_message:
-        type:
-          - "null"
-          - object
-        description: The main message content of the conversation.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of the conversation message
-          attachments:
-            description: Attachments in the conversation message
-            anyOf:
-              - type: array
-                items:
-                  type: object
-                  properties:
-                    type:
-                      type:
-                        - "null"
-                        - string
-                    content_type:
-                      type:
-                        - "null"
-                        - string
-                    filesize:
-                      type:
-                        - "null"
-                        - integer
-                    height:
-                      type:
-                        - "null"
-                        - integer
-                    name:
-                      type:
-                        - "null"
-                        - string
-                    url:
-                      type:
-                        - "null"
-                        - string
-                    width:
-                      type:
-                        - "null"
-                        - integer
-              - type: "null"
-          author:
-            type:
-              - "null"
-              - object
-            description: The author of the conversation message.
-            properties:
-              type:
-                type:
-                  - "null"
-                  - string
-                description: The type of the author (e.g., admin, customer)
-              email:
-                type:
-                  - "null"
-                  - string
-                description: The email of the author of the message
-              id:
-                type:
-                  - "null"
-                  - string
-                description: The ID of the author of the message
-              name:
-                type:
-                  - "null"
-                  - string
-                description: The name of the author of the message
-          body:
-            type:
-              - "null"
-              - string
-            description: The body/content of the conversation message
-          delivered_as:
-            type:
-              - "null"
-              - string
-            description: The delivery status of the message
-          id:
-            type:
-              - "null"
-              - string
-            description: The ID of the conversation message
-          subject:
-            type:
-              - "null"
-              - string
-            description: The subject of the conversation message
-          url:
-            type:
-              - "null"
-              - string
-            description: The URL of the conversation message
-      conversation_rating:
-        type:
-          - "null"
-          - object
-        description: Ratings given to the conversation by the customer and teammate.
-        properties:
-          created_at:
-            type:
-              - "null"
-              - integer
-            description: The timestamp when the rating was created
-          customer:
-            type:
-              - "null"
-              - object
-            description: Rating given by the customer.
-            properties:
-              type:
-                type:
-                  - "null"
-                  - string
-                description: The type of the customer providing the rating
-              id:
-                type:
-                  - "null"
-                  - string
-                description: The ID of the customer who provided the rating
-          rating:
-            type:
-              - "null"
-              - integer
-            description: The rating given to the conversation
-          remark:
-            type:
-              - "null"
-              - string
-            description: Any remarks provided with the rating
-          teammate:
-            type:
-              - "null"
-              - object
-            description: Rating given by the teammate.
-            properties:
-              type:
-                type:
-                  - "null"
-                  - string
-                description: The type of the teammate being rated
-              id:
-                type:
-                  - "null"
-                  - integer
-                description: The ID of the teammate being rated
-      created_at:
-        type:
-          - "null"
-          - integer
-        description: The timestamp when the conversation was created
-      custom_attributes:
-        type:
-          - "null"
-          - object
-        description: Custom attributes associated with the conversation
-      customer_first_reply:
-        type:
-          - "null"
-          - object
-        description: Timestamp indicating when the customer first replied.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of the first customer reply
-          created_at:
-            type:
-              - "null"
-              - integer
-            description: The timestamp of the customer's first reply
-          url:
-            type:
-              - "null"
-              - string
-            description: The URL of the first customer reply
-      customers:
-        description: List of customers involved in the conversation
-        anyOf:
-          - type: array
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type:
-                    - "null"
-                    - string
-                id:
-                  type:
-                    - "null"
-                    - string
-          - type: "null"
-      first_contact_reply:
-        type:
-          - "null"
-          - object
-        description: Timestamp indicating when the first contact replied.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of the first contact reply
-          created_at:
-            type:
-              - "null"
-              - integer
-            description: The timestamp of the first contact's reply
-          url:
-            type:
-              - "null"
-              - string
-            description: The URL of the first contact reply
-      id:
-        type:
-          - "null"
-          - string
-        description: The unique ID of the conversation
-      open:
-        type:
-          - "null"
-          - boolean
-        description: Indicates if the conversation is open or closed
-      priority:
-        type:
-          - "null"
-          - string
-        description: The priority level of the conversation
-      read:
-        type:
-          - "null"
-          - boolean
-        description: Indicates if the conversation has been read
-      redacted:
-        type:
-          - "null"
-          - boolean
-        description: Indicates if the conversation is redacted
-      sent_at:
-        type:
-          - "null"
-          - integer
-        description: The timestamp when the conversation was sent
-      sla_applied:
-        type:
-          - "null"
-          - object
-        description: Service Level Agreement details applied to the conversation.
-        properties:
-          sla_name:
-            type:
-              - "null"
-              - string
-            description: The name of the SLA applied
-          sla_status:
-            type:
-              - "null"
-              - string
-            description: The status of the SLA applied
-      snoozed_until:
-        type:
-          - "null"
-          - integer
-        description: Timestamp until the conversation is snoozed
-      source:
-        type:
-          - "null"
-          - object
-        description: Source details of the conversation.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of the source
-          attachments:
-            type:
-              - "null"
-              - array
-            description: Attachments related to the conversation.
-            items:
-              type:
-                - "null"
-                - object
-              additionalProperties: true
-              properties: {}
-          author:
-            type:
-              - "null"
-              - object
-            description: Author of the source.
-            properties:
-              type:
-                type:
-                  - "null"
-                  - string
-                description: The type of the source author (e.g., admin, customer)
-              email:
-                type:
-                  - "null"
-                  - string
-                description: The email of the source author
-              id:
-                type:
-                  - "null"
-                  - string
-                description: The ID of the source author
-              name:
-                type:
-                  - "null"
-                  - string
-                description: The name of the source author
-          body:
-            type:
-              - "null"
-              - string
-            description: The body/content of the source
-          delivered_as:
-            type:
-              - "null"
-              - string
-            description: The delivery status of the source
-          id:
-            type:
-              - "null"
-              - string
-            description: The ID of the source
-          redacted:
-            type:
-              - "null"
-              - boolean
-            description: Indicates if the source is redacted
-          subject:
-            type:
-              - "null"
-              - string
-            description: The subject of the source
-          url:
-            type:
-              - "null"
-              - string
-            description: The URL of the source
-      state:
-        type:
-          - "null"
-          - string
-        description: The state of the conversation (e.g., new, in progress)
-      statistics:
-        type:
-          - "null"
-          - object
-        description: Statistics related to the conversation.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of conversation statistics
-          count_assignments:
-            type:
-              - "null"
-              - integer
-            description: The total count of assignments for the conversation
-          count_conversation_parts:
-            type:
-              - "null"
-              - integer
-            description: The total count of conversation parts
-          count_reopens:
-            type:
-              - "null"
-              - integer
-            description: The total count of conversation reopens
-          first_admin_reply_at:
-            type:
-              - "null"
-              - integer
-            description: Timestamp of the first admin reply
-          first_assignment_at:
-            type:
-              - "null"
-              - integer
-            description: Timestamp of the first assignment
-          first_close_at:
-            type:
-              - "null"
-              - integer
-            description: Timestamp of the first conversation close
-          first_contact_reply_at:
-            type:
-              - "null"
-              - integer
-            description: Timestamp of the first contact reply
-          last_admin_reply_at:
-            type:
-              - "null"
-              - integer
-            description: Timestamp of the last admin reply
-          last_assignment_admin_reply_at:
-            type:
-              - "null"
-              - integer
-            description: Timestamp of the last assignment admin reply
-          last_assignment_at:
-            type:
-              - "null"
-              - integer
-            description: Timestamp of the last assignment
-          last_close_at:
-            type:
-              - "null"
-              - integer
-            description: Timestamp of the last conversation close
-          last_closed_by_id:
-            type:
-              - "null"
-              - integer
-            description: The ID of the last user who closed the conversation
-          last_contact_reply_at:
-            type:
-              - "null"
-              - integer
-            description: Timestamp of the last contact reply
-          median_time_to_reply:
-            type:
-              - "null"
-              - integer
-            description: The median time taken to reply to the conversation
-          time_to_admin_reply:
-            type:
-              - "null"
-              - integer
-            description: Time taken to reply by admin
-          time_to_assignment:
-            type:
-              - "null"
-              - integer
-            description: Time taken for assignment
-          time_to_first_close:
-            type:
-              - "null"
-              - integer
-            description: Time taken to first close the conversation
-          time_to_last_close:
-            type:
-              - "null"
-              - integer
-            description: Time taken to last close the conversation
-      tags:
-        type:
-          - "null"
-          - object
-        description: Tags applied to the conversation.
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            type:
-              type:
-                - "null"
-                - string
-              description: The type of the tag
-            applied_at:
-              type:
-                - "null"
-                - integer
-              description: Timestamp when the tag was applied
-            applied_by:
-              type:
-                - "null"
-                - object
-              description: User who applied the tag.
-              properties:
-                type:
-                  type:
-                    - "null"
-                    - string
-                  description: The type of the user who applied the tag
-                id:
-                  type:
-                    - "null"
-                    - string
-                  description: The ID of the user who applied the tag
-            id:
-              type:
-                - "null"
-                - string
-              description: The ID of the tag
-            name:
-              type:
-                - "null"
-                - string
-              description: The name of the tag
-      team_assignee_id:
-        type:
-          - "null"
-          - integer
-        description: The ID of the team assigned to the conversation
-      teammates:
-        type:
-          - "null"
-          - object
-        description: List of teammates involved in the conversation.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of teammates
-          admins:
-            type:
-              - "null"
-              - array
-            description: Admin teammates involved in the conversation.
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type:
-                    - "null"
-                    - string
-                  description: The type of the teammate (admin)
-                id:
-                  type:
-                    - "null"
-                    - string
-                  description: The ID of the teammate admin
-      title:
-        type:
-          - "null"
-          - string
-        description: The title of the conversation
-      topics:
-        type:
-          - "null"
-          - object
-        description: Topics associated with the conversation.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of topics
-          topics:
-            type:
-              - "null"
-              - array
-            description: List of topics related to the conversation.
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                type:
-                  type:
-                    - "null"
-                    - string
-                  description: The type of the topic
-                id:
-                  type:
-                    - "null"
-                    - integer
-                  description: The ID of the topic
-                name:
-                  type:
-                    - "null"
-                    - string
-                  description: The name of the topic
-          total_count:
-            type:
-              - "null"
-              - integer
-            description: The total count of topics
-      updated_at:
-        type:
-          - "null"
-          - integer
-        description: The timestamp when the conversation was last updated
-      user:
-        type:
-          - "null"
-          - object
-        description: The user related to the conversation.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of the user
-          id:
-            type:
-              - "null"
-              - string
-            description: The ID of the user associated with the conversation
-      waiting_since:
-        type:
-          - "null"
-          - integer
-        description: Timestamp since waiting for a response
-  conversation_parts:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: The type of conversation part, such as message or note.
-      assigned_to:
-        description: >-
-          The user or team member who is assigned to handle this conversation
-          part.
-        oneOf:
-          - type: object
-            properties:
-              type:
-                type:
-                  - "null"
-                  - string
-              id:
-                type:
-                  - "null"
-                  - string
-          - type: string
-          - type: "null"
-      attachments:
-        type:
-          - "null"
-          - array
-        description: Represents the attachments associated with the conversation part.
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            type:
-              type:
-                - "null"
-                - string
-              description: The type or category of the attachment.
-            content_type:
-              type:
-                - "null"
-                - string
-              description: The MIME type of the attachment content.
-            filesize:
-              type:
-                - "null"
-                - integer
-              description: The size of the attachment file in bytes.
-            height:
-              type:
-                - "null"
-                - integer
-              description: The height dimension of the attachment in pixels.
-            name:
-              type:
-                - "null"
-                - string
-              description: The filename or name of the attachment.
-            url:
-              type:
-                - "null"
-                - string
-              description: The URL or location where the attachment can be accessed.
-            width:
-              type:
-                - "null"
-                - integer
-              description: The width dimension of the attachment in pixels.
-      author:
-        type:
-          - "null"
-          - object
-        description: Represents the author of the conversation part.
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-            description: The type of author, such as customer or agent.
-          email:
-            type:
-              - "null"
-              - string
-            description: The email address of the conversation author.
-          id:
-            type:
-              - "null"
-              - string
-            description: The unique identifier of the conversation author.
-          name:
-            type:
-              - "null"
-              - string
-            description: The name of the conversation author.
-      body:
-        type:
-          - "null"
-          - string
-        description: The main content or message body of the conversation part.
-      conversation_created_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the conversation was created.
-      conversation_id:
-        type:
-          - "null"
-          - string
-        description: The unique identifier of the conversation.
-      conversation_total_parts:
-        type:
-          - "null"
-          - integer
-        description: The total number of parts in the conversation.
-      conversation_updated_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the conversation was last updated.
-      created_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the conversation part was created.
-      external_id:
-        type:
-          - "null"
-          - string
-        description: An external identifier associated with the conversation part.
-      id:
-        type:
-          - "null"
-          - string
-        description: The unique identifier of the conversation part.
-      notified_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the conversation part was last notified.
-      part_type:
-        type:
-          - "null"
-          - string
-        description: The type or category of the conversation part.
-      redacted:
-        type:
-          - "null"
-          - boolean
-        description: Indicates if the conversation part has been redacted or censored.
-      updated_at:
-        type:
-          - "null"
-          - integer
-        description: The date and time when the conversation part was last updated.
-  company_segments:
-    type: object
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - "null"
-          - string
-        description: The category or type of the company segment.
-      count:
-        type:
-          - "null"
-          - integer
-        description: The count of company segments returned in the response.
-      created_at:
-        type:
-          - "null"
-          - integer
-        description: The timestamp when the company segment was created.
-      id:
-        type:
-          - "null"
-          - string
-        description: The unique identifier associated with the company segment.
-      name:
-        type:
-          - "null"
-          - string
-        description: The name of the company segment.
-      person_type:
-        type:
-          - "null"
-          - string
-        description: The type of person associated with the company segment.
-      updated_at:
-        type:
-          - "null"
-          - integer
-        description: The timestamp when the company segment was last updated.
