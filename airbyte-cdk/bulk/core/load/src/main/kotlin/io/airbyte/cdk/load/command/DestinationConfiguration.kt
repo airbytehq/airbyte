@@ -61,7 +61,8 @@ import java.nio.file.Path
  * ```
  */
 abstract class DestinationConfiguration : Configuration {
-    open val recordBatchSizeBytes: Long = 200L * 1024L * 1024L
+    open val recordBatchSizeBytes: Long = DEFAULT_RECORD_BATCH_SIZE_BYTES
+    open val processEmptyFiles: Boolean = false
     open val tmpFileDirectory: Path = Path.of("airbyte-cdk-load")
 
     /** Memory queue settings */
@@ -83,6 +84,15 @@ abstract class DestinationConfiguration : Configuration {
      * current work after a failure.
      */
     open val gracefulCancellationTimeoutMs: Long = 60 * 1000L // 1 minutes
+
+    open val numProcessRecordsWorkers: Int = 2
+    open val numProcessBatchWorkers: Int = 5
+    open val numProcessBatchWorkersForFileTransfer: Int = 3
+    open val batchQueueDepth: Int = 10
+
+    companion object {
+        const val DEFAULT_RECORD_BATCH_SIZE_BYTES = 200L * 1024L * 1024L
+    }
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and

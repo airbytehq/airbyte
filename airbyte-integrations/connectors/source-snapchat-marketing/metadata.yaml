@@ -4,11 +4,11 @@ data:
       - accounts.snapchat.com
       - adsapi.snapchat.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
   connectorSubtype: api
   connectorType: source
   definitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
-  dockerImageTag: 1.3.2
+  dockerImageTag: 1.3.6
   dockerRepository: airbyte/source-snapchat-marketing
   githubIssueLabel: source-snapchat-marketing
   icon: snapchat.svg

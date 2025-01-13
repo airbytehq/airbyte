@@ -14,12 +14,14 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedWriter
+import java.io.File
 import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
+import kotlin.io.path.writeText
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -27,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.apache.commons.lang3.RandomStringUtils
+import org.junit.jupiter.api.Assertions.assertFalse
 
 private val logger = KotlinLogging.logger {}
 
@@ -37,6 +40,8 @@ class DockerizedDestination(
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     private val testName: String,
+    useFileTransfer: Boolean,
+    envVars: Map<String, String>,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
@@ -53,6 +58,7 @@ class DockerizedDestination(
 
     private val stdoutDrained = CompletableDeferred<Unit>()
     private val stderrDrained = CompletableDeferred<Unit>()
+    private val fileTransferMountSource = Files.createTempDirectory("tmp")
 
     init {
         // This is largely copied from the old cdk's DockerProcessFactory /
@@ -73,6 +79,11 @@ class DockerizedDestination(
         // and is also mounted as a volume.
         val jobRoot = Files.createDirectories(workspaceRoot.resolve("job"))
 
+        // This directory is being used for the file transfer feature.
+        if (useFileTransfer) {
+            val file = Files.createFile(fileTransferMountSource.resolve("test_file"))
+            file.writeText("123")
+        }
         // Extract the string "destination-foo" from "gcr.io/airbyte/destination-foo:1.2.3".
         // The old code had a ton of extra logic here, along with a max string
         // length (docker container names must be <128 chars) - none of that
@@ -83,6 +94,12 @@ class DockerizedDestination(
         val shortImageName = imageTag.substringAfterLast("/").substringBefore(":")
         val containerName = "$shortImageName-$command-$randomSuffix"
         logger.info { "Creating docker container $containerName" }
+        logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
+        val additionalEnvEntries =
+            envVars.flatMap { (key, value) ->
+                logger.info { "Env vars: $key loaded" }
+                listOf("-e", "$key=$value")
+            }
 
         val cmd: MutableList<String> =
             (listOf(
@@ -103,10 +120,16 @@ class DockerizedDestination(
                     String.format("%s:%s", workspaceRoot, "/data"),
                     "-v",
                     String.format("%s:%s", localRoot, "/local"),
+                    "-v",
+                    "$fileTransferMountSource:/tmp",
+                    "-e",
+                    "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE=1",
+                    "-e",
+                    "USE_FILE_TRANSFER=$useFileTransfer",
                 ) +
+                    additionalEnvEntries +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
-
                         // Yes, we hardcode the job ID to 0.
                         // Also yes, this is available in the configured catalog
                         // via the syncId property.
@@ -211,6 +234,11 @@ class DockerizedDestination(
         destinationStdin.newLine()
     }
 
+    override fun sendMessage(string: String) {
+        destinationStdin.write(string)
+        destinationStdin.newLine()
+    }
+
     override fun readMessages(): List<AirbyteMessage> {
         return destinationOutput.newMessages()
     }
@@ -239,6 +267,11 @@ class DockerizedDestination(
     override fun kill() {
         process.destroyForcibly()
     }
+
+    override fun verifyFileDeleted() {
+        val file = File(fileTransferMountSource.resolve("test_file").toUri())
+        assertFalse(file.exists())
+    }
 }
 
 class DockerizedDestinationFactory(
@@ -249,6 +282,8 @@ class DockerizedDestinationFactory(
         command: String,
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
+        useFileTransfer: Boolean,
+        envVars: Map<String, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
@@ -257,6 +292,8 @@ class DockerizedDestinationFactory(
             configContents,
             catalog,
             testName,
+            useFileTransfer,
+            envVars,
             *featureFlags,
         )
     }

@@ -4,10 +4,11 @@
 
 
 import pytest
+from source_airtable.streams import AirtableStream
+
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_airtable.streams import AirtableStream
 
 
 @pytest.fixture

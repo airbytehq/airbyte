@@ -10,9 +10,11 @@ from typing import Any
 
 import backoff
 import pendulum
+from facebook_business.exceptions import FacebookRequestError
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from facebook_business.exceptions import FacebookRequestError
+
 
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/

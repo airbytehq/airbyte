@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.mock_integration_test
 
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
+import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.Untyped
 import org.junit.jupiter.api.Disabled
@@ -18,7 +18,7 @@ class MockBasicFunctionalityIntegrationTest :
         MockDestinationSpecification::class.java,
         MockDestinationDataDumper,
         NoopDestinationCleaner,
-        NoopExpectedRecordMapper,
+        UncoercedExpectedRecordMapper,
         NoopNameMapper,
         isStreamSchemaRetroactive = false,
         supportsDedup = true,
@@ -27,6 +27,8 @@ class MockBasicFunctionalityIntegrationTest :
         preserveUndeclaredFields = true,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        envVars = emptyMap(),
+        supportFileTransfer = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -34,7 +36,6 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    @Disabled
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
     }
@@ -74,6 +75,7 @@ class MockBasicFunctionalityIntegrationTest :
         super.testAppendSchemaEvolution()
     }
 
+    @Disabled("flaky")
     @Test
     override fun testDedup() {
         super.testDedup()

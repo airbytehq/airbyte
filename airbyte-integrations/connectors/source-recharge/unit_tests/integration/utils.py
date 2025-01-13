@@ -8,10 +8,11 @@ from lib2to3.pgen2.literals import test
 from typing import Any, List, Mapping, Optional
 from unittest import TestCase
 
+from source_recharge import SourceRecharge
+
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
-from source_recharge import SourceRecharge
 
 from .config import ConfigBuilder
 from .request_builder import RequestBuilder

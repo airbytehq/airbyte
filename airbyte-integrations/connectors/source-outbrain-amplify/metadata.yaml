@@ -3,7 +3,7 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorTestSuitesOptions:
     - suite: unitTests
@@ -16,7 +16,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: 4fe962d0-a70e-4516-aa99-c551abf46352
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.26
   dockerRepository: airbyte/source-outbrain-amplify
   documentationUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
   githubIssueLabel: source-outbrain-amplify

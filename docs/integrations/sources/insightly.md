@@ -72,6 +72,12 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.8 | 2025-01-11 | [51161](https://github.com/airbytehq/airbyte/pull/51161) | Update dependencies |
+| 0.3.7 | 2024-12-28 | [50631](https://github.com/airbytehq/airbyte/pull/50631) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [50087](https://github.com/airbytehq/airbyte/pull/50087) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49646](https://github.com/airbytehq/airbyte/pull/49646) | Update dependencies |
+| 0.3.4 | 2024-12-12 | [49243](https://github.com/airbytehq/airbyte/pull/49243) | Update dependencies |
+| 0.3.3 | 2024-12-11 | [48288](https://github.com/airbytehq/airbyte/pull/48288) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.2 | 2024-10-29 | [47917](https://github.com/airbytehq/airbyte/pull/47917) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44140](https://github.com/airbytehq/airbyte/pull/44140) | Refactor connector to manifest-only format |

@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 import semver
+
 from pipelines.helpers.changelog import Changelog, ChangelogParsingException
 
 pytestmark = [

@@ -8,6 +8,7 @@ from http import HTTPStatus
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
+
 LOGGER = logging.getLogger("airbyte")
 
 

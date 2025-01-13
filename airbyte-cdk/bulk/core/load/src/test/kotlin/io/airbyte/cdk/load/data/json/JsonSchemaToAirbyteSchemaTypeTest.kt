@@ -52,6 +52,14 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         Assertions.assertTrue(airbyteType is IntegerType)
     }
 
+    /** Note: this is nonstandard, but some sources apparently use it. */
+    @Test
+    fun testInt() {
+        val integerType = ofType("int")
+        val airbyteType = JsonSchemaToAirbyteType().convert(integerType)
+        Assertions.assertTrue(airbyteType is IntegerType)
+    }
+
     @Test
     fun testNumber() {
         val numberType = ofType("number")
@@ -242,5 +250,12 @@ class JsonSchemaToAirbyteSchemaTypeTest {
                 .deserializeToNode() as ObjectNode
         val airbyteType = JsonSchemaToAirbyteType().convert(inputSchema)
         Assertions.assertEquals(UnionType.of(StringType, IntegerType), airbyteType)
+    }
+
+    @Test
+    fun testUnrecognizedStringFormats() {
+        val schemaNode = ofType("string").put("format", "foo")
+        val airbyteType = JsonSchemaToAirbyteType().convert(schemaNode)
+        Assertions.assertTrue(airbyteType is StringType)
     }
 }
