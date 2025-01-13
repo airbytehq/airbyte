@@ -53,7 +53,7 @@ data:
         upgradeDeadline: "2024-03-11"
       5.0.0:
         message: The PK for the stream `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` has been removed to prevent incorrect record deduplication in Full Refresh (Overwrite + Deduped) and Incremental (Append + Deduped) sync modes. Users will need to refresh the source schema and reset this stream after upgrading.
-        upgradeDeadline: "2025-01-15"
+        upgradeDeadline: "2025-02-03"
         deadlineAction: "auto_upgrade"
   supportLevel: certified
   tags:
