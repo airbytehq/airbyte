@@ -135,6 +135,7 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.4 | 2025-01-10 | [51487](https://github.com/airbytehq/airbyte/pull/51487) | Use a non root base image |
 | 0.5.3 | 2024-12-18 | [49883](https://github.com/airbytehq/airbyte/pull/49883) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.5.2 | 2024-02-13 | [35225](https://github.com/airbytehq/airbyte/pull/35225) | Adopt CDK 0.20.4 |
 | 0.5.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
