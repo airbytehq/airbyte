@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.9.1"
+version = "4.11.4"
 name = "source-s3"
 description = "Source implementation for S3."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -22,7 +22,7 @@ wcmatch = "==8.4"
 dill = "==0.3.4"
 transformers = "4.38.2"
 urllib3 = "<2"
-airbyte-cdk = {extras = ["file-based"], version = "^5.7.4"}
+airbyte-cdk = {extras = ["file-based"], version = "^6.5.2"}
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"

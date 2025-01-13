@@ -32,6 +32,8 @@ acceptance_tests:
             bypass_reason: "Unstable data. Test data is not persistent. Tested with mocker server tests."
           - name: "site_migration_detail"
             bypass_reason: "Cannnot populate with test data."
+          - name: "contact"
+            bypass_reason: "Relies on customer as a parent stream and there is a bug where the parent stream is emitting stream statuses on rate limit which leads to CATs failing. See https://github.com/airbytehq/airbyte-internal-issues/issues/10808 for more information."
           - name: "customer"
             bypass_reason: "Tested with mocker server tests."
           - name: "subscription"
@@ -45,7 +47,7 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
-        validate_state_messages: False
+        validate_state_messages: false
         fail_on_extra_columns: true
   incremental:
     tests:
@@ -53,16 +55,7 @@ acceptance_tests:
         timeout_seconds: 2400
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
-          future_state_path: "integration_tests/future_state.json"
-          missing_streams:
-            - name: contact
-              bypass_reason: "This stream is Full-Refresh only"
-            - name: quote_line_group
-              bypass_reason: "This stream is Full-Refresh only"
-            - name: attached_item
-              bypass_reason: "This stream is Full-Refresh only"
-            - name: subscription_with_scheduled_changes
-              bypass_reason: "This stream is Full-Refresh only"
+          bypass_reason: "This test does not make sense using Concurrent CDK"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

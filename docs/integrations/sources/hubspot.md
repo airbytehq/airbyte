@@ -75,6 +75,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
 | `goals`                     | `crm.objects.goals.read`                                                                                     |
+| `leads`                     | `crm.objects.leads.read`, `crm.schemas.leads.read`                                                   |
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
@@ -176,6 +177,7 @@ The HubSpot source connector supports the following streams:
 - [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 - [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
 - [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
+- [Leads](https://developers.hubspot.com/docs/api/crm/leads) \(Incremental\)
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 - [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
 - [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
@@ -336,6 +338,17 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.7 | 2025-01-11 | [51146](https://github.com/airbytehq/airbyte/pull/51146) | Update dependencies |
+| 4.4.6 | 2025-01-04 | [50898](https://github.com/airbytehq/airbyte/pull/50898) | Update dependencies |
+| 4.4.5 | 2024-12-28 | [50669](https://github.com/airbytehq/airbyte/pull/50669) | Update dependencies |
+| 4.4.4 | 2024-12-21 | [50138](https://github.com/airbytehq/airbyte/pull/50138) | Update dependencies |
+| 4.4.3 | 2024-12-14 | [48984](https://github.com/airbytehq/airbyte/pull/48984) | Update dependencies |
+| 4.4.2 | 2024-12-10 | [48480](https://github.com/airbytehq/airbyte/pull/48480) | Adds individual read scopes to LineItems Stream |
+| 4.4.1 | 2024-11-25 | [48662](https://github.com/airbytehq/airbyte/pull/48662) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 4.4.0 | 2024-11-18 | [48548](https://github.com/airbytehq/airbyte/pull/48548) | Promoting release candidate 4.4.0-rc.1 to a main version. |
+| 4.4.0-rc.1 | 2024-11-18 | [48472](https://github.com/airbytehq/airbyte/pull/48472) | Adds support to maintain use of legacy fields for `Contacts`, `Deals`, and `DealsArchived` streams: `hs_lifecyclestage_{stage_id}_date`, `hs_date_entered_{stage_id}`, `hs_date_exited_{stage_id}`, `hs_time_in_{stage_id}`. |
+| 4.3.0  | 2024-11-15 | [44481](https://github.com/airbytehq/airbyte/pull/44481) | Add `Leads` stream |
+| 4.2.26 | 2024-11-04 | [48199](https://github.com/airbytehq/airbyte/pull/48199) | Update dependencies |
 | 4.2.25 | 2024-10-29 | [47028](https://github.com/airbytehq/airbyte/pull/47028) | Update dependencies |
 | 4.2.24 | 2024-10-12 | [46827](https://github.com/airbytehq/airbyte/pull/46827) | Update dependencies |
 | 4.2.23 | 2024-10-05 | [46494](https://github.com/airbytehq/airbyte/pull/46494) | Update dependencies |

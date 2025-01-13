@@ -12,6 +12,7 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageReposi
 
 from .source import SourceAmazonSellerPartner
 
+
 logger = logging.getLogger("airbyte_logger")
 
 

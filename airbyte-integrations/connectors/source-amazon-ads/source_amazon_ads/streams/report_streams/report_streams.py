@@ -15,10 +15,12 @@ from urllib.parse import urljoin
 import backoff
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
+from pendulum import Date
+
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from pendulum import Date
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 from source_amazon_ads.utils import get_typed_env, iterate_one_by_one
 
@@ -49,6 +51,9 @@ class TooManyRequests(Exception):
     """
     Custom exception occured when response with 429 status code received
     """
+
+
+CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
 class ReportStream(BasicAmazonAdsStream, ABC):
@@ -85,7 +90,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._session = requests.Session()
         self._session.auth = authenticator
         self._report_download_session = self._session
-        self._start_date: Optional[Date] = config.get("start_date")
+        self._start_date: Optional[str] = (
+            pendulum.from_format(config["start_date"], CONFIG_DATE_FORMAT).date() if config.get("start_date") else None
+        )
         self._look_back_window: int = config["look_back_window"]
         # Timeout duration in minutes for Reports. Default is 180 minutes.
         self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
@@ -122,7 +129,14 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return
         profile = stream_slice["profile"]
         report_date = stream_slice[self.cursor_field]
-        report_info_list = self._init_and_try_read_records(profile, report_date)
+        try:
+            report_info_list = self._init_and_try_read_records(profile, report_date)
+        except TooManyRequests as e:
+            raise AirbyteTracedException(
+                failure_type=FailureType.transient_error,
+                message=f"Too many requests on resource {e}. Please retry later",
+                internal_message=f"Errors received from the API were: {e}",
+            )
         self._update_state(profile, report_date)
 
         for report_info in report_info_list:
@@ -250,7 +264,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             session = self._report_download_session if is_download_report else self._session
             response = session.get(url, headers=headers)
         if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            raise TooManyRequests()
+            raise TooManyRequests("429: Too many requests during report creation. Please try again later...")
         return response
 
     def get_date_range(self, start_date: Date, timezone: str) -> Iterable[str]:
@@ -264,7 +278,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         today = pendulum.today(tz=profile["timezone"]).date()
         start_date = stream_state.get(str(profile["profileId"]), {}).get(self.cursor_field)
         if start_date:
-            start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT).date()
+            start_date = pendulum.parse(start_date).date()
             # Taking date from state if it's not older than 60 days
             return max(start_date, today.subtract(days=self.REPORTING_PERIOD))
         if self._start_date:
@@ -279,7 +293,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         stream_state = stream_state or {}
         no_data = True
 
@@ -298,9 +311,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @state.setter
     def state(self, value):
         self._state = deepcopy(value)
-
-    def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
-        return self._state
 
     def _update_state(self, profile: dict[str, Any], report_date: str):
         report_date = pendulum.from_format(report_date, self.REPORT_DATE_FORMAT).date()
