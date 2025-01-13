@@ -46,11 +46,6 @@ def find_mandatory_reviewers() -> List[Dict[str, Union[str, Dict[str, List]]]]:
             "teams": list(CERTIFIED_MANIFEST_ONLY_CONNECTOR_REVIEWERS),
             "is_required": find_changed_manifest_only_connectors(support_level="certified"),
         },
-        {
-            "name": "Manifest-only community connectors",
-            "teams": list(COMMUNITY_MANIFEST_ONLY_CONNECTOR_REVIEWERS),
-            "is_required": find_changed_manifest_only_connectors(support_level="community"),
-        },
     ]
 
     return [{"name": r["name"], "teams": r["teams"]} for r in requirements if r["is_required"]]
