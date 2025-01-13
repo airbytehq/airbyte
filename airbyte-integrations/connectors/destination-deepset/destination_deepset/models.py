@@ -18,20 +18,6 @@ __all__ = [
     "DeepsetCloudFile",
     "FileData",
     "Filetypes",
-    "SUPPORTED_FILE_EXTENSIONS",
-]
-
-SUPPORTED_FILE_EXTENSIONS = [
-    ".csv",
-    ".docx",
-    ".html",
-    ".json",
-    ".md",
-    ".txt",
-    ".pdf",
-    ".pptx",
-    ".xlsx",
-    ".xml",
 ]
 
 
@@ -96,10 +82,6 @@ class DeepsetCloudFile(BaseModel):
     name: str = Field(title="Name", description="File Name")
     content: AnyStr = Field(title="Content", description="File Content")
     meta: Dict[str, Any] = Field(default_factory={}, title="Meta Data", description="File Meta Data")
-
-    @property
-    def extension(self) -> str:
-        return Path(self.name).suffix
 
     @property
     def meta_as_string(self) -> str:

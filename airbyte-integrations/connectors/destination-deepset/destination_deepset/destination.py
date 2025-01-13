@@ -88,6 +88,7 @@ class DestinationDeepset(Destination):
             writer = DeepsetCloudFileWriter.factory(config)
             writer.client.health_check()
         except Exception as ex:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Failed to connect to deepset cloud, reason: {ex!s}")
-        else:
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            message = f"Failed to connect to deepset cloud, reason: {ex!s}"
+            return AirbyteConnectionStatus(status=Status.FAILED, message=message)
+
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
