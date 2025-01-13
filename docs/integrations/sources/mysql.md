@@ -226,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.10.1 | 2025-01-10 | [51510](https://github.com/airbytehq/airbyte/pull/51510) | Use a non root base image |
 | 3.10.0 | 2025-01-09 | [51008](https://github.com/airbytehq/airbyte/pull/51008) | Promoting release candidate 3.10.0-rc.9 to a main version. |
 | 3.10.0-rc.9 | 2025-01-08 | [50987](https://github.com/airbytehq/airbyte/pull/50987)   | Increase Debezium shutdown timeout.                                                                                                             |
 | 3.10.0-rc.8 | 2025-01-07 | [50965](https://github.com/airbytehq/airbyte/pull/50965)   | Fix bug introduced in 3.10.0-rc.3.                                                                                                              |
