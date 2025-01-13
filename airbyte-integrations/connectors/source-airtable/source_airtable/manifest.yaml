@@ -85,7 +85,6 @@ definitions:
     airtable_stream:
       type: DeclarativeStream
       name: airtable_stream
-      primary_key: id
       retriever:
         type: SimpleRetriever
         requester:
@@ -94,6 +93,7 @@ definitions:
           http_method: GET
         record_selector:
           type: RecordSelector
+          schema_normalization: Default
           extractor:
             type: DpathExtractor
             field_path:
