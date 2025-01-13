@@ -323,6 +323,16 @@
                 "min": 4,
                 "max": 24,
                 "always_show": true
+              },
+              "debezium_shutdown_timeout_seconds": {
+                "type": "integer",
+                "default": 60,
+                "description": "The amount of time to allow the Debezium Engine to shut down, in seconds.",
+                "title": "Debezium Engine Shutdown Timeout in Seconds (Advanced)",
+                "order": 3,
+                "min": 1,
+                "max": 3600,
+                "always_show": true
               }
             },
             "required": ["cursor_method"]

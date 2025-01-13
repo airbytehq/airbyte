@@ -368,6 +368,15 @@ class CdcCursorConfigurationSpecification : IncrementalConfigurationSpecificatio
     @JsonSchemaDefault("8")
     @JsonSchemaInject(json = """{"order":2,"min":4,"max":24,"always_show":true}""")
     var initialLoadTimeoutHours: Int? = 8
+
+    @JsonProperty("debezium_shutdown_timeout_seconds")
+    @JsonSchemaTitle("Debezium Engine Shutdown Timeout in Seconds (Advanced)")
+    @JsonPropertyDescription(
+        "The amount of time to allow the Debezium Engine to shut down, in seconds.",
+    )
+    @JsonSchemaDefault("60")
+    @JsonSchemaInject(json = """{"order":3,"min":1,"max":3600,"always_show":true}""")
+    var debeziumShutdownTimeoutSeconds: Int? = 60
 }
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.cursor")
@@ -375,6 +384,7 @@ class MicronautPropertiesFriendlyCursorConfigurationSpecification {
     var cursorMethod: String = "user_defined"
     var invalidCdcCursorPositionBehavior: String? = null
     var initialLoadTimeoutHours: Int? = null
+    var debeziumShutdownTimeoutSeconds: Int? = null
 
     fun asIncrementalConfigurationSpecification(): IncrementalConfigurationSpecification =
         when (cursorMethod) {
@@ -383,6 +393,7 @@ class MicronautPropertiesFriendlyCursorConfigurationSpecification {
                 CdcCursorConfigurationSpecification().also {
                     it.invalidCdcCursorPositionBehavior = invalidCdcCursorPositionBehavior
                     it.initialLoadTimeoutHours = initialLoadTimeoutHours
+                    it.debeziumShutdownTimeoutSeconds = debeziumShutdownTimeoutSeconds
                 }
             else -> throw ConfigErrorException("invalid value $cursorMethod")
         }

@@ -272,6 +272,10 @@ class OracleSourceDebeziumOperations(
             .with("$CONVERTER_KEY.type", OracleAirbyteCustomConverter::class.qualifiedName!!)
             .with("zero_scale.type", NumberToZeroScaleConverter::class.qualifiedName!!)
             .with("boolean.type", NumberOneToBooleanConverter::class.qualifiedName!!)
+            .with(
+                "debezium.embedded.shutdown.pause.before.interrupt.ms",
+                configuration.cdc!!.shutdownTimeout.toMillis().toString(),
+            )
             .buildMap()
     }
 

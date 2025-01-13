@@ -40,12 +40,10 @@ data class OracleSourceConfiguration(
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
-    override val global = incremental is CdcIncrementalConfiguration
-    override val maxSnapshotReadDuration: Duration? =
-        when (incremental) {
-            UserDefinedCursorIncrementalConfiguration -> null
-            is CdcIncrementalConfiguration -> incremental.initialLoadTimeout
-        }
+    val cdc: CdcIncrementalConfiguration? = incremental as? CdcIncrementalConfiguration
+
+    override val global: Boolean = cdc != null
+    override val maxSnapshotReadDuration: Duration? = cdc?.initialLoadTimeout
 
     /** Required to inject [OracleSourceConfiguration] directly. */
     @Factory
@@ -67,6 +65,7 @@ data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
 data class CdcIncrementalConfiguration(
     val initialLoadTimeout: Duration,
     val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
+    val shutdownTimeout: Duration,
 ) : IncrementalConfiguration
 
 enum class InvalidCdcCursorPositionBehavior {
@@ -155,6 +154,8 @@ class OracleSourceConfigurationFactory :
                                         "Unknown value ${inc.invalidCdcCursorPositionBehavior}"
                                     )
                             },
+                        shutdownTimeout =
+                            Duration.ofSeconds(inc.debeziumShutdownTimeoutSeconds!!.toLong()),
                     )
             }
         return OracleSourceConfiguration(
