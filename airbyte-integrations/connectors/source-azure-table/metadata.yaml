@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 798ae795-5189-42b6-b64e-3cb91db93338
-  dockerImageTag: 0.1.30
+  dockerImageTag: 0.1.32
   dockerRepository: airbyte/source-azure-table
   githubIssueLabel: source-azure-table
   icon: azureblobstorage.svg

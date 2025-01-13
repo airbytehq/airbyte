@@ -30,6 +30,9 @@ Visit `https://github.com/buzzsprout/buzzsprout-api/tree/master?tab=readme-ov-fi
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.10 | 2025-01-11 | [51284](https://github.com/airbytehq/airbyte/pull/51284) | Update dependencies |
+| 0.0.9 | 2024-12-28 | [50479](https://github.com/airbytehq/airbyte/pull/50479) | Update dependencies |
+| 0.0.8 | 2024-12-21 | [50153](https://github.com/airbytehq/airbyte/pull/50153) | Update dependencies |
 | 0.0.7 | 2024-12-14 | [49564](https://github.com/airbytehq/airbyte/pull/49564) | Update dependencies |
 | 0.0.6 | 2024-12-12 | [49278](https://github.com/airbytehq/airbyte/pull/49278) | Update dependencies |
 | 0.0.5 | 2024-12-11 | [49029](https://github.com/airbytehq/airbyte/pull/49029) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

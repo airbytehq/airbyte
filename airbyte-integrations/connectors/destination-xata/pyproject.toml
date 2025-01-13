@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.28"
+version = "0.1.32"
 name = "destination-xata"
 description = "Destination implementation for Xata.io"
 authors = [ "Philip Krauss <philip@xata.io> <support@xata.io>",]

@@ -32,6 +32,9 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.8 | 2025-01-11 | [51208](https://github.com/airbytehq/airbyte/pull/51208) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50614](https://github.com/airbytehq/airbyte/pull/50614) | Update dependencies |
+| 0.2.6 | 2024-12-21 | [50111](https://github.com/airbytehq/airbyte/pull/50111) | Update dependencies |
 | 0.2.5 | 2024-12-14 | [49647](https://github.com/airbytehq/airbyte/pull/49647) | Update dependencies |
 | 0.2.4 | 2024-12-12 | [49235](https://github.com/airbytehq/airbyte/pull/49235) | Update dependencies |
 | 0.2.3 | 2024-12-11 | [47810](https://github.com/airbytehq/airbyte/pull/47810) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
