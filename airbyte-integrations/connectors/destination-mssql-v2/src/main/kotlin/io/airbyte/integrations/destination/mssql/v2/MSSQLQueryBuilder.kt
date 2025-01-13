@@ -146,6 +146,9 @@ class MSSQLQueryBuilder(
     fun getFinalTableInsertColumnHeader(): String =
         getFinalTableInsertColumnHeader(fqTableName, finalTableSchema)
 
+    fun deletePreviousGenerations(minGenerationId: Long): String =
+        deleteWhere(fqTableName, minGenerationId)
+
     fun populateStatement(
         statement: PreparedStatement,
         record: DestinationRecordAirbyteValue,
@@ -232,6 +235,12 @@ class MSSQLQueryBuilder(
                     ${airbyteTypeToSqlSchema(schema, separator = ",\n                    ")}
                 );
             END
+        """.trimIndent()
+
+    private fun deleteWhere(fqTableName: String, minGenerationId: Long) =
+        """
+            DELETE FROM $fqTableName
+            WHERE $AIRBYTE_GENERATION_ID < $minGenerationId
         """.trimIndent()
 
     private fun getFinalTableInsertColumnHeader(
