@@ -202,6 +202,20 @@ object MySqlSourceDatatypeTestOperations :
             "NULL" to "null",
         )
 
+    val tinyInt1Values =
+        mapOf(
+            "1" to "true",
+            "0" to "false",
+            "NULL" to "null",
+        )
+
+    val tinyInt1DefaultTrueValues =
+        mapOf(
+            "1" to "true",
+            "0" to "false",
+            "NULL" to "true",
+        )
+
     val enumValues =
         mapOf(
             "'a'" to """"a"""",
@@ -293,6 +307,16 @@ object MySqlSourceDatatypeTestOperations :
                     "TINYINT UNSIGNED",
                     tinyintValues,
                     LeafAirbyteSchemaType.INTEGER,
+                ),
+                MySqlSourceDatatypeTestCase(
+                    "TINYINT(1)",
+                    tinyInt1Values,
+                    LeafAirbyteSchemaType.BOOLEAN,
+                ),
+                MySqlSourceDatatypeTestCase(
+                    "TINYINT(1) NOT NULL DEFAULT 1",
+                    tinyInt1DefaultTrueValues,
+                    LeafAirbyteSchemaType.BOOLEAN,
                 ),
                 MySqlSourceDatatypeTestCase(
                     "SMALLINT",
