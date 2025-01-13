@@ -19,7 +19,16 @@ def get_current_git_revision() -> str:  # noqa D103
 
 
 def get_current_git_branch() -> str:  # noqa D103
-    return git.Repo(search_parent_directories=True).active_branch.name
+    repo = git.Repo(search_parent_directories=True)
+    try:
+        if repo.head.is_detached:
+            # Return a meaningful string or the detached HEAD commit hash
+            return f"Detached HEAD at {repo.head.commit.hexsha}"
+        return repo.active_branch.name
+    except Exception as e:
+        # Gracefully handle unexpected errors
+        return f"Error retrieving branch: {e}"
+
 
 
 async def get_modified_files_in_branch_remote(
