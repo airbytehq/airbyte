@@ -58,6 +58,9 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.6 | 2025-01-11 | [51372](https://github.com/airbytehq/airbyte/pull/51372) | Update dependencies |
+| 0.2.5 | 2024-12-28 | [50703](https://github.com/airbytehq/airbyte/pull/50703) | Update dependencies |
+| 0.2.4 | 2024-12-21 | [50281](https://github.com/airbytehq/airbyte/pull/50281) | Update dependencies |
 | 0.2.3 | 2024-12-14 | [49667](https://github.com/airbytehq/airbyte/pull/49667) | Update dependencies |
 | 0.2.2 | 2024-12-12 | [49046](https://github.com/airbytehq/airbyte/pull/49046) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [47539](https://github.com/airbytehq/airbyte/pull/47539) | Update dependencies |

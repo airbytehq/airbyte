@@ -65,6 +65,9 @@ The Tyntec SMS connector should not run into limitations under normal usage. Ple
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------ |
+| 0.2.9 | 2025-01-11 | [51439](https://github.com/airbytehq/airbyte/pull/51439) | Update dependencies |
+| 0.2.8 | 2024-12-28 | [50783](https://github.com/airbytehq/airbyte/pull/50783) | Update dependencies |
+| 0.2.7 | 2024-12-21 | [50364](https://github.com/airbytehq/airbyte/pull/50364) | Update dependencies |
 | 0.2.6 | 2024-12-14 | [49793](https://github.com/airbytehq/airbyte/pull/49793) | Update dependencies |
 | 0.2.5 | 2024-12-12 | [49431](https://github.com/airbytehq/airbyte/pull/49431) | Update dependencies |
 | 0.2.4 | 2024-12-11 | [49110](https://github.com/airbytehq/airbyte/pull/49110) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

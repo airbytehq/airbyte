@@ -92,6 +92,9 @@ Because of the way API works some syncs may take a long time to finish. Timeout 
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.28 | 2025-01-11 | [51446](https://github.com/airbytehq/airbyte/pull/51446) | Update dependencies |
+| 1.0.27 | 2024-12-28 | [50769](https://github.com/airbytehq/airbyte/pull/50769) | Update dependencies |
+| 1.0.26 | 2024-12-21 | [50375](https://github.com/airbytehq/airbyte/pull/50375) | Update dependencies |
 | 1.0.25 | 2024-12-14 | [49796](https://github.com/airbytehq/airbyte/pull/49796) | Update dependencies |
 | 1.0.24 | 2024-12-12 | [49425](https://github.com/airbytehq/airbyte/pull/49425) | Update dependencies |
 | 1.0.23 | 2024-11-25 | [48660](https://github.com/airbytehq/airbyte/pull/48660) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

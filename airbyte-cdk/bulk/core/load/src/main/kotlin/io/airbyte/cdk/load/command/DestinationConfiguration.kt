@@ -87,6 +87,7 @@ abstract class DestinationConfiguration : Configuration {
 
     open val numProcessRecordsWorkers: Int = 2
     open val numProcessBatchWorkers: Int = 5
+    open val numProcessBatchWorkersForFileTransfer: Int = 3
     open val batchQueueDepth: Int = 10
 
     companion object {

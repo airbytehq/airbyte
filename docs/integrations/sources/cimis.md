@@ -33,6 +33,9 @@ To get started, register and request your appKey from the [CIMIS website](https:
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.9 | 2025-01-11 | [51236](https://github.com/airbytehq/airbyte/pull/51236) | Update dependencies |
+| 0.0.8 | 2024-12-28 | [50453](https://github.com/airbytehq/airbyte/pull/50453) | Update dependencies |
+| 0.0.7 | 2024-12-21 | [50154](https://github.com/airbytehq/airbyte/pull/50154) | Update dependencies |
 | 0.0.6 | 2024-12-14 | [49565](https://github.com/airbytehq/airbyte/pull/49565) | Update dependencies |
 | 0.0.5 | 2024-12-12 | [49281](https://github.com/airbytehq/airbyte/pull/49281) | Update dependencies |
 | 0.0.4 | 2024-12-11 | [49024](https://github.com/airbytehq/airbyte/pull/49024) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

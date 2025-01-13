@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfffecb7-9a13-43e9-acdc-b92af7997ca9
-  dockerImageTag: 0.5.26
+  dockerImageTag: 0.5.30
   dockerRepository: airbyte/source-close-com
   documentationUrl: https://docs.airbyte.com/integrations/sources/close-com
   githubIssueLabel: source-close-com
