@@ -109,6 +109,7 @@ The Close.com connector is subject to rate limits. For more information on this 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| 0.5.30 | 2025-01-11 | [51119](https://github.com/airbytehq/airbyte/pull/51119) | Update dependencies |
 | 0.5.29 | 2025-01-04 | [50920](https://github.com/airbytehq/airbyte/pull/50920) | Update dependencies |
 | 0.5.28 | 2024-12-28 | [50532](https://github.com/airbytehq/airbyte/pull/50532) | Update dependencies |
 | 0.5.27 | 2024-12-21 | [50065](https://github.com/airbytehq/airbyte/pull/50065) | Update dependencies |
