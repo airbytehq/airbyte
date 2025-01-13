@@ -47,6 +47,11 @@ jobs:
     runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 360 # 6 hours
     steps:
+      - name: Install Python
+        id: install_python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Checkout Airbyte
         uses: actions/checkout@v4
       - name: Check PAT rate limits
