@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
-  dockerImageTag: 0.1.27
+  dockerImageTag: 0.1.30
   dockerRepository: airbyte/source-kyriba
   documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
   githubIssueLabel: source-kyriba

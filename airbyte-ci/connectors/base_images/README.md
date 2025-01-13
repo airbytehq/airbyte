@@ -42,7 +42,7 @@ RUN mkdir -p 755 /usr/share/nltk_data
 ### Example for `airbyte/java-connector-base`:
 ```dockerfile
 FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33
-RUN sh -c set -o xtrace && yum update -y --security && yum install -y tar openssl findutils && yum clean all
+RUN sh -c set -o xtrace && yum install -y shadow-utils tar openssl findutils && yum update -y --security && yum clean all && rm -rf /var/cache/yum && groupadd --gid 1000 airbyte && useradd --uid 1000 --gid airbyte --shell /bin/bash --create-home airbyte && mkdir /secrets && mkdir /config && mkdir --mode 755 /airbyte && mkdir --mode 755 /custom_cache && chown -R airbyte:airbyte /airbyte && chown -R airbyte:airbyte /custom_cache && chown -R airbyte:airbyte /secrets && chown -R airbyte:airbyte /config && chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && chown -R airbyte:airbyte /etc/pki/ca-trust && chown -R airbyte:airbyte /tmp
 ENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec
 ENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check
 ENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover
@@ -77,6 +77,9 @@ ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
 
 | Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
+|  2.0.0 | ✅| docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454 | ~Release non root base image~ |
+|  2.0.0-rc.2 | ✅| docker.io/airbyte/java-connector-base:2.0.0-rc.2@sha256:e5543b3de4c38e9ef45dba886bad5ee319b0d7bfe921f310c788f1d4466e25eb | Fine tune permissions and reproduce platform java base implementation |
+|  2.0.0-rc.1 | ✅| docker.io/airbyte/java-connector-base:2.0.0-rc.1@sha256:484b929684b9e4f60d06cde171ee0b8238802cb434403293fcede81c1e73c537 |  Make the java base image non root |
 |  1.0.0 | ✅| docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a | Create a base image for our java connectors based on Amazon Corretto. |
 |  1.0.0-rc.4 | ✅| docker.io/airbyte/java-connector-base:1.0.0-rc.4@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a | Bundle yum calls in a single RUN |
 |  1.0.0-rc.3 | ✅| docker.io/airbyte/java-connector-base:1.0.0-rc.3@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a |  |

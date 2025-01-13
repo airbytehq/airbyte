@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 084124ab-22db-4019-b36d-630418541bf7
-  dockerImageTag: 0.0.20
+  dockerImageTag: 0.0.24
   dockerRepository: airbyte/source-hardcoded-records
   documentationUrl: https://docs.airbyte.com/integrations/sources/hardcoded-records
   githubIssueLabel: source-hardcoded-records

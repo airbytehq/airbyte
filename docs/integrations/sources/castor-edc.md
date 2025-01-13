@@ -43,6 +43,9 @@ Visit `https://YOUR_REGION.castoredc.com/account/settings` for getting your clie
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-01-11 | [51244](https://github.com/airbytehq/airbyte/pull/51244) | Update dependencies |
+| 0.0.9 | 2024-12-28 | [50456](https://github.com/airbytehq/airbyte/pull/50456) | Update dependencies |
+| 0.0.8 | 2024-12-21 | [50156](https://github.com/airbytehq/airbyte/pull/50156) | Update dependencies |
 | 0.0.7 | 2024-12-14 | [49591](https://github.com/airbytehq/airbyte/pull/49591) | Update dependencies |
 | 0.0.6 | 2024-12-12 | [49289](https://github.com/airbytehq/airbyte/pull/49289) | Update dependencies |
 | 0.0.5 | 2024-12-11 | [49019](https://github.com/airbytehq/airbyte/pull/49019) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

@@ -51,6 +51,9 @@ Our source connector adheres to the standard rate limiting with the Airbyte low-
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.2.8 | 2025-01-11 | [51133](https://github.com/airbytehq/airbyte/pull/51133) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50576](https://github.com/airbytehq/airbyte/pull/50576) | Update dependencies |
+| 0.2.6 | 2024-12-21 | [50053](https://github.com/airbytehq/airbyte/pull/50053) | Update dependencies |
 | 0.2.5 | 2024-12-14 | [49495](https://github.com/airbytehq/airbyte/pull/49495) | Update dependencies |
 | 0.2.4 | 2024-12-12 | [49162](https://github.com/airbytehq/airbyte/pull/49162) | Update dependencies |
 | 0.2.3 | 2024-12-11 | [48943](https://github.com/airbytehq/airbyte/pull/48943) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

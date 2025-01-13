@@ -41,6 +41,7 @@ class DockerizedDestination(
     catalog: ConfiguredAirbyteCatalog?,
     private val testName: String,
     useFileTransfer: Boolean,
+    envVars: Map<String, String>,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
@@ -94,6 +95,12 @@ class DockerizedDestination(
         val containerName = "$shortImageName-$command-$randomSuffix"
         logger.info { "Creating docker container $containerName" }
         logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
+        val additionalEnvEntries =
+            envVars.flatMap { (key, value) ->
+                logger.info { "Env vars: $key loaded" }
+                listOf("-e", "$key=$value")
+            }
+
         val cmd: MutableList<String> =
             (listOf(
                     "docker",
@@ -120,6 +127,7 @@ class DockerizedDestination(
                     "-e",
                     "USE_FILE_TRANSFER=$useFileTransfer",
                 ) +
+                    additionalEnvEntries +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
                         // Yes, we hardcode the job ID to 0.
@@ -275,6 +283,7 @@ class DockerizedDestinationFactory(
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         useFileTransfer: Boolean,
+        envVars: Map<String, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
@@ -284,6 +293,7 @@ class DockerizedDestinationFactory(
             catalog,
             testName,
             useFileTransfer,
+            envVars,
             *featureFlags,
         )
     }

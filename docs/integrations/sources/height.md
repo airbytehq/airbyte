@@ -37,6 +37,9 @@ API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ---- | ---------------- |
+| 0.0.10 | 2025-01-11 | [51154](https://github.com/airbytehq/airbyte/pull/51154) | Update dependencies |
+| 0.0.9 | 2024-12-28 | [50610](https://github.com/airbytehq/airbyte/pull/50610) | Update dependencies |
+| 0.0.8 | 2024-12-21 | [50094](https://github.com/airbytehq/airbyte/pull/50094) | Update dependencies |
 | 0.0.7 | 2024-12-14 | [49597](https://github.com/airbytehq/airbyte/pull/49597) | Update dependencies |
 | 0.0.6 | 2024-12-12 | [49225](https://github.com/airbytehq/airbyte/pull/49225) | Update dependencies |
 | 0.0.5 | 2024-12-11 | [48977](https://github.com/airbytehq/airbyte/pull/48977) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

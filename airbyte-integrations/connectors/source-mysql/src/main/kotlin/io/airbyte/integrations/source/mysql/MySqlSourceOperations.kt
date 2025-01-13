@@ -19,7 +19,7 @@ import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
-import io.airbyte.cdk.jdbc.ByteFieldType
+import io.airbyte.cdk.jdbc.BytesFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
@@ -124,13 +124,7 @@ class MySqlSourceOperations :
 
     private fun leafType(type: SystemType): JdbcFieldType<*> {
         return when (MysqlType.getByName(type.typeName)) {
-            MysqlType.BIT -> {
-                if (type.precision!! > 1) {
-                    ByteFieldType
-                } else {
-                    BooleanFieldType
-                }
-            }
+            MysqlType.BIT -> if (type.precision == 1) BooleanFieldType else BytesFieldType
             MysqlType.BOOLEAN -> BooleanFieldType
             MysqlType.TINYINT,
             MysqlType.TINYINT_UNSIGNED,
@@ -141,12 +135,14 @@ class MySqlSourceOperations :
             MysqlType.MEDIUMINT_UNSIGNED,
             MysqlType.INT -> IntFieldType
             MysqlType.INT_UNSIGNED,
-            MysqlType.BIGINT,
+            MysqlType.BIGINT -> LongFieldType
             MysqlType.BIGINT_UNSIGNED -> BigIntegerFieldType
             MysqlType.FLOAT,
-            MysqlType.FLOAT_UNSIGNED -> FloatFieldType
+            MysqlType.FLOAT_UNSIGNED,
             MysqlType.DOUBLE,
-            MysqlType.DOUBLE_UNSIGNED -> DoubleFieldType
+            MysqlType.DOUBLE_UNSIGNED -> {
+                if ((type.precision ?: 0) <= 23) FloatFieldType else DoubleFieldType
+            }
             MysqlType.DECIMAL,
             MysqlType.DECIMAL_UNSIGNED -> {
                 if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
@@ -161,9 +157,9 @@ class MySqlSourceOperations :
             MysqlType.TEXT,
             MysqlType.MEDIUMTEXT,
             MysqlType.LONGTEXT,
-            MysqlType.JSON,
             MysqlType.ENUM,
             MysqlType.SET -> StringFieldType
+            MysqlType.JSON -> StringFieldType // TODO: replace this with JsonStringFieldType
             MysqlType.TINYBLOB,
             MysqlType.BLOB,
             MysqlType.MEDIUMBLOB,
@@ -172,10 +168,9 @@ class MySqlSourceOperations :
             MysqlType.VARBINARY,
             MysqlType.GEOMETRY -> BinaryStreamFieldType
             MysqlType.NULL -> NullFieldType
-            else -> {
-                print("test debug: unrecognized type: ${type.typeName}")
-                PokemonFieldType
-            }
+            MysqlType.VECTOR,
+            MysqlType.UNKNOWN,
+            null -> PokemonFieldType
         }
     }
 
@@ -213,13 +208,16 @@ class MySqlSourceOperations :
                 // chance of a row getting picked. This comes at a price of bias to the beginning
                 // of table on very large tables ( > 100s million of rows)
                 val greatestRate: String = 0.00005.toString()
+                // We only do a full count in case information schema contains no row count.
+                // This is the case for views.
+                val fullCount = "SELECT COUNT(*) FROM `$namespace`.`$name`"
                 // Quick approximation to "select count(*) from table" which doesn't require
                 // full table scan. However, note this could give delayed summary info about a table
                 // and thus a new table could be treated as empty despite we recently added rows.
                 // To prevent that from happening and resulted for skipping the table altogether,
                 // the minimum count is set to 10.
                 val quickCount =
-                    "SELECT GREATEST(10, table_rows) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'"
+                    "SELECT GREATEST(10, COALESCE(table_rows, ($fullCount))) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'"
                 val greatest = "GREATEST($greatestRate, $sampleSize / ($quickCount))"
                 // Rand returns a value between 0 and 1
                 val where = "WHERE RAND() < $greatest "
