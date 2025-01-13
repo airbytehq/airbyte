@@ -77,6 +77,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 2.1.8 | 2025-01-11 | [51218](https://github.com/airbytehq/airbyte/pull/51218) | Update dependencies |
 | 2.1.7 | 2024-12-28 | [50616](https://github.com/airbytehq/airbyte/pull/50616) | Update dependencies |
 | 2.1.6 | 2024-12-21 | [50089](https://github.com/airbytehq/airbyte/pull/50089) | Update dependencies |
 | 2.1.5 | 2024-12-14 | [49215](https://github.com/airbytehq/airbyte/pull/49215) | Update dependencies |
