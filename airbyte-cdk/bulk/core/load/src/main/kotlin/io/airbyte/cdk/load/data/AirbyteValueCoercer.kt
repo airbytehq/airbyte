@@ -126,10 +126,10 @@ object AirbyteValueCoercer {
 
     private inline fun <reified InputType : AirbyteValue, OutputType : AirbyteValue> requireType(
         value: AirbyteValue,
-        f: (InputType) -> OutputType,
+        convertToOutputType: (InputType) -> OutputType,
     ): OutputType? {
         return if (value is InputType) {
-            f(value)
+            convertToOutputType(value)
         } else {
             null
         }
