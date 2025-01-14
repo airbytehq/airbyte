@@ -25,7 +25,6 @@ class AirbyteValueWithMetaToOutputRecord {
                 Instant.ofEpochMilli(
                     value.values[Meta.COLUMN_NAME_AB_EXTRACTED_AT].let { v ->
                         when (v) {
-                            is IntegerValue -> v.value.toLong()
                             is TimestampWithTimezoneValue -> v.value.toEpochSecond()
                             else -> throw IllegalArgumentException("Invalid extractedAt value: $v")
                         }
