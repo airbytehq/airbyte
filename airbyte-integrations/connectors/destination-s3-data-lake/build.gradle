@@ -10,7 +10,7 @@ airbyteBulkConnector {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.iceberg.v2.IcebergDestination'
+    mainClass = 'io.airbyte.integrations.destination.s3_data_lake.S3DataLakeDestination'
 
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 

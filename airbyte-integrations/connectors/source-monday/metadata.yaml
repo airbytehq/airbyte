@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.1.8
+  dockerImageTag: 2.1.10
   releases:
     breakingChanges:
       2.0.0:
