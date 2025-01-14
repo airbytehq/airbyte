@@ -209,7 +209,6 @@ class SourceAmazonSellerPartner(AbstractSource):
                 BrandAnalyticsMarketBasketReports,
                 BrandAnalyticsSearchTermsReports,
                 BrandAnalyticsRepeatPurchaseReports,
-                SellerAnalyticsSalesAndTrafficReports,
                 VendorSalesReports,
                 VendorInventoryReports,
                 NetPureProductMarginReport,
