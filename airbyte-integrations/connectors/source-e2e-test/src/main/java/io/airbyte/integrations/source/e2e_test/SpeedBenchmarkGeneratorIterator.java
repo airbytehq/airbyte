@@ -17,6 +17,13 @@ import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 
 import java.time.Instant;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.CheckForNull;
 
 /**
@@ -28,17 +35,19 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
 
   private static final String fieldBase = "field";
   private static final String valueBase = "valuevaluevaluevaluevalue";
-  private static final AirbyteMessage message = new AirbyteMessage()
-      .withType(Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withEmittedAt(Instant.EPOCH.toEpochMilli()).withStream("stream1"));
-  private static final JsonNode jsonNode = Jsons.emptyObject();
+  private static final Long TIMEOUT_MS = TimeUnit.MINUTES.toMillis(1);
 
   private final long maxRecords;
-  private long numRecordsEmitted;
+  private final AtomicLong numRecordsEmitted;
+  private final Executor executor = Executors.newSingleThreadExecutor();
+  private final BlockingQueue<AirbyteMessage> buffer;
 
   public SpeedBenchmarkGeneratorIterator(final long maxRecords) {
     this.maxRecords = maxRecords;
-    numRecordsEmitted = 0;
+    numRecordsEmitted = new AtomicLong(0);
+    final int bufferCapacity = Long.valueOf(Math.round(maxRecords*.20)).intValue();
+    buffer = new LinkedBlockingQueue<>(Math.max(bufferCapacity, 1000));
+    executor.execute(this::generateData);
   }
 
   @CheckForNull
@@ -47,20 +56,42 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
   protected AirbyteMessage computeNext() {
     final Span span = GlobalTracer.get().buildSpan("computeNext").asChildOf(GlobalTracer.get().activeSpan()).start();
     try (final Scope ignored = GlobalTracer.get().activateSpan(span)) {
-      if (numRecordsEmitted == maxRecords) {
+      if (numRecordsEmitted.get() == maxRecords) {
         return endOfData();
       }
 
-      numRecordsEmitted++;
-
-      for (int j = 1; j <= 5; ++j) {
-        // do % 10 so that all records are same length.
-        ((ObjectNode) jsonNode).put(fieldBase + j, valueBase + numRecordsEmitted % 10);
+      try {
+        // Wait up to the timeout for data to be available.  If not, consider the generation side complete and end the stream
+        final AirbyteMessage message = buffer.poll(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        if (message != null) {
+          return Jsons.clone(message);
+        } else {
+          return endOfData();
+        }
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
       }
-
-      message.getRecord().withData(jsonNode);
-      return Jsons.clone(message);
     }
   }
 
+  private void generateData() {
+    while(numRecordsEmitted.get() < maxRecords) {
+      try {
+        final AirbyteMessage message = new AirbyteMessage()
+                .withType(Type.RECORD)
+                .withRecord(new AirbyteRecordMessage().withEmittedAt(Instant.EPOCH.toEpochMilli()).withStream("stream1"));
+        final JsonNode jsonNode = Jsons.emptyObject();
+        for (int j = 1; j <= 5; ++j) {
+          // do % 10 so that all records are same length.
+          ((ObjectNode) jsonNode).put(fieldBase + j, valueBase + numRecordsEmitted.get() % 10);
+        }
+
+        message.getRecord().withData(jsonNode);
+        buffer.put(message);
+        numRecordsEmitted.incrementAndGet();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
 }
