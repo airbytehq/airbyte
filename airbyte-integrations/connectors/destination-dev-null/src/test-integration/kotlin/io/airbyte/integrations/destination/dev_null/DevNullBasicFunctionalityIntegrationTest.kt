@@ -22,7 +22,7 @@ class DevNullBasicFunctionalityIntegrationTest :
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
         stringifySchemalessObjects = false,
-        promoteUnionToObject = false,
+        unionBehavior = false,
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
