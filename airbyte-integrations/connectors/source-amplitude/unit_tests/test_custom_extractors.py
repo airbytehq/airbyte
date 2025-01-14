@@ -11,10 +11,11 @@ from unittest.mock import MagicMock, patch
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.utils import AirbyteTracedException
 from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessionLengthRecordExtractor, EventsExtractor
 from source_amplitude.streams import Events
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 @pytest.mark.parametrize(
@@ -141,9 +142,9 @@ class TestEventsExtractor:
         "error_code, expectation",
         [
             (400, pytest.raises(AirbyteTracedException)),
-            (404, does_not_raise()), # does not raise because response action is IGNORE
+            (404, does_not_raise()),  # does not raise because response action is IGNORE
             (504, pytest.raises(AirbyteTracedException)),
-            (500, does_not_raise()), # does not raise because repsonse action is RETRY
+            (500, does_not_raise()),  # does not raise because repsonse action is RETRY
         ],
     )
     def test_event_errors_read(self, mocker, requests_mock, error_code, expectation):
@@ -195,7 +196,6 @@ class TestEventsExtractor:
         assert len(parsed_response) == records_count
 
         if content_is_valid:
-
             # RFC3339 pattern
             pattern = r"^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$"
 

@@ -4,17 +4,18 @@ from __future__ import annotations
 
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
+
 #  todo: this should be picked from manifest in the future
 GOOGLE_SHEETS_BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets"
 OAUTH_AUTHORIZATION_ENDPOINT = "https://oauth2.googleapis.com"
+
 
 class RequestBuilder:
     @classmethod
     def get_account_endpoint(cls) -> RequestBuilder:
         return cls(resource="values:batchGet")
 
-
-    def __init__(self, resource:str=None) -> None:
+    def __init__(self, resource: str = None) -> None:
         self._spreadsheet_id = None
         self._query_params = {}
         self._body = None

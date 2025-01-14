@@ -143,6 +143,8 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.3.5 | 2024-12-28 | [50796](https://github.com/airbytehq/airbyte/pull/50796) | Update dependencies |
+| 1.3.4 | 2024-12-21 | [50308](https://github.com/airbytehq/airbyte/pull/50308) | Update dependencies |
 | 1.3.3 | 2024-12-14 | [49414](https://github.com/airbytehq/airbyte/pull/49414) | Update dependencies |
 | 1.3.2 | 2024-11-05 | [48375](https://github.com/airbytehq/airbyte/pull/48375) | Re-implement advanced_auth in connector spec |
 | 1.3.1 | 2024-10-29 | [47837](https://github.com/airbytehq/airbyte/pull/47837) | Update dependencies |

@@ -42,7 +42,6 @@ class TestCheckConnectorIconIsAvailable:
         assert result.status == CheckStatus.FAILED
         assert result.message == "Icon file is not a SVG file"
 
-
     def test_fail_when_icon_file_is_not_valid_svg(self, tmp_path, mocker):
         # Arrange
         connector = mocker.MagicMock()

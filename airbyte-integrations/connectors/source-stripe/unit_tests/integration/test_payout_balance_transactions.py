@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
+from source_stripe import SourceStripe
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -21,7 +23,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
-from source_stripe import SourceStripe
+
 
 _STREAM_NAME = "payout_balance_transactions"
 _A_PAYOUT_ID = "a_payout_id"
@@ -118,7 +120,10 @@ class PayoutBalanceTransactionsFullRefreshTest(TestCase):
         config = _config().with_start_date(_START_DATE).build()
         http_mocker.get(
             _payouts_request().with_created_gte(_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
-            _payouts_response().with_record(_create_payout_record().with_id(_A_PAYOUT_ID)).with_record(_create_payout_record().with_id(_ANOTHER_PAYOUT_ID)).build(),
+            _payouts_response()
+            .with_record(_create_payout_record().with_id(_A_PAYOUT_ID))
+            .with_record(_create_payout_record().with_id(_ANOTHER_PAYOUT_ID))
+            .build(),
         )
         http_mocker.get(
             _balance_transactions_request().with_limit(100).with_payout(_A_PAYOUT_ID).build(),
@@ -160,8 +165,15 @@ class PayoutBalanceTransactionsIncrementalTest(TestCase):
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(_STATE_DATE.timestamp())}).build()
         catalog = _create_catalog(SyncMode.incremental)
         http_mocker.get(
-            _events_request().with_created_gte(_STATE_DATE + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
-            _events_response().with_record(_event_record().with_field(_DATA_FIELD, _create_payout_record().with_id(_A_PAYOUT_ID).build())).build(),
+            _events_request()
+            .with_created_gte(_STATE_DATE + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
+            _events_response()
+            .with_record(_event_record().with_field(_DATA_FIELD, _create_payout_record().with_id(_A_PAYOUT_ID).build()))
+            .build(),
         )
         http_mocker.get(
             _balance_transactions_request().with_limit(100).with_payout(_A_PAYOUT_ID).build(),

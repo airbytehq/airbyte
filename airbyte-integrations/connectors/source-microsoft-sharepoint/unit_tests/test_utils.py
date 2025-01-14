@@ -6,8 +6,9 @@ from http import HTTPStatus
 from unittest.mock import Mock, patch
 
 import pytest
-from airbyte_cdk import AirbyteTracedException
 from source_microsoft_sharepoint.utils import execute_query_with_retry, filter_http_urls
+
+from airbyte_cdk import AirbyteTracedException
 
 
 class MockResponse:
@@ -49,9 +50,10 @@ def test_execute_query_with_retry(status_code, retry_after_header, expected_retr
     obj = Mock()
     obj.execute_query = Mock(side_effect=MockException(status_code, {"Retry-After": retry_after_header}))
 
-    with patch("source_microsoft_sharepoint.utils.time.sleep") as mock_sleep, patch(
-        "source_microsoft_sharepoint.utils.datetime"
-    ) as mock_datetime:
+    with (
+        patch("source_microsoft_sharepoint.utils.time.sleep") as mock_sleep,
+        patch("source_microsoft_sharepoint.utils.datetime") as mock_datetime,
+    ):
         start_time = datetime(2021, 1, 1, 0, 0, 0)
         if retry_after_header:
             mock_datetime.now.side_effect = [start_time] * 2 + [

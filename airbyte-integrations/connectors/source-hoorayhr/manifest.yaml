@@ -1,0 +1,803 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: >-
+  Source connector for HoorayHR (https://hoorayhr.io). The connector uses
+  https://api.hoorayhr.io
+
+check:
+  type: CheckStream
+  stream_names:
+    - sick-leaves
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    time-off:
+      type: DeclarativeStream
+      name: time-off
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /time-off
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time-off"
+    leave-types:
+      type: DeclarativeStream
+      name: leave-types
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leave-types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leave-types"
+    sick-leaves:
+      type: DeclarativeStream
+      name: sick-leaves
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sick-leave
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sick-leaves"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.hooray.nl
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        path: authentication
+        url_base: https://api.hooray.nl
+        http_method: POST
+        authenticator:
+          type: NoAuth
+        request_headers: {}
+        request_body_json:
+          email: "{{ config[\"hoorayhrusername\"] }}"
+          password: "{{ config[\"hoorayhrpassword\"] }}"
+          strategy: local
+        request_parameters: {}
+      session_token_path:
+        - accessToken
+      request_authentication:
+        type: ApiKey
+        inject_into:
+          type: RequestOption
+          field_name: Authorization
+          inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/sick-leaves"
+  - $ref: "#/definitions/streams/time-off"
+  - $ref: "#/definitions/streams/leave-types"
+  - $ref: "#/definitions/streams/users"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - hoorayhrusername
+      - hoorayhrpassword
+    properties:
+      hoorayhrpassword:
+        type: string
+        order: 1
+        title: HoorayHR Password
+        airbyte_secret: true
+      hoorayhrusername:
+        type: string
+        order: 0
+        title: HoorayHR Username
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    users:
+      hasRecords: true
+      streamHash: 33982ec24949870d1dd15b7191b46c03296fd15d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    time-off:
+      hasRecords: true
+      streamHash: 768ac0388c513fc36cf2af868244f3e0e13997a2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    leave-types:
+      hasRecords: true
+      streamHash: aca371fa790b98baa7a814d47ca7e66d0b17c399
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sick-leaves:
+      hasRecords: true
+      streamHash: 2bb47034ff795f366f0bafa8258077020af607c0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    users: true
+    time-off: true
+    leave-types: true
+    sick-leaves: true
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      city:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      teams:
+        type:
+          - string
+          - "null"
+      avatar:
+        type:
+          - string
+          - "null"
+      gender:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      isAdmin:
+        type:
+          - number
+          - "null"
+      zipcode:
+        type:
+          - string
+          - "null"
+      initials:
+        type:
+          - string
+          - "null"
+      jobTitle:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      nickName:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      abilities:
+        type:
+          - array
+          - "null"
+      biography:
+        type:
+          - string
+          - "null"
+      birthdate:
+        type:
+          - string
+          - "null"
+      companyId:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      insertion:
+        type:
+          - string
+          - "null"
+      invitedAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      birthPlace:
+        type:
+          - string
+          - "null"
+      civilStatus:
+        type:
+          - string
+          - "null"
+      costCenters:
+        type:
+          - array
+          - "null"
+      nationality:
+        type:
+          - string
+          - "null"
+      onBoardedAt:
+        type:
+          - string
+          - "null"
+      birthCountry:
+        type:
+          - string
+          - "null"
+      emailPrivate:
+        type:
+          - string
+          - "null"
+      integrations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            enabled:
+              type:
+                - string
+                - "null"
+      addressNumber:
+        type:
+          - string
+          - "null"
+      addressStreet:
+        type:
+          - string
+          - "null"
+      emergencyName:
+        type:
+          - string
+          - "null"
+      holidayPolicy:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      lastNameUsage:
+        type:
+          - string
+          - "null"
+      companyEndDate:
+        type:
+          - string
+          - "null"
+      employeeNumber:
+        type:
+          - string
+          - "null"
+      addressAddition:
+        type:
+          - string
+          - "null"
+      holidayPolicyId:
+        type:
+          - number
+          - "null"
+      invitedByUserId:
+        type:
+          - number
+          - "null"
+      travelAllowance:
+        type:
+          - number
+          - "null"
+      companyEndReason:
+        type:
+          - string
+          - "null"
+      companyStartDate:
+        type:
+          - string
+          - "null"
+      inviteAcceptedAt:
+        type:
+          - string
+          - "null"
+      inviteRemindedAt:
+        type:
+          - string
+          - "null"
+      bankAccountNumber:
+        type:
+          - string
+          - "null"
+      emergencyRelation:
+        type:
+          - string
+          - "null"
+      emergencyWorkPhone:
+        type:
+          - string
+          - "null"
+      citizenServiceNumber:
+        type:
+          - string
+          - "null"
+      emergencyPersonalPhone:
+        type:
+          - string
+          - "null"
+      twoFactorAuthentication:
+        type:
+          - number
+          - "null"
+      bankAccountNumberOnBehalfOf:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  time-off:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      end:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      pause:
+        type:
+          - number
+          - "null"
+      reply:
+        type:
+          - string
+          - "null"
+      start:
+        type:
+          - string
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - object
+                - "null"
+              properties:
+                de:
+                  type:
+                    - string
+                    - "null"
+                en:
+                  type:
+                    - string
+                    - "null"
+                nl:
+                  type:
+                    - string
+                    - "null"
+            createdAt:
+              type:
+                - string
+                - "null"
+            updatedAt:
+              type:
+                - string
+                - "null"
+            archivedAt:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - number
+          - "null"
+      userId:
+        type:
+          - number
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      holidayId:
+        type:
+          - number
+          - "null"
+      isPrivate:
+        type:
+          - number
+          - "null"
+      leaveUnit:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      budgetTotal:
+        type:
+          - number
+          - "null"
+      leaveTypeId:
+        type:
+          - number
+          - "null"
+      timeOffType:
+        type:
+          - string
+          - "null"
+      userIdApproved:
+        type:
+          - number
+          - "null"
+      baseTimeOffType:
+        type:
+          - string
+          - "null"
+      isNotCalculated:
+        type:
+          - number
+          - "null"
+      leaveTypeRuleId:
+        type:
+          - number
+          - "null"
+      budgetAdjustment:
+        type:
+          - number
+          - "null"
+      budgetCalculated:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  leave-types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      icon:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      budget:
+        type:
+          - number
+          - "null"
+      default:
+        type:
+          - number
+          - "null"
+      isLegacy:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - number
+          - "null"
+      leaveInDays:
+        type:
+          - number
+          - "null"
+      unpaidLeave:
+        type:
+          - number
+          - "null"
+      periodOffset:
+        type:
+          - number
+          - "null"
+      leaveTypeRules:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            order:
+              type:
+                - number
+                - "null"
+            budget:
+              type:
+                - number
+                - "null"
+            createdAt:
+              type:
+                - string
+                - "null"
+            updatedAt:
+              type:
+                - string
+                - "null"
+            leaveTypeId:
+              type:
+                - number
+                - "null"
+            transferTerm:
+              type:
+                - number
+                - "null"
+            transferPeriod:
+              type:
+                - string
+                - "null"
+            expirationMoment:
+              type:
+                - string
+                - "null"
+            ruleSystemCategory:
+              type:
+                - string
+                - "null"
+      autoApproveLimit:
+        type:
+          - number
+          - "null"
+      subtractHolidays:
+        type:
+          - number
+          - "null"
+      calculationMethod:
+        type:
+          - string
+          - "null"
+      budgetReleaseTiming:
+        type:
+          - string
+          - "null"
+      invisibleInCalendar:
+        type:
+          - number
+          - "null"
+      budgetReleaseRecurrence:
+        type:
+          - string
+          - "null"
+      leaveTypeSystemCategory:
+        type:
+          - string
+          - "null"
+      accumulateBudgetWhenAbsent:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  sick-leaves:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      notes:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      userId:
+        type:
+          - number
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      percentage:
+        type:
+          - number
+          - "null"
+      actualStart:
+        type:
+          - string
+          - "null"
+      actualTotal:
+        type:
+          - number
+          - "null"
+      actualReturn:
+        type:
+          - string
+          - "null"
+      expectedTotal:
+        type:
+          - number
+          - "null"
+      reportedStart:
+        type:
+          - string
+          - "null"
+      actualStartEnd:
+        type:
+          - string
+          - "null"
+      expectedReturn:
+        type:
+          - string
+          - "null"
+      reportedReturn:
+        type:
+          - string
+          - "null"
+      userIdReported:
+        type:
+          - number
+          - "null"
+      actualReturnEnd:
+        type:
+          - string
+          - "null"
+      userIdConfirmed:
+        type:
+          - number
+          - "null"
+    additionalProperties: true

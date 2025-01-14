@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import dpath.util
+
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -13,6 +14,7 @@ from airbyte_cdk.sources.declarative.partition_routers.substream_partition_route
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
+
 
 RequestInput = Union[str, Mapping[str, str]]
 

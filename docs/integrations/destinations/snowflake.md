@@ -266,6 +266,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 | :-------------- | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.15.3 | 2024-12-18 | [49913](https://github.com/airbytehq/airbyte/pull/49913) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 3.15.2          | 2024-10-31 | [\#48070](https://github.com/airbytehq/airbyte/pull/48070) | upgrade JDBC driver to 3.20.0                                                                                                                                                    |
 | 3.15.1          | 2024-10-20 | [\#46989](https://github.com/airbytehq/airbyte/pull/46989) | add snowflake transaction wrapper for rollback support                                                                                                                           |
 | 3.15.0          | 2024-09-18 | [\#45437](https://github.com/airbytehq/airbyte/pull/45437) | upgrade all dependencies                                                                                                                                                         |

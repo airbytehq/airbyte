@@ -10,6 +10,7 @@ from typing import Any, List, MutableMapping
 
 import pendulum
 
+
 ACCESS_TOKEN = "test_access_token"
 ACCOUNT_ID = "111111111111111"
 CLIENT_ID = "test_client_id"

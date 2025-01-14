@@ -5,9 +5,10 @@ from datetime import datetime, timedelta
 
 import toml
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
+from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load  # type: ignore
+
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
-from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load  # type: ignore
 
 
 class MetadataCheck(Check):

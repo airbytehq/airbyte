@@ -23,7 +23,7 @@ class MultiProducerChannelTest {
 
     @BeforeEach
     fun setup() {
-        channel = MultiProducerChannel(size, wrapped)
+        channel = MultiProducerChannel(size, wrapped, "test")
     }
 
     @Test

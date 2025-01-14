@@ -10,6 +10,7 @@ from typing import Any
 import git  # type: ignore
 from anyio import Semaphore  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
+
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.manifest_component_transformer import ManifestComponentTransformer
@@ -297,7 +298,6 @@ class UpdateManifestOnlyFiles(Step):
 
 ## MAIN FUNCTION ##
 async def run_connectors_manifest_only_pipeline(context: ConnectorContext, semaphore: "Semaphore", *args: Any) -> Report:
-
     steps_to_run: STEP_TREE = []
     steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.MANIFEST_ONLY_CHECK, step=CheckIsManifestMigrationCandidate(context))])
 

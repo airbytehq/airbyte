@@ -43,6 +43,7 @@ Visit `https://developers.gorgias.com/reference/introduction` for API documentat
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.7 | 2024-12-21 | [50123](https://github.com/airbytehq/airbyte/pull/50123) | Update dependencies |
 | 0.0.6 | 2024-12-14 | [49219](https://github.com/airbytehq/airbyte/pull/49219) | Update dependencies |
 | 0.0.5 | 2024-12-11 | [48973](https://github.com/airbytehq/airbyte/pull/48973) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.4 | 2024-11-06 | [48378](https://github.com/airbytehq/airbyte/pull/48378) | Fix incremental sync format, Auto update schema with additional fields |

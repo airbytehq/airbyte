@@ -3,8 +3,9 @@
 #
 from typing import Literal, Union
 
-from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic.v1 import BaseModel, Field
+
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 
 
 class OAuthCredentials(BaseModel):

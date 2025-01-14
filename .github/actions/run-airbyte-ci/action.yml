@@ -199,7 +199,7 @@ runs:
       id: hash-subcommand
       shell: bash
       if: always()
-      run: echo "::set-output name=subcommand_hash::$(echo ${{ inputs.subcommand }} | sha256sum | cut -d ' ' -f 1)"
+      run: echo "subcommand_hash=$(echo ${{ inputs.subcommand }} | sha256sum | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
 
     - name: Upload logs to GitHub
       id: upload-dagger-engine-logs

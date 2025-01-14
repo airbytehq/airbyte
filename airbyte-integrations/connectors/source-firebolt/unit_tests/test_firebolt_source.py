@@ -6,6 +6,11 @@ from datetime import date, datetime
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
+from pytest import fixture, mark
+from source_firebolt.database import get_table_structure, parse_config
+from source_firebolt.source import SUPPORTED_SYNC_MODES, SourceFirebolt, convert_type, establish_connection
+from source_firebolt.utils import airbyte_message_from_data, format_fetch_result
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -17,10 +22,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from pytest import fixture, mark
-from source_firebolt.database import get_table_structure, parse_config
-from source_firebolt.source import SUPPORTED_SYNC_MODES, SourceFirebolt, convert_type, establish_connection
-from source_firebolt.utils import airbyte_message_from_data, format_fetch_result
 
 
 @fixture(params=["my_engine", "my_engine.api.firebolt.io"])
@@ -33,6 +34,7 @@ def config(request):
     }
     return args
 
+
 @fixture()
 def legacy_config(request):
     args = {
@@ -43,6 +45,7 @@ def legacy_config(request):
         "engine": "my_engine",
     }
     return args
+
 
 @fixture()
 def config_no_engine():
@@ -109,11 +112,13 @@ def test_parse_config(config, logger):
     result = parse_config(config, logger)
     assert result["engine_url"] == "override_engine.api.firebolt.io"
 
+
 def test_parse_legacy_config(legacy_config, logger):
     result = parse_config(legacy_config, logger)
     assert result["database"] == "my_database"
     assert result["auth"].username == "my@username"
     assert result["auth"].password == "my_password"
+
 
 @patch("source_firebolt.database.connect")
 def test_connection(mock_connection, config, config_no_engine, logger):

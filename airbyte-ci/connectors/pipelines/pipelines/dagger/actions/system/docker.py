@@ -6,9 +6,9 @@ import json
 import uuid
 from typing import Callable, Dict, List, Optional, Union
 
-from dagger import Client, Container, File
+from dagger import Client, Container, File, Service
 from dagger import Secret as DaggerSecret
-from dagger import Service
+
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import (
@@ -229,9 +229,8 @@ def with_crane(
 
     if context.docker_hub_username and context.docker_hub_password:
         base_container = (
-            base_container.with_secret_variable(
-                "DOCKER_HUB_USERNAME", context.docker_hub_username.as_dagger_secret(context.dagger_client)
-            ).with_secret_variable("DOCKER_HUB_PASSWORD", context.docker_hub_password.as_dagger_secret(context.dagger_client))
+            base_container.with_secret_variable("DOCKER_HUB_USERNAME", context.docker_hub_username.as_dagger_secret(context.dagger_client))
+            .with_secret_variable("DOCKER_HUB_PASSWORD", context.docker_hub_password.as_dagger_secret(context.dagger_client))
             # We use sh -c to be able to use environment variables in the command
             # This is a workaround as the default crane entrypoint doesn't support environment variables
             .with_exec(sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]))

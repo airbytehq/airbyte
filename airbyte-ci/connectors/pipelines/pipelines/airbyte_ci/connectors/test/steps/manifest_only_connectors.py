@@ -7,6 +7,7 @@
 from typing import List, Sequence, Tuple
 
 from dagger import Container, File
+
 from pipelines.airbyte_ci.connectors.build_image.steps.manifest_only_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext

@@ -9,10 +9,11 @@ from typing import Any, Final, Iterable, List, Mapping, Optional
 
 import pendulum as pdm
 import requests
-from airbyte_cdk.sources.streams.http import HttpClient
 from requests.exceptions import JSONDecodeError
 from source_shopify.utils import LOGGER, ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
+
+from airbyte_cdk.sources.streams.http import HttpClient
 
 from .exceptions import AirbyteTracedException, ShopifyBulkExceptions
 from .query import ShopifyBulkQuery, ShopifyBulkTemplates

@@ -33,6 +33,9 @@ The Nylas platform provides an integration layer that makes it easy to connect a
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.9 | 2025-01-11 | [51167](https://github.com/airbytehq/airbyte/pull/51167) | Update dependencies |
+| 0.0.8 | 2024-12-28 | [50641](https://github.com/airbytehq/airbyte/pull/50641) | Update dependencies |
+| 0.0.7 | 2024-12-21 | [50112](https://github.com/airbytehq/airbyte/pull/50112) | Update dependencies |
 | 0.0.6 | 2024-12-14 | [49615](https://github.com/airbytehq/airbyte/pull/49615) | Update dependencies |
 | 0.0.5 | 2024-12-12 | [49220](https://github.com/airbytehq/airbyte/pull/49220) | Update dependencies |
 | 0.0.4 | 2024-12-11 | [48319](https://github.com/airbytehq/airbyte/pull/48319) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

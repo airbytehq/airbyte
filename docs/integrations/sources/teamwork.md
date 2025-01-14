@@ -57,6 +57,9 @@ Your default login username and password could be used as secrets, ref: `https:/
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.9 | 2025-01-11 | [51399](https://github.com/airbytehq/airbyte/pull/51399) | Update dependencies |
+| 0.0.8 | 2024-12-28 | [50758](https://github.com/airbytehq/airbyte/pull/50758) | Update dependencies |
+| 0.0.7 | 2024-12-21 | [50362](https://github.com/airbytehq/airbyte/pull/50362) | Update dependencies |
 | 0.0.6 | 2024-12-14 | [49757](https://github.com/airbytehq/airbyte/pull/49757) | Update dependencies |
 | 0.0.5 | 2024-12-12 | [49429](https://github.com/airbytehq/airbyte/pull/49429) | Update dependencies |
 | 0.0.4 | 2024-12-11 | [49119](https://github.com/airbytehq/airbyte/pull/49119) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-capsule-crm
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.11.1@sha256:0d0f562a70c0ed19ab605f0c83802a2e052712587692e2f3a1cc794fe7cd7007
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
   connectorSubtype: api
   connectorType: source
   definitionId: 4f1b8b9c-fa2c-4fc2-b041-e3bde27a0cb1
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.7
   dockerRepository: airbyte/source-capsule-crm
   githubIssueLabel: source-capsule-crm
   icon: icon.svg

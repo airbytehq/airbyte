@@ -9,6 +9,7 @@ from typing import Callable, List, Tuple
 
 import asyncclick as click
 import dagger
+
 from pipelines import main_logger
 from pipelines.airbyte_ci.format.actions import list_files_in_directory
 from pipelines.airbyte_ci.format.configuration import Formatter
@@ -106,33 +107,8 @@ class FormatCommand(click.Command):
     @pass_pipeline_context
     @sentry_utils.with_command_context
     async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> CommandResult:
-        """Run the command. If _exit_on_failure is True, exit the process with status code 1 if the command fails.
-
-        Args:
-            ctx (click.Context): The click context
-            click_pipeline_context (ClickPipelineContext): The pipeline context
-
-        Returns:
-            Any: The result of running the command
-        """
-
-        dagger_client = await click_pipeline_context.get_dagger_client()
-        dir_to_format = self.get_dir_to_format(dagger_client)
-
-        container = self.get_format_container_fn(dagger_client, dir_to_format)
-        command_result = await self.get_format_command_result(dagger_client, container, dir_to_format)
-
-        if (formatted_code_dir := command_result.output) and self.export_formatted_code:
-            await formatted_code_dir.export(self.LOCAL_REPO_PATH)
-
-        if self._enable_logging:
-            log_command_results(ctx, [command_result], main_logger, LogOptions(quiet=ctx.obj["quiet"]))
-
-        if command_result.status is StepStatus.FAILURE and self._exit_on_failure:
-            sys.exit(1)
-
-        self.logger.info(f"Finished running formatter - {command_result.status}")
-        return command_result
+        print("Use pre-commit instead")
+        exit(1)
 
     def set_enable_logging(self, value: bool) -> FormatCommand:
         """Set _enable_logging to the given value.
