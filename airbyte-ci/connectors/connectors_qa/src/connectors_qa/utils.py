@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Set
 
 from connector_ops.utils import Connector  # type: ignore
+
 from connectors_qa import consts
 
 

@@ -3,21 +3,19 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.mysql.MysqlSource'
+    mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
 }
 
 airbyteBulkConnector {
     core = 'extract'
     toolkits = ['extract-jdbc', 'extract-cdc']
-    cdk = 'local'
+    cdk = '0.257'
 }
 
 dependencies {
-    implementation 'mysql:mysql-connector-java:8.0.30'
-    implementation 'org.codehaus.plexus:plexus-utils:4.0.0'
+    implementation 'com.mysql:mysql-connector-j:9.1.0'
     implementation 'io.debezium:debezium-connector-mysql'
 
-    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.2')
     testImplementation 'org.testcontainers:mysql'
-    testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation 'io.mockk:mockk:1.12.0'
 }

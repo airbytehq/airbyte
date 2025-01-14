@@ -6,6 +6,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator

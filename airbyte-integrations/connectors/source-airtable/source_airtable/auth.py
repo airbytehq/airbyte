@@ -5,6 +5,7 @@
 from typing import Any, Mapping, Union
 
 import requests
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.requests_native_auth import (
     BasicHttpAuthenticator,

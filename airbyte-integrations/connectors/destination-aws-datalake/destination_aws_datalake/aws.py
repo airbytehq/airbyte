@@ -10,14 +10,16 @@ import awswrangler as wr
 import boto3
 import botocore
 import pandas as pd
-from airbyte_cdk.destinations import Destination
 from awswrangler import _data_types
 from botocore.credentials import AssumeRoleCredentialFetcher, CredentialResolver, DeferredRefreshableCredentials, JSONFileCache
 from botocore.exceptions import ClientError
 from retrying import retry
 
+from airbyte_cdk.destinations import Destination
+
 from .config_reader import CompressionCodec, ConnectorConfig, CredentialsType, OutputFormat
 from .constants import BOOLEAN_VALUES, EMPTY_VALUES
+
 
 logger = logging.getLogger("airbyte")
 

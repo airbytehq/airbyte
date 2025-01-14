@@ -3,10 +3,11 @@
 from typing import Optional, Union
 
 import requests
+from requests.exceptions import InvalidURL
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
-from requests.exceptions import InvalidURL
 
 
 class KlaviyoErrorHandler(DefaultErrorHandler):

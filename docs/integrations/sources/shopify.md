@@ -247,6 +247,12 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.18 | 2025-01-11 | [51326](https://github.com/airbytehq/airbyte/pull/51326) | Update dependencies |
+| 2.5.17 | 2025-01-06 | [50884](https://github.com/airbytehq/airbyte/pull/50884) | Add `moments` field `Customer Journey Summary` stream |
+| 2.5.16 | 2025-01-04 | [50938](https://github.com/airbytehq/airbyte/pull/50938) | Update dependencies |
+| 2.5.15 | 2024-12-28 | [50779](https://github.com/airbytehq/airbyte/pull/50779) | Update dependencies |
+| 2.5.14 | 2024-12-21 | [49088](https://github.com/airbytehq/airbyte/pull/49088) | Update dependencies |
+| 2.5.13 | 2024-12-11 | [49134](https://github.com/airbytehq/airbyte/pull/49134) | Added `checkpointed value` collision detection for BULK-supported streams |
 | 2.5.12 | 2024-11-25 | [48661](https://github.com/airbytehq/airbyte/pull/48661) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.5.11 | 2024-11-07 | [48402](https://github.com/airbytehq/airbyte/pull/48402) | Add `image_src`, `image_url`, including `options` to `Product Variants` stream |
 | 2.5.10 | 2024-11-05 | [48322](https://github.com/airbytehq/airbyte/pull/48322) | Update dependencies |

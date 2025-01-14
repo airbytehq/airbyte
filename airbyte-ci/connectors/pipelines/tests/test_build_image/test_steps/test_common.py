@@ -7,6 +7,7 @@ import os
 import dagger
 import docker
 import pytest
+
 from pipelines.airbyte_ci.connectors.build_image.steps import common
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.models.steps import StepStatus

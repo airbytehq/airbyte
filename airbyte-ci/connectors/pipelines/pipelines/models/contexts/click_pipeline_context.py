@@ -11,9 +11,10 @@ from typing import Any, Callable, Dict, Optional, TextIO, Tuple
 import anyio
 import dagger
 from asyncclick import Context, get_current_context
+from pydantic import BaseModel, Field, PrivateAttr
+
 from pipelines import main_logger
 from pipelines.cli.click_decorators import LazyPassDecorator
-from pydantic import BaseModel, Field, PrivateAttr
 
 from ..singleton import Singleton
 
@@ -86,7 +87,6 @@ class ClickPipelineContext(BaseModel, Singleton):
         if not self._dagger_client:
             async with self._dagger_client_lock:
                 if not self._dagger_client:
-
                     connection = dagger.Connection(dagger.Config(log_output=self.get_log_output()))
                     """
                     Sets up the '_dagger_client' attribute, intended for single-threaded use within connectors.

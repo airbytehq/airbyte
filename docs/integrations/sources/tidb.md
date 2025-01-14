@@ -130,12 +130,13 @@ Now that you have set up the TiDB source connector, check out the following TiDB
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.3.2   | 2024-02-13 | [35218](https://github.com/airbytehq/airbyte/pull/35218) | Adopt CDK 0.20.4                                                                                                                          |
-| 0.3.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
-| 0.3.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Remove LEGACY state                                                                                                                       |
-| 0.2.5   | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                  |
-| 0.2.4   | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting                                                                                          |
-| 0.2.3   | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect to                                               |
+| 0.3.3 | 2024-12-18 | [49896](https://github.com/airbytehq/airbyte/pull/49896) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.3.2 | 2024-02-13 | [35218](https://github.com/airbytehq/airbyte/pull/35218) | Adopt CDK 0.20.4 |
+| 0.3.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
+| 0.3.0 | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Remove LEGACY state |
+| 0.2.5 | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase |
+| 0.2.4 | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting |
+| 0.2.3 | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect to |
 | 0.2.2   | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                                                                                     |
 |         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.2.1   | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently                                                                                                       |

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-zoho-bigin
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.4@sha256:b73460101d4ff373826b56f00ef2012b635f5eab04c429892547dd055cd779dc
   connectorSubtype: api
   connectorType: source
   definitionId: 30e47b8d-5132-4b24-a204-2493bda33c8d
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/source-zoho-bigin
   githubIssueLabel: source-zoho-bigin
   icon: icon.svg

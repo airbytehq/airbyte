@@ -20,6 +20,11 @@ import requests  # type: ignore
 import semver
 import yaml  # type: ignore
 from dagger import Container, Directory
+
+# This slugify lib has to be consistent with the slugify lib used in live_tests
+# live_test can't resolve the passed connector container otherwise.
+from slugify import slugify  # type: ignore
+
 from pipelines import hacks, main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -32,10 +37,6 @@ from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
-
-# This slugify lib has to be consistent with the slugify lib used in live_tests
-# live_test can't resolve the passed connector container otherwise.
-from slugify import slugify  # type: ignore
 
 GITHUB_URL_PREFIX_FOR_CONNECTORS = f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/master/airbyte-integrations/connectors"
 
@@ -827,7 +828,5 @@ class LiveTests(Step):
                 )
             )
 
-        container = container.with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True).with_exec(
-            ["poetry", "install"], use_entrypoint=True
-        )
+        container = container.with_exec(["poetry", "lock"], use_entrypoint=True).with_exec(["poetry", "install"], use_entrypoint=True)
         return container

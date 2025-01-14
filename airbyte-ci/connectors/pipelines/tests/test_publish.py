@@ -8,6 +8,7 @@ from typing import List
 
 import anyio
 import pytest
+
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.airbyte_ci.connectors.publish.context import RolloutMode
 from pipelines.models.steps import StepStatus
@@ -95,7 +96,7 @@ class TestUploadSpecToCache:
         step = publish_pipeline.UploadSpecToCache(publish_context)
         step_result = await step.run(connector_container)
         if valid_spec:
-            publish_pipeline.upload_to_gcs.assert_called_once_with(
+            publish_pipeline.upload_to_gcs.assert_called_with(
                 publish_context.dagger_client,
                 mocker.ANY,
                 f"specs/{image_name.replace(':', '/')}/spec.json",
@@ -361,7 +362,6 @@ async def test_run_connector_python_registry_publish_pipeline(
     expect_build_connector_called,
     api_token,
 ):
-
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 

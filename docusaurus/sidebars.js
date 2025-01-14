@@ -444,6 +444,7 @@ const deployAirbyte = {
         "deploying-airbyte/integrations/database",
         // "deploying-airbyte/integrations/monitoring",
         "deploying-airbyte/integrations/ingress",
+        "deploying-airbyte/integrations/custom-image-registries",
       ],
     },
 
@@ -727,6 +728,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/v-1.3",
         "release_notes/v-1.2",
         "release_notes/v-1.1",
         "release_notes/v-1.0",

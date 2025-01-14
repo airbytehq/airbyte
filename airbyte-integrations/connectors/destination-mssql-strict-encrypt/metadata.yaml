@@ -1,33 +1,38 @@
 data:
-  registryOverrides:
-    cloud:
-      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
-    oss:
-      enabled: false # strict encrypt connectors are not used on OSS.
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: integrationTests
   connectorType: destination
   definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/destination-mssql-strict-encrypt
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql
   githubIssueLabel: destination-mssql
   icon: mssql.svg
   license: ELv2
   name: MS SQL Server
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
   releaseStage: alpha
   releases:
     breakingChanges:
       1.0.0:
+        message:
+          'This version removes the option to use "normalization" with MSSQL.
+          It also changes the schema and database of Airbyte''s "raw" tables to be
+          compatible with the new [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
+          format. These changes will likely require updates to downstream dbt / SQL
+          models. Selecting `Upgrade` will upgrade **all** connections using this
+          destination at their next sync.
+
+          '
         upgradeDeadline: "2024-05-25"
-        message: >
-          This version removes the option to use "normalization" with MSSQL. It also changes
-          the schema and database of Airbyte's "raw" tables to be compatible with the new
-          [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
-          format. These changes will likely require updates to downstream dbt / SQL models.
-          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync.
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql
   supportsDbt: true
   tags:
     - language:java
-  connectorTestSuitesOptions:
-    - suite: integrationTests
 metadataSpecVersion: "1.0"

@@ -72,7 +72,12 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 2.2.0  | 2024-10-29 | [47286](https://github.com/airbytehq/airbyte/pull/47286) | Migrate to manifest only format |
+| 2.2.5 | 2025-01-11 | [51257](https://github.com/airbytehq/airbyte/pull/51257) | Update dependencies |
+| 2.2.4 | 2024-12-28 | [50468](https://github.com/airbytehq/airbyte/pull/50468) | Update dependencies |
+| 2.2.3 | 2024-12-21 | [50217](https://github.com/airbytehq/airbyte/pull/50217) | Update dependencies |
+| 2.2.2 | 2024-12-14 | [49553](https://github.com/airbytehq/airbyte/pull/49553) | Update dependencies |
+| 2.2.1 | 2024-12-12 | [48216](https://github.com/airbytehq/airbyte/pull/48216) | Update dependencies |
+| 2.2.0 | 2024-10-29 | [47286](https://github.com/airbytehq/airbyte/pull/47286) | Migrate to manifest only format |
 | 2.1.27 | 2024-10-29 | [47068](https://github.com/airbytehq/airbyte/pull/47068) | Update dependencies |
 | 2.1.26 | 2024-10-12 | [46837](https://github.com/airbytehq/airbyte/pull/46837) | Update dependencies |
 | 2.1.25 | 2024-10-01 | [46373](https://github.com/airbytehq/airbyte/pull/46373) | add user-agent header to be able to track Airbyte integration on Apify |

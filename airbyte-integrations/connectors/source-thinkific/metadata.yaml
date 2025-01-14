@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-thinkific
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.1.0@sha256:3ac88000d74db5f9d8dcb004299b917a5dff5cbbc19ebccd49288266095547ca
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.4@sha256:b73460101d4ff373826b56f00ef2012b635f5eab04c429892547dd055cd779dc
   connectorSubtype: api
   connectorType: source
   definitionId: 80e5803c-7013-4ecc-a3b1-2344ce43e054
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.7
   dockerRepository: airbyte/source-thinkific
   githubIssueLabel: source-thinkific
   icon: icon.svg
