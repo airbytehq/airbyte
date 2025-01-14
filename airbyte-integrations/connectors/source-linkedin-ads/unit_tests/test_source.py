@@ -218,6 +218,12 @@ class TestLinkedinAdsStream:
     def test_next_page_token(self, requests_mock, accounts_stream, accounts_stream_url, response_json, expected):
         requests_mock.get(accounts_stream_url, json=response_json)
         test_response = requests.get(accounts_stream_url)
+        last_page_size = len(response_json.get("elements", []))
+        last_record = response_json.get("elements", [])[-1] if response_json.get("elements") else None
+        last_page_token_value = None
 
-        result = accounts_stream.retriever._next_page_token(test_response)
+        result = accounts_stream.retriever._next_page_token(
+            test_response, last_page_size, last_record, last_page_token_value
+        )
+
         assert expected == result
