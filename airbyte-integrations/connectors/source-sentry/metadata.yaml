@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
-  dockerImageTag: 0.6.4
+  dockerImageTag: 0.6.5
   dockerRepository: airbyte/source-sentry
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   githubIssueLabel: source-sentry
