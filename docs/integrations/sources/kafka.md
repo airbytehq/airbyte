@@ -53,6 +53,7 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
 
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
+| 0.2.7 | 2025-01-10 | [51480](https://github.com/airbytehq/airbyte/pull/51480) | Use a non root base image |
 | 0.2.6 | 2024-12-18 | [49907](https://github.com/airbytehq/airbyte/pull/49907) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.5 | 2024-06-12 | [32538](https://github.com/airbytehq/airbyte/pull/32538) | Fix empty airbyte data column |
 | 0.2.4 | 2024-02-13 | [35229](https://github.com/airbytehq/airbyte/pull/35229) | Adopt CDK 0.20.4 |

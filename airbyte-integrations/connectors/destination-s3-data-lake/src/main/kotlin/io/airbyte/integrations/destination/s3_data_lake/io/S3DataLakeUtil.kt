@@ -354,27 +354,31 @@ class S3DataLakeUtil(
     private fun buildKeyBasedClientProperties(
         config: S3DataLakeConfiguration
     ): Map<String, String> {
-        val awsAccessKeyId =
-            requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
-                "AWS Access Key ID is required for key-based authentication"
-            }
-        val awsSecretAccessKey =
-            requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
-                "AWS Secret Access Key is required for key-based authentication"
-            }
         val clientCredentialsProviderPrefix = "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}."
 
-        return mapOf(
-            S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
-            S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
-            AwsClientProperties.CLIENT_REGION to config.s3BucketConfiguration.s3BucketRegion.region,
-            AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
-                GlueCredentialsProvider::class.java.name,
-            "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$AWS_CREDENTIALS_MODE" to
-                AWS_CREDENTIALS_MODE_STATIC_CREDS,
-            "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
-            "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to awsSecretAccessKey
-        )
+        val properties =
+            mutableMapOf(
+                AwsClientProperties.CLIENT_REGION to
+                    config.s3BucketConfiguration.s3BucketRegion.region,
+                AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
+                    GlueCredentialsProvider::class.java.name,
+                "${AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER}.$AWS_CREDENTIALS_MODE" to
+                    AWS_CREDENTIALS_MODE_STATIC_CREDS,
+            )
+
+        // If we don't have explicit S3 creds, fall back to the default creds provider chain.
+        // For example, this should allow us to use AWS instance profiles.
+        val awsAccessKeyId = config.awsAccessKeyConfiguration.accessKeyId
+        val awsSecretAccessKey = config.awsAccessKeyConfiguration.secretAccessKey
+        if (awsAccessKeyId != null && awsSecretAccessKey != null) {
+            properties[S3FileIOProperties.ACCESS_KEY_ID] = awsAccessKeyId
+            properties[S3FileIOProperties.SECRET_ACCESS_KEY] = awsSecretAccessKey
+            properties["${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}"] = awsAccessKeyId
+            properties["${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}"] =
+                awsSecretAccessKey
+        }
+
+        return properties
     }
 
     fun toIcebergSchema(stream: DestinationStream, pipeline: MapperPipeline): Schema {
