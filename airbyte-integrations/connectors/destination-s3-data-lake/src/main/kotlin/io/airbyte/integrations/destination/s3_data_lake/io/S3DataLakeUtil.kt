@@ -59,6 +59,7 @@ const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 const val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
 const val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
 const val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
+private const val AWS_REGION = "aws.region"
 
 data class AWSSystemCredentials(
     @get:JsonProperty("AWS_ACCESS_KEY_ID") val AWS_ACCESS_KEY_ID: String,
@@ -217,7 +218,7 @@ class S3DataLakeUtil(
         return when (catalogConfig) {
             is NessieCatalogConfiguration -> {
                 // Set AWS region as system property
-                System.setProperty("aws.region", region)
+                System.setProperty(AWS_REGION, region)
                 buildNessieProperties(config, catalogConfig, s3Properties)
             }
             is GlueCatalogConfiguration ->
