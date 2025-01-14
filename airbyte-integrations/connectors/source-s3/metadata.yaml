@@ -48,7 +48,7 @@ data:
     - suite: liveTests
       testConnections:
         - name: s3_100_mb_dev_null
-        - id: 3dbae341-863a-43c0-bf00-d6a7473c7364
+          id: 3dbae341-863a-43c0-bf00-d6a7473c7364
         - name: s3_v4_jsonl_config_dev_null
           id: 01f508b1-5690-47af-940c-a777d471762f
         - name: s3_v4_csv_skip_rows_no_header_config_dev_null
