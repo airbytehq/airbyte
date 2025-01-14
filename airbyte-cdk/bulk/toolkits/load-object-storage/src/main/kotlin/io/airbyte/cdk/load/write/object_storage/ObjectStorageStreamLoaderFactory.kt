@@ -15,20 +15,22 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationFile
+import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.MultiProducerChannel
+import io.airbyte.cdk.load.message.object_storage.*
 import io.airbyte.cdk.load.message.object_storage.LoadedObject
 import io.airbyte.cdk.load.message.object_storage.ObjectStorageBatch
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
 import io.airbyte.cdk.load.write.BatchAccumulator
+import io.airbyte.cdk.load.write.FileBatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.OutputStream
-import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
@@ -94,39 +96,12 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             fileSizeBytes = fileSizeBytes,
             stream,
             fileNumber
-        )
+        ) { name -> destinationStateManager.getState(stream).ensureUnique(name) }
     }
 
-    override suspend fun processFile(file: DestinationFile): Batch {
-        if (pathFactory.supportsStaging) {
-            throw IllegalStateException("Staging is not supported for files")
-        }
-        val fileUrl = file.fileMessage.fileUrl ?: ""
-        if (!File(fileUrl).exists()) {
-            log.error { "File does not exist: $fileUrl" }
-            throw IllegalStateException("File does not exist: $fileUrl")
-        }
-        val key =
-            Path.of(pathFactory.getFinalDirectory(stream), "${file.fileMessage.fileRelativePath}")
-                .toString()
-
-        val state = destinationStateManager.getState(stream)
-        state.addObject(
-            generationId = stream.generationId,
-            key = key,
-            partNumber = 0,
-            isStaging = false
-        )
-
-        val metadata = ObjectStorageDestinationState.metadataFor(stream)
-        val obj =
-            client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
-                File(fileUrl).inputStream().use { it.copyTo(outputStream) }
-            }
-        val localFile = createFile(fileUrl)
-        localFile.delete()
-        return LoadedObject(remoteObject = obj, fileNumber = 0)
-    }
+    override suspend fun createFileBatchAccumulator(
+        outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
+    ): FileBatchAccumulator = FilePartAccumulator(pathFactory, stream, outputQueue)
 
     @VisibleForTesting fun createFile(url: String) = File(url)
 

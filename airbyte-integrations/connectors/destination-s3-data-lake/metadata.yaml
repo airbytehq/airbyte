@@ -1,0 +1,46 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+  connectorSubtype: file
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_CONFIG
+          fileName: glue.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_CONFIG
+          fileName: glue_assume_role.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_SYSTEM_AWS_CONFIG
+          fileName: glue_aws_assume_role.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorType: destination
+  definitionId: 716ca874-520b-4902-9f80-9fad66754b89
+  dockerImageTag: 0.2.16
+  dockerRepository: airbyte/destination-s3-data-lake
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-data-lake
+  githubIssueLabel: destination-s3-data-lake
+  icon: icon.svg
+  license: ELv2
+  name: S3 Data Lake
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  supportsRefreshes: true
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"

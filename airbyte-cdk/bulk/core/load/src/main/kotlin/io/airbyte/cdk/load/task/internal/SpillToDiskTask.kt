@@ -92,7 +92,7 @@ class DefaultSpillToDiskTask(
         diskManager.reserve(event.sizeBytes)
 
         // write to disk
-        outputStream.write(event.record.serialized)
+        outputStream.write(event.payload.serialized)
         outputStream.write("\n")
 
         // calculate whether we should flush

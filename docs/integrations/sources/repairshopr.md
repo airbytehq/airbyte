@@ -35,6 +35,9 @@ With this connector we can extract data from various streams such as customers ,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-01-11 | [51367](https://github.com/airbytehq/airbyte/pull/51367) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50682](https://github.com/airbytehq/airbyte/pull/50682) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50255](https://github.com/airbytehq/airbyte/pull/50255) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49690](https://github.com/airbytehq/airbyte/pull/49690) | Update dependencies |
 | 0.0.3 | 2024-12-12 | [49366](https://github.com/airbytehq/airbyte/pull/49366) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [49092](https://github.com/airbytehq/airbyte/pull/49092) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

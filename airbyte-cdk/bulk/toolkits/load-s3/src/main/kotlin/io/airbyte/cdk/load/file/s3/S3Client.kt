@@ -18,6 +18,7 @@ import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toInputStream
+import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.net.url.Url
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
@@ -191,6 +192,8 @@ class S3ClientFactory(
     private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
 ) {
     companion object {
+        const val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
+
         fun <T> make(config: T) where
         T : S3BucketConfigurationProvider,
         T : AWSAccessKeyConfigurationProvider,
@@ -199,7 +202,6 @@ class S3ClientFactory(
             S3ClientFactory(config, config, config, config).make()
     }
 
-    private val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
     private val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
     private val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
     private val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
@@ -207,7 +209,6 @@ class S3ClientFactory(
     @Singleton
     @Secondary
     fun make(): S3Client {
-
         val credsProvider: CredentialsProvider =
             if (keyConfig.awsAccessKeyConfiguration.accessKeyId != null) {
                 StaticCredentialsProvider {
@@ -232,7 +233,6 @@ class S3ClientFactory(
                     assumeRoleParameters = assumeRoleParams
                 )
             } else {
-                // Todo: fill in with a stubbed out credentials provider.
                 DefaultChainCredentialsProvider()
             }
 
@@ -240,7 +240,16 @@ class S3ClientFactory(
             aws.sdk.kotlin.services.s3.S3Client {
                 region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
                 credentialsProvider = credsProvider
-                endpointUrl = bucketConfig.s3BucketConfiguration.s3Endpoint?.let { Url.parse(it) }
+                endpointUrl =
+                    bucketConfig.s3BucketConfiguration.s3Endpoint?.let {
+                        if (it.isNotBlank()) {
+                            Url.parse(it)
+                        } else null
+                    }
+
+                // Fix for connection reset issue:
+                // https://github.com/awslabs/aws-sdk-kotlin/issues/1214#issuecomment-2464831817
+                httpClient(CrtHttpEngine)
             }
 
         return S3Client(

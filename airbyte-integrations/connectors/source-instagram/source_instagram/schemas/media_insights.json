@@ -33,10 +33,6 @@
       "description": "The number of times users have saved the media.",
       "type": ["null", "integer"]
     },
-    "video_views": {
-      "description": "The total number of views on video media.",
-      "type": ["null", "integer"]
-    },
     "comments": {
       "description": "The number of comments received on the media.",
       "type": ["null", "integer"]
