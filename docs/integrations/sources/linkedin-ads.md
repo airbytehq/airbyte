@@ -191,6 +191,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 5.1.0 | 2025-01-14 | [51547](https://github.com/airbytehq/airbyte/pull/51547) | Promoting release candidate 5.1.0-rc.2 to a main version. |
 | 5.1.0-rc.2   | 2025-01-10 | [48863](https://github.com/airbytehq/airbyte/pull/48863) | Update CDK  
 | 5.1.0-rc.1   | 2025-01-09 | [48863](https://github.com/airbytehq/airbyte/pull/48863) | Custom streams moved to manifest implementation                                                                 |
 | 5.0.0   | 2024-11-26 | [48451](https://github.com/airbytehq/airbyte/pull/48451) | Update primary keys for streams ad_campaign_analytics, Custom Ad Analytics Reports and account_users            |
