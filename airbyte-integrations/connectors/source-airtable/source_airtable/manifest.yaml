@@ -73,8 +73,8 @@ definitions:
               parent_key: id
               partition_field: base_id
               extra_fields:
-                - [name]
-                - [id]
+                - ["name"]
+                - ["id"]
               stream:
                 $ref: "#/definitions/streams/bases"
       schema_loader:
@@ -322,7 +322,7 @@ dynamic_streams:
               parent_key: id
               partition_field: base_id
               extra_fields:
-                - [name]
+                - ["name"]
               stream:
                 $ref: "#/definitions/streams/bases"
       components_mapping:
@@ -697,8 +697,3 @@ schemas:
               type:
                 - string
                 - "null"
-  airtable_stream:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
