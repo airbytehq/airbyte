@@ -24,7 +24,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        upgradeDeadline: "2024-12-30"
+        upgradeDeadline: "2025-01-30"
         message: "The verison migrates the Amazon SQS connector to the low-code
           framework for greater maintainability. !! Important: The management_events
           stream changed it's EventTime field from integer to float. The `start_date`
