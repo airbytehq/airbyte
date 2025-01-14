@@ -37,9 +37,7 @@ import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.types.Type.PrimitiveType
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 internal class S3DataLakeWriterTest {
 
@@ -209,6 +207,7 @@ internal class S3DataLakeWriterTest {
                 any<PrimitiveType>(),
             )
         } returns updateSchema
+        every { updateSchema.setIdentifierFields(any<Collection<String>>()) } returns updateSchema
         every { updateSchema.commit() } just runs
         every { table.refresh() } just runs
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
@@ -237,6 +236,7 @@ internal class S3DataLakeWriterTest {
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }
         verify(exactly = 0) { updateSchema.makeColumnOptional(any()) }
+        verify(exactly = 0) { updateSchema.setIdentifierFields(any<Collection<String>>()) }
         verify { updateSchema.addColumn(null, "_airbyte_raw_id", Types.StringType.get()) }
         verify { updateSchema.addColumn(null, "id", Types.LongType.get()) }
         verify { updateSchema.addColumn(null, "_airbyte_meta", any()) }
@@ -328,6 +328,24 @@ internal class S3DataLakeWriterTest {
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
+        val updateSchema: UpdateSchema = mockk()
+        every { table.updateSchema().allowIncompatibleChanges() } returns updateSchema
+        every {
+            updateSchema.updateColumn(
+                any<String>(),
+                any<PrimitiveType>(),
+            )
+        } returns updateSchema
+        every {
+            updateSchema.addColumn(
+                any<String>(),
+                any<String>(),
+                any<PrimitiveType>(),
+            )
+        } returns updateSchema
+        every { updateSchema.setIdentifierFields(primaryKeys) } returns updateSchema
+        every { updateSchema.commit() } just runs
+        every { table.refresh() } just runs
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
@@ -349,10 +367,17 @@ internal class S3DataLakeWriterTest {
                         S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                     ),
             )
-        val e =
-            assertThrows<IllegalArgumentException> {
-                s3DataLakeWriter.createStreamLoader(stream = stream)
-            }
-        assertTrue(e.message?.startsWith("Identifier fields are different") ?: false)
+
+        s3DataLakeWriter.createStreamLoader(stream = stream)
+
+        verify(exactly = 0) { updateSchema.deleteColumn(any()) }
+        verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }
+        verify(exactly = 0) { updateSchema.makeColumnOptional(any()) }
+        verify(exactly = 0) {
+            updateSchema.addColumn(any<String>(), any<String>(), any<PrimitiveType>())
+        }
+        verify(exactly = 1) { updateSchema.setIdentifierFields(primaryKeys) }
+        verify { updateSchema.commit() }
+        verify { table.refresh() }
     }
 }

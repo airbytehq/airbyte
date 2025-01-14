@@ -57,8 +57,11 @@ class S3DataLakeTableSynchronizerTest {
     }
 
     /** Helper to build a schema with [Types.NestedField]s. */
-    private fun buildSchema(vararg fields: Types.NestedField): Schema {
-        return Schema(fields.toList())
+    private fun buildSchema(
+        vararg fields: Types.NestedField,
+        identifierFields: Set<Int> = emptySet()
+    ): Schema {
+        return Schema(fields.toList(), identifierFields)
     }
 
     @Test
@@ -66,6 +69,7 @@ class S3DataLakeTableSynchronizerTest {
         // The existing schema is the same as incoming => no diffs
         val existingSchema =
             buildSchema(Types.NestedField.required(1, "id", Types.IntegerType.get()))
+        existingSchema.identifierFieldNames()
         val incomingSchema =
             buildSchema(Types.NestedField.required(1, "id", Types.IntegerType.get()))
 
@@ -86,6 +90,7 @@ class S3DataLakeTableSynchronizerTest {
         verify(exactly = 0) { mockUpdateSchema.updateColumn(any(), any<PrimitiveType>()) }
         verify(exactly = 0) { mockUpdateSchema.makeColumnOptional(any()) }
         verify(exactly = 0) { mockUpdateSchema.addColumn(any<String>(), any<String>(), any()) }
+        verify(exactly = 0) { mockUpdateSchema.setIdentifierFields(any<Collection<String>>()) }
         verify(exactly = 0) { mockUpdateSchema.commit() }
         verify(exactly = 0) { mockTable.refresh() }
     }
@@ -256,6 +261,26 @@ class S3DataLakeTableSynchronizerTest {
     }
 
     @Test
+    fun `test update identifier fields`() {
+        val existingSchema =
+            buildSchema(Types.NestedField.required(3, "id", Types.StringType.get()))
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.required(3, "id", Types.StringType.get()),
+                identifierFields = setOf(3)
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        synchronizer.applySchemaChanges(mockTable, incomingSchema)
+
+        // We expect setIdentifierFields(listOf("id")) to be called
+        verify { mockUpdateSchema.setIdentifierFields(listOf("id")) }
+        verify { mockUpdateSchema.commit() }
+        verify { mockTable.refresh() }
+    }
+
+    @Test
     fun `test multiple operations in one pass`() {
         val existingSchema =
             buildSchema(
@@ -273,7 +298,8 @@ class S3DataLakeTableSynchronizerTest {
                 // upgrade_int -> changed to long
                 Types.NestedField.required(4, "upgrade_int", Types.LongType.get()),
                 // brand_new -> new column
-                Types.NestedField.optional(5, "brand_new", Types.FloatType.get())
+                Types.NestedField.optional(5, "brand_new", Types.FloatType.get()),
+                identifierFields = setOf(1)
             )
 
         every { mockTable.schema() } returns existingSchema
@@ -294,6 +320,7 @@ class S3DataLakeTableSynchronizerTest {
         verify { mockUpdateSchema.updateColumn("upgrade_int", Types.LongType.get()) }
         verify { mockUpdateSchema.makeColumnOptional("make_optional") }
         verify { mockUpdateSchema.addColumn(null, "brand_new", Types.FloatType.get()) }
+        verify { mockUpdateSchema.setIdentifierFields(listOf("id")) }
 
         verify { mockUpdateSchema.commit() }
         verify { mockTable.refresh() }

@@ -129,6 +129,11 @@ class S3DataLakeTableSynchronizer(
             }
         }
 
+        // 5) Update identifier fields
+        if (diff.identifierFieldsChanged) {
+            update.setIdentifierFields(incomingSchema.identifierFieldNames().toList())
+        }
+
         // Commit all changes and refresh the table schema
         update.commit()
         table.refresh()
