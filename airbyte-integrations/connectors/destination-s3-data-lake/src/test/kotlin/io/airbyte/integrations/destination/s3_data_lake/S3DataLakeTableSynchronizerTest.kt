@@ -213,7 +213,8 @@ class S3DataLakeTableSynchronizerTest {
         val incomingSchema = buildSchema() // Not too relevant, since we expect an exception
 
         every { mockTable.schema() } returns existingSchema
-        val diff = S3DataLakeTypesComparator.ColumnDiff(newColumns = mutableListOf("outer~inner~leaf"))
+        val diff =
+            S3DataLakeTypesComparator.ColumnDiff(newColumns = mutableListOf("outer~inner~leaf"))
         every { comparator.compareSchemas(incomingSchema, existingSchema) } returns diff
 
         assertThatThrownBy { synchronizer.applySchemaChanges(mockTable, incomingSchema) }

@@ -140,10 +140,10 @@ internal class S3DataLakeWriterTest {
                 icebergConfiguration = icebergConfiguration,
                 s3DataLakeUtil = s3DataLakeUtil,
                 s3DataLakeTableSynchronizer =
-                S3DataLakeTableSynchronizer(
-                    S3DataLakeTypesComparator(),
-                    S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
-                )
+                    S3DataLakeTableSynchronizer(
+                        S3DataLakeTypesComparator(),
+                        S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
+                    )
             )
         val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
         assertNotNull(streamLoader)
