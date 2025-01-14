@@ -30,13 +30,7 @@ Put the contents of the following LastPass secrets into corresponding files unde
 | LastPass Secret                                                                                        | File                                     |
 | ------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
 | `destination snowflake - test creds (secrets/config.json)`                                             | `secrets/config.json`                    |
-| `destination snowflake - insert test creds (secrets/insert_config.json)`                               | `secrets/insert_config.json`             |
 | `destination snowflake - internal staging test creds (secrets/internal_staging_config.json)`           | `secrets/internal_staging_config.json`   |
-| `destination snowflake - internal staging key pair (secrets/config_key_pair.json)`                     | `secrets/config_key_pair.json`           |
-| `destination snowflake - internal staging key pair encrypted (secrets/config_key_pair_encrypted.json)` | `secrets/config_key_pair_encrypted.json` |
-| `destination snowflake - s3 staging test creds (secrets/copy_s3_config.json)`                          | `secrets/copy_s3_config.json`            |
-| `destination snowflake - s3 staging encrypted test creds (secrets/copy_s3_encrypted_config.json)`      | `secrets/copy_s3_encrypted_config.json`  |
-| `destination snowflake - gcs staging test creds (secrets/copy_gcs_config.json)`                        | `secrets/copy_gcs_config.json`           |
 
 The query timeout for insert data to table has been updated from 30 minutes to 3 hours.
 
@@ -104,5 +98,3 @@ create schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA;
 grant ownership on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role INTEGRATION_TESTER_DESTINATION revoke current grants;
 grant all privileges on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role NO_ACTIVE_WAREHOUSE_ROLE;
 ```
-
-These tests are currently disabled (`testCheckWithNoProperStagingPermissionConnection`, `testCheckWithNoActiveWarehouseConnection`). Their test users keep breaking (i.e. becoming the schema owner) because our tests are tearing down `TEXT_SCHEMA` after every test.

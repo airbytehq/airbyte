@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
 from jinja2 import Template
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.airbyte_ci.steps.base_image import UpdateBaseImageMetadata
@@ -15,7 +16,6 @@ from pipelines.helpers import git
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
-
     from anyio import Semaphore
 
 
@@ -89,7 +89,6 @@ class AddBuildInstructionsToReadme(Step):
         )
 
     def add_build_instructions(self, og_doc_content: str) -> str:
-
         build_instructions_template = Template(
             textwrap.dedent(
                 """

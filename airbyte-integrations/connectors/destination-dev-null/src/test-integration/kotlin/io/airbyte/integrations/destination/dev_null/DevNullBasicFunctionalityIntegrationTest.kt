@@ -26,6 +26,8 @@ class DevNullBasicFunctionalityIntegrationTest :
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        envVars = emptyMap(),
+        supportFileTransfer = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -37,9 +39,5 @@ class DevNullBasicFunctionalityIntegrationTest :
         super.testMidSyncCheckpointingStreamState()
     }
 
-    @Test
-    @Disabled("File transfer is not supported")
-    override fun testBasicWriteFile() {
-        super.testBasicWriteFile()
-    }
+    @Test @Disabled("File transfer is not supported") override fun testBasicWriteFile() {}
 }

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from connector_ops.utils import ConnectorLanguage  # type: ignore
+
 from connectors_insights.utils import never_fail_exec
 
 if TYPE_CHECKING:

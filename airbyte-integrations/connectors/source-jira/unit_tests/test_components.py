@@ -4,9 +4,10 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_jira.components.extractors import LabelsRecordExtractor
 from source_jira.components.partition_routers import SprintIssuesSubstreamPartitionRouter
+
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @pytest.mark.parametrize(

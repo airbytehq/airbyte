@@ -31,6 +31,12 @@ Historical News is only available for premium users of NewsData service.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-01-11 | [51173](https://github.com/airbytehq/airbyte/pull/51173) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50643](https://github.com/airbytehq/airbyte/pull/50643) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50097](https://github.com/airbytehq/airbyte/pull/50097) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49630](https://github.com/airbytehq/airbyte/pull/49630) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [49259](https://github.com/airbytehq/airbyte/pull/49259) | Update dependencies |
+| 0.0.2 | 2024-12-11 | [48999](https://github.com/airbytehq/airbyte/pull/48999) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-11-08 | | Initial release by [@faria-karim-porna](https://github.com/faria-karim-porna) via Connector Builder |
 
 </details>

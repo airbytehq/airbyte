@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
-  dockerImageTag: 1.5.5
+  dockerImageTag: 1.5.10
   dockerRepository: airbyte/source-google-search-console
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   erdUrl: https://dbdocs.io/airbyteio/source-google-search-console?view=relationships
