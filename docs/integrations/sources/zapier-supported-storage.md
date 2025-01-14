@@ -25,6 +25,8 @@ The Zapier Supported Storage Connector can be used to sync your [Zapier](https:/
 
 | Version | Date | Pull Request | Subject |
 |:--------|:-----------|:---------------------------------------------------------| |
+| 0.2.8 | 2025-01-11 | [51407](https://github.com/airbytehq/airbyte/pull/51407) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50793](https://github.com/airbytehq/airbyte/pull/50793) | Update dependencies |
 | 0.2.6 | 2024-12-21 | [50333](https://github.com/airbytehq/airbyte/pull/50333) | Update dependencies |
 | 0.2.5 | 2024-12-14 | [49783](https://github.com/airbytehq/airbyte/pull/49783) | Update dependencies |
 | 0.2.4 | 2024-12-12 | [48181](https://github.com/airbytehq/airbyte/pull/48181) | Update dependencies |

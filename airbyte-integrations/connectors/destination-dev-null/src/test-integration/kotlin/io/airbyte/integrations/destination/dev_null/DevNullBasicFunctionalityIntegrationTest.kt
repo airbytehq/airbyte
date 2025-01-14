@@ -26,6 +26,7 @@ class DevNullBasicFunctionalityIntegrationTest :
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        envVars = emptyMap(),
         supportFileTransfer = false,
     ) {
     @Test
@@ -39,6 +40,4 @@ class DevNullBasicFunctionalityIntegrationTest :
     }
 
     @Test @Disabled("File transfer is not supported") override fun testBasicWriteFile() {}
-
-    @Test @Disabled("DevNull does not support Unknown types") override fun testUnknownTypes() {}
 }

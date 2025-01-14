@@ -77,6 +77,9 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                           |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| 2.1.10 | 2025-01-11 | [51147](https://github.com/airbytehq/airbyte/pull/51147) | Update dependencies |
+| 2.1.9 | 2025-01-08 | [50984](https://github.com/airbytehq/airbyte/pull/50984) | Update the `spec` to support `Jinja` style variables for `DeclarativeOAuthFlow` |
+| 2.1.8 | 2024-12-28 | [50624](https://github.com/airbytehq/airbyte/pull/50624) | Update dependencies |
 | 2.1.7 | 2024-12-21 | [43901](https://github.com/airbytehq/airbyte/pull/43901) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.1.6 | 2024-12-19 | [49943](https://github.com/airbytehq/airbyte/pull/49943) | Pin CDK constraint to avoid breaking change in newer versions |
 | 2.1.5 | 2024-10-31 | [48054](https://github.com/airbytehq/airbyte/pull/48054) | Moved to `DeclarativeOAuthFlow` specification |

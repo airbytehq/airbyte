@@ -96,7 +96,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             fileSizeBytes = fileSizeBytes,
             stream,
             fileNumber
-        )
+        ) { name -> destinationStateManager.getState(stream).ensureUnique(name) }
     }
 
     override suspend fun createFileBatchAccumulator(

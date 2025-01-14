@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.3@sha256:9214270d83304213977c08e91fd9c55a98819543dbbf0df25a4356299af4f3ab
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
   connectorSubtype: api
   connectorType: source
   definitionId: 1e9086ab-ddac-4c1d-aafd-ba43ff575fe4
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.7
   dockerRepository: airbyte/source-google-pagespeed-insights
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
   githubIssueLabel: source-google-pagespeed-insights

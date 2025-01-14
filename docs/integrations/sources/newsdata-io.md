@@ -31,6 +31,8 @@ Historical News is only available for premium users of NewsData service.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-01-11 | [51173](https://github.com/airbytehq/airbyte/pull/51173) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50643](https://github.com/airbytehq/airbyte/pull/50643) | Update dependencies |
 | 0.0.5 | 2024-12-21 | [50097](https://github.com/airbytehq/airbyte/pull/50097) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49630](https://github.com/airbytehq/airbyte/pull/49630) | Update dependencies |
 | 0.0.3 | 2024-12-12 | [49259](https://github.com/airbytehq/airbyte/pull/49259) | Update dependencies |

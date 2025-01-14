@@ -15,7 +15,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 042ce96f-1158-4662-9543-e2ff015be97a
-  dockerImageTag: 0.1.32
+  dockerImageTag: 0.1.35
   dockerRepository: airbyte/destination-astra
   githubIssueLabel: destination-astra
   icon: astra.svg

@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 4.4.4
+  dockerImageTag: 4.4.7
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships

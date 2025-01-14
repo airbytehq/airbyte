@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.data.parquet
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteSchemaNoopMapper
+import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.AirbyteValueNoopMapper
 import io.airbyte.cdk.load.data.FailOnAllUnknownTypesExceptNull
 import io.airbyte.cdk.load.data.MapperPipeline
@@ -22,10 +23,19 @@ class ParquetMapperPipelineFactory : MapperPipelineFactory {
         MapperPipeline(
             stream.schema,
             listOf(
-                FailOnAllUnknownTypesExceptNull() to SchemalessValuesToJsonString(),
+                FailOnAllUnknownTypesExceptNull() to AirbyteValueNoopMapper(),
+                MergeUnions() to AirbyteValueNoopMapper(),
+                AirbyteSchemaNoopMapper() to AirbyteValueDeepCoercingMapper(),
+                // We need to maintain the original ObjectWithNoProperties/etc type.
+                // For example, if a stream declares no columns, we will (correctly) recognize
+                // the root schema as ObjectTypeWithEmptySchema.
+                // If we then map that root schema to StringType, then
+                // AirbyteTypeToAirbyteTypeWithMeta will crash on it.
+                // Furthermore, in UnionTypeToDisjointRecord, this enables us to write thes fields
+                // as "object" rather than as "string".
+                AirbyteSchemaNoopMapper() to SchemalessValuesToJsonString(),
                 AirbyteSchemaNoopMapper() to NullOutOfRangeIntegers(),
                 AirbyteSchemaNoopMapper() to TimeStringToInteger(),
-                MergeUnions() to AirbyteValueNoopMapper(),
                 UnionTypeToDisjointRecord() to UnionValueToDisjointRecord(),
             ),
         )

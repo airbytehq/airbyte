@@ -86,6 +86,9 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.17 | 2025-01-11 | [51170](https://github.com/airbytehq/airbyte/pull/51170) | Update dependencies |
+| 0.3.16 | 2025-01-04 | [50899](https://github.com/airbytehq/airbyte/pull/50899) | Update dependencies |
+| 0.3.15 | 2024-12-28 | [50670](https://github.com/airbytehq/airbyte/pull/50670) | Update dependencies |
 | 0.3.14 | 2024-12-21 | [50073](https://github.com/airbytehq/airbyte/pull/50073) | Update dependencies |
 | 0.3.13 | 2024-12-14 | [49264](https://github.com/airbytehq/airbyte/pull/49264) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.12 | 2024-12-12 | [49145](https://github.com/airbytehq/airbyte/pull/49145) | Update dependencies |

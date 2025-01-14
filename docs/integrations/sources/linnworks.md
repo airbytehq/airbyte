@@ -74,6 +74,8 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| 0.1.38 | 2025-01-11 | [51157](https://github.com/airbytehq/airbyte/pull/51157) | Update dependencies |
+| 0.1.37 | 2024-12-28 | [50634](https://github.com/airbytehq/airbyte/pull/50634) | Update dependencies |
 | 0.1.36 | 2024-12-21 | [50148](https://github.com/airbytehq/airbyte/pull/50148) | Update dependencies |
 | 0.1.35 | 2024-12-14 | [48880](https://github.com/airbytehq/airbyte/pull/48880) | Update dependencies |
 | 0.1.34 | 2024-11-25 | [48665](https://github.com/airbytehq/airbyte/pull/48665) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

@@ -72,6 +72,8 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.8 | 2025-01-11 | [51161](https://github.com/airbytehq/airbyte/pull/51161) | Update dependencies |
+| 0.3.7 | 2024-12-28 | [50631](https://github.com/airbytehq/airbyte/pull/50631) | Update dependencies |
 | 0.3.6 | 2024-12-21 | [50087](https://github.com/airbytehq/airbyte/pull/50087) | Update dependencies |
 | 0.3.5 | 2024-12-14 | [49646](https://github.com/airbytehq/airbyte/pull/49646) | Update dependencies |
 | 0.3.4 | 2024-12-12 | [49243](https://github.com/airbytehq/airbyte/pull/49243) | Update dependencies |
