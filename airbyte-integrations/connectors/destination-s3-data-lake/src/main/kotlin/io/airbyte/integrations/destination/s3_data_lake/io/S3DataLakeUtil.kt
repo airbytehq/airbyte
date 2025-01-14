@@ -215,8 +215,11 @@ class S3DataLakeUtil(
         val s3Properties = buildS3Properties(config, icebergCatalogConfig)
 
         return when (catalogConfig) {
-            is NessieCatalogConfiguration ->
+            is NessieCatalogConfiguration -> {
+                // Set AWS region as system property
+                System.setProperty("aws.region", region)
                 buildNessieProperties(config, catalogConfig, s3Properties)
+            }
             is GlueCatalogConfiguration ->
                 buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region)
             else ->

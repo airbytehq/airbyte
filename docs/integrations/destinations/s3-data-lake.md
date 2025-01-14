@@ -17,6 +17,7 @@ for more information.
 
 | Version | Date       | Pull Request                                               | Subject                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------|
+| 0.2.15  | 2025-01-14 | [\#50413](https://github.com/airbytehq/airbyte/pull/50413) | Update existing table schema based on the incoming schema        |
 | 0.2.14  | 2025-01-14 | [\#50413](https://github.com/airbytehq/airbyte/pull/50413) | Update existing table schema based on the incoming schema        |
 | 0.2.13  | 2025-01-14 | [\#50412](https://github.com/airbytehq/airbyte/pull/50412) | Implement logic to determine super types between iceberg types   |
 | 0.2.12  | 2025-01-10 | [\#50876](https://github.com/airbytehq/airbyte/pull/50876) | Add support for AWS instance profile auth                        |
