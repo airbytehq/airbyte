@@ -17,8 +17,7 @@ for more information.
 
 | Version | Date       | Pull Request                                                | Subject                                      |
 |:--------|:-----------|:------------------------------------------------------------|:---------------------------------------------|
-| 0.2.12  | 2025-01-10 | [\#50876](https://github.com/airbytehq/airbyte/pull/50876)  | Add support for AWS instance profile auth    |
-| 0.2.11  | 2025-01-10 | [\#50971](https://github.com/airbytehq/airbyte/pull/50971)  | Internal refactor in AWS auth flow           |
+| 0.2.11 | 2025-01-10 | [51494](https://github.com/airbytehq/airbyte/pull/51494) | Use a non root base image |
 | 0.2.10  | 2025-01-09 | [\#50400](https://github.com/airbytehq/airbyte/pull/50400)  | Add S3DataLakeTypesComparator                |
 | 0.2.9   | 2025-01-09 | [\#51022](https://github.com/airbytehq/airbyte/pull/51022)  | Rename all classes and files from Iceberg V2 |
 | 0.2.8   | 2025-01-09 | [\#51012](https://github.com/airbytehq/airbyte/pull/51012)  | Rename/Cleanup package from Iceberg V2       |
