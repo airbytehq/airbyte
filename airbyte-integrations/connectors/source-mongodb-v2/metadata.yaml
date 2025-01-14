@@ -6,7 +6,7 @@ data:
     hosts:
       - ${connection_string}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: database
   connectorTestSuitesOptions:
     - suite: unitTests
@@ -36,7 +36,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
-  dockerImageTag: 1.5.13
+  dockerImageTag: 1.5.14
   dockerRepository: airbyte/source-mongodb-v2
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   githubIssueLabel: source-mongodb-v2

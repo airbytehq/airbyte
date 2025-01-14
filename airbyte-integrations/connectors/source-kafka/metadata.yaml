@@ -3,14 +3,14 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: database
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
   connectorType: source
   definitionId: d917a47b-8537-4d0d-8c10-36a9928d4265
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.7
   dockerRepository: airbyte/source-kafka
   documentationUrl: https://docs.airbyte.com/integrations/sources/kafka
   githubIssueLabel: source-kafka
