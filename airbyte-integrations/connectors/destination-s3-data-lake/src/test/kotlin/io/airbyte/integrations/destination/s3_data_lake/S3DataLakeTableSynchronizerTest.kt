@@ -275,6 +275,7 @@ class S3DataLakeTableSynchronizerTest {
         synchronizer.applySchemaChanges(mockTable, incomingSchema)
 
         // We expect setIdentifierFields(listOf("id")) to be called
+        verify { mockUpdateSchema.requireColumn("id") }
         verify { mockUpdateSchema.setIdentifierFields(listOf("id")) }
         verify { mockUpdateSchema.commit() }
         verify { mockTable.refresh() }
@@ -320,6 +321,7 @@ class S3DataLakeTableSynchronizerTest {
         verify { mockUpdateSchema.updateColumn("upgrade_int", Types.LongType.get()) }
         verify { mockUpdateSchema.makeColumnOptional("make_optional") }
         verify { mockUpdateSchema.addColumn(null, "brand_new", Types.FloatType.get()) }
+        verify { mockUpdateSchema.requireColumn("id") }
         verify { mockUpdateSchema.setIdentifierFields(listOf("id")) }
 
         verify { mockUpdateSchema.commit() }

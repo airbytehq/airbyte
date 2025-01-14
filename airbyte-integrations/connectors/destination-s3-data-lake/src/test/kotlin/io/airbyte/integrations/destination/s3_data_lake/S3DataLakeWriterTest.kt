@@ -236,6 +236,7 @@ internal class S3DataLakeWriterTest {
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }
         verify(exactly = 0) { updateSchema.makeColumnOptional(any()) }
+        verify(exactly = 0) { updateSchema.requireColumn(any()) }
         verify(exactly = 0) { updateSchema.setIdentifierFields(any<Collection<String>>()) }
         verify { updateSchema.addColumn(null, "_airbyte_raw_id", Types.StringType.get()) }
         verify { updateSchema.addColumn(null, "id", Types.LongType.get()) }
@@ -343,6 +344,7 @@ internal class S3DataLakeWriterTest {
                 any<PrimitiveType>(),
             )
         } returns updateSchema
+        every { updateSchema.requireColumn("id") } returns updateSchema
         every { updateSchema.setIdentifierFields(primaryKeys) } returns updateSchema
         every { updateSchema.commit() } just runs
         every { table.refresh() } just runs
@@ -376,6 +378,7 @@ internal class S3DataLakeWriterTest {
         verify(exactly = 0) {
             updateSchema.addColumn(any<String>(), any<String>(), any<PrimitiveType>())
         }
+        verify(exactly = 1) { updateSchema.requireColumn("id") }
         verify(exactly = 1) { updateSchema.setIdentifierFields(primaryKeys) }
         verify { updateSchema.commit() }
         verify { table.refresh() }
