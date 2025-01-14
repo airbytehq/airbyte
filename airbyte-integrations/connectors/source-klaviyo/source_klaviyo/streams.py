@@ -24,12 +24,12 @@ from .exceptions import KlaviyoBackoffError
 
 
 class KlaviyoStream(HttpStream, CheckpointMixin, ABC):
-    """Base stream for api version v2023-10-15"""
+    """Base stream for api version v2024-10-15"""
 
     url_base = "https://a.klaviyo.com/api/"
     primary_key = "id"
     page_size = None
-    api_revision = "2023-10-15"
+    api_revision = "2024-10-15"
 
     @property
     def state(self):
@@ -223,10 +223,10 @@ class IncrementalKlaviyoStreamWithArchivedRecords(IncrementalKlaviyoStream, ABC)
 
 
 class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
-    """Docs: https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns"""
+    """Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns"""
 
     cursor_field = "updated_at"
-    api_revision = "2023-06-15"
+    api_revision = "2024-10-15"
 
     def path(self, **kwargs) -> str:
         return "campaigns"

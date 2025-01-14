@@ -34,7 +34,7 @@ definitions:
           error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
     request_headers:
       Accept: "application/json"
-      Revision: "2023-10-15"
+      Revision: "2024-10-15"
 
   # Selector
   selector:
@@ -86,7 +86,7 @@ definitions:
       $ref: "#/definitions/requester"
       request_headers:
         Accept: "application/json"
-        Revision: "2023-02-22"
+        Revision: "2024-10-15"
       request_parameters:
         "additional-fields[profile]": "{{ 'predictive_analytics' if not config['disable_fetching_predictive_analytics'] else '' }}"
 
@@ -112,7 +112,7 @@ definitions:
 
   # Incremental streams
   profiles_stream:
-    # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
+    # Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles
     name: "profiles"
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -143,7 +143,7 @@ definitions:
       cursor_field: "updated"
 
   global_exclusions_stream:
-    # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
+    # Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles
     name: "global_exclusions"
     $ref: "#/definitions/profiles_stream"
     schema_loader:
