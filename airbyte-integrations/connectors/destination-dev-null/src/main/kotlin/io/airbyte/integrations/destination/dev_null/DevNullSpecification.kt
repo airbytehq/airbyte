@@ -47,6 +47,7 @@ sealed class DevNullSpecification : ConfigurationSpecification() {
 @JsonSchemaTitle("E2E Test Destination Spec")
 @Singleton
 @Requires(notEnv = [AIRBYTE_CLOUD_ENV])
+@Requires(property = "airbyte.core.deployment.mode", value = "OSS")
 class DevNullSpecificationOss : DevNullSpecification() {
     @JsonProperty("test_destination")
     @JsonSchemaTitle("Test Destination")
@@ -202,7 +203,7 @@ data class FailingDestination(
 /** The cloud variant is more restricted: it only allows for a single destination type. */
 @JsonSchemaTitle("E2E Test Destination Spec")
 @Singleton
-@Requires(env = [AIRBYTE_CLOUD_ENV])
+@Requires(property = "airbyte.core.deployment.mode", value = "CLOUD")
 class DevNullSpecificationCloud : DevNullSpecification() {
     @JsonProperty("test_destination")
     @JsonSchemaTitle("Test Destination")
