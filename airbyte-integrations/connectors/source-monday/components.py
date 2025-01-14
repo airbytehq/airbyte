@@ -9,7 +9,7 @@ from datetime import datetime
 from functools import partial
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
-import dpath.util
+import dpath
 import requests
 
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
@@ -388,11 +388,11 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
         response_body = self.decoder.decode(response)
 
         path = [path.eval(self.config) for path in field_path]
-        extracted = dpath.util.values(response_body, path) if path else response_body
+        extracted = dpath.values(response_body, path) if path else response_body
 
         pattern_path = "*" in path
         if not pattern_path:
-            extracted = dpath.util.get(response_body, path, default=[])
+            extracted = dpath.get(response_body, path, default=[])
 
         if extracted:
             if isinstance(extracted, list) and None in extracted:
@@ -594,7 +594,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
                         parent_record = parent_record.record.data
 
                 try:
-                    substream_slice = dpath.util.get(parent_record, self.parent_field)
+                    substream_slice = dpath.get(parent_record, self.parent_field)
                 except KeyError:
                     pass
                 else:

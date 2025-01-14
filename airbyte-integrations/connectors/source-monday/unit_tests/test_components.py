@@ -13,6 +13,10 @@ from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.streams import Stream
 
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
+
 
 def _create_response(content: Any) -> Response:
     response = Response()
@@ -180,15 +184,6 @@ def test_set_initial_state(components_module):
     assert slicer._state == expected_state
 
 
-from unittest.mock import MagicMock
-
-import pytest
-
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
-
-
 nested_object_schema = {
     "root": {
         "type": ["null", "array"],
@@ -351,11 +346,6 @@ def test_get_request_headers(monday_requester):
     assert headers == {"API-Version": "2024-01"}
 
 
-from unittest.mock import MagicMock
-
-import pytest
-
-
 @pytest.mark.parametrize(
     ("response_json", "last_records", "expected"),
     [
@@ -432,9 +422,6 @@ def test_item_cursor_pagination_strategy(components_module, response_json, last_
     response.json.return_value = response_json
 
     assert strategy.next_page_token(response, last_records) == expected
-
-
-from unittest.mock import MagicMock
 
 
 def test_extract_records(components_module):
