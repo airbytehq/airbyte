@@ -244,7 +244,7 @@ class IncrementalTest(TestCase):
         output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(created=int(_NOW.timestamp()))
+        assert most_recent_state.stream_state == AirbyteStateBlob(created=int(cursor_value))
 
     @HttpMocker()
     def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
