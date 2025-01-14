@@ -200,6 +200,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             FbaReimbursementsReports,
             VendorOrders,
             VendorForecastingFreshReport,
+            SellerAnalyticsSalesAndTrafficReports,
             VendorForecastingRetailReport,
         ]
 
