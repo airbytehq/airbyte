@@ -242,7 +242,6 @@ class SourceAmazonSellerPartner(AbstractSource):
                 "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT",
                 "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT",
                 "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT",
-                "GET_SALES_AND_TRAFFIC_REPORT",
                 "GET_VENDOR_SALES_REPORT",
                 "GET_VENDOR_INVENTORY_REPORT",
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
