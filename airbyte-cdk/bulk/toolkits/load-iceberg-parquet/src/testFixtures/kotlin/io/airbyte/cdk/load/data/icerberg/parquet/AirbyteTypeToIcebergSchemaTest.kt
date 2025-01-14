@@ -42,6 +42,20 @@ class AirbyteTypeToIcebergSchemaTest {
     }
 
     @Test
+    fun `convert handles stringifying ObjectType`() {
+        val objectType =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, false),
+                    "name" to FieldType(StringType, true),
+                ),
+            )
+        val result = converter.convert(objectType, stringifyObjects = true)
+
+        assertEquals(Types.StringType.get(), result)
+    }
+
+    @Test
     fun `convert handles ArrayType`() {
         val arrayType = ArrayType(FieldType(IntegerType, false))
         val result = converter.convert(arrayType, stringifyObjects = false) as Types.ListType
@@ -199,6 +213,4 @@ class AirbyteTypeToIcebergSchemaTest {
         assertEquals(1, identifierFieldIds.size)
         assertEquals(true, identifierFieldIds.contains(ageColumn.fieldId()))
     }
-
-    // TODO add test for stringifyObjects = true
 }
