@@ -2,10 +2,10 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.iceberg.v2
+package io.airbyte.integrations.destination.s3_data_lake
 
-import io.airbyte.integrations.destination.iceberg.v2.IcebergTypesComparator.Companion.PARENT_CHILD_SEPARATOR
-import io.airbyte.integrations.destination.iceberg.v2.IcebergTypesComparator.Companion.splitIntoParentAndLeaf
+import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeTypesComparator.Companion.PARENT_CHILD_SEPARATOR
+import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeTypesComparator.Companion.splitIntoParentAndLeaf
 import jakarta.inject.Singleton
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -26,9 +26,9 @@ import org.apache.iceberg.types.Type.PrimitiveType
  * @property superTypeFinder Used to find a common supertype when data types differ.
  */
 @Singleton
-class IcebergTableSynchronizer(
-    private val comparator: IcebergTypesComparator,
-    private val superTypeFinder: IcebergSuperTypeFinder,
+class S3DataLakeTableSynchronizer(
+    private val comparator: S3DataLakeTypesComparator,
+    private val superTypeFinder: S3DataLakeSuperTypeFinder,
 ) {
 
     /**

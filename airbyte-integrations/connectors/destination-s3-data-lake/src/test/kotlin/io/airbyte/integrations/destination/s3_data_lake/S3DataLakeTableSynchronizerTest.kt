@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.iceberg.v2
+package io.airbyte.integrations.destination.s3_data_lake
 
 import io.mockk.every
 import io.mockk.just
@@ -21,21 +21,21 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * Tests for [IcebergTableSynchronizer].
+ * Tests for [S3DataLakeTableSynchronizer].
  *
  * We use a mocked [Table] and [UpdateSchema] to verify that the right calls are made based on the
- * computed [IcebergTypesComparator.ColumnDiff].
+ * computed [S3DataLakeTypesComparator.ColumnDiff].
  */
-class IcebergTableSynchronizerTest {
+class S3DataLakeTableSynchronizerTest {
 
     // Mocks
     private lateinit var mockTable: Table
     private lateinit var mockUpdateSchema: UpdateSchema
 
     // Collaborators under test
-    private val comparator = spyk(IcebergTypesComparator())
-    private val superTypeFinder = spyk(IcebergSuperTypeFinder(comparator))
-    private val synchronizer = IcebergTableSynchronizer(comparator, superTypeFinder)
+    private val comparator = spyk(S3DataLakeTypesComparator())
+    private val superTypeFinder = spyk(S3DataLakeSuperTypeFinder(comparator))
+    private val synchronizer = S3DataLakeTableSynchronizer(comparator, superTypeFinder)
 
     @BeforeEach
     fun setUp() {
@@ -73,7 +73,7 @@ class IcebergTableSynchronizerTest {
         // The comparator will see no changes
         every { comparator.compareSchemas(incomingSchema, existingSchema) } answers
             {
-                IcebergTypesComparator.ColumnDiff()
+                S3DataLakeTypesComparator.ColumnDiff()
             }
 
         val result = synchronizer.applySchemaChanges(mockTable, incomingSchema)
@@ -213,7 +213,7 @@ class IcebergTableSynchronizerTest {
         val incomingSchema = buildSchema() // Not too relevant, since we expect an exception
 
         every { mockTable.schema() } returns existingSchema
-        val diff = IcebergTypesComparator.ColumnDiff(newColumns = mutableListOf("outer~inner~leaf"))
+        val diff = S3DataLakeTypesComparator.ColumnDiff(newColumns = mutableListOf("outer~inner~leaf"))
         every { comparator.compareSchemas(incomingSchema, existingSchema) } returns diff
 
         assertThatThrownBy { synchronizer.applySchemaChanges(mockTable, incomingSchema) }
@@ -236,7 +236,7 @@ class IcebergTableSynchronizerTest {
 
         every { mockTable.schema() } returns existingSchema
         val diff =
-            IcebergTypesComparator.ColumnDiff(updatedDataTypes = mutableListOf("complex_col"))
+            S3DataLakeTypesComparator.ColumnDiff(updatedDataTypes = mutableListOf("complex_col"))
         every { comparator.compareSchemas(incomingSchema, existingSchema) } returns diff
 
         // Let superTypeFinder return a struct type

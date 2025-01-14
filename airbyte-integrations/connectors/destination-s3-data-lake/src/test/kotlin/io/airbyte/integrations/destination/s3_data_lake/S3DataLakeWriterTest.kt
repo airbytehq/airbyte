@@ -139,10 +139,10 @@ internal class S3DataLakeWriterTest {
                 s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
                 icebergConfiguration = icebergConfiguration,
                 s3DataLakeUtil = s3DataLakeUtil,
-                icebergTableSynchronizer =
-                IcebergTableSynchronizer(
-                    IcebergTypesComparator(),
-                    IcebergSuperTypeFinder(IcebergTypesComparator()),
+                s3DataLakeTableSynchronizer =
+                S3DataLakeTableSynchronizer(
+                    S3DataLakeTypesComparator(),
+                    S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                 )
             )
         val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
@@ -211,7 +211,7 @@ internal class S3DataLakeWriterTest {
         } returns updateSchema
         every { updateSchema.commit() } just runs
         every { table.refresh() } just runs
-        val icebergUtil: IcebergUtil = mockk {
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
             every { toCatalogProperties(any()) } returns mapOf()
@@ -225,14 +225,14 @@ internal class S3DataLakeWriterTest {
             S3DataLakeWriter(
                 s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
                 icebergConfiguration = icebergConfiguration,
-                icebergUtil = icebergUtil,
-                icebergTableSynchronizer =
-                    IcebergTableSynchronizer(
-                        IcebergTypesComparator(),
-                        IcebergSuperTypeFinder(IcebergTypesComparator()),
+                s3DataLakeUtil = s3DataLakeUtil,
+                s3DataLakeTableSynchronizer =
+                    S3DataLakeTableSynchronizer(
+                        S3DataLakeTypesComparator(),
+                        S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                     ),
             )
-        icebergV2Writer.createStreamLoader(stream = stream)
+        s3DataLakeWriter.createStreamLoader(stream = stream)
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }
@@ -342,11 +342,11 @@ internal class S3DataLakeWriterTest {
             S3DataLakeWriter(
                 s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
                 icebergConfiguration = icebergConfiguration,
-                icebergUtil = icebergUtil,
-                icebergTableSynchronizer =
-                    IcebergTableSynchronizer(
-                        IcebergTypesComparator(),
-                        IcebergSuperTypeFinder(IcebergTypesComparator()),
+                s3DataLakeUtil = s3DataLakeUtil,
+                s3DataLakeTableSynchronizer =
+                    S3DataLakeTableSynchronizer(
+                        S3DataLakeTypesComparator(),
+                        S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                     ),
             )
         val e =

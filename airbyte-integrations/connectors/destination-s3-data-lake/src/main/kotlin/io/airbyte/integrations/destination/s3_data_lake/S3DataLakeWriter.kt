@@ -18,7 +18,7 @@ class S3DataLakeWriter(
     private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
     private val icebergConfiguration: S3DataLakeConfiguration,
     private val s3DataLakeUtil: S3DataLakeUtil,
-    private val icebergTableSynchronizer: IcebergTableSynchronizer
+    private val s3DataLakeTableSynchronizer: S3DataLakeTableSynchronizer
 ) : DestinationWriter {
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
@@ -40,7 +40,7 @@ class S3DataLakeWriter(
             existingSchema = table.schema()
         )
 
-        icebergTableSynchronizer.applySchemaChanges(table, incomingSchema)
+        s3DataLakeTableSynchronizer.applySchemaChanges(table, incomingSchema)
 
         return S3DataLakeStreamLoader(
             stream = stream,
