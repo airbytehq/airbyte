@@ -3,7 +3,7 @@ data:
     ql: 200
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: api
   connectorTestSuitesOptions:
     - suite: unitTests
@@ -17,7 +17,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: 50401137-8871-4c5a-abb7-1f5fda35545a
-  dockerImageTag: 0.3.7
+  dockerImageTag: 0.3.8
   dockerRepository: airbyte/source-dynamodb
   documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
   githubIssueLabel: source-dynamodb
