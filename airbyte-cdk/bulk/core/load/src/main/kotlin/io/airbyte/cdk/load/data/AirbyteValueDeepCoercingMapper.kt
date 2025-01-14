@@ -165,6 +165,8 @@ class AirbyteValueDeepCoercingMapper(
 
     private fun withContext(value: AirbyteValue?, context: Context): Pair<AirbyteValue, Context> =
         if (value != null) {
+            // Note: This only triggers if the value was explicitly nulled out.
+            // If the value was originally null, then value would be NullValue.i
             value to context
         } else {
             context.changes.add(
