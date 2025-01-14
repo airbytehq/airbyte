@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 3.10.0
+  dockerImageTag: 3.11.0-rc.1
   dockerRepository: airbyte/source-mysql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   githubIssueLabel: source-mysql
@@ -18,7 +18,7 @@ data:
   maxSecondsBetweenMessages: 7200
   name: MySQL
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   registryOverrides:
     cloud:
       enabled: true
@@ -72,5 +72,5 @@ data:
         message: Add default cursor for cdc
         upgradeDeadline: "2023-08-17"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"

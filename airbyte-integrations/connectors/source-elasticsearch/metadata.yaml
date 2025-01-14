@@ -3,14 +3,14 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: api
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
   connectorType: source
   definitionId: 7cf88806-25f5-4e1a-b422-b2fa9e1b0090
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-elasticsearch
   documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
   githubIssueLabel: source-elasticsearch
