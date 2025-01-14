@@ -294,13 +294,8 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: nextToken
-          #          page_size_option:
-          #            type: RequestOption
-          #            inject_into: request_parameter
-          #            field_name: MaxResultsPerPage
           pagination_strategy:
             type: CursorPagination
-            #            page_size: 100
             stop_condition: '{{ not response.get("payload", {}).get("pagination", {}).get("nextToken") }}'
             cursor_value: "{{ response.payload.pagination.nextToken }}"
 
@@ -1689,12 +1684,22 @@ definitions:
       request_headers:
         content-type: "application/json"
 
+    url_requester:
+      type: HttpRequester
+      path: reports/2021-06-30/documents/{{stream_slice['polling_job_response'].json()['reportDocumentId']}}
+      url_base: "{{ config['endpoint'] }}"
+      authenticator: "#/definitions/authenticator"
+      http_method: GET
+      request_headers:
+        content-type: "application/json"
+
     download_requester:
       type: HttpRequester
       path: "{{stream_slice.extra_fields['url'] }}"
       url_base: "{{ config['endpoint'] }}"
       http_method: GET
-      authenticator: "#/definitions/authenticator"
+      authenticator:
+        type: NoAuth
 #      request_headers:
 #        content-type: "application/json"
     download_decoder:
