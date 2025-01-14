@@ -96,7 +96,8 @@ class SapHanaSourceOperations :
                         " TABLESAMPLE BERNOULLI (${sampleRatePercentage.toPlainString()})"
                     }
                 val innerFrom: String = From(name, namespace).sql() + sample
-                "FROM (SELECT * $innerFrom LIMIT $sampleSize)"
+                val inner = "SELECT * $innerFrom ORDER BY RAND()"
+                "FROM (SELECT * FROM ($inner) LIMIT $sampleSize)"
             }
         }
 
