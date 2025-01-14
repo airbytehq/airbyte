@@ -79,6 +79,10 @@ Depending on your destination, you may know this more commonly as the "Dataset",
 
 For more details, see our [Namespace documentation](namespaces.md).
 
+## Delivery Method
+
+You can move data from a source to a destination in one of two ways, depending on whether your data is structured or unstructured. When you replicate records, you extract and load structured records, allowing for blocking and hashing individual fields, typing, and deduping. You can also copy raw files without processing them, which is appropriate for unstructured data. Read more about the difference in [Delivery methods](../delivery-methods).
+
 ## Sync Mode
 
 A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides several sync modes depending what you want to accomplish. The sync modes define how your data will sync and whether duplicates will exist in the destination.

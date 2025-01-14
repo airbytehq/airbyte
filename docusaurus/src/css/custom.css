@@ -280,3 +280,7 @@ table tr:hover {
 table thead tr:hover {
   background-color: transparent;
 }
+
+.markdown li > p {
+  margin: 0px !important;
+}

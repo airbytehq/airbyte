@@ -554,6 +554,10 @@ module.exports = {
       id: "using-airbyte/core-concepts/typing-deduping",
     },
     {
+      type: "doc",
+      id: "using-airbyte/delivery-methods",
+    },
+    {
       type: "category",
       label: "Transformations",
       items: ["cloud/managing-airbyte-cloud/dbt-cloud-integration"],
