@@ -118,7 +118,5 @@
 - from:
     - /deploying-airbyte/quickstart
   to: /using-airbyte/getting-started/oss-quickstart
-- from:
-  - /operator-guides/configuring-airbyte-db
+- from: /operator-guides/configuring-airbyte-db
   to: /deploying-airbyte/integrations/database
-  
