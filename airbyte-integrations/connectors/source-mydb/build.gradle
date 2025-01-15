@@ -1,0 +1,23 @@
+plugins {
+    id 'airbyte-bulk-connector'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc']
+    cdk = 'local'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.mydb.MyDbSource'
+}
+
+dependencies {
+    implementation(project(":airbyte-cdk:bulk:core:bulk-cdk-core-base"))
+    api(project(":airbyte-cdk:bulk:core:bulk-cdk-core-base"))
+    // Add jdbc driver dependencies here
+}
+
+compileKotlin {
+
+}

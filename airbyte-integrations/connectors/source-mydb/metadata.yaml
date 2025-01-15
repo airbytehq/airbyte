@@ -1,0 +1,29 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 0
+  allowedHosts:
+    host:
+      - ${host}
+      - ${tunnel_method.tunnel_host}
+  connectorSubType: database
+  connectorType: source
+  definitionId: 8A0FEAA0-48A1-4C98-BB37-730E4AE43D11
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-mydb
+  documentationUrl: https://docs.airbyte.io/integrations/enterprise-connectors/source-mydb
+  githubIssueLabel: source-mydb
+  icon: mydb.svg
+  license: Airbyte Enterprise
+  maxSecondsBetweenMessages: 7200
+  name: MyDB Source
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language: java
+  metadataSpecVersion: "1.0"
