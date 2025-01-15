@@ -8,9 +8,11 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
 import io.airbyte.cdk.load.file.TimeProvider
+import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -112,5 +114,29 @@ class ObjectStoragePathFactoryUTest {
 
         val matcher = factory.getPathMatcher(streamWithNullNamespace, "(-foo)?")
         assertNotNull(matcher.match("prefix/stream/any_filename"))
+    }
+
+    @Test
+    fun `handles duplicate vars in path templates`() {
+        every { pathConfigProvider.objectStoragePathConfiguration } returns
+            ObjectStoragePathConfiguration(
+                "\${NAMESPACE}/\${STREAM_NAME}",
+                null,
+                "\${YEAR}/\${MONTH}/\${DAY}/\${NAMESPACE}_\${STREAM_NAME}_\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_",
+                "{part_number}{format_extension}",
+                false,
+            )
+        val stream = mockk<DestinationStream>()
+        every { stream.descriptor } returns DestinationStream.Descriptor("namespace1", "stream_abc")
+        val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
+
+        val matcher = factory.getPathMatcher(stream, OPTIONAL_ORDINAL_SUFFIX_PATTERN)
+
+        val remoteFileKey = "namespace1/stream_abc/2024/08/30/namespace1_stream_abc_2024_08_30_1736900845782_1"
+
+        val result = matcher.match(remoteFileKey)
+
+        assertNotNull(result)
+        assertEquals(1, result!!.partNumber)
     }
 }
