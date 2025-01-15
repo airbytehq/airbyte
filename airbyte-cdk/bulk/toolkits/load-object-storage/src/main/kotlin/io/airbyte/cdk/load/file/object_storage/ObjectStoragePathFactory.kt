@@ -45,11 +45,26 @@ interface PathFactory {
 data class PathMatcher(val regex: Regex, val variableToIndex: Map<String, Int>) {
     fun match(path: String): PathMatcherResult? {
         val match = regex.matchEntire(path) ?: return null
-        return PathMatcherResult(
-            path,
-            variableToIndex["part_number"]?.let { match.groupValues[it].toLong() },
+
+        val partNumber = try {
+            variableToIndex["part_number"]?.let { match.groupValues[it].toLong() }
+        } catch (e: Exception) {
+            throw PathMatcherException(
+                "Could not parse part number from $path with pattern: ${regex.pattern} at index: ${variableToIndex["part_number"]}",
+                e,
+            )
+        }
+
+        val suffix = try {
             variableToIndex["suffix"]?.let { match.groupValues[it].let { g -> g.ifBlank { null } } }
-        )
+        } catch (e: Exception) {
+            throw PathMatcherException(
+                "Could not parse suffix from $path with pattern: ${regex.pattern} at index: ${variableToIndex["suffix"]}",
+                e,
+            )
+        }
+
+        return PathMatcherResult(path, partNumber, suffix)
     }
 }
 
@@ -411,11 +426,13 @@ class ObjectStoragePathFactory(
         val combined = "$replacedForPathWithEmptyVariablesRemoved$replacedForFile"
         val withSuffix =
             if (suffixPattern != null) {
-                variableToIndex["suffix"] = variableToIndex.size + 1
+                variableIndexTuples.add(Pair("suffix", variableIndexTuples.size + 1))
                 "$combined$suffixPattern"
             } else {
                 combined
             }
+
+        val variableToIndex = variableIndexTuples.toMap()
         return PathMatcher(Regex(withSuffix), variableToIndex)
     }
 }
