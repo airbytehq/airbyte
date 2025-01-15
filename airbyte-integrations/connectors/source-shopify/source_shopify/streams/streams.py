@@ -3,10 +3,8 @@
 #
 
 
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Mapping, MutableMapping
 
-import requests
-from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
     CustomerAddresses,
@@ -30,9 +28,6 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProductVariant,
     Transaction,
 )
-from source_shopify.shopify_graphql.graphql import get_query_products
-from source_shopify.utils import ApiTypeEnum
-from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -118,57 +113,6 @@ class MetafieldDraftOrders(IncrementalShopifyGraphQlBulkStream):
 
 class Products(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Product = Product
-
-
-class ProductsGraphQl(IncrementalShopifyStream):
-    filter_field = "updatedAt"
-    cursor_field = "updatedAt"
-    data_field = "graphql"
-    http_method = "POST"
-    # pin the old api_version before this stream is deprecated
-    api_version = "2023-07"
-
-    def request_params(
-        self,
-        stream_state: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-        **kwargs,
-    ) -> MutableMapping[str, Any]:
-        return {}
-
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
-        state_value = stream_state.get(self.filter_field)
-        if state_value:
-            filter_value = state_value
-        else:
-            filter_value = self.default_filter_field_value
-        query = get_query_products(
-            first=self.limit, filter_field=self.filter_field, filter_value=filter_value, next_page_token=next_page_token
-        )
-        return {"query": query}
-
-    @staticmethod
-    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
-        page_info = response.json()["data"]["products"]["pageInfo"]
-        has_next_page = page_info["hasNextPage"]
-        if has_next_page:
-            return page_info["endCursor"]
-        else:
-            return None
-
-    @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code is requests.codes.OK:
-            try:
-                json_response = response.json()["data"]["products"]["nodes"]
-                yield from self.produce_records(json_response)
-            except RequestException as e:
-                self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
 
 
 class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):
@@ -375,14 +319,6 @@ class Shop(ShopifyStream):
 
 class MetafieldShops(IncrementalShopifyStream):
     data_field = "metafields"
-
-
-class CustomerSavedSearch(IncrementalShopifyStream):
-    api_version = "2022-01"
-    cursor_field = "id"
-    order_field = "id"
-    data_field = "customer_saved_searches"
-    filter_field = "since_id"
 
 
 class CustomerAddress(IncrementalShopifyGraphQlBulkStream):
