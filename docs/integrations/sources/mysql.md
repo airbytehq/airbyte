@@ -226,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.0 | 2025-01-14 | [51545](https://github.com/airbytehq/airbyte/pull/51545) | Promoting release candidate 3.11.0-rc.1 to a main version. |
 | 3.11.0-rc.1 | 2025-01-09 | [51029](https://github.com/airbytehq/airbyte/pull/51029) | Fix unnecessary schema change when upgrading from legacy mysql source.                                                                          |
 | 3.10.1      | 2025-01-10 | [51510](https://github.com/airbytehq/airbyte/pull/51510) | Use a non root base image |
 | 3.10.0      | 2025-01-09 | [51008](https://github.com/airbytehq/airbyte/pull/51008) | Promoting release candidate 3.10.0-rc.9 to a main version. |
