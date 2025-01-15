@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1901024c-0249-45d0-bcac-31a954652927
-  dockerImageTag: 0.1.27
+  dockerImageTag: 0.1.29
   dockerRepository: airbyte/source-instatus
   githubIssueLabel: source-instatus
   icon: instatus.svg

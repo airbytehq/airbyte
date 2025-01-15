@@ -115,7 +115,6 @@ abstract class BasicFunctionalityIntegrationTest(
     val promoteUnionToObject: Boolean,
     val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
-    val envVars: Map<String, String>,
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
      * example:
@@ -130,6 +129,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val nullUnknownTypes: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
+    envVars: Map<String, String> = emptyMap(),
 ) :
     IntegrationTest(
         dataDumper = dataDumper,
@@ -137,7 +137,8 @@ abstract class BasicFunctionalityIntegrationTest(
         recordMangler = recordMangler,
         nameMapper = nameMapper,
         nullEqualsUnset = nullEqualsUnset,
-        configUpdater = configUpdater
+        configUpdater = configUpdater,
+        envVars = envVars,
     ) {
     val parsedConfig =
         ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))
@@ -181,7 +182,6 @@ abstract class BasicFunctionalityIntegrationTest(
                         sourceRecordCount = 1,
                     )
                 ),
-                envVars = envVars,
             )
 
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }

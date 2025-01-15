@@ -52,6 +52,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -118,6 +119,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -186,6 +188,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -252,6 +255,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -318,6 +322,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -384,6 +389,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -450,6 +456,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -516,6 +523,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -582,6 +590,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -648,6 +657,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -714,6 +724,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -780,6 +791,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -846,6 +858,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -912,6 +925,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -978,6 +992,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -1052,6 +1067,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
