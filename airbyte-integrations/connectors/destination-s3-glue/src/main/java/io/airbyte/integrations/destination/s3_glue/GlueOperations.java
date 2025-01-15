@@ -30,6 +30,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3Format;
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants;
+import io.airbyte.protocol.models.v0.SyncMode;
 
 // TODO (itaseski) implement wrapper for retry logic on transient errors
 public class GlueOperations implements MetastoreOperations {
@@ -50,7 +51,8 @@ public class GlueOperations implements MetastoreOperations {
                           String location,
                           JsonNode jsonSchema,
                           String serializationLibrary,
-                          S3DestinationConfig s3DestinationConfig) {
+                          S3DestinationConfig s3DestinationConfig,
+                          SyncMode syncMode) {
     try {
       GetTableRequest getTableRequest = new GetTableRequest()
           .withDatabaseName(databaseName)
@@ -61,13 +63,13 @@ public class GlueOperations implements MetastoreOperations {
 
       UpdateTableRequest updateTableRequest = new UpdateTableRequest()
           .withDatabaseName(databaseName)
-          .withTableInput(this.tableInputBuilder(tableName, s3DestinationConfig.getFormatConfig().getFormat(), location, jsonSchema, serializationLibrary));
+          .withTableInput(this.tableInputBuilder(tableName, s3DestinationConfig.getFormatConfig().getFormat(), location, jsonSchema, serializationLibrary, syncMode));
 
       awsGlueClient.updateTable(updateTableRequest);
     } catch (EntityNotFoundException enfe) {
       CreateTableRequest createTableRequest = new CreateTableRequest()
           .withDatabaseName(databaseName)
-          .withTableInput(this.tableInputBuilder(tableName, s3DestinationConfig.getFormatConfig().getFormat(), location, jsonSchema, serializationLibrary));
+          .withTableInput(this.tableInputBuilder(tableName, s3DestinationConfig.getFormatConfig().getFormat(), location, jsonSchema, serializationLibrary, syncMode));
 
       awsGlueClient.createTable(createTableRequest);
     }
@@ -203,7 +205,7 @@ private Collection<Column> transformSchema(JsonNode jsonSchema, S3Format s3Forma
     awsGlueClient.shutdown();
   }
 
-  private TableInput tableInputBuilder(String tableName, S3Format s3Format, String location, JsonNode jsonSchema, String serializationLibrary) {
+  private TableInput tableInputBuilder(String tableName, S3Format s3Format, String location, JsonNode jsonSchema, String serializationLibrary, SyncMode syncMode) {
     ArrayList<Column> columns = new ArrayList<>(transformSchema(jsonSchema, s3Format));
     columns.add(new Column().withName(JavaBaseConstants.COLUMN_NAME_AB_ID).withType("string"));
     columns.add(new Column().withName(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).withType("timestamp"));
@@ -234,7 +236,11 @@ private Collection<Column> transformSchema(JsonNode jsonSchema, S3Format s3Forma
         throw new RuntimeException("Unexpected output format: " + s3Format);
     };
 
-    Map<String, String> parameters = Map.of("classification", s3Format.toString().toLowerCase(), "typeOfData", "file");
+    Map<String, String> parameters = Map.of(
+      "classification", s3Format.toString().toLowerCase(),
+       "typeOfData", "file",
+       "syncMode", syncMode.toString()
+       );
 
     return new TableInput()
       .withName(tableName)

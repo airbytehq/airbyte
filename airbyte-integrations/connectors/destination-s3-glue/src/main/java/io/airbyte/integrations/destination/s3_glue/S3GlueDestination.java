@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.airbyte.protocol.models.v0.SyncMode;
 
 public class S3GlueDestination extends BaseS3Destination {
 
@@ -51,7 +52,7 @@ public class S3GlueDestination extends BaseS3Destination {
     String tableName = "test_table_" + tableSuffix;
     try {
       metastoreOperations = new GlueOperations(glueConfig.getAWSGlueInstance());
-      metastoreOperations.upsertTable(glueConfig.getDatabase(), tableName, "s3://", Jsons.emptyObject(), glueConfig.getSerializationLibrary(), s3Config);
+      metastoreOperations.upsertTable(glueConfig.getDatabase(), tableName, "s3://", Jsons.emptyObject(), glueConfig.getSerializationLibrary(), s3Config, SyncMode.FULL_REFRESH);
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
