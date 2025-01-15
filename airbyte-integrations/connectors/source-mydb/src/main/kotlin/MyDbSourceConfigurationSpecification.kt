@@ -1,4 +1,17 @@
+/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mydb
+
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.micronaut.context.annotation.ConfigurationProperties
+import jakarta.inject.Singleton
 
 @JsonSchemaTitle("MyDb Source Spec")
 @JsonPropertyOrder(
