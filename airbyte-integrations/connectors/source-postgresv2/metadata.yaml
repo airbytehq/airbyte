@@ -8,7 +8,7 @@ data:
       - ${tunnel_method.tunnel_host}
   connectorSubtype: database
   connectorType: source
-  definitionId: 8A0FEAA0-48A1-4C98-BB37-730E4AE43D11
+  definitionId: 8A0FEAA0-48A1-4C98-BB37-730E4AE43D12
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-postgresv2
   documentationUrl: https://docs.airbyte.io/integrations/enterprise-connectors/source-postgresv2
