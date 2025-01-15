@@ -8,14 +8,19 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
 import io.airbyte.cdk.load.file.TimeProvider
+import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
+import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 class ObjectStoragePathFactoryUTest {
     @MockK lateinit var stream: DestinationStream
@@ -112,5 +117,77 @@ class ObjectStoragePathFactoryUTest {
 
         val matcher = factory.getPathMatcher(streamWithNullNamespace, "(-foo)?")
         assertNotNull(matcher.match("prefix/stream/any_filename"))
+    }
+
+    @ParameterizedTest
+    @MethodSource("pathTemplateMatrix")
+    fun `handles duplicate vars in path templates`(
+        bucketPathTemplate: String,
+        filePathTemplate: String,
+        fileNameTemplate: String,
+        remoteFileKey: String,
+        expectedPartNumber: Long,
+    ) {
+        every { pathConfigProvider.objectStoragePathConfiguration } returns
+            ObjectStoragePathConfiguration(
+                bucketPathTemplate,
+                null,
+                filePathTemplate,
+                fileNameTemplate,
+                false,
+            )
+        val stream = mockk<DestinationStream>()
+        every { stream.descriptor } returns DestinationStream.Descriptor("namespace1", "stream_abc")
+        val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
+
+        val matcher = factory.getPathMatcher(stream, OPTIONAL_ORDINAL_SUFFIX_PATTERN)
+
+        val result = matcher.match(remoteFileKey)
+
+        assertNotNull(result)
+        assertEquals(expectedPartNumber, result!!.partNumber)
+    }
+
+    companion object {
+        @JvmStatic
+        private fun pathTemplateMatrix(): Stream<Arguments> {
+            return Stream.of(
+                Arguments.arguments(
+                    "\${NAMESPACE}/\${STREAM_NAME}",
+                    "\${YEAR}/\${MONTH}/\${DAY}/\${NAMESPACE}_\${BIRD_DOG}_\${STREAM_NAME}_\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_",
+                    "{part_number}{format_extension}",
+                    "namespace1/stream_abc/2024/08/30/namespace1_BIRD_DOG_stream_abc_2024_08_30_1736900845782_1",
+                    1L,
+                ),
+                Arguments.arguments(
+                    "\${NAMESPACE}/\${STREAM_NAME}",
+                    "\${YEAR}/\${MONTH}/\${DAY}/\${NAMESPACE}_\${STREAM_NAME}_\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_",
+                    "{part_number}{format_extension}",
+                    "namespace1/stream_abc/2024/08/30/namespace1_stream_abc_2024_08_30_1736900845782_5",
+                    5L,
+                ),
+                Arguments.arguments(
+                    "\${NAMESPACE}/\${STREAM_NAME}",
+                    "\${YEAR}/\${MONTH}/\${DAY}/\${NAMESPACE}_\${STREAM_NAME}_\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_",
+                    "{part_number}{format_extension}",
+                    "namespace1/stream_abc/2024/08/30/namespace1_stream_abc_2024_08_30_1736900845782_7",
+                    7L,
+                ),
+                Arguments.arguments(
+                    "\${NAMESPACE}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}",
+                    "_",
+                    "{part_number}{format_extension}",
+                    "namespace1/stream_abc/stream_abc/stream_abc/stream_abc/_0",
+                    0,
+                ),
+                Arguments.arguments(
+                    "\${NAMESPACE}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}",
+                    "",
+                    "{part_number}{format_extension}",
+                    "namespace1/stream_abc/stream_abc/stream_abc/stream_abc0",
+                    0,
+                ),
+            )
+        }
     }
 }
