@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mydb
+package io.airbyte.integrations.source.postgresv2
 
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
@@ -13,7 +13,7 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.time.Duration
 
-data class MyDbSourceConfiguration(
+data class PostgresV2SourceConfiguration(
     override val realHost: String,
     override val realPort: Int,
     override val jdbcProperties: Map<String, String>,
@@ -36,29 +36,29 @@ data class MyDbSourceConfiguration(
     @Factory
     private class MicronautFactory {
         @Singleton
-        fun mydbSourceConfig(
+        fun postgresV2Config(
             factory:
                 SourceConfigurationFactory<
-                    MyDbSourceConfigurationSpecification,
-                    MyDbSourceConfiguration,
+                    PostgresV2SourceConfigurationSpecification,
+                    PostgresV2SourceConfiguration,
                 >,
-            supplier: ConfigurationSpecificationSupplier<MyDbSourceConfigurationSpecification>,
-        ): MyDbSourceConfiguration = factory.make(supplier.get())
+            supplier: ConfigurationSpecificationSupplier<PostgresV2SourceConfigurationSpecification>,
+        ): PostgresV2SourceConfiguration = factory.make(supplier.get())
     }
 }
 
 @Singleton
-class MyDbSourceConfigurationFactory :
-    SourceConfigurationFactory<MyDbSourceConfigurationSpecification, MyDbSourceConfiguration> {
+class PostgresV2SourceConfigurationFactory :
+    SourceConfigurationFactory<PostgresV2SourceConfigurationSpecification, PostgresV2SourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: MyDbSourceConfigurationSpecification
-    ): MyDbSourceConfiguration {
+        pojo: PostgresV2SourceConfigurationSpecification
+    ): PostgresV2SourceConfiguration {
         val realHost = pojo.host
         val realPort = pojo.port
         val jdbcProperties = mutableMapOf<String, String>()
         jdbcProperties["user"] = pojo.username
         pojo.password?.let { jdbcProperties["password"] = it }
-        return MyDbSourceConfiguration(
+        return PostgresV2SourceConfiguration(
             realHost = realHost,
             realPort = realPort,
             jdbcProperties = jdbcProperties,

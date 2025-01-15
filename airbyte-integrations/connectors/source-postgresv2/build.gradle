@@ -3,7 +3,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.mydb.MyDbSource'
+    mainClass = 'io.airbyte.integrations.source.postgresv2.PostgresV2'
 }
 
 airbyteBulkConnector {

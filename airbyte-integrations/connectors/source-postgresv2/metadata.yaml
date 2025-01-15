@@ -10,13 +10,13 @@ data:
   connectorType: source
   definitionId: 8A0FEAA0-48A1-4C98-BB37-730E4AE43D11
   dockerImageTag: 0.0.1
-  dockerRepository: airbyte/source-mydb
-  documentationUrl: https://docs.airbyte.io/integrations/enterprise-connectors/source-mydb
-  githubIssueLabel: source-mydb
-  icon: mydb.svg
+  dockerRepository: airbyte/source-postgresv2
+  documentationUrl: https://docs.airbyte.io/integrations/enterprise-connectors/source-postgresv2
+  githubIssueLabel: source-postgresv2
+  icon: postgresv2.svg
   license: ELv2
   maxSecondsBetweenMessages: 7200
-  name: MyDB
+  name: PostgresV2
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   registryOverrides:

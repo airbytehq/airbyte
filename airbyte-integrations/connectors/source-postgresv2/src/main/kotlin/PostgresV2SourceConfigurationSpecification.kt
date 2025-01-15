@@ -1,9 +1,10 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source.mydb
+package io.airbyte.integrations.source.postgresv2
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaArrayWithUniqueItems
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
@@ -13,7 +14,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.micronaut.context.annotation.ConfigurationProperties
 import jakarta.inject.Singleton
 
-@JsonSchemaTitle("MyDb Source Spec")
+@JsonSchemaTitle("PostgresV2 Source Spec")
 @JsonPropertyOrder(
     value =
         [
@@ -21,12 +22,14 @@ import jakarta.inject.Singleton
             "port",
             "username",
             "password",
+            "database",
+            "schemas",
         ],
 )
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class MyDbSourceConfigurationSpecification : ConfigurationSpecification() {
+class PostgresV2SourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
     @JsonSchemaInject(json = """{"order":1}""")
@@ -53,4 +56,18 @@ class MyDbSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription("The password associated with the username.")
     @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
     var password: String? = null
+
+    @JsonProperty("database")
+    @JsonSchemaTitle("Database")
+    @JsonPropertyDescription("The database name.")
+    @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
+    lateinit var database: String
+
+    @JsonProperty("schemas")
+    @JsonSchemaTitle("Schemas")
+    @JsonSchemaArrayWithUniqueItems("schemas")
+    @JsonPropertyDescription("The list of schemas to sync from. Case sensitive.")
+    @JsonSchemaInject(json = """{"order":7,"always_show":true,"uniqueItems":true}""")
+    var schemas: List<String>? = null
+
 }
