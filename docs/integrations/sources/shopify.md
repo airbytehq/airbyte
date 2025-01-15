@@ -147,7 +147,6 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Customers](https://shopify.dev/api/admin-rest/2024-04/resources/customer#top)
 - [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/customerjourneysummary)
 - [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Customer#field-customer-addresses)
-- [Customer Saved Search](https://shopify.dev/docs/api/admin-rest/2024-04/resources/customersavedsearch)
 - [Draft Orders](https://shopify.dev/api/admin-rest/2024-04/resources/draftorder#top)
 - [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/unions/DiscountCode)
 - [Disputes](https://shopify.dev/docs/api/admin-rest/2024-04/resources/dispute)
@@ -247,7 +246,8 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.5.19 | 2025-01-14 | [50976](https://github.com/airbytehq/airbyte/pull/50976) | Retry requests that return HTTP 500 |
+| 2.6.1 | 2025-01-14 | [50976](https://github.com/airbytehq/airbyte/pull/50976) | Retry requests that return HTTP 500 |
+| 2.6.0 | 2025-01-10 | [51037](https://github.com/airbytehq/airbyte/pull/51037) | Deprecated the `ProductsGraphQL` and `CustomerSavedSearch` streams from the stream catalog |
 | 2.5.18 | 2025-01-11 | [51326](https://github.com/airbytehq/airbyte/pull/51326) | Update dependencies |
 | 2.5.17 | 2025-01-06 | [50884](https://github.com/airbytehq/airbyte/pull/50884) | Add `moments` field `Customer Journey Summary` stream |
 | 2.5.16 | 2025-01-04 | [50938](https://github.com/airbytehq/airbyte/pull/50938) | Update dependencies |
