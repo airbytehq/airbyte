@@ -199,6 +199,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 1.5.14 | 2025-01-10 | [51491](https://github.com/airbytehq/airbyte/pull/51491) | Use a non root base image |
 | 1.5.13 | 2024-12-18 | [49868](https://github.com/airbytehq/airbyte/pull/49868) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 1.5.12 | 2024-11-01 | [48115](https://github.com/airbytehq/airbyte/pull/48115) | Remove database name check. |
 | 1.5.11 | 2024-09-24 | [45883](https://github.com/airbytehq/airbyte/pull/45883) | Lazy init mongocursor to prevent timeout. |

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "5.1.0-rc.1"
+version = "5.1.0"
 name = "source-linkedin-ads"
 description = "Source implementation for Linkedin Ads."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_linkedin_ads"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = { version = "6.12.1.dev0", allow-prereleases = true }
+airbyte-cdk = { version = "6.12.1.dev0", allow-prereleases = true } # Set this to an official release as soon as https://github.com/airbytehq/airbyte-python-cdk/pull/177 is merged and included in a CDK release.
 coverage = "^7.5.3"
 
 [tool.poetry.scripts]
