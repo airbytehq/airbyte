@@ -13,7 +13,7 @@ Also check our [privacy policy](https://airbyte.com/privacy-policy) for more det
 
 <Tabs groupId="cloud-hosted">
   <TabItem value="self-managed" label="Self Managed">
-      To disable telemetry for your instance, modify the `.env` file and define the following environment variable:
+      To disable telemetry for your instance, modify the `values.yaml` file and define the following environment variable:
 
       ```
       TRACKING_STRATEGY=logging
