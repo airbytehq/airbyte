@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToSqlType
@@ -28,6 +29,8 @@ import java.lang.ArithmeticException
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Statement
+import java.sql.Timestamp
+import java.time.Instant
 import java.util.UUID
 
 class MSSQLQueryBuilder(

@@ -30,21 +30,26 @@ runs:
     - name: "Determine how Airbyte CI should be installed"
       shell: bash
       id: determine-install-mode
-      # When the PR is from a fork, we always install from binary
-      if: inputs.is_fork == 'false'
       run: |
-        if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
-          echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
-          echo "install-mode=source" >> $GITHUB_OUTPUT
-          echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
-        else
-          echo "install-mode=binary" >> $GITHUB_OUTPUT
-          echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
-        fi
+        echo "install-mode=source" >> $GITHUB_OUTPUT
+        echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
+
+      # When the PR is from a fork, we always install from binary
+      # if: inputs.is_fork == 'false'
+      # run: |
+      #   if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
+      #     echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
+      #     echo "install-mode=source" >> $GITHUB_OUTPUT
+      #     echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
+      #   else
+      #     echo "install-mode=binary" >> $GITHUB_OUTPUT
+      #     echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
+      #   fi
 
     - name: Install Airbyte CI from binary
       id: install-airbyte-ci-binary
-      if: steps.determine-install-mode.outputs.install-mode == 'binary' || ${{ inputs.is_fork }} == 'true'
+      if: false
+      # if: steps.determine-install-mode.outputs.install-mode == 'binary' || ${{ inputs.is_fork }} == 'true'
       shell: bash
       run: |
         curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
@@ -54,20 +59,26 @@ runs:
     - name: Install Python 3.10
       id: install-python-3-10
       uses: actions/setup-python@v4
-      if: steps.determine-install-mode.outputs.install-mode == 'source'
+      # if: steps.determine-install-mode.outputs.install-mode == 'source'
       with:
         python-version: "3.10"
         token: ${{ inputs.github_token }}
 
     - name: Install Airbyte CI from source
       id: install-airbyte-ci-source
-      if: steps.determine-install-mode.outputs.install-mode == 'source'
+      if: true
+      # if: steps.determine-install-mode.outputs.install-mode == 'source'
       shell: bash
       run: |
         pip install --upgrade pip
         pip install pipx
         pipx ensurepath
         pipx install ${{ inputs.path_to_airbyte_ci_source }}
+
+    - name: Print installed `airbyte-ci` version
+      shell: bash
+      run: |
+        airbyte-ci --version
 
     - name: Get dagger engine image name
       id: get-dagger-engine-image-name

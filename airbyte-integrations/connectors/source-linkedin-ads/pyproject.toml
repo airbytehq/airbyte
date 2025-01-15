@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "5.0.0"
+version = "5.1.0-rc.2"
 name = "source-linkedin-ads"
 description = "Source implementation for Linkedin Ads."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_linkedin_ads"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^5"
+airbyte-cdk = "^6"
 coverage = "^7.5.3"
 
 [tool.poetry.scripts]

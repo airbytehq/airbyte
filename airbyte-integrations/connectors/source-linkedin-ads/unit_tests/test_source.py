@@ -1,12 +1,13 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from typing import Any, Dict, List
 
 import pytest
 import requests
-from conftest import find_stream
+from conftest import find_stream, get_source, load_json_file
 from source_linkedin_ads.source import SourceLinkedinAds
 
 from airbyte_cdk.models import SyncMode
@@ -32,7 +33,8 @@ TEST_OAUTH_CONFIG: dict = {
 }
 
 TEST_CONFIG: dict = {
-    "start_date": "2021-08-01",
+    "start_date": "2021-01-01",
+    "end_date": "2021-02-01",
     "account_ids": [1, 2],
     "credentials": {
         "auth_method": "access_token",
@@ -58,7 +60,9 @@ TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
 
 
 class TestAllStreams:
-    _instance: SourceLinkedinAds = SourceLinkedinAds()
+    @pytest.fixture
+    def linkedin_source(self) -> SourceLinkedinAds:
+        return get_source(TEST_CONFIG)
 
     @staticmethod
     def _mock_initialize_cache_for_parent_streams(stream_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -104,11 +108,34 @@ class TestAllStreams:
         with pytest.raises(DefaultBackoffException):
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
-    def test_custom_streams(self):
+    def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
-        ad_campaign_analytics = find_stream("ad_campaign_analytics", config)
-        for stream in self._instance._create_custom_ad_analytics_streams(config=config):
-            assert isinstance(stream, type(ad_campaign_analytics))
+        streams = get_source(config).streams(config=config)
+        custom_streams = [stream for stream in streams if "custom_" in stream.name]
+
+        assert len(custom_streams) == 1
+
+        custom_stream = custom_streams[0]
+        requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
+        requests_mock.get(
+            "https://api.linkedin.com/rest/adAccounts/1/adCampaigns?q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,"
+            "COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
+            json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]},
+        )
+        requests_mock.get(
+            "https://api.linkedin.com/rest/adAnalytics?q=analytics&pivot=(value:COMPANY)&timeGranularity=(value:MONTHLY)&campaigns=List("
+            "urn%3Ali%3AsponsoredCampaign%3A1111)&dateRange=(start:(year:2021,month:1,day:1),end:(year:2021,month:1,day:31))",
+            [
+                {"json": load_json_file("responses/ad_member_country_analytics/response_1.json")},
+                {"json": load_json_file("responses/ad_member_country_analytics/response_2.json")},
+                {"json": load_json_file("responses/ad_member_country_analytics/response_3.json")},
+            ],
+        )
+
+        stream_slice = next(custom_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+        records = list(custom_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=None))
+
+        assert len(records) == 2
 
     @pytest.mark.parametrize(
         "stream_name, expected",
@@ -152,7 +179,7 @@ class TestAllStreams:
             (200, True, None),
         ),
     )
-    def test_check_connection(self, requests_mock, status_code, is_connection_successful, error_msg, mocker):
+    def test_check_connection(self, requests_mock, linkedin_source, status_code, is_connection_successful, error_msg, mocker):
         mocker.patch.object(
             ManifestDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams
         )
@@ -164,14 +191,19 @@ class TestAllStreams:
             status_code=status_code,
             json=json,
         )
-        success, error = self._instance.check_connection(logger=logger, config=TEST_CONFIG)
+        success, error = linkedin_source.check_connection(logger=logger, config=TEST_CONFIG)
         assert success is is_connection_successful
         assert error == error_msg
 
 
 class TestLinkedinAdsStream:
-    stream: Stream = find_stream("accounts", TEST_CONFIG)
-    url = f"{stream.retriever.requester.url_base}/{stream.retriever.requester.path}"
+    @pytest.fixture
+    def accounts_stream(self) -> Stream:
+        return find_stream("accounts", TEST_CONFIG)
+
+    @pytest.fixture
+    def accounts_stream_url(self, accounts_stream) -> str:
+        return f"{accounts_stream.retriever.requester.url_base}/{accounts_stream.retriever.requester.path}"
 
     @pytest.mark.parametrize(
         "response_json, expected",
@@ -183,9 +215,9 @@ class TestLinkedinAdsStream:
             ),
         ),
     )
-    def test_next_page_token(self, requests_mock, response_json, expected):
-        requests_mock.get(self.url, json=response_json)
-        test_response = requests.get(self.url)
+    def test_next_page_token(self, requests_mock, accounts_stream, accounts_stream_url, response_json, expected):
+        requests_mock.get(accounts_stream_url, json=response_json)
+        test_response = requests.get(accounts_stream_url)
 
-        result = self.stream.retriever._next_page_token(test_response)
+        result = accounts_stream.retriever._next_page_token(test_response)
         assert expected == result
