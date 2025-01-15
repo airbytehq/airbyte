@@ -60,6 +60,12 @@ definitions:
     record_selector: "#/definitions/selector"
     requester: "#/definitions/requester"
     paginator: "#/definitions/paginator"
+    decoder:
+      type: CompositeRawDecoder
+      parser:
+        type: GzipParser
+        inner_parser:
+          type: JsonParser
 
   semi_incremental_retriever:
     $ref: "#/definitions/base_retriever"
@@ -989,7 +995,7 @@ spec:
         description: >-
           Certain streams like the profiles stream can retrieve predictive analytics data from Klaviyo's
           API. However, at high volume, this can lead to service availability issues on the API which can
-          be improved by not fetching this field. WARNING: Enabling this setting will stop the 
+          be improved by not fetching this field. WARNING: Enabling this setting will stop the
           "predictive_analytics" column from being populated in your downstream destination.
         order: 2
       num_workers:
