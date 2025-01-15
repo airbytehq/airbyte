@@ -58,6 +58,9 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.6.18 | 2025-01-11 | [51288](https://github.com/airbytehq/airbyte/pull/51288) | Update dependencies |
+| 0.6.17 | 2025-01-04 | [50906](https://github.com/airbytehq/airbyte/pull/50906) | Update dependencies |
+| 0.6.16 | 2024-12-28 | [50486](https://github.com/airbytehq/airbyte/pull/50486) | Update dependencies |
 | 0.6.15 | 2024-12-21 | [50150](https://github.com/airbytehq/airbyte/pull/50150) | Update dependencies |
 | 0.6.14 | 2024-12-14 | [49017](https://github.com/airbytehq/airbyte/pull/49017) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.6.13 | 2024-10-29 | [47097](https://github.com/airbytehq/airbyte/pull/47097) | Update dependencies |

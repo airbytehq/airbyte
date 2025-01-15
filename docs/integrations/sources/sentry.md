@@ -65,6 +65,9 @@ Please be aware: this also means that any change older than 90 days will not be 
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.6.5 | 2025-01-11 | [51335](https://github.com/airbytehq/airbyte/pull/51335) | Update dependencies |
+| 0.6.4 | 2025-01-04 | [50930](https://github.com/airbytehq/airbyte/pull/50930) | Update dependencies |
+| 0.6.3 | 2024-12-28 | [50709](https://github.com/airbytehq/airbyte/pull/50709) | Update dependencies |
 | 0.6.2 | 2024-12-21 | [49058](https://github.com/airbytehq/airbyte/pull/49058) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.6.1 | 2024-11-04 | [43855](https://github.com/airbytehq/airbyte/pull/43855) | Update dependencies |
 | 0.6.0 | 2024-10-30 | [47988](https://github.com/airbytehq/airbyte/pull/47988) | Upgrade the CDK and startup files to sync incremental streams concurrently |

@@ -15,7 +15,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 008b2e26-11a3-11ec-82a8-0242ac130003
-  dockerImageTag: 0.2.25
+  dockerImageTag: 0.2.28
   dockerRepository: airbyte/source-commercetools
   githubIssueLabel: source-commercetools
   icon: commercetools.svg

@@ -153,6 +153,9 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 6.2.5 | 2025-01-11 | [51239](https://github.com/airbytehq/airbyte/pull/51239) | Update dependencies |
+| 6.2.4 | 2025-01-04 | [50902](https://github.com/airbytehq/airbyte/pull/50902) | Update dependencies |
+| 6.2.3 | 2024-12-28 | [50478](https://github.com/airbytehq/airbyte/pull/50478) | Update dependencies |
 | 6.2.2 | 2024-12-21 | [50202](https://github.com/airbytehq/airbyte/pull/50202) | Update dependencies |
 | 6.2.1 | 2024-12-14 | [48229](https://github.com/airbytehq/airbyte/pull/48229) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 6.2.0 | 2024-11-12 | [48116](https://github.com/airbytehq/airbyte/pull/48116) | Migrate REST streams to low-code |

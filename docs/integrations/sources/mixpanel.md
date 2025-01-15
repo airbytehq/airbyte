@@ -58,6 +58,9 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.15 | 2025-01-11 | [51216](https://github.com/airbytehq/airbyte/pull/51216) | Update dependencies |
+| 3.4.14 | 2025-01-04 | [50891](https://github.com/airbytehq/airbyte/pull/50891) | Update dependencies |
+| 3.4.13 | 2024-12-28 | [50596](https://github.com/airbytehq/airbyte/pull/50596) | Update dependencies |
 | 3.4.12 | 2024-12-21 | [50095](https://github.com/airbytehq/airbyte/pull/50095) | Update dependencies |
 | 3.4.11 | 2024-12-14 | [49249](https://github.com/airbytehq/airbyte/pull/49249) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 3.4.10 | 2024-12-12 | [48948](https://github.com/airbytehq/airbyte/pull/48948) | Update dependencies |

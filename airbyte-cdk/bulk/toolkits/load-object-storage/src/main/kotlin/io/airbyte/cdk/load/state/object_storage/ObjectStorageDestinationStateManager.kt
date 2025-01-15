@@ -21,7 +21,7 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.nio.file.Paths
-import kotlinx.coroutines.flow.map
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
@@ -31,14 +31,17 @@ import kotlinx.coroutines.sync.withLock
 class ObjectStorageDestinationState(
     // (State -> (GenerationId -> (Key -> PartNumber)))
     @JsonProperty("generations_by_state")
-    var generationMap: MutableMap<State, MutableMap<Long, MutableMap<String, Long>>> =
-        mutableMapOf(),
+    var generationMap:
+        ConcurrentHashMap<State, ConcurrentHashMap<Long, ConcurrentHashMap<String, Long>>> =
+        ConcurrentHashMap(),
     @JsonProperty("count_by_key") var countByKey: MutableMap<String, Long> = mutableMapOf()
 ) : DestinationState {
     enum class State {
         STAGED,
         FINALIZED
     }
+
+    @JsonIgnore private val countByKeyLock = Mutex()
 
     companion object {
         const val METADATA_GENERATION_ID_KEY = "ab-generation-id"
@@ -50,8 +53,6 @@ class ObjectStorageDestinationState(
             mapOf(METADATA_GENERATION_ID_KEY to stream.generationId.toString())
     }
 
-    @JsonIgnore private val accessLock = Mutex()
-
     suspend fun addObject(
         generationId: Long,
         key: String,
@@ -59,23 +60,19 @@ class ObjectStorageDestinationState(
         isStaging: Boolean = false
     ) {
         val state = if (isStaging) State.STAGED else State.FINALIZED
-        accessLock.withLock {
-            generationMap
-                .getOrPut(state) { mutableMapOf() }
-                .getOrPut(generationId) { mutableMapOf() }[key] = partNumber ?: 0L
-        }
+        generationMap
+            .getOrPut(state) { ConcurrentHashMap() }
+            .getOrPut(generationId) { ConcurrentHashMap() }[key] = partNumber ?: 0L
     }
 
     suspend fun removeObject(generationId: Long, key: String, isStaging: Boolean = false) {
         val state = if (isStaging) State.STAGED else State.FINALIZED
-        accessLock.withLock { generationMap[state]?.get(generationId)?.remove(key) }
+        generationMap[state]?.get(generationId)?.remove(key)
     }
 
     suspend fun dropGenerationsBefore(minimumGenerationId: Long) {
-        accessLock.withLock {
-            State.entries.forEach { state ->
-                (0 until minimumGenerationId).forEach { generationMap[state]?.remove(it) }
-            }
+        State.entries.forEach { state ->
+            (0 until minimumGenerationId).forEach { generationMap[state]?.remove(it) }
         }
     }
 
@@ -91,21 +88,19 @@ class ObjectStorageDestinationState(
     )
 
     suspend fun getGenerations(): Sequence<Generation> =
-        accessLock.withLock {
-            generationMap.entries
-                .asSequence()
-                .map { (state, gens) ->
-                    val isStaging = state == State.STAGED
-                    gens.map { (generationId, objects) ->
-                        Generation(
-                            isStaging,
-                            generationId,
-                            objects.map { (key, partNumber) -> ObjectAndPart(key, partNumber) }
-                        )
-                    }
+        generationMap.entries
+            .asSequence()
+            .map { (state, gens) ->
+                val isStaging = state == State.STAGED
+                gens.map { (generationId, objects) ->
+                    Generation(
+                        isStaging,
+                        generationId,
+                        objects.map { (key, partNumber) -> ObjectAndPart(key, partNumber) }
+                    )
                 }
-                .flatten()
-        }
+            }
+            .flatten()
 
     suspend fun getNextPartNumber(): Long =
         getGenerations().flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
@@ -133,7 +128,9 @@ class ObjectStorageDestinationState(
     /** Used to guarantee the uniqueness of a key */
     suspend fun ensureUnique(key: String): String {
         val ordinal =
-            accessLock.withLock { countByKey.merge(key, 0L) { old, new -> maxOf(old + 1, new) } }
+            countByKeyLock.withLock {
+                countByKey.merge(key, 0L) { old, new -> maxOf(old + 1, new) }
+            }
                 ?: 0L
         return if (ordinal > 0L) {
             "$key-$ordinal"
@@ -192,33 +189,39 @@ class ObjectStorageFallbackPersister(
             "Searching path $longestUnambiguous (matching ${matcher.regex}) for destination state metadata"
         }
         val matches = client.list(longestUnambiguous).mapNotNull { matcher.match(it.key) }.toList()
+
+        /* Initialize the unique key counts. */
         val countByKey = mutableMapOf<String, Long>()
         matches.forEach {
             val key = it.path.replace(Regex("-[0-9]+$"), "")
             val ordinal = it.customSuffix?.substring(1)?.toLongOrNull() ?: 0
             countByKey.merge(key, ordinal) { a, b -> maxOf(a, b) }
         }
-        matches
-            .groupBy {
-                client
-                    .getMetadata(it.path)[ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY]
-                    ?.toLong()
-                    ?: 0L
-            }
-            .mapValues { (_, matches) ->
-                matches.associate { it.path to (it.partNumber ?: 0L) }.toMutableMap()
-            }
-            .toMutableMap()
-            .let {
-                val generationSizes = it.map { gen -> gen.key to gen.value.size }
-                log.info {
-                    "Inferred state for generations with size: $generationSizes (minimum=${stream.minimumGenerationId}; current=${stream.generationId})"
-                }
-                return ObjectStorageDestinationState(
-                    mutableMapOf(ObjectStorageDestinationState.State.FINALIZED to it),
-                    countByKey
+
+        /* Build (generationId -> (key -> fileNumber)). */
+        val generationIdToKeyAndFileNumber =
+            ConcurrentHashMap(
+                matches
+                    .groupBy {
+                        client
+                            .getMetadata(it.path)[
+                                ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY]
+                            ?.toLong()
+                            ?: 0L
+                    }
+                    .mapValues { (_, matches) ->
+                        ConcurrentHashMap(matches.associate { it.path to (it.partNumber ?: 0L) })
+                    }
+            )
+
+        return ObjectStorageDestinationState(
+            ConcurrentHashMap(
+                mapOf(
+                    ObjectStorageDestinationState.State.FINALIZED to generationIdToKeyAndFileNumber
                 )
-            }
+            ),
+            countByKey
+        )
     }
 
     override suspend fun persist(stream: DestinationStream, state: ObjectStorageDestinationState) {
