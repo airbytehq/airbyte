@@ -1,0 +1,6 @@
+# Default to OSS in the absence of an env variable
+deployment:
+  mode: oss
+airbyte:
+  destination:
+    record-batch-size-override: 1 # Microbatch for testing

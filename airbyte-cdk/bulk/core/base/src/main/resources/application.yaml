@@ -1,4 +1,7 @@
 airbyte:
+  core:
+    deployment:
+      mode: ${DEPLOYMENT_MODE:OSS}
   file-transfer:
     enabled: ${USE_FILE_TRANSFER:false}
     staging-path: ${AIRBYTE_STAGING_DIRECTORY:/staging/files}

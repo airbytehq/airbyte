@@ -18,6 +18,13 @@ import picocli.CommandLine.Model.ArgGroupSpec
 import picocli.CommandLine.Model.OptionSpec
 import picocli.CommandLine.Model.UsageMessageSpec
 
+// A pair of micronaut environment names. Intended for use by connectors,
+// which can create `src/main/resources/application-override.yaml` and
+// `src/test-integration/resources/application-test-override.yaml` to override
+// CDK property declarations.
+const val OVERRIDE_ENV = "override"
+const val TEST_OVERRIDE_ENV = "test-override"
+
 /** Source connector entry point. */
 class AirbyteSourceRunner(
     /** CLI args. */
@@ -105,7 +112,12 @@ sealed class AirbyteConnectorRunner(
         val additionalPropertiesSource =
             MapPropertySource("additional_properties", additionalProperties)
         val ctx: ApplicationContext =
-            ApplicationContext.builder(R::class.java, *envs)
+            // Note: the override envs are applied last, with test-override coming after override.
+            // If the same property appears in multiple application-XYZ.yaml files,
+            // the last-declared env wins, so this allows connectors to override CDK declarations,
+            // and connector tests to override connector runtime declarations..
+            // (sidenote: application-XYZ.yaml wins over application.yaml)
+            ApplicationContext.builder(R::class.java, *envs, OVERRIDE_ENV, TEST_OVERRIDE_ENV)
                 .propertySources(
                     *listOfNotNull(
                             airbytePropertySource,

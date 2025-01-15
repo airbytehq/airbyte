@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -46,7 +45,6 @@ sealed class DevNullSpecification : ConfigurationSpecification() {
  */
 @JsonSchemaTitle("E2E Test Destination Spec")
 @Singleton
-@Requires(notEnv = [AIRBYTE_CLOUD_ENV])
 @Requires(property = "airbyte.core.deployment.mode", value = "OSS")
 class DevNullSpecificationOss : DevNullSpecification() {
     @JsonProperty("test_destination")
