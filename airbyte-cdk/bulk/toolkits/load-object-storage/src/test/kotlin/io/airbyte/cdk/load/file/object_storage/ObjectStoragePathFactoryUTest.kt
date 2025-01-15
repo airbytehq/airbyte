@@ -13,12 +13,12 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import java.util.stream.Stream
-import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
@@ -188,7 +188,6 @@ class ObjectStoragePathFactoryUTest {
                     0,
                 ),
             )
-
         }
     }
 }
