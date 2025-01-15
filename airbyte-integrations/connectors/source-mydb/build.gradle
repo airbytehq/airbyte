@@ -3,7 +3,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.mydb.MySbSource'
+    mainClass = 'io.airbyte.integrations.source.mydb.MyDbSource'
 }
 
 airbyteBulkConnector {
