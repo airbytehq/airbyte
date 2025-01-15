@@ -117,7 +117,7 @@ sealed class AirbyteConnectorRunner(
             // the last-declared env wins, so this allows connectors to override CDK declarations,
             // and connector tests to override connector runtime declarations..
             // (sidenote: application-XYZ.yaml wins over application.yaml)
-            ApplicationContext.builder(R::class.java, *envs, OVERRIDE_ENV, TEST_OVERRIDE_ENV)
+            ApplicationContext.builder(R::class.java, *envs, *additionalEnvironments, OVERRIDE_ENV, TEST_OVERRIDE_ENV)
                 .propertySources(
                     *listOfNotNull(
                             airbytePropertySource,
@@ -127,7 +127,6 @@ sealed class AirbyteConnectorRunner(
                         )
                         .toTypedArray(),
                 )
-                .environments(*additionalEnvironments)
                 .beanDefinitions(*testBeanDefinitions)
                 .start()
         val isTest: Boolean = ctx.environment.activeNames.contains(Environment.TEST)
