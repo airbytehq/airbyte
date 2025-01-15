@@ -22,7 +22,7 @@ wcmatch = "==10.0"
 dill = "==0.3.4"
 transformers = "4.38.2"
 urllib3 = "<2"
-airbyte-cdk = {extras = ["file-based"], version = "6.13.1.dev04105"}
+airbyte-cdk = {extras = ["file-based"], version = "6.13.1.dev04107"}
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
