@@ -14,6 +14,8 @@ Implementing Airbyte this way has several advantages.
 - **Access control**: You have more control over who can access and modify images.
 - **Compliance**: By keeping images in a controlled environment, it's easier to prove compliance with regulatory requirements for data storage and handling.
 
+[Custom Docker connectors](../operator-guides/using-custom-connectors/) in your workspace that specify an image using a fully qualified domain name (for example, `example.com/airbyte/your-custom-source`) ignore your configured custom image registry and pull images from the domain specified by that connector.
+
 ## Before you start
 
 Set up your custom image registry. The examples in this article use GitHub, but you have many options. Here are some popular ones:
@@ -90,10 +92,22 @@ If your registry requires authentication, you can create a Kubernetes secret and
 
 ## Step 2: Tag and push Airbyte images
 
-Tag and push Airbyte's images to your custom image registry. In this example, you tag all Airbyte images and push them all to GitHub.
+Tag and push Airbyte's images to your custom image registry. 
+
+In this example, you tag all platform images and push them all to GitHub.
 
 ```bash
 abctl images manifest | xargs -L1 -I{} docker tag {} ghcr.io/NAMESPACE/{} && docker push ghcr.io/NAMESPACE/{}
+```
+
+You can also pull Airbyte's connector images from Docker, tag them, and push them to your custom image registry. You must do this prior to adding a source or destination.
+
+In this example, you pull a connector from Docker, tag it, and push it to GitHub.
+
+```bash
+docker pull airbyte/destination-google-sheets:latest
+docker tag airbyte/desination-google-sheets:latest ghcr.io/NAMESPACE/desination-google-sheets:latest
+docker push ghcr.io/NAMESPACE/destination-google-sheets:latest    
 ```
 
 Now, when you install Airbyte, images will come from the custom image registry you configured.
