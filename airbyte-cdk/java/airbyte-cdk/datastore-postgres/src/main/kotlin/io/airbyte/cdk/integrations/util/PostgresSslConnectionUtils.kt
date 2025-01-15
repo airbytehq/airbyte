@@ -68,11 +68,7 @@ object PostgresSslConnectionUtils {
             if (file.exists()) {
                 keyStorePassword = readFile(file)
             } else {
-                try {
-                    createCertificateFile(ENCRYPT_FILE_NAME, keyStorePassword)
-                } catch (e: IOException) {
-                    throw RuntimeException("Failed to create encryption file ")
-                }
+                createCertificateFile(ENCRYPT_FILE_NAME, keyStorePassword)
             }
         } else {
             keyStorePassword = sslPassword
