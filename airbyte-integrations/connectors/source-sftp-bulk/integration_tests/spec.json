@@ -467,7 +467,7 @@
               "preserve_directory_structure": {
                 "default": true,
                 "description": "If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.",
-                "title": "Preserve Subdirectories in File Paths",
+                "title": "Preserve Sub-Directories in File Paths",
                 "type": "boolean"
               }
             },
