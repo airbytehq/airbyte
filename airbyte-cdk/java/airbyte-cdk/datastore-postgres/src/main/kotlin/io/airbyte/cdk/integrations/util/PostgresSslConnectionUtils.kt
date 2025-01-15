@@ -4,10 +4,13 @@
 package io.airbyte.cdk.integrations.util
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 import org.apache.commons.lang3.RandomStringUtils
+
+private val logger = KotlinLogging.logger {}
 
 object PostgresSslConnectionUtils {
     private const val CA_CERTIFICATE = "ca.crt"
@@ -206,6 +209,7 @@ object PostgresSslConnectionUtils {
 
     @Throws(IOException::class)
     private fun createCertificateFile(fileName: String, fileValue: String) {
+        logger.info { "EDGAO DEBUG creating $fileName, which should be ${File(fileName).absolutePath}" }
         PrintWriter(fileName, StandardCharsets.UTF_8).use { out -> out.print(fileValue) }
     }
 
