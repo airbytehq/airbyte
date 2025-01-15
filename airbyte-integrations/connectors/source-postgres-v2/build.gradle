@@ -1,0 +1,18 @@
+plugins {
+    id 'airbyte-bulk-connector'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.postgres-v2.PostgresSource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc', 'extract-cdc']
+    cdk = 'local'
+}
+
+dependencies {
+    testImplementation 'org.postgresql:postgresql:42.7.3'
+    testImplementation 'org.testcontainers:postgresql:1.19.0'
+}

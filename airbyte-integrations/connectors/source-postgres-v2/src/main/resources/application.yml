@@ -1,0 +1,22 @@
+---
+airbyte:
+  connector:
+    extract:
+      jdbc:
+        mode: sequential
+        with-sampling: false
+        table-sample-size: 1024
+        throughput-bytes-per-second: 10000000
+        min-fetch-size: 10
+        default-fetch-size: 1024
+        max-fetch-size: 1000000000
+        memory-capacity-ratio: 0.6
+        estimated-record-overhead-bytes: 16
+        estimated-field-overhead-bytes: 16
+        namespace-kind: CATALOG_AND_SCHEMA
+    check:
+      jdbc:
+        queries:
+          - >-
+            SELECT 1 WHERE 1 = 0;
+            

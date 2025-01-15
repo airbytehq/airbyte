@@ -1,0 +1,31 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - ${host}
+      - ${tunnel_method.tunnel_host}
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 66caa90c-a311-49d2-b1cc-77abd18d8331
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-postgres-v2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postgres-v2
+  githubIssueLabel: source-postgres-v2
+  icon: icon.svg
+  license: ELv2
+  maxSecondsBetweenMessages: 7200
+  name: Postgres-v2
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: certified
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
