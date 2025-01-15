@@ -12,19 +12,12 @@ from unittest.mock import ANY
 import pytest
 from source_sftp_bulk import SourceSFTPBulk
 
-from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, Status
-from airbyte_cdk.exception_handler import generate_failed_streams_error_message
+from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog
 from airbyte_cdk.models import (
-    AirbyteErrorTraceMessage,
-    AirbyteMessage,
-    AirbyteTraceMessage,
     FailureType,
     Status,
-    TraceType,
-    Type,
 )
 from airbyte_cdk.sources.declarative.models import FailureType
-from airbyte_cdk.sources.file_based.exceptions import format_duplicate_files_error_message
 from airbyte_cdk.test.entrypoint_wrapper import read
 
 
@@ -170,7 +163,7 @@ def test_not_mirroring_paths_not_duplicates_file_transfer(
     configured_catalog: ConfiguredAirbyteCatalog, config_fixture_not_mirroring_paths_not_duplicates: Mapping[str, Any]
 ):
     """
-    Delivery options is present and preserve_subdirectories_directories is False so we should not preserve directories (mirroring paths).
+    Delivery options is present and preserve_directory_structure is False so we should not preserve directories (mirroring paths).
     """
     source_directory_path = "files/not_duplicates/data/"
     expected_uniqueness_count = 3
@@ -190,29 +183,16 @@ def test_not_mirroring_paths_with_duplicates_file_transfer_fails_sync(
     configured_catalog: ConfiguredAirbyteCatalog, config_fixture_not_mirroring_paths_with_duplicates: Mapping[str, Any]
 ):
     """
-    Delivery options is present and preserve_subdirectories_directories is False so we should not preserve directories (mirroring paths),
+    Delivery options is present and preserve_directory_structure is False so we should not preserve directories (mirroring paths),
     but, there are duplicates so the sync fails.
     """
-    expected_duplicated_files = [
-        {
-            "monthly-kickoff.mpeg": [
-                "/files/duplicates/data/feb/monthly-kickoff.mpeg",
-                "/files/duplicates/data/jan/monthly-kickoff.mpeg",
-                "/files/duplicates/data/mar/monthly-kickoff.mpeg",
-            ]
-        }
-    ]
-
-    airbyte_exception = AirbyteTracedException(
-        failure_type=FailureType.system_error,
-        internal_message=format_duplicate_files_error_message(configured_catalog.streams[0].stream.name, expected_duplicated_files),
-        message=None,
-    )
-    stream_failures = {configured_catalog.streams[0].stream.name: [airbyte_exception]}
-    error_message = generate_failed_streams_error_message(stream_failures).replace('")', " Contact Support if you need assistance.")
 
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_not_mirroring_paths_with_duplicates, state=None)
     output = read(source=source, config=config_fixture_not_mirroring_paths_with_duplicates, catalog=configured_catalog)
 
-    assert error_message in output.errors[-1].trace.error.message
+    # assert error_message in output.errors[-1].trace.error.message
+    assert "3 duplicates found for file name monthly-kickoff.mpeg" in output.errors[-1].trace.error.message
+    assert "/files/duplicates/data/feb/monthly-kickoff.mpeg" in output.errors[-1].trace.error.message
+    assert "/files/duplicates/data/jan/monthly-kickoff.mpeg" in output.errors[-1].trace.error.message
+    assert "/files/duplicates/data/mar/monthly-kickoff.mpeg" in output.errors[-1].trace.error.message
     assert not output.records
