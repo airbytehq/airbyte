@@ -80,13 +80,11 @@ abstract class S3DataLakeWriteTest(
     }
 
     @Test
-    @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
     }
 
     @Test
-    @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
     override fun testDedupChangeCursor() {
         super.testDedupChangeCursor()
     }
