@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mydb
 
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
@@ -8,7 +12,6 @@ import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.time.Duration
-import kotlin.time.toDuration
 
 data class MyDbSourceConfiguration(
     override val realHost: String,
@@ -22,18 +25,22 @@ data class MyDbSourceConfiguration(
     override val maxConcurrency: Int = 1,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ZERO,
     override val sshTunnel: SshTunnelMethodConfiguration? = null,
-    override val sshConnectionOptions: SshConnectionOptions = SshConnectionOptions(kotlin.time.Duration.ZERO,
-        kotlin.time.Duration.ZERO, kotlin.time.Duration.ZERO
-    ),
+    override val sshConnectionOptions: SshConnectionOptions =
+        SshConnectionOptions(
+            kotlin.time.Duration.ZERO,
+            kotlin.time.Duration.ZERO,
+            kotlin.time.Duration.ZERO
+        ),
 ) : JdbcSourceConfiguration {
 
     @Factory
     private class MicronautFactory {
         @Singleton
         fun mydbSourceConfig(
-            factory: SourceConfigurationFactory<
-                MyDbSourceConfigurationSpecification,
-                MyDbSourceConfiguration,
+            factory:
+                SourceConfigurationFactory<
+                    MyDbSourceConfigurationSpecification,
+                    MyDbSourceConfiguration,
                 >,
             supplier: ConfigurationSpecificationSupplier<MyDbSourceConfigurationSpecification>,
         ): MyDbSourceConfiguration = factory.make(supplier.get())
@@ -42,9 +49,10 @@ data class MyDbSourceConfiguration(
 
 @Singleton
 class MyDbSourceConfigurationFactory :
-    SourceConfigurationFactory<
-        MyDbSourceConfigurationSpecification, MyDbSourceConfiguration> {
-    override fun makeWithoutExceptionHandling(pojo: MyDbSourceConfigurationSpecification): MyDbSourceConfiguration {
+    SourceConfigurationFactory<MyDbSourceConfigurationSpecification, MyDbSourceConfiguration> {
+    override fun makeWithoutExceptionHandling(
+        pojo: MyDbSourceConfigurationSpecification
+    ): MyDbSourceConfiguration {
         val realHost = pojo.host
         val realPort = pojo.port
         val jdbcProperties = mutableMapOf<String, String>()

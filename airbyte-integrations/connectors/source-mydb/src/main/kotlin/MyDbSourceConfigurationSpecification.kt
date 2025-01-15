@@ -23,7 +23,6 @@ import jakarta.inject.Singleton
             "password",
         ],
 )
-
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
