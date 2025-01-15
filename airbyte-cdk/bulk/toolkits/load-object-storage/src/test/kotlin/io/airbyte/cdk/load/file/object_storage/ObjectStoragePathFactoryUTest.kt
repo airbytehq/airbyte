@@ -8,6 +8,9 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
 import io.airbyte.cdk.load.file.TimeProvider
+import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory.Companion.DEFAULT_FILE_FORMAT
+import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory.Companion.DEFAULT_PATH_FORMAT
+import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory.Companion.DEFAULT_STAGING_PREFIX_SUFFIX
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -122,6 +125,8 @@ class ObjectStoragePathFactoryUTest {
     @ParameterizedTest
     @MethodSource("pathTemplateMatrix")
     fun `handles duplicate vars in path templates`(
+        namespace: String?,
+        name: String,
         bucketPathTemplate: String,
         filePathTemplate: String,
         fileNameTemplate: String,
@@ -137,7 +142,7 @@ class ObjectStoragePathFactoryUTest {
                 false,
             )
         val stream = mockk<DestinationStream>()
-        every { stream.descriptor } returns DestinationStream.Descriptor("namespace1", "stream_abc")
+        every { stream.descriptor } returns DestinationStream.Descriptor(namespace, name)
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
 
         val matcher = factory.getPathMatcher(stream, OPTIONAL_ORDINAL_SUFFIX_PATTERN)
@@ -153,6 +158,8 @@ class ObjectStoragePathFactoryUTest {
         private fun pathTemplateMatrix(): Stream<Arguments> {
             return Stream.of(
                 Arguments.arguments(
+                    "namespace1",
+                    "stream_abc",
                     "\${NAMESPACE}/\${STREAM_NAME}",
                     "\${YEAR}/\${MONTH}/\${DAY}/\${NAMESPACE}_\${BIRD_DOG}_\${STREAM_NAME}_\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_",
                     "{part_number}{format_extension}",
@@ -160,6 +167,8 @@ class ObjectStoragePathFactoryUTest {
                     1L,
                 ),
                 Arguments.arguments(
+                    "namespace1",
+                    "stream_abc",
                     "\${NAMESPACE}/\${STREAM_NAME}",
                     "\${YEAR}/\${MONTH}/\${DAY}/\${NAMESPACE}_\${STREAM_NAME}_\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_",
                     "{part_number}{format_extension}",
@@ -167,6 +176,8 @@ class ObjectStoragePathFactoryUTest {
                     5L,
                 ),
                 Arguments.arguments(
+                    "namespace1",
+                    "stream_abc",
                     "\${NAMESPACE}/\${STREAM_NAME}",
                     "\${YEAR}/\${MONTH}/\${DAY}/\${NAMESPACE}_\${STREAM_NAME}_\${YEAR}_\${MONTH}_\${DAY}_\${EPOCH}_",
                     "{part_number}{format_extension}",
@@ -174,18 +185,67 @@ class ObjectStoragePathFactoryUTest {
                     7L,
                 ),
                 Arguments.arguments(
+                    "namespace3",
+                    "stream_456",
                     "\${NAMESPACE}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}",
                     "_",
                     "{part_number}{format_extension}",
-                    "namespace1/stream_abc/stream_abc/stream_abc/stream_abc/_0",
+                    "namespace3/stream_456/stream_456/stream_456/stream_456/_0",
                     0,
                 ),
                 Arguments.arguments(
+                    "namespace2",
+                    "stream_123",
+                    "\${NAMESPACE}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}",
+                    "",
+                    "{part_number}{format_extension}",
+                    "namespace2/stream_123/stream_123/stream_123/stream_1230",
+                    0,
+                ),
+                Arguments.arguments(
+                    "namespace1",
+                    "stream_abc",
                     "\${NAMESPACE}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}",
                     "",
                     "{part_number}{format_extension}",
                     "namespace1/stream_abc/stream_abc/stream_abc/stream_abc0",
                     0,
+                ),
+                Arguments.arguments(
+                    null,
+                    "stream_abc",
+                    "asdf",
+                    "\${NAMESPACE}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}",
+                    "{part_number}{format_extension}",
+                    "asdf/stream_abc/stream_abc/stream_abc/stream_abc0",
+                    0,
+                ),
+                Arguments.arguments(
+                    null,
+                    "stream_abc",
+                    "",
+                    "\${NAMESPACE}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}",
+                    "{part_number}{format_extension}",
+                    "/stream_abc/stream_abc/stream_abc/stream_abc6",
+                    6,
+                ),
+                Arguments.arguments(
+                    "namespace_2",
+                    "stream_abcd",
+                    "",
+                    DEFAULT_PATH_FORMAT,
+                    DEFAULT_FILE_FORMAT,
+                    "namespace_2/stream_abcd/2024_08_30_1736900845782_7",
+                    7,
+                ),
+                Arguments.arguments(
+                    "namespace_2",
+                    "stream_abcd",
+                    DEFAULT_STAGING_PREFIX_SUFFIX,
+                    DEFAULT_PATH_FORMAT,
+                    DEFAULT_FILE_FORMAT,
+                    "__airbyte_tmp/namespace_2/stream_abcd/2024_08_30_1736900845782_7",
+                    7,
                 ),
             )
         }
