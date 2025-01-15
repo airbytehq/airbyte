@@ -368,12 +368,14 @@ class ObjectStoragePathFactory(
         input: String,
         macroPattern: String,
         variableToPattern: Map<String, String>,
-        variableToIndex: MutableMap<String, Int>
+        variableToIndex: MutableList<Pair<String, Int>>
     ): String {
         return Regex.escapeReplacement(input).replace(macroPattern.toRegex()) {
             val variable = it.groupValues[1]
             val pattern = variableToPattern[variable]
             if (pattern == null) {
+                // This should happen if it wasn't a supported variable and is thus interpreted as
+                // a string literal—e.g. ${FOOBAR} will be inserted as FOOBAR.
                 variable
             } else if (pattern.isBlank()) {
                 // This should only happen in the case of a blank namespace.
@@ -381,7 +383,7 @@ class ObjectStoragePathFactory(
                 // `()/($streamName)` against `$streamName`.
                 ""
             } else {
-                variableToIndex[variable] = variableToIndex.size + 1
+                variableToIndex.add(Pair(variable, variableToIndex.size + 1))
                 "($pattern)"
             }
         }
@@ -389,18 +391,18 @@ class ObjectStoragePathFactory(
 
     override fun getPathMatcher(stream: DestinationStream, suffixPattern: String?): PathMatcher {
         val pathVariableToPattern = getPathVariableToPattern(stream)
-        val variableToIndex = mutableMapOf<String, Int>()
+        val variableIndexTuples = mutableListOf<Pair<String, Int>>()
 
         val pathPattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
 
         val replacedForPath =
-            buildPattern(pathPattern, """\\\$\{(\w+)}""", pathVariableToPattern, variableToIndex)
+            buildPattern(pathPattern, """\\\$\{(\w+)}""", pathVariableToPattern, variableIndexTuples)
         val replacedForFile =
             buildPattern(
                 filePatternResolved,
                 """\{([\w\:]+)}""",
                 pathVariableToPattern,
-                variableToIndex
+                variableIndexTuples
             )
         // NOTE the old code does not actually resolve the path + filename,
         // even tho the documentation says it does.
