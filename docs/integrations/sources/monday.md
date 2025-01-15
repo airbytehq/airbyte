@@ -77,6 +77,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                           |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| 2.1.11 | 2025-01-14 | [51147](https://github.com/airbytehq/airbyte/pull/10311) | Update API version to 2024-10 |
 | 2.1.10 | 2025-01-11 | [51147](https://github.com/airbytehq/airbyte/pull/51147) | Update dependencies |
 | 2.1.9 | 2025-01-08 | [50984](https://github.com/airbytehq/airbyte/pull/50984) | Update the `spec` to support `Jinja` style variables for `DeclarativeOAuthFlow` |
 | 2.1.8 | 2024-12-28 | [50624](https://github.com/airbytehq/airbyte/pull/50624) | Update dependencies |
