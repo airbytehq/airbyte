@@ -153,7 +153,7 @@ def auto_merge() -> None:
         main_branch = repo.get_branch(BASE_BRANCH)
         logger.info(f"Fetching required passing contexts for {BASE_BRANCH}")
         required_passing_contexts = set(main_branch.get_required_status_checks().contexts)
-        candidate_issues = gh_client.search_issues(f"repo:{AIRBYTE_REPO} is:pr label:{AUTO_MERGE_LABEL} base:{BASE_BRANCH} state:open")
+        candidate_issues = gh_client.search_issues(f"repo:{AIRBYTE_REPO} is:pr label:{AUTO_MERGE_LABEL},{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL} base:{BASE_BRANCH} state:open")
         prs = [issue.as_pull_request() for issue in candidate_issues]
         logger.info(f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with the {AUTO_MERGE_LABEL} label")
         merged_prs = []
