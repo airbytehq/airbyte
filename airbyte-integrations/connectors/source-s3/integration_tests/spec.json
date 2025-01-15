@@ -406,9 +406,9 @@
                 "enum": ["use_file_transfer"],
                 "type": "string"
               },
-              "preserve_subdirectories_directories": {
+              "preserve_directory_structure": {
                 "default": true,
-                "description": "If enabled replicate source folder structure",
+                "description": "If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.",
                 "title": "Preserve Subdirectories in File Paths",
                 "type": "boolean"
               }
