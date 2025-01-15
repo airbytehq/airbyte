@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.25"
+version = "0.1.27"
 name = "source-alpha-vantage"
 description = "Source implementation for Alpha Vantage."
 authors = [ "Airbyte <contact@airbyte.io>",]

@@ -64,6 +64,8 @@ The Pendo source connector supports the following [sync modes](https://docs.airb
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.6 | 2025-01-11 | [51299](https://github.com/airbytehq/airbyte/pull/51299) | Update dependencies |
+| 0.2.5 | 2025-01-04 | [50244](https://github.com/airbytehq/airbyte/pull/50244) | Update dependencies |
 | 0.2.4 | 2024-12-14 | [48313](https://github.com/airbytehq/airbyte/pull/48313) | Update dependencies |
 | 0.2.3 | 2024-10-29 | [47847](https://github.com/airbytehq/airbyte/pull/47847) | Update dependencies |
 | 0.2.2 | 2024-10-28 | [47563](https://github.com/airbytehq/airbyte/pull/47563) | Update dependencies |
