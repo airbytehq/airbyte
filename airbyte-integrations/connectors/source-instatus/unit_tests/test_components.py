@@ -5,6 +5,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
