@@ -11,7 +11,7 @@ data:
   definitionId: 8A0FEAA0-48A1-4C98-BB37-730E4AE43D11
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-postgresv2
-  documentationUrl: https://docs.airbyte.io/integrations/enterprise-connectors/source-postgresv2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   githubIssueLabel: source-postgresv2
   icon: postgresv2.svg
   license: ELv2

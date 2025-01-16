@@ -231,13 +231,12 @@
             "title": "Read Changes using Write-Ahead Log (CDC)",
             "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#cdc\">write-ahead log (WAL)</a>. This needs to be configured on the source database itself. Recommended for tables of any size.",
             "required": ["method", "replication_slot", "publication"],
-            "type": "object",
             "additionalProperties": true,
             "properties": {
               "method": {
                 "type": "string",
-                "default": "CDC",
-                "enum": ["CDC"]
+                "const": "CDC",
+                "order": 1
               },
               "plugin": {
                 "type": "string",
@@ -318,13 +317,11 @@
             "title": "Detect Changes with Xmin System Column",
             "description": "<i>Recommended</i> - Incrementally reads new inserts and updates via Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#xmin\">Xmin system column</a>. Suitable for databases that have low transaction pressure.",
             "required": ["method"],
-            "type": "object",
-            "additionalProperties": true,
             "properties": {
               "method": {
                 "type": "string",
-                "default": "Xmin",
-                "enum": ["Xmin"]
+                "const": "Xmin",
+                "order": 0
               }
             }
           },
@@ -332,22 +329,36 @@
             "title": "Scan Changes with User Defined Cursor",
             "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
             "required": ["method"],
-            "type": "object",
-            "additionalProperties": true,
             "properties": {
               "method": {
                 "type": "string",
-                "default": "Standard",
-                "enum": ["Standard"]
+                "const": "Standard",
+                "order": 8
               }
             }
           }
         ]
       }
     },
-    "required": ["host", "port", "database", "username", "replication_method"],
+    "required": ["host", "port", "database", "username"],
     "title": "Postgres Source Spec",
-    "type": "object"
+    "type": "object",
+    "groups": [
+      {
+        "id": "db"
+      },
+      {
+        "id": "auth"
+      },
+      {
+        "id": "security",
+        "title": "Security"
+      },
+      {
+        "id": "advanced",
+        "title": "Advanced"
+      }
+    ]
   },
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres"
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgresv2"
 }
