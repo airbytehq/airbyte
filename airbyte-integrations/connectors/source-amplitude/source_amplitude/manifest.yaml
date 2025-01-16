@@ -359,8 +359,7 @@ definitions:
         parser:
           type: GzipParser
           inner_parser:
-            type: JsonParser
-            encoding: utf-8
+            type: JsonLineParser
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "{{ parameters['cursor_field'] }}"
