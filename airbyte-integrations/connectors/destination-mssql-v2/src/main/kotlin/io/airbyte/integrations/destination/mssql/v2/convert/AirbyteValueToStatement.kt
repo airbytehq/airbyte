@@ -36,7 +36,11 @@ class AirbyteValueToStatement {
         private val toSqlType = AirbyteTypeToSqlType()
         private val toSqlValue = AirbyteValueToSqlValue()
 
-        fun PreparedStatement.setValue(idx: Int, value: AirbyteValue?, field: MSSQLQueryBuilder.NamedField) {
+        fun PreparedStatement.setValue(
+            idx: Int,
+            value: AirbyteValue?,
+            field: MSSQLQueryBuilder.NamedField
+        ) {
             if (value != null && value !is NullValue && field.type.type is UnionType) {
                 val objectValue = createUnionObject(field.type.type as UnionType, value)
                 setAsJsonString(idx, objectValue)
@@ -85,30 +89,46 @@ class AirbyteValueToStatement {
             setDouble(idx, value.value.toDouble())
         }
 
-        private fun PreparedStatement.setAsStringValue(idx: Int, value: StringValue, type: AirbyteType) {
+        private fun PreparedStatement.setAsStringValue(
+            idx: Int,
+            value: StringValue,
+            type: AirbyteType
+        ) {
             val sqlType = toSqlType.convert(type)
             if (sqlType == Types.VARCHAR || sqlType == Types.LONGVARCHAR) {
                 setString(idx, value.value)
             } else {
                 // TODO: this is a fallback because Values aren't fully typed.
-                // TODO: this should get refactored once the CDK interface changed wrt types and values
-                if (sqlType in setOf(Types.DATE, Types.TIME, Types.TIME_WITH_TIMEZONE, Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE)) {
+                // TODO: this should get refactored once the CDK interface changed wrt types and
+                // values
+                if (
+                    sqlType in
+                        setOf(
+                            Types.DATE,
+                            Types.TIME,
+                            Types.TIME_WITH_TIMEZONE,
+                            Types.TIMESTAMP,
+                            Types.TIMESTAMP_WITH_TIMEZONE
+                        )
+                ) {
                     val coercedValue = AirbyteValueDeepCoercingMapper().map(value, type)
                     if (coercedValue.second.isEmpty()) {
                         when (coercedValue.first) {
                             is DateValue -> setAsDateValue(idx, coercedValue.first as DateValue)
-                            is TimeWithTimezoneValue -> setAsTime(idx,
-                                coercedValue.first as TimeWithTimezoneValue
-                            )
-                            is TimeWithoutTimezoneValue -> setAsTime(idx,
-                                coercedValue.first as TimeWithoutTimezoneValue
-                            )
-                            is TimestampWithTimezoneValue -> setAsTimestamp(idx,
-                                coercedValue.first as TimestampWithTimezoneValue
-                            )
-                            is TimestampWithoutTimezoneValue -> setAsTimestamp(idx,
-                                coercedValue.first as TimestampWithoutTimezoneValue
-                            )
+                            is TimeWithTimezoneValue ->
+                                setAsTime(idx, coercedValue.first as TimeWithTimezoneValue)
+                            is TimeWithoutTimezoneValue ->
+                                setAsTime(idx, coercedValue.first as TimeWithoutTimezoneValue)
+                            is TimestampWithTimezoneValue ->
+                                setAsTimestamp(
+                                    idx,
+                                    coercedValue.first as TimestampWithTimezoneValue
+                                )
+                            is TimestampWithoutTimezoneValue ->
+                                setAsTimestamp(
+                                    idx,
+                                    coercedValue.first as TimestampWithoutTimezoneValue
+                                )
                             else -> throw IllegalArgumentException("$value isn't a $type")
                         }
                     } else {
@@ -132,22 +152,22 @@ class AirbyteValueToStatement {
             setTimestamp(idx, Timestamp.valueOf(value.value.toLocalDateTime()))
         }
 
-        private fun PreparedStatement.setAsTimestamp(idx: Int, value: TimestampWithoutTimezoneValue) {
+        private fun PreparedStatement.setAsTimestamp(
+            idx: Int,
+            value: TimestampWithoutTimezoneValue
+        ) {
             setTimestamp(idx, Timestamp.valueOf(value.value))
         }
 
         private fun createSimpleUnionObject(value: AirbyteValue): ObjectValue {
             val unionType = value.toTypeName()
-            return ObjectValue.from(mapOf(
-                "type" to StringValue(unionType),
-                unionType to value
-            ))
+            return ObjectValue.from(mapOf("type" to StringValue(unionType), unionType to value))
         }
 
         private fun createUnionObject(type: UnionType, value: AirbyteValue): AirbyteValue =
             if (type.options.all { it is ObjectType }) {
-                val model = mutableMapOf<String, MutableSet<FieldType>>()
-                    .withDefault { mutableSetOf() }
+                val model =
+                    mutableMapOf<String, MutableSet<FieldType>>().withDefault { mutableSetOf() }
 
                 type.options.map {
                     (it as ObjectType).properties.entries.forEach { objectEntry ->
@@ -161,35 +181,37 @@ class AirbyteValueToStatement {
                 if (model.values.all { it.size == 1 }) {
                     value
                 } else {
-                    val valuesWithConflicts = (value as ObjectValue).values
-                        .entries
-                        .map { pair ->
-                            if (model[pair.key]?.let { it.size > 1 } == true)
-                                Pair(pair.key, createSimpleUnionObject(pair.value))
-                            else
-                                Pair(pair.key, pair.value)
-                        }
-                        .toMap()
+                    val valuesWithConflicts =
+                        (value as ObjectValue)
+                            .values
+                            .entries
+                            .map { pair ->
+                                if (model[pair.key]?.let { it.size > 1 } == true)
+                                    Pair(pair.key, createSimpleUnionObject(pair.value))
+                                else Pair(pair.key, pair.value)
+                            }
+                            .toMap()
                     ObjectValue.from(valuesWithConflicts)
                 }
             } else {
                 createSimpleUnionObject(value)
             }
 
-        private fun AirbyteValue.toTypeName(): String = when (this) {
-            is ArrayValue -> "array"
-            is BooleanValue -> "boolean"
-            is DateValue -> "string"
-            is IntegerValue -> "integer"
-            NullValue -> "null"
-            is NumberValue -> "number"
-            is ObjectValue -> "object"
-            is StringValue -> "string"
-            is TimeWithTimezoneValue -> "string"
-            is TimeWithoutTimezoneValue -> "string"
-            is TimestampWithTimezoneValue -> "string"
-            is TimestampWithoutTimezoneValue -> "string"
-            is UnknownValue -> "oneOf"
-        }
+        private fun AirbyteValue.toTypeName(): String =
+            when (this) {
+                is ArrayValue -> "array"
+                is BooleanValue -> "boolean"
+                is DateValue -> "string"
+                is IntegerValue -> "integer"
+                NullValue -> "null"
+                is NumberValue -> "number"
+                is ObjectValue -> "object"
+                is StringValue -> "string"
+                is TimeWithTimezoneValue -> "string"
+                is TimeWithoutTimezoneValue -> "string"
+                is TimestampWithTimezoneValue -> "string"
+                is TimestampWithoutTimezoneValue -> "string"
+                is UnknownValue -> "oneOf"
+            }
     }
 }

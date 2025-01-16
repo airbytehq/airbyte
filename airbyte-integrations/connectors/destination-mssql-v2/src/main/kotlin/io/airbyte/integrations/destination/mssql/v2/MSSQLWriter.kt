@@ -23,7 +23,8 @@ class MSSQLWriter(
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val sqlBuilder = MSSQLQueryBuilder(config, stream)
         return MSSQLStreamLoader(
-            dataSource = dataSource ?: throw IllegalStateException("dataSource hasn't been initialized"),
+            dataSource = dataSource
+                    ?: throw IllegalStateException("dataSource hasn't been initialized"),
             stream = stream,
             sqlBuilder = sqlBuilder,
         )
@@ -38,5 +39,4 @@ class MSSQLWriter(
         dataSource?.let { dataSourceFactory.disposeDataSource(it) }
         super.teardown(destinationFailure)
     }
-
 }

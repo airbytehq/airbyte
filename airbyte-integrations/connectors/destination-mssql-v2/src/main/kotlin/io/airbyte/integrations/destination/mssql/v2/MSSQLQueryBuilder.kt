@@ -21,9 +21,9 @@ import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatem
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
 import io.airbyte.integrations.destination.mssql.v2.convert.SqlTypeToMssqlType
+import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import io.airbyte.protocol.models.Jsons
 import java.lang.ArithmeticException
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -82,12 +82,15 @@ class MSSQLQueryBuilder(
 
     fun getExistingSchema(statement: Statement): List<NamedSqlField> {
         val fields = mutableListOf<NamedSqlField>()
-        statement.executeQuery("""
+        statement
+            .executeQuery(
+                """
             SELECT COLUMN_NAME, DATA_TYPE
             FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_SCHEMA = '$outputSchema' AND TABLE_NAME = '$tableName'
             ORDER BY ORDINAL_POSITION ASC
-        """.trimIndent())
+        """.trimIndent()
+            )
             .use { rs ->
                 while (rs.next()) {
                     val name = rs.getString("COLUMN_NAME")
@@ -115,23 +118,24 @@ class MSSQLQueryBuilder(
         }
         val toDelete = existingFields.filter { it.key !in expectedFields }
         val toAdd = expectedFields.filter { it.key !in existingFields }
-        val toAlter = expectedFields.filter {
-            it.key in existingFields && it.value != existingFields[it.key]
-        }
-        return StringBuilder().apply {
-            toDelete.entries.forEach {
-                appendLine("ALTER TABLE $fqTableName")
-                appendLine("DROP COLUMN ${it.key};")
+        val toAlter =
+            expectedFields.filter { it.key in existingFields && it.value != existingFields[it.key] }
+        return StringBuilder()
+            .apply {
+                toDelete.entries.forEach {
+                    appendLine("ALTER TABLE $fqTableName")
+                    appendLine("DROP COLUMN ${it.key};")
+                }
+                toAdd.entries.forEach {
+                    appendLine("ALTER TABLE $fqTableName")
+                    appendLine("ADD ${it.key} ${it.value.sqlString} NULL;")
+                }
+                toAlter.entries.forEach {
+                    appendLine("ALTER TABLE $fqTableName")
+                    appendLine("ALTER COLUMN ${it.key} ${it.value.sqlString} NULL;")
+                }
             }
-            toAdd.entries.forEach {
-                appendLine("ALTER TABLE $fqTableName")
-                appendLine("ADD ${it.key} ${it.value.sqlString} NULL;")
-            }
-            toAlter.entries.forEach {
-                appendLine("ALTER TABLE $fqTableName")
-                appendLine("ALTER COLUMN ${it.key} ${it.value.sqlString} NULL;")
-            }
-        }.toString()
+            .toString()
     }
 
     fun createFinalTableIfNotExists(): String =
@@ -151,7 +155,9 @@ class MSSQLQueryBuilder(
         var airbyteMetaStatementIndex: Int? = null
         val airbyteMeta =
             AirbyteRecordMessageMeta().apply {
-                changes = record.meta?.changes?.map { it.asProtocolObject() }?.toMutableList() ?: mutableListOf()
+                changes =
+                    record.meta?.changes?.map { it.asProtocolObject() }?.toMutableList()
+                        ?: mutableListOf()
                 setAdditionalProperty("syncId", stream.syncId)
             }
 
@@ -161,11 +167,7 @@ class MSSQLQueryBuilder(
                 when (field.name) {
                     AIRBYTE_RAW_ID ->
                         statement.setString(statementIndex, UUID.randomUUID().toString())
-                    AIRBYTE_EXTRACTED_AT ->
-                        statement.setLong(
-                            statementIndex,
-                            record.emittedAtMs
-                        )
+                    AIRBYTE_EXTRACTED_AT -> statement.setLong(statementIndex, record.emittedAtMs)
                     AIRBYTE_GENERATION_ID -> statement.setLong(statementIndex, stream.generationId)
                     AIRBYTE_META -> airbyteMetaStatementIndex = statementIndex
                 }
@@ -180,13 +182,15 @@ class MSSQLQueryBuilder(
                             airbyteMeta.trackChange(
                                 field.name,
                                 AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION,
                             )
                         else ->
                             airbyteMeta.trackChange(
                                 field.name,
                                 AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_SERIALIZATION_ERROR,
                             )
                     }
                 }

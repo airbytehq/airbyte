@@ -41,5 +41,4 @@ class ResultSetToAirbyteValueTest {
         val expected = TimestampValue("2023-01-23T12:34:56")
         assertEquals(expected, actual)
     }
-
 }
