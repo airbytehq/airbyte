@@ -5,7 +5,7 @@ import TabItem from "@theme/TabItem";
 
 Everyone is welcome to contribute to Airbyte's documentation! 
 
-Our documentation is stored in the [Airbyte repository](https://github.com/airbytehq/airbyte/tree/master/docs) on GitHub. It's published at [docs.airbyte.com](https://docs.airbyte.com/) using [GitHub Pages](https://pages.github.com/). Connector docs are also rendered within Airbyte itself when setting up new connectors. The docs are built on [Docusaurus](https://docusaurus.io/). Content is written in [Markdown](https://guides.github.com/features/mastering-markdown/) and all topics are in the `/docs` folder. Configuration files are in the `/docusaurus` folder.
+Our documentation is stored in the [Airbyte repository](https://github.com/airbytehq/airbyte/tree/master/docs) on GitHub. It's published at [docs.airbyte.com](https://docs.airbyte.com/) using [Vercel](https://vercel.com). Connector docs are also rendered within Airbyte itself when setting up new connectors. The docs are built on [Docusaurus](https://docusaurus.io/). Content is written in [Markdown](https://guides.github.com/features/mastering-markdown/) and all topics are in the `/docs` folder. Configuration files are in the `/docusaurus` folder.
 
 ## Open source contributions welcome
 
@@ -300,4 +300,4 @@ Before we accept your contribution, you need to sign the Contributor License Agr
 
 ## Deploy the documentation site
 
-When someone merges documentation changes into the `master` branch, updated docs are deployed automatically. This takes 5-10 minutes and needs no human intervention.
+When someone merges documentation changes into the `master` branch, Vercel deploys updated docs automatically. This takes 5-10 minutes and needs no human intervention.
