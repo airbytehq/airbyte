@@ -270,13 +270,46 @@ definitions:
             - ["id"]
             - ["createdtime"]
 
+  oauth_authenticator:
+    # https://airtable.com/developers/web/api/oauth-reference
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    grant_type: refresh_token
+    refresh_request_headers:
+      Authorization: "Basic {{ [config['credentials']['client_id'], config['credentials']['client_secret']] | join(':')  | base64encode }}"
+      Content-Type: "application/x-www-form-urlencoded"
+    refresh_token_updater:
+      refresh_token_error_status_codes: [400, 401]
+      refresh_token_error_key: "error"
+      refresh_token_error_values: ["invalid_grant", "invalid_client"]
+      refresh_token_name: refresh_token
+      access_token_config_path:
+        - credentials
+        - access_token
+      token_expiry_date_config_path:
+        - credentials
+        - token_expiry_date
+      refresh_token_config_path:
+        - credentials
+        - refresh_token
+    token_refresh_endpoint: https://airtable.com/oauth2/v1/token
+
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['api_key'] }}"
+
   base_requester:
     type: HttpRequester
     url_base: https://api.airtable.com/v0/
     authenticator:
-      type: CustomAuthenticator
-      class_name: source_airtable.auth.AirtableAuth
-      config: "{{ config }}"
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "auth_method"]
+      authenticators:
+        oauth2.0: "#/definitions/oauth_authenticator"
+        api_key: "#/definitions/bearer_authenticator"
+
     error_handler:
       type: DefaultErrorHandler
       max_retries: 10
@@ -292,6 +325,10 @@ definitions:
           action: FAIL
           failure_type: config_error
           error_message: "Permission denied or entity is unprocessable."
+        - http_codes: [401]
+          action: FAIL
+          failure_type: config_error
+          error_message: "Invalid credentials were provided. Please re-authenticate to restore access to Airtable."
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
