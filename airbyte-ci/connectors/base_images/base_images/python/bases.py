@@ -110,6 +110,8 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             .with_exec(["pip", "install", "poetry==1.6.1"])
             .with_exec(["sh", "-c", "apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean"])
             .with_exec(["sh", "-c", "apt-get install -y socat=1.7.4.4-2"])
+            # Give the user ownership of the /tmp directory
+            .with_exec(["chown", "-R", f"{self.USER}:{self.USER}", "/tmp"])
             # Install CDK system dependencies
             .with_(self.install_cdk_system_dependencies())
         )
@@ -133,6 +135,8 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
         await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.CACHE_DIR_PATH)
         await base_sanity_checks.check_user_can_write_dir(container, self.USER, self.AIRBYTE_DIR_PATH)
         await base_sanity_checks.check_user_cant_write_dir(container, self.USER, self.CACHE_DIR_PATH)
+        await base_sanity_checks.check_user_can_write_dir(container, self.USER, "/tmp")
+        await base_sanity_checks.check_user_can_read_dir(container, self.USER, "/tmp")
         await python_sanity_checks.check_poetry_version(container, "1.6.1")
         await python_sanity_checks.check_python_image_has_expected_env_vars(container)
         await base_sanity_checks.check_a_command_is_available_using_version_option(container, "socat", "-V")

@@ -1,5 +1,10 @@
 [
   {
+    "version": "3.0.1-rc.1",
+    "changelog_entry": "Make the airbyte user owner of /tmp",
+    "dockerfile_example": "FROM docker.io/python:3.10.14-slim-bookworm@sha256:2407c61b1a18067393fecd8a22cf6fceede893b6aaca817bf9fbfe65e33614a3\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN adduser --uid 1000 --system --group --no-create-home airbyte\nRUN mkdir --mode 755 /custom_cache\nRUN mkdir --mode 755 /airbyte\nRUN chown airbyte:airbyte /airbyte\nENV PIP_CACHE_DIR=/custom_cache/pip\nRUN pip install --upgrade pip==24.0 setuptools==70.0.0\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.6.1\nRUN sh -c apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean\nRUN sh -c apt-get install -y socat=1.7.4.4-2\nRUN chown -R airbyte:airbyte /tmp\nRUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1\nRUN mkdir -p 755 /usr/share/nltk_data"
+  },
+  {
     "version": "3.0.0",
     "changelog_entry": "Create airbyte user",
     "dockerfile_example": "FROM docker.io/python:3.10.14-slim-bookworm@sha256:2407c61b1a18067393fecd8a22cf6fceede893b6aaca817bf9fbfe65e33614a3\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN adduser --uid 1000 --system --group --no-create-home airbyte\nRUN mkdir --mode 755 /custom_cache\nRUN mkdir --mode 755 /airbyte\nRUN chown airbyte:airbyte /airbyte\nENV PIP_CACHE_DIR=/custom_cache/pip\nRUN pip install --upgrade pip==24.0 setuptools==70.0.0\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.6.1\nRUN sh -c apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean\nRUN sh -c apt-get install -y socat=1.7.4.4-2\nRUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1\nRUN mkdir -p 755 /usr/share/nltk_data"
