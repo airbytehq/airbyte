@@ -4,16 +4,9 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.util.serializeToString
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.time.OffsetTime
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.time.format.DateTimeFormatter
 
 /**
@@ -28,147 +21,112 @@ import java.time.format.DateTimeFormatter
  * This mapper performs common-sense type coercions. For example, it will promote IntegerValue to
  * NumberValue, or parse StringValue to TimestampValue.
  */
-class AirbyteValueDeepCoercingMapper : AirbyteValueIdentityMapper() {
+class AirbyteValueDeepCoercingMapper(
+    recurseIntoObjects: Boolean,
+    recurseIntoArrays: Boolean,
+    recurseIntoUnions: Boolean,
+) :
+    AirbyteValueIdentityMapper(
+        recurseIntoObjects = recurseIntoObjects,
+        recurseIntoArrays = recurseIntoArrays,
+        recurseIntoUnions = recurseIntoUnions,
+    ) {
     override fun mapObject(
         value: AirbyteValue,
         schema: ObjectType,
-        context: Context
+        context: Context,
     ): Pair<AirbyteValue, Context> =
-        // force to object, and then use the superclass recursion
-        requireType<ObjectValue>(value, schema, context) { super.mapObject(it, schema, context) }
+        // We should inspect the object's fields if we're doing full recursion,
+        // or if this is the root object.
+        if (recurseIntoObjects || context.path.isEmpty()) {
+            // force to object, and then use the superclass recursion
+            AirbyteValueCoercer.coerceObject(value)?.let { super.mapObject(it, schema, context) }
+                ?: nulledOut(schema, context)
+        } else {
+            // otherwise, try to get an ObjectValue out of this value, but don't recurse.
+            withContext(AirbyteValueCoercer.coerceObject(value), context)
+        }
 
     override fun mapObjectWithEmptySchema(
         value: AirbyteValue,
         schema: ObjectTypeWithEmptySchema,
         context: Context
-    ): Pair<AirbyteValue, Context> = requireType<ObjectValue>(value, schema, context)
+    ): Pair<AirbyteValue, Context> = withContext(AirbyteValueCoercer.coerceObject(value), context)
 
     override fun mapObjectWithoutSchema(
         value: AirbyteValue,
         schema: ObjectTypeWithoutSchema,
         context: Context
-    ): Pair<AirbyteValue, Context> = requireType<ObjectValue>(value, schema, context)
+    ): Pair<AirbyteValue, Context> = withContext(AirbyteValueCoercer.coerceObject(value), context)
 
     override fun mapArray(
         value: AirbyteValue,
         schema: ArrayType,
         context: Context
     ): Pair<AirbyteValue, Context> =
-        // force to array, and then use the superclass recursion
-        requireType<ArrayValue>(value, schema, context) { super.mapArray(it, schema, context) }
+        // similar to mapObject, recurse if needed.
+        // Realistically, the root node is _never_ an array, i.e. `context.path.isEmpty()` is
+        // always false.
+        // But might as well be consistent.
+        if (recurseIntoArrays || context.path.isEmpty()) {
+            // force to array, and then use the superclass recursion
+            AirbyteValueCoercer.coerceArray(value)?.let { super.mapArray(it, schema, context) }
+                ?: nulledOut(schema, context)
+        } else {
+            withContext(AirbyteValueCoercer.coerceArray(value), context)
+        }
 
     override fun mapArrayWithoutSchema(
         value: AirbyteValue,
         schema: ArrayTypeWithoutSchema,
         context: Context
-    ): Pair<AirbyteValue, Context> = requireType<ArrayValue>(value, schema, context)
+    ): Pair<AirbyteValue, Context> = withContext(AirbyteValueCoercer.coerceArray(value), context)
 
     override fun mapBoolean(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
-        requireType<BooleanValue>(value, BooleanType, context)
+        withContext(AirbyteValueCoercer.coerceBoolean(value), context)
 
     override fun mapNumber(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
-        when (value) {
-            is NumberValue -> value to context
-            is IntegerValue -> NumberValue(value.value.toBigDecimal()) to context
-            is StringValue -> NumberValue(BigDecimal(value.value)) to context
-            else -> nulledOut(NumberType, context)
-        }
+        withContext(AirbyteValueCoercer.coerceNumber(value), context)
 
     override fun mapInteger(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
-        when (value) {
-            // Maybe we should truncate non-int values?
-            // But to match existing behavior, let's just null for now.
-            is NumberValue -> IntegerValue(value.value.toBigIntegerExact()) to context
-            is IntegerValue -> value to context
-            is StringValue -> IntegerValue(BigInteger(value.value)) to context
-            else -> nulledOut(IntegerType, context)
-        }
+        withContext(AirbyteValueCoercer.coerceInt(value), context)
 
-    override fun mapString(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> {
-        val stringified =
-            when (value) {
-                // this should never happen, because we handle `value is NullValue`
-                // in the top-level if statement
-                NullValue -> throw IllegalStateException("Unexpected NullValue")
-                is StringValue -> value.value
-                is NumberValue -> value.value.toString()
-                is IntegerValue -> value.value.toString()
-                is BooleanValue -> value.value.toString()
-                is ArrayValue,
-                is ObjectValue -> value.serializeToString()
-                // JsonToAirbyteValue never outputs these values, so don't handle them.
-                is DateValue,
-                is TimeWithTimezoneValue,
-                is TimeWithoutTimezoneValue,
-                is TimestampWithTimezoneValue,
-                is TimestampWithoutTimezoneValue,
-                is UnknownValue ->
-                    throw IllegalArgumentException(
-                        "Invalid value type ${value.javaClass.canonicalName}"
-                    )
-            }
-        return StringValue(stringified) to context
-    }
+    override fun mapString(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
+        withContext(AirbyteValueCoercer.coerceString(value), context)
 
     override fun mapDate(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
-        requireType<StringValue>(value, DateType, context) {
-            DateValue(LocalDate.parse(it.value, DATE_TIME_FORMATTER)) to context
-        }
+        withContext(AirbyteValueCoercer.coerceDate(value), context)
 
     override fun mapTimeWithTimezone(
         value: AirbyteValue,
         context: Context
-    ): Pair<AirbyteValue, Context> =
-        requireType<StringValue>(value, TimeTypeWithTimezone, context) {
-            val ot =
-                try {
-                    OffsetTime.parse(it.value, TIME_FORMATTER)
-                } catch (e: Exception) {
-                    LocalTime.parse(it.value, TIME_FORMATTER).atOffset(ZoneOffset.UTC)
-                }
-            TimeWithTimezoneValue(ot) to context
-        }
+    ): Pair<AirbyteValue, Context> = withContext(AirbyteValueCoercer.coerceTimeTz(value), context)
 
     override fun mapTimeWithoutTimezone(
         value: AirbyteValue,
         context: Context
-    ): Pair<AirbyteValue, Context> =
-        requireType<StringValue>(value, TimeTypeWithoutTimezone, context) {
-            TimeWithoutTimezoneValue(LocalTime.parse(it.value, TIME_FORMATTER)) to context
-        }
+    ): Pair<AirbyteValue, Context> = withContext(AirbyteValueCoercer.coerceTimeNtz(value), context)
 
     override fun mapTimestampWithTimezone(
         value: AirbyteValue,
         context: Context
     ): Pair<AirbyteValue, Context> =
-        requireType<StringValue>(value, TimestampTypeWithTimezone, context) {
-            TimestampWithTimezoneValue(offsetDateTime(it)) to context
-        }
+        withContext(AirbyteValueCoercer.coerceTimestampTz(value), context)
 
     override fun mapTimestampWithoutTimezone(
         value: AirbyteValue,
         context: Context
     ): Pair<AirbyteValue, Context> =
-        requireType<StringValue>(value, TimestampTypeWithoutTimezone, context) {
-            TimestampWithoutTimezoneValue(offsetDateTime(it).toLocalDateTime()) to context
-        }
-
-    private fun offsetDateTime(it: StringValue): OffsetDateTime {
-        val odt =
-            try {
-                ZonedDateTime.parse(it.value, DATE_TIME_FORMATTER).toOffsetDateTime()
-            } catch (e: Exception) {
-                LocalDateTime.parse(it.value, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
-            }
-        return odt
-    }
+        withContext(AirbyteValueCoercer.coerceTimestampNtz(value), context)
 
     override fun mapUnion(
         value: AirbyteValue,
         schema: UnionType,
         context: Context
     ): Pair<AirbyteValue, Context> =
-        if (schema.options.isEmpty()) {
+        if (!recurseIntoUnions) {
+            value to context
+        } else if (schema.options.isEmpty()) {
             nulledOut(schema, context)
         } else {
             val option =
@@ -205,18 +163,21 @@ class AirbyteValueDeepCoercingMapper : AirbyteValueIdentityMapper() {
         return mappedValue !is NullValue
     }
 
-    private inline fun <reified T : AirbyteValue> requireType(
-        value: AirbyteValue,
-        schema: AirbyteType,
-        context: Context,
-        f: (T) -> Pair<AirbyteValue, Context> = { value to context },
-    ): Pair<AirbyteValue, Context> {
-        return if (value is T) {
-            f(value)
+    private fun withContext(value: AirbyteValue?, context: Context): Pair<AirbyteValue, Context> =
+        if (value != null) {
+            // Note: This only triggers if the value was explicitly nulled out.
+            // If the value was originally null, then value would be NullValue.
+            value to context
         } else {
-            nulledOut(schema, context)
+            context.changes.add(
+                Meta.Change(
+                    context.path.joinToString("."),
+                    Change.NULLED,
+                    Reason.DESTINATION_SERIALIZATION_ERROR
+                )
+            )
+            NullValue to context
         }
-    }
 
     companion object {
         val DATE_TIME_FORMATTER: DateTimeFormatter =
