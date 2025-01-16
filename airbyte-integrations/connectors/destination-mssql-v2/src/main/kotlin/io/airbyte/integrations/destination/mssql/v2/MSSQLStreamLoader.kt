@@ -51,11 +51,23 @@ class MSSQLStreamLoader(
                 connection.createStatement().use { statement ->
                     statement.executeUpdate(sqlBuilder.createFinalTableIfNotExists())
                 }
+                connection.createStatement().use { statement ->
+                    val existingSchema = sqlBuilder.getExistingSchema(statement)
+                    val expectedSchema = sqlBuilder.getSchema()
+                    sqlBuilder
+                        .alterTableIfNeeded(
+                            existingSchema = existingSchema,
+                            expectedSchema = expectedSchema,
+                        )
+                        ?.let { alterStatement ->
+                            log.error { alterStatement }
+                            statement.executeUpdate(alterStatement)
+                        }
+                }
             }
         } catch (ex: Exception) {
             log.error(ex) { ex.message }
             throw ex
         }
     }
-
 }

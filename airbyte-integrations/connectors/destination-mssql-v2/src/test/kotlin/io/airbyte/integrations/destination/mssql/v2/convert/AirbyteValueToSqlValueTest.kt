@@ -11,13 +11,10 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimeValue
-import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDate
-import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDateTime
-import io.airbyte.cdk.load.util.TimeStringUtility.toOffset
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.integrations.destination.mssql.v2.model.SqlColumn
 import io.airbyte.integrations.destination.mssql.v2.model.SqlTable
@@ -61,7 +58,7 @@ internal class AirbyteValueToSqlValueTest {
         val result = converter.convert(dateValue)
         assertEquals(Date::class.java, result?.javaClass)
         assertEquals(
-            toLocalDate(dateValue.value).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli(),
+            dateValue.value.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli(),
             (result as Date).time
         )
     }
@@ -99,19 +96,19 @@ internal class AirbyteValueToSqlValueTest {
 
     @Test
     fun testConvertTimeValue() {
-        val timeValue = TimeValue("12:34:56")
+        val timeValue = TimeWithoutTimezoneValue("12:34:56")
         val result = converter.convert(timeValue)
         assertEquals(Time::class.java, result?.javaClass)
-        assertEquals(Time.valueOf(toOffset(timeValue.value)).time, (result as Time).time)
+        assertEquals(Time.valueOf(timeValue.value).time, (result as Time).time)
     }
 
     @Test
     fun testConvertTimestampValue() {
-        val timestampValue = TimestampValue("2024-11-18T12:34:56Z")
+        val timestampValue = TimestampWithTimezoneValue("2024-11-18T12:34:56Z")
         val result = converter.convert(timestampValue)
         assertEquals(Timestamp::class.java, result?.javaClass)
         assertEquals(
-            Timestamp.valueOf(toLocalDateTime(timestampValue.value)).time,
+            Timestamp.valueOf(timestampValue.value.toLocalDateTime()).time,
             (result as Timestamp).time
         )
     }

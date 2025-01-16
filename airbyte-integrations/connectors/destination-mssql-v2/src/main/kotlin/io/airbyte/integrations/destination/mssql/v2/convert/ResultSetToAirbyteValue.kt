@@ -25,10 +25,12 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimeValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.integrations.destination.mssql.v2.MSSQLQueryBuilder
@@ -59,13 +61,13 @@ class ResultSetToAirbyteValue {
                 TimestampTypeWithTimezone -> getTimestampWithTimezoneValue(field.name)
                 TimestampTypeWithoutTimezone -> getTimestampWithoutTimezoneValue(field.name)
                 is UnionType -> getObjectValue(field.name)
-                is UnknownType -> TODO()
+                is UnknownType -> getStringValue(field.name)
             }
 
         private fun ResultSet.getArrayValue(name: String): NamedValue =
-            getNullable(name, this::getString)?.let {
-                ArrayValue.from(deserialize<List<Any?>>(it))
-            }.toNamedValue(name)
+            getNullable(name, this::getString)
+                ?.let { ArrayValue.from(deserialize<List<Any?>>(it)) }
+                .toNamedValue(name)
 
         private fun ResultSet.getBooleanValue(name: String): NamedValue =
             getNullable(name, this::getBoolean)?.let { BooleanValue(it) }.toNamedValue(name)
@@ -77,12 +79,14 @@ class ResultSetToAirbyteValue {
             getNullable(name, this::getLong)?.let { IntegerValue(it) }.toNamedValue(name)
 
         private fun ResultSet.getNumberValue(name: String): NamedValue =
-            getNullable(name, this::getDouble)?.let { NumberValue(it.toBigDecimal()) }.toNamedValue(name)
+            getNullable(name, this::getDouble)
+                ?.let { NumberValue(it.toBigDecimal()) }
+                .toNamedValue(name)
 
         private fun ResultSet.getObjectValue(name: String): NamedValue =
-            getNullable(name, this::getString)?.let {
-                ObjectValue.from(deserialize<Map<String, Any?>>(it))
-            }.toNamedValue(name)
+            getNullable(name, this::getString)
+                ?.let { ObjectValue.from(deserialize<Map<String, Any?>>(it)) }
+                .toNamedValue(name)
 
         private fun ResultSet.getStringValue(name: String): NamedValue =
             getNullable(name, this::getString)?.let { StringValue(it) }.toNamedValue(name)
@@ -110,20 +114,29 @@ class ResultSetToAirbyteValue {
         private inline fun <reified T> deserialize(value: String): T =
             Jsons.deserialize(value, T::class.java)
 
-        internal fun String.toTimeWithTimezone(): TimeValue =
-            TimeValue(
-                OffsetDateTime.parse(this,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")).toOffsetTime().toString())
+        internal fun String.toTimeWithTimezone(): TimeWithTimezoneValue =
+            TimeWithTimezoneValue(
+                OffsetDateTime.parse(
+                        this,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")
+                    )
+                    .toOffsetTime()
+                    .toString()
+            )
 
-        internal fun String.toTimeWithoutTimezone(): TimeValue =
-            TimeValue(LocalTime.parse(this).toString())
+        internal fun String.toTimeWithoutTimezone(): TimeWithoutTimezoneValue =
+            TimeWithoutTimezoneValue(LocalTime.parse(this).toString())
 
-        internal fun String.toTimestampWithTimezone(): TimestampValue =
-            TimestampValue(
-                OffsetDateTime.parse(this,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")).toString())
+        internal fun String.toTimestampWithTimezone(): TimestampWithTimezoneValue =
+            TimestampWithTimezoneValue(
+                OffsetDateTime.parse(
+                        this,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")
+                    )
+                    .toString()
+            )
 
-        internal fun String.toTimestampWithoutTimezone(): TimestampValue =
-            TimestampValue(Timestamp.valueOf(this).toLocalDateTime().toString())
+        internal fun String.toTimestampWithoutTimezone(): TimestampWithoutTimezoneValue =
+            TimestampWithoutTimezoneValue(Timestamp.valueOf(this).toLocalDateTime().toString())
     }
 }

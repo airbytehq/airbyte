@@ -13,12 +13,11 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimeValue
-import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnknownValue
-import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDate
-import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDateTime
-import io.airbyte.cdk.load.util.TimeStringUtility.toOffset
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.integrations.destination.mssql.v2.model.SqlTable
 import io.airbyte.integrations.destination.mssql.v2.model.SqlTableRow
@@ -48,14 +47,16 @@ class AirbyteValueToSqlValue {
             }
             is ArrayValue -> airbyteValue.values.map { convert(it) }
             is BooleanValue -> airbyteValue.value
-            is DateValue -> Date.valueOf(toLocalDate(airbyteValue.value))
+            is DateValue -> Date.valueOf(airbyteValue.value)
             is IntegerValue -> airbyteValue.value
             is NullValue -> null
             is NumberValue -> airbyteValue.value.toDouble().toBigDecimal()
             is StringValue -> airbyteValue.value
-            is TimeValue -> Time.valueOf(toOffset(airbyteValue.value))
-            is TimestampValue -> Timestamp.valueOf(toLocalDateTime(airbyteValue.value))
             is UnknownValue -> airbyteValue.value.serializeToJsonBytes()
+            is TimeWithTimezoneValue -> Time.valueOf(airbyteValue.value.toLocalTime())
+            is TimeWithoutTimezoneValue -> Time.valueOf(airbyteValue.value)
+            is TimestampWithTimezoneValue -> Timestamp.valueOf(airbyteValue.value.toLocalDateTime())
+            is TimestampWithoutTimezoneValue -> Timestamp.valueOf(airbyteValue.value)
         }
     }
 }
