@@ -65,6 +65,14 @@ Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at prese
 
 | Version | Date       | Pull Request                                            | Subject                                     |
 | :------ |:-----------| :------------------------------------------------------ |:--------------------------------------------|
+| 0.2.8 | 2025-01-11 | [51277](https://github.com/airbytehq/airbyte/pull/51277) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50475](https://github.com/airbytehq/airbyte/pull/50475) | Update dependencies |
+| 0.2.6 | 2024-12-21 | [50192](https://github.com/airbytehq/airbyte/pull/50192) | Update dependencies |
+| 0.2.5 | 2024-12-14 | [49569](https://github.com/airbytehq/airbyte/pull/49569) | Update dependencies |
+| 0.2.4 | 2024-12-12 | [49299](https://github.com/airbytehq/airbyte/pull/49299) | Update dependencies |
+| 0.2.3 | 2024-12-11 | [48900](https://github.com/airbytehq/airbyte/pull/48900) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.2 | 2024-11-04 | [48177](https://github.com/airbytehq/airbyte/pull/48177) | Update dependencies |
+| 0.2.1 | 2024-10-29 | [47769](https://github.com/airbytehq/airbyte/pull/47769) | Update dependencies |
 | 0.2.0 | 2024-08-19 | [44419](https://github.com/airbytehq/airbyte/pull/44419) | Refactor connector to manifest-only format |
 | 0.1.15 | 2024-08-17 | [44340](https://github.com/airbytehq/airbyte/pull/44340) | Update dependencies |
 | 0.1.14 | 2024-08-12 | [43919](https://github.com/airbytehq/airbyte/pull/43919) | Update dependencies |

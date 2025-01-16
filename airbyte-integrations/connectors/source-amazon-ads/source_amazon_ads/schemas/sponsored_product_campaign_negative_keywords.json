@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "keywordId": { "type": ["null", "string"] },
+    "campaignId": { "type": ["null", "string"] },
+    "adGroupId": { "type": ["null", "number"] },
+    "state": { "type": ["null", "string"] },
+    "keywordText": { "type": ["null", "string"] },
+    "extendedData": { "type": ["null", "object"] }
+  },
+  "title": "sponsored_product_campaign_negative_keywords",
+  "type": ["null", "object"]
+}

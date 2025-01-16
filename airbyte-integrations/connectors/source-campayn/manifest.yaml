@@ -1,0 +1,381 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for [Campayn](https://campayn.com/) enables seamless
+  data integration between the Campayn email marketing platform and your data
+  warehouse or analytics system. This connector automates the extraction of
+  subscriber lists, email campaigns, performance metrics, and engagement data
+  from Campayn, allowing businesses to centralize marketing insights, optimize
+  email strategies, and drive data-driven decisions efficiently.
+
+check:
+  type: CheckStream
+  stream_names:
+    - lists
+
+definitions:
+  streams:
+    lists:
+      type: DeclarativeStream
+      name: lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /lists.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+    forms:
+      type: DeclarativeStream
+      name: forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /lists/{{ stream_partition.list_id }}/forms.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: list_id
+              stream:
+                $ref: "#/definitions/streams/lists"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /lists/{{ stream_partition.list_id }}/contacts.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: list_id
+              stream:
+                $ref: "#/definitions/streams/lists"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    emails:
+      type: DeclarativeStream
+      name: emails
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /emails.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/emails"
+    reports:
+      type: DeclarativeStream
+      name: reports
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/calendar.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reports"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['sub_domain'] }}.campayn.com/api/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: TRUEREST apikey={{ config["api_key"] }}
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/emails"
+  - $ref: "#/definitions/streams/reports"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - sub_domain
+      - api_key
+    properties:
+      sub_domain:
+        type: string
+        name: domain
+        title: Sub Domain
+        order: 0
+      api_key:
+        type: string
+        description: >-
+          API key to use. Find it in your Campayn account settings. Keep it
+          secure as it grants access to your Campayn data.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    lists: true
+    forms: true
+    contacts: true
+    emails: true
+    reports: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    lists:
+      streamHash: 616482821ae602657529ce5b28d5bda32e35406f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    forms:
+      streamHash: e191ad7b67f69fb64758f4d2c018db77997ca403
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: c666da93e7c5c59b9179a3f12114f86ef9067def
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    emails:
+      streamHash: 7d9acd173fa4ab94ea22b8e7c43b82bfc64fd140
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    reports:
+      streamHash: 5dcf5bba9a8dd94090b5d719112d2b15bfb50075
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://github.com/nebojsac/Campayn-API
+
+schemas:
+  lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      contact_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      list_name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      contact_list_id:
+        type:
+          - string
+          - "null"
+      form_html:
+        type:
+          - string
+          - "null"
+      form_title:
+        type:
+          - string
+          - "null"
+      form_type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      signup_count:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      confirmed:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      image_url:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  emails:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      percent_responses:
+        type:
+          - number
+          - "null"
+      percent_views:
+        type:
+          - number
+          - "null"
+      preview_thumb:
+        type:
+          - string
+          - "null"
+      preview_url:
+        type:
+          - string
+          - "null"
+      send_count:
+        type:
+          - string
+          - "null"
+      send_now:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      unique_responses:
+        type:
+          - number
+          - "null"
+      unique_views:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      preview_url:
+        type:
+          - string
+          - "null"
+      scheduled_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id

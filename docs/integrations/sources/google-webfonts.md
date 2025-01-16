@@ -68,6 +68,13 @@ Google Webfont's [API reference](https://developers.google.com/fonts/docs/develo
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.2.7 | 2025-01-11 | [51150](https://github.com/airbytehq/airbyte/pull/51150) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50099](https://github.com/airbytehq/airbyte/pull/50099) | Update dependencies |
+| 0.2.5 | 2024-12-14 | [49616](https://github.com/airbytehq/airbyte/pull/49616) | Update dependencies |
+| 0.2.4 | 2024-12-12 | [49232](https://github.com/airbytehq/airbyte/pull/49232) | Update dependencies |
+| 0.2.3 | 2024-12-11 | [48141](https://github.com/airbytehq/airbyte/pull/48141) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.2 | 2024-10-29 | [47891](https://github.com/airbytehq/airbyte/pull/47891) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47623](https://github.com/airbytehq/airbyte/pull/47623) | Update dependencies |
 | 0.2.0 | 2024-08-23 | [44615](https://github.com/airbytehq/airbyte/pull/44615) | Refactor connector to manifest-only format |
 | 0.1.16 | 2024-08-17 | [44279](https://github.com/airbytehq/airbyte/pull/44279) | Update dependencies |
 | 0.1.15 | 2024-08-10 | [43552](https://github.com/airbytehq/airbyte/pull/43552) | Update dependencies |

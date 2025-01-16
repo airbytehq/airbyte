@@ -70,6 +70,8 @@ MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES = ["Regression Tests"]
 
 PUBLISH_UPDATES_SLACK_CHANNEL = "#connector-publish-updates"
 PUBLISH_FAILURE_SLACK_CHANNEL = "#connector-publish-failures"
+# TODO this should be passed via an env var or a CLI input
+PATH_TO_LOCAL_CDK = "../airbyte-python-cdk"
 
 
 class CIContext(str, Enum):

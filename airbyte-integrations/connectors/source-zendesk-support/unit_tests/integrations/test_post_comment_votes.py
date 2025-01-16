@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 import freezegun
 import pendulum
-from airbyte_cdk.models import AirbyteStateBlob
+
+from airbyte_cdk.models import AirbyteStateBlob, SyncMode
 from airbyte_cdk.models import Level as LogLevel
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -20,6 +20,7 @@ from .zs_requests import PostCommentVotesRequestBuilder
 from .zs_requests.request_authenticators import ApiTokenAuthenticator
 from .zs_responses import ErrorResponseBuilder, PostCommentVotesResponseBuilder
 from .zs_responses.records import PostCommentVotesRecordBuilder
+
 
 _NOW = datetime.now(timezone.utc)
 
@@ -96,7 +97,13 @@ class TestPostsCommentsVotesStreamFullRefresh(TestCase):
         assert len(output.records) == 0
 
         info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-        assert any(["Forbidden. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support." in error for error in info_logs])
+        assert any(
+            [
+                "Forbidden. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+                in error
+                for error in info_logs
+            ]
+        )
 
     @HttpMocker()
     def test_given_404_error_when_read_posts_comments_then_skip_stream(self, http_mocker):
@@ -126,7 +133,13 @@ class TestPostsCommentsVotesStreamFullRefresh(TestCase):
         assert len(output.records) == 0
 
         info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-        assert any(["Not found. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support." in error for error in info_logs])
+        assert any(
+            [
+                "Not found. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+                in error
+                for error in info_logs
+            ]
+        )
 
     @HttpMocker()
     def test_given_500_error_when_read_posts_comments_then_stop_syncing(self, http_mocker):

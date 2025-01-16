@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.justsift.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-just-sift
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 27b801a1-fd34-4470-829a-bb12c63c42f9
+  dockerImageTag: 0.0.7
+  dockerRepository: airbyte/source-just-sift
+  githubIssueLabel: source-just-sift
+  icon: icon.svg
+  license: MIT
+  name: JustSift
+  releaseDate: 2024-10-29
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/just-sift
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

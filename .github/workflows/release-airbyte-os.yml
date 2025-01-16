@@ -14,7 +14,7 @@ jobs:
   start-release-airbyte-runner:
     name: "Release Airbyte: Start EC2 Runner"
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
@@ -37,7 +37,7 @@ jobs:
           github-token: ${{ env.PAT }}
 
   release-airbyte-platform:
-    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
+    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-24.04.
     needs:
       - start-release-airbyte-runner
     runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
@@ -107,7 +107,7 @@ jobs:
           tag: v${{ env.NEW_VERSION }}
 
   release-airbyte:
-    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
+    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-24.04.
     needs:
       - start-release-airbyte-runner
       - release-airbyte-platform
@@ -174,7 +174,7 @@ jobs:
   # We are releasing octavia from a separate job because:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
   release-octavia:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -205,7 +205,7 @@ jobs:
     needs:
       - start-release-airbyte-runner # required to get output from the start-runner job
       - release-airbyte # required to wait when the main job is done
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
       - name: Configure AWS credentials

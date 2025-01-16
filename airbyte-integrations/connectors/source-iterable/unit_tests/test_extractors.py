@@ -4,8 +4,9 @@
 import io
 
 import requests
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonlDecoder
 from source_iterable.components import EventsRecordExtractor
+
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonlDecoder
 
 
 def test_events_extraction():

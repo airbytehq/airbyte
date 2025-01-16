@@ -50,6 +50,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -114,6 +117,9 @@ definitions:
         cursor_field: updated_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -180,6 +186,9 @@ definitions:
         cursor_field: updated_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -244,6 +253,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -308,6 +320,9 @@ definitions:
         cursor_field: updated_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -372,6 +387,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -436,6 +454,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -500,6 +521,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -564,6 +588,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -628,6 +655,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -692,6 +722,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -756,6 +789,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -820,6 +856,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -884,6 +923,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -948,6 +990,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -1020,6 +1065,9 @@ definitions:
         cursor_field: created_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%d %H:%M:%S+00:00"
+          - "%Y-%m-%dT%H:%M:%S+00:00"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -1112,114 +1160,148 @@ metadata:
     messages: true
     users: true
     views_items: true
+  yamlComponents:
+    streams:
+      account:
+        - incrementalSync
+      customers:
+        - incrementalSync
+      custom-fields:
+        - incrementalSync
+      events:
+        - incrementalSync
+      integrations:
+        - incrementalSync
+      jobs:
+        - incrementalSync
+      macros:
+        - incrementalSync
+      views:
+        - incrementalSync
+      rules:
+        - incrementalSync
+      satisfaction-surveys:
+        - incrementalSync
+      tags:
+        - incrementalSync
+      teams:
+        - incrementalSync
+      tickets:
+        - incrementalSync
+      messages:
+        - incrementalSync
+      users:
+        - incrementalSync
+      views_items:
+        - incrementalSync
   testedStreams:
     account:
-      streamHash: 35c0cadba84dbdeff763b400c40d63332063f0ca
+      streamHash: d744624c7484b6696d00b448a4873d44577fe6d4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     customers:
-      streamHash: f4fa57dc21e535ec9b5b8b772ca89d3c7587e2e9
+      streamHash: ca559007a6bf263aeaf11dbb9b96295e64555c2f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     custom-fields:
-      hasRecords: true
-      streamHash: c19cf92c5bde4806aba375c664479a9d36a61896
+      streamHash: 158d74d4ec15ddb393fcd93410df78b504b07144
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     events:
-      hasRecords: true
-      streamHash: 49ac78abe633a9c4fce0778e183d9bba24473308
+      streamHash: 180fd5e4dcc2a7c6c78011249aa2a8bdc8910c4f
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     integrations:
-      hasRecords: true
-      streamHash: d160fd9e3e9e1a62d7d8c789126191c998476934
+      streamHash: d7d971ef58a4eab715c2a3609213d5d65e8fefca
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     jobs:
-      streamHash: e705479af8c394a6a042d19943fde3c7c574df91
+      streamHash: ed6c3e3ed40bb137f8ef8748435bd2c83b9e3d74
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     macros:
-      hasRecords: true
-      streamHash: bebe6bd207f5507cc2b92614e82608fe5488acd7
+      streamHash: 955fe8be382283bd12e9b461f8c6dea96d521480
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     views:
-      streamHash: fd8ae05b480c0312b7780da2d0ecc1831779db78
+      streamHash: f6f2fec4decd9c5657d47007cf7ca50c74798f5d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     rules:
-      streamHash: 5df2be309fb2e0d9ddc5903d1f1177e8ddb0e551
+      streamHash: 1bbb2ded40d6ec6ac514a7a4d031824fb72c8671
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     satisfaction-surveys:
-      streamHash: 83a105ff8474fa6f58bb39fa09006938444f10ce
+      streamHash: 78392e54d6a852c07c6b68f1268167a523a1fed8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tags:
-      streamHash: 3715b9466b20abc4f5bdc222cd4dde77d65b0344
+      streamHash: d08f102f1d1d60817d0dc073daebc13c9589d2fc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teams:
-      streamHash: 4c753176b11815ff3da55d6806ee16839b9c0c7d
+      streamHash: 0ef08ffb72fa8e5404c7ceb3d350be90cf39cbcb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tickets:
-      streamHash: 5086078a027afddc63a8a323be7c7208b47b109c
+      streamHash: b735a8354cf6d5ad5034612614d137a60a0420d8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     messages:
-      streamHash: d57f0f0ff7940081368628d20293453fd5807e0a
+      streamHash: 5fb8111396993c073be7704df24dac5c8bdb3446
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     users:
-      streamHash: 4c462adb8d9112b0f7d54e967939cdb8627ba15f
+      streamHash: 5c44f43aba3bdbdddb0bce2483d1a2baf7591307
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     views_items:
-      streamHash: 95d5e0af74d9233ab6a07c00834b2d3b993b4496
+      streamHash: 3fb81032865e8878b9d3d811f070b8e09c2d82cf
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1420,6 +1502,19 @@ schemas:
           - object
           - "null"
         properties:
+          notification:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              message:
+                type:
+                  - string
+                  - "null"
           status:
             type:
               - string
@@ -1439,6 +1534,10 @@ schemas:
       created_datetime:
         type:
           - string
+          - "null"
+      custom_fields:
+        type:
+          - object
           - "null"
       email:
         type:
@@ -1693,12 +1792,103 @@ schemas:
           - "null"
       created_datetime:
         type: string
+      ended_datetime:
+        type:
+          - string
+          - "null"
       id:
         type: number
       info:
         type:
           - object
           - "null"
+        properties:
+          _composed_files:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                absolute_path:
+                  type:
+                    - string
+                    - "null"
+                content_type:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                size:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          _tickets_files:
+            type:
+              - array
+              - "null"
+          archive:
+            type:
+              - object
+              - "null"
+            properties:
+              absolute_path:
+                type:
+                  - string
+                  - "null"
+              content_type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              size:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          custom_fields_mapping:
+            type:
+              - object
+              - "null"
+          custom_fields_order:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          iteration_over:
+            type:
+              - boolean
+              - "null"
+          progress_count:
+            type:
+              - number
+              - "null"
+          progress_cursor:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
       params:
         type:
           - object
@@ -2053,6 +2243,10 @@ schemas:
                 type:
                   - string
                   - "null"
+      started_datetime:
+        type:
+          - string
+          - "null"
       status:
         type:
           - string
@@ -7371,6 +7565,10 @@ schemas:
                 - "null"
       created_datetime:
         type: string
+      custom_fields:
+        type:
+          - object
+          - "null"
       email:
         type:
           - string

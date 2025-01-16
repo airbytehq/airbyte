@@ -75,6 +75,12 @@ In the Data tab, you should see the tables and a sample of the data that will be
 
 | Version | Date       | Pull Request                                             | Subject                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------- |
+| 0.4.26 | 2025-01-11 | [51094](https://github.com/airbytehq/airbyte/pull/51094) | Update dependencies |
+| 0.4.25 | 2024-12-28 | [50531](https://github.com/airbytehq/airbyte/pull/50531) | Update dependencies |
+| 0.4.24 | 2024-12-21 | [50013](https://github.com/airbytehq/airbyte/pull/50013) | Update dependencies |
+| 0.4.23 | 2024-12-14 | [49179](https://github.com/airbytehq/airbyte/pull/49179) | Update dependencies |
+| 0.4.22 | 2024-11-25 | [48680](https://github.com/airbytehq/airbyte/pull/48680) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.4.21 | 2024-10-29 | [47081](https://github.com/airbytehq/airbyte/pull/47081) | Update dependencies |
 | 0.4.20 | 2024-10-12 | [46480](https://github.com/airbytehq/airbyte/pull/46480) | Update dependencies |
 | 0.4.19 | 2024-09-28 | [46208](https://github.com/airbytehq/airbyte/pull/46208) | Update dependencies |
 | 0.4.18 | 2024-09-21 | [45809](https://github.com/airbytehq/airbyte/pull/45809) | Update dependencies |

@@ -1,4 +1,5 @@
 from .error_response_builder import ErrorResponseBuilder
+from .groups_response_builder import GroupsResponseBuilder
 from .post_comment_votes_response_builder import PostCommentVotesResponseBuilder
 from .post_comments_response_builder import PostsCommentsResponseBuilder
 from .post_votes_response_builder import PostsVotesResponseBuilder

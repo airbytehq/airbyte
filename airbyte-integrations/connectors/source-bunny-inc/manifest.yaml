@@ -1,0 +1,2110 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: Synchronizes Bunny data
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+    - accountBalances
+    - contacts
+    - entities
+    - invoices
+    - invoiceItems
+    - payments
+    - products
+    - plans
+    - quotes
+    - quote_charges
+    - subscriptions
+    - subscriptionCharges
+    - transactions
+    - tenants
+
+definitions:
+  streams:
+    plans:
+      type: DeclarativeStream
+      name: plans
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.plans.pageInfo.endCursor + '"}'
+              if response.data.plans.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.plans.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { plans(first: 10, after: $after) { nodes {
+              id               addon basePrice code contactUsLabel contactUsUrl
+              createdAt description id internalNotes isVisible name position
+              pricingDescription productId productPlanName selfServiceBuy
+              selfServiceCancel selfServiceRenew updatedAt } pageInfo {
+              startCursor endCursor hasNextPage hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - plans
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/plans"
+    quotes:
+      type: DeclarativeStream
+      name: quotes
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.quotes.pageInfo.endCursor + '"}'
+              if response.data.quotes.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.quotes.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { quotes(first: 10, after: $after) { nodes {
+              id               acceptedByName acceptedByTitle accountId amount
+              amountDue applicationDate backdatedPeriods backdatedQuote
+              billingDay contactId createdAt credits currencyId dealId discount
+              discountValue evergreen id message name netPaymentDays notes
+              number ownerId payableId periodAmount poNumber smallUnitAmountDue
+              splitInvoice subtotal taxAmount taxCode updatedAt uuid } pageInfo
+              { startCursor endCursor hasNextPage hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - quotes
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/quotes"
+    tenants:
+      type: DeclarativeStream
+      name: tenants
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.tenants.pageInfo.endCursor + '"}'
+              if response.data.tenants.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.tenants.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { tenants(first: 10, after: $after) { nodes
+              { id               accountId code createdAt id lastLogin
+              latestProvisioningChangeId name platformId provisioningRequired
+              provisioningState subdomain updatedAt userCount utilizationMetrics
+              } pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
+              } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - tenants
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tenants"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.accounts.pageInfo.endCursor +
+              '"}' if response.data.accounts.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.accounts.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { accounts(first: 10, after: $after) { nodes
+              { id               accountTypeId annualRevenue billingCity
+              billingContactId billingCountry billingDay billingState
+              billingStreet billingZip code createdAt currencyId description
+              duns employees entityId entityUseCode fax groupId id industryId
+              invoiceTemplateId linkedinUrl name netPaymentDays ownerUserId
+              payingStatus phone shippingCity shippingCountry shippingState
+              shippingStreet shippingZip taxNumber taxNumberValidated timezone
+              updatedAt website } pageInfo { startCursor endCursor hasNextPage
+              hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - accounts
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.contacts.pageInfo.endCursor +
+              '"}' if response.data.contacts.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.contacts.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { contacts(first: 10, after: $after) { nodes
+              { id               accountId code createdAt description email
+              entityId firstName fullName id lastName linkedinUrl mailingCity
+              mailingCountry mailingState mailingStreet mailingZip mobile phone
+              portalAccess salutation title updatedAt } pageInfo { startCursor
+              endCursor hasNextPage hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - contacts
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    entities:
+      type: DeclarativeStream
+      name: entities
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.entities.pageInfo.endCursor +
+              '"}' if response.data.entities.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.entities.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { entities(first: 10, after: $after) { nodes
+              { id               abbreviation accentColor baseCurrencyId
+              billingCity billingCountry billingState billingStreet billingZip
+              brandColor createdAt customerServiceEmail
+              defaultAccountsReceivableAccountId defaultBankingFeesAccountId
+              defaultConversionGainAccountId defaultConversionLossAccountId
+              defaultCpcaAccountId defaultDeferredRevenueAccountId
+              defaultPaymentAccountId defaultRecognizedRevenueAccountId
+              defaultTaxPayableAccountId emailSenderName emailTemplate fax
+              fiscalYearStartMonth id invoiceNumberPrefix invoiceNumberSeq
+              invoicesImageUrl isDefault name phone privacyUrl quoteNumberPrefix
+              quoteNumberSeq quotesImageUrl refundPolicyUrl taxId taxType
+              termsUrl timezone topNavImageUrl updatedAt website } pageInfo {
+              startCursor endCursor hasNextPage hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - entities
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/entities"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.invoices.pageInfo.endCursor +
+              '"}' if response.data.invoices.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.invoices.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { invoices(first: 10, after: $after) { nodes
+              { id               accountId amount amountDue amountPaid createdAt
+              credits currencyId description dueAt id netPaymentDays number
+              paidAt payableId poNumber portalUrl quoteId smallUnitAmountDue
+              subtotal taxAmount updatedAt url uuid } pageInfo { startCursor
+              endCursor hasNextPage hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - invoices
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+    payments:
+      type: DeclarativeStream
+      name: payments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.payments.pageInfo.endCursor +
+              '"}' if response.data.payments.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.payments.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { payments(first: 10, after: $after) { nodes
+              { id               accountId amount amountUnapplied
+              baseCurrencyCash baseCurrencyId createdAt currencyId description
+              id isLegacy memo receivedAt updatedAt } pageInfo { startCursor
+              endCursor hasNextPage hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - payments
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/payments"
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.products.pageInfo.endCursor +
+              '"}' if response.data.products.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.products.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { products(first: 10, after: $after) { nodes
+              { id               code description everythingInPlus id
+              internalNotes name platformId productCategoryId
+              showProductNameOnLineItem } pageInfo { startCursor endCursor
+              hasNextPage hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - products
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    invoiceItems:
+      type: DeclarativeStream
+      name: invoiceItems
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.invoiceItems.pageInfo.endCursor +
+              '"}' if response.data.invoiceItems.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.invoiceItems.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { invoiceItems(first: 10, after: $after) {
+              nodes { id               amount chargeType couponId currencyId
+              discount id invoiceId lineText position price priceDecimals
+              priceListId pricingModel prorationRate quantity subtotal taxAmount
+              taxCode unitOfMeasure vatCode } pageInfo { startCursor endCursor
+              hasNextPage hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - invoiceItems
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoiceItems"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.transactions.pageInfo.endCursor +
+              '"}' if response.data.transactions.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.transactions.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { transactions(first: 10, after: $after) {
+              nodes { id               accountId amount createdAt currencyId
+              description dueAt id state transactionableId } pageInfo {
+              startCursor endCursor hasNextPage hasPreviousPage } } } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - transactions
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
+    quote_charges:
+      type: DeclarativeStream
+      name: quote_charges
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.quote_charges.pageInfo.endCursor
+              + '"}' if response.data.quote_charges.pageInfo.endCursor else ""
+              }}
+            stop_condition: "{{ response.data.quote_charges.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { quote_charges(first: 10, after: $after) {
+              nodes { id               amount billingPeriod chargeType couponId
+              createdAt currencyId currentQuantity discount id invoiceLineText
+              kind name price priceDecimals priceListChargeId pricingModel
+              prorationRate quantity quantityMax quantityMin quoteChangeId
+              subtotal taxAmount taxCode tieredAveragePrice updatedAt vatCode }
+              pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
+              } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - quote_charges
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/quote_charges"
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.subscriptions.pageInfo.endCursor
+              + '"}' if response.data.subscriptions.pageInfo.endCursor else ""
+              }}
+            stop_condition: "{{ response.data.subscriptions.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { subscriptions(first: 10, after: $after) {
+              nodes { id               accountId cancelationDate createdAt
+              currencyId endDate id name period priceListId rampIntervalMonths
+              startDate trialEndDate trialPeriod trialStartDate updatedAt }
+              pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
+              } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - subscriptions
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriptions"
+    accountBalances:
+      type: DeclarativeStream
+      name: accountBalances
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' +
+              response.data.accountBalances.pageInfo.endCursor + '"}' if
+              response.data.accountBalances.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.accountBalances.pageInfo.hasNextPage is false }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { accountBalances(first: 10, after: $after)
+              { nodes { id               accountId balance currencyId id }
+              pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
+              } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - accountBalances
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accountBalances"
+    subscriptionCharges:
+      type: DeclarativeStream
+      name: subscriptionCharges
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: variables
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' +
+              response.data.subscriptionCharges.pageInfo.endCursor + '"}' if
+              response.data.subscriptionCharges.pageInfo.endCursor else "" }}
+            stop_condition: >-
+              {{ response.data.subscriptionCharges.pageInfo.hasNextPage is false
+              }}
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /graphql
+          http_method: POST
+          request_body_json:
+            query: >-
+              query($after: String) { subscriptionCharges(first: 10, after:
+              $after) { nodes { id               amount billingPeriod chargeType
+              createdAt discount discountedPrice id invoiceLineText kind name
+              periodPrice price priceDecimals priceListChargeId priceListId
+              pricingModel prorationRate quantity quantityMax quantityMin
+              selfServiceQuantity subscriptionId tieredAveragePrice updatedAt }
+              pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
+              } 
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - subscriptionCharges
+              - nodes
+              - "*"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriptionCharges"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['subdomain'] }}.bunny.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"apikey\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/accountBalances"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/entities"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/invoiceItems"
+  - $ref: "#/definitions/streams/payments"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/plans"
+  - $ref: "#/definitions/streams/quotes"
+  - $ref: "#/definitions/streams/quote_charges"
+  - $ref: "#/definitions/streams/subscriptions"
+  - $ref: "#/definitions/streams/subscriptionCharges"
+  - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/tenants"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - subdomain
+      - apikey
+    properties:
+      apikey:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      subdomain:
+        type: string
+        description: The subdomain specific to your Bunny account or service.
+        name: subdomain
+        order: 0
+        title: Subdomain
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://docs.bunny.com/developer/api-reference/queries
+  testedStreams:
+    accounts:
+      hasRecords: true
+      streamHash: 879d5b5d7dce71369a5533ed96b390b77ad3564c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    accountBalances:
+      hasRecords: true
+      streamHash: 7966c01aabd07cbc905c0279ad44b14f477f299c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts:
+      streamHash: 5c4db7b94dae251a1def94ae790d146b1cbda8dd
+    entities:
+      streamHash: 65ba5f31944b56368fe9d693a03ac6cab8cec1a8
+    invoices:
+      streamHash: 9feae4d0141466f2d326a05d2188dbfa9164b183
+    invoiceItems:
+      streamHash: a57d20dc73fd2c3a236145e89f3c77d9c061628d
+    payments:
+      streamHash: 9fe5abc62e8cecac5d14d5e058c3d246892c5f99
+    products:
+      streamHash: eb4c9da4f993e9b1171199b47692253adb532726
+    plans:
+      streamHash: cea5bead8031602423eb8df3ba577195d17572c8
+    quotes:
+      streamHash: 36c6f963d53d145a8e9445f6278e156097883364
+    quote_charges:
+      streamHash: ee6bfaba5669eac8de245ecf39c78af156089584
+    subscriptions:
+      streamHash: ad990d631848383d26d20f3789de9ebce593c10d
+    subscriptionCharges:
+      streamHash: 123de539ae97a449a628d09b51e62183f0a2e522
+    transactions:
+      streamHash: cfa646f3076e35847315e08f20dcd1857b2609fe
+    tenants:
+      streamHash: e0b625be017779be93b76740a2a5d9b9c2cd6374
+  autoImportSchema:
+    plans: false
+    quotes: false
+    tenants: false
+    accounts: true
+    contacts: false
+    entities: false
+    invoices: false
+    payments: false
+    products: false
+    invoiceItems: false
+    transactions: false
+    quote_charges: false
+    subscriptions: false
+    accountBalances: false
+    subscriptionCharges: false
+
+schemas:
+  plans:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      addon:
+        type:
+          - boolean
+          - "null"
+      position:
+        type:
+          - int
+          - "null"
+      basePrice:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      isVisible:
+        type:
+          - boolean
+          - "null"
+      productId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      contactUsUrl:
+        type:
+          - string
+          - "null"
+      internalNotes:
+        type:
+          - string
+          - "null"
+      contactUsLabel:
+        type:
+          - string
+          - "null"
+      selfServiceBuy:
+        type:
+          - boolean
+          - "null"
+      productPlanName:
+        type:
+          - string
+          - "null"
+      selfServiceRenew:
+        type:
+          - boolean
+          - "null"
+      selfServiceCancel:
+        type:
+          - boolean
+          - "null"
+      pricingDescription:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  quotes:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      dealId:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      credits:
+        type:
+          - number
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      taxCode:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - number
+          - "null"
+      poNumber:
+        type:
+          - string
+          - "null"
+      subtotal:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      amountDue:
+        type:
+          - number
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      evergreen:
+        type:
+          - boolean
+          - "null"
+      payableId:
+        type:
+          - string
+          - "null"
+      taxAmount:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      billingDay:
+        type:
+          - int
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      periodAmount:
+        type:
+          - number
+          - "null"
+      splitInvoice:
+        type:
+          - boolean
+          - "null"
+      discountValue:
+        type:
+          - string
+          - "null"
+      acceptedByName:
+        type:
+          - string
+          - "null"
+      backdatedQuote:
+        type:
+          - boolean
+          - "null"
+      netPaymentDays:
+        type:
+          - int
+          - "null"
+      acceptedByTitle:
+        type:
+          - string
+          - "null"
+      applicationDate:
+        type:
+          - date
+          - "null"
+      backdatedPeriods:
+        type:
+          - boolean
+          - "null"
+      smallUnitAmountDue:
+        type:
+          - int
+          - "null"
+    additionalProperties: true
+  tenants:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      lastLogin:
+        type:
+          - timestamp_without_timezone
+          - "null"
+      subdomain:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      userCount:
+        type:
+          - int
+          - "null"
+      platformId:
+        type:
+          - string
+          - "null"
+      provisioningState:
+        type:
+          - string
+          - "null"
+      utilizationMetrics:
+        type:
+          - string
+          - "null"
+      provisioningRequired:
+        type:
+          - boolean
+          - "null"
+      latestProvisioningChangeId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      groupId:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      entityId:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      billingDay:
+        type:
+          - number
+          - "null"
+      billingZip:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      industryId:
+        type:
+          - string
+          - "null"
+      billingCity:
+        type:
+          - string
+          - "null"
+      linkedinUrl:
+        type:
+          - string
+          - "null"
+      ownerUserId:
+        type:
+          - string
+          - "null"
+      billingState:
+        type:
+          - string
+          - "null"
+      payingStatus:
+        type:
+          - string
+          - "null"
+      accountTypeId:
+        type:
+          - string
+          - "null"
+      billingStreet:
+        type:
+          - string
+          - "null"
+      billingCountry:
+        type:
+          - string
+          - "null"
+      netPaymentDays:
+        type:
+          - number
+          - "null"
+      shippingCountry:
+        type:
+          - string
+          - "null"
+      billingContactId:
+        type:
+          - string
+          - "null"
+      invoiceTemplateId:
+        type:
+          - string
+          - "null"
+      taxNumberValidated:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      entityId:
+        type:
+          - string
+          - "null"
+      fullName:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - timestamp_without_timezone
+          - "null"
+      mailingZip:
+        type:
+          - string
+          - "null"
+      salutation:
+        type:
+          - string
+          - "null"
+      linkedinUrl:
+        type:
+          - string
+          - "null"
+      mailingCity:
+        type:
+          - string
+          - "null"
+      mailingState:
+        type:
+          - string
+          - "null"
+      portalAccess:
+        type:
+          - boolean
+          - "null"
+      mailingStreet:
+        type:
+          - string
+          - "null"
+      mailingCountry:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  entities:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      taxId:
+        type:
+          - string
+          - "null"
+      taxType:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      termsUrl:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      billingZip:
+        type:
+          - string
+          - "null"
+      brandColor:
+        type:
+          - string
+          - "null"
+      privacyUrl:
+        type:
+          - string
+          - "null"
+      accentColor:
+        type:
+          - string
+          - "null"
+      billingCity:
+        type:
+          - string
+          - "null"
+      abbreviation:
+        type:
+          - string
+          - "null"
+      billingState:
+        type:
+          - string
+          - "null"
+      billingStreet:
+        type:
+          - string
+          - "null"
+      emailTemplate:
+        type:
+          - string
+          - "null"
+      baseCurrencyId:
+        type:
+          - string
+          - "null"
+      billingCountry:
+        type:
+          - string
+          - "null"
+      quoteNumberSeq:
+        type:
+          - int
+          - "null"
+      quotesImageUrl:
+        type:
+          - string
+          - "null"
+      topNavImageUrl:
+        type:
+          - string
+          - "null"
+      emailSenderName:
+        type:
+          - string
+          - "null"
+      refundPolicyUrl:
+        type:
+          - string
+          - "null"
+      invoiceNumberSeq:
+        type:
+          - int
+          - "null"
+      invoicesImageUrl:
+        type:
+          - string
+          - "null"
+      quoteNumberPrefix:
+        type:
+          - string
+          - "null"
+      invoiceNumberPrefix:
+        type:
+          - string
+          - "null"
+      customerServiceEmail:
+        type:
+          - string
+          - "null"
+      defaultCpcaAccountId:
+        type:
+          - string
+          - "null"
+      fiscalYearStartMonth:
+        type:
+          - int
+          - "null"
+      defaultPaymentAccountId:
+        type:
+          - string
+          - "null"
+      defaultTaxPayableAccountId:
+        type:
+          - string
+          - "null"
+      defaultBankingFeesAccountId:
+        type:
+          - string
+          - "null"
+      defaultConversionGainAccountId:
+        type:
+          - string
+          - "null"
+      defaultConversionLossAccountId:
+        type:
+          - string
+          - "null"
+      defaultDeferredRevenueAccountId:
+        type:
+          - string
+          - "null"
+      defaultRecognizedRevenueAccountId:
+        type:
+          - string
+          - "null"
+      defaultAccountsReceivableAccountId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  invoices:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+      dueAt:
+        type:
+          - date
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      paidAt:
+        type:
+          - timestamp_without_timezone
+          - "null"
+      credits:
+        type:
+          - number
+          - "null"
+      quoteId:
+        type:
+          - string
+          - "null"
+      poNumber:
+        type:
+          - string
+          - "null"
+      subtotal:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      amountDue:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      payableId:
+        type:
+          - string
+          - "null"
+      portalUrl:
+        type:
+          - string
+          - "null"
+      taxAmount:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      amountPaid:
+        type:
+          - number
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      netPaymentDays:
+        type:
+          - string
+          - "null"
+      smallUnitAmountDue:
+        type:
+          - int
+          - "null"
+    additionalProperties: true
+  payments:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      memo:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      isLegacy:
+        type:
+          - boolean
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      receivedAt:
+        type:
+          - string
+          - "null"
+      baseCurrencyId:
+        type:
+          - string
+          - "null"
+      amountUnapplied:
+        type:
+          - number
+          - "null"
+      baseCurrencyCash:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  products:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      platformId:
+        type:
+          - string
+          - "null"
+      internalNotes:
+        type:
+          - string
+          - "null"
+      everythingInPlus:
+        type:
+          - boolean
+          - "null"
+      productCategoryId:
+        type:
+          - string
+          - "null"
+      showProductNameOnLineItem:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  invoiceItems:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      taxCode:
+        type:
+          - string
+          - "null"
+      vatCode:
+        type:
+          - string
+          - "null"
+      couponId:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - number
+          - "null"
+      lineText:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - int
+          - "null"
+      quantity:
+        type:
+          - int
+          - "null"
+      subtotal:
+        type:
+          - string
+          - "null"
+      invoiceId:
+        type:
+          - string
+          - "null"
+      taxAmount:
+        type:
+          - number
+          - "null"
+      chargeType:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      priceListId:
+        type:
+          - string
+          - "null"
+      pricingModel:
+        type:
+          - string
+          - "null"
+      priceDecimals:
+        type:
+          - string
+          - "null"
+      prorationRate:
+        type:
+          - number
+          - "null"
+      unitOfMeasure:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  transactions:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      dueAt:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      transactionableId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  quote_charges:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      taxCode:
+        type:
+          - string
+          - "null"
+      vatCode:
+        type:
+          - string
+          - "null"
+      couponId:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - number
+          - "null"
+      quantity:
+        type:
+          - int
+          - "null"
+      subtotal:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      taxAmount:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      chargeType:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      quantityMax:
+        type:
+          - int
+          - "null"
+      quantityMin:
+        type:
+          - int
+          - "null"
+      pricingModel:
+        type:
+          - string
+          - "null"
+      billingPeriod:
+        type:
+          - string
+          - "null"
+      priceDecimals:
+        type:
+          - int
+          - "null"
+      prorationRate:
+        type:
+          - number
+          - "null"
+      quoteChangeId:
+        type:
+          - string
+          - "null"
+      currentQuantity:
+        type:
+          - int
+          - "null"
+      invoiceLineText:
+        type:
+          - string
+          - "null"
+      priceListChargeId:
+        type:
+          - string
+          - "null"
+      tieredAveragePrice:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      endDate:
+        type:
+          - date
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - timestamp_without_timezone
+          - "null"
+      startDate:
+        type:
+          - date
+          - "null"
+      updatedAt:
+        type:
+          - timestamp_without_timezone
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      priceListId:
+        type:
+          - string
+          - "null"
+      trialPeriod:
+        type:
+          - string
+          - "null"
+      trialEndDate:
+        type:
+          - date
+          - "null"
+      trialStartDate:
+        type:
+          - date
+          - "null"
+      cancelationDate:
+        type:
+          - date
+          - "null"
+      rampIntervalMonths:
+        type:
+          - int
+          - "null"
+    additionalProperties: true
+  accountBalances:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  subscriptionCharges:
+    type: object
+    $schema: http://json-schema.org/schema
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      discount:
+        type:
+          - number
+          - "null"
+      quantity:
+        type:
+          - int
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      chargeType:
+        type:
+          - string
+          - "null"
+      periodPrice:
+        type:
+          - number
+          - "null"
+      priceListId:
+        type:
+          - string
+          - "null"
+      quantityMax:
+        type:
+          - int
+          - "null"
+      quantityMin:
+        type:
+          - int
+          - "null"
+      pricingModel:
+        type:
+          - string
+          - "null"
+      billingPeriod:
+        type:
+          - string
+          - "null"
+      priceDecimals:
+        type:
+          - int
+          - "null"
+      prorationRate:
+        type:
+          - number
+          - "null"
+      subscriptionId:
+        type:
+          - string
+          - "null"
+      discountedPrice:
+        type:
+          - string
+          - "null"
+      invoiceLineText:
+        type:
+          - string
+          - "null"
+      priceListChargeId:
+        type:
+          - string
+          - "null"
+      tieredAveragePrice:
+        type:
+          - number
+          - "null"
+      selfServiceQuantity:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true

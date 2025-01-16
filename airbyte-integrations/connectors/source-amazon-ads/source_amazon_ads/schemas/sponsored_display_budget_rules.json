@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "ruleId": { "type": ["null", "string"] },
+    "ruleStatus": { "type": ["null", "string"] },
+    "ruleState": { "type": ["null", "string"] },
+    "lastUpdatedDate": { "type": ["null", "number"] },
+    "createdDate": { "type": ["null", "number"] },
+    "ruleDetails": {
+      "type": ["object", "null"],
+      "properties": {
+        "name": { "type": ["null", "string"] },
+        "ruleType": { "type": ["null", "string"] },
+        "duration": {
+          "type": ["object", "null"],
+          "properties": {
+            "eventTypeRuleDuration": {
+              "type": ["object", "null"],
+              "properties": {
+                "eventId": { "type": ["null", "string"] },
+                "endDate": { "type": ["null", "string"] },
+                "eventName": { "type": ["null", "string"] },
+                "startDate": { "type": ["null", "string"] }
+              }
+            },
+            "dateRangeTypeRuleDuration": {
+              "type": ["object", "null"],
+              "properties": {
+                "endDate": { "type": ["null", "string"] },
+                "startDate": { "type": ["null", "string"] }
+              }
+            }
+          }
+        },
+        "budgetIncreaseBy": {
+          "type": ["object", "null"],
+          "properties": {
+            "type": { "type": ["null", "string"] },
+            "value": { "type": ["null", "number"] }
+          }
+        },
+        "recurrence": {
+          "type": ["object", "null"],
+          "properties": {
+            "type": { "type": ["null", "string"] },
+            "daysOfWeek": {
+              "type": ["null", "array"],
+              "items": { "type": ["null", "string"] }
+            },
+            "intraDaySchedule": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["object", "null"],
+                "properties": {
+                  "startTime": { "type": ["null", "string"] },
+                  "endTime": { "type": ["null", "string"] }
+                }
+              }
+            },
+            "threshold": { "type": ["null", "number"] }
+          }
+        },
+        "performanceMeasureCondition": {
+          "type": ["object", "null"],
+          "properties": {
+            "metricName": { "type": ["null", "string"] },
+            "comparisonOperator": { "type": ["null", "string"] },
+            "threshold": { "type": ["null", "number"] }
+          }
+        }
+      }
+    },
+    "ruleStatusDetails": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    }
+  },
+  "title": "sponsored_display_budget_rules",
+  "type": ["null", "object"]
+}

@@ -6,11 +6,11 @@ data:
     hosts:
       - api.sendgrid.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.18.0@sha256:ddd0ca48d82fa9d894ef93c30e60f8d67255a5538207df66ab04e74ed82b234c
   connectorSubtype: api
   connectorType: source
   definitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
-  dockerImageTag: 1.2.0
+  dockerImageTag: 1.2.3
   releases:
     breakingChanges:
       1.0.0:

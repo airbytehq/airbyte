@@ -74,6 +74,13 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.30 | 2025-01-11 | [51214](https://github.com/airbytehq/airbyte/pull/51214) | Update dependencies |
+| 0.5.29 | 2024-12-28 | [50632](https://github.com/airbytehq/airbyte/pull/50632) | Update dependencies |
+| 0.5.28 | 2024-12-21 | [50109](https://github.com/airbytehq/airbyte/pull/50109) | Update dependencies |
+| 0.5.27 | 2024-12-14 | [49248](https://github.com/airbytehq/airbyte/pull/49248) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.5.26 | 2024-12-12 | [48996](https://github.com/airbytehq/airbyte/pull/48996) | Update dependencies |
+| 0.5.25 | 2024-10-29 | [47110](https://github.com/airbytehq/airbyte/pull/47110) | Update dependencies |
+| 0.5.24 | 2024-10-23 | [47306](https://github.com/airbytehq/airbyte/pull/47306) | Add 'job_post_id' to applications stream scehma |
 | 0.5.23 | 2024-10-12 | [46828](https://github.com/airbytehq/airbyte/pull/46828) | Update dependencies |
 | 0.5.22 | 2024-10-05 | [46506](https://github.com/airbytehq/airbyte/pull/46506) | Update dependencies |
 | 0.5.21 | 2024-09-28 | [46159](https://github.com/airbytehq/airbyte/pull/46159) | Update dependencies |

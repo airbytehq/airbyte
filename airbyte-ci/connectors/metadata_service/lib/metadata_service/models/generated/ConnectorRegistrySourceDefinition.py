@@ -301,6 +301,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     releases: Optional[ConnectorRegistryReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
     supportsRefreshes: Optional[bool] = False
+    supportsFileTransfer: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
     language: Optional[str] = Field(None, description="The language the connector is written in")

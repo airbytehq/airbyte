@@ -1,0 +1,61 @@
+[tool.poetry]
+name = "airbyte-destination-motherduck"
+version = "0.1.17"
+description = "Destination implementation for MotherDuck."
+authors = ["Guen Prawiroatmodjo, Simon Späti, Airbyte"]
+license = "MIT"
+readme = "README.md"
+
+[[tool.poetry.packages]]
+include = "destination_motherduck"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+# NOTE: You can toggle between pinned and local CDK version for testing:
+airbyte-cdk = {version = "^5.15.0", extras = ["sql"] }
+# airbyte-cdk = { path = "../../../airbyte-cdk/python", extras = ["sql"] }
+duckdb = "1.1.2"
+duckdb-engine = "^0.13.4"
+pyarrow = "15.0.2"
+sqlalchemy = ">=1.4.51,!=2.0.36,<3.0"
+rich = "^13.7.0"
+overrides = "^7.4.0"
+python-ulid = "^3.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+ruff = "^0.7.1"
+black = "^23.7.0"
+mypy = "^1.5.1"
+faker = "24.4.0"
+coverage = "^7.5.3"
+freezegun = "^1.5.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+test = { shell = "pytest" }
+ci-test = { shell = "airbyte-ci connectors --name=destination-motherduck test" }
+
+coverage = { shell = "coverage run -m pytest && coverage report" }
+coverage-report = { shell = "coverage report" }
+coverage-html = { shell = "coverage html -d htmlcov && open htmlcov/index.html" }
+coverage-reset = { shell = "coverage erase" }
+
+check = { shell = "ruff check . && mypy ." }
+
+fix = { shell = "ruff format . && ruff check --fix -s || ruff format ." }
+fix-unsafe = { shell = "ruff format . && ruff check --fix --unsafe-fixes . && ruff format ." }
+fix-and-check = { shell = "poe fix && poe check" }
+
+# Use this when building on Mac M1/M2, to deploy and test on local `abctl` instances
+build-arm = { shell = "airbyte-ci connectors --name=destination-motherduck build --architecture=linux/arm64 && NEW_IMAGE=airbyte/destination-motherduck:dev-arm && docker tag airbyte/destination-motherduck:dev ${NEW_IMAGE} && echo Created new image: $NEW_IMAGE && docker run --rm $NEW_IMAGE spec" }
+
+# Use this when building for non-ARM architecture, or when building to deploy to Cloud
+build-amd = { shell = "airbyte-ci connectors --name=destination-motherduck build --architecture=linux/amd64 && NEW_IMAGE=airbyte/destination-motherduck:dev-amd && docker tag airbyte/destination-motherduck:dev ${NEW_IMAGE} && echo Created new image: $NEW_IMAGE && docker run --rm $NEW_IMAGE spec" }
+
+[tool.poetry.scripts]
+destination-motherduck = "destination_motherduck.run:run"

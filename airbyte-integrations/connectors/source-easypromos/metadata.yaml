@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.easypromosapp.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-easypromos
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8b418a25-7042-430f-96d8-72853a337a26
+  dockerImageTag: 0.0.7
+  dockerRepository: airbyte/source-easypromos
+  githubIssueLabel: source-easypromos
+  icon: icon.svg
+  license: MIT
+  name: Easypromos
+  releaseDate: 2024-10-21
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/easypromos
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
