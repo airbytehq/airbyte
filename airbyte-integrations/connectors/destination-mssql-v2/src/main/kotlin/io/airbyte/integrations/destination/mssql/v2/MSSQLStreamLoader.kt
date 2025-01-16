@@ -51,7 +51,8 @@ class MSSQLStreamLoader(
                 connection.createStatement().use { statement ->
                     statement.executeUpdate(sqlBuilder.createFinalTableIfNotExists())
                 }
-                connection.createStatement().use { statement ->
+                connection.prepareStatement(GET_EXISTING_SCHEMA_QUERY.trimIndent()).use { statement
+                    ->
                     val existingSchema = sqlBuilder.getExistingSchema(statement)
                     val expectedSchema = sqlBuilder.getSchema()
                     sqlBuilder
