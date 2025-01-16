@@ -78,8 +78,8 @@ data:
       2.6.0:
         message:
           "The `ProductsGraphQL` and the `CustomerSavedSearch` streams have been deprecated by Shopify and removed from Airbyte.
-          Use the `Products` stream instead. More details here: https://github.com/airbytehq/airbyte/pull/51037."
-        upgradeDeadline: "2025-02-15"
+          Use the `Products` stream instead. The data for the affected streams are no longer available. More details here: https://github.com/airbytehq/airbyte/pull/51037."
+        upgradeDeadline: "2025-02-16"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["products_graph_ql", "customer_saved_search"]
