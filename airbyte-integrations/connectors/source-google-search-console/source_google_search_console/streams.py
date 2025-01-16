@@ -179,15 +179,17 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
                 period = pendulum.Duration(days=self.range_of_days - 1)
                 while next_start <= end_date:
                     next_end = min(next_start + period, end_date)
-                    yield {
+                    slice_info = {
                         "site_url": site_url,
                         "search_type": search_type,
                         "start_date": next_start.to_date_string(),
                         "end_date": next_end.to_date_string(),
                         "data_state": self._data_state,
                     }
+                    print(f"Generated slice: {slice_info}") 
+                    yield slice_info
                     # add 1 day for the next slice's start date not to duplicate data from previous slice's end date.
-                    next_start = next_end + pendulum.Duration(days=1)
+                    next_start = next_end + pendulum.Duration(days=1) - pendulum.Duration(seconds=1)
 
     def next_page_token(self, response: requests.Response) -> Optional[bool]:
         """
@@ -312,12 +314,15 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
 
         value = current_stream_state.get(site_url, {}).get(search_type, {}).get(self.cursor_field)
         if value:
-            latest_benchmark = max(latest_benchmark, value)
-        current_stream_state.setdefault(site_url, {}).setdefault(search_type, {})[self.cursor_field] = latest_benchmark
+            latest_benchmark = max(latest_benchmark, pendulum.parse(value))
 
-        # we need to get the max date over all searchTypes but the current acceptance test YAML format doesn't
-        # support that
-        current_stream_state[self.cursor_field] = current_stream_state[site_url][search_type][self.cursor_field]
+        current_stream_state.setdefault(site_url, {}).setdefault(search_type, {})[self.cursor_field] = latest_benchmark.to_date_string()
+
+        # Ensure the global state is updated for the latest date across all search types and URLs.
+        current_stream_state[self.cursor_field] = max(
+            current_stream_state.get(self.cursor_field, latest_benchmark),
+            latest_benchmark,
+        ).to_date_string()
 
         return current_stream_state
 
@@ -412,17 +417,20 @@ class SearchByKeyword(SearchAnalytics):
 class SearchAnalyticsKeywordPageReport(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
     dimensions = ["date", "country", "device", "query", "page"]
+    search_types = ["web", "news", "image", "video", "googleNews", "discover"]
 
 
 class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
+    search_types = ["web", "news", "image", "video", "googleNews", "discover"]
     aggregation_type = QueryAggregationType.by_page
 
 
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
+    
     aggregation_type = QueryAggregationType.by_property
 
 
