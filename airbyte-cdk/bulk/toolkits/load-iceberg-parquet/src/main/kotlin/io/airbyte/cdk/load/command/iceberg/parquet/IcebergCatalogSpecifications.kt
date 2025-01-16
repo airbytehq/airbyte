@@ -51,7 +51,7 @@ interface IcebergCatalogSpecifications {
      */
     @get:JsonSchemaTitle("Main Branch Name")
     @get:JsonPropertyDescription(
-        """The primary or default branch name in the catalog. Most query engines will use "main" by default. See [Iceberg documentation](https://iceberg.apache.org/docs/latest/branching/) for more information."""
+        """The primary or default branch name in the catalog. Most query engines will use "main" by default. See <a href="https://iceberg.apache.org/docs/latest/branching/">Iceberg documentation</a> for more information."""
     )
     @get:JsonProperty("main_branch_name", defaultValue = "main")
     val mainBranchName: String

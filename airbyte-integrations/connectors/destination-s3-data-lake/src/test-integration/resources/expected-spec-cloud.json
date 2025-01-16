@@ -55,7 +55,7 @@
       "main_branch_name" : {
         "type" : "string",
         "default" : "main",
-        "description" : "The primary or default branch name in the catalog. Most query engines will use \"main\" by default. See [Iceberg documentation](https://iceberg.apache.org/docs/latest/branching/) for more information.",
+        "description" : "The primary or default branch name in the catalog. Most query engines will use \"main\" by default. See <a href=\"https://iceberg.apache.org/docs/latest/branching/\">Iceberg documentation</a> for more information.",
         "title" : "Main Branch Name",
         "always_show" : true,
         "order" : 6
