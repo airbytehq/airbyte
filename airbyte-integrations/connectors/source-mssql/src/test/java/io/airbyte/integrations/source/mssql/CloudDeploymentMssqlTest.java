@@ -36,7 +36,8 @@ public class CloudDeploymentMssqlTest {
 
   private Source source() {
     final var source = new MssqlSource();
-//    source.setFeatureFlags(FeatureFlagsWrapper.overridingDeploymentMode(new EnvVariableFeatureFlags(), "CLOUD"));
+    // source.setFeatureFlags(FeatureFlagsWrapper.overridingDeploymentMode(new
+    // EnvVariableFeatureFlags(), "CLOUD"));
     return MssqlSource.sshWrappedSource(source);
   }
 
