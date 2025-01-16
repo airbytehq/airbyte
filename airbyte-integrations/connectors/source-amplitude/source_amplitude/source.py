@@ -3,11 +3,13 @@
 #
 
 from base64 import b64encode
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
 from source_amplitude.streams import Events
 
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
@@ -22,8 +24,11 @@ WARNING: Do not modify this file.
 
 # Declarative Source
 class SourceAmplitude(YamlDeclarativeSource):
-    def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+
+    # def __init__(self):
+    #     super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
     def _convert_auth_to_token(self, username: str, password: str) -> str:
         username = username.encode("latin1")
