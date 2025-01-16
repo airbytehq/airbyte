@@ -1,14 +1,10 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import gzip
-import io
-import json
 import logging
-import zipfile
-from dataclasses import InitVar, dataclass
-from typing import IO, Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, MutableMapping, Optional
 
 import pendulum
 import requests
