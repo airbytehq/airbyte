@@ -26,7 +26,7 @@ class MSSQLStreamLoader(
     }
 
     override suspend fun close(streamFailure: StreamProcessingFailed?) {
-        streamFailure?.let {
+        if (streamFailure == null) {
             truncatePreviousGenerations(dataSource)
         }
         super.close(streamFailure)
