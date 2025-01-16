@@ -75,9 +75,14 @@ class DockerizedDestination(
         // Certainly nothing in the bulk CDK's test suites is reading back
         // anything in this directory.
         val localRoot = Files.createTempDirectory(testDir, "output")
+
         // This directory will contain the actual inputs to the connector (config+catalog),
         // and is also mounted as a volume.
-        val jobRoot = Files.createDirectories(workspaceRoot.resolve("job"))
+        val jobDir = "job"
+        val jobRoot = Files.createDirectories(workspaceRoot.resolve(jobDir))
+
+        val containerDataRoot = "/data"
+        val containerJobRoot = "$containerDataRoot/$jobDir"
 
         // This directory is being used for the file transfer feature.
         if (useFileTransfer) {
@@ -118,7 +123,7 @@ class DockerizedDestination(
                     "--network",
                     "host",
                     "-v",
-                    String.format("%s:%s", workspaceRoot, "/data"),
+                    String.format("%s:%s", workspaceRoot, containerDataRoot),
                     "-v",
                     String.format("%s:%s", localRoot, "/local"),
                     "-v",
@@ -148,7 +153,7 @@ class DockerizedDestination(
                 fileContents,
             )
             cmd.add("--$paramName")
-            cmd.add("destination_$paramName.json")
+            cmd.add("$containerJobRoot/destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
