@@ -20,6 +20,7 @@ python = "^3.9,<3.12"
 airbyte-cdk = "^0"
 isodate = "==0.6.1"
 requests = "==2.28.2"
+freezegun = "^1.5.1"
 
 [tool.poetry.scripts]
 source-railz = "source_railz.run:run"
