@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
-import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.util.serializeToString
@@ -40,9 +39,7 @@ class DockerizedDestination(
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     private val testName: String,
-    useFileTransfer: Boolean,
     envVars: Map<String, String>,
-    vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
     private val destinationOutput = BufferingOutputConsumer(Clock.systemDefaultZone())
@@ -80,7 +77,8 @@ class DockerizedDestination(
         val jobRoot = Files.createDirectories(workspaceRoot.resolve("job"))
 
         // This directory is being used for the file transfer feature.
-        if (useFileTransfer) {
+        // TODO constant
+        if (envVars.get("USE_FILE_TRANSFER") == "true") {
             val file = Files.createFile(fileTransferMountSource.resolve("test_file"))
             file.writeText("123")
         }
@@ -94,7 +92,6 @@ class DockerizedDestination(
         val shortImageName = imageTag.substringAfterLast("/").substringBefore(":")
         val containerName = "$shortImageName-$command-$randomSuffix"
         logger.info { "Creating docker container $containerName" }
-        logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
         val additionalEnvEntries =
             envVars.flatMap { (key, value) ->
                 logger.info { "Env vars: $key loaded" }
@@ -123,12 +120,10 @@ class DockerizedDestination(
                     "-v",
                     "$fileTransferMountSource:/tmp",
                     "-e",
+                // TODO extract this string to consatnt, reuse in NonDockerizedDestination
                     "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE=1",
-                    "-e",
-                    "USE_FILE_TRANSFER=$useFileTransfer",
                 ) +
                     additionalEnvEntries +
-                    featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
                         // Yes, we hardcode the job ID to 0.
                         // Also yes, this is available in the configured catalog
@@ -283,9 +278,7 @@ class DockerizedDestinationFactory(
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         useFileTransfer: Boolean,
-        envVars: Map<String, String>,
         micronautProperties: Map<Property, String>,
-        vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
             "$imageName:$imageVersion",
@@ -293,9 +286,7 @@ class DockerizedDestinationFactory(
             configContents,
             catalog,
             testName,
-            useFileTransfer,
-            envVars + micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
-            *featureFlags,
+            micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
         )
     }
 }

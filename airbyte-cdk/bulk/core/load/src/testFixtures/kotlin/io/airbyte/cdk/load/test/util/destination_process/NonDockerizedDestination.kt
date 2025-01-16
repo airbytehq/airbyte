@@ -30,8 +30,6 @@ class NonDockerizedDestination(
     command: String,
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
-    useFileTransfer: Boolean,
-    envVars: Map<String, String>,
     additionalEnvironments: Array<out String>,
     micronautProperties: Map<Property, String>,
     vararg featureFlags: FeatureFlag,
@@ -47,17 +45,10 @@ class NonDockerizedDestination(
     private val file = File("/tmp/test_file")
 
     init {
-        envVars.forEach { (key, value) ->
-            IntegrationTest.nonDockerMockEnvVars.set(key, value)
-            logger.info { "Env vars: $key loaded" }
-        }
-
-        if (useFileTransfer) {
-            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "true")
+        // TODO constant
+        if (micronautProperties.mapKeys { (k, _) -> k.environmentVariable }["USE_FILE_TRANSFER"] == "true") {
             val fileContentStr = "123"
             file.writeText(fileContentStr)
-        } else {
-            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "false")
         }
         val destinationStdin = PipedInputStream()
         // This could probably be a channel, somehow. But given the current structure,
@@ -74,9 +65,8 @@ class NonDockerizedDestination(
                 configContents = configContents,
                 catalog = catalog,
                 inputStream = destinationStdin,
-                featureFlags = featureFlags,
                 additionalEnvironments = additionalEnvironments,
-                additionalProperties = micronautProperties.mapKeys { (k, _) -> k.micronautProperty }
+                additionalProperties = micronautProperties.mapKeys { (k, _) -> k.micronautProperty } + mapOf("airbyte.destination.record-batch-size-override" to "1"),
             )
     }
 

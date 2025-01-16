@@ -29,11 +29,9 @@ const val TEST_OVERRIDE_ENV = "test-override"
 class AirbyteSourceRunner(
     /** CLI args. */
     args: Array<out String>,
-    /** Environment variables. */
-    systemEnv: Map<String, String> = System.getenv(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
-) : AirbyteConnectorRunner("source", args, systemEnv, testBeanDefinitions) {
+) : AirbyteConnectorRunner("source", args, testBeanDefinitions) {
     companion object {
         @JvmStatic
         fun run(vararg args: String) {
@@ -46,8 +44,6 @@ class AirbyteSourceRunner(
 class AirbyteDestinationRunner(
     /** CLI args. */
     args: Array<out String>,
-    /** Environment variables. */
-    systemEnv: Map<String, String> = System.getenv(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
     additionalEnvironments: Array<out String> = emptyArray(),
@@ -56,7 +52,6 @@ class AirbyteDestinationRunner(
     AirbyteConnectorRunner(
         "destination",
         args,
-        systemEnv,
         testBeanDefinitions,
         additionalEnvironments,
         additionalProperties,
@@ -85,15 +80,12 @@ class AirbyteDestinationRunner(
 sealed class AirbyteConnectorRunner(
     val connectorType: String,
     val args: Array<out String>,
-    systemEnv: Map<String, String>,
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
     val additionalEnvironments: Array<out String> = emptyArray(),
     val additionalProperties: Map<String, String> = emptyMap(),
 ) {
     val envs: Array<String> =
         arrayOf(Environment.CLI, connectorType) +
-            // Set feature flag environments.
-            FeatureFlag.active(systemEnv).map { it.micronautEnvironmentName } +
             // Micronaut's TEST env detection relies on inspecting the stacktrace and checking for
             // any junit calls. This doesn't work if we launch the connector from a different
             // thread, e.g. `Dispatchers.IO`. Force the test env if needed. Some tests launch the

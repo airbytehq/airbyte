@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.destination_process.Property
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.charset.StandardCharsets
@@ -46,6 +47,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     "check",
                     configContents = config,
                     featureFlags = featureFlags.toTypedArray(),
+                    micronautProperties = mapOf(Property("airbyte.core.deployment.mode", "DEPLOYMENT_MODE") to "CLOUD"),
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()
@@ -73,6 +75,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                 destinationProcessFactory.createDestinationProcess(
                     "check",
                     configContents = config,
+                    micronautProperties = mapOf(Property("airbyte.core.deployment.mode", "DEPLOYMENT_MODE") to "CLOUD"),
                     featureFlags = featureFlags.toTypedArray(),
                 )
             runBlocking { process.run() }

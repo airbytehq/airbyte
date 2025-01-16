@@ -5,6 +5,7 @@
 package io.airbyte.cdk.command
 
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Value
 import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.util.EnumSet
@@ -62,3 +63,20 @@ enum class FeatureFlag(
 }
 
 const val AIRBYTE_CLOUD_ENV = "airbyte-cloud"
+
+const val AIRBYTE_DEPLOYMENT_MODE_PROPERTY = "airbyte.core.deployment.mode"
+const val DEPLOYMENT_MODE_CLOUD = "CLOUD"
+
+enum class DeploymentMode { OSS, CLOUD }
+@Factory
+class DeploymentModeFactory(@Value("\${airbyte.core.deployment.mode}") val deploymentMode: String?) {
+    @Singleton
+    fun getDeploymentMode(): DeploymentMode {
+        return when (deploymentMode) {
+            "CLOUD" -> DeploymentMode.CLOUD
+            "OSS" -> DeploymentMode.OSS
+            // if deployment mode is unset, or some weird value, assume OSS
+            else -> DeploymentMode.OSS
+        }
+    }
+}

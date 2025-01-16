@@ -4,7 +4,7 @@ package io.airbyte.integrations.source.mysql
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CdcSourceConfiguration
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
-import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.command.DeploymentMode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
@@ -77,10 +77,11 @@ enum class InvalidCdcCursorPositionBehavior {
 }
 
 @Singleton
-class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<FeatureFlag>) :
-    SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
+class MySqlSourceConfigurationFactory @Inject constructor(
+    private val deploymentMode: DeploymentMode
+) : SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
 
-    constructor() : this(emptySet())
+    constructor() : this(DeploymentMode.OSS)
 
     override fun makeWithoutExceptionHandling(
         pojo: MySqlSourceConfigurationSpecification,
@@ -116,7 +117,7 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
         if (
             pojo.getEncryptionValue() is EncryptionPreferred &&
                 sshTunnel is SshNoTunnelMethod &&
-                featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+            deploymentMode == DeploymentMode.CLOUD
         ) {
             throw ConfigErrorException(
                 "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel."

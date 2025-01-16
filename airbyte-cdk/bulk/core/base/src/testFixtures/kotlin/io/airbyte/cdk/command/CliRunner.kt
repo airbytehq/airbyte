@@ -53,7 +53,6 @@ data object CliRunner {
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         inputStream: InputStream,
-        vararg featureFlags: FeatureFlag,
         additionalEnvironments: Array<out String>,
         additionalProperties: Map<String, String>,
     ): CliRunnable {
@@ -67,7 +66,6 @@ data object CliRunner {
             makeRunnable(op, configPath, catalog, state) { args: Array<String> ->
                 AirbyteDestinationRunner(
                     args,
-                    featureFlags.systemEnv,
                     inputBeanDefinition,
                     out.beanDefinition,
                     additionalEnvironments = additionalEnvironments,
