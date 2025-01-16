@@ -52,6 +52,7 @@ class MSSQLStreamLoader(
 
     private fun ensureTableExists(dataSource: DataSource) {
         try {
+            // TODO leverage preparedStatement instead of createStatement
             dataSource.connection.use { connection ->
                 connection.createStatement().use { statement ->
                     statement.executeUpdate(sqlBuilder.createFinalSchemaIfNotExists())
@@ -59,7 +60,8 @@ class MSSQLStreamLoader(
                 connection.createStatement().use { statement ->
                     statement.executeUpdate(sqlBuilder.createFinalTableIfNotExists())
                 }
-                connection.prepareStatement(GET_EXISTING_SCHEMA_QUERY.trimIndent()).use { statement
+                val alterStatement = connection.prepareStatement(GET_EXISTING_SCHEMA_QUERY
+                    .trimIndent()).use { statement
                     ->
                     val existingSchema = sqlBuilder.getExistingSchema(statement)
                     val expectedSchema = sqlBuilder.getSchema()
@@ -68,10 +70,11 @@ class MSSQLStreamLoader(
                             existingSchema = existingSchema,
                             expectedSchema = expectedSchema,
                         )
-                        ?.let { alterStatement ->
-                            log.error { alterStatement }
+                    }
+                alterStatement?.let {
+                    connection.createStatement().use { statement ->
                             statement.executeUpdate(alterStatement)
-                        }
+                    }
                 }
             }
         } catch (ex: Exception) {

@@ -33,7 +33,7 @@ const val GET_EXISTING_SCHEMA_QUERY =
     """
             SELECT COLUMN_NAME, DATA_TYPE
             FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_SCHEMA = '?' AND TABLE_NAME = '?'
+            WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
             ORDER BY ORDINAL_POSITION ASC
         """
 
