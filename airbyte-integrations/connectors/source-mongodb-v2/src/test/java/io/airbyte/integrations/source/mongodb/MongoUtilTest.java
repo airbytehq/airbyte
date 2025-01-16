@@ -37,7 +37,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoIterable;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -60,20 +59,6 @@ import org.junit.jupiter.api.Test;
 public class MongoUtilTest {
 
   private static final String JSON_TYPE_PROPERTY_NAME = "type";
-
-  @Test
-  void testCheckDatabaseExists() {
-    final String databaseName = "test";
-    final List<String> databaseNames = List.of("test", "test1", "test2");
-    final MongoIterable<String> iterable = mock(MongoIterable.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
-
-    when(iterable.spliterator()).thenReturn(databaseNames.spliterator());
-    when(mongoClient.listDatabaseNames()).thenReturn(iterable);
-
-    assertTrue(MongoUtil.checkDatabaseExists(mongoClient, databaseName));
-    assertFalse(MongoUtil.checkDatabaseExists(mongoClient, "other"));
-  }
 
   @Test
   void testGetAirbyteStreams() throws IOException {

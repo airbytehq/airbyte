@@ -21,13 +21,16 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
+import io.airbyte.cdk.discover.TestMetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
+import io.airbyte.cdk.read.FieldValueChange
 import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.StreamRecordConsumer
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -77,10 +80,10 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace(namespace)),
-            fields = listOf(Field("v", IntFieldType)),
+            schema = setOf(Field("v", IntFieldType), TestMetaFieldDecorator.GlobalCursor),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = null,
-            configuredCursor = null,
+            configuredCursor = TestMetaFieldDecorator.GlobalCursor,
         )
 
     val global: Global
@@ -164,10 +167,29 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
         upperBound: T,
     ): ReadResult {
         val outputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
+        val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer> =
+            mapOf(
+                stream.id to
+                    object : StreamRecordConsumer {
+                        override val stream: Stream = this@CdcPartitionReaderTest.stream
+
+                        override fun accept(
+                            recordData: ObjectNode,
+                            changes: Map<Field, FieldValueChange>?
+                        ) {
+                            outputConsumer.accept(
+                                AirbyteRecordMessage()
+                                    .withStream(stream.name)
+                                    .withNamespace(stream.namespace)
+                                    .withData(recordData)
+                            )
+                        }
+                    }
+            )
         val reader =
             CdcPartitionReader(
                 ConcurrencyResource(1),
-                outputConsumer,
+                streamRecordConsumers,
                 this,
                 upperBound,
                 input,
@@ -190,11 +212,15 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
         // Sanity checks. If any of these fail, particularly after a debezium version change,
         // it's important to understand why.
         Assertions.assertEquals(checkpoint.numRecords.toInt(), outputConsumer.records().size)
-        Assertions.assertEquals(checkpoint.numRecords, reader.numRecords.get())
+        Assertions.assertEquals(checkpoint.numRecords, reader.numEmittedRecords.get())
         Assertions.assertEquals(
             reader.numEvents.get(),
-            reader.numRecords.get() + reader.numHeartbeats.get() + reader.numTombstones.get()
+            reader.numEmittedRecords.get() +
+                reader.numDiscardedRecords.get() +
+                reader.numHeartbeats.get() +
+                reader.numTombstones.get()
         )
+        Assertions.assertEquals(0, reader.numDiscardedRecords.get())
         Assertions.assertEquals(0, reader.numEventsWithoutSourceRecord.get())
         Assertions.assertEquals(0, reader.numSourceRecordsWithoutPosition.get())
         Assertions.assertEquals(0, reader.numEventValuesWithoutPosition.get())
@@ -224,10 +250,11 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     data class Update(override val id: Int, val v: Int) : Record
     data class Delete(override val id: Int) : Record
 
-    override fun toAirbyteRecordMessage(
+    override fun deserialize(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
-    ): AirbyteRecordMessage {
+        stream: Stream,
+    ): DeserializedRecord {
         val id: Int = key.element("id").asInt()
         val after: Int? = value.after["v"]?.asInt()
         val record: Record =
@@ -238,8 +265,17 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
             } else {
                 Update(id, after)
             }
-        return AirbyteRecordMessage().withData(Jsons.valueToTree(record))
+        return DeserializedRecord(
+            data = Jsons.valueToTree(record) as ObjectNode,
+            changes = emptyMap(),
+        )
     }
+
+    override fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
+        stream.id.namespace
+
+    override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
+        stream.id.name
 
     override fun serialize(debeziumState: DebeziumState): OpaqueStateValue =
         Jsons.valueToTree(
@@ -642,10 +678,11 @@ class CdcPartitionReaderMongoTest :
             .withOffset()
             .buildMap()
 
-    override fun toAirbyteRecordMessage(
+    override fun deserialize(
         key: DebeziumRecordKey,
-        value: DebeziumRecordValue
-    ): AirbyteRecordMessage {
+        value: DebeziumRecordValue,
+        stream: Stream,
+    ): DeserializedRecord {
         val id: Int = key.element("id").asInt()
         val record: Record =
             if (value.operation == "d") {
@@ -668,6 +705,9 @@ class CdcPartitionReaderMongoTest :
                     Insert(id, v)
                 }
             }
-        return AirbyteRecordMessage().withData(Jsons.valueToTree(record))
+        return DeserializedRecord(
+            data = Jsons.valueToTree(record),
+            changes = emptyMap(),
+        )
     }
 }

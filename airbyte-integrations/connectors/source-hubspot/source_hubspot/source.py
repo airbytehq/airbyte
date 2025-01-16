@@ -8,12 +8,13 @@ from http import HTTPStatus
 from itertools import chain
 from typing import Any, Generator, List, Mapping, Optional, Tuple, Union
 
+from requests import HTTPError
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, HttpStatusErrorHandler, ResponseAction
-from requests import HTTPError
 from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
@@ -52,6 +53,7 @@ from source_hubspot.streams import (
     FormSubmissions,
     Goals,
     GoalsWebAnalytics,
+    Leads,
     LineItems,
     LineItemsWebAnalytics,
     MarketingEmails,
@@ -66,6 +68,7 @@ from source_hubspot.streams import (
     WebAnalyticsStream,
     Workflows,
 )
+
 
 """
 https://github.com/airbytehq/oncall/issues/3800
@@ -157,6 +160,7 @@ class SourceHubspot(AbstractSource):
             Forms(**common_params),
             FormSubmissions(**common_params),
             Goals(**common_params),
+            Leads(**common_params),
             LineItems(**common_params),
             MarketingEmails(**common_params),
             Owners(**common_params),

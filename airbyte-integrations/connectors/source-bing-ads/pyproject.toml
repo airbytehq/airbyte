@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.8.0"
+version = "2.8.9"
 name = "source-bing-ads"
 description = "Source implementation for Bing Ads."
 authors = [ "Airbyte <contact@airbyte.io>",]

@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 import anyio
 import asyncer
 import dpath
+
 from pipelines import main_logger
 from pipelines.models.steps import StepStatus
 
@@ -191,7 +192,6 @@ def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], r
     """
     steps_to_run: STEP_TREE = []
     for step_to_eval in steps_to_evaluate:
-
         # ignore nested steps
         if isinstance(step_to_eval, list):
             steps_to_run.append(step_to_eval)

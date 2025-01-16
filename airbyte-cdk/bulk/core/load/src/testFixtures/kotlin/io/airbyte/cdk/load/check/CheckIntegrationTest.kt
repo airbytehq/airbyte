@@ -6,6 +6,8 @@ package io.airbyte.cdk.load.check
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.test.util.ConfigurationUpdater
+import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
@@ -25,19 +27,20 @@ import org.junit.jupiter.api.assertAll
 data class CheckTestConfig(val configPath: Path, val featureFlags: Set<FeatureFlag> = emptySet())
 
 open class CheckIntegrationTest<T : ConfigurationSpecification>(
-    val configurationClass: Class<T>,
     val successConfigFilenames: List<CheckTestConfig>,
     val failConfigFilenamesAndFailureReasons: Map<CheckTestConfig, Pattern>,
+    configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
 ) :
     IntegrationTest(
-        FakeDataDumper,
-        NoopDestinationCleaner,
-        NoopExpectedRecordMapper,
+        dataDumper = FakeDataDumper,
+        destinationCleaner = NoopDestinationCleaner,
+        recordMangler = NoopExpectedRecordMapper,
+        configUpdater = configUpdater,
     ) {
     @Test
     open fun testSuccessConfigs() {
         for ((path, featureFlags) in successConfigFilenames) {
-            val config = Files.readString(path, StandardCharsets.UTF_8)
+            val config = updateConfig(Files.readString(path, StandardCharsets.UTF_8))
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",
@@ -65,7 +68,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
     open fun testFailConfigs() {
         for ((checkTestConfig, failurePattern) in failConfigFilenamesAndFailureReasons) {
             val (path, featureFlags) = checkTestConfig
-            val config = Files.readString(path)
+            val config = updateConfig(Files.readString(path))
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",

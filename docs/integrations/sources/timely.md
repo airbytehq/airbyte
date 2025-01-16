@@ -37,25 +37,33 @@ The Timely source connector supports the following [sync modes](https://docs.air
 
 | Version | Date      | Pull Request                                             | Subject                                                                         |
 | :------ | :-------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.4.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
-| 0.4.0   | 2024-08-07 | [43368](https://github.com/airbytehq/airbyte/pull/43368) | Refactor connector to manifest-only format |
-| 0.3.15  | 2024-08-03 | [43226](https://github.com/airbytehq/airbyte/pull/43226) | Update dependencies |
-| 0.3.14  | 2024-07-27 | [42635](https://github.com/airbytehq/airbyte/pull/42635) | Update dependencies |
-| 0.3.13  | 2024-07-20 | [42252](https://github.com/airbytehq/airbyte/pull/42252) | Update dependencies |
-| 0.3.12  | 2024-07-13 | [41921](https://github.com/airbytehq/airbyte/pull/41921) | Update dependencies |
-| 0.3.11  | 2024-07-10 | [41348](https://github.com/airbytehq/airbyte/pull/41348) | Update dependencies |
-| 0.3.10  | 2024-07-09 | [41268](https://github.com/airbytehq/airbyte/pull/41268) | Update dependencies |
-| 0.3.9   | 2024-07-06 | [40773](https://github.com/airbytehq/airbyte/pull/40773) | Update dependencies |
-| 0.3.8   | 2024-06-26 | [40510](https://github.com/airbytehq/airbyte/pull/40510) | Update dependencies |
-| 0.3.7   | 2024-06-22 | [39996](https://github.com/airbytehq/airbyte/pull/39996) | Update dependencies |
-| 0.3.6   | 2024-06-04 | [39054](https://github.com/airbytehq/airbyte/pull/39054) | [autopull] Upgrade base image to v1.2.1 |
-| 0.3.5   | 2024-05-20 | [38228](https://github.com/airbytehq/airbyte/pull/38228) | Make compatible with builder |
-| 0.3.4   | 2024-04-19 | [37270](https://github.com/airbytehq/airbyte/pull/37270) | Updating to 0.80.0 CDK |
-| 0.3.3   | 2024-04-18 | [37270](https://github.com/airbytehq/airbyte/pull/37270) | Manage dependencies with Poetry. |
-| 0.3.2   | 2024-04-15 | [37270](https://github.com/airbytehq/airbyte/pull/37270) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.3.1   | 2024-04-12 | [37270](https://github.com/airbytehq/airbyte/pull/37270) | schema descriptions |
-| 0.3.0   | 2023-10-25 | [31002](https://github.com/airbytehq/airbyte/pull/31002) | Migrate to low-code framework |
-| 0.2.0   | 2023-10-23 | [31745](https://github.com/airbytehq/airbyte/pull/31745) | Fix schemas |
-| 0.1.0   | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Initial release |
+| 0.4.9 | 2025-01-11 | [51398](https://github.com/airbytehq/airbyte/pull/51398) | Update dependencies |
+| 0.4.8 | 2024-12-28 | [50777](https://github.com/airbytehq/airbyte/pull/50777) | Update dependencies |
+| 0.4.7 | 2024-12-21 | [50349](https://github.com/airbytehq/airbyte/pull/50349) | Update dependencies |
+| 0.4.6 | 2024-12-14 | [49769](https://github.com/airbytehq/airbyte/pull/49769) | Update dependencies |
+| 0.4.5 | 2024-12-12 | [49387](https://github.com/airbytehq/airbyte/pull/49387) | Update dependencies |
+| 0.4.4 | 2024-12-11 | [48307](https://github.com/airbytehq/airbyte/pull/48307) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.4.3 | 2024-10-29 | [47887](https://github.com/airbytehq/airbyte/pull/47887) | Update dependencies |
+| 0.4.2 | 2024-10-28 | [47503](https://github.com/airbytehq/airbyte/pull/47503) | Update dependencies |
+| 0.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.4.0 | 2024-08-07 | [43368](https://github.com/airbytehq/airbyte/pull/43368) | Refactor connector to manifest-only format |
+| 0.3.15 | 2024-08-03 | [43226](https://github.com/airbytehq/airbyte/pull/43226) | Update dependencies |
+| 0.3.14 | 2024-07-27 | [42635](https://github.com/airbytehq/airbyte/pull/42635) | Update dependencies |
+| 0.3.13 | 2024-07-20 | [42252](https://github.com/airbytehq/airbyte/pull/42252) | Update dependencies |
+| 0.3.12 | 2024-07-13 | [41921](https://github.com/airbytehq/airbyte/pull/41921) | Update dependencies |
+| 0.3.11 | 2024-07-10 | [41348](https://github.com/airbytehq/airbyte/pull/41348) | Update dependencies |
+| 0.3.10 | 2024-07-09 | [41268](https://github.com/airbytehq/airbyte/pull/41268) | Update dependencies |
+| 0.3.9 | 2024-07-06 | [40773](https://github.com/airbytehq/airbyte/pull/40773) | Update dependencies |
+| 0.3.8 | 2024-06-26 | [40510](https://github.com/airbytehq/airbyte/pull/40510) | Update dependencies |
+| 0.3.7 | 2024-06-22 | [39996](https://github.com/airbytehq/airbyte/pull/39996) | Update dependencies |
+| 0.3.6 | 2024-06-04 | [39054](https://github.com/airbytehq/airbyte/pull/39054) | [autopull] Upgrade base image to v1.2.1 |
+| 0.3.5 | 2024-05-20 | [38228](https://github.com/airbytehq/airbyte/pull/38228) | Make compatible with builder |
+| 0.3.4 | 2024-04-19 | [37270](https://github.com/airbytehq/airbyte/pull/37270) | Updating to 0.80.0 CDK |
+| 0.3.3 | 2024-04-18 | [37270](https://github.com/airbytehq/airbyte/pull/37270) | Manage dependencies with Poetry. |
+| 0.3.2 | 2024-04-15 | [37270](https://github.com/airbytehq/airbyte/pull/37270) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.3.1 | 2024-04-12 | [37270](https://github.com/airbytehq/airbyte/pull/37270) | schema descriptions |
+| 0.3.0 | 2023-10-25 | [31002](https://github.com/airbytehq/airbyte/pull/31002) | Migrate to low-code framework |
+| 0.2.0 | 2023-10-23 | [31745](https://github.com/airbytehq/airbyte/pull/31745) | Fix schemas |
+| 0.1.0 | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Initial release |
 
 </details>

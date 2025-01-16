@@ -12,9 +12,11 @@ from typing import IO, Any, Iterable, List, Mapping, MutableMapping, Union
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.types import Config, Record
+
 
 logger = logging.getLogger("airbyte")
 

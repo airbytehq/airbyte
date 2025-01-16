@@ -8,6 +8,7 @@ from typing import List, Set, Tuple
 
 import asyncclick as click
 from connector_ops.utils import Connector, ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
+
 from pipelines import main_logger
 from pipelines.cli.airbyte_ci import wrap_in_secret
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
@@ -206,6 +207,15 @@ def validate_environment(is_local: bool) -> None:
     help=("Build with the airbyte-cdk from the local repository. " "This is useful for testing changes to the CDK."),
     default=False,
     type=bool,
+)
+@click.option(
+    "--use-cdk-ref",
+    help=(
+        "Build with the airbyte-cdk from the specified git ref. "
+        "This is useful for testing against dev versions or previous versions of the CDK. "
+        "Ignored for java connectors and if `--use-local-cdk` is set."
+    ),
+    type=str,
 )
 @click.option(
     "--enable-report-auto-open/--disable-report-auto-open",

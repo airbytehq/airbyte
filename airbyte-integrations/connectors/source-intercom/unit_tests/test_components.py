@@ -6,13 +6,14 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.streams import Stream
-from source_intercom.components import IncrementalSingleSliceCursor, IncrementalSubstreamSlicerCursor, IntercomRateLimiter
 
 
-def test_slicer():
+def test_slicer(components_module):
     date_time_dict = {"updated_at": 1662459010}
+    IncrementalSingleSliceCursor = components_module.IncrementalSingleSliceCursor
     slicer = IncrementalSingleSliceCursor(config={}, parameters={}, cursor_field="updated_at")
     slicer.observe(date_time_dict, date_time_dict)
     slicer.close_slice(date_time_dict)
@@ -36,7 +37,7 @@ def test_slicer():
         )
     ],
 )
-def test_sub_slicer(last_record, expected, records):
+def test_sub_slicer(components_module, last_record, expected, records):
     parent_stream = Mock(spec=Stream)
     parent_stream.name = "parent_stream_name"
     parent_stream.cursor_field = "parent_cursor_field"
@@ -51,6 +52,8 @@ def test_sub_slicer(last_record, expected, records):
         parameters={},
         config={},
     )
+
+    IncrementalSubstreamSlicerCursor = components_module.IncrementalSubstreamSlicerCursor
 
     slicer = IncrementalSubstreamSlicerCursor(
         config={}, parameters={}, cursor_field="first_stream_cursor", parent_stream_configs=[parent_config], parent_complete_fetch=True
@@ -72,7 +75,9 @@ def test_sub_slicer(last_record, expected, records):
         ({}, 1.0),
     ],
 )
-def test_rate_limiter(rate_limit_header, backoff_time):
+def test_rate_limiter(components_module, rate_limit_header, backoff_time):
+    IntercomRateLimiter = components_module.IntercomRateLimiter
+
     def check_backoff_time(t):
         """A replacer for original `IntercomRateLimiter.backoff_time`"""
         assert backoff_time == t, f"Expected {backoff_time}, got {t}"

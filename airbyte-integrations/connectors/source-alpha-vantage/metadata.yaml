@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: db385323-9333-4fec-bec3-9e0ca9326c90
-  dockerImageTag: 0.1.22
+  dockerImageTag: 0.1.27
   dockerRepository: airbyte/source-alpha-vantage
   githubIssueLabel: source-alpha-vantage
   icon: alpha-vantage.svg
@@ -39,5 +39,5 @@ data:
     #         type: GSM
     #         alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
 metadataSpecVersion: "1.0"

@@ -16,27 +16,29 @@ acceptance_tests:
     - config_path: "secrets/config.json"
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      fail_on_extra_columns: false
-      empty_streams:
-      - name: files
-      - name: filters
-      - name: leads
-      - name: notes
-      - name: activities
-      - name: pipelines
-      - name: products
-      - name: stages
-      - name: deal_products
-      - name: mail
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        fail_on_extra_columns: false
+        empty_streams:
+          - name: files
+          - name: filters
+          - name: leads
+          - name: notes
+          - name: activities
+          - name: pipelines
+          - name: products
+          - name: stages
+          - name: deal_products
+          - name: mail
+          - name: deals
+          - name: users
+          - name: persons
 
   incremental:
-    tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
+    bypass_reason: "All incremental streams are empty in sandbox account."
   full_refresh:
     tests:
     - config_path: "secrets/config.json"

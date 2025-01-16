@@ -88,6 +88,12 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.0.28 | 2025-01-11 | [51056](https://github.com/airbytehq/airbyte/pull/51056) | Update dependencies |
+| 1.0.27 | 2025-01-04 | [50923](https://github.com/airbytehq/airbyte/pull/50923) | Update dependencies |
+| 1.0.26 | 2024-12-28 | [50530](https://github.com/airbytehq/airbyte/pull/50530) | Update dependencies |
+| 1.0.25 | 2024-12-21 | [49997](https://github.com/airbytehq/airbyte/pull/49997) | Update dependencies |
+| 1.0.24 | 2024-12-14 | [49154](https://github.com/airbytehq/airbyte/pull/49154) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.0.23 | 2024-10-29 | [47737](https://github.com/airbytehq/airbyte/pull/47737) | Update dependencies |
 | 1.0.22 | 2024-10-21 | [47025](https://github.com/airbytehq/airbyte/pull/47025) | Update dependencies |
 | 1.0.21 | 2024-10-12 | [46807](https://github.com/airbytehq/airbyte/pull/46807) | Update dependencies |
 | 1.0.20 | 2024-10-05 | [46461](https://github.com/airbytehq/airbyte/pull/46461) | Update dependencies |

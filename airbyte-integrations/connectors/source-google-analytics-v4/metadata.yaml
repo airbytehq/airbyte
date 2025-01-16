@@ -9,11 +9,11 @@ data:
       - analyticsdata.googleapis.com
       - analyticsreporting.googleapis.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.7
   dockerRepository: airbyte/source-google-analytics-v4
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
   githubIssueLabel: source-google-analytics-v4

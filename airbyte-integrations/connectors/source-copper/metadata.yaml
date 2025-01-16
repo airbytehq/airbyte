@@ -3,11 +3,11 @@ data:
     hosts:
       - https://api.copper.com/
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
   connectorSubtype: api
   connectorType: source
   definitionId: 44f3002f-2df9-4f6d-b21c-02cd3b47d0dc
-  dockerImageTag: 0.4.1
+  dockerImageTag: 0.4.4
   dockerRepository: airbyte/source-copper
   documentationUrl: https://docs.airbyte.com/integrations/sources/copper
   githubIssueLabel: source-copper

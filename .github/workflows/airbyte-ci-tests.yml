@@ -17,7 +17,7 @@ on:
       - synchronize
 jobs:
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       internal_poetry_packages: ${{ steps.changes.outputs.internal_poetry_packages }}
 
@@ -42,7 +42,6 @@ jobs:
             - airbyte-ci/connectors/erd/**
             - airbyte-ci/connectors/metadata_service/lib/**
             - airbyte-ci/connectors/metadata_service/orchestrator/**
-            - airbyte-cdk/python/**
             - airbyte-integrations/bases/connector-acceptance-test/**
 
   run-tests:
@@ -60,6 +59,25 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
+      - name: Checkout Airbyte Python CDK
+        uses: actions/checkout@v4
+        with:
+          repository: airbytehq/airbyte-python-cdk
+          ref: main
+          # We can't clone into a parent directory of the repo, so we clone into
+          # a subdirectory and then move it over as a sibling directory.
+          # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
+          path: airbyte-python-cdk
+      - name: Move airbyte-python-cdk to sibling directory path
+        shell: bash
+        run: mv ./airbyte-python-cdk ../airbyte-python-cdk
+      - name: Show local paths checked out
+        shell: bash
+        run: |
+          set -x
+          echo "Current directory: $(pwd)"
+          ls -la
+          ls -la ../airbyte-python-cdk || echo "No airbyte-python-cdk directory"
 
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
