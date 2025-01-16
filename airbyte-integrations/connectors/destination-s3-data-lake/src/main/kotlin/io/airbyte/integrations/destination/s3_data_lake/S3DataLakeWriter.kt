@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import javax.inject.Singleton
-import org.apache.iceberg.Schema
 
 @Singleton
 class S3DataLakeWriter(
@@ -34,12 +33,6 @@ class S3DataLakeWriter(
                 properties = properties
             )
 
-        // TODO : See if the identifier fields are allowed to change
-        identifierFieldsShouldNotChange(
-            incomingSchema = incomingSchema,
-            existingSchema = table.schema()
-        )
-
         s3DataLakeTableSynchronizer.applySchemaChanges(table, incomingSchema)
 
         return S3DataLakeStreamLoader(
@@ -51,30 +44,5 @@ class S3DataLakeWriter(
             stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
         )
-    }
-
-    private fun identifierFieldsShouldNotChange(incomingSchema: Schema, existingSchema: Schema) {
-        val incomingIdentifierFields = incomingSchema.identifierFieldNames()
-        val existingIdentifierFieldNames = existingSchema.identifierFieldNames()
-
-        val identifiersMissingInIncoming = existingIdentifierFieldNames - incomingIdentifierFields
-        val identifiersExtraInIncoming = incomingIdentifierFields - existingIdentifierFieldNames
-
-        if (identifiersMissingInIncoming.isNotEmpty() || identifiersExtraInIncoming.isNotEmpty()) {
-            val errorMessage = buildString {
-                append("Identifier fields are different:\n")
-                if (identifiersMissingInIncoming.isNotEmpty()) {
-                    append(
-                        "Identifier Fields missing in incoming schema: $identifiersMissingInIncoming\n"
-                    )
-                }
-                if (identifiersExtraInIncoming.isNotEmpty()) {
-                    append(
-                        "Identifier Extra fields in incoming schema: $identifiersExtraInIncoming\n"
-                    )
-                }
-            }
-            throw IllegalArgumentException(errorMessage)
-        }
     }
 }
