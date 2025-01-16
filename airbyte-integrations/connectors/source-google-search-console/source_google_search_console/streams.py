@@ -179,15 +179,14 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
                 period = pendulum.Duration(days=self.range_of_days - 1)
                 while next_start <= end_date:
                     next_end = min(next_start + period, end_date)
-                    slice_info = {
+                    yield {
                         "site_url": site_url,
                         "search_type": search_type,
                         "start_date": next_start.to_date_string(),
                         "end_date": next_end.to_date_string(),
                         "data_state": self._data_state,
                     }
-                    print(f"Generated slice: {slice_info}") 
-                    yield slice_info
+
                     # add 1 day for the next slice's start date not to duplicate data from previous slice's end date.
                     next_start = next_end + pendulum.Duration(days=1) - pendulum.Duration(seconds=1)
 
