@@ -4308,6 +4308,14 @@ spec:
           - app_id
           - secret
 
+# Based on https://developers.tiktok.com/doc/tiktok-api-v2-rate-limit, the rate limiting for the API on all endpoint is 600 requests per minutes.
+# This means 10 requests per second. Assuming response time of 250 ms (there is very little based for this response time though) and a bit of time for processing the responses, it would mean a thread can do ~3 requests per second.
+# If time allows it, we can definitely try to scope this number a bit better empirically.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 3
+  max_concurrency: 20
+
 metadata:
   autoImportSchema:
     advertiser_ids: true

@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
+from airbyte_cdk import TState
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-
+from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
 
 logger = logging.getLogger("airbyte")
 DOCUMENTATION_URL = "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -44,8 +45,8 @@ REPORT_GRANULARITY = {"DAY": "daily", "HOUR": "hourly", "LIFETIME": "lifetime"}
 
 
 class SourceTiktokMarketing(YamlDeclarativeSource):
-    def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     @staticmethod
     def _is_sandbox(config: Mapping[str, Any]) -> bool:
