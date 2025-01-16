@@ -47,7 +47,7 @@
       },
       "warehouse_location" : {
         "type" : "string",
-        "description" : "The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. Must include the storage protocol (such as \"s3://\" for Amazon S3, or \"gs://\" for Google GCS).",
+        "description" : "The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. Must include the storage protocol (such as \"s3://\" for Amazon S3).",
         "title" : "Warehouse Location",
         "always_show" : true,
         "order" : 5

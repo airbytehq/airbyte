@@ -37,7 +37,7 @@ interface IcebergCatalogSpecifications {
      */
     @get:JsonSchemaTitle("Warehouse Location")
     @get:JsonSchemaDescription(
-        """The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. Must include the storage protocol (such as "s3://" for Amazon S3, or "gs://" for Google GCS)."""
+        """The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. Must include the storage protocol (such as "s3://" for Amazon S3)."""
     )
     @get:JsonSchemaInject(json = """{"examples": ["s3://your-bucket/path/to/store/files/in"]}""")
     @get:JsonProperty("warehouse_location")
