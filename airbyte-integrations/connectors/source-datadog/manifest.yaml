@@ -214,7 +214,9 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or \"2024-09-01T00:00:00Z\" }}"
+          datetime: >-
+            {{ config['start_date'] or day_delta(-30,
+            format='%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -226,7 +228,9 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['end_date'] or \"2024-09-30T23:59:59Z\" }}"
+          datetime: >-
+            {{ config['end_date'] or day_delta(-1, format='%Y-%m-%dT%H:%M:%SZ')
+            }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT0.000001S
