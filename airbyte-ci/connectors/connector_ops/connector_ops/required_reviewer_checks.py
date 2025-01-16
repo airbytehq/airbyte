@@ -12,7 +12,6 @@ from connector_ops import utils
 # The breaking change reviewers is still in active use.
 BREAKING_CHANGE_REVIEWERS = {"breaking-change-reviewers"}
 CERTIFIED_MANIFEST_ONLY_CONNECTOR_REVIEWERS = {"dev-python"}
-COMMUNITY_MANIFEST_ONLY_CONNECTOR_REVIEWERS = {"dev-marketplace-contributions"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
 
