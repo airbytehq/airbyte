@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from freezegun import freeze_time
 from components import ShortLivedTokenAuthenticator
+from freezegun import freeze_time
 
 
 def test_get_tokens(requests_mock):
