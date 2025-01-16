@@ -10,7 +10,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
-  dockerImageTag: 4.12.0
+  dockerImageTag: 4.12.0-rc.1
   dockerRepository: airbyte/source-s3
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   githubIssueLabel: source-s3
@@ -29,6 +29,7 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    isReleaseCandidate: true
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
