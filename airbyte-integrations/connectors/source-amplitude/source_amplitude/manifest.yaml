@@ -342,24 +342,21 @@ definitions:
             type:
               - "null"
               - object
-  # events_stream:
-  #   type: DeclarativeStream
-  #   name: events
-  #   primary_key:
-  #     - uuid
-  #   retriever:
-  #     type: SimpleRetriever
-  #     requester:
-  #       $ref: "#/definitions/requester"
-  #       path: /2/export
-  #     $ref: "#/definitions/retriever"
-  #     decoder:
-  #       type: CompositeRawDecoder
-  #       parser:
-  #         type: GzipParser
-  #         inner_parser:
-  #           type: JsonParser
-  #           encoding: utf-8
+  events_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: events
+      primary_key: uuid
+      path: /2/export
+    retriever:
+      $ref: "#/definitions/base_incremental_stream/retriever"
+      decoder:
+        type: ZipfileDecoder
+        parser:
+          type: GzipParser
+          inner_parser:
+            type: JsonParser
+            encoding: utf-8
 
   events_list_stream:
     type: DeclarativeStream
@@ -447,7 +444,7 @@ streams:
   - "#/definitions/average_session_length_stream"
   - "#/definitions/active_users_stream"
   - "#/definitions/events_list_stream"
-  # - "#/definitions/events_stream"
+  - "#/definitions/events_stream"
 
 check:
   stream_names:
