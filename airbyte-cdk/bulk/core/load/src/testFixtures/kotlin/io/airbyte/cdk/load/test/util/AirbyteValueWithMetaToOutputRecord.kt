@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import java.time.Instant
 import java.util.UUID
 
 class AirbyteValueWithMetaToOutputRecord {
@@ -22,14 +21,12 @@ class AirbyteValueWithMetaToOutputRecord {
             rawId =
                 UUID.fromString((value.values[Meta.COLUMN_NAME_AB_RAW_ID] as StringValue).value),
             extractedAt =
-                Instant.ofEpochMilli(
-                    value.values[Meta.COLUMN_NAME_AB_EXTRACTED_AT].let { v ->
-                        when (v) {
-                            is TimestampWithTimezoneValue -> v.value.toEpochSecond()
-                            else -> throw IllegalArgumentException("Invalid extractedAt value: $v")
-                        }
+                value.values[Meta.COLUMN_NAME_AB_EXTRACTED_AT].let { v ->
+                    when (v) {
+                        is TimestampWithTimezoneValue -> v.value.toInstant()
+                        else -> throw IllegalArgumentException("Invalid extractedAt value: $v")
                     }
-                ),
+                },
             loadedAt = null,
             data = value.values[Meta.COLUMN_NAME_DATA] as ObjectValue,
             generationId =
