@@ -49,8 +49,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -107,8 +107,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -191,8 +191,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -253,8 +253,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -315,8 +315,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -372,8 +372,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -444,8 +444,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -525,8 +525,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -605,8 +605,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -678,8 +678,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -753,8 +753,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -825,8 +825,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -927,8 +927,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -983,8 +983,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1055,8 +1055,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1121,8 +1121,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1179,8 +1179,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1237,8 +1237,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1296,8 +1296,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1370,8 +1370,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1456,8 +1456,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1514,8 +1514,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1572,8 +1572,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1635,8 +1635,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1712,8 +1712,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1797,8 +1797,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1880,8 +1880,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1951,8 +1951,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2022,8 +2022,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2104,8 +2104,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2170,8 +2170,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2234,8 +2234,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2333,8 +2333,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2399,8 +2399,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2457,8 +2457,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2555,8 +2555,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2629,8 +2629,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2687,8 +2687,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2752,8 +2752,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2834,8 +2834,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2918,8 +2918,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2990,8 +2990,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3048,8 +3048,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3141,8 +3141,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3220,8 +3220,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3278,8 +3278,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3332,8 +3332,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3394,8 +3394,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3452,8 +3452,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3510,8 +3510,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3568,8 +3568,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3626,8 +3626,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3688,8 +3688,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3812,8 +3812,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3870,8 +3870,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3928,8 +3928,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3986,8 +3986,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4044,8 +4044,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4114,8 +4114,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4176,8 +4176,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4238,8 +4238,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4296,8 +4296,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4363,8 +4363,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4447,8 +4447,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4515,8 +4515,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4587,8 +4587,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4695,8 +4695,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4761,8 +4761,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4824,8 +4824,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4890,8 +4890,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4994,8 +4994,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -5052,8 +5052,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -5110,8 +5110,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -5169,8 +5169,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -5241,8 +5241,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -5348,8 +5348,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
@@ -5418,8 +5418,8 @@ definitions:
                     http_codes:
                       - 429
                     error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
         record_selector:
           type: RecordSelector
           extractor:
