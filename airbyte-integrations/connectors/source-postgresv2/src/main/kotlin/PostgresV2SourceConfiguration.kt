@@ -57,7 +57,8 @@ class PostgresV2SourceConfigurationFactory :
         val realHost = pojo.host
         val realPort = pojo.port
         val dbName = pojo.database
-        val jdbcUrlFmt = "jdbc:postgresql://%s:%s"
+
+        val jdbcUrlFmt = "jdbc:postgresql://%s:%s/$dbName";
         val jdbcProperties = mutableMapOf<String, String>()
         val defaultSchema = "public"
         jdbcProperties["user"] = pojo.username

@@ -2,8 +2,6 @@ package io.airbyte.integrations.source.postgresv2
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
-import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
-import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.env.Environment
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest

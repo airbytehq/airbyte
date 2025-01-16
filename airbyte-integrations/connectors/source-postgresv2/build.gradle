@@ -12,7 +12,7 @@ airbyteBulkConnector {
     cdk = 'local'
 }
 
-
 dependencies {
-    // Add jdbc driver dependencies here
+    implementation 'org.postgresql:postgresql:42.7.3'
+    testImplementation 'org.testcontainers:postgresql'
 }
