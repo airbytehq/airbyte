@@ -517,7 +517,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
         if (config.has("certificate")) {
           String certificate = config.get("certificate").asText();
-          String password = RandomStringUtils.randomAlphanumeric(100);
+          String password = RandomStringUtils.secure().nextAlphanumeric(100);
           final URI keyStoreUri;
           try {
             keyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(certificate, password, null, null);
