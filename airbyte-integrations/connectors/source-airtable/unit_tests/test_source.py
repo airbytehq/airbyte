@@ -5,8 +5,6 @@
 
 from unittest.mock import MagicMock
 
-import pytest
-import requests
 from source_airtable import SourceAirtable
 
 
@@ -62,9 +60,6 @@ class TestSourceAirtable:
             status_code=200,
             json={"bases": []},
         )
-        status = SourceAirtable(catalog={}, config=self.config, state={}).check_connection(logger=MagicMock(), config=self.config)
-        assert status == (
-            False,
-            "Provided source configuration does not contain any streams."
-            " Please check that you have permissions to pull available tables and bases using `Metadata API` for a given authenticated user",
-        )
+        status, reason = SourceAirtable(catalog={}, config=self.config, state={}).check_connection(logger=MagicMock(), config=self.config)
+        assert "No streams to connect to from source" in reason
+        assert status is False

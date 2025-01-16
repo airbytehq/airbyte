@@ -3,9 +3,8 @@ version: 6.6.0
 type: DeclarativeSource
 
 check:
-  type: CheckStream
-  stream_names:
-    - "bases"
+  type: CheckDynamicStream
+  stream_count: 1
 
 definitions:
   streams:
