@@ -82,17 +82,6 @@ class DockerProcessFactory(
                 IOs.writeFile(jobRoot, key, value)
             }
 
-            // The image name is probably something like "airbyte/destination-foo:dev"
-            // so try to get the "destination" substring
-            val maybeConnectorType = imageName.removePrefix("airbyte/").substringBefore("-")
-            // Platform launches connectors with workdir /source or /dest, depending on
-            // the connector type.
-            val workingDirectory =
-                when (maybeConnectorType) {
-                    "source" -> "/source"
-                    "destination" -> "/dest"
-                    else -> "/dest"
-                }
             val cmd: MutableList<String> =
                 Lists.newArrayList(
                     "docker",
@@ -101,7 +90,7 @@ class DockerProcessFactory(
                     "--init",
                     "-i",
                     "-w",
-                    workingDirectory,
+                    rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
                     "--log-driver",
                     "none"
                 )
