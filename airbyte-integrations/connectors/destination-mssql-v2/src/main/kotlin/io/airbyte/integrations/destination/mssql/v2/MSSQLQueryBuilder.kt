@@ -27,8 +27,15 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.lang.ArithmeticException
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.sql.Statement
 import java.util.UUID
+
+const val GET_EXISTING_SCHEMA_QUERY =
+    """
+            SELECT COLUMN_NAME, DATA_TYPE
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = '?' AND TABLE_NAME = '?'
+            ORDER BY ORDINAL_POSITION ASC
+        """
 
 class MSSQLQueryBuilder(
     config: MSSQLConfiguration,
@@ -69,7 +76,6 @@ class MSSQLQueryBuilder(
     data class NamedValue(val name: String, val value: AirbyteValue)
     data class NamedSqlField(val name: String, val type: MssqlType)
 
-    private val internalSchema: String = config.rawDataSchema
     private val outputSchema: String = stream.descriptor.namespace ?: config.schema
     private val tableName: String = stream.descriptor.name
     private val fqTableName = "$outputSchema.$tableName"
@@ -80,24 +86,17 @@ class MSSQLQueryBuilder(
     val finalTableSchema: List<NamedField> =
         airbyteFinalTableFields + extractFinalTableSchema(stream.schema)
 
-    fun getExistingSchema(statement: Statement): List<NamedSqlField> {
+    fun getExistingSchema(statement: PreparedStatement): List<NamedSqlField> {
         val fields = mutableListOf<NamedSqlField>()
-        statement
-            .executeQuery(
-                """
-            SELECT COLUMN_NAME, DATA_TYPE
-            FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_SCHEMA = '$outputSchema' AND TABLE_NAME = '$tableName'
-            ORDER BY ORDINAL_POSITION ASC
-        """.trimIndent()
-            )
-            .use { rs ->
-                while (rs.next()) {
-                    val name = rs.getString("COLUMN_NAME")
-                    val type = MssqlType.valueOf(rs.getString("DATA_TYPE").uppercase())
-                    fields.add(NamedSqlField(name, type))
-                }
+        statement.setString(1, outputSchema)
+        statement.setString(2, tableName)
+        statement.executeQuery().use { rs ->
+            while (rs.next()) {
+                val name = rs.getString("COLUMN_NAME")
+                val type = MssqlType.valueOf(rs.getString("DATA_TYPE").uppercase())
+                fields.add(NamedSqlField(name, type))
             }
+        }
         return fields
     }
 
