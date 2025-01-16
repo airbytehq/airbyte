@@ -9,10 +9,10 @@ from datetime import datetime
 from typing import List
 
 from orjson import orjson
-from source_tiktok_marketing import SourceTiktokMarketing
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
+from source_tiktok_marketing import SourceTiktokMarketing
 
 
 def _get_source(args: List[str]):

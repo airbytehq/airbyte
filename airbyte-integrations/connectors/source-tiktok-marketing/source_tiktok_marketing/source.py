@@ -4,10 +4,12 @@
 import logging
 from typing import Any, List, Mapping, Optional
 
+from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
+
 from airbyte_cdk import TState
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
+
 
 logger = logging.getLogger("airbyte")
 DOCUMENTATION_URL = "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
