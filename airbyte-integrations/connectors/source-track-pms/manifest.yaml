@@ -798,9 +798,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/contacts"
-    contactspii_redacted:
+    contacts_pii_redacted:
       type: DeclarativeStream
-      name: contactspii_redacted
+      name: contacts_pii_redacted
       primary_key:
         - id
       retriever:
@@ -899,7 +899,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/contactspii_redacted"
+          $ref: "#/schemas/contacts_pii_redacted"
     contracts:
       type: DeclarativeStream
       name: contracts
@@ -3585,12 +3585,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: size
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -4336,69 +4336,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/unit_blocks"
-    unit_types:
-      type: DeclarativeStream
-      name: unit_types
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: pms/units/types
-          http_method: GET
-          request_headers:
-            accept: application/json
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (1000 requests per 5 minutes) met,
-                      waiting 5 minutes to reset.
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _embedded
-              - unitTypes
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
-      transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _links
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - lodgingType
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/unit_types"
     unit_charge_pricing_parent:
       type: DeclarativeStream
       name: unit_charge_pricing_parent
@@ -4797,6 +4734,69 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/unit_type_daily_pricing_v2"
+    unit_types:
+      type: DeclarativeStream
+      name: unit_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/units/types
+          http_method: GET
+          request_headers:
+            accept: application/json
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (1000 requests per 5 minutes) met,
+                      waiting 5 minutes to reset.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - unitTypes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - lodgingType
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/unit_types"
     unit_types_pricing_parent:
       type: DeclarativeStream
       name: unit_types_pricing_parent
@@ -5491,7 +5491,7 @@ streams:
   - $ref: "#/definitions/streams/companies"
   - $ref: "#/definitions/streams/contact_companies"
   - $ref: "#/definitions/streams/contacts"
-  - $ref: "#/definitions/streams/contactspii_redacted"
+  - $ref: "#/definitions/streams/contacts_pii_redacted"
   - $ref: "#/definitions/streams/contracts"
   - $ref: "#/definitions/streams/crm_company_attachment"
   - $ref: "#/definitions/streams/crm_tasks"
@@ -5542,12 +5542,12 @@ streams:
   - $ref: "#/definitions/streams/taxes"
   - $ref: "#/definitions/streams/travel_insurance_products"
   - $ref: "#/definitions/streams/unit_blocks"
-  - $ref: "#/definitions/streams/unit_types"
   - $ref: "#/definitions/streams/unit_charge_pricing_parent"
   - $ref: "#/definitions/streams/unit_daily_pricing_v2"
   - $ref: "#/definitions/streams/unit_taxes"
   - $ref: "#/definitions/streams/unit_taxes_parent"
   - $ref: "#/definitions/streams/unit_type_daily_pricing_v2"
+  - $ref: "#/definitions/streams/unit_types"
   - $ref: "#/definitions/streams/unit_types_pricing_parent"
   - $ref: "#/definitions/streams/units"
   - $ref: "#/definitions/streams/units_amenities"
@@ -5596,7 +5596,7 @@ metadata:
     companies: true
     contact_companies: true
     contacts: true
-    contactspii_redacted: true
+    contacts_pii_redacted: true
     contracts: true
     crm_company_attachment: true
     crm_tasks: true
@@ -5647,12 +5647,12 @@ metadata:
     taxes: true
     travel_insurance_products: true
     unit_blocks: true
-    unit_types: true
     unit_charge_pricing_parent: true
     unit_daily_pricing_v2: true
     unit_taxes: true
     unit_taxes_parent: true
     unit_type_daily_pricing_v2: true
+    unit_types: true
     unit_types_pricing_parent: true
     units: true
     units_amenities: true
@@ -5667,12 +5667,12 @@ metadata:
       - authenticator
   testedStreams:
     accounting_accounts:
+      hasRecords: true
       streamHash: 545ba4c6a25cf44d1084f5983d0a2d9b1e708d31
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     accounting_bills:
       hasRecords: true
       streamHash: 094d2ee2bb369f46dcca93db1ffe6af4b473ad8c
@@ -5695,12 +5695,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     accounting_deposits_payments:
-      streamHash: d6c4b860187cf284fa89310a4d9c4db6f2ba4775
+      streamHash: 79081c0b7b1ed236181f6a2618febfdf494af288
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
-      primaryKeysAreUnique: false
+      primaryKeysAreUnique: true
     accounting_items:
       hasRecords: true
       streamHash: 7810597a29b06371dfc6ba2dd0f0c2db71298fa6
@@ -5743,13 +5743,13 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    contactspii_redacted:
-      hasRecords: true
-      streamHash: fb6d663fb46fceb14eef00bde761a8bef11f6f96
+    contacts_pii_redacted:
+      streamHash: d07cbb4b183987d8b54781a9d18bc68d666d226c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     contracts:
       hasRecords: true
       streamHash: b0fc439ca49458afabb050b79ffadcc72d505454
@@ -5765,7 +5765,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     crm_tasks:
-      hasRecords: false
+      hasRecords: true
       streamHash: 7541f055567acdc886589203bf1f66ed1ec27f73
       hasResponse: true
       primaryKeysAreUnique: true
@@ -6022,7 +6022,7 @@ metadata:
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: false
+      responsesAreSuccessful: true
     reservations_guarantee_policies:
       hasRecords: true
       streamHash: 4c30924401433deafeb3ff51518b72666dc5dc16
@@ -6100,13 +6100,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    unit_types:
-      hasRecords: true
-      streamHash: 6d4311a8a28f4b20d2be8d75605e742792d475ff
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     unit_charge_pricing_parent:
       hasRecords: true
       streamHash: 3cdbaab68ff18333d9e3ebfcf362e3a364d6fdb2
@@ -6138,6 +6131,13 @@ metadata:
     unit_type_daily_pricing_v2:
       hasRecords: true
       streamHash: aee24eda1a4549960320805577018acca1be7da6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    unit_types:
+      hasRecords: true
+      streamHash: 6d4311a8a28f4b20d2be8d75605e742792d475ff
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -12852,14 +12852,6 @@ schemas:
         type:
           - string
           - "null"
-      ownerId:
-        type:
-          - string
-          - "null"
-      ownerName:
-        type:
-          - string
-          - "null"
       reference:
         type:
           - string
@@ -14099,7 +14091,7 @@ schemas:
     required:
       - id
       - updatedAt
-  contactspii_redacted:
+  contacts_pii_redacted:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -23552,224 +23544,6 @@ schemas:
           - "null"
     required:
       - id
-  unit_types:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      _embedded:
-        type:
-          - object
-          - "null"
-        properties:
-          calendarGroup:
-            type:
-              - object
-              - "null"
-            properties:
-              _links:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  self:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      href:
-                        type:
-                          - string
-                          - "null"
-              createdAt:
-                type:
-                  - string
-                  - "null"
-              createdBy:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-              updatedAt:
-                type:
-                  - string
-                  - "null"
-              updatedBy:
-                type:
-                  - string
-                  - "null"
-      allowOversell:
-        type:
-          - boolean
-          - "null"
-      allowUnitRates:
-        type:
-          - boolean
-          - "null"
-      amenitiesIds:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - number
-            - "null"
-      bedTypes:
-        type:
-          - array
-          - "null"
-      calendarGroupId:
-        type:
-          - number
-          - "null"
-      cancellationPoliciesIds:
-        type:
-          - array
-          - "null"
-      childrenAllowed:
-        type:
-          - boolean
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      createdBy:
-        type:
-          - string
-          - "null"
-      custom:
-        type:
-          - array
-          - "null"
-      documentsIds:
-        type:
-          - array
-          - "null"
-      eventsAllowed:
-        type:
-          - boolean
-          - "null"
-      folioException:
-        type:
-          - boolean
-          - "null"
-      gatewaysIds:
-        type:
-          - array
-          - "null"
-      guaranteePoliciesIds:
-        type:
-          - array
-          - "null"
-      hasEarlyCheckin:
-        type:
-          - boolean
-          - "null"
-      hasLateCheckout:
-        type:
-          - boolean
-          - "null"
-      id:
-        type: number
-      isAccessible:
-        type:
-          - boolean
-          - "null"
-      isActive:
-        type:
-          - boolean
-          - "null"
-      isBookable:
-        type:
-          - boolean
-          - "null"
-      lodgingTypeId:
-        type:
-          - number
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      oversellLimit:
-        type:
-          - number
-          - "null"
-      petFriendly:
-        type:
-          - boolean
-          - "null"
-      quickCheckin:
-        type:
-          - boolean
-          - "null"
-      quickCheckout:
-        type:
-          - boolean
-          - "null"
-      roles:
-        type:
-          - array
-          - "null"
-      securityDeposit:
-        type:
-          - string
-          - "null"
-      shortName:
-        type:
-          - string
-          - "null"
-      smokingAllowed:
-        type:
-          - boolean
-          - "null"
-      typeCode:
-        type:
-          - string
-          - "null"
-      updated:
-        type:
-          - object
-          - "null"
-        properties:
-          availability:
-            type:
-              - string
-              - "null"
-          content:
-            type:
-              - string
-              - "null"
-          pricing:
-            type:
-              - string
-              - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      updatedBy:
-        type:
-          - string
-          - "null"
-      useBedTypes:
-        type:
-          - boolean
-          - "null"
-      useRoomConfiguration:
-        type:
-          - boolean
-          - "null"
-    required:
-      - id
   unit_charge_pricing_parent:
     type: object
     $schema: http://json-schema.org/schema#
@@ -24467,6 +24241,224 @@ schemas:
     required:
       - unit_type_id
       - rateTypeId
+  unit_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _embedded:
+        type:
+          - object
+          - "null"
+        properties:
+          calendarGroup:
+            type:
+              - object
+              - "null"
+            properties:
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - string
+                          - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              createdBy:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              updatedBy:
+                type:
+                  - string
+                  - "null"
+      allowOversell:
+        type:
+          - boolean
+          - "null"
+      allowUnitRates:
+        type:
+          - boolean
+          - "null"
+      amenitiesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      bedTypes:
+        type:
+          - array
+          - "null"
+      calendarGroupId:
+        type:
+          - number
+          - "null"
+      cancellationPoliciesIds:
+        type:
+          - array
+          - "null"
+      childrenAllowed:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - array
+          - "null"
+      documentsIds:
+        type:
+          - array
+          - "null"
+      eventsAllowed:
+        type:
+          - boolean
+          - "null"
+      folioException:
+        type:
+          - boolean
+          - "null"
+      gatewaysIds:
+        type:
+          - array
+          - "null"
+      guaranteePoliciesIds:
+        type:
+          - array
+          - "null"
+      hasEarlyCheckin:
+        type:
+          - boolean
+          - "null"
+      hasLateCheckout:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      isAccessible:
+        type:
+          - boolean
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isBookable:
+        type:
+          - boolean
+          - "null"
+      lodgingTypeId:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      oversellLimit:
+        type:
+          - number
+          - "null"
+      petFriendly:
+        type:
+          - boolean
+          - "null"
+      quickCheckin:
+        type:
+          - boolean
+          - "null"
+      quickCheckout:
+        type:
+          - boolean
+          - "null"
+      roles:
+        type:
+          - array
+          - "null"
+      securityDeposit:
+        type:
+          - string
+          - "null"
+      shortName:
+        type:
+          - string
+          - "null"
+      smokingAllowed:
+        type:
+          - boolean
+          - "null"
+      typeCode:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - object
+          - "null"
+        properties:
+          availability:
+            type:
+              - string
+              - "null"
+          content:
+            type:
+              - string
+              - "null"
+          pricing:
+            type:
+              - string
+              - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      useBedTypes:
+        type:
+          - boolean
+          - "null"
+      useRoomConfiguration:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
   unit_types_pricing_parent:
     type: object
     $schema: http://json-schema.org/schema#
