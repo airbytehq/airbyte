@@ -89,5 +89,4 @@ class MSSQLStreamLoader(
             }
         }
     }
-
 }
