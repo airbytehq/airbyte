@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
 |:-----------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.48.5     | 2025-01-16 | [\#51583](https://github.com/airbytehq/airbyte/pull/51583)  | Save SSL key to /tmp in destination-postgres also                                                                                                              |
 | 0.48.4     | 2024-12-24 | [\#50410](https://github.com/airbytehq/airbyte/pull/50410)  | Save SSL key to /tmp                                                                                                                                           |
 | 0.48.3     | 2024-12-23 | [\#49858](https://github.com/airbytehq/airbyte/pull/49858)  | Relax various Destination CDK methods visibility.                                                                                                              |
 | 0.48.1     | 2024-11-13 | [\#48482](https://github.com/airbytehq/airbyte/pull/48482)  | Adding support converting very large numbers via BigInteger                                                                                                    |
