@@ -4,7 +4,7 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-    - api.pipedrive.com   # Please change to the hostname of the source.
+      - api.pipedrive.com # Please change to the hostname of the source.
   remoteRegistries:
     pypi:
       enabled: false
@@ -28,40 +28,40 @@ data:
     breakingChanges:
       2.0.0:
         upgradeDeadline: 2023-10-04
-        message: "This version removes the `pipeline_ids` field from the `deal_fields`
+        message:
+          "This version removes the `pipeline_ids` field from the `deal_fields`
           stream. Config has changed to only use API key. Please update your config."
   releaseDate: 2021-07-19
   releaseStage: alpha
   supportLevel: community
   tags:
-  - cdk:low-code
-  - language:manifest-only
+    - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
-  - suite: liveTests
-    testConnections:
-    - name: pipedrive_old_config_dev_null
-      id: 7bd5c95e-ead8-42a7-8c5a-6cfd50b1f0e0
-    - name: pipedrive_config_dev_null
-      id: 8278c55c-e9e9-4403-a001-b47aaac3535f
-  - suite: unitTests
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_SOURCE-PIPEDRIVE_OAUTH__CREDS
-      fileName: oauth_config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_SOURCE-PIPEDRIVE_OLD__CREDS
-      fileName: old_config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_SOURCE-PIPEDRIVE__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: liveTests
+      testConnections:
+        - name: pipedrive_old_config_dev_null
+          id: 7bd5c95e-ead8-42a7-8c5a-6cfd50b1f0e0
+        - name: pipedrive_config_dev_null
+          id: 8278c55c-e9e9-4403-a001-b47aaac3535f
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PIPEDRIVE_OAUTH__CREDS
+          fileName: oauth_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PIPEDRIVE_OLD__CREDS
+          fileName: old_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PIPEDRIVE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: 
-      docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
 metadataSpecVersion: "1.0"

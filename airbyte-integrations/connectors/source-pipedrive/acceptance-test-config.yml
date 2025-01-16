@@ -4,18 +4,32 @@ connector_image: airbyte/source-pipedrive:dev
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "manifest.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        fail_on_extra_columns: false
+        empty_streams:
+          - name: files
+          - name: filters
+          - name: leads
+          - name: notes
+          - name: activities
+          - name: pipelines
+          - name: products
+          - name: stages
+          - name: deal_products
+          - name: mail
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -41,5 +55,5 @@ acceptance_tests:
     bypass_reason: "All incremental streams are empty in sandbox account."
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
