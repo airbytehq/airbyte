@@ -64,5 +64,6 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
             .with_exec(["/tmp/finalize_build.sh"], use_entrypoint=True)
         )
     # Switch back to the original user
+    connector_container = connector_container.with_exec(["chown", "-R", f"{original_user}:{original_user}", "/tmp"])
     connector_container = connector_container.with_user(original_user)
     return connector_container.with_entrypoint(original_entrypoint)
