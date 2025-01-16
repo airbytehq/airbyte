@@ -20,6 +20,9 @@ def get_dagger_sdk_version() -> str:
 
 async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
     """Finalize build by adding dagger engine version label and running finalize_build.sh or finalize_build.py if present in the connector directory."""
+    original_user = (await connector_container.with_exec(["whoami"]).stdout()).strip()
+    # Switch to root to finalize the build with superuser permissions
+    connector_container = connector_container.with_user("root")
     connector_container = connector_container.with_label("io.dagger.engine_version", get_dagger_sdk_version())
     connector_dir_with_finalize_script = await context.get_connector_dir(include=["finalize_build.sh", "finalize_build.py"])
     finalize_scripts = await connector_dir_with_finalize_script.entries()
@@ -60,5 +63,6 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
             .with_entrypoint(["sh"])
             .with_exec(["/tmp/finalize_build.sh"], use_entrypoint=True)
         )
-
+    # Switch back to the original user
+    connector_container = connector_container.with_user(original_user)
     return connector_container.with_entrypoint(original_entrypoint)
