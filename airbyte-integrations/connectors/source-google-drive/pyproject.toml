@@ -16,12 +16,12 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_google_drive"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 google-api-python-client = "==2.104.0"
 google-auth-httplib2 = "==0.1.1"
 google-auth-oauthlib = "==1.1.0"
 google-api-python-client-stubs = "==1.18.0"
-airbyte-cdk = {extras = ["file-based"], version = "^1"}
+airbyte-cdk = {extras = ["file-based"], version = "^6.18.2"}
 
 
 [tool.poetry.scripts]

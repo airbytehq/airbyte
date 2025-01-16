@@ -8,13 +8,14 @@ import json
 import logging
 from datetime import datetime
 from io import IOBase
-from typing import Iterable, List, Optional, Set
+from typing import Iterable, List, Optional, Set, Dict
 
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
 from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
@@ -39,6 +40,8 @@ class GoogleDriveRemoteFile(RemoteFile):
 
 
 class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
+    FILE_SIZE_LIMIT = 1_500_000_000
+
     def __init__(self):
         super().__init__()
         self._drive_service = None
@@ -185,3 +188,60 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         else:
             return "application/pdf"
+
+    def file_size(self, file: GoogleDriveRemoteFile) -> int:
+        """
+        Retrieves the size of a file in Google Drive.
+
+        Args:
+            file (RemoteFile): The file to get the size for.
+
+        Returns:
+            int: The file size in bytes.
+        """
+        try:
+            file_metadata = self.google_drive_service.files().get(fileId=file.id, fields="size").execute()
+            return int(file_metadata.get("size", 0))
+        except Exception as e:
+            # TODO: check why this is failing
+            return 0
+            # raise ValueError(f"Failed to retrieve file size for {file.id}: {e}")
+
+
+    def get_file(self, file: GoogleDriveRemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
+        """
+        Downloads a file from Google Drive to a specified local directory.
+
+        Args:
+            file (RemoteFile): The file to download, containing its Google Drive ID.
+            local_directory (str): The local directory to save the file.
+            logger (logging.Logger): Logger for debugging and information.
+
+        Returns:
+            Dict[str, str | int]: Contains the local file path and file size in bytes.
+        """
+        try:
+            file_size = self.file_size(file)
+            # I'm putting this check here so we can remove the safety wheels per connector when ready.
+            if file_size > self.FILE_SIZE_LIMIT:
+                message = "File size exceeds the 1 GB limit."
+                raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+
+            file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
+
+            # todo: we need to match Native type
+            request = self.google_drive_service.files().get_media(fileId=file.id)
+
+            with open(local_file_path, "wb") as local_file:
+                downloader = MediaIoBaseDownload(local_file, request)
+                done = False
+                while not done:
+                    status, done = downloader.next_chunk(num_retries=3)
+                    logger.info(f"Processing file {file.uri}, progress: {status}%")
+
+            return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
+
+        except Exception as e:
+            logger.error(f"Failed to download file {file.uri}: {e}")
+            raise
+
