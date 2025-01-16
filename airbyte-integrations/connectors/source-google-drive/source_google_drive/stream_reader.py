@@ -6,6 +6,7 @@
 import io
 import json
 import logging
+from collections import defaultdict
 from datetime import datetime
 from io import IOBase
 from typing import Dict, Iterable, List, Optional, Set
@@ -25,11 +26,42 @@ from .spec import SourceGoogleDriveSpec
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
 GOOGLE_DOC_MIME_TYPE = "application/vnd.google-apps.document"
-EXPORTABLE_DOCUMENTS_MIME_TYPES = [
-    GOOGLE_DOC_MIME_TYPE,
-    "application/vnd.google-apps.presentation",
-    "application/vnd.google-apps.drawing",
-]
+GOOGLE_PRESENTATION_MIME_TYPE = "application/vnd.google-apps.presentation"
+GOOGLE_DRAWING_MIME_TYPE = "application/vnd.google-apps.drawing"
+EXPORTABLE_DOCUMENTS_MIME_TYPES = [GOOGLE_DOC_MIME_TYPE, GOOGLE_PRESENTATION_MIME_TYPE, GOOGLE_DRAWING_MIME_TYPE]
+
+EXPORT_MEDIA_MIME_TYPE_DOC = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+EXPORT_MEDIA_MIME_TYPE_SPREADSHEET = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+EXPORT_MEDIA_MIME_TYPE_PRESENTATION = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+EXPORT_MEDIA_MIME_TYPE_PDF = "application/pdf"
+
+# This key is used to relate the required mimeType parameter for export_media() method
+EXPORT_MEDIA_MIME_TYPE_KEY = "exportable_mime_type"
+DOCUMENT_FILE_EXTENSION_KEY = "document_file_extension"
+
+DOWNLOADABLE_DOCUMENTS_MIME_TYPES = defaultdict(
+    lambda: {
+        EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF,
+        DOCUMENT_FILE_EXTENSION_KEY: ".pdf",
+    },  # Default value for unsupported types
+    {
+        GOOGLE_DOC_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_DOC, DOCUMENT_FILE_EXTENSION_KEY: ".docx"},
+        "application/vnd.google-apps.spreadsheet": {
+            EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_SPREADSHEET,
+            DOCUMENT_FILE_EXTENSION_KEY: ".xlsx",
+        },
+        GOOGLE_PRESENTATION_MIME_TYPE: {
+            EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PRESENTATION,
+            DOCUMENT_FILE_EXTENSION_KEY: ".pptx",
+        },
+        GOOGLE_DRAWING_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"},
+    },
+)
+
+
+def get_file_extension(mime_type: str) -> str:
+    extension_map = {}
+    return extension_map.get(mime_type, ".bin")  # Default to `.bin` for unknown types
 
 
 class GoogleDriveRemoteFile(RemoteFile):
@@ -181,10 +213,12 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
     def _get_export_mime_type(self, original_mime_type: str):
         """
         Returns the mime type to export Google App documents as.
-
-        Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
         """
+        if self.use_file_transfer():
+            return DOWNLOADABLE_DOCUMENTS_MIME_TYPES[original_mime_type][EXPORT_MEDIA_MIME_TYPE_KEY]
+
         if original_mime_type.startswith(GOOGLE_DOC_MIME_TYPE):
+            # Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
             return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         else:
             return "application/pdf"
@@ -228,8 +262,14 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
             file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
 
-            # todo: we need to match Native type
-            request = self.google_drive_service.files().get_media(fileId=file.id)
+            if file.original_mime_type.startswith("application/vnd.google-apps."):
+                request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
+                file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES[file.original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
+                local_file_path += file_extension
+                absolute_file_path += file_extension
+                file_relative_path += file_extension
+            else:
+                request = self.google_drive_service.files().get_media(fileId=file.id)
 
             with open(local_file_path, "wb") as local_file:
                 downloader = MediaIoBaseDownload(local_file, request)
