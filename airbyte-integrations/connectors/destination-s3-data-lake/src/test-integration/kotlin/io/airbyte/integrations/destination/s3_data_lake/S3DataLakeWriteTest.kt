@@ -142,12 +142,7 @@ abstract class S3DataLakeWriteTest(
                 OutputRecord(
                     extractedAt = 1234,
                     generationId = 0,
-                    data =
-                        if (isStreamSchemaRetroactive)
-                        // the first sync's record has to_change modified to a string,
-                        // and to_drop is gone completely
-                        mapOf("id" to 42, "same" to "42")
-                        else mapOf("id" to 42, "to_drop" to "val1", "same" to 42),
+                    data = mapOf("id" to 42, "same" to 42),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
