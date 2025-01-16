@@ -127,3 +127,9 @@ See [State and Logging Storage](../deploying-airbyte/integrations/storage.md) fo
 ## Data Retention
 
 1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Defines the retention period of the job history in Temporal. Defaults to 30 days.
+
+## Server
+
+1.  `AUDIT_LOGGING_ENABLED` - For Self-Managed Enterprise only, defines whether audit logging is enabled. Set to `true` or `false`. If `true`, specify `STORAGE_BUCKET_AUDIT_LOGGING`.
+2. `STORAGE_BUCKET_AUDIT_LOGGING` - For Self-Managed Enterprise only, if `AUDIT_LOGGING_ENABLED` is `true`, define your audit logging bucket here. You 
+must configure a blob storage solution (S3, GCS, Azure Blob Storage).

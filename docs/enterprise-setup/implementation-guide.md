@@ -751,6 +751,10 @@ serviceAccount:
   name:
 ```
 
+### Configure audit logging
+
+See [Audit logging](../access-management/audit-logging).
+
 
 ## AWS Policies Appendix
 
