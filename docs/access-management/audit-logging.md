@@ -8,11 +8,11 @@ Audit logging provides you with full visibility into permission changes for role
 
 ## How it works
 
-Create a blob storage solution to store audit logs. Then, use Airbyte's `values.yaml` file to configure that storage solution. Once enabled, audit logs are written to the `/audit-logging/` directory as JSON files. These files have the following naming convention: `<yyyyMMddHHmmss>_<hostname>_<random UUID>`. You can process these logs outside of Airbyte using any tool you like.
+You set up a blob storage solution to store audit logs. Then, you use Airbyte's `values.yaml` file to configure that storage solution in Airbyte. Once enabled, audit logs are written to the `/audit-logging/` directory as JSON files. These files have the following naming convention: `<yyyyMMddHHmmss>_<hostname>_<random UUID>`. You can process these logs outside of Airbyte using any tool you like.
 
 ## Step 1: Configure blob storage
 
-Create a new blob storage bucket with your chosen cloud provider (for example, AWS S3, GCS, or Azure Blob Storage). This must be a separate bucket from that used for log and state storage.
+Choose a new blob storage bucket with your chosen cloud provider (for example, AWS S3, GCS, or Azure Blob Storage). This bucket must be accessible by Airbyte's pods using the same credentials it uses to access your log and state storage. It's easiest to reuse your existing bucket, but you can create a new bucket as long as the [authentication is identical](../enterprise-setup/implementation-guide#configuring-external-logging).
 
 ## Step 2: Configure audit logging in Airbyte
 
