@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper.Companion.DATE_TI
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -21,7 +22,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class AirbyteValueDeepCoercingMapperTest {
-    private val mapper = AirbyteValueDeepCoercingMapper()
+    private val mapper =
+        AirbyteValueDeepCoercingMapper(
+            recurseIntoObjects = false,
+            recurseIntoArrays = false,
+            recurseIntoUnions = false,
+        )
 
     @Test
     fun testBasicCoerce() {
@@ -284,6 +290,128 @@ class AirbyteValueDeepCoercingMapperTest {
                 { assertEquals(emptyList<Meta.Change>(), changes) }
             )
         }
+    }
+
+    @Test
+    fun testCoerceNestedValue() {
+        val (mappedValue, changes) =
+            mapper.map(
+                Jsons.readTree(
+                        """
+                    {
+                        "sub_object": {
+                            "undeclared": 42,
+                            "timestamptz": "invalid"
+                        },
+                        "sub_array": ["invalid"]
+                    }
+                """.trimIndent()
+                    )
+                    .toAirbyteValue(),
+                ObjectType(
+                    linkedMapOf(
+                        "sub_object" to
+                            f(
+                                ObjectType(
+                                    linkedMapOf("timestamptz" to f(TimestampTypeWithTimezone))
+                                )
+                            ),
+                        "sub_array" to f(ArrayType(f(IntegerType)))
+                    )
+                ),
+            )
+        assertAll(
+            {
+                assertEquals(
+                    ObjectValue(
+                        linkedMapOf(
+                            "sub_object" to
+                                ObjectValue(
+                                    linkedMapOf(
+                                        "undeclared" to IntegerValue(42),
+                                        "timestamptz" to StringValue("invalid"),
+                                    )
+                                ),
+                            "sub_array" to ArrayValue(listOf(StringValue("invalid")))
+                        )
+                    ),
+                    mappedValue
+                )
+            },
+            { assertEquals(emptyList<Meta.Change>(), changes) },
+        )
+    }
+
+    /**
+     * Identical to [testCoerceNestedValue], but uses a mapper with
+     * [AirbyteValueDeepCoercingMapper.recurseIntoObjects] and
+     * [AirbyteValueDeepCoercingMapper.recurseIntoArrays] enabled.
+     */
+    @Test
+    fun testCoerceNestedValueRecursing() {
+        val mapper =
+            AirbyteValueDeepCoercingMapper(
+                recurseIntoObjects = true,
+                recurseIntoArrays = true,
+                recurseIntoUnions = true,
+            )
+        val (mappedValue, changes) =
+            mapper.map(
+                Jsons.readTree(
+                        """
+                    {
+                        "sub_object": {
+                            "undeclared": 42,
+                            "timestamptz": "invalid"
+                        },
+                        "sub_array": ["invalid"]
+                    }
+                """.trimIndent()
+                    )
+                    .toAirbyteValue(),
+                ObjectType(
+                    linkedMapOf(
+                        "sub_object" to
+                            f(
+                                ObjectType(
+                                    linkedMapOf("timestamptz" to f(TimestampTypeWithTimezone))
+                                )
+                            ),
+                        "sub_array" to f(ArrayType(f(IntegerType)))
+                    )
+                ),
+            )
+        assertAll(
+            // Note: undeclared field is gone, and we null the invalid timestamp
+            {
+                assertEquals(
+                    ObjectValue(
+                        linkedMapOf(
+                            "sub_object" to ObjectValue(linkedMapOf("timestamptz" to NullValue)),
+                            "sub_array" to ArrayValue(listOf(NullValue))
+                        )
+                    ),
+                    mappedValue
+                )
+            },
+            {
+                assertEquals(
+                    listOf(
+                        Meta.Change(
+                            "sub_object.timestamptz",
+                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                        ),
+                        Meta.Change(
+                            "sub_array.[0]",
+                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                        )
+                    ),
+                    changes
+                )
+            },
+        )
     }
 
     private fun f(type: AirbyteType) = FieldType(type, nullable = true)
