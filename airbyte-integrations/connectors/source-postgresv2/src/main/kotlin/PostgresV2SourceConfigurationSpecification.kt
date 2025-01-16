@@ -35,6 +35,26 @@ import jakarta.inject.Singleton
             "schemas",
         ],
 )
+@JsonSchemaInject(
+    json = """ {"groups":
+    [
+        {
+            "id": "db"
+        },
+        {
+            "id": "auth"
+        },
+        {
+            "id": "security",
+            "title": "Security"
+        },
+        {
+            "id": "advanced",
+            "title": "Advanced"
+        }
+    ]}
+    """
+)
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")

@@ -347,7 +347,23 @@
     },
     "required": ["host", "port", "database", "username", "replication_method"],
     "title": "Postgres Source Spec",
-    "type": "object"
+    "type": "object",
+    "groups": [
+      {
+        "id": "db"
+      },
+      {
+        "id": "auth"
+      },
+      {
+        "id": "security",
+        "title": "Security"
+      },
+      {
+        "id": "advanced",
+        "title": "Advanced"
+      }
+    ]
   },
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres"
 }
