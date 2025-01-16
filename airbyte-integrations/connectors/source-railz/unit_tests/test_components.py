@@ -3,10 +3,9 @@
 #
 
 from freezegun import freeze_time
-from components import ShortLivedTokenAuthenticator
 
 
-def test_get_tokens(requests_mock):
+def test_get_tokens(components_module, requests_mock):
     url = "https://auth.railz.ai/getAccess"
 
     responses = [
@@ -15,7 +14,7 @@ def test_get_tokens(requests_mock):
     ]
     requests_mock.get(url, json=lambda request, context: responses.pop(0))
 
-    authenticator = ShortLivedTokenAuthenticator(
+    authenticator = components_module.ShortLivedTokenAuthenticator(
         client_id="client_id",
         secret_key="secret_key",
         url=url,
