@@ -8,14 +8,16 @@ import json
 import logging
 import zipfile
 from dataclasses import InitVar, dataclass
-from typing import IO, Any, Iterable, List, Mapping, MutableMapping, Union
+from typing import IO, Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 logger = logging.getLogger("airbyte")
@@ -59,30 +61,24 @@ class ActiveUsersRecordExtractor(RecordExtractor):
 
 
 @dataclass
-class EventsExtractor(RecordExtractor):
-    """
-    Response for event stream is a zip file with a list of gziped json files inside it.
-    Issue: https://github.com/airbytehq/airbyte/issues/23144
-    """
+class TransformDatetimesToRFC3339(RecordTransformation):
+    def __init__(self):
+        self.name = "events"
 
-    config: Config
-    parameters: InitVar[Mapping[str, Any]]
+    def _get_schema(self, config: Config):
+        schema_loader = JsonFileSchemaLoader(config=config, parameters={"name": self.name})
+        return schema_loader.get_json_schema()
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self.name = parameters.get("name")
-        self.date_time_fields = self._get_date_time_items_from_schema()
-
-    def _get_schema_root_properties(self):
-        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
-        schema = schema_loader.get_json_schema()
+    def _get_schema_root_properties(self, config: Config):
+        schema = self._get_schema(config=config)
         return schema["properties"]
 
-    def _get_date_time_items_from_schema(self):
+    def _get_date_time_items_from_schema(self, config: Config):
         """
         Get all properties from schema with format: 'date-time'
         """
         result = []
-        schema = self._get_schema_root_properties()
+        schema = self._get_schema_root_properties(config=config)
         for key, value in schema.items():
             if value.get("format") == "date-time":
                 result.append(key)
@@ -97,26 +93,12 @@ class EventsExtractor(RecordExtractor):
                 record[item] = pendulum.parse(record[item]).to_rfc3339_string()
         return record
 
-    def extract_records(
+    def transform(
         self,
-        response: requests.Response,
-    ) -> List[Record]:
-        try:
-            logger.info(f"The size of the response body is: {len(response.content)}")
-            zip_file = zipfile.ZipFile(io.BytesIO(response.content))
-        except zipfile.BadZipFile:
-            logger.exception(
-                f"Received an invalid zip file in response to URL: {response.request.url}."
-                f"The size of the response body is: {len(response.content)}"
-            )
-            return []
-
-        for gzip_filename in zip_file.namelist():
-            with zip_file.open(gzip_filename) as file:
-                for record in self._parse_zip_file(file):
-                    yield self._date_time_to_rfc3339(record)  # transform all `date-time` fields to RFC3339
-
-    def _parse_zip_file(self, zip_file: Union[IO[bytes], str]) -> Iterable[MutableMapping]:
-        with gzip.open(zip_file) as file:
-            for record in file:
-                yield json.loads(record)
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        self.date_time_fields = self._get_date_time_items_from_schema(config)
+        return self._date_time_to_rfc3339(record)

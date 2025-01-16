@@ -343,13 +343,17 @@ definitions:
               - "null"
               - object
   events_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    $parameters:
-      name: events
-      primary_key: uuid
-      path: /2/export
     retriever:
-      $ref: "#/definitions/base_incremental_stream/retriever"
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          condition: "{{ record[parameters['cursor_field']] > stream_slice.get('start', config['start_date']) }}"
       decoder:
         type: ZipfileDecoder
         parser:
@@ -357,7 +361,38 @@ definitions:
           inner_parser:
             type: JsonParser
             encoding: utf-8
-
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y%m%dT%H"
+      cursor_granularity: PT1H
+      step: PT1{{ config.get("request_time_range", 24)}}H
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config["start_date"] }}'
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: start
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: end
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_amplitude.components.TransformDatetimesToRFC3339
+    $parameters:
+      name: "events"
+      primary_key: "uuid"
+      path: "/2/export"
+      cursor_field: "server_upload_time"
   events_list_stream:
     type: DeclarativeStream
     name: events_list
