@@ -6,6 +6,8 @@ package io.airbyte.cdk.command
 
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
+import io.micronaut.context.condition.Condition
+import io.micronaut.context.condition.ConditionContext
 import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.util.EnumSet
@@ -78,5 +80,16 @@ class DeploymentModeFactory(@Value("\${airbyte.core.deployment.mode}") val deplo
             // if deployment mode is unset, or some weird value, assume OSS
             else -> DeploymentMode.OSS
         }
+    }
+}
+class DeploymentModeCloudCondition: Condition {
+    override fun matches(context: ConditionContext<*>): Boolean {
+        val deploymentMode = context.getBean(DeploymentMode::class.java)
+        return deploymentMode == DeploymentMode.CLOUD
+    }
+}
+class DeploymentModeOssCondition: Condition {
+    override fun matches(context: ConditionContext<*>): Boolean {
+        return !DeploymentModeCloudCondition().matches(context)
     }
 }

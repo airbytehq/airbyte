@@ -36,12 +36,11 @@ data object CliRunner {
         config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
-        vararg featureFlags: FeatureFlag,
     ): CliRunnable {
         val out = CliRunnerOutputStream()
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
-                AirbyteSourceRunner(args, featureFlags.systemEnv, out.beanDefinition)
+                AirbyteSourceRunner(args, out.beanDefinition)
             }
         return CliRunnable(runnable, out.results)
     }
@@ -81,7 +80,6 @@ data object CliRunner {
         configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
-        featureFlags: Set<FeatureFlag> = setOf(),
         additionalEnvironments: Array<out String>,
         additionalProperties: Map<String, String>,
         vararg input: AirbyteMessage,
@@ -101,7 +99,6 @@ data object CliRunner {
             catalog,
             state,
             inputStream,
-            *featureFlags.toTypedArray(),
             additionalEnvironments = additionalEnvironments,
             additionalProperties = additionalProperties,
         )
@@ -145,9 +142,6 @@ data object CliRunner {
             }
         }
     }
-
-    private val Array<out FeatureFlag>.systemEnv: Map<String, String>
-        get() = toSet().map { it.envVar.name to it.requiredEnvVarValue }.toMap()
 
     private fun inputFile(contents: Any?): Path? =
         contents?.let { inputFileFromString(Jsons.writeValueAsString(contents)) }

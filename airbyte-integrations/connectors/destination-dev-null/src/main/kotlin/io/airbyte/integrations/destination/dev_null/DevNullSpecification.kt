@@ -15,6 +15,8 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.AIRBYTE_DEPLOYMENT_MODE_PROPERTY
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.DEPLOYMENT_MODE_CLOUD
+import io.airbyte.cdk.command.DeploymentModeCloudCondition
+import io.airbyte.cdk.command.DeploymentModeOssCondition
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.Requires
@@ -47,7 +49,7 @@ sealed class DevNullSpecification : ConfigurationSpecification() {
  */
 @JsonSchemaTitle("E2E Test Destination Spec")
 @Singleton
-@Requires(property = AIRBYTE_DEPLOYMENT_MODE_PROPERTY, notEquals = DEPLOYMENT_MODE_CLOUD)
+@Requires(condition = DeploymentModeOssCondition::class)
 class DevNullSpecificationOss : DevNullSpecification() {
     @JsonProperty("test_destination")
     @JsonSchemaTitle("Test Destination")
@@ -203,7 +205,7 @@ data class FailingDestination(
 /** The cloud variant is more restricted: it only allows for a single destination type. */
 @JsonSchemaTitle("E2E Test Destination Spec")
 @Singleton
-@Requires(property = AIRBYTE_DEPLOYMENT_MODE_PROPERTY, value = DEPLOYMENT_MODE_CLOUD)
+@Requires(condition = DeploymentModeCloudCondition::class)
 class DevNullSpecificationCloud : DevNullSpecification() {
     @JsonProperty("test_destination")
     @JsonSchemaTitle("Test Destination")

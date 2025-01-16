@@ -2,7 +2,6 @@
 package io.airbyte.cdk
 
 import io.airbyte.cdk.command.ConnectorCommandLinePropertySource
-import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.MetadataYamlPropertySource
 import io.micronaut.configuration.picocli.MicronautFactory
 import io.micronaut.context.ApplicationContext
