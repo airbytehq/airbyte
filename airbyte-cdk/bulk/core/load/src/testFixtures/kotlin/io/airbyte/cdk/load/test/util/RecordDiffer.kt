@@ -5,17 +5,12 @@
 package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.TimeValue
-import io.airbyte.cdk.load.data.TimestampValue
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.time.OffsetTime
+import io.airbyte.cdk.load.data.UnknownValue
+import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import kotlin.reflect.jvm.jvmName
 
 class RecordDiffer(
@@ -30,7 +25,24 @@ class RecordDiffer(
     val primaryKey: List<List<String>> = emptyList(),
     /** The path to the cursor from a record, or null if the stream has no cursor. */
     val cursor: List<String>? = null,
+    /**
+     * Many destinations (e.g. SQL destinations with a JSON column type) can distinguish between a
+     * value being explicitly null, vs being unset. E.g. postgres `"null" :: jsonb` vs `null ::
+     * jsonb`, or plain JSONL files `{"foo": null}` vs `{}`.
+     *
+     * Set this parameter to true for destinations which do not support this distinction (e.g. Avro
+     * files).
+     */
+    val nullEqualsUnset: Boolean = false,
+    /**
+     * Most tests should require the destination to contain an exact list of records. However, some
+     * tests expect a record to be present, but may also expect other unspecified records to exist.
+     * Those tests should set this parameter to true.
+     */
+    val allowUnexpectedRecord: Boolean = false,
 ) {
+    private val valueComparator = getValueComparator(nullEqualsUnset)
+
     private fun extract(data: Map<String, AirbyteValue>, path: List<String>): AirbyteValue {
         return when (path.size) {
             0 -> throw IllegalArgumentException("Empty path")
@@ -70,7 +82,7 @@ class RecordDiffer(
             )
         }
 
-        comparePks(pk1, pk2)
+        comparePks(pk1, pk2, nullEqualsUnset)
     }
 
     /**
@@ -109,8 +121,8 @@ class RecordDiffer(
             expectedRecordIndex < expectedRecordsSorted.size &&
                 actualRecordIndex < actualRecordsSorted.size
         ) {
-            val expectedRecord = expectedRecords[expectedRecordIndex]
-            val actualRecord = actualRecords[actualRecordIndex]
+            val expectedRecord = expectedRecordsSorted[expectedRecordIndex]
+            val actualRecord = actualRecordsSorted[actualRecordIndex]
             val compare = everythingComparator.compare(expectedRecord, actualRecord)
             if (compare == 0) {
                 // These records are the same underlying record
@@ -122,8 +134,10 @@ class RecordDiffer(
                 matches.add(MatchingRecords(expectedRecord, actualRecord = null))
                 expectedRecordIndex++
             } else {
-                // There's an extra actual record
-                matches.add(MatchingRecords(expectedRecord = null, actualRecord))
+                if (!allowUnexpectedRecord) {
+                    // There's an extra actual record
+                    matches.add(MatchingRecords(expectedRecord = null, actualRecord))
+                }
                 actualRecordIndex++
             }
         }
@@ -133,9 +147,13 @@ class RecordDiffer(
             matches.add(MatchingRecords(expectedRecords[expectedRecordIndex], actualRecord = null))
             expectedRecordIndex++
         }
-        while (actualRecordIndex < actualRecords.size) {
-            matches.add(MatchingRecords(expectedRecord = null, actualRecords[actualRecordIndex]))
-            actualRecordIndex++
+        if (!allowUnexpectedRecord) {
+            while (actualRecordIndex < actualRecords.size) {
+                matches.add(
+                    MatchingRecords(expectedRecord = null, actualRecords[actualRecordIndex])
+                )
+                actualRecordIndex++
+            }
         }
 
         // We've paired up all the records, now find just the ones that are wrong.
@@ -220,17 +238,22 @@ class RecordDiffer(
                 val expectedPresent: Boolean = expectedRecord.data.values.containsKey(key)
                 val actualPresent: Boolean = actualRecord.data.values.containsKey(key)
                 if (expectedPresent && !actualPresent) {
-                    // The expected record contained this key, but the actual record was missing
-                    // this key.
-                    diff.append(
-                        "$key: Expected ${expectedRecord.data.values[key]}, but was <unset>\n"
-                    )
+                    if (!nullEqualsUnset || expectedRecord.data.values[key] !is NullValue) {
+                        // The expected record contained this key, but the actual record was missing
+                        // this key.
+                        diff.append(
+                            "$key: Expected ${expectedRecord.data.values[key]}, but was <unset>\n"
+                        )
+                    }
                 } else if (!expectedPresent && actualPresent) {
-                    // The expected record didn't contain this key, but the actual record contained
-                    // this key.
-                    diff.append(
-                        "$key: Expected <unset>, but was ${actualRecord.data.values[key]}\n"
-                    )
+                    if (!nullEqualsUnset || actualRecord.data.values[key] !is NullValue) {
+                        // The expected record didn't contain this key, but the actual record
+                        // contained
+                        // this key.
+                        diff.append(
+                            "$key: Expected <unset>, but was ${actualRecord.data.values[key]}\n"
+                        )
+                    }
                 } else if (expectedPresent && actualPresent) {
                     // The expected and actual records both contain this key.
                     // Compare the values for equality.
@@ -248,63 +271,78 @@ class RecordDiffer(
     }
 
     companion object {
-        val valueComparator: Comparator<AirbyteValue> =
-            Comparator.nullsFirst { v1, v2 -> compare(v1!!, v2!!) }
+        fun getValueComparator(nullEqualsUnset: Boolean): Comparator<AirbyteValue> =
+            Comparator.nullsFirst { v1, v2 -> compare(v1!!, v2!!, nullEqualsUnset) }
 
         /**
          * Compare each PK field in order, until we find a field that the two records differ in. If
          * all the fields are equal, then these two records have the same PK.
          */
-        fun comparePks(pk1: List<AirbyteValue?>, pk2: List<AirbyteValue?>) =
-            (pk1.zip(pk2)
-                .map { (pk1Field, pk2Field) -> valueComparator.compare(pk1Field, pk2Field) }
+        fun comparePks(
+            pk1: List<AirbyteValue?>,
+            pk2: List<AirbyteValue?>,
+            nullEqualsUnset: Boolean,
+        ): Int {
+            return (pk1.zip(pk2)
+                .map { (pk1Field, pk2Field) ->
+                    getValueComparator(nullEqualsUnset).compare(pk1Field, pk2Field)
+                }
                 .firstOrNull { it != 0 }
                 ?: 0)
+        }
 
-        private fun compare(v1: AirbyteValue, v2: AirbyteValue): Int {
+        private fun compare(v1: AirbyteValue, v2: AirbyteValue, nullEqualsUnset: Boolean): Int {
+            if (v1 is UnknownValue) {
+                return compare(
+                    JsonToAirbyteValue().convert(v1.value),
+                    v2,
+                    nullEqualsUnset,
+                )
+            }
+            if (v2 is UnknownValue) {
+                return compare(
+                    v1,
+                    JsonToAirbyteValue().convert(v2.value),
+                    nullEqualsUnset,
+                )
+            }
+
             // when comparing values of different types, just sort by their class name.
             // in theory, we could check for numeric types and handle them smartly...
             // that's a lot of work though
             return if (v1::class != v2::class) {
                 v1::class.jvmName.compareTo(v2::class.jvmName)
             } else {
-                // Handle temporal types specifically, because they require explicit parsing
                 return when (v1) {
-                    is DateValue ->
-                        try {
-                            LocalDate.parse(v1.value)
-                                .compareTo(LocalDate.parse((v2 as DateValue).value))
-                        } catch (e: Exception) {
-                            v1.value.compareTo((v2 as DateValue).value)
+                    is ObjectValue -> {
+                        fun objComp(a: ObjectValue, b: ObjectValue): Int {
+                            // objects aren't really comparable, so just do an equality check
+                            return if (a == b) 0 else 1
                         }
-                    is TimeValue -> {
-                        try {
-                            val time1 = LocalTime.parse(v1.value)
-                            val time2 = LocalTime.parse((v2 as TimeValue).value)
-                            time1.compareTo(time2)
-                        } catch (e: Exception) {
-                            try {
-                                val time1 = OffsetTime.parse(v1.value)
-                                val time2 = OffsetTime.parse((v2 as TimeValue).value)
-                                time1.compareTo(time2)
-                            } catch (e: Exception) {
-                                v1.value.compareTo((v2 as TimeValue).value)
-                            }
-                        }
-                    }
-                    is TimestampValue -> {
-                        try {
-                            val ts1 = LocalDateTime.parse(v1.value)
-                            val ts2 = LocalDateTime.parse((v2 as TimestampValue).value)
-                            ts1.compareTo(ts2)
-                        } catch (e: Exception) {
-                            try {
-                                val ts1 = OffsetDateTime.parse(v1.value)
-                                val ts2 = OffsetDateTime.parse((v2 as TimestampValue).value)
-                                ts1.compareTo(ts2)
-                            } catch (e: Exception) {
-                                v1.value.compareTo((v2 as TimestampValue).value)
-                            }
+                        if (nullEqualsUnset) {
+                            // Walk through the airbyte value, removing any NullValue entries
+                            // from ObjectValues.
+                            fun removeObjectNullValues(value: AirbyteValue): AirbyteValue =
+                                when (value) {
+                                    is ObjectValue ->
+                                        ObjectValue(
+                                            value.values
+                                                .filterTo(linkedMapOf()) { (_, v) ->
+                                                    v !is NullValue
+                                                }
+                                                .mapValuesTo(linkedMapOf()) { (_, v) ->
+                                                    removeObjectNullValues(v)
+                                                }
+                                        )
+                                    is ArrayValue ->
+                                        ArrayValue(value.values.map { removeObjectNullValues(it) })
+                                    else -> value
+                                }
+                            val filteredV1 = removeObjectNullValues(v1) as ObjectValue
+                            val filteredV2 = removeObjectNullValues(v2) as ObjectValue
+                            objComp(filteredV1, filteredV2)
+                        } else {
+                            objComp(v1, v2 as ObjectValue)
                         }
                     }
                     // otherwise, just be a terrible person.

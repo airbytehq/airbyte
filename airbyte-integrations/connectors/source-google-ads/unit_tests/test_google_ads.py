@@ -8,13 +8,15 @@ from datetime import date
 
 import pendulum
 import pytest
-from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow
 from google.auth import exceptions
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import chunk_date_range
 
+from airbyte_cdk.utils import AirbyteTracedException
+
 from .common import MockGoogleAdsClient, MockGoogleAdsService
+
 
 SAMPLE_SCHEMA = {
     "properties": {
@@ -148,11 +150,12 @@ def test_get_field_value():
     response = GoogleAds.get_field_value(MockedDateSegment(date), field, {})
     assert response == date
 
+
 def test_get_field_value_object():
     expected_response = [
-            { "text": "An exciting headline", "policySummaryInfo": { "reviewStatus": "REVIEWED","approvalStatus":"APPROVED" } },
-            { "text": "second" },
-        ]
+        {"text": "An exciting headline", "policySummaryInfo": {"reviewStatus": "REVIEWED", "approvalStatus": "APPROVED"}},
+        {"text": "second"},
+    ]
     field = "ad_group_ad.ad.responsive_search_ad.headlines"
     ads_row = GoogleAdsRow(
         ad_group_ad={
@@ -161,14 +164,9 @@ def test_get_field_value_object():
                     "headlines": [
                         {
                             "text": "An exciting headline",
-                            "policy_summary_info": {
-                                "review_status": "REVIEWED",
-                                "approval_status": "APPROVED"
-                            }
+                            "policy_summary_info": {"review_status": "REVIEWED", "approval_status": "APPROVED"},
                         },
-                        {
-                            "text": "second"
-                        }
+                        {"text": "second"},
                     ]
                 }
             }
@@ -176,13 +174,14 @@ def test_get_field_value_object():
     )
 
     response = GoogleAds.get_field_value(ads_row, field, {})
-    assert [json.loads(i) for i in response]  == expected_response
+    assert [json.loads(i) for i in response] == expected_response
+
 
 def test_get_field_value_strings():
     expected_response = [
-            "http://url_one.com",
-            "https://url_two.com",
-        ]
+        "http://url_one.com",
+        "https://url_two.com",
+    ]
     ads_row = GoogleAdsRow(
         ad_group_ad={
             "ad": {
@@ -196,6 +195,7 @@ def test_get_field_value_strings():
     field = "ad_group_ad.ad.final_urls"
     response = GoogleAds.get_field_value(ads_row, field, {})
     assert response == expected_response
+
 
 def test_parse_single_result():
     date = "2001-01-01"

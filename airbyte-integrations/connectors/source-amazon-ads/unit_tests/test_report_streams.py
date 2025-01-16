@@ -13,25 +13,19 @@ import pendulum
 import pytest
 import requests_mock
 import responses
-from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from pendulum import Date
 from pytest import raises
 from requests.exceptions import ConnectionError
-from source_amazon_ads.source import CONFIG_DATE_FORMAT
-from source_amazon_ads.streams import (
-    SponsoredBrandsCampaigns,
-    SponsoredBrandsV3ReportStream,
-    SponsoredDisplayCampaigns,
-    SponsoredDisplayReportStream,
-    SponsoredProductCampaigns,
-    SponsoredProductsReportStream,
-)
+from source_amazon_ads.streams import SponsoredBrandsV3ReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream
 from source_amazon_ads.streams.report_streams.report_stream_models import RecordType
 from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests
 
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import SyncMode
+
 from .utils import read_incremental
+
 
 """
 METRIC_RESPONSE is gzip compressed binary representing this string:
@@ -426,7 +420,7 @@ def test_display_report_stream_slices_full_refresh(config):
 def test_display_report_stream_slices_incremental(config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_state = {str(profiles[0]['profileId']): {"reportDate": "2021-07-25"}}
+    stream_state = {str(profiles[0]["profileId"]): {"reportDate": "2021-07-25"}}
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [
         {"profile": profiles[0], "reportDate": "2021-07-25"},
@@ -436,7 +430,7 @@ def test_display_report_stream_slices_incremental(config):
         {"profile": profiles[0], "reportDate": "2021-07-29"},
     ]
 
-    stream_state = {str(profiles[0]['profileId']): {"reportDate": "2021-07-30"}}
+    stream_state = {str(profiles[0]["profileId"]): {"reportDate": "2021-07-30"}}
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [None]
 
@@ -451,14 +445,14 @@ def test_display_report_stream_slices_incremental(config):
 def test_get_start_date(config):
     profiles = make_profiles()
 
-    config["start_date"] = pendulum.from_format("2021-07-10", CONFIG_DATE_FORMAT).date()
+    config["start_date"] = "2021-07-10"
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {}) == Date(2021, 7, 10)
-    config["start_date"] = pendulum.from_format("2021-05-10", CONFIG_DATE_FORMAT).date()
+    config["start_date"] = "2021-05-10"
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {}) == Date(2021, 6, 1)
 
-    profile_id = str(profiles[0]['profileId'])
+    profile_id = str(profiles[0]["profileId"])
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "2021-08-10"}}) == Date(2021, 8, 10)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
@@ -480,7 +474,7 @@ def test_stream_slices_different_timezones(config):
 
 def test_stream_slices_lazy_evaluation(config):
     with freeze_time("2022-06-01T23:50:00+00:00") as frozen_datetime:
-        config["start_date"] = pendulum.from_format("2021-05-10", CONFIG_DATE_FORMAT).date()
+        config["start_date"] = "2021-05-10"
         profile1 = dict(profileId=1, timezone="UTC", accountInfo=dict(marketplaceStringId="", id="", type="seller"))
         profile2 = dict(profileId=2, timezone="UTC", accountInfo=dict(marketplaceStringId="", id="", type="seller"))
 
@@ -602,7 +596,7 @@ def test_read_incremental_without_records_start_date(config):
     )
 
     profiles = make_profiles()
-    config["start_date"] = pendulum.from_format("2020-12-25", CONFIG_DATE_FORMAT).date()
+    config["start_date"] = "2020-12-25"
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
@@ -624,7 +618,7 @@ def test_read_incremental_with_records_start_date(config):
     )
 
     profiles = make_profiles()
-    config["start_date"] = pendulum.from_format("2020-12-25", CONFIG_DATE_FORMAT).date()
+    config["start_date"] = "2020-12-25"
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
@@ -663,75 +657,6 @@ def test_read_incremental_with_records_start_date(config):
         records = list(read_incremental(stream, state))
         assert state == {"1": {"reportDate": "2021-01-04"}}
         assert {r["reportDate"] for r in records} == {"2021-01-03", "2021-01-04", "2021-01-05", "2021-01-06"}
-
-
-@pytest.mark.parametrize(
-    "state_filter, stream_class",
-    [
-        (
-            ["enabled", "archived", "paused"],
-            SponsoredDisplayCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredDisplayCampaigns,
-        ),
-        (
-            None,
-            SponsoredDisplayCampaigns,
-        ),
-    ],
-)
-def test_streams_state_filter(mocker, config, state_filter, stream_class):
-    profiles = make_profiles()
-    mocker.patch.object(stream_class, "state_filter", new_callable=mocker.PropertyMock, return_value=state_filter)
-
-    stream = stream_class(config, profiles)
-    params = stream.request_params(stream_state=None, stream_slice=None, next_page_token=None)
-    if "stateFilter" in params:
-        assert params["stateFilter"] == ",".join(state_filter)
-    else:
-        assert state_filter is None
-
-@pytest.mark.parametrize(
-    "state_filter, stream_class",
-    [
-        (
-            ["enabled", "archived", "paused"],
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            None,
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            ["enabled", "archived", "paused"],
-            SponsoredProductCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredProductCampaigns,
-        ),
-        (
-            None,
-            SponsoredProductCampaigns,
-        ),
-    ],
-)
-def test_sponsored_brand_and_products_streams_state_filter(mocker, config, state_filter, stream_class):
-    profiles = make_profiles()
-    mocker.patch.object(stream_class, "state_filter", new_callable=mocker.PropertyMock, return_value=state_filter)
-
-    stream = stream_class(config, profiles)
-    request_body = stream.request_body_json(stream_state=None, stream_slice=None, next_page_token=None)
-    if "stateFilter" in request_body:
-        assert request_body["stateFilter"]["include"] == state_filter
-    else:
-        assert state_filter is None
 
 
 @responses.activate
@@ -812,7 +737,7 @@ def test_get_record_id_by_report_type(config, metric_object, record_type):
 
 def test_sponsored_products_report_stream_send_http_request_on_download_not_use_headers(config):
     profiles = make_profiles(profile_type="vendor")
-    stream = SponsoredProductsReportStream(config,profiles, authenticator=mock.MagicMock())
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     download_url = "https://download/url"
 
     with requests_mock.Mocker() as m:
@@ -821,4 +746,3 @@ def test_sponsored_products_report_stream_send_http_request_on_download_not_use_
 
     assert request_mock.called is True
     assert "Authorization" not in request_mock.request_history[0].matcher.last_request._request.headers.keys()
-

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-systeme
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
   connectorSubtype: api
   connectorType: source
   definitionId: 2e731a08-e503-4caf-998a-92bd4afd80c1
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.7
   dockerRepository: airbyte/source-systeme
   githubIssueLabel: source-systeme
   icon: icon.svg

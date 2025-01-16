@@ -3,6 +3,7 @@
 #
 
 
+import math
 import urllib.parse
 from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Optional
@@ -13,14 +14,19 @@ import freezegun
 import pendulum
 import pytest
 import requests
-from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
 from dateutil.relativedelta import relativedelta
+from integration.config import KlaviyoConfigBuilder
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.source import SourceKlaviyo
 from source_klaviyo.streams import Campaigns, CampaignsDetailed, IncrementalKlaviyoStream, KlaviyoStream
+
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
+
 
 _ANY_ATTEMPT_COUNT = 123
 API_KEY = "some_key"
@@ -32,17 +38,18 @@ EVENTS_STREAM_CONFIG_START_DATE = "2021-11-08T00:00:00+00:00"
 EVENTS_STREAM_STATE_DATE = (datetime.fromisoformat(EVENTS_STREAM_CONFIG_START_DATE) + relativedelta(years=1)).isoformat()
 EVENTS_STREAM_TESTING_FREEZE_TIME = "2023-12-12 12:00:00"
 
-def get_months_diff(provided_date: str) -> int:
+
+def get_step_diff(provided_date: str) -> int:
     """
-    This function returns the difference in months between provided date and freeze time.
+    This function returns the difference in weeks between provided date and freeze time.
     """
     provided_date = datetime.fromisoformat(provided_date).replace(tzinfo=None)
     freeze_date = datetime.strptime(EVENTS_STREAM_TESTING_FREEZE_TIME, "%Y-%m-%d %H:%M:%S")
-    difference = relativedelta(freeze_date, provided_date)
-    return difference.years * 12 + difference.months
+    return (freeze_date - provided_date).days // 7
+
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
-    source = SourceKlaviyo()
+    source = SourceKlaviyo(CatalogBuilder().build(), KlaviyoConfigBuilder().build(), StateBuilder().build())
     matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
     if not matches_by_name:
         raise ValueError("Please provide a valid stream name.")
@@ -81,9 +88,7 @@ class SomeIncrementalStream(IncrementalKlaviyoStream):
 class TestKlaviyoStream:
     def test_request_headers(self):
         stream = SomeStream(api_key=API_KEY)
-        expected_headers = {
-            "Accept": "application/json", "Revision": stream.api_revision, "Authorization": f"Klaviyo-API-Key {API_KEY}"
-        }
+        expected_headers = {"Accept": "application/json", "Revision": stream.api_revision, "Authorization": f"Klaviyo-API-Key {API_KEY}"}
         assert stream.request_headers() == expected_headers
 
     @pytest.mark.parametrize(
@@ -145,9 +150,7 @@ class TestKlaviyoStream:
             "This is most likely due to insufficient permissions on the credentials in use. "
             "Try to create and use an API key with read permission for the 'some_stream' stream granted"
         )
-        reasons_for_unavailable_status_codes = stream.availability_strategy.reasons_for_unavailable_status_codes(
-            stream, None, None, None
-        )
+        reasons_for_unavailable_status_codes = stream.availability_strategy.reasons_for_unavailable_status_codes(stream, None, None, None)
         assert expected_status_code in reasons_for_unavailable_status_codes
         assert reasons_for_unavailable_status_codes[expected_status_code] == expected_message
 
@@ -170,14 +173,11 @@ class TestKlaviyoStream:
         response_mock.headers = {"Retry-After": retry_after}
         with pytest.raises(AirbyteTracedException) as e:
             stream.get_backoff_strategy().backoff_time(response_mock, _ANY_ATTEMPT_COUNT)
-        error_message = (
-            "Rate limit wait time 605.0 is greater than max waiting time of 600 seconds. Stopping the stream..."
-        )
+        error_message = "Rate limit wait time 605.0 is greater than max waiting time of 600 seconds. Stopping the stream..."
         assert str(e.value) == error_message
 
 
 class TestIncrementalKlaviyoStream:
-
     @staticmethod
     def generate_api_urls(start_date_str: str) -> list[(str, str)]:
         """
@@ -187,24 +187,25 @@ class TestIncrementalKlaviyoStream:
         start_date = datetime.fromisoformat(start_date_str)
         current_date = datetime.now(start_date.tzinfo)
         urls = []
+        step = relativedelta(days=7)
         while start_date < current_date:
-            end_date = start_date + relativedelta(months=1) - timedelta(seconds=1)
+            end_date = start_date + step - timedelta(seconds=1)
             if end_date > current_date:
                 end_date = current_date
             start_date_str = start_date.strftime("%Y-%m-%dT%H:%M:%S") + start_date.strftime("%z")
             end_date_str = end_date.strftime("%Y-%m-%dT%H:%M:%S") + end_date.strftime("%z")
-            base_url = 'https://a.klaviyo.com/api/events'
+            base_url = "https://a.klaviyo.com/api/events"
             query_params = {
-                'fields[metric]': 'name,created,updated,integration',
-                'include': 'metric',
-                'filter': f'greater-or-equal(datetime,{start_date_str}),less-or-equal(datetime,{end_date_str})',
-                'sort': 'datetime'
+                "fields[metric]": "name,created,updated,integration",
+                "include": "metric",
+                "filter": f"greater-or-equal(datetime,{start_date_str}),less-or-equal(datetime,{end_date_str})",
+                "sort": "datetime",
             }
             encoded_query = urllib.parse.urlencode(query_params)
             encoded_url = f"{base_url}?{encoded_query}"
             dummy_record = {"attributes": {"datetime": start_date_str}, "datetime": start_date_str}
             urls.append((encoded_url, dummy_record))
-            start_date = start_date + relativedelta(months=1)
+            start_date = start_date + step
         return urls
 
     def test_cursor_field_is_required(self):
@@ -285,7 +286,6 @@ class TestIncrementalKlaviyoStream:
             latest_record={stream.cursor_field: latest_cursor},
         ) == {stream.cursor_field: expected_cursor}
 
-
     @freezegun.freeze_time("2023-12-12 12:00:00")
     @pytest.mark.parametrize(
         # expected_amount_of_results: we put 1 record for every request
@@ -295,18 +295,18 @@ class TestIncrementalKlaviyoStream:
                 # we pick the state
                 EVENTS_STREAM_CONFIG_START_DATE,
                 EVENTS_STREAM_STATE_DATE,
-                get_months_diff(EVENTS_STREAM_STATE_DATE) + 1 # adding last request
+                get_step_diff(EVENTS_STREAM_STATE_DATE) + 1,  # adding last request
             ),
             (
-                    # we pick the config start date
-                    EVENTS_STREAM_CONFIG_START_DATE,
-                    None,
-                    get_months_diff(EVENTS_STREAM_CONFIG_START_DATE) + 1  # adding last request
+                # we pick the config start date
+                EVENTS_STREAM_CONFIG_START_DATE,
+                None,
+                get_step_diff(EVENTS_STREAM_CONFIG_START_DATE) + 1,  # adding last request
             ),
             (
-                    "",
-                    "",
-                    get_months_diff(EVENTS_STREAM_DEFAULT_START_DATE) + 1 # adding last request
+                "",
+                "",
+                get_step_diff(EVENTS_STREAM_DEFAULT_START_DATE) + 1,  # adding last request
             ),
         ),
     )
@@ -366,16 +366,13 @@ class TestSemiIncrementalKlaviyoStream:
     )
     def test_read_records(self, start_date, stream_state, input_records, expected_records, requests_mock):
         stream = get_stream_by_name("metrics", CONFIG | {"start_date": start_date})
-        requests_mock.register_uri(
-            "GET", f"https://a.klaviyo.com/api/metrics", status_code=200, json={"data": input_records}
-        )
+        requests_mock.register_uri("GET", f"https://a.klaviyo.com/api/metrics", status_code=200, json={"data": input_records})
         stream.stream_state = {stream.cursor_field: stream_state if stream_state else start_date}
         records = get_records(stream=stream, sync_mode=SyncMode.incremental)
         assert records == expected_records
 
 
 class TestProfilesStream:
-
     def test_read_records(self, requests_mock):
         stream = get_stream_by_name("profiles", CONFIG)
         json = {
@@ -613,9 +610,9 @@ class TestCampaignsStream:
     )
     def test_request_params(self, stream_state, stream_slice, next_page_token, expected_params):
         stream = Campaigns(api_key=API_KEY)
-        assert stream.request_params(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-        ) == expected_params
+        assert (
+            stream.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token) == expected_params
+        )
 
 
 class TestCampaignsDetailedStream:
@@ -643,7 +640,9 @@ class TestCampaignsDetailedStream:
         mocked_response.ok = False
         mocked_response.status_code = 404
         mocked_response.json.return_value = {}
-        with patch.object(stream._http_client, "send_request", return_value=(mock.MagicMock(spec=requests.PreparedRequest), mocked_response)):
+        with patch.object(
+            stream._http_client, "send_request", return_value=(mock.MagicMock(spec=requests.PreparedRequest), mocked_response)
+        ):
             stream._set_recipient_count(record)
         assert record["estimated_recipient_count"] == 0
 

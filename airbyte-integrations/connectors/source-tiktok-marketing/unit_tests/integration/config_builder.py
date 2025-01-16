@@ -7,14 +7,9 @@ from typing import Any, Dict
 class ConfigBuilder:
     def __init__(self) -> None:
         self._config: Dict[str, Any] = {
-            "credentials": {
-                "auth_type": "oauth2.0",
-                "access_token": "access token",
-                "app_id": "11111111111111111111",
-                "secret": "secret"
-            },
+            "credentials": {"auth_type": "oauth2.0", "access_token": "access token", "app_id": "11111111111111111111", "secret": "secret"},
             "start_date": "2024-01-01",
-            "include_deleted": False
+            "include_deleted": False,
         }
 
     def with_include_deleted(self) -> "ConfigBuilder":

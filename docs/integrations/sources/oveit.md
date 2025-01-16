@@ -22,6 +22,12 @@ An Airbyte connector for Oveit enables seamless data synchronization by extracti
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-01-11 | [51309](https://github.com/airbytehq/airbyte/pull/51309) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50715](https://github.com/airbytehq/airbyte/pull/50715) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50275](https://github.com/airbytehq/airbyte/pull/50275) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49695](https://github.com/airbytehq/airbyte/pull/49695) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [49328](https://github.com/airbytehq/airbyte/pull/49328) | Update dependencies |
+| 0.0.2 | 2024-12-11 | [49057](https://github.com/airbytehq/airbyte/pull/49057) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-10-24 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

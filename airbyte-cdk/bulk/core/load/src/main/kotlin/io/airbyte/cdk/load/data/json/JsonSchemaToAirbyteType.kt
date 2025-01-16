@@ -8,8 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.data.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class JsonSchemaToAirbyteType {
+    private val log = KotlinLogging.logger {}
+
     fun convert(schema: JsonNode): AirbyteType = convertInner(schema)!!
 
     private fun convertInner(schema: JsonNode): AirbyteType? {
@@ -22,23 +25,36 @@ class JsonSchemaToAirbyteType {
                 when (schema.get("type").asText()) {
                     "string" -> fromString(schema)
                     "boolean" -> BooleanType
+                    "int",
                     "integer" -> IntegerType
                     "number" -> fromNumber(schema)
                     "array" -> fromArray(schema)
                     "object" -> fromObject(schema)
                     "null" -> null
-                    else ->
-                        throw IllegalArgumentException(
-                            "Unknown type: ${
-                                schema.get("type").asText()
-                            }"
-                        )
+                    else -> UnknownType(schema)
                 }
             } else if (schemaType.isArray) {
                 // {"type": [...], ...}
                 unionFromCombinedTypes(schemaType.toList(), schema)
             } else {
                 UnknownType(schema)
+            }
+        } else if (schema.isObject && schema.has("\$ref")) {
+            // TODO: Determine whether we even still need to support this
+            return when (schema.get("\$ref").asText()) {
+                "WellKnownTypes.json#/definitions/Integer" -> IntegerType
+                "WellKnownTypes.json#/definitions/Number" -> NumberType
+                "WellKnownTypes.json#/definitions/String" -> StringType
+                "WellKnownTypes.json#/definitions/Boolean" -> BooleanType
+                "WellKnownTypes.json#/definitions/Date" -> DateType
+                "WellKnownTypes.json#/definitions/TimestampWithTimezone" ->
+                    TimestampTypeWithTimezone
+                "WellKnownTypes.json#/definitions/TimestampWithoutTimezone" ->
+                    TimestampTypeWithoutTimezone
+                "WellKnownTypes.json#/definitions/BinaryData" -> StringType
+                "WellKnownTypes.json#/definitions/TimeWithTimezone" -> TimeTypeWithTimezone
+                "WellKnownTypes.json#/definitions/TimeWithoutTimezone" -> TimeTypeWithoutTimezone
+                else -> UnknownType(schema)
             }
         } else if (schema.isObject) {
             // {"oneOf": [...], ...} or {"anyOf": [...], ...} or {"allOf": [...], ...}
@@ -74,12 +90,10 @@ class JsonSchemaToAirbyteType {
                     TimestampTypeWithTimezone
                 }
             null -> StringType
-            else ->
-                throw IllegalArgumentException(
-                    "Unknown string format: ${
-                        schema.get("format").asText()
-                    }"
-                )
+            else -> {
+                log.warn { "Ignoring unrecognized string format: ${schema.get("format").asText()}" }
+                StringType
+            }
         }
 
     private fun fromNumber(schema: ObjectNode): AirbyteType =
@@ -138,6 +152,9 @@ class JsonSchemaToAirbyteType {
                     convertInner(it)
                 }
             }
+        if (unionOptions.isEmpty()) {
+            return UnknownType(parentSchema)
+        }
         return UnionType.of(unionOptions)
     }
 }

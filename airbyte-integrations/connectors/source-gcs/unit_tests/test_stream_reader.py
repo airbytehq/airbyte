@@ -4,19 +4,17 @@ import datetime
 from unittest.mock import Mock
 
 import pytest
+from source_gcs import Config, SourceGCSStreamReader
+from source_gcs.config import ServiceAccountCredentials
+
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from source_gcs import Config, SourceGCSStreamReader
-from source_gcs.config import ServiceAccountCredentials
 
 
 def test_get_matching_files_with_no_prefix(logger, mocked_reader):
     mocked_reader._config = Config(
-        credentials=ServiceAccountCredentials(
-            service_account='{"type": "service_account"}',
-            auth_type="Service"
-        ),
+        credentials=ServiceAccountCredentials(service_account='{"type": "service_account"}', auth_type="Service"),
         bucket="test_bucket",
         streams=[],
     )

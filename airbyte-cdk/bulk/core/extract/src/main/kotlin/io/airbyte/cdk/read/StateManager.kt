@@ -17,6 +17,9 @@ interface StateQuerier {
 
     /** Returns the current state value for the given [feed]. */
     fun current(feed: Feed): OpaqueStateValue?
+
+    /** Rolls back each feed state. This is required when resyncing CDC from scratch */
+    fun resetFeedStates()
 }
 
 /** Singleton object which tracks the state of an ongoing READ operation. */
@@ -56,6 +59,10 @@ class StateManager(
 
     override fun current(feed: Feed): OpaqueStateValue? = scoped(feed).current()
 
+    override fun resetFeedStates() {
+        feeds.forEach { f -> scoped(f).set(Jsons.objectNode(), 0) }
+    }
+
     /** Returns a [StateManagerScopedToFeed] instance scoped to this [feed]. */
     fun scoped(feed: Feed): StateManagerScopedToFeed =
         when (feed) {
@@ -86,15 +93,19 @@ class StateManager(
      * Updates the internal state of the [StateManager] to ensure idempotency (no redundant messages
      * are emitted).
      */
-    fun checkpoint(): List<AirbyteStateMessage> =
-        listOfNotNull(global?.checkpoint()) + nonGlobal.mapNotNull { it.value.checkpoint() }
+    fun checkpoint(): List<AirbyteStateMessage> {
+        return listOfNotNull(global?.checkpoint()) +
+            nonGlobal
+                .mapNotNull { it.value.checkpoint() }
+                .filter { it.stream.streamState.isNull.not() }
+    }
 
     private sealed class BaseStateManager<K : Feed>(
         override val feed: K,
         initialState: OpaqueStateValue?,
     ) : StateManagerScopedToFeed {
         private var currentStateValue: OpaqueStateValue? = initialState
-        private var pendingStateValue: OpaqueStateValue? = initialState
+        private var pendingStateValue: OpaqueStateValue? = null
         private var pendingNumRecords: Long = 0L
 
         @Synchronized override fun current(): OpaqueStateValue? = currentStateValue
@@ -198,7 +209,12 @@ class StateManager(
                     AirbyteStreamState()
                         .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
                         .withStreamState(
-                            streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                            when (streamStateForCheckpoint.opaqueStateValue?.isNull) {
+                                null,
+                                true -> Jsons.objectNode()
+                                false -> streamStateForCheckpoint.opaqueStateValue
+                                        ?: Jsons.objectNode()
+                            }
                         ),
                 )
             }

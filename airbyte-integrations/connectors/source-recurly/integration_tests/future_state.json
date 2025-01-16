@@ -110,5 +110,12 @@
       "stream_state": { "updated_at": "2036-07-19T22:21:37Z" },
       "stream_descriptor": { "name": "unique_coupons" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2036-07-19T22:21:37Z" },
+      "stream_descriptor": { "name": "unique_coupons_parent" }
+    }
   }
 ]

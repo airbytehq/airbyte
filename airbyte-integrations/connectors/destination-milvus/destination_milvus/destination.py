@@ -16,6 +16,7 @@ from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_milvus.config import ConfigModel
 from destination_milvus.indexer import MilvusIndexer
 
+
 BATCH_SIZE = 128
 
 

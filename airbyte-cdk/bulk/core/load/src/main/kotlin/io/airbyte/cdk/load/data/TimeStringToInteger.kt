@@ -4,13 +4,11 @@
 
 package io.airbyte.cdk.load.data
 
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 /**
@@ -18,76 +16,55 @@ import java.time.temporal.ChronoUnit
  * as with timezone, then fall back to without. But in theory we should be more strict.
  */
 class TimeStringToInteger : AirbyteValueIdentityMapper() {
-    companion object {
-        private val DATE_TIME_FORMATTER: DateTimeFormatter =
-            DateTimeFormatter.ofPattern(
-                "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d][[' '][G]][[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][[' '][G]]]]"
-            )
-        private val TIME_FORMATTER: DateTimeFormatter =
-            DateTimeFormatter.ofPattern(
-                "HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]"
-            )
+
+    override fun mapDate(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> {
+        value as DateValue
+        val epochDay = value.value.toEpochDay()
+        return IntegerValue(epochDay) to context
     }
 
-    override fun mapDate(value: DateValue, context: Context): Pair<AirbyteValue, Context> {
-        val epochDay = LocalDate.parse(value.value, DATE_TIME_FORMATTER).toEpochDay()
-        return IntValue(epochDay.toInt()) to context
-    }
-
-    private fun toMicrosOfDayWithTimezone(timeString: String): Long {
-        val time = OffsetTime.parse(timeString, TIME_FORMATTER)
+    private fun toMicrosOfDayWithTimezone(time: OffsetTime): Long {
         return time.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime().toNanoOfDay() / 1_000
     }
 
-    private fun toMicrosOfDayWithoutTimezone(timeString: String): Long {
-        val time = LocalTime.parse(timeString, TIME_FORMATTER)
+    private fun toMicrosOfDayWithoutTimezone(time: LocalTime): Long {
         return time.toNanoOfDay() / 1_000
     }
 
-    private fun toMicrosOfDay(timeString: String): Long {
-        return try {
-            toMicrosOfDayWithTimezone(timeString)
-        } catch (e: Exception) {
-            toMicrosOfDayWithoutTimezone(timeString)
-        }
-    }
-
     override fun mapTimeWithTimezone(
-        value: TimeValue,
+        value: AirbyteValue,
         context: Context
-    ): Pair<AirbyteValue, Context> = IntegerValue(toMicrosOfDay(value.value)) to context
+    ): Pair<AirbyteValue, Context> =
+        IntegerValue(toMicrosOfDayWithTimezone((value as TimeWithTimezoneValue).value)) to context
 
     override fun mapTimeWithoutTimezone(
-        value: TimeValue,
+        value: AirbyteValue,
         context: Context
-    ): Pair<AirbyteValue, Context> = IntegerValue(toMicrosOfDay(value.value)) to context
+    ): Pair<AirbyteValue, Context> =
+        IntegerValue(toMicrosOfDayWithoutTimezone((value as TimeWithoutTimezoneValue).value)) to
+            context
 
-    private fun toEpochMicrosWithTimezone(timestampString: String): Long {
-        val zdt = ZonedDateTime.parse(timestampString, DATE_TIME_FORMATTER)
-        return zdt.toInstant().truncatedTo(ChronoUnit.MICROS).toEpochMilli() * 1_000 +
-            zdt.toInstant().nano / 1_000 % 1_000
+    private fun toEpochMicrosWithTimezone(odt: OffsetDateTime): Long {
+        return odt.toInstant().truncatedTo(ChronoUnit.MICROS).toEpochMilli() * 1_000 +
+            odt.toInstant().nano / 1_000 % 1_000
     }
 
-    private fun toEpochMicrosWithoutTimezone(timestampString: String): Long {
-        val dt = LocalDateTime.parse(timestampString, DATE_TIME_FORMATTER)
+    private fun toEpochMicrosWithoutTimezone(dt: LocalDateTime): Long {
         val instant = dt.toInstant(ZoneOffset.UTC)
         return instant.epochSecond * 1_000_000 + instant.nano / 1_000
     }
 
-    private fun toEpochMicros(timestampString: String): Long {
-        return try {
-            toEpochMicrosWithTimezone(timestampString)
-        } catch (e: Exception) {
-            toEpochMicrosWithoutTimezone(timestampString)
-        }
-    }
-
     override fun mapTimestampWithTimezone(
-        value: TimestampValue,
+        value: AirbyteValue,
         context: Context
-    ): Pair<AirbyteValue, Context> = IntegerValue(toEpochMicros(value.value)) to context
+    ): Pair<AirbyteValue, Context> =
+        IntegerValue(toEpochMicrosWithTimezone((value as TimestampWithTimezoneValue).value)) to
+            context
     override fun mapTimestampWithoutTimezone(
-        value: TimestampValue,
+        value: AirbyteValue,
         context: Context
-    ): Pair<AirbyteValue, Context> = IntegerValue(toEpochMicros(value.value)) to context
+    ): Pair<AirbyteValue, Context> =
+        IntegerValue(
+            toEpochMicrosWithoutTimezone((value as TimestampWithoutTimezoneValue).value)
+        ) to context
 }

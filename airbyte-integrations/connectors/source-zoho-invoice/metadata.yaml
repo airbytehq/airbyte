@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-zoho-invoice
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.1.1@sha256:2c0f02fecb74df212054dea8bb971be8e1247a3c175c1ac45e603f5ec67eb7c6
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
   connectorSubtype: api
   connectorType: source
   definitionId: 6ee3d92d-b081-4024-9214-2987ae114c17
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/source-zoho-invoice
   githubIssueLabel: source-zoho-invoice
   icon: icon.svg

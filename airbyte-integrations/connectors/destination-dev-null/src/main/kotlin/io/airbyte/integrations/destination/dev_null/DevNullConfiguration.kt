@@ -6,7 +6,9 @@ package io.airbyte.integrations.destination.dev_null
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 
 /** This is the simplified configuration object actually used by the implementation. */
@@ -27,6 +29,7 @@ data class Throttled(val millisPerRecord: Long) : DevNullType
 
 data class DevNullConfiguration(
     val type: DevNullType,
+    override val recordBatchSizeBytes: Long = 200 * 1024 * 1024,
 ) : DestinationConfiguration()
 
 /**
@@ -37,10 +40,14 @@ data class DevNullConfiguration(
  * rest of the implementation.
  */
 @Singleton
-class DevNullConfigurationFactory :
-    DestinationConfigurationFactory<DevNullSpecification, DevNullConfiguration> {
+class DevNullConfigurationFactory(
+    @Value("\${airbyte.destination.record-batch-size-override}")
+    private val recordBatchSizeBytesOverride: Long?
+) : DestinationConfigurationFactory<DevNullSpecification, DevNullConfiguration> {
+    private val log = KotlinLogging.logger {}
 
     override fun makeWithoutExceptionHandling(pojo: DevNullSpecification): DevNullConfiguration {
+        log.info { "Record batch size from environment: $recordBatchSizeBytesOverride" }
         return when (pojo) {
             is DevNullSpecificationOss -> {
                 when (pojo.testDestination) {
@@ -53,7 +60,7 @@ class DevNullConfigurationFactory :
                                             maxEntryCount =
                                                 pojo.testDestination.loggingConfig.maxEntryCount
                                                     .toInt(),
-                                        )
+                                        ),
                                 )
                             }
                             is EveryNthEntryConfig -> {
@@ -101,7 +108,10 @@ class DevNullConfigurationFactory :
                     }
                 }
             }
-        }
+        }.copy(
+            recordBatchSizeBytes = recordBatchSizeBytesOverride
+                    ?: DestinationConfiguration.DEFAULT_RECORD_BATCH_SIZE_BYTES
+        )
     }
 }
 

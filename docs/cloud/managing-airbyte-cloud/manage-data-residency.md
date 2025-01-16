@@ -28,6 +28,10 @@ Depending on your network configuration, you may need to add [IP addresses](/ope
 
 ## Choose the data residency for a connection
 
+:::info
+As of November 2024, the option to enable a custom data residency for a connection has been deprecated from Airbyte Cloud.
+:::
+
 You can additionally choose the data residency for your connection in the connection settings. You can choose the data residency when creating a new connection, or you can set the default data residency for your workspace so that it applies for any new connections moving forward.
 
 To choose a custom data residency for your connection, click **Connections** in the Airbyte UI and then select the connection that you want to configure. Navigate to the **Settings** tab, open the **Advanced Settings**, and select the **Data residency** for the connection.

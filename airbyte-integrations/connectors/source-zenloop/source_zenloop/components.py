@@ -12,7 +12,6 @@ from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 
 @dataclass
 class ZenloopPartitionRouter(SubstreamPartitionRouter):
-
     config: Config
 
     def stream_slices(self) -> Iterable[StreamSlice]:
