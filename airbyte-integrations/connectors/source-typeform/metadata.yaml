@@ -4,7 +4,7 @@ data:
     sl: 200
   allowedHosts:
     hosts:
-    - api.typeform.com
+      - api.typeform.com
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.10.0@sha256:58722e84dbd06bb2af9250e37d24d1c448e247fc3a84d75ee4407d52771b6f03
   connectorSubtype: api
@@ -32,7 +32,8 @@ data:
   releases:
     breakingChanges:
       1.1.0:
-        message: This version migrates the Typeform connector to the low-code framework
+        message:
+          This version migrates the Typeform connector to the low-code framework
           for greater maintainability. This introduces a breaking change to the state
           format for the `responses` stream. If you are using the incremental sync
           mode for this stream, you will need to reset affected connections after
@@ -40,38 +41,38 @@ data:
         upgradeDeadline: "2023-09-25"
   supportLevel: certified
   tags:
-  - cdk:low-code
-  - language:manifest-only
+    - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
-  - suite: liveTests
-    testConnections:
-    - name: typeform_config_oauth_dev_null
-      id: 1522cc4d-04d2-4d44-9152-0854b38e15ee
-    - name: typeform_config_dev_null
-      id: 2b707284-7c35-46da-b1ed-1cb09779a43c
-    - name: typeform_incremental_config_dev_null
-      id: 681b2010-52af-4d44-b2e1-1b5f50581509
-  - suite: unitTests
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_SOURCE-TYPEFORM_OAUTH__CREDS
-      fileName: config_oauth.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_SOURCE-TYPEFORM__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_SOURCE-TYPEFORM__CREDS_INCREMENTAL
-      fileName: incremental_config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_SOURCE-TYPEFORM__CREDS_TOKEN
-      fileName: config_token.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: liveTests
+      testConnections:
+        - name: typeform_config_oauth_dev_null
+          id: 1522cc4d-04d2-4d44-9152-0854b38e15ee
+        - name: typeform_config_dev_null
+          id: 2b707284-7c35-46da-b1ed-1cb09779a43c
+        - name: typeform_incremental_config_dev_null
+          id: 681b2010-52af-4d44-b2e1-1b5f50581509
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TYPEFORM_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TYPEFORM__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TYPEFORM__CREDS_INCREMENTAL
+          fileName: incremental_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TYPEFORM__CREDS_TOKEN
+          fileName: config_token.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
