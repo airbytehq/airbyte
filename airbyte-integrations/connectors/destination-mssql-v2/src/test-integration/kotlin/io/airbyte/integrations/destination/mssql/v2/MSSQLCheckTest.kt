@@ -25,7 +25,7 @@ internal class MSSQLCheckTest :
                     MSSQLTestConfigUtil.getConfigPath("check/fail-internal-schema-invalid.json")
                 ) to "\"iamnotthere\" either does not exist".toPattern(),
             ),
-        configUpdater = MSSQLContainerHelper
+        configUpdater = MSSQLConfigUpdater()
     ) {
 
     @BeforeAll

@@ -25,16 +25,23 @@ data class MSSQLConfiguration(
 class MSSQLConfigurationFactory :
     DestinationConfigurationFactory<MSSQLSpecification, MSSQLConfiguration> {
     override fun makeWithoutExceptionHandling(pojo: MSSQLSpecification): MSSQLConfiguration {
+        return makeWithOverrides(spec = pojo)
+    }
+
+    fun makeWithOverrides(
+        spec: MSSQLSpecification,
+        overrides: Map<String, String> = emptyMap()
+    ): MSSQLConfiguration {
         return MSSQLConfiguration(
-            host = pojo.host,
-            port = pojo.port,
-            database = pojo.database,
-            schema = pojo.schema,
-            user = pojo.user,
-            password = pojo.password,
-            jdbcUrlParams = pojo.jdbcUrlParams,
-            rawDataSchema = pojo.rawDataSchema,
-            sslMethod = pojo.sslMethod,
+            host = overrides.getOrDefault("host", spec.host),
+            port = overrides.getOrDefault("port", spec.port.toString()).toInt(),
+            database = overrides.getOrDefault("database", spec.database),
+            schema = overrides.getOrDefault("schema", spec.schema),
+            user = overrides.getOrDefault("user", spec.user),
+            password = overrides.getOrDefault("password", spec.password),
+            jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
+            rawDataSchema = overrides.getOrDefault("rawDataSchema", spec.rawDataSchema),
+            sslMethod = spec.sslMethod,
         )
     }
 }
