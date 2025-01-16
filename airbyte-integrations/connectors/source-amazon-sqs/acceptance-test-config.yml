@@ -3,7 +3,7 @@
 connector_image: airbyte/source-amazon-sqs:dev
 tests:
   spec:
-    - spec_path: "source_amazon_sqs/spec.json"
+    - spec_path: "source_amazon_sqs/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
