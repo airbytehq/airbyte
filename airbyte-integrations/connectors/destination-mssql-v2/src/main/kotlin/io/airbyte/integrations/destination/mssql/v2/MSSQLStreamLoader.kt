@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import javax.sql.DataSource
@@ -22,6 +23,13 @@ class MSSQLStreamLoader(
 
     override suspend fun start() {
         ensureTableExists(dataSource)
+    }
+
+    override suspend fun close(streamFailure: StreamProcessingFailed?) {
+        if (streamFailure == null) {
+            truncatePreviousGenerations(dataSource)
+        }
+        super.close(streamFailure)
     }
 
     override suspend fun processRecords(
@@ -69,6 +77,17 @@ class MSSQLStreamLoader(
         } catch (ex: Exception) {
             log.error(ex) { ex.message }
             throw ex
+        }
+    }
+
+    private fun truncatePreviousGenerations(dataSource: DataSource) {
+        // TODO this can be improved to avoid attempting to truncate the data for each sync
+        dataSource.connection.use { connection ->
+            connection.createStatement().use { statement ->
+                statement.executeUpdate(
+                    sqlBuilder.deletePreviousGenerations(stream.minimumGenerationId)
+                )
+            }
         }
     }
 }

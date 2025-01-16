@@ -31,7 +31,7 @@ abstract class MSSQLWriterTest(
         configSpecClass = MSSQLSpecification::class.java,
         dataDumper = dataDumper,
         destinationCleaner = dataCleaner,
-        isStreamSchemaRetroactive = false,
+        isStreamSchemaRetroactive = true,
         supportsDedup = false,
         stringifySchemalessObjects = false,
         promoteUnionToObject = true,
