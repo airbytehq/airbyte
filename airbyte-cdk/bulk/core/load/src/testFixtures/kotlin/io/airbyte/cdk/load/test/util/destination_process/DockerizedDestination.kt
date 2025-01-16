@@ -109,7 +109,8 @@ class DockerizedDestination(
                     "--init",
                     "-i",
                     "-w",
-                    "/data/job",
+                    // In real syncs, platform changes the workdir to /dest for destinations.
+                    "/dest",
                     "--log-driver",
                     "none",
                     "--name",
