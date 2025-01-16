@@ -77,11 +77,12 @@
             "additionalProperties": true,
             "description": "Disables encryption of communication between Airbyte and source database.",
             "required": ["mode"],
+            "type": "object",
             "properties": {
               "mode": {
                 "type": "string",
-                "const": "disable",
-                "order": 0
+                "default": "disable",
+                "enum": ["disable"]
               }
             }
           },
@@ -90,11 +91,12 @@
             "additionalProperties": true,
             "description": "Enables encryption only when required by the source database.",
             "required": ["mode"],
+            "type": "object",
             "properties": {
               "mode": {
                 "type": "string",
-                "const": "allow",
-                "order": 0
+                "default": "allow",
+                "enum": ["allow"]
               }
             }
           },
@@ -103,11 +105,12 @@
             "additionalProperties": true,
             "description": "Allows unencrypted connection only if the source database does not support encryption.",
             "required": ["mode"],
+            "type": "object",
             "properties": {
               "mode": {
                 "type": "string",
-                "const": "prefer",
-                "order": 0
+                "default": "prefer",
+                "enum": ["prefer"]
               }
             }
           },
@@ -116,11 +119,12 @@
             "additionalProperties": true,
             "description": "Always require encryption. If the source database server does not support encryption, connection will fail.",
             "required": ["mode"],
+            "type": "object",
             "properties": {
               "mode": {
                 "type": "string",
-                "const": "require",
-                "order": 0
+                "default": "require",
+                "enum": ["require"]
               }
             }
           },
@@ -129,11 +133,12 @@
             "additionalProperties": true,
             "description": "Always require encryption and verifies that the source database server has a valid SSL certificate.",
             "required": ["mode", "ca_certificate"],
+            "type": "object",
             "properties": {
               "mode": {
                 "type": "string",
-                "const": "verify-ca",
-                "order": 0
+                "default": "verify-ca",
+                "enum": ["verify-ca"]
               },
               "ca_certificate": {
                 "type": "string",
@@ -175,11 +180,12 @@
             "additionalProperties": true,
             "description": "This is the most secure mode. Always require encryption and verifies the identity of the source database server.",
             "required": ["mode", "ca_certificate"],
+            "type": "object",
             "properties": {
               "mode": {
                 "type": "string",
-                "const": "verify-full",
-                "order": 0
+                "default": "verify-full",
+                "enum": ["verify-full"]
               },
               "ca_certificate": {
                 "type": "string",
@@ -345,7 +351,7 @@
         ]
       }
     },
-    "required": ["host", "port", "database", "username", "replication_method"],
+    "required": ["host", "port", "database", "username" ,"replication_method", "ssl_mode"],
     "title": "Postgres Source Spec",
     "type": "object",
     "groups": [

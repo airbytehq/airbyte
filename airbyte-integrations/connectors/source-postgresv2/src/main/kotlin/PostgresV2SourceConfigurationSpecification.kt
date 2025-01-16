@@ -104,165 +104,153 @@ class PostgresV2SourceConfigurationSpecification : ConfigurationSpecification() 
     @JsonPropertyDescription("Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (Eg. key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://jdbc.postgresql.org/documentation/head/connect.html\">JDBC URL parameters</a>.")
     var jdbcUrlParams: String? = null
 
-    // todo (cgardens) - this is a cop out and needs to be tweaked to make real java objects.
-    @JsonProperty("ssl_mode")
-    @JsonSchemaTitle("SSL Modes")
-    @JsonSchemaInject(
-        json = """
-    {
-        "order": 8,
-        "group": "security",
-        "oneOf": [
-            {
-                "title": "disable",
-                "description": "Disables encryption of communication between Airbyte and source database.",
-                "required": ["mode"],
-                "properties": {
-                    "mode": {
-                        "type": "string",
-                        "const": "disable",
-                        "order": 0
-                    }
-                },
-                "additionalProperties": true
-            },
-            {
-                "title": "allow",
-                "description": "Enables encryption only when required by the source database.",
-                "required": ["mode"],
-                "properties": {
-                    "mode": {
-                        "type": "string",
-                        "const": "allow",
-                        "order": 0
-                    }
-                },
-                "additionalProperties": true
-            },
-            {
-                "title": "prefer",
-                "description": "Allows unencrypted connection only if the source database does not support encryption.",
-                "required": ["mode"],
-                "properties": {
-                    "mode": {
-                        "type": "string",
-                        "const": "prefer",
-                        "order": 0
-                    }
-                },
-                "additionalProperties": true
-            },
-            {
-                "title": "require",
-                "description": "Always require encryption. If the source database server does not support encryption, connection will fail.",
-                "required": ["mode"],
-                "properties": {
-                    "mode": {
-                        "type": "string",
-                        "const": "require",
-                        "order": 0
-                    }
-                },
-                "additionalProperties": true
-            },
-            {
-                "title": "verify-ca",
-                "description": "Always require encryption and verifies that the source database server has a valid SSL certificate.",
-                "required": ["mode", "ca_certificate"],
-                "properties": {
-                    "mode": {
-                        "type": "string",
-                        "const": "verify-ca",
-                        "order": 0
-                    },
-                    "ca_certificate": {
-                        "type": "string",
-                        "title": "CA Certificate",
-                        "description": "CA certificate",
-                        "airbyte_secret": true,
-                        "multiline": true,
-                        "order": 1
-                    },
-                    "client_certificate": {
-                        "type": "string",
-                        "title": "Client Certificate",
-                        "description": "Client certificate",
-                        "airbyte_secret": true,
-                        "always_show": true,
-                        "multiline": true,
-                        "order": 2
-                    },
-                    "client_key": {
-                        "type": "string",
-                        "title": "Client Key",
-                        "description": "Client key",
-                        "airbyte_secret": true,
-                        "always_show": true,
-                        "multiline": true,
-                        "order": 3
-                    },
-                    "client_key_password": {
-                        "type": "string",
-                        "title": "Client key password",
-                        "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
-                        "airbyte_secret": true,
-                        "order": 4
-                    }
-                },
-                "additionalProperties": true
-            },
-            {
-                "title": "verify-full",
-                "description": "This is the most secure mode. Always require encryption and verifies the identity of the source database server.",
-                "required": ["mode", "ca_certificate"],
-                "properties": {
-                    "mode": {
-                        "type": "string",
-                        "const": "verify-full",
-                        "order": 0
-                    },
-                    "ca_certificate": {
-                        "type": "string",
-                        "title": "CA Certificate",
-                        "description": "CA certificate",
-                        "airbyte_secret": true,
-                        "multiline": true,
-                        "order": 1
-                    },
-                    "client_certificate": {
-                        "type": "string",
-                        "title": "Client Certificate",
-                        "description": "Client certificate",
-                        "airbyte_secret": true,
-                        "always_show": true,
-                        "multiline": true,
-                        "order": 2
-                    },
-                    "client_key": {
-                        "type": "string",
-                        "title": "Client Key",
-                        "description": "Client key",
-                        "airbyte_secret": true,
-                        "always_show": true,
-                        "multiline": true,
-                        "order": 3
-                    },
-                    "client_key_password": {
-                        "type": "string",
-                        "title": "Client key password",
-                        "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
-                        "airbyte_secret": true,
-                        "order": 4
-                    }
-                },
-                "additionalProperties": true
-            }
-        ]
+    @JsonIgnore
+    @ConfigurationBuilder(configurationPrefix = "ssl_mode")
+    var sslMode = MicronautPropertiesFriendlySslConfiguration()
+
+    @JsonIgnore var sslModeJson: SslMode? = null
+
+    @JsonSetter("ssl_mode")
+    fun setSslValue(value: SslMode) {
+        sslModeJson = value
     }
-    """
-    )
+
+    @JsonGetter("ssl_mode")
+    @JsonSchemaTitle("SSL Modes")
     @JsonPropertyDescription("SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.")
-    var sslMode: String? = null
+    @JsonSchemaInject(json = """{"order": 8, "group": "security"}""")
+    fun getSslValue(): SslMode =
+        sslModeJson ?: sslMode.asSslConfiguration()
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")
+    @JsonSubTypes(
+        JsonSubTypes.Type(value = SslDisable::class, name = "disable"),
+        JsonSubTypes.Type(value = SslAllow::class, name = "allow"),
+        JsonSubTypes.Type(value = SslPrefer::class, name = "prefer"),
+        JsonSubTypes.Type(value = SslRequire::class, name = "require"),
+        JsonSubTypes.Type(value = SslVerifyCA::class, name = "verify-ca"),
+        JsonSubTypes.Type(value = SslVerifyFull::class, name = "verify-full")
+    )
+    @JsonSchemaTitle("SSL Modes")
+    sealed class SslMode
+
+    @JsonTypeName("disable")
+    @JsonSchemaTitle("disable")
+    @JsonSchemaDescription("Disables encryption of communication between Airbyte and source database.")
+    data class SslDisable(
+        @JsonProperty("mode")
+        @JsonSchemaInject(json = """{"const": "disable", "order": 0}""")
+        val mode: String = "disable"
+    ) : SslMode()
+
+    @JsonTypeName("allow")
+    @JsonSchemaTitle("allow")
+    @JsonSchemaDescription("Enables encryption only when required by the source database.")
+    data class SslAllow(
+        @JsonProperty("mode")
+        @JsonSchemaInject(json = """{"const": "allow", "order": 0}""")
+        val mode: String = "allow"
+    ) : SslMode()
+
+    @JsonTypeName("prefer")
+    @JsonSchemaTitle("prefer")
+    @JsonSchemaDescription("Allows unencrypted connection only if the source database does not support encryption.")
+    data class SslPrefer(
+        @JsonProperty("mode")
+        @JsonSchemaInject(json = """{"const": "prefer", "order": 0}""")
+        val mode: String = "prefer"
+    ) : SslMode()
+
+    @JsonTypeName("require")
+    @JsonSchemaTitle("require")
+    @JsonSchemaDescription("Always require encryption. If the source database server does not support encryption, connection will fail.")
+    data class SslRequire(
+        @JsonProperty("mode")
+        @JsonSchemaInject(json = """{"const": "require", "order": 0}""")
+        val mode: String = "require"
+    ) : SslMode()
+
+    @JsonTypeName("verify-ca")
+    @JsonSchemaTitle("verify-ca")
+    @JsonSchemaDescription("Always require encryption and verifies that the source database server has a valid SSL certificate.")
+    data class SslVerifyCA(
+        @JsonProperty("mode")
+        @JsonSchemaInject(json = """{"const": "verify-ca", "order": 0}""")
+        val mode: String = "verify-ca",
+
+        @JsonProperty("ca_certificate")
+        @JsonSchemaTitle("CA Certificate")
+        @JsonSchemaDescription("CA certificate")
+        @JsonSchemaInject(json = """{"order": 1, "airbyte_secret": true, "multiline": true}""")
+        val caCertificate: String = "",
+
+        @JsonProperty("client_certificate")
+        @JsonSchemaTitle("Client Certificate")
+        @JsonSchemaDescription("Client certificate")
+        @JsonSchemaInject(json = """{"order": 2, "airbyte_secret": true, "always_show": true, "multiline": true}""")
+        val clientCertificate: String? = null,
+
+        @JsonProperty("client_key")
+        @JsonSchemaTitle("Client Key")
+        @JsonSchemaDescription("Client key")
+        @JsonSchemaInject(json = """{"order": 3, "airbyte_secret": true, "always_show": true, "multiline": true}""")
+        val clientKey: String? = null,
+
+        @JsonProperty("client_key_password")
+        @JsonSchemaTitle("Client key password")
+        @JsonSchemaDescription("Password for keystorage. If you do not add it - the password will be generated automatically.")
+        @JsonSchemaInject(json = """{"order": 4, "airbyte_secret": true}""")
+        val clientKeyPassword: String? = null
+    ) : SslMode()
+
+    @JsonTypeName("verify-full")
+    @JsonSchemaTitle("verify-full")
+    @JsonSchemaDescription("This is the most secure mode. Always require encryption and verifies the identity of the source database server.")
+    data class SslVerifyFull(
+        @JsonProperty("mode")
+        @JsonSchemaInject(json = """{"const": "verify-full", "order": 0}""")
+        val mode: String = "verify-full",
+
+        @JsonProperty("ca_certificate")
+        @JsonSchemaTitle("CA Certificate")
+        @JsonSchemaDescription("CA certificate")
+        @JsonSchemaInject(json = """{"order": 1, "airbyte_secret": true, "multiline": true}""")
+        val caCertificate: String = "",
+
+        @JsonProperty("client_certificate")
+        @JsonSchemaTitle("Client Certificate")
+        @JsonSchemaDescription("Client certificate")
+        @JsonSchemaInject(json = """{"order": 2, "airbyte_secret": true, "always_show": true, "multiline": true}""")
+        val clientCertificate: String? = null,
+
+        @JsonProperty("client_key")
+        @JsonSchemaTitle("Client Key")
+        @JsonSchemaDescription("Client key")
+        @JsonSchemaInject(json = """{"order": 3, "airbyte_secret": true, "always_show": true, "multiline": true}""")
+        val clientKey: String? = null,
+
+        @JsonProperty("client_key_password")
+        @JsonSchemaTitle("Client key password")
+        @JsonSchemaDescription("Password for keystorage. If you do not add it - the password will be generated automatically.")
+        @JsonSchemaInject(json = """{"order": 4, "airbyte_secret": true}""")
+        val clientKeyPassword: String? = null
+    ) : SslMode()
+
+    @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.ssl_mode")
+    class MicronautPropertiesFriendlySslConfiguration {
+        var mode: String? = "require"
+
+        fun asSslConfiguration(): SslMode =
+            when (mode) {
+                "disable" -> SslDisable()
+                "allow" -> SslAllow()
+                "prefer" -> SslPrefer()
+                "require" -> SslRequire()
+                "verify-ca" -> SslVerifyCA()
+                "verify-full" -> SslVerifyFull()
+                else -> throw ConfigErrorException("invalid value $mode")
+            }
+    }
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "replication_method")
