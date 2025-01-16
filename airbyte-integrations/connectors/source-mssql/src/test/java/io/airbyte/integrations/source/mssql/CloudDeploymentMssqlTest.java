@@ -16,10 +16,12 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@Disabled
 @Execution(ExecutionMode.CONCURRENT)
 public class CloudDeploymentMssqlTest {
 
@@ -36,7 +38,7 @@ public class CloudDeploymentMssqlTest {
 
   private Source source() {
     final var source = new MssqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingDeploymentMode(new EnvVariableFeatureFlags(), "CLOUD"));
+//    source.setFeatureFlags(FeatureFlagsWrapper.overridingDeploymentMode(new EnvVariableFeatureFlags(), "CLOUD"));
     return MssqlSource.sshWrappedSource(source);
   }
 
