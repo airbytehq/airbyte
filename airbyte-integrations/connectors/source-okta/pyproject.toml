@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.3.15"
+version = "0.3.17"
 name = "source-okta"
 description = "Source implementation for okta."
 authors = [ "Airbyte <contact@airbyte.io>",]

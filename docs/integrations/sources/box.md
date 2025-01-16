@@ -38,6 +38,7 @@ Follow [this](https://developer.box.com/guides/authentication/client-credentials
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-01-11 | [51291](https://github.com/airbytehq/airbyte/pull/51291) | Update dependencies |
 | 0.0.6 | 2024-12-28 | [50497](https://github.com/airbytehq/airbyte/pull/50497) | Update dependencies |
 | 0.0.5 | 2024-12-21 | [50209](https://github.com/airbytehq/airbyte/pull/50209) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49580](https://github.com/airbytehq/airbyte/pull/49580) | Update dependencies |

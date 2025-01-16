@@ -267,6 +267,7 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.4.1 | 2024-12-18 | [49885](https://github.com/airbytehq/airbyte/pull/49885) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 2.4.0   | 2024-08-18 | [\#45434](https://github.com/airbytehq/airbyte/pull/45434) | upgrade all dependencies.                                                          |
 | 2.3.2   | 2024-08-07 | [\#43331](https://github.com/airbytehq/airbyte/pull/43331) | bump java CDK.                                                          |
 | 2.3.1   | 2024-08-07 | [\#43363](https://github.com/airbytehq/airbyte/pull/43363) | Adopt latest CDK.                                                                                                                                          |

@@ -39,6 +39,7 @@ import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
@@ -92,7 +93,7 @@ interface DestinationTaskLauncher : TaskLauncher {
     justification = "arguments are guaranteed to be non-null by Kotlin's type system"
 )
 class DefaultDestinationTaskLauncher(
-    private val taskScopeProvider: TaskScopeProvider<WrappedTask<ScopedTask>>,
+    private val taskScopeProvider: TaskScopeProvider,
     private val catalog: DestinationCatalog,
     private val config: DestinationConfiguration,
     private val syncManager: SyncManager,
@@ -137,6 +138,8 @@ class DefaultDestinationTaskLauncher(
 
     private val teardownIsEnqueued = AtomicBoolean(false)
     private val failSyncIsEnqueued = AtomicBoolean(false)
+
+    private val closeStreamHasRun = ConcurrentHashMap<DestinationStream.Descriptor, AtomicBoolean>()
 
     inner class TaskWrapper(
         override val innerTask: ScopedTask,
@@ -277,10 +280,13 @@ class DefaultDestinationTaskLauncher(
             }
 
             if (streamManager.isBatchProcessingComplete()) {
-                log.info { "Batch processing complete: Starting close stream task for $stream" }
-
-                val task = closeStreamTaskFactory.make(this, stream)
-                enqueue(task)
+                if (closeStreamHasRun.getOrPut(stream) { AtomicBoolean(false) }.setOnce()) {
+                    log.info { "Batch processing complete: Starting close stream task for $stream" }
+                    val task = closeStreamTaskFactory.make(this, stream)
+                    enqueue(task)
+                } else {
+                    log.info { "Close stream task has already run, skipping." }
+                }
             } else {
                 log.info { "Batch processing not complete: nothing else to do." }
             }

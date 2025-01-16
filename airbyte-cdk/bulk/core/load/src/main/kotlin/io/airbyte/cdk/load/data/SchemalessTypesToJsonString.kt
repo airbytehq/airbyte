@@ -56,30 +56,6 @@ class SchemalessValuesToJsonString : AirbyteValueIdentityMapper() {
         context: Context
     ): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
-    override fun mapUnknown(value: UnknownValue, context: Context): Pair<AirbyteValue, Context> =
+    override fun mapUnknown(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
-
-    override fun mapUnion(
-        value: AirbyteValue,
-        schema: UnionType,
-        context: Context
-    ): Pair<AirbyteValue, Context> {
-        if (ObjectTypeWithEmptySchema in schema.options && value is ObjectValue) {
-            return mapObjectWithEmptySchema(value, ObjectTypeWithEmptySchema, context)
-        }
-
-        if (ObjectTypeWithoutSchema in schema.options && value is ObjectValue) {
-            return mapObjectWithoutSchema(value, ObjectTypeWithoutSchema, context)
-        }
-
-        if (ArrayTypeWithoutSchema in schema.options && value is ArrayValue) {
-            return mapArrayWithoutSchema(value, ArrayTypeWithoutSchema, context)
-        }
-
-        if (schema.options.any { it is UnknownType } && value is UnknownValue) {
-            return mapUnknown(value, context)
-        }
-
-        return super.mapUnion(value, schema, context)
-    }
 }
