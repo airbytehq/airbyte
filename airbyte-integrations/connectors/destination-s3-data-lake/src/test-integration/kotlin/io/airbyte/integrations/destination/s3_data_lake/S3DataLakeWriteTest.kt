@@ -87,10 +87,19 @@ abstract class S3DataLakeWriteTest(
     }
 
     /**
-     * Intended to test for basic schema evolution. Runs two append syncs, where the second sync has
-     * a few changes
-     * * drop the `to_drop` column
-     * * add a `to_add` column
+     * This test differs from the base test in two critical aspects:
+     *
+     * 1. Data Type Conversion:
+     * ```
+     *    The base test attempts to change a column's data type from INTEGER to STRING,
+     *    which Iceberg does not support and will throw an exception.
+     * ```
+     * 2. Result Ordering:
+     * ```
+     *    While the data content matches exactly, Iceberg returns results in a different
+     *    order than what the base test expects. The base test's ordering assumptions
+     *    need to be adjusted accordingly.
+     * ```
      */
     @Test
     override fun testAppendSchemaEvolution() {
