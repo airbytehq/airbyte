@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.mssql.v2.convert
 
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
@@ -16,13 +17,12 @@ import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimeValue
-import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownValue
-import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDate
-import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDateTime
-import io.airbyte.cdk.load.util.TimeStringUtility.toOffset
 import io.airbyte.integrations.destination.mssql.v2.MSSQLQueryBuilder
 import io.airbyte.protocol.models.Jsons
 import java.sql.Date
@@ -50,8 +50,10 @@ class AirbyteValueToStatement {
                     is NumberValue -> setAsNumberValue(idx, value)
                     is ObjectValue -> setAsJsonString(idx, value)
                     is StringValue -> setAsStringValue(idx, value, field.type.type)
-                    is TimeValue -> setAsTime(idx, value)
-                    is TimestampValue -> setAsTimestamp(idx, value)
+                    is TimeWithTimezoneValue -> setAsTime(idx, value)
+                    is TimeWithoutTimezoneValue -> setAsTime(idx, value)
+                    is TimestampWithTimezoneValue -> setAsTimestamp(idx, value)
+                    is TimestampWithoutTimezoneValue -> setAsTimestamp(idx, value)
                     is UnknownValue -> setAsJsonString(idx, value)
                     null -> setAsNullValue(idx, field.type.type)
                 }
@@ -68,7 +70,7 @@ class AirbyteValueToStatement {
         }
 
         private fun PreparedStatement.setAsDateValue(idx: Int, value: DateValue) {
-            setDate(idx, Date.valueOf(toLocalDate(value.value)))
+            setDate(idx, Date.valueOf(value.value))
         }
 
         private fun PreparedStatement.setAsIntegerValue(idx: Int, value: IntegerValue) {
@@ -88,16 +90,50 @@ class AirbyteValueToStatement {
             if (sqlType == Types.VARCHAR || sqlType == Types.LONGVARCHAR) {
                 setString(idx, value.value)
             } else {
-                throw IllegalArgumentException("$value isn't a $type")
+                // TODO: this is a fallback because Values aren't fully typed.
+                // TODO: this should get refactored once the CDK interface changed wrt types and values
+                if (sqlType in setOf(Types.DATE, Types.TIME, Types.TIME_WITH_TIMEZONE, Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE)) {
+                    val coercedValue = AirbyteValueDeepCoercingMapper().map(value, type)
+                    if (coercedValue.second.isEmpty()) {
+                        when (coercedValue.first) {
+                            is DateValue -> setAsDateValue(idx, coercedValue.first as DateValue)
+                            is TimeWithTimezoneValue -> setAsTime(idx,
+                                coercedValue.first as TimeWithTimezoneValue
+                            )
+                            is TimeWithoutTimezoneValue -> setAsTime(idx,
+                                coercedValue.first as TimeWithoutTimezoneValue
+                            )
+                            is TimestampWithTimezoneValue -> setAsTimestamp(idx,
+                                coercedValue.first as TimestampWithTimezoneValue
+                            )
+                            is TimestampWithoutTimezoneValue -> setAsTimestamp(idx,
+                                coercedValue.first as TimestampWithoutTimezoneValue
+                            )
+                            else -> throw IllegalArgumentException("$value isn't a $type")
+                        }
+                    } else {
+                        throw IllegalArgumentException("$value isn't a $type")
+                    }
+                } else {
+                    throw IllegalArgumentException("$value isn't a $type")
+                }
             }
         }
 
-        private fun PreparedStatement.setAsTime(idx: Int, value: TimeValue) {
-            setTime(idx, Time.valueOf(toOffset(value.value)))
+        private fun PreparedStatement.setAsTime(idx: Int, value: TimeWithTimezoneValue) {
+            setTime(idx, Time.valueOf(value.value.toLocalTime()))
         }
 
-        private fun PreparedStatement.setAsTimestamp(idx: Int, value: TimestampValue) {
-            setTimestamp(idx, Timestamp.valueOf(toLocalDateTime(value.value)))
+        private fun PreparedStatement.setAsTime(idx: Int, value: TimeWithoutTimezoneValue) {
+            setTime(idx, Time.valueOf(value.value))
+        }
+
+        private fun PreparedStatement.setAsTimestamp(idx: Int, value: TimestampWithTimezoneValue) {
+            setTimestamp(idx, Timestamp.valueOf(value.value.toLocalDateTime()))
+        }
+
+        private fun PreparedStatement.setAsTimestamp(idx: Int, value: TimestampWithoutTimezoneValue) {
+            setTimestamp(idx, Timestamp.valueOf(value.value))
         }
 
         private fun createSimpleUnionObject(value: AirbyteValue): ObjectValue {
@@ -149,8 +185,10 @@ class AirbyteValueToStatement {
             is NumberValue -> "number"
             is ObjectValue -> "object"
             is StringValue -> "string"
-            is TimeValue -> "string"
-            is TimestampValue -> "string"
+            is TimeWithTimezoneValue -> "string"
+            is TimeWithoutTimezoneValue -> "string"
+            is TimestampWithTimezoneValue -> "string"
+            is TimestampWithoutTimezoneValue -> "string"
             is UnknownValue -> "oneOf"
         }
     }

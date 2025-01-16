@@ -25,10 +25,12 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimeValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.integrations.destination.mssql.v2.MSSQLQueryBuilder
@@ -110,20 +112,20 @@ class ResultSetToAirbyteValue {
         private inline fun <reified T> deserialize(value: String): T =
             Jsons.deserialize(value, T::class.java)
 
-        internal fun String.toTimeWithTimezone(): TimeValue =
-            TimeValue(
+        internal fun String.toTimeWithTimezone(): TimeWithTimezoneValue =
+            TimeWithTimezoneValue(
                 OffsetDateTime.parse(this,
                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")).toOffsetTime().toString())
 
-        internal fun String.toTimeWithoutTimezone(): TimeValue =
-            TimeValue(LocalTime.parse(this).toString())
+        internal fun String.toTimeWithoutTimezone(): TimeWithoutTimezoneValue =
+            TimeWithoutTimezoneValue(LocalTime.parse(this).toString())
 
-        internal fun String.toTimestampWithTimezone(): TimestampValue =
-            TimestampValue(
+        internal fun String.toTimestampWithTimezone(): TimestampWithTimezoneValue =
+            TimestampWithTimezoneValue(
                 OffsetDateTime.parse(this,
                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")).toString())
 
-        internal fun String.toTimestampWithoutTimezone(): TimestampValue =
-            TimestampValue(Timestamp.valueOf(this).toLocalDateTime().toString())
+        internal fun String.toTimestampWithoutTimezone(): TimestampWithoutTimezoneValue =
+            TimestampWithoutTimezoneValue(Timestamp.valueOf(this).toLocalDateTime().toString())
     }
 }
