@@ -29,9 +29,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
-    isReleaseCandidate: true
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       4.0.0:
         message: UX improvement, multi-stream support and deprecation of some parsing features
