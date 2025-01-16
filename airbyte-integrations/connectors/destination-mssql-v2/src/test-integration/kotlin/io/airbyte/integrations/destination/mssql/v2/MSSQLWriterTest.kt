@@ -65,7 +65,9 @@ class MSSQLDataDumper : DestinationDataDumper {
                                     UUID.fromString(it)
                                 },
                             extractedAt =
-                                Instant.ofEpochMilli(rs.getLong(MSSQLQueryBuilder.AIRBYTE_EXTRACTED_AT)),
+                                Instant.ofEpochMilli(
+                                    rs.getLong(MSSQLQueryBuilder.AIRBYTE_EXTRACTED_AT)
+                                ),
                             loadedAt = null,
                             generationId = rs.getLong(MSSQLQueryBuilder.AIRBYTE_GENERATION_ID),
                             data = objectValue,
