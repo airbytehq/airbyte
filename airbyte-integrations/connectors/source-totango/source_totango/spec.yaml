@@ -12,7 +12,6 @@ connectionSpecification:
       required:
         - client_id
         - client_secret
-        - refresh_token
       properties:
         client_id:
           type: string
@@ -24,24 +23,6 @@ connectionSpecification:
           title: Client Secret
           description: The Client Secret of your Totango OAuth application.
           airbyte_secret: true
-        refresh_token:
-          type: string
-          title: Refresh Token
-          description: The refresh token obtained from Totango OAuth flow. Used to obtain new access tokens.
-          airbyte_secret: true
-        access_token:
-          type: string
-          title: Access Token
-          description: The access token obtained from Totango OAuth flow. Used to authenticate requests to the Totango API.
-          airbyte_secret: true
-        access_token_expiration:
-          type: number
-          title: Access Token Expiry
-          description: The expiry time of the access token in seconds.
-        refresh_token_expiration:
-          type: number
-          title: Refresh Token Expiry
-          description: The expiry time of the refresh token in seconds.
     AccountConfig:
       type: object
       title: Account Config

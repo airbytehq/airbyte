@@ -4,100 +4,72 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-import time
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import json
 import logging
 import requests
 import dpath
-import pendulum
+import datetime
 from airbyte_cdk.models import SyncMode, FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
+
+_TOTANGO_URL_BASE = "https://api-gw-us.totango.com"
+
 
 class TotangoStream(HttpStream, ABC):
     # Base URL for the Totango API
-    url_base = "https://api-gw-us.totango.com"
+    url_base = _TOTANGO_URL_BASE
 
-class TotangoOAuth(SingleUseRefreshTokenOauth2Authenticator):
-    def build_refresh_request_headers(self) -> Mapping[str, Any]:
+
+class TotangoAuthenticator(requests.auth.AuthBase):
+    _token_request_path = '/oauth/token'
+    _grant_type = 'client_credentials'
+    _headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    def __init__(self, credentials: dict):
+        self._client_secret = credentials["client_secret"]
+        self._client_id = credentials["client_id"]
+
+        self._token: dict = {}
+
+    def _payload(self) -> dict:
         return {
-            "Content-Type": "application/x-www-form-urlencoded",
+            "grant_type": self._grant_type,
+            "client_id": self._client_id,
+            "client_secret": self._client_secret
         }
 
-    def build_refresh_request_body(self) -> Mapping[str, Any]:
-        return {
-            "grant_type": "refresh_token",
-            "refresh_token": self.get_refresh_token(),
-            "client_id": self.get_client_id(),
-            "client_secret": self.get_client_secret()
-        }
-
-    def _get_refresh_access_token_response(self) -> Mapping[str, Any]:
-        response = requests.post(
-            url=self.get_token_refresh_endpoint(),
-            data=self.build_refresh_request_body(),
-            headers=self.build_refresh_request_headers(),
+    def _token_expired(self):
+        if not self._token:
+            return True
+        return self._token["access_token_expiration"] < (
+            datetime.datetime.now().timestamp() * 1000
         )
-        content = response.json()
-        content["access_token_expiration"] = str(content["access_token_expiration"])
 
-        if response.status_code == 400 and content.get("error") == "invalid_grant":
-            raise AirbyteTracedException(
-                internal_message=content.get("error_description"),
-                message="Refresh token is invalid or expired. Please re-authenticate to restore access to Totango.",
-                failure_type=FailureType.config_error,
-            )
+    def _rotate(self):
+        if self._token_expired():
+            try:
+                response = requests.request(
+                    method="POST",
+                    headers=self._headers,
+                    url=f"{_TOTANGO_URL_BASE}{self._token_request_path}",
+                    data=self._payload()
+                ).json()
+            except requests.exceptions.RequestException as e:
+                raise Exception(f"Error fetching access token: {e}") from e
+            self._token = response
 
-        response.raise_for_status()
-        return content
+    def __call__(self, r: requests.Request) -> requests.Request:
+        self._rotate()
 
-    """
-    NOTE: Totango Oauth uses unix timestamp in milliseconds for the expiry date and airbyte uses DateTime, hence the conversion
-    of timestamp to DateTime when getting the expiry date
-    """
-    @staticmethod
-    def get_new_token_expiry_date(access_token_expires_in: str, token_expiry_date_format: str = None) -> pendulum.DateTime:
-        # Convert millisecond timestamp to seconds and return the parsed date
-        timestamp = int(access_token_expires_in) / 1000
-        return pendulum.from_timestamp(timestamp)
-    
-    def get_token_expiry_date(self) -> pendulum.DateTime:
-        expiry_date = dpath.util.get(self._connector_config, self._token_expiry_date_config_path, default="")
-        expiry_date_seconds = int(expiry_date) / 1000
-        return pendulum.from_timestamp(expiry_date_seconds)
-
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        """
-        Returns the headers required for making requests to the Totango API.
-        """
-        return {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.get_access_token()}"
-        }
-
-
-class TotangoAuthenticator:
-    url_base = "https://api-gw-us.totango.com"
-    token_url = f"{url_base}/oauth/token"
-
-    def __new__(self, config: dict) -> Union[TokenAuthenticator, TotangoOAuth]:
-        return TotangoOAuth(
-            connector_config=config,
-            token_refresh_endpoint=self.token_url,
-            access_token_name="access_token",
-            expires_in_name="access_token_expiration",
-            refresh_token_name="refresh_token",
-            token_expiry_date_config_path=("credentials", "access_token_expiration"),
-            token_expiry_date_format=None,
-            token_expiry_is_time_of_expiration=True)
+        r.headers["Authorization"] = f"Bearer {self._token['access_token']}"
+        return r
 
 
 class Account(TotangoStream):
-
     # Primary key of the stream
     primary_key = "account_id"
     record_count = 1000
@@ -111,7 +83,7 @@ class Account(TotangoStream):
         return "accounts.yml"
 
     def __init__(self, authenticator: TotangoAuthenticator, config: dict):
-        super().__init__(authenticator=authenticator)  # Pass authenticator to the parent class
+        super().__init__(authenticator=authenticator)
         self._connector_config = config
 
     @property
@@ -124,14 +96,20 @@ class Account(TotangoStream):
     def path(self, stream_state=None, stream_slice=None, next_page_token=None) -> str:
         """Returns the endpoint path for this stream."""
         return "/api/v1/search/accounts"
-    
+
     def get_json_schema(self):
         schema = super().get_json_schema()
-        custom_fields = dpath.util.get(self._connector_config["AccountConfig"], "customFields", default=[])
 
-        if custom_fields:
-            for field in custom_fields:
-                schema["properties"][field["attribute"]] = field
+        if 'AccountConfig' in self._connector_config:
+            custom_fields = dpath.util.get(
+                self._connector_config["AccountConfig"],
+                "customFields",
+                default=[]
+            )
+
+            if custom_fields:
+                for field in custom_fields:
+                    schema["properties"][field["attribute"]] = field
 
         return schema
 
@@ -140,11 +118,18 @@ class Account(TotangoStream):
         Returns the fields for the API response.
         """
         schema = self.get_json_schema()
-        custom_fields = dpath.util.get(self._connector_config["AccountConfig"], "customFields", default=[])
+
+        custom_fields = None
+        if 'AccountConfig' in self._connector_config:
+            custom_fields = dpath.util.get(
+                self._connector_config["AccountConfig"],
+                "customFields",
+                default=[]
+            )
 
         fields = []
 
-        for field_name, field_details in schema["properties"].items():
+        for _, field_details in schema["properties"].items():
             field = {
                 "type": field_details["source_attribute"],
             }
@@ -175,7 +160,12 @@ class Account(TotangoStream):
 
         return fields
 
-    def request_body_json(self, stream_state=None, stream_slice=None, next_page_token=None) ->  MutableMapping[str, Any]:
+    def request_body_json(
+        self,
+        stream_state=None,
+        stream_slice=None,
+        next_page_token=None
+    ) -> MutableMapping[str, Any]:
         """
         Constructs the form-encoded body for the POST request.
         """
@@ -238,6 +228,7 @@ class Account(TotangoStream):
 
             yield yield_dict
 
+
 class Tasks(HttpSubStream, TotangoStream):
     primary_key = "id"
     record_count = 1000
@@ -269,7 +260,12 @@ class Tasks(HttpSubStream, TotangoStream):
         account_id = stream_slice["account_id"]
         return f"/api/v2/events?account_id={account_id}"
 
-    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Returns the stream slices for this stream.
         """
@@ -287,7 +283,7 @@ class Tasks(HttpSubStream, TotangoStream):
             )
             for record in parent_records:
                 yield {"account_id": record.get("account_id")}
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         Parses the API response to yield individual records.
@@ -296,7 +292,7 @@ class Tasks(HttpSubStream, TotangoStream):
 
         for task in response_json:
             yield task
-    
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Handles pagination based on the API response.
@@ -306,21 +302,17 @@ class Tasks(HttpSubStream, TotangoStream):
 
 class SourceTotango(AbstractSource):
     logger = logging.getLogger("SourceTotango")
-    url_base = "https://api-gw-us.totango.com"
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         Check connection and handle token rotation.
         """
         self.logger.info("Checking connection...")
-        authenticator = TotangoAuthenticator(config)
+        authenticator = TotangoAuthenticator(config['credentials'])
 
         try:
-            access_token = authenticator.get_access_token()
-            self.logger.info(f"Access token used for connection check: {access_token}")
-
-            url = f"{self.url_base}/api/v1/users/whoami"
-            response = requests.get(url, headers=authenticator.request_headers())
+            url = f"{_TOTANGO_URL_BASE}/api/v1/users/whoami"
+            response = requests.get(url, auth=authenticator)
 
             self.logger.info(f"Connection check response: {response.text}")
 
@@ -336,7 +328,12 @@ class SourceTotango(AbstractSource):
         """
         Define streams for this source.
         """
-        authenticator = TotangoAuthenticator(config)
+        authenticator = TotangoAuthenticator(config["credentials"])
 
-        return [Account(authenticator=authenticator, config=config), Tasks(parent=Account(authenticator=authenticator, config=config), authenticator=authenticator)]
-
+        return [
+            Account(authenticator=authenticator, config=config),
+            Tasks(parent=Account(
+                authenticator=authenticator, config=config),
+                authenticator=authenticator
+            )
+        ]
