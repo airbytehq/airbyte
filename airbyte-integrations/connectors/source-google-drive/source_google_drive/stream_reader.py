@@ -8,7 +8,7 @@ import json
 import logging
 from datetime import datetime
 from io import IOBase
-from typing import Iterable, List, Optional, Set, Dict
+from typing import Dict, Iterable, List, Optional, Set
 
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
@@ -207,7 +207,6 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             return 0
             # raise ValueError(f"Failed to retrieve file size for {file.id}: {e}")
 
-
     def get_file(self, file: GoogleDriveRemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
         """
         Downloads a file from Google Drive to a specified local directory.
@@ -244,4 +243,3 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         except Exception as e:
             logger.error(f"Failed to download file {file.uri}: {e}")
             raise
-
