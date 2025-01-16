@@ -6,8 +6,14 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
+import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
@@ -17,6 +23,7 @@ import java.util.Base64
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -79,9 +86,81 @@ abstract class S3DataLakeWriteTest(
         super.resumeAfterCancelledTruncate()
     }
 
+    /**
+     * Intended to test for basic schema evolution. Runs two append syncs, where the second sync has
+     * a few changes
+     * * drop the `to_drop` column
+     * * add a `to_add` column
+     */
     @Test
     override fun testAppendSchemaEvolution() {
-        super.testAppendSchemaEvolution()
+        Assumptions.assumeTrue(verifyDataWriting)
+        fun makeStream(syncId: Long, schema: LinkedHashMap<String, FieldType>) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(schema),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId,
+            )
+        runSync(
+            configContents,
+            makeStream(
+                syncId = 42,
+                linkedMapOf("id" to intType, "to_drop" to stringType, "same" to intType)
+            ),
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_drop": "val1", "same": 42}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val finalStream =
+            makeStream(
+                syncId = 43,
+                linkedMapOf("id" to intType, "same" to intType, "to_add" to stringType)
+            )
+        runSync(
+            configContents,
+            finalStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "same": "43", "to_add": "val3"}""",
+                    emittedAtMs = 1234,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 0,
+                    data =
+                        if (isStreamSchemaRetroactive)
+                        // the first sync's record has to_change modified to a string,
+                        // and to_drop is gone completely
+                        mapOf("id" to 42, "same" to "42")
+                        else mapOf("id" to 42, "to_drop" to "val1", "same" to 42),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 0,
+                    data = mapOf("id" to 42, "same" to 43, "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
     }
 
     @Test
