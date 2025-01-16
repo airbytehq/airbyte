@@ -3,7 +3,7 @@
 #
 
 from freezegun import freeze_time
-from source_railz.components import ShortLivedTokenAuthenticator
+from components import ShortLivedTokenAuthenticator
 
 
 def test_get_tokens(requests_mock):
