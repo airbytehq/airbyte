@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -42,6 +43,8 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
@@ -102,13 +105,22 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private MssqlInitialLoadStateManager initialLoadStateManager = null;
   public static final String JDBC_DELIMITER = ";";
   private List<String> schemas;
+  private int stateEmissionFrequency;
+  private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource(final MssqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MssqlSource() {
+    this(new EnvVariableFeatureFlags());
+    // super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+  }
+
+  public MssqlSource(FeatureFlags featureFlags) {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+    this.featureFlags = featureFlags;
+    this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   @Override
@@ -647,6 +659,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final var completeStatus =
         new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
     return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamItrator, completeStatus);
+  }
+
+  @Override
+  public FeatureFlags getFeatureFlags() {
+    return featureFlags;
+  }
+
+  @VisibleForTesting
+  protected void setStateEmissionFrequencyForDebug(final int stateEmissionFrequency) {
+    this.stateEmissionFrequency = stateEmissionFrequency;
   }
 
 }
