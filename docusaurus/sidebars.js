@@ -649,10 +649,6 @@ module.exports = {
               type: "doc", 
               id: "access-management/role-mapping" 
             },
-            {
-              type: "doc",
-              id: "access-management/audit-logging"
-            },
           ],
         },
       ],
