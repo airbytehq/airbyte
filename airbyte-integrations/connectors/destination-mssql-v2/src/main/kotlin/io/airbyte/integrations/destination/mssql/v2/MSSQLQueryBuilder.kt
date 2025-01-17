@@ -83,15 +83,17 @@ class MSSQLQueryBuilder(
     private val outputSchema: String = stream.descriptor.namespace ?: config.schema
     private val tableName: String = stream.descriptor.name
     private val fqTableName = "$outputSchema.$tableName"
-    private val uniquenessKey: List<String> = when (stream.importType) {
-        is Dedupe -> if ((stream.importType as Dedupe).primaryKey.isNotEmpty()) {
-            (stream.importType as Dedupe).primaryKey.map { it.joinToString(".") }
-        } else {
-            listOf((stream.importType as Dedupe).cursor.joinToString("."))
+    private val uniquenessKey: List<String> =
+        when (stream.importType) {
+            is Dedupe ->
+                if ((stream.importType as Dedupe).primaryKey.isNotEmpty()) {
+                    (stream.importType as Dedupe).primaryKey.map { it.joinToString(".") }
+                } else {
+                    listOf((stream.importType as Dedupe).cursor.joinToString("."))
+                }
+            Append -> emptyList()
+            Overwrite -> emptyList()
         }
-        Append -> emptyList()
-        Overwrite -> emptyList()
-    }
 
     private val toSqlType = AirbyteTypeToSqlType()
     private val toMssqlType = SqlTypeToMssqlType()
@@ -268,7 +270,8 @@ class MSSQLQueryBuilder(
                 FROM (VALUES ($templateColumns)) table_value($columns)
             """
         } else {
-            val uniquenessConstraint = uniquenessKey.joinToString(" AND ") { "Target.$it = Source.$it" }
+            val uniquenessConstraint =
+                uniquenessKey.joinToString(" AND ") { "Target.$it = Source.$it" }
             val updateStatement = schema.joinToString(", ") { "${it.name} = Source.${it.name}" }
             """
             MERGE INTO $fqTableName AS Target

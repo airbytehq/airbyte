@@ -35,11 +35,12 @@ class AirbyteValueToStatement {
     companion object {
         private val toSqlType = AirbyteTypeToSqlType()
         private val toSqlValue = AirbyteValueToSqlValue()
-        private val valueCoercingMapper = AirbyteValueDeepCoercingMapper(
-            recurseIntoObjects = false,
-            recurseIntoArrays = false,
-            recurseIntoUnions = false,
-        )
+        private val valueCoercingMapper =
+            AirbyteValueDeepCoercingMapper(
+                recurseIntoObjects = false,
+                recurseIntoArrays = false,
+                recurseIntoUnions = false,
+            )
 
         fun PreparedStatement.setValue(
             idx: Int,
