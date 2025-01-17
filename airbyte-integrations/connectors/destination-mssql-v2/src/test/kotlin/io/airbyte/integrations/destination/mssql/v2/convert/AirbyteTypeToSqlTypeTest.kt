@@ -42,21 +42,21 @@ class AirbyteTypeToSqlTypeTest {
                 ),
             )
         val result = converter.convert(objectType)
-        assertEquals(Types.BLOB, result)
+        assertEquals(Types.LONGVARCHAR, result)
     }
 
     @Test
     fun testConvertArrayType() {
         val arrayType = ArrayType(FieldType(IntegerType, false))
         val result = converter.convert(arrayType)
-        assertEquals(Types.BLOB, result)
+        assertEquals(Types.LONGVARCHAR, result)
     }
 
     @Test
     fun testConvertArrayTypeWithoutSchema() {
         val arrayType = ArrayTypeWithoutSchema
         val result = converter.convert(arrayType)
-        assertEquals(Types.BLOB, result)
+        assertEquals(Types.LONGVARCHAR, result)
     }
 
     @Test
@@ -91,14 +91,14 @@ class AirbyteTypeToSqlTypeTest {
     fun testConvertObjectTypeWithEmptySchema() {
         val objectType = ObjectTypeWithEmptySchema
         val result = converter.convert(objectType)
-        assertEquals(Types.BLOB, result)
+        assertEquals(Types.LONGVARCHAR, result)
     }
 
     @Test
     fun testConvertObjectTypeWithoutSchema() {
         val objectType = ObjectTypeWithoutSchema
         val result = converter.convert(objectType)
-        assertEquals(Types.BLOB, result)
+        assertEquals(Types.LONGVARCHAR, result)
     }
 
     @Test
@@ -140,14 +140,14 @@ class AirbyteTypeToSqlTypeTest {
     fun testConvertUnionType() {
         val unionType = UnionType(setOf(StringType, NumberType))
         val result = converter.convert(unionType)
-        assertEquals(Types.BLOB, result)
+        assertEquals(Types.LONGVARCHAR, result)
     }
 
     @Test
     fun testConvertUnknownType() {
         val unknownType = UnknownType(mockk<JsonNode>())
         val result = converter.convert(unknownType)
-        assertEquals(Types.BLOB, result)
+        assertEquals(Types.LONGVARCHAR, result)
     }
 
     @Test
