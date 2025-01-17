@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.mssql.v2
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getIpAddress
 import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getPort
-import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.testContainer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.testcontainers.containers.MSSQLServerContainer
 import org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT
@@ -41,7 +40,7 @@ object MSSQLContainerHelper {
 
     fun getPassword(): String = testContainer.password
 
-    fun getPort(): Int? = testContainer.firstMappedPort
+    fun getPort(): Int? = testContainer.getMappedPort(MS_SQL_SERVER_PORT)
 
     fun getIpAddress(): String? {
         // Ensure that the container is started first
@@ -54,14 +53,12 @@ class MSSQLConfigUpdater(private val replacePort: Boolean = false) : Configurati
     override fun update(config: String): String {
         var updatedConfig = config
         updatedConfig =
-            MSSQLContainerHelper.getIpAddress()?.let { config.replace("localhost", it) }
-                ?: updatedConfig
+            getIpAddress()?.let { updatedConfig.replace("localhost", it) } ?: updatedConfig
         if (replacePort) {
             updatedConfig =
-                getPort()?.let { config.replace("$MS_SQL_SERVER_PORT", it.toString()) }
+                getPort()?.let { updatedConfig.replace("$MS_SQL_SERVER_PORT", it.toString()) }
                     ?: updatedConfig
         }
-
         return updatedConfig.replace("replace_me", MSSQLContainerHelper.getPassword())
     }
 }
