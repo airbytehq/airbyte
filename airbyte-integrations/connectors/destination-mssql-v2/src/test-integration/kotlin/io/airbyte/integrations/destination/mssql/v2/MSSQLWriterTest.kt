@@ -45,9 +45,9 @@ abstract class MSSQLWriterTest(
         nullEqualsUnset = true,
         supportFileTransfer = false,
         envVars = emptyMap(),
-        configUpdater = MSSQLConfigUpdater(),
+        configUpdater = MSSQLConfigUpdater(replacePort = true),
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
-        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
         nullUnknownTypes = false,
     )
