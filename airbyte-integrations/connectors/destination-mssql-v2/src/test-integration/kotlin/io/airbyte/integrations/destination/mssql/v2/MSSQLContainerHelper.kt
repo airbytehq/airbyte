@@ -51,14 +51,16 @@ object MSSQLContainerHelper {
 
 class MSSQLConfigUpdater : ConfigurationUpdater {
     override fun update(config: String): String {
-        var updatedConfig = getIpAddress()?.let { config.replace("localhost", it) } ?: config
+        var updatedConfig = config
 
         // If not running the connector in docker, we must use the mapped port to connect to the
-        // database.
+        // database.  Otherwise, get the container's IP address for the host
         if (System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") != "docker") {
             updatedConfig =
                 getPort()?.let { updatedConfig.replace("$MS_SQL_SERVER_PORT", it.toString()) }
                     ?: updatedConfig
+        } else {
+            getIpAddress()?.let { config.replace("localhost", it) } ?: updatedConfig
         }
 
         updatedConfig = updatedConfig.replace("replace_me", MSSQLContainerHelper.getPassword())
