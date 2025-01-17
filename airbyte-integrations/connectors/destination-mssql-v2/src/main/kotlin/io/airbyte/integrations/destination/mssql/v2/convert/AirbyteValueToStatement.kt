@@ -35,6 +35,11 @@ class AirbyteValueToStatement {
     companion object {
         private val toSqlType = AirbyteTypeToSqlType()
         private val toSqlValue = AirbyteValueToSqlValue()
+        private val valueCoercingMapper = AirbyteValueDeepCoercingMapper(
+            recurseIntoObjects = false,
+            recurseIntoArrays = false,
+            recurseIntoUnions = false,
+        )
 
         fun PreparedStatement.setValue(
             idx: Int,
@@ -111,7 +116,7 @@ class AirbyteValueToStatement {
                             Types.TIMESTAMP_WITH_TIMEZONE
                         )
                 ) {
-                    val coercedValue = AirbyteValueDeepCoercingMapper().map(value, type)
+                    val coercedValue = valueCoercingMapper.map(value, type)
                     if (coercedValue.second.isEmpty()) {
                         when (coercedValue.first) {
                             is DateValue -> setAsDateValue(idx, coercedValue.first as DateValue)

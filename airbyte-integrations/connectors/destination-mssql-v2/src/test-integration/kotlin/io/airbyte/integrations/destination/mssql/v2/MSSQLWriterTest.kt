@@ -11,7 +11,9 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
+import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.integrations.destination.mssql.v2.config.DataSourceFactory
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfigurationFactory
@@ -37,14 +39,17 @@ abstract class MSSQLWriterTest(
         isStreamSchemaRetroactive = true,
         supportsDedup = true,
         stringifySchemalessObjects = false,
-        promoteUnionToObject = true,
         preserveUndeclaredFields = false,
         commitDataIncrementally = true,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         supportFileTransfer = false,
         envVars = emptyMap(),
-        configUpdater = MSSQLConfigUpdater()
+        configUpdater = MSSQLConfigUpdater(),
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
+        nullUnknownTypes = false,
     )
 
 class MSSQLDataDumper : DestinationDataDumper {
