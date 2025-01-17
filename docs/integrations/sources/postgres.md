@@ -112,28 +112,36 @@ ALTER USER <user_name> REPLICATION;
 
 #### Step 3: Enable logical replication on your Postgres database
 
-To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following parameters in the <a href="https://www.postgresql.org/docs/current/config-setting.html">postgresql.conf file</a> for your Postgres database:
+To enable logical replication, follow these steps based on your deployment environment:
+
+##### Bare Metal, VMs, and Docker
+
+ - To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following parameters in the [postgresql.conf file](https://www.postgresql.org/docs/current/config-setting.html) for your Postgres database:
 
 | Parameter             | Description                                                                    | Set value to                                                                                                                         |
 | --------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| wal_level             | Type of coding used within the Postgres write-ahead log                        | `logical `                                                                                                                           |
+| wal_level             | Type of coding used within the Postgres write-ahead log                        | `logical`                                                                                                                           |
 | max_wal_senders       | The maximum number of processes used for handling WAL changes                  | `min: 1`                                                                                                                             |
 | max_replication_slots | The maximum number of replication slots that are allowed to stream WAL changes | `1` (if Airbyte is the only service reading subscribing to WAL changes. More than 1 if other services are also reading from the WAL) |
 
-To enable logical replication on AWS Postgres RDS or Aurora:
+##### AWS Postgres RDS or Aurora
 
 - Go to the Configuration tab for your DB cluster.
 - Find your cluster parameter group. Either edit the parameters for this group or create a copy of this parameter group to edit. If you create a copy, change your cluster's parameter group before restarting.
-- Within the parameter group page, search for `rds.logical_replication`. Select this row and click Edit parameters. Set this value to 1.
+- Within the parameter group page, search for `rds.logical_replication`. Select this row and click Edit parameters. Set this value to `1`.
 - Wait for a maintenance window to automatically restart the instance or restart it manually.
 
-To enable logical replication on Azure Database for Postgres, change the replication mode of your Postgres DB on Azure to `logical` using the replication menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the Azure CLI to run the following command:
+:::note AWS Aurora implements a [CDC caching layer](https://aws.amazon.com/blogs/database/achieve-up-to-17x-lower-replication-lag-with-the-new-write-through-cache-for-aurora-postgresql/) that is incompatible with Airbyte's CDC implementation. To use Airbyte with AWS Aurora, disable the CDC caching layer. Disable CDC caching by setting the [`rds.logical_wal_cache`](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Replication.Logical.html) parameter to `0` in the AWS Aurora parameter group.
+:::
+
+##### Azure Database for Postgres
+
+- Change the replication mode of your Postgres DB on Azure to `logical` using the replication menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the Azure CLI to run the following command:
 
 ```
 az postgres server configuration set --resource-group group --server-name server --name azure.replication_support --value logical
 az postgres server restart --resource-group group --name server
 ```
-
 #### Step 4: Create a replication slot on your Postgres database
 <FieldAnchor field="replication_method.replication_slot">
 Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot.
