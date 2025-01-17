@@ -4,7 +4,10 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.FieldType
@@ -31,11 +34,11 @@ import java.util.UUID
 
 const val GET_EXISTING_SCHEMA_QUERY =
     """
-            SELECT COLUMN_NAME, DATA_TYPE
-            FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
-            ORDER BY ORDINAL_POSITION ASC
-        """
+        SELECT COLUMN_NAME, DATA_TYPE
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
+        ORDER BY ORDINAL_POSITION ASC
+    """
 
 class MSSQLQueryBuilder(
     config: MSSQLConfiguration,
@@ -80,6 +83,15 @@ class MSSQLQueryBuilder(
     private val outputSchema: String = stream.descriptor.namespace ?: config.schema
     private val tableName: String = stream.descriptor.name
     private val fqTableName = "$outputSchema.$tableName"
+    private val uniquenessKey: List<String> = when (stream.importType) {
+        is Dedupe -> if ((stream.importType as Dedupe).primaryKey.isNotEmpty()) {
+            (stream.importType as Dedupe).primaryKey.map { it.joinToString(".") }
+        } else {
+            listOf((stream.importType as Dedupe).cursor.joinToString("."))
+        }
+        Append -> emptyList()
+        Overwrite -> emptyList()
+    }
 
     private val toSqlType = AirbyteTypeToSqlType()
     private val toMssqlType = SqlTypeToMssqlType()
@@ -247,17 +259,28 @@ class MSSQLQueryBuilder(
         fqTableName: String,
         schema: List<NamedField>
     ): String {
-        return StringBuilder()
-            .apply {
-                val columns = schema.joinToString(", ") { it.name }
-                val templateColumns = schema.joinToString(", ") { "?" }
-                append("""
-                    INSERT INTO $fqTableName ($columns)
-                      SELECT table_value.*
-                      FROM (VALUES ($templateColumns)) table_value($columns)
-                """.trimIndent())
-            }
-            .toString()
+        val columns = schema.joinToString(", ") { it.name }
+        val templateColumns = schema.joinToString(", ") { "?" }
+        return if (uniquenessKey.isEmpty()) {
+            """
+            INSERT INTO $fqTableName ($columns)
+                SELECT table_value.*
+                FROM (VALUES ($templateColumns)) table_value($columns)
+            """
+        } else {
+            val uniquenessConstraint = uniquenessKey.joinToString(" AND ") { "Target.$it = Source.$it" }
+            val updateStatement = schema.joinToString(", ") { "${it.name} = Source.${it.name}" }
+            """
+            MERGE INTO $fqTableName AS Target
+            USING (VALUES ($templateColumns)) AS Source ($columns)
+            ON $uniquenessConstraint
+            WHEN MATCHED THEN
+                UPDATE SET $updateStatement
+            WHEN NOT MATCHED BY TARGET THEN
+                INSERT ($columns) VALUES ($columns)
+            ;
+            """.trimIndent()
+        }
     }
 
     private fun extractFinalTableSchema(schema: AirbyteType): List<NamedField> =
