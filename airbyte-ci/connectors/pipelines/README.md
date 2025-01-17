@@ -854,7 +854,8 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 4.48.8  | [#51609](https://github.com/airbytehq/airbyte/pull/51609)  | Fix typo in `migrate-to-inline-schemas` command                                                       |
+| 4.48.9  | [#51609](https://github.com/airbytehq/airbyte/pull/51609)  | Fix ownership of shared cache volume for non root connectors                                                                 |
+| 4.48.8  | [#51582](https://github.com/airbytehq/airbyte/pull/51582)  | Fix typo in `migrate-to-inline-schemas` command                                                       |
 | 4.48.7  | [#51579](https://github.com/airbytehq/airbyte/pull/51579)  | Give back the ownership of /tmp to the original user on finalize build                                                       |
 | 4.48.6  | [#51577](https://github.com/airbytehq/airbyte/pull/51577)  | Run finalize build scripts as root                                                                                           |
 | 4.48.5  | [#49827](https://github.com/airbytehq/airbyte/pull/49827)  | Bypasses CI checks for promoted release candidate PRs.                                                                       |

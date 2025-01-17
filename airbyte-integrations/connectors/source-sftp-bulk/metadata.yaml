@@ -7,7 +7,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 31e3242f-dee7-4cdc-a4b8-8e06c5458517
-  dockerImageTag: 1.7.0-rc.1
+  dockerImageTag: 1.7.0
   dockerRepository: airbyte/source-sftp-bulk
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
   githubIssueLabel: source-sftp-bulk
@@ -26,7 +26,7 @@ data:
   releaseStage: alpha
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: "This upgrade migrates the SFTP Bulk source to the Airbyte file-based CDK. This is the first necessary step of transitioning a file connector from community to Airbyte maintained."
