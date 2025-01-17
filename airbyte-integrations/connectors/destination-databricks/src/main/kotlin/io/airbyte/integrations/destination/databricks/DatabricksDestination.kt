@@ -62,8 +62,8 @@ class DatabricksDestination : BaseConnector(), Destination {
             val datasource = DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
             val sqlGenerator =
                 DatabricksSqlGenerator(
-                    DatabricksNamingTransformer(), 
-                    connectorConfig.database, 
+                    DatabricksNamingTransformer(),
+                    connectorConfig.database,
                     connectorConfig.useVariantDatatype
                 )
             val jdbcDatabase = DefaultJdbcDatabase(datasource)
@@ -213,8 +213,8 @@ class DatabricksDestination : BaseConnector(), Destination {
 
         val sqlGenerator =
             DatabricksSqlGenerator(
-                DatabricksNamingTransformer(), 
-                connectorConfig.database, 
+                DatabricksNamingTransformer(),
+                connectorConfig.database,
                 connectorConfig.useVariantDatatype
             )
         val defaultNamespace = connectorConfig.schema
