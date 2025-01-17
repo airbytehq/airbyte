@@ -245,16 +245,28 @@ class MSSQLQueryBuilder(
             END
         """.trimIndent()
 
-    private fun createTableIfNotExists(fqTableName: String, schema: List<NamedField>): String =
-        """
+    private fun createTableIfNotExists(fqTableName: String, schema: List<NamedField>): String {
+        val index = if (uniquenessKey.isNotEmpty()) createIndex(fqTableName, uniquenessKey, clustered = false) else ""
+        val cdcIndex = if (hasCdc) createIndex(fqTableName, listOf(AIRBYTE_CDC_DELETED_AT)) else ""
+
+        return """
             IF OBJECT_ID('$fqTableName') IS NULL
             BEGIN
                 CREATE TABLE $fqTableName
                 (
                     ${airbyteTypeToSqlSchema(schema)}
                 );
+                $index;
+                $cdcIndex;
             END
         """.trimIndent()
+    }
+
+    private fun createIndex(fqTableName: String, columns: List<String>, clustered: Boolean = false): String {
+        val name = "${fqTableName.replace('.', '_')}_${columns.hashCode()}"
+        val indexType = if (clustered) "CLUSTERED" else ""
+        return "CREATE $indexType INDEX $name ON $fqTableName (${columns.joinToString(", ")})"
+    }
 
     private fun deleteWhereCdc(fqTableName: String) =
         """
