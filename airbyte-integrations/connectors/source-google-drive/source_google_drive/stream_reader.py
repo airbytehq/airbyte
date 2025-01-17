@@ -6,6 +6,7 @@
 import io
 import json
 import logging
+from os.path import getsize
 from collections import defaultdict
 from datetime import datetime
 from io import IOBase
@@ -20,6 +21,7 @@ from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
+from .exceptions import ErrorFetchingMetadata, ErrorDownloadingFile
 
 from .spec import SourceGoogleDriveSpec
 
@@ -232,14 +234,15 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
         Returns:
             int: The file size in bytes.
+        ref: https://developers.google.com/drive/api/reference/rest/v3/files/get
         """
         try:
-            file_metadata = self.google_drive_service.files().get(fileId=file.id, fields="size").execute()
-            return int(file_metadata.get("size", 0))
+            file_metadata = self.google_drive_service.files().get(fileId=file.id, fields="size", supportsAllDrives=True).execute()
+            return int(file_metadata["size"])
+        except KeyError:
+            raise ErrorFetchingMetadata(f"Size was expected in metadata response but was missing")
         except Exception as e:
-            # TODO: check why this is failing
-            return 0
-            # raise ValueError(f"Failed to retrieve file size for {file.id}: {e}")
+            raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
 
     def get_file(self, file: GoogleDriveRemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
         """
@@ -253,13 +256,13 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         Returns:
             Dict[str, str | int]: Contains the local file path and file size in bytes.
         """
-        try:
-            file_size = self.file_size(file)
-            # I'm putting this check here so we can remove the safety wheels per connector when ready.
-            if file_size > self.FILE_SIZE_LIMIT:
-                message = "File size exceeds the 1 GB limit."
-                raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+        file_size = self.file_size(file)
+        # I'm putting this check here so we can remove the safety wheels per connector when ready.
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = "File size exceeds the 1 GB limit."
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
+        try:
             file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
 
             if file.original_mime_type.startswith("application/vnd.google-apps."):
@@ -278,8 +281,10 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                     status, done = downloader.next_chunk(num_retries=3)
                     logger.info(f"Processing file {file.uri}, progress: {status}%")
 
+            # native google objects seems to be reporting lower size through the api than the final download
+            file_size = getsize(local_file_path)
+
             return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
 
         except Exception as e:
-            logger.error(f"Failed to download file {file.uri}: {e}")
-            raise
+            raise ErrorDownloadingFile(f"There was an error while trying to download the file: {str(e)}")
