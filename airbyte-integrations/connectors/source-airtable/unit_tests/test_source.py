@@ -36,7 +36,7 @@ class TestSourceAirtable:
             "_airtable_created_time": {"type": ["null", "string"]},
             "_airtable_id": {"type": ["null", "string"]},
             "_airtable_table_name": {"type": ["null", "string"]},
-            "assignee": {"type": ["null", "array"]},
+            "assignee": {"type": ["null", "number"]},
             "assignee_(from_table_6)": {"type": ["null", "array"]},
             "barcode": {"type": ["null", "string"]},
             "float": {"type": ["null", "number"]},
