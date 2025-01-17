@@ -1,213 +1,230 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/enterprise-connectors/source-netsuite",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Netsuite Source Spec",
     "type": "object",
-    "additionalProperties": true,
+    "title": "Netsuite Source Spec",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "required": [
+      "host",
+      "port",
+      "username",
+      "tunnel_method",
+      "cursor",
+      "account_id",
+      "role_id"
+    ],
     "properties": {
       "host": {
         "type": "string",
-        "description": "Hostname of the database.",
+        "order": 1,
         "title": "Host",
-        "order": 1
+        "description": "Hostname of the database."
       },
       "port": {
         "type": "integer",
-        "default": 1708,
-        "description": "Port of the database.",
-        "title": "Port",
         "order": 2,
+        "title": "Port",
+        "default": 1708,
+        "maximum": 65536,
         "minimum": 0,
-        "maximum": 65536
+        "description": "Port of the database."
       },
-      "username": {
+      "cursor": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Scan Changes with User Defined Cursor",
+            "required": ["cursor_method"],
+            "properties": {
+              "cursor_method": {
+                "enum": ["user_defined"],
+                "type": "string",
+                "default": "user_defined"
+              }
+            },
+            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+            "additionalProperties": true
+          }
+        ],
+        "order": 10,
+        "title": "Update Method",
+        "description": "Configures how data is extracted from the database.",
+        "display_type": "radio"
+      },
+      "role_id": {
         "type": "string",
-        "description": "The username which is used to access the database.",
-        "title": "User",
-        "order": 4
+        "order": 7,
+        "title": "Role Id",
+        "description": "The username which is used to access the database."
       },
       "password": {
         "type": "string",
-        "description": "The password associated with the username.",
-        "title": "Password",
         "order": 5,
+        "title": "Password",
         "always_show": true,
+        "description": "The password associated with the username.",
         "airbyte_secret": true
       },
-      "jdbc_url_params": {
+      "username": {
         "type": "string",
-        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
-        "title": "JDBC URL Params",
-        "order": 7
+        "order": 4,
+        "title": "User",
+        "description": "The username which is used to access the database."
+      },
+      "account_id": {
+        "type": "string",
+        "order": 6,
+        "title": "Account ID",
+        "description": "The username which is used to access the database."
+      },
+      "concurrency": {
+        "type": "integer",
+        "order": 12,
+        "title": "Concurrency",
+        "default": 1,
+        "description": "Maximum number of concurrent queries to the database."
       },
       "tunnel_method": {
+        "type": "object",
         "oneOf": [
           {
-            "title": "No Tunnel",
             "type": "object",
-            "additionalProperties": true,
-            "description": "No ssh tunnel needed to connect to database",
+            "title": "No Tunnel",
+            "required": ["tunnel_method"],
             "properties": {
               "tunnel_method": {
-                "type": "string",
                 "enum": ["NO_TUNNEL"],
+                "type": "string",
                 "default": "NO_TUNNEL"
               }
             },
-            "required": ["tunnel_method"]
+            "description": "No ssh tunnel needed to connect to database",
+            "additionalProperties": true
           },
           {
-            "title": "SSH Key Authentication",
             "type": "object",
-            "additionalProperties": true,
-            "description": "Connect through a jump server tunnel host using username and ssh key",
-            "properties": {
-              "tunnel_method": {
-                "type": "string",
-                "enum": ["SSH_KEY_AUTH"],
-                "default": "SSH_KEY_AUTH"
-              },
-              "tunnel_host": {
-                "type": "string",
-                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
-                "title": "SSH Tunnel Jump Server Host",
-                "order": 1
-              },
-              "tunnel_port": {
-                "type": "integer",
-                "default": 22,
-                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
-                "title": "SSH Connection Port",
-                "order": 2,
-                "minimum": 0,
-                "maximum": 65536
-              },
-              "tunnel_user": {
-                "type": "string",
-                "description": "OS-level username for logging into the jump server host",
-                "title": "SSH Login Username",
-                "order": 3
-              },
-              "ssh_key": {
-                "type": "string",
-                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
-                "title": "SSH Private Key",
-                "order": 4,
-                "multiline": true,
-                "airbyte_secret": true
-              }
-            },
+            "title": "SSH Key Authentication",
             "required": [
               "tunnel_method",
               "tunnel_host",
               "tunnel_port",
               "tunnel_user",
               "ssh_key"
-            ]
-          },
-          {
-            "title": "Password Authentication",
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Connect through a jump server tunnel host using username and password authentication",
+            ],
             "properties": {
-              "tunnel_method": {
+              "ssh_key": {
                 "type": "string",
-                "enum": ["SSH_PASSWORD_AUTH"],
-                "default": "SSH_PASSWORD_AUTH"
+                "order": 4,
+                "title": "SSH Private Key",
+                "multiline": true,
+                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+                "airbyte_secret": true
               },
               "tunnel_host": {
                 "type": "string",
-                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "order": 1,
                 "title": "SSH Tunnel Jump Server Host",
-                "order": 1
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel."
               },
               "tunnel_port": {
                 "type": "integer",
-                "default": 22,
-                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
-                "title": "SSH Connection Port",
                 "order": 2,
+                "title": "SSH Connection Port",
+                "default": 22,
+                "maximum": 65536,
                 "minimum": 0,
-                "maximum": 65536
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections."
               },
               "tunnel_user": {
                 "type": "string",
-                "description": "OS-level username for logging into the jump server host",
+                "order": 3,
                 "title": "SSH Login Username",
-                "order": 3
+                "description": "OS-level username for logging into the jump server host"
               },
-              "tunnel_user_password": {
+              "tunnel_method": {
+                "enum": ["SSH_KEY_AUTH"],
                 "type": "string",
-                "description": "OS-level password for logging into the jump server host",
-                "title": "Password",
-                "order": 4,
-                "airbyte_secret": true
+                "default": "SSH_KEY_AUTH"
               }
             },
+            "description": "Connect through a jump server tunnel host using username and ssh key",
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "Password Authentication",
             "required": [
               "tunnel_method",
               "tunnel_host",
               "tunnel_port",
               "tunnel_user",
               "tunnel_user_password"
-            ]
-          }
-        ],
-        "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
-        "title": "SSH Tunnel Method",
-        "order": 9,
-        "type": "object"
-      },
-      "cursor": {
-        "oneOf": [
-          {
-            "title": "Scan Changes with User Defined Cursor",
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+            ],
             "properties": {
-              "cursor_method": {
+              "tunnel_host": {
                 "type": "string",
-                "enum": ["user_defined"],
-                "default": "user_defined"
+                "order": 1,
+                "title": "SSH Tunnel Jump Server Host",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel."
+              },
+              "tunnel_port": {
+                "type": "integer",
+                "order": 2,
+                "title": "SSH Connection Port",
+                "default": 22,
+                "maximum": 65536,
+                "minimum": 0,
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections."
+              },
+              "tunnel_user": {
+                "type": "string",
+                "order": 3,
+                "title": "SSH Login Username",
+                "description": "OS-level username for logging into the jump server host"
+              },
+              "tunnel_method": {
+                "enum": ["SSH_PASSWORD_AUTH"],
+                "type": "string",
+                "default": "SSH_PASSWORD_AUTH"
+              },
+              "tunnel_user_password": {
+                "type": "string",
+                "order": 4,
+                "title": "Password",
+                "description": "OS-level password for logging into the jump server host",
+                "airbyte_secret": true
               }
             },
-            "required": ["cursor_method"]
+            "description": "Connect through a jump server tunnel host using username and password authentication",
+            "additionalProperties": true
           }
         ],
-        "description": "Configures how data is extracted from the database.",
-        "title": "Update Method",
-        "order": 10,
-        "display_type": "radio",
-        "type": "object"
+        "order": 9,
+        "title": "SSH Tunnel Method",
+        "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use."
       },
-      "checkpoint_target_interval_seconds": {
-        "type": "integer",
-        "default": 300,
-        "description": "How often (in seconds) a stream should checkpoint, when possible.",
-        "title": "Checkpoint Target Time Interval",
-        "order": 11
-      },
-      "concurrency": {
-        "type": "integer",
-        "default": 1,
-        "description": "Maximum number of concurrent queries to the database.",
-        "title": "Concurrency",
-        "order": 12
+      "jdbc_url_params": {
+        "type": "string",
+        "order": 8,
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
       },
       "check_privileges": {
         "type": "boolean",
-        "default": true,
-        "description": "When this feature is enabled, during schema discovery the connector will query each table or view individually to check access privileges and inaccessible tables, views, or columns therein will be removed. In large schemas, this might cause schema discovery to take too long, in which case it might be advisable to disable this feature.",
+        "order": 13,
         "title": "Check Table and Column Access Privileges",
-        "order": 13
+        "default": true,
+        "description": "When this feature is enabled, during schema discovery the connector will query each table or view individually to check access privileges and inaccessible tables, views, or columns therein will be removed. In large schemas, this might cause schema discovery to take too long, in which case it might be advisable to disable this feature."
+      },
+      "checkpoint_target_interval_seconds": {
+        "type": "integer",
+        "order": 11,
+        "title": "Checkpoint Target Time Interval",
+        "default": 300,
+        "description": "How often (in seconds) a stream should checkpoint, when possible."
       }
     },
-    "required": ["host", "port", "username", "tunnel_method", "cursor"]
-  },
-  "supportsNormalization": false,
-  "supportsDBT": false,
-  "supported_destination_sync_modes": []
+    "additionalProperties": true
+  }
 }

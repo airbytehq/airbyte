@@ -85,11 +85,14 @@ class NetsuiteSourceConfigurationFactory :
                 jdbcProperties[key] = URLDecoder.decode(urlEncodedValue, StandardCharsets.UTF_8)
             }
         }
+        Class.forName("com.netsuite.jdbc.openaccess.OpenAccessDriver")
+
         // todo: fix netsuite address.
         // example:
         // jdbc:ns://<ServiceHost>:1708;ServerDataSource=NetSuite2.com;Encrypted=1;NegotiateSSLClose=false;CustomProperties=(AccountID=<accountID>;RoleID=<roleID>);
-        val address = "%s:%d"
-        val jdbcUrlFmt = "jdbc:ns//${address}"
+        val address =
+            "%s:%d;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(AccountID=${pojo.accountId};RoleID=${pojo.roleId})"
+        val jdbcUrlFmt = "jdbc:ns://${address}"
 
         val sshOpts = SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
         val checkpointTargetInterval: Duration =

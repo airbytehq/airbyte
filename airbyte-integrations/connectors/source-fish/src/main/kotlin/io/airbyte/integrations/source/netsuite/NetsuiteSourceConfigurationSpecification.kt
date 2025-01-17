@@ -78,6 +78,18 @@ class NetsuiteSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
     var password: String? = null
 
+    @JsonProperty("account_id")
+    @JsonSchemaTitle("Account ID")
+    @JsonPropertyDescription("The username which is used to access the database.")
+    @JsonSchemaInject(json = """{"order":6}""")
+    lateinit var accountId: String
+
+    @JsonProperty("role_id")
+    @JsonSchemaTitle("Role Id")
+    @JsonPropertyDescription("The username which is used to access the database.")
+    @JsonSchemaInject(json = """{"order":7}""")
+    lateinit var roleId: String
+
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
     @JsonPropertyDescription(
@@ -85,7 +97,7 @@ class NetsuiteSourceConfigurationSpecification : ConfigurationSpecification() {
             "formatted as 'key=value' pairs separated by the symbol '&'. " +
             "(example: key1=value1&key2=value2&key3=value3).",
     )
-    @JsonSchemaInject(json = """{"order":7}""")
+    @JsonSchemaInject(json = """{"order":8}""")
     var jdbcUrlParams: String? = null
 
     @JsonIgnore
