@@ -9,7 +9,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
+import io.airbyte.cdk.load.write.UnionBehavior
 import java.nio.file.Files
 import java.util.Base64
 import okhttp3.FormBody
@@ -33,12 +35,19 @@ abstract class S3DataLakeWriteTest(
         isStreamSchemaRetroactive = true,
         supportsDedup = true,
         stringifySchemalessObjects = true,
-        promoteUnionToObject = true,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        unionBehavior = UnionBehavior.STRINGIFY,
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         supportFileTransfer = false,
         envVars = envVars,
-        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        allTypesBehavior =
+            StronglyTyped(
+                integerCanBeLarge = false,
+                // we stringify objects, so nested floats stay exact
+                nestedFloatLosesPrecision = false
+            ),
         nullUnknownTypes = true,
         nullEqualsUnset = true,
     ) {
@@ -92,7 +101,12 @@ class GlueWriteTest :
                 S3DataLakeTestUtil.getAWSSystemCredentials()
             )
         )
-    )
+    ) {
+    @Test
+    override fun testUnions() {
+        super.testUnions()
+    }
+}
 
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
