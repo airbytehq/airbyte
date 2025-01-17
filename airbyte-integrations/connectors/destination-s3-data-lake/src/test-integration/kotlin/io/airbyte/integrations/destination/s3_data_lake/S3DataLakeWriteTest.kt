@@ -32,6 +32,7 @@ abstract class S3DataLakeWriteTest(
         S3DataLakeDataDumper,
         destinationCleaner,
         S3DataLakeExpectedRecordMapper,
+        additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
         isStreamSchemaRetroactive = true,
         supportsDedup = true,
         stringifySchemalessObjects = true,
@@ -78,7 +79,7 @@ class GlueWriteTest :
         S3DataLakeDestinationCleaner(
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAWSSystemCredentials()
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
             )
         )
     ) {
@@ -96,10 +97,10 @@ class GlueAssumeRoleWriteTest :
         S3DataLakeDestinationCleaner(
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAWSSystemCredentials()
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
             )
         ),
-        S3DataLakeTestUtil.getAWSSystemCredentialsAsMap()
+        S3DataLakeTestUtil.getAwsAssumeRoleCredentialsAsMap()
     ) {
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
