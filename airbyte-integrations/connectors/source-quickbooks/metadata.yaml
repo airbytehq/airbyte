@@ -36,14 +36,14 @@ data:
           to fix normalization. You may need to refresh the connection schema for
           those streams (skipping the reset), and running a sync. Alternatively, you
           can just run a reset."
-        upgradeDeadline: 2023-10-04
+        upgradeDeadline: "2023-10-04"
       4.0.0:
         message:
           "The config no longer has a nested credentials field, while the config fields remain the same,
           they are now at the root level instead of being nested inside a credentials object
           You will need to repopulate the config fields to make the connector work again.
           This is done to fix the refresh token issue where it wasn't getting updated after 24 hours."
-        upgradeDeadline: 2025-02-15
+        upgradeDeadline: "2025-02-15"
   documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
   tags:
     - cdk:low-code
