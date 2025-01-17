@@ -23,7 +23,6 @@ import java.time.Instant
 import java.util.UUID
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.TestInstance
 
 abstract class MSSQLWriterTest(
     configPath: String,
@@ -135,21 +134,24 @@ class MSSQLDataCleaner : DestinationCleaner {
     }
 }
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class StandardInsert :
+internal class StandardInsert :
     MSSQLWriterTest(
         "check/valid.json",
         MSSQLDataDumper(),
         MSSQLDataCleaner(),
     ) {
 
-    @BeforeAll
-    fun beforeAll() {
-        MSSQLContainerHelper.start()
-    }
+    companion object {
+        @JvmStatic
+        @BeforeAll
+        fun beforeAll() {
+            MSSQLContainerHelper.start()
+        }
 
-    @AfterAll
-    fun afterAll() {
-        MSSQLContainerHelper.stop()
+        @JvmStatic
+        @AfterAll
+        fun afterAll() {
+            MSSQLContainerHelper.stop()
+        }
     }
 }

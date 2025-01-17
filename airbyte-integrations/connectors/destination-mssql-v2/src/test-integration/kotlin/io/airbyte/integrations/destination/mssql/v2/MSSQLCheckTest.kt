@@ -9,9 +9,7 @@ import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLSpecification
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.TestInstance
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class MSSQLCheckTest :
     CheckIntegrationTest<MSSQLSpecification>(
         successConfigFilenames =
@@ -28,13 +26,17 @@ internal class MSSQLCheckTest :
         configUpdater = MSSQLConfigUpdater()
     ) {
 
-    @BeforeAll
-    fun beforeAll() {
-        MSSQLContainerHelper.start()
-    }
+    companion object {
+        @JvmStatic
+        @BeforeAll
+        fun beforeAll() {
+            MSSQLContainerHelper.start()
+        }
 
-    @AfterAll
-    fun afterAll() {
-        MSSQLContainerHelper.stop()
+        @JvmStatic
+        @AfterAll
+        fun afterAll() {
+            MSSQLContainerHelper.stop()
+        }
     }
 }
