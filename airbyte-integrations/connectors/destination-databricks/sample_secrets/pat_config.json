@@ -1,0 +1,12 @@
+{
+  "accept_terms": true,
+  "hostname": "abc-12345678-wxyz.cloud.databricks.com",
+  "http_path": "sql/protocolvx/o/1234567489/0000-1111111-abcd90",
+  "port": "443",
+  "database": "catalog_name",
+  "schema": "schema_name",
+  "authentication": {
+    "auth_type": "BASIC",
+    "personal_access_token": "deadbeef00001111"
+  }
+}

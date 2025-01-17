@@ -188,26 +188,26 @@ class DatabricksDestinationHandler(
     ): Boolean {
         val isAbRawIdMatch =
             tableDefinition.columns.contains(COLUMN_NAME_AB_RAW_ID) &&
-                DatabricksSqlGenerator.toDialectType(STRING) ==
+                sqlGenerator.toDialectType(STRING) ==
                     tableDefinition.columns[COLUMN_NAME_AB_RAW_ID]?.type
         val isAbExtractedAtMatch =
             tableDefinition.columns.contains(COLUMN_NAME_AB_EXTRACTED_AT) &&
-                DatabricksSqlGenerator.toDialectType(TIMESTAMP_WITH_TIMEZONE) ==
+                sqlGenerator.toDialectType(TIMESTAMP_WITH_TIMEZONE) ==
                     tableDefinition.columns[COLUMN_NAME_AB_EXTRACTED_AT]?.type
         val isAbMetaMatch =
             tableDefinition.columns.contains(COLUMN_NAME_AB_META) &&
-                DatabricksSqlGenerator.toDialectType(STRING) ==
+                sqlGenerator.toDialectType(STRING) ==
                     tableDefinition.columns[COLUMN_NAME_AB_META]?.type
         val isAbGenerationMatch =
             tableDefinition.columns.contains(COLUMN_NAME_AB_GENERATION_ID) &&
-                DatabricksSqlGenerator.toDialectType(AirbyteProtocolType.INTEGER) ==
+                sqlGenerator.toDialectType(AirbyteProtocolType.INTEGER) ==
                     tableDefinition.columns[COLUMN_NAME_AB_GENERATION_ID]?.type
         if (!isAbRawIdMatch || !isAbExtractedAtMatch || !isAbMetaMatch || !isAbGenerationMatch)
             return false
 
         val expectedColumns =
             streamConfig.columns.entries.associate {
-                it.key.name to DatabricksSqlGenerator.toDialectType(it.value)
+                it.key.name to sqlGenerator.toDialectType(it.value)
             }
         val actualColumns =
             tableDefinition.columns.entries

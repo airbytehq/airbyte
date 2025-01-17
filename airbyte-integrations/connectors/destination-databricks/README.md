@@ -19,15 +19,28 @@ From the Airbyte repository root, run:
 
 #### Create credentials
 
-**If you are a community contributor**, you will need access to AWS S3, Azure blob storage, and Databricks cluster to run the integration tests:
+**If you are a community contributor**, you will need access to a Databricks workspace to run the integration tests:
 
-- Create a Databricks cluster. See [documentation](https://docs.databricks.com/clusters/create.html).
-- Create an S3 bucket. See [documentation](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
-- Create an Azure storage container.
-- Grant the Databricks cluster full access to the S3 bucket and Azure container. Or mount it as Databricks File System (DBFS). See [documentation](https://docs.databricks.com/data/data-sources/aws/amazon-s3.html).
-- Place both Databricks and S3 credentials in `sample_secrets/config.json`, which conforms to the spec file in `src/main/resources/spec.json`.
-- Place both Databricks and Azure credentials in `sample_secrets/azure_config.json`, which conforms to the spec file in `src/main/resources/spec.json`.
-- Rename the directory from `sample_secrets` to `secrets`.
+- Copy the `sample_secrets` directory to `secrets`.
+- Create a Databricks workspace. See [documentation](https://docs.databricks.com/clusters/create.html).
+- Create a service principal in Databricks and note down its application id (referred later as `<application_id>`).
+- Create a OAuth credentials for the service principal and place them in `secrets/oauth_config.json`.
+- Create a catalog in Databricks for airbyte testing and give the service principal `ALL PRIVELEGES` permissions to the catalog.
+- Create a (serverless) SQL Warehouse in Databricks (pick the smallest size and auto stop time) and give the service principal `Can use` permissions.
+- Add the catalog name and SQL Warehouse server hostname and http path to `secrets/oauth_config.json` and `secrets/pat_config.json`.
+- Go to Settings -> `Workspace Admin` -> `Advanced` -> `Personal Access Tokens` and click the `Permissions Settings`. 
+  Add `Can Use` permissions to your service principal.
+  If the `Permissions Settings` button is greyed out, then go to your personal developer settings, create a token with lifetime of 1 day and click done (don't use the code anywhere). 
+  This should enable the `Permissions Settings` button.
+- Create a personal access token (PAT) for the service principal as follows: 
+  ```bash
+  export DATABRICKS_CLIENT_ID=<service-principal-client-id>
+  export DATABRICKS_CLIENT_SECRET=<service-principal-client-secret>
+  export DATABRICKS_HOST=https://<your-databricks-workspace-hostname>
+  # Setting the lifetime seconds is optional, but recommended.
+  databricks token create [--lifetime-seconds <lifetime-seconds>]
+  ```
+- Take the `token_value` from the output and past in `secrets/pat_config.json`.
 - Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
 
 **If you are an Airbyte core member**:
@@ -39,7 +52,7 @@ From the Airbyte repository root, run:
 
 #### Build
 
-Build the connector image via Gradle:
+Build the connector image via Gradle. Run the command below from the root of the repository:
 
 ```
 ./gradlew :airbyte-integrations:connectors:destination-databricks:buildConnectorImage
@@ -47,6 +60,18 @@ Build the connector image via Gradle:
 
 Once built, the docker image name and tag on your host will be `airbyte/destination-databricks:dev`.
 the Dockerfile.
+
+Alternatively, you can use `airbyte-ci` to build the image:
+
+```
+airbyte-ci connectors --name=destination-databricks build
+```
+
+Once the image is built, you can load it into a local airbyte instance:
+
+```
+kind load docker-image airbyte/destination-databricks:dev -n airbyte-abctl
+```
 
 #### Run
 
@@ -78,13 +103,13 @@ All commands should be run from airbyte project root.
 To run unit tests:
 
 ```
-./gradlew :airbyte-integrations:connectors:destination-databricks:unitTest
+./gradlew :airbyte-integrations:connectors:destination-databricks:test
 ```
 
 To run acceptance and custom integration tests:
 
 ```
-./gradlew :airbyte-integrations:connectors:destination-databricks:integrationTest
+./gradlew :airbyte-integrations:connectors:destination-databricks:integrationTestJava
 ```
 
 ## Dependency Management

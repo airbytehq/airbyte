@@ -117,6 +117,13 @@
         "title": "Raw Table Schema Name",
         "default": "airbyte_internal",
         "order": 10
+      },
+      "use_variant_datatype": {
+        "type": "boolean",
+        "description": "Use the VARIANT data type for semi-structured data.",
+        "title": "Use VARIANT data type",
+        "default": false,
+        "order": 11
       }
     }
   }

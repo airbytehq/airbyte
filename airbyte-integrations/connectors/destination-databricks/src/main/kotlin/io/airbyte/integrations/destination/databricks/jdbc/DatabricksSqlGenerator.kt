@@ -31,6 +31,7 @@ import java.util.Optional
 class DatabricksSqlGenerator(
     private val namingTransformer: NamingConventionTransformer,
     private val unityCatalogName: String,
+    private val useVariantDatatype: Boolean,
 ) : SqlGenerator {
 
     private val cdcDeletedColumn = buildColumnId(CDC_DELETED_COLUMN_NAME)
@@ -45,38 +46,39 @@ class DatabricksSqlGenerator(
     companion object {
         const val QUOTE = "`"
         const val CDC_DELETED_COLUMN_NAME = "_ab_cdc_deleted_at"
+    }
 
-        fun toDialectType(type: AirbyteType): String {
-            return when (type) {
-                is AirbyteProtocolType -> toDialectType(type)
+    fun toDialectType(type: AirbyteType): String {
+        return when (type) {
+            is AirbyteProtocolType -> toDialectType(type)
 
-                // Databricks has only STRING for semi structured data, else we need to map
-                // each subTypes inside the Struct and Array
-                is Struct,
-                is Array,
-                is UnsupportedOneOf -> "STRING"
-                is Union -> toDialectType(type.chooseType())
-                else -> {
-                    throw IllegalArgumentException("Unsupported AirbyteType $type")
-                }
-            }
-        }
-
-        private fun toDialectType(type: AirbyteProtocolType): String {
-            return when (type) {
-                AirbyteProtocolType.STRING,
-                AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
-                AirbyteProtocolType.TIME_WITH_TIMEZONE,
-                AirbyteProtocolType.UNKNOWN -> "STRING"
-                AirbyteProtocolType.DATE -> "DATE"
-                AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
-                AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP"
-                AirbyteProtocolType.NUMBER -> "DECIMAL(38, 10)"
-                AirbyteProtocolType.INTEGER -> "LONG"
-                AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
+            // Databricks has only STRING for semi structured data, else we need to map
+            // each subTypes inside the Struct and Array
+            is Struct,
+            is Array -> if (useVariantDatatype) "VARIANT" else "STRING"
+            is UnsupportedOneOf -> "STRING"
+            is Union -> toDialectType(type.chooseType())
+            else -> {
+                throw IllegalArgumentException("Unsupported AirbyteType $type")
             }
         }
     }
+
+    private fun toDialectType(type: AirbyteProtocolType): String {
+        return when (type) {
+            AirbyteProtocolType.STRING,
+            AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
+            AirbyteProtocolType.TIME_WITH_TIMEZONE,
+            AirbyteProtocolType.UNKNOWN -> "STRING"
+            AirbyteProtocolType.DATE -> "DATE"
+            AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
+            AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP"
+            AirbyteProtocolType.NUMBER -> "DECIMAL(38, 10)"
+            AirbyteProtocolType.INTEGER -> "LONG"
+            AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
+        }
+    }
+
     override fun buildStreamId(
         namespace: String,
         name: String,
@@ -282,10 +284,15 @@ class DatabricksSqlGenerator(
     }
 
     private fun cast(columnName: String, columnType: AirbyteType, safeCast: Boolean): String {
-        if (!safeCast) {
-            return "${jsonPath(columnName)}::${toDialectType(columnType)}"
+        val dialectType = toDialectType(columnType)
+        if (dialectType == "VARIANT") {
+            return "parse_json(${jsonPath(columnName)})"
+        } else {
+            if (!safeCast) {
+                return "${jsonPath(columnName)}::${dialectType}"
+            }
+            return "try_cast(${jsonPath(columnName)} AS ${dialectType})"
         }
-        return "try_cast(${jsonPath(columnName)} AS ${toDialectType(columnType)})"
     }
 
     private fun jsonPath(originalColumnName: String): String {

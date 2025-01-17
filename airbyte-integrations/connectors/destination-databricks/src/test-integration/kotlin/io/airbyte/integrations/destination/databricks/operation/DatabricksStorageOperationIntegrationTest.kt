@@ -204,7 +204,7 @@ class DatabricksStorageOperationIntegrationTest {
         private val jdbcDatabase =
             DefaultJdbcDatabase(DatabricksConnectorClientsFactory.createDataSource(config))
         private val sqlGenerator =
-            DatabricksSqlGenerator(DatabricksNamingTransformer(), config.database)
+            DatabricksSqlGenerator(DatabricksNamingTransformer(), config.database, false)
 
         private const val SYNC_ID = 12L
         private const val GENERATION_ID = 42L
