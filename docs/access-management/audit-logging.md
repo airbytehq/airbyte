@@ -24,11 +24,26 @@ server:
     AUDIT_LOGGING_ENABLED: true
     STORAGE_BUCKET_AUDIT_LOGGING: # your-audit-logging-bucket
 ```
+## Log format
 
-<!-- ## Log format and how to process data
+This is a sample of an individual log file.
 
-### File system
+```json title="<yyyyMMddHHmmss>_<hostname>_<random UUID>.json"
+"events": [
+    {
+      "timestamp": 1737070174216,
+      "message": "Logging audit entry: AuditLogEntry(id=4841f1d8-7fa0-416f-8991-4ca521cbb383, timestamp=1737070174212, user=User(userId=bdfe1362-e3e6-4a7b-9db5-a724f6ece6f2, email=alex@example.com, ipAddress=192.168.50.253, userAgent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36), actionName=updatePermission, summary={\"targetUser\":{\"id\":\"424f2c4f-18a7-4bcc-a71a-e84894eadaa7\",\"email\":null},\"targetScope\":{\"type\":\"organization\",\"id\":\"00000000-0000-0000-0000-000000000000\"},\"previousRole\":\"organization_member\",\"newRole\":\"organization_editor\"}, success=true, errorMessage=null)",
+      "level": "INFO",
+      "logSource": "platform",
+      "caller": {
+        "className": "io.airbyte.audit.logging.AuditLoggingInterceptor",
+        "methodName": "logAuditInfo$io_airbyte_airbyte_audit_logging",
+        "lineNumber": 135,
+        "threadName": "io-executor-thread-10"
+      },
+      "throwable": null
+    }
+]
+```
 
-### Log format
-
-### Processing example -->
+<!-- ### Processing example: should add a couple of samples in Python, etc. -->
