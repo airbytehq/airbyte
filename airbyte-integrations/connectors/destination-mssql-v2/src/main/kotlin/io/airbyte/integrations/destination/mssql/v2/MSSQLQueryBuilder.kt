@@ -50,6 +50,7 @@ class MSSQLQueryBuilder(
         const val AIRBYTE_EXTRACTED_AT = "_airbyte_extracted_at"
         const val AIRBYTE_META = "_airbyte_meta"
         const val AIRBYTE_GENERATION_ID = "_airbyte_generation_id"
+        const val AIRBYTE_CDC_DELETED_AT = "_ab_cdc_deleted_at"
         const val DEFAULT_SEPARATOR = ",\n                    "
 
         val airbyteFinalTableFields =
@@ -100,6 +101,7 @@ class MSSQLQueryBuilder(
 
     val finalTableSchema: List<NamedField> =
         airbyteFinalTableFields + extractFinalTableSchema(stream.schema)
+    val hasCdc: Boolean = finalTableSchema.any { it.name == AIRBYTE_CDC_DELETED_AT }
 
     fun getExistingSchema(statement: PreparedStatement): List<NamedSqlField> {
         val fields = mutableListOf<NamedSqlField>()
@@ -160,8 +162,11 @@ class MSSQLQueryBuilder(
     fun getFinalTableInsertColumnHeader(): String =
         getFinalTableInsertColumnHeader(fqTableName, finalTableSchema)
 
+    fun deleteCdc(): String =
+        deleteWhereCdc(fqTableName)
+
     fun deletePreviousGenerations(minGenerationId: Long): String =
-        deleteWhere(fqTableName, minGenerationId)
+        deleteWhereMinGen(fqTableName, minGenerationId)
 
     fun populateStatement(
         statement: PreparedStatement,
@@ -251,7 +256,13 @@ class MSSQLQueryBuilder(
             END
         """.trimIndent()
 
-    private fun deleteWhere(fqTableName: String, minGenerationId: Long) =
+    private fun deleteWhereCdc(fqTableName: String) =
+        """
+            DELETE FROM $fqTableName
+            WHERE _ab_cdc_deleted_at is not NULL
+        """.trimIndent()
+
+    private fun deleteWhereMinGen(fqTableName: String, minGenerationId: Long) =
         """
             DELETE FROM $fqTableName
             WHERE $AIRBYTE_GENERATION_ID < $minGenerationId

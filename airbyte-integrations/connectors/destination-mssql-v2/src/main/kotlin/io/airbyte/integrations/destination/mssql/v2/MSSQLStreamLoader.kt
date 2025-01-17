@@ -45,6 +45,10 @@ class MSSQLStreamLoader(
                 statement.addBatch()
             }
             statement.executeLargeBatch()
+            if (sqlBuilder.hasCdc) {
+                val deleteStatement = connection.prepareStatement(sqlBuilder.deleteCdc())
+                deleteStatement.execute()
+            }
             connection.commit()
         }
         return SimpleBatch(Batch.State.COMPLETE)
