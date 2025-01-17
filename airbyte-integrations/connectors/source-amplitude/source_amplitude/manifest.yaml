@@ -364,7 +364,8 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: "{{ parameters['cursor_field'] }}"
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%d %H:%M:%S.%f"
       datetime_format: "%Y%m%dT%H"
       cursor_granularity: PT1H
       step: PT1{{ config.get("request_time_range", 24)}}H
@@ -387,11 +388,14 @@ definitions:
     transformations:
       - type: CustomTransformation
         class_name: source_amplitude.components.TransformDatetimesToRFC3339
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_amplitude.components.EventsStateMigration
     $parameters:
-      name: "events"
-      primary_key: "uuid"
-      path: "/2/export"
-      cursor_field: "server_upload_time"
+      name: events
+      primary_key: uuid
+      path: /2/export
+      cursor_field: server_upload_time
   events_list_stream:
     type: DeclarativeStream
     name: events_list

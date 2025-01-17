@@ -4,14 +4,14 @@
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, MutableMapping, Optional
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-import yaml
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record
@@ -59,7 +59,6 @@ class ActiveUsersRecordExtractor(RecordExtractor):
         return []
 
 
-@dataclass
 class TransformDatetimesToRFC3339(RecordTransformation):
     def __init__(self):
         self.name = "events"
@@ -91,6 +90,7 @@ class TransformDatetimesToRFC3339(RecordTransformation):
             if item in self.date_time_fields and record[item]:
                 try:
                     record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+                    # record[item]
                 except Exception as e:
                     logger.error(f"Error converting {item} to RFC3339 format: {e}")
                     raise AirbyteTracedException(
@@ -109,3 +109,20 @@ class TransformDatetimesToRFC3339(RecordTransformation):
     ) -> None:
         self.date_time_fields = self._get_date_time_items_from_schema(config)
         return self._date_time_to_rfc3339(record)
+
+
+class EventsStateMigration(StateMigration):
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        cursor_value = stream_state.get("server_upload_time")
+        if not cursor_value:
+            return False
+        try:
+            pendulum.from_format(cursor_value, "%Y-%m-%d %H:%M:%S.%f")
+            return True
+        except pendulum.exceptions.ParserError:
+            return False
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor_value = stream_state.get("server_upload_time")
+        stream_state["server_upload_time"] = pendulum.from_format(cursor_value, "%Y-%m-%d %H:%M:%S.%f").to_rfc3339_string()
+        return stream_state
