@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 
 
 @dataclass
-class AmazonSPWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBackoffStrategy):
+class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBackoffStrategy):
     """
     This strategy is designed for scenarios where the server communicates retry-after durations
     through HTTP headers. The wait time is derived by taking the reciprocal of the value extracted

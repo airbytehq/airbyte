@@ -85,43 +85,6 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
         }
         return stream_kwargs
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        """
-        Check connection to Amazon SP API by requesting the Orders endpoint
-        This endpoint is not available for vendor-only Seller accounts,
-        the Orders endpoint will then return a 403 error
-        Therefore made an exception for 403 errors (when vendor-only accounts).
-        When no access, a 401 error is given.
-        Validate if response has the expected error code and body.
-        Show error message in case of request exception or unexpected response.
-        """
-        try:
-            self.validate_replication_dates(config)
-            self.validate_stream_report_options(config)
-            stream_kwargs = self._get_stream_kwargs(config)
-
-            if config.get("account_type", "Seller") == "Seller":
-                pass
-                # stream_to_check = Orders(**stream_kwargs)
-                # next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
-            else:
-                pass
-                # stream_to_check = VendorOrders(**stream_kwargs)
-                # stream_slices = list(stream_to_check.stream_slices(sync_mode=SyncMode.full_refresh))
-                # next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
-
-            return True, None
-        except Exception as e:
-            # Validate stream without data
-            if isinstance(e, StopIteration):
-                return True, None
-
-            if isinstance(e, HTTPError):
-                return False, e.response.json().get("error_description")
-            else:
-                error_message = "Caught unexpected exception during the check"
-                raise AirbyteTracedException(internal_message=error_message, message=error_message, exception=e)
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
@@ -133,14 +96,15 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
         # streams = []
         stream_kwargs = self._get_stream_kwargs(config)
         stream_list = [
-            VendorForecastingFreshReport,
+            VendorForecastingFreshReport,  # remove in favor of using low-code analytics streams
             VendorForecastingRetailReport,
         ]
 
         # TODO: Remove after Brand Analytics will be enabled in CLOUD: https://github.com/airbytehq/airbyte/issues/32353
         if not is_cloud_environment():
             brand_analytics_reports = [
-                BrandAnalyticsMarketBasketReports,
+                # Uncomment this to reuse the legacy Python
+                # BrandAnalyticsMarketBasketReports,
                 BrandAnalyticsSearchTermsReports,
                 BrandAnalyticsRepeatPurchaseReports,
                 SellerAnalyticsSalesAndTrafficReports,

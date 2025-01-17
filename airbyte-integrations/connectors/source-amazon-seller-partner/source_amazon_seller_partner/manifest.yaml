@@ -43,7 +43,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           field_name: LastUpdatedAfter
@@ -66,7 +66,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 60
@@ -108,7 +108,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       transformations:
         - type: AddFields
@@ -132,7 +132,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 10
@@ -184,7 +184,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           field_name: createdAfter
@@ -210,7 +210,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 60
@@ -253,7 +253,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           field_name: changedAfter
@@ -279,7 +279,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 60
@@ -327,7 +327,6 @@ definitions:
         end_time_option:
           field_name: FinancialEventGroupStartedBefore
           inject_into: request_parameter
-
       retriever:
         type: SimpleRetriever
         requester:
@@ -341,7 +340,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 60
@@ -364,6 +363,7 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.payload.NextToken }}"
+
     list_financial_events:
       type: DeclarativeStream
       name: ListFinancialEvents
@@ -409,7 +409,7 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 backoff_strategies:
-                  - class_name: "source_amazon_seller_partner.components.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
                     header: x-amzn-RateLimit-Limit
                     default_backoff_time: 60
@@ -452,9 +452,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -473,6 +472,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: last-updated-date
         cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         #        replication_start_date_limit_in_days = 30
@@ -484,9 +484,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -496,6 +495,7 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
     get_fba_storage_fee_charges_data:
       type: DeclarativeStream
       name: GET_FBA_STORAGE_FEE_CHARGES_DATA
@@ -515,9 +515,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -527,6 +526,7 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
     get_amazon_fulfilled_shipments_data_general:
       type: DeclarativeStream
       name: GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
@@ -546,9 +546,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -558,6 +557,7 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
     get_flat_file_open_listings_data:
       type: DeclarativeStream
       name: GET_FLAT_FILE_OPEN_LISTINGS_DATA
@@ -577,9 +577,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -589,6 +588,7 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
     get_fba_fulfillment_removal_order_detail_data:
       type: DeclarativeStream
       name: GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA
@@ -608,9 +608,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -620,6 +619,7 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
     get_flat_file_actionable_order_data_shipping:
       type: DeclarativeStream
       name: GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING
@@ -639,9 +639,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -651,6 +650,7 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
     get_order_report_data_shipping:
       type: DeclarativeStream
       name: GET_ORDER_REPORT_DATA_SHIPPING
@@ -670,9 +670,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -705,9 +704,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -725,6 +723,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+
     get_ledger_summary_view_data:
       type: DeclarativeStream
       name: get_ledger_summary_view_data
@@ -744,9 +743,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -784,9 +782,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -816,9 +813,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -848,9 +844,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -891,9 +886,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -923,9 +917,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -955,9 +948,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -987,9 +979,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1019,9 +1010,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1051,9 +1041,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1083,9 +1072,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1115,9 +1103,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1155,9 +1142,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1187,9 +1173,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1227,9 +1212,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1259,9 +1243,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1291,9 +1274,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1323,9 +1305,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1355,9 +1336,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1387,9 +1367,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1419,9 +1398,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1451,9 +1429,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1487,9 +1464,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1527,9 +1503,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1567,9 +1542,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1634,6 +1608,57 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+
+    get_brand_analytics_market_basket_report:
+      type: DeclarativeStream
+      name: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: endDate
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # replication_start_date_limit_in_days = 365
+        # The existing Python behavior is very weird, we perform slicing, however, regardless of how many slices we
+        # generate, we just get the last time period. week/day/month to generate the analytics report. For example,
+        # running a sync for MONTH would create a report request for 2024-12-01 to 2024-12-31. The step and the
+        # configured replication_start_date are effectively meaningless for analytics streams in the Python implementation
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          # The default availability_sla_days for most analytics reports streams is 1
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('P1D') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
+            # this is currently hardcoded, but supports DAY / WEEK / MONTH. It is very important that the proper
+            # boundaries for dataStartTime and dataEndTime are specified according to the reportPeriod because
+            # when they are not, Amazon's API is guaranteed to return a FATAL error.
+            # MONTH: dataStartTime = first day of the month, dataEndTime = last day of the month
+            # WEEK = dataStartTime = must be a Sunday, dataEndTime = must be a Saturday
+            # DAY = dataStartTime = start of a day, dataEndTime = end of the same day
+            # See here for more details on how we make requests https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports
+            reportOptions:
+              reportPeriod: "MONTH"
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "2024-12-01T00:00:00Z" # you can also test hardcoding this to "2024-12-01T00:00:00Z" for testing purposes
+            dataEndTime: "2024-12-31T23:59:59Z" # you can also test hardcoding this to "2024-12-31T23:59:59Z" for testing purposes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["dataByAsin"]
 
   basic_async_retriever:
     type: AsyncRetriever
@@ -1700,8 +1725,8 @@ definitions:
       http_method: GET
       authenticator:
         type: NoAuth
-#      request_headers:
-#        content-type: "application/json"
+    #      request_headers:
+    #        content-type: "application/json"
     download_decoder:
       type: CustomDecoder
       class_name: source_amazon_seller_partner.components.GzipCsvDecoder
@@ -1768,6 +1793,7 @@ definitions:
           cursor_value: "{{ response.NextToken }}"
 
 streams:
+  # REST Streams
   - $ref: "#/definitions/streams/orders"
   - $ref: "#/definitions/streams/order_items"
   - $ref: "#/definitions/streams/list_financial_event_groups"
@@ -1781,6 +1807,7 @@ streams:
   - $ref: "#/definitions/streams/get_flat_file_actionable_order_data_shipping"
   - $ref: "#/definitions/streams/get_order_report_data_shipping"
 
+  # Reports Streams
   - $ref: "#/definitions/streams/get_ledger_detail_view_data"
   - $ref: "#/definitions/streams/get_ledger_summary_view_data"
   - $ref: "#/definitions/streams/get_fba_reimbursements_data"
@@ -1812,6 +1839,9 @@ streams:
 
   - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
   - $ref: "#/definitions/streams/vendor_orders"
+
+  # Analytics Streams
+  - $ref: "#/definitions/streams/get_brand_analytics_market_basket_report"
 
 concurrency_level:
   type: ConcurrencyLevel

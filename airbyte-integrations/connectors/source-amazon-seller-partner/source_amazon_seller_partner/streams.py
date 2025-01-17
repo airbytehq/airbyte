@@ -400,7 +400,11 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     def get_error_handler(self) -> Optional[ErrorHandler]:
         class AmazonSPErrorHandler(HttpStatusErrorHandler):
             def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-                if not isinstance(response_or_exception, Exception) and response_or_exception.status_code != 200:
+                if (
+                    not isinstance(response_or_exception, Exception)
+                    and response_or_exception.status_code != 200
+                    and response_or_exception.status_code != 202
+                ):
                     response = response_or_exception
                     errors = " ".join([er.get("message", "") for er in response.json().get("errors", [])])
                     if response.status_code == requests.codes.BAD_REQUEST:
@@ -622,6 +626,7 @@ class AnalyticsStream(ReportsAmazonSPStream):
         parsed = json.loads(document)
         return parsed.get(self.result_key, [])
 
+    # delete this method since we're not going to modify report_options anymore
     def _report_data(
         self,
         sync_mode: SyncMode,
@@ -705,6 +710,7 @@ class IncrementalAnalyticsStream(AnalyticsStream, CheckpointMixin):
                 record["queryEndDate"] = pendulum.parse(stream_slice["dataEndTime"]).strftime("%Y-%m-%d")
             yield record
 
+    # this is the same as the reports incremental method used for updating state. low-code stream doesn't need to account for deviation
     def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's
@@ -719,6 +725,8 @@ class IncrementalAnalyticsStream(AnalyticsStream, CheckpointMixin):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = pendulum.parse(self._replication_start_date)
+
+        # doing the interpolation of the end date we need to subtract
         end_date = pendulum.now("utc").subtract(days=self.availability_sla_days)
 
         if self._replication_end_date:
@@ -731,6 +739,9 @@ class IncrementalAnalyticsStream(AnalyticsStream, CheckpointMixin):
         start_date = min(start_date, end_date)
 
         while start_date < end_date:
+            # This part needs to be incorporated into low-code analytics streams where the datetimebased cursor's step will be
+            # hardcoded to the fixed_period_in_days if defined or "P{{ min( config.get('period_in_days', 365), 365 ) }}D" via incoming
+            # configs
             # If request only returns data on day level
             if self.fixed_period_in_days != 0:
                 slice_range = self.fixed_period_in_days
@@ -744,6 +755,7 @@ class IncrementalAnalyticsStream(AnalyticsStream, CheckpointMixin):
             }
             start_date = end_date_slice
 
+    # this is equivalent to the reports incremental read records
     def read_records(
         self,
         sync_mode: SyncMode,

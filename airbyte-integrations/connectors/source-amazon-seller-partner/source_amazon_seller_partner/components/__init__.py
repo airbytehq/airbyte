@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from .auth import AmazonSPOauthAuthenticator
-from .backoff_strategy import AmazonSPWaitTimeFromHeaderBackoffStrategy
+from .backoff_strategy import AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy
 from .decoder import GetXmlBrowseTreeDataDecoder, GzipCsvDecoder, GzipXmlDecoder, SellerFeedbackReportsGzipCsvDecoder
 from .type_transformers import (
     FlatFileSettlementV2ReportsTypeTransformer,
@@ -14,7 +14,7 @@ from .type_transformers import (
 
 __all__ = [
     "AmazonSPOauthAuthenticator",
-    "AmazonSPWaitTimeFromHeaderBackoffStrategy",
+    "AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy",
     "GzipCsvDecoder",
     "GzipXmlDecoder",
     "SellerFeedbackReportsGzipCsvDecoder",
