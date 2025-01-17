@@ -132,7 +132,8 @@ abstract class AbstractDatabricksTypingDedupingTest(
     }
 
     override val sqlGenerator: SqlGenerator
-        get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database, false)
+        get() = 
+            DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database, false)
 
     // Disabling until we can safely fetch generation ID
     @Test

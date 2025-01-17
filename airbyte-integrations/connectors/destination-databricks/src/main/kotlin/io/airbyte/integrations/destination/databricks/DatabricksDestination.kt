@@ -61,7 +61,11 @@ class DatabricksDestination : BaseConnector(), Destination {
             val connectorConfig = DatabricksConnectorConfig.deserialize(config)
             val datasource = DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
             val sqlGenerator =
-                DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database, connectorConfig.useVariantDatatype)
+                DatabricksSqlGenerator(
+                    DatabricksNamingTransformer(), 
+                    connectorConfig.database, 
+                    connectorConfig.useVariantDatatype
+                )
             val jdbcDatabase = DefaultJdbcDatabase(datasource)
             val destinationHandler =
                 DatabricksDestinationHandler(sqlGenerator, connectorConfig.database, jdbcDatabase)
@@ -208,7 +212,11 @@ class DatabricksDestination : BaseConnector(), Destination {
         val connectorConfig = DatabricksConnectorConfig.deserialize(config)
 
         val sqlGenerator =
-            DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database, connectorConfig.useVariantDatatype)
+            DatabricksSqlGenerator(
+                DatabricksNamingTransformer(), 
+                connectorConfig.database, 
+                connectorConfig.useVariantDatatype
+            )
         val defaultNamespace = connectorConfig.schema
         val catalogParser =
             CatalogParser(sqlGenerator, defaultNamespace, connectorConfig.rawSchemaOverride)

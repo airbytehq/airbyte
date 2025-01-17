@@ -60,7 +60,8 @@ class DatabricksSqlGeneratorIntegrationTest :
     }
 
     override val sqlGenerator: SqlGenerator
-        get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database, false)
+        get() = 
+            DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database, false)
     private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
     override val destinationHandler: DestinationHandler<MinimumDestinationState.Impl>
         get() =
