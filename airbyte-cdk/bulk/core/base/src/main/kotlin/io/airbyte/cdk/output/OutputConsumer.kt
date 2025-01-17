@@ -37,8 +37,9 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
     /**
      * The constant emittedAt timestamp we use for record timestamps.
      *
-     * TODO: use the correct emittedAt time for each record.
-     * Ryan: not changing this now as it could have performance implications for sources given the delicate serialization logic in place here.
+     * TODO: use the correct emittedAt time for each record. Ryan: not changing this now as it could
+     * have performance implications for sources given the delicate serialization logic in place
+     * here.
      */
     val recordEmittedAt: Instant = Instant.ofEpochMilli(clock.millis())
 
@@ -72,7 +73,8 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
     }
 
     fun accept(trace: AirbyteTraceMessage) {
-        // Use the correct emittedAt timestamp for trace messages. This allows platform and other downstream consumers to take emission time into account for error classification.
+        // Use the correct emittedAt timestamp for trace messages. This allows platform and other
+        // downstream consumers to take emission time into account for error classification.
         trace.emittedAt = clock.millis().toDouble()
         accept(AirbyteMessage().withType(AirbyteMessage.Type.TRACE).withTrace(trace))
     }
