@@ -42,7 +42,8 @@ class S3V2CheckTest :
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 )
             ),
-        failConfigFilenamesAndFailureReasons = emptyMap()
+        failConfigFilenamesAndFailureReasons = emptyMap(),
+        additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,
     ) {
     @Test
     @Timeout(5, unit = TimeUnit.MINUTES)
