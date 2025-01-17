@@ -8,12 +8,15 @@ from typing import Any, Dict, List, MutableMapping, Optional
 
 import pendulum
 import requests
+import yaml
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 logger = logging.getLogger("airbyte")
@@ -86,7 +89,15 @@ class TransformDatetimesToRFC3339(RecordTransformation):
         """
         for item in record:
             if item in self.date_time_fields and record[item]:
-                record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+                try:
+                    record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+                except Exception as e:
+                    logger.error(f"Error converting {item} to RFC3339 format: {e}")
+                    raise AirbyteTracedException(
+                        message=f"Error converting {item} to RFC3339 format. See logs for more infromation",
+                        internal_message=f"Error converting {item} to RFC3339 format: {e}",
+                        failure_type=FailureType.system_error,
+                    ) from e
         return record
 
     def transform(

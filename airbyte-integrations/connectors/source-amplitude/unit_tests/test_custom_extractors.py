@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 import os
@@ -11,10 +11,8 @@ from unittest.mock import MagicMock, patch
 import pendulum
 import pytest
 import requests
-from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessionLengthRecordExtractor, EventsExtractor
-from source_amplitude.streams import Events
+from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessionLengthRecordExtractor
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
 
 
