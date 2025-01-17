@@ -425,6 +425,7 @@ class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
+    search_types = ["web", "news", "image", "video", "googleNews", "discover"]
     aggregation_type = QueryAggregationType.by_property
 
 
