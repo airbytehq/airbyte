@@ -230,7 +230,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
-| 1.5.11 | 2025-01-16 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Added `discover` and `googleNews` search types for `search_analytics_keyword` streams & minor bug fix with date slices. |
+| 1.5.11 | 2025-01-16 | [51599](https://github.com/airbytehq/airbyte/pull/51599 | Added `discover` and `googleNews` search types for `search_analytics_keyword` streams|
 | 1.5.10 | 2025-01-11 | [51129](https://github.com/airbytehq/airbyte/pull/51129) | Update dependencies |
 | 1.5.9 | 2025-01-04 | [50919](https://github.com/airbytehq/airbyte/pull/50919) | Update dependencies |
 | 1.5.8 | 2024-12-28 | [50579](https://github.com/airbytehq/airbyte/pull/50579) | Update dependencies |

@@ -186,9 +186,8 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
                         "end_date": next_end.to_date_string(),
                         "data_state": self._data_state,
                     }
-
                     # add 1 day for the next slice's start date not to duplicate data from previous slice's end date.
-                    next_start = next_end + pendulum.Duration(days=1) - pendulum.Duration(seconds=1)
+                    next_start = next_end + pendulum.Duration(days=1)
 
     def next_page_token(self, response: requests.Response) -> Optional[bool]:
         """
@@ -313,15 +312,12 @@ class SearchAnalytics(GoogleSearchConsole, CheckpointMixin, ABC):
 
         value = current_stream_state.get(site_url, {}).get(search_type, {}).get(self.cursor_field)
         if value:
-            latest_benchmark = max(latest_benchmark, pendulum.parse(value))
+            latest_benchmark = max(latest_benchmark, value)
+        current_stream_state.setdefault(site_url, {}).setdefault(search_type, {})[self.cursor_field] = latest_benchmark
 
-        current_stream_state.setdefault(site_url, {}).setdefault(search_type, {})[self.cursor_field] = latest_benchmark.to_date_string()
-
-        # Ensure the global state is updated for the latest date across all search types and URLs.
-        current_stream_state[self.cursor_field] = max(
-            current_stream_state.get(self.cursor_field, latest_benchmark),
-            latest_benchmark,
-        ).to_date_string()
+        # we need to get the max date over all searchTypes but the current acceptance test YAML format doesn't
+        # support that
+        current_stream_state[self.cursor_field] = current_stream_state[site_url][search_type][self.cursor_field]
 
         return current_stream_state
 
@@ -429,7 +425,6 @@ class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
-    
     aggregation_type = QueryAggregationType.by_property
 
 
