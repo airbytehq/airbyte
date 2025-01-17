@@ -49,6 +49,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", justification = "Micronaut DI")
 @ExtendWith(SystemStubsExtension::class)
 abstract class IntegrationTest(
+    additionalMicronautEnvs: List<String>,
     val dataDumper: DestinationDataDumper,
     val destinationCleaner: DestinationCleaner,
     val recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
@@ -61,7 +62,7 @@ abstract class IntegrationTest(
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
     // multiple times.
-    val destinationProcessFactory = DestinationProcessFactory.get()
+    val destinationProcessFactory = DestinationProcessFactory.get(additionalMicronautEnvs)
 
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =

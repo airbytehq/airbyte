@@ -29,9 +29,11 @@ data class CheckTestConfig(val configPath: Path, val featureFlags: Set<FeatureFl
 open class CheckIntegrationTest<T : ConfigurationSpecification>(
     val successConfigFilenames: List<CheckTestConfig>,
     val failConfigFilenamesAndFailureReasons: Map<CheckTestConfig, Pattern>,
+    additionalMicronautEnvs: List<String> = emptyList(),
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
 ) :
     IntegrationTest(
+        additionalMicronautEnvs = additionalMicronautEnvs,
         dataDumper = FakeDataDumper,
         destinationCleaner = NoopDestinationCleaner,
         recordMangler = NoopExpectedRecordMapper,

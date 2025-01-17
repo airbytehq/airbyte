@@ -34,8 +34,9 @@ import org.junit.jupiter.api.assertAll
  * of the diff. This diff is _really messy_ for the initial migration from the old CDK to the new
  * one, but after that, it should be pretty readable.
  */
-abstract class SpecTest :
+abstract class SpecTest(additionalMicronautEnvs: List<String> = emptyList()) :
     IntegrationTest(
+        additionalMicronautEnvs = additionalMicronautEnvs,
         dataDumper = FakeDataDumper,
         destinationCleaner = NoopDestinationCleaner,
         recordMangler = NoopExpectedRecordMapper,

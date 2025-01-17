@@ -68,10 +68,14 @@ abstract class DestinationProcessFactory {
     ): DestinationProcess
 
     companion object {
-        fun get(): DestinationProcessFactory =
+        /**
+         * [additionalMicronautEnvs] is only passed into the non-docker connector. We assume that
+         * the dockerized connector is capable of setting its own micronaut environments.
+         */
+        fun get(additionalMicronautEnvs: List<String>): DestinationProcessFactory =
             when (val runner = System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER")) {
                 null,
-                "non-docker" -> NonDockerizedDestinationFactory()
+                "non-docker" -> NonDockerizedDestinationFactory(additionalMicronautEnvs)
                 "docker" -> {
                     val rawProperties: Map<String, Any?> =
                         YamlPropertySourceLoader()

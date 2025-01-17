@@ -28,15 +28,23 @@ const val CONNECTOR_OVERRIDE_ENV = "connector"
 class AirbyteSourceRunner(
     /** CLI args. */
     args: Array<out String>,
+    additionalMicronautEnvs: List<String> = emptyList(),
     /** Environment variables. */
     systemEnv: Map<String, String> = System.getenv(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
-) : AirbyteConnectorRunner("source", args, systemEnv, testBeanDefinitions) {
+) :
+    AirbyteConnectorRunner(
+        "source",
+        args,
+        additionalMicronautEnvs,
+        systemEnv,
+        testBeanDefinitions
+    ) {
     companion object {
         @JvmStatic
-        fun run(vararg args: String) {
-            AirbyteSourceRunner(args).run<AirbyteConnectorRunnable>()
+        fun run(vararg args: String, additionalMicronautEnvs: List<String> = emptyList()) {
+            AirbyteSourceRunner(args, additionalMicronautEnvs).run<AirbyteConnectorRunnable>()
         }
     }
 }
@@ -45,15 +53,23 @@ class AirbyteSourceRunner(
 class AirbyteDestinationRunner(
     /** CLI args. */
     args: Array<out String>,
+    additionalMicronautEnvs: List<String> = emptyList(),
     /** Environment variables. */
     systemEnv: Map<String, String> = System.getenv(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
-) : AirbyteConnectorRunner("destination", args, systemEnv, testBeanDefinitions) {
+) :
+    AirbyteConnectorRunner(
+        "destination",
+        args,
+        additionalMicronautEnvs,
+        systemEnv,
+        testBeanDefinitions
+    ) {
     companion object {
         @JvmStatic
-        fun run(vararg args: String) {
-            AirbyteDestinationRunner(args).run<AirbyteConnectorRunnable>()
+        fun run(vararg args: String, additionalMicronautEnvs: List<String> = emptyList()) {
+            AirbyteDestinationRunner(args, additionalMicronautEnvs).run<AirbyteConnectorRunnable>()
         }
     }
 }
@@ -65,6 +81,7 @@ class AirbyteDestinationRunner(
 sealed class AirbyteConnectorRunner(
     val connectorType: String,
     val args: Array<out String>,
+    additionalMicronautEnvs: List<String> = emptyList(),
     systemEnv: Map<String, String>,
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
 ) {
@@ -76,7 +93,8 @@ sealed class AirbyteConnectorRunner(
             // any junit calls. This doesn't work if we launch the connector from a different
             // thread, e.g. `Dispatchers.IO`. Force the test env if needed. Some tests launch the
             // connector from the IO context to avoid blocking themselves.
-            listOfNotNull(Environment.TEST.takeIf { testBeanDefinitions.isNotEmpty() })
+            listOfNotNull(Environment.TEST.takeIf { testBeanDefinitions.isNotEmpty() }) +
+            additionalMicronautEnvs
 
     inline fun <reified R : Runnable> run() {
         val picocliCommandLineFactory = PicocliCommandLineFactory(this)
