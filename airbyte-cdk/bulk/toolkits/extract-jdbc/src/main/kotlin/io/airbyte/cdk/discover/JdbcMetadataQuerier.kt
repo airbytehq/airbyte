@@ -22,6 +22,7 @@ import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import java.sql.SQLException
+import java.sql.SQLFeatureNotSupportedException
 import java.sql.Statement
 
 /** Default implementation of [MetadataQuerier]. */
@@ -109,13 +110,17 @@ class JdbcMetadataQuerier(
                 .map { it.catalog to it.schema }
                 .distinct()
                 .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
-                        while (rs.next()) {
-                            val (tableName: TableName, metadata: ColumnMetadata) =
-                                columnMetadataFromResultSet(rs, isPseudoColumn = true)
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.add(joinedTableName to metadata)
+                    try {
+                        dbmd.getPseudoColumns(catalog, schema, null, null)?.use { rs: ResultSet ->
+                            while (rs.next()) {
+                                val (tableName: TableName, metadata: ColumnMetadata) =
+                                    columnMetadataFromResultSet(rs, isPseudoColumn = true)
+                                val joinedTableName: TableName = joinMap[tableName] ?: continue
+                                results.add(joinedTableName to metadata)
+                            }
                         }
+                    } catch (e: SQLFeatureNotSupportedException) {
+                        // Handle the case where getPseudoColumns is not implemented
                     }
                     dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
                         while (rs.next()) {

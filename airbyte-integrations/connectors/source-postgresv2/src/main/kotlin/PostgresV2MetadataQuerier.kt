@@ -135,7 +135,7 @@ FROM
     information_schema.key_column_usage 
 WHERE 
     table_schema IN (%s)
-    AND constraint_name LIKE '%pkey';
+    AND constraint_name LIKE '%%pkey';
             """
     }
 

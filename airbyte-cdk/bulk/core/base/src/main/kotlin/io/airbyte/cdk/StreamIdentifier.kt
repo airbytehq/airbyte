@@ -14,7 +14,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
  * This exists to avoid coupling the Bulk CDK code too closely to the Airbyte Protocol objects.
  */
 data class StreamIdentifier
-private constructor(
+constructor(
     val namespace: String?,
     val name: String,
 ) {

@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.ssh.SshConnectionOptions
+import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
@@ -25,7 +26,7 @@ data class PostgresV2SourceConfiguration(
     override val checkpointTargetInterval: Duration = Duration.ZERO,
     override val maxConcurrency: Int = 1,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ZERO,
-    override val sshTunnel: SshTunnelMethodConfiguration? = null,
+    override val sshTunnel: SshTunnelMethodConfiguration = SshNoTunnelMethod,
     override val sshConnectionOptions: SshConnectionOptions =
         SshConnectionOptions(
             kotlin.time.Duration.ZERO,

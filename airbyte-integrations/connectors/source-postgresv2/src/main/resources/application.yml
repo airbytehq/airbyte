@@ -6,8 +6,8 @@ airbyte:
 
     extract:
       jdbc:
-        mode: concurrent
-        with-sampling: true
+        mode: sequential
+        with-sampling: false
         table-sample-size: 1024
         throughput-bytes-per-second: 10000000
         min-fetch-size: 10
@@ -17,4 +17,4 @@ airbyte:
       jdbc:
         queries:
           - >-
-            SELECT 1 FROM WHERE 1 = 0;
+            SELECT 1 WHERE 1 = 0;

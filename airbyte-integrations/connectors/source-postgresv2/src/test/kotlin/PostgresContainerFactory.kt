@@ -3,56 +3,32 @@ package io.airbyte.integrations.source.postgresv2
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.testcontainers.containers.Container
-import org.testcontainers.containers.PostgresContainer
+import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.utility.DockerImageName
 
 object PostgresContainerFactory {
-    const val COMPATIBLE_NAME = "mysql:8.0"
+    const val COMPATIBLE_NAME = "postgres"
     private val log = KotlinLogging.logger {}
 
+
     init {
-        TestContainerFactory.register(COMPATIBLE_NAME, ::MySQLContainer)
+        TestContainerFactory.register(COMPATIBLE_NAME, ::PostgreSQLContainer)
     }
 
-    sealed interface MySqlContainerModifier :
-        TestContainerFactory.ContainerModifier<MySQLContainer<*>>
+    sealed interface PostgresContainerModifier :
+        TestContainerFactory.ContainerModifier<PostgreSQLContainer<*>>
 
-    data object WithNetwork : MySqlContainerModifier {
-        override fun modify(container: MySQLContainer<*>) {
+    data object WithNetwork : PostgresContainerModifier {
+        override fun modify(container: PostgreSQLContainer<*>) {
             container.withNetwork(Network.newNetwork())
         }
     }
-
-    data object WithCdc : MySqlContainerModifier {
-        override fun modify(container: MySQLContainer<*>) {
-            container.start()
-            container.execAsRoot(GTID_ON)
-            container.execAsRoot(GRANT.format(container.username))
-            container.execAsRoot("FLUSH PRIVILEGES;")
-        }
-
-        const val GTID_ON =
-            "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +
-                "SET @@GLOBAL.GTID_MODE = 'OFF_PERMISSIVE';" +
-                "SET @@GLOBAL.GTID_MODE = 'ON_PERMISSIVE';" +
-                "SET @@GLOBAL.GTID_MODE = 'ON';"
-
-        const val GRANT =
-            "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT " +
-                "ON *.* TO '%s'@'%%';"
-    }
-
-    data object WithCdcOff : MySqlContainerModifier {
-        override fun modify(container: MySQLContainer<*>) {
-            container.withCommand("--skip-log-bin")
-        }
-    }
-
+    
     fun exclusive(
         imageName: String,
-        vararg modifiers: MySqlContainerModifier,
-    ): MySQLContainer<*> {
+        vararg modifiers: PostgresContainerModifier,
+    ): PostgreSQLContainer<*> {
         val dockerImageName =
             DockerImageName.parse(imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
         return TestContainerFactory.exclusive(dockerImageName, *modifiers)
@@ -60,32 +36,26 @@ object PostgresContainerFactory {
 
     fun shared(
         imageName: String,
-        vararg modifiers: MySqlContainerModifier,
-    ): MySQLContainer<*> {
+        vararg modifiers: PostgresContainerModifier,
+    ): PostgreSQLContainer<*> {
         val dockerImageName =
             DockerImageName.parse(imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
         return TestContainerFactory.shared(dockerImageName, *modifiers)
     }
 
     @JvmStatic
-    fun config(mySQLContainer: MySQLContainer<*>): MySqlSourceConfigurationSpecification =
-        MySqlSourceConfigurationSpecification().apply {
-            host = mySQLContainer.host
-            port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
-            username = mySQLContainer.username
-            password = mySQLContainer.password
-            jdbcUrlParams = ""
+    fun config(PostgresContainer: PostgreSQLContainer<*>): PostgresV2SourceConfigurationSpecification =
+        PostgresV2SourceConfigurationSpecification().apply {
+            host = PostgresContainer.host
+            port = PostgresContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)
+            username = PostgresContainer.username
+            password = PostgresContainer.password
             database = "test"
-            checkpointTargetIntervalSeconds = 60
-            concurrency = 1
-            setIncrementalValue(UserDefinedCursor)
         }
 
-    fun MySQLContainer<*>.execAsRoot(sql: String) {
-        val cleanSql: String = sql.trim().removeSuffix(";") + ";"
-        log.info { "Executing SQL as root: $cleanSql" }
+    fun PostgreSQLContainer<*>.exec(sql: String) {
         val result: Container.ExecResult =
-            execInContainer("mysql", "-u", "root", "-ptest", "-e", cleanSql)
+            execInContainer("su", "-c", "psql -U test -c \""+sql+"\"")
         for (line in (result.stdout ?: "").lines()) {
             log.info { "STDOUT: $line" }
         }
@@ -96,6 +66,6 @@ object PostgresContainerFactory {
             return
         }
         log.error { "Exit code ${result.exitCode}" }
-        throw RuntimeException("Failed to execute query $cleanSql")
+        throw RuntimeException("Failed to execute query $sql")
     }
 }
