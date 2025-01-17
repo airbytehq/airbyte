@@ -11,18 +11,6 @@ import org.junit.jupiter.api.Test
 
 internal class DataSourceFactoryTest {
 
-    //    @Test
-    //    fun test() {
-    //        val factory = DataSourceFactory()
-    //        val dataSource = factory.dataSource()
-    //
-    //        dataSource.connection.use { connection ->
-    //            connection.createStatement().use { statement ->
-    //                statement.execute("SELECT * FROM Inventory")
-    //            }
-    //        }
-    //    }
-
     @Test
     fun `test data source base url conversion`() {
         val config =
