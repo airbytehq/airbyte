@@ -6,10 +6,10 @@
 import io
 import json
 import logging
-from os.path import getsize
 from collections import defaultdict
 from datetime import datetime
 from io import IOBase
+from os.path import getsize
 from typing import Dict, Iterable, List, Optional, Set
 
 from google.oauth2 import credentials, service_account
@@ -21,8 +21,8 @@ from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
-from .exceptions import ErrorFetchingMetadata, ErrorDownloadingFile
 
+from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
 from .spec import SourceGoogleDriveSpec
 
 
