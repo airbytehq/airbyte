@@ -249,11 +249,13 @@ class MSSQLQueryBuilder(
     ): String {
         return StringBuilder()
             .apply {
-                append("INSERT INTO $fqTableName(")
-                append(schema.map { it.name }.joinToString(", "))
-                append(") VALUES (")
-                append(schema.map { "?" }.joinToString(", "))
-                append(")")
+                val columns = schema.joinToString(", ") { it.name }
+                val templateColumns = schema.joinToString(", ") { "?" }
+                append("""
+                    INSERT INTO $fqTableName ($columns)
+                      SELECT table_value.*
+                      FROM (VALUES ($templateColumns)) table_value($columns)
+                """.trimIndent())
             }
             .toString()
     }

@@ -35,7 +35,7 @@ abstract class MSSQLWriterTest(
         dataDumper = dataDumper,
         destinationCleaner = dataCleaner,
         isStreamSchemaRetroactive = true,
-        supportsDedup = false,
+        supportsDedup = true,
         stringifySchemalessObjects = false,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
