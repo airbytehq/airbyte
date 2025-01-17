@@ -49,16 +49,20 @@ object MSSQLContainerHelper {
     }
 }
 
-class MSSQLConfigUpdater(private val replacePort: Boolean = false) : ConfigurationUpdater {
+class MSSQLConfigUpdater : ConfigurationUpdater {
     override fun update(config: String): String {
-        var updatedConfig = config
-        updatedConfig =
-            getIpAddress()?.let { updatedConfig.replace("localhost", it) } ?: updatedConfig
-        if (replacePort) {
+        var updatedConfig = getIpAddress()?.let { config.replace("localhost", it) } ?: config
+
+        // If not running the connector in docker, we must use the mapped port to connect to the
+        // database.
+        if (System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") != "docker") {
             updatedConfig =
                 getPort()?.let { updatedConfig.replace("$MS_SQL_SERVER_PORT", it.toString()) }
                     ?: updatedConfig
         }
-        return updatedConfig.replace("replace_me", MSSQLContainerHelper.getPassword())
+
+        updatedConfig = updatedConfig.replace("replace_me", MSSQLContainerHelper.getPassword())
+        logger.debug { "Using updated MSSQL configuration: $updatedConfig" }
+        return updatedConfig
     }
 }
