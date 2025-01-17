@@ -11,6 +11,11 @@ import jakarta.inject.Singleton
 import java.util.UUID
 import javax.sql.DataSource
 
+const val CHECK_TABLE_STATEMENT = """
+    CREATE TABLE ? (test int);
+    DROP TABLE ?;
+"""
+
 @Singleton
 class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
     DestinationChecker<MSSQLConfiguration> {
@@ -19,13 +24,10 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
         val testTableName = "check_test_${UUID.randomUUID()}"
         val fullyQualifiedTableName = "[${config.rawDataSchema}].[${testTableName}]"
         dataSource.connection.use { connection ->
-            connection.createStatement().use { statement ->
-                statement.executeUpdate(
-                    """
-                    CREATE TABLE ${fullyQualifiedTableName} (test int);
-                    DROP TABLE ${fullyQualifiedTableName};
-                    """.trimIndent(),
-                )
+            connection.prepareStatement(CHECK_TABLE_STATEMENT.trimIndent()).use { statement ->
+                statement.setString(1, fullyQualifiedTableName)
+                statement.setString(2, fullyQualifiedTableName)
+                statement.executeUpdate()
             }
         }
     }

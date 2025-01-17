@@ -43,10 +43,11 @@ class MSSQLQueryBuilder(
 ) {
 
     companion object {
-        val AIRBYTE_RAW_ID = "_airbyte_raw_id"
-        val AIRBYTE_EXTRACTED_AT = "_airbyte_extracted_at"
-        val AIRBYTE_META = "_airbyte_meta"
-        val AIRBYTE_GENERATION_ID = "_airbyte_generation_id"
+        const val AIRBYTE_RAW_ID = "_airbyte_raw_id"
+        const val AIRBYTE_EXTRACTED_AT = "_airbyte_extracted_at"
+        const val AIRBYTE_META = "_airbyte_meta"
+        const val AIRBYTE_GENERATION_ID = "_airbyte_generation_id"
+        const val DEFAULT_SEPARATOR = ",\n                    "
 
         val airbyteFinalTableFields =
             listOf(
@@ -231,7 +232,7 @@ class MSSQLQueryBuilder(
             BEGIN
                 CREATE TABLE $fqTableName
                 (
-                    ${airbyteTypeToSqlSchema(schema, separator = ",\n                    ")}
+                    ${airbyteTypeToSqlSchema(schema)}
                 );
             END
         """.trimIndent()
@@ -268,11 +269,12 @@ class MSSQLQueryBuilder(
             else -> TODO("most likely fail hard")
         }
 
-    private fun airbyteTypeToSqlSchema(schema: List<NamedField>, separator: String): String {
-        return schema
-            .map {
-                "${it.name} ${toMssqlType.convert(toSqlType.convert(it.type.type)).sqlString} NULL"
-            }
-            .joinToString(separator = separator)
+    private fun airbyteTypeToSqlSchema(
+        schema: List<NamedField>,
+        separator: String = DEFAULT_SEPARATOR
+    ): String {
+        return schema.joinToString(separator = separator) {
+            "${it.name} ${toMssqlType.convert(toSqlType.convert(it.type.type)).sqlString} NULL"
+        }
     }
 }
