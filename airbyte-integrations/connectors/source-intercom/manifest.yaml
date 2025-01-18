@@ -16,9 +16,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
     request_headers:
-      # There is a bug in interpolation, causing the `2.10` string to be evaluated to `2.1`, cutting off the `0`.
-      # the workaround is to put the `string` inside the `string`, then it's evaluated properly to `2.10`
-      Intercom-Version: "'2.10'"
+      Intercom-Version: "'2.11'"
       Accept: "application/json"
     error_handler:
       type: CustomErrorHandler
@@ -1058,8 +1056,7 @@ definitions:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.intercom.io/
+        $ref: "#/definitions/requester"
         path: tickets/search
         http_method: POST
         request_options_provider:
@@ -1072,18 +1069,8 @@ definitions:
               - operator: ">"
                 field: "created_at"
                 value: "{{ config['start_date'] }}"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_body_json
-          field_name: "page"
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response._metadata.next }}"
+        $ref: "#/definitions/retriever/paginator"
       record_selector:
         type: RecordSelector
         extractor:
@@ -2007,10 +1994,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester_incremental_search"
         request_headers:
-          # API version header
-          # There are 404 - User Not Found issue, when `2.10` is used, for certain users:
-          # https://github.com/airbytehq/oncall/issues/4514
-          Intercom-Version: "2.9"
+          Intercom-Version: "2.11"
           Accept: "application/json"
     $parameters:
       name: "conversations"
