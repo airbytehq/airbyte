@@ -412,17 +412,20 @@ class SearchByKeyword(SearchAnalytics):
 class SearchAnalyticsKeywordPageReport(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
     dimensions = ["date", "country", "device", "query", "page"]
+    search_types = ["web", "news", "image", "video", "googleNews", "discover"]
 
 
 class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
+    search_types = ["web", "news", "image", "video", "googleNews", "discover"]
     aggregation_type = QueryAggregationType.by_page
 
 
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
+    search_types = ["web", "news", "image", "video", "googleNews", "discover"]
     aggregation_type = QueryAggregationType.by_property
 
 
