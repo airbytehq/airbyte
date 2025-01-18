@@ -13,5 +13,8 @@ class SecretStore(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    alias: Optional[str] = Field(None, description="The alias of the secret store which can map to its actual secret address")
+    alias: Optional[str] = Field(
+        None,
+        description="The alias of the secret store which can map to its actual secret address",
+    )
     type: Optional[Literal["GSM"]] = Field(None, description="The type of the secret store")
