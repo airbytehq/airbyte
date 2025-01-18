@@ -12,7 +12,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: e0e06cd9-57a9-4d39-b032-bedd874ae875
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   dockerRepository: airbyte/destination-pgvector
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pgvector
   githubIssueLabel: destination-pgvector
