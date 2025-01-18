@@ -46,8 +46,7 @@ class MSSQLStreamLoader(
             }
             statement.executeLargeBatch()
             if (sqlBuilder.hasCdc) {
-                val deleteStatement = connection.prepareStatement(sqlBuilder.deleteCdc())
-                deleteStatement.execute()
+                sqlBuilder.deleteCdc(connection)
             }
             connection.commit()
         }
@@ -56,29 +55,9 @@ class MSSQLStreamLoader(
 
     private fun ensureTableExists(dataSource: DataSource) {
         try {
-            // TODO leverage preparedStatement instead of createStatement
             dataSource.connection.use { connection ->
-                connection.createStatement().use { statement ->
-                    statement.executeUpdate(sqlBuilder.createFinalSchemaIfNotExists())
-                }
-                connection.createStatement().use { statement ->
-                    statement.executeUpdate(sqlBuilder.createFinalTableIfNotExists())
-                }
-                val alterStatement =
-                    connection.prepareStatement(GET_EXISTING_SCHEMA_QUERY.trimIndent()).use {
-                        statement ->
-                        val existingSchema = sqlBuilder.getExistingSchema(statement)
-                        val expectedSchema = sqlBuilder.getSchema()
-                        sqlBuilder.alterTableIfNeeded(
-                            existingSchema = existingSchema,
-                            expectedSchema = expectedSchema,
-                        )
-                    }
-                alterStatement?.let {
-                    connection.createStatement().use { statement ->
-                        statement.executeUpdate(alterStatement)
-                    }
-                }
+                sqlBuilder.createTableIfNotExists(connection)
+                sqlBuilder.updateSchema(connection)
             }
         } catch (ex: Exception) {
             log.error(ex) { ex.message }
@@ -89,11 +68,7 @@ class MSSQLStreamLoader(
     private fun truncatePreviousGenerations(dataSource: DataSource) {
         // TODO this can be improved to avoid attempting to truncate the data for each sync
         dataSource.connection.use { connection ->
-            connection.createStatement().use { statement ->
-                statement.executeUpdate(
-                    sqlBuilder.deletePreviousGenerations(stream.minimumGenerationId)
-                )
-            }
+            sqlBuilder.deletePreviousGenerations(connection, stream.minimumGenerationId)
         }
     }
 }
