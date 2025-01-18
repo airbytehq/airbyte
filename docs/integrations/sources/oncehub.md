@@ -31,6 +31,9 @@ You can learn more about the API here https://developers.oncehub.com/reference/i
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-01-11 | [51329](https://github.com/airbytehq/airbyte/pull/51329) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50690](https://github.com/airbytehq/airbyte/pull/50690) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50238](https://github.com/airbytehq/airbyte/pull/50238) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49725](https://github.com/airbytehq/airbyte/pull/49725) | Update dependencies |
 | 0.0.3 | 2024-12-12 | [49329](https://github.com/airbytehq/airbyte/pull/49329) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [49094](https://github.com/airbytehq/airbyte/pull/49094) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

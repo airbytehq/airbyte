@@ -152,6 +152,7 @@ With the field `File Extension`, it is possible to save the output files with ex
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.4 | 2025-01-10 | [51507](https://github.com/airbytehq/airbyte/pull/51507) | Use a non root base image |
 | 0.2.3 | 2024-12-18 | [49910](https://github.com/airbytehq/airbyte/pull/49910) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.2   | 2024-06-12 | [\#38061](https://github.com/airbytehq/airbyte/pull/38061) | File Extensions added for the output files                                                                                                                      |
 | 0.2.1   | 2023-09-13 | [\#30412](https://github.com/airbytehq/airbyte/pull/30412) | Switch noisy logging to debug                                                                                                                                   |

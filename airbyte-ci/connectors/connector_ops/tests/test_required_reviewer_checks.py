@@ -54,17 +54,6 @@ def test_breaking_change_release_expected_team(tmp_path, pokeapi_metadata_path) 
 
 
 @pytest.fixture
-def test_community_manifest_only_connector_expected_team(tmp_path, manifest_only_community_connector_path) -> List:
-    expected_teams = list(required_reviewer_checks.COMMUNITY_MANIFEST_ONLY_CONNECTOR_REVIEWERS)
-    backup_path = tmp_path / "backup_xkcd_metadata"
-    shutil.copyfile(manifest_only_community_connector_path, backup_path)
-    with open(manifest_only_community_connector_path, "a") as metadata_file:
-        metadata_file.write("anyKey: anyValue")
-    yield expected_teams
-    shutil.copyfile(backup_path, manifest_only_community_connector_path)
-
-
-@pytest.fixture
 def test_certified_manifest_only_connector_expected_team(tmp_path, manifest_only_community_connector_path) -> List:
     expected_teams = list(required_reviewer_checks.CERTIFIED_MANIFEST_ONLY_CONNECTOR_REVIEWERS)
     backup_path = tmp_path / "backup_xkcd_metadata"
@@ -111,10 +100,6 @@ def test_find_mandatory_reviewers_breaking_change_release(capsys, test_breaking_
 
 def test_find_mandatory_reviewers_no_tracked_changed(capsys, not_tracked_change_expected_team):
     check_review_requirements_file(capsys, not_tracked_change_expected_team)
-
-
-def test_find_reviewers_manifest_only_community_connector(capsys, test_community_manifest_only_connector_expected_team):
-    check_review_requirements_file(capsys, test_community_manifest_only_connector_expected_team)
 
 
 def test_find_reviewers_manifest_only_certified_connector(capsys, test_certified_manifest_only_connector_expected_team):

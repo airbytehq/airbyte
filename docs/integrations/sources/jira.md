@@ -165,6 +165,10 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.8 | 2025-01-11 | [51189](https://github.com/airbytehq/airbyte/pull/51189) | Update dependencies |
+| 3.4.7 | 2025-01-04 | [50886](https://github.com/airbytehq/airbyte/pull/50886) | Update dependencies |
+| 3.4.6 | 2024-12-28 | [50625](https://github.com/airbytehq/airbyte/pull/50625) | Update dependencies |
+| 3.4.5 | 2024-12-21 | [50108](https://github.com/airbytehq/airbyte/pull/50108) | Update dependencies |
 | 3.4.4 | 2024-12-14 | [49224](https://github.com/airbytehq/airbyte/pull/49224) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 3.4.3 | 2024-12-12 | [47087](https://github.com/airbytehq/airbyte/pull/47087) | Update dependencies |
 | 3.4.2 | 2024-12-09 | [48838](https://github.com/airbytehq/airbyte/pull/48838) | Fixing timezone gaps with state |

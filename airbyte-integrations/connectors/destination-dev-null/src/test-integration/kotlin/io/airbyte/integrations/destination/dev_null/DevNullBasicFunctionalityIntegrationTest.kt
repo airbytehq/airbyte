@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.dev_null
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
+import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -22,10 +24,13 @@ class DevNullBasicFunctionalityIntegrationTest :
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
         stringifySchemalessObjects = false,
-        promoteUnionToObject = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        envVars = emptyMap(),
         supportFileTransfer = false,
     ) {
     @Test
@@ -38,9 +43,5 @@ class DevNullBasicFunctionalityIntegrationTest :
         super.testMidSyncCheckpointingStreamState()
     }
 
-    @Test
-    @Disabled("File transfer is not supported")
-    override fun testBasicWriteFile() {
-        super.testBasicWriteFile()
-    }
+    @Test @Disabled("File transfer is not supported") override fun testBasicWriteFile() {}
 }
