@@ -25,6 +25,12 @@ freezegun = "^1.5.1"
 [tool.poetry.scripts]
 source-railz = "source_railz.run:run"
 
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6.1"
+requests-mock = "^1.9.3"
+pytest = "^6.2"
+freezegun = "^1.5.1"
+
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore:This class is experimental*"
