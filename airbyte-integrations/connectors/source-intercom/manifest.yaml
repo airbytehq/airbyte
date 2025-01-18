@@ -780,8 +780,7 @@ definitions:
         properties:
           assigned_to:
             description:
-              The user or team member who is assigned to handle this conversation
-              part.
+              The user or team member who is assigned to handle this conversation part.
             oneOf:
               - type: object
                 properties:
@@ -797,8 +796,7 @@ definitions:
               - type: "null"
           attachments:
             description:
-              Represents the attachments associated with the conversation
-              part.
+              Represents the attachments associated with the conversation part.
             type:
               - "null"
               - array
@@ -933,6 +931,193 @@ definitions:
             type:
               - "null"
               - boolean
+          waiting_since:
+            description: The timestamp indicating how long the conversation has been waiting.
+            type:
+              - "null"
+              - integer
+          snoozed_until:
+            description: The timestamp indicating when the conversation is snoozed until.
+            type:
+              - "null"
+              - integer
+          contacts:
+            description: A list of contacts associated with the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the contacts list.
+                type:
+                  - "null"
+                  - string
+              contacts:
+                description: The individual contacts in the list.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      description: The type of contact.
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: The unique identifier of the contact.
+                      type:
+                        - "null"
+                        - string
+                    external_id:
+                      description: An external identifier associated with the contact.
+                      type:
+                        - "null"
+                        - string
+          tags:
+            description: A list of tags associated with the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the tags list.
+                type:
+                  - "null"
+                  - string
+              tags:
+                description: The individual tags in the list.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: string
+          priority:
+            description: The priority level of the conversation.
+            type:
+              - "null"
+              - string
+          linked_objects:
+            description: Objects linked to the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the linked objects list.
+                type:
+                  - "null"
+                  - string
+              data:
+                description: The individual linked objects in the list.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+              total_count:
+                description: The total number of linked objects.
+                type:
+                  - "null"
+                  - integer
+              has_more:
+                description: Indicates if more linked objects are available.
+                type:
+                  - "null"
+                  - boolean
+          ai_agent:
+            description: The AI agent associated with the conversation, if any.
+            type:
+              - "null"
+              - object
+          ai_agent_participated:
+            description: Indicates whether an AI agent participated in the conversation.
+            type:
+              - "null"
+              - boolean
+          sla_applied:
+            description: The SLA applied to the conversation.
+            type:
+              - "null"
+              - object
+          statistics:
+            description: Statistical data related to the conversation.
+            type:
+              - "null"
+              - object
+          conversation_rating:
+            description: The rating given to the conversation, if applicable.
+            type:
+              - "null"
+              - object
+  tickets:
+    type: DeclarativeStream
+    name: tickets
+    primary_key: id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.intercom.io/
+        path: tickets/search
+        http_method: POST
+        request_options_provider:
+          type: RequestOptionsProvider
+          request_parameters:
+            type: RequestOption
+            inject_into: request_body_json
+            field_name: query
+            value:
+              - operator: ">"
+                field: "created_at"
+                value: "{{ config['start_date'] }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_body_json
+          field_name: "page"
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response._metadata.next }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          created_at:
+            type: string
+          updated_at:
+            type: string
+          title:
+            type: string
+          description:
+            type: string
+          status:
+            type: string
+          priority:
+            type: string
+          assignee_id:
+            type: string
+          requester_id:
+            type: string
+          tags:
+            type: array
+            items:
+              type: string
+          custom_attributes:
+            type: object
   company_segments:
     $ref: "#/definitions/substream_semi_incremental"
     $parameters:
@@ -2402,6 +2587,7 @@ streams:
   - "#/definitions/conversations"
   - "#/definitions/conversation_parts"
   - "#/definitions/company_segments"
+  - "#/definitions/tickets"
 
 check:
   stream_names:
