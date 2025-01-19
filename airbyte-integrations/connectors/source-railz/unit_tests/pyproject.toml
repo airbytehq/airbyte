@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 version = "0.1.23"
 name = "source-railz"
-description = "Source implementation for Railz."
+description = "Unit tests for Railz."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
@@ -16,10 +16,11 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_railz"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+python = ">=3.10,<3.12"
+airbyte-cdk = "^6"
 isodate = "==0.6.1"
 requests = "==2.28.2"
+freezegun = "^1.5.1"
 
 [tool.poetry.scripts]
 source-railz = "source_railz.run:run"
@@ -29,3 +30,8 @@ pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
 pytest = "^6.2"
 freezegun = "^1.5.1"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*"
+]
