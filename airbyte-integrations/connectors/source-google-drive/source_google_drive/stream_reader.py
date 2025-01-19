@@ -41,24 +41,21 @@ EXPORT_MEDIA_MIME_TYPE_PDF = "application/pdf"
 EXPORT_MEDIA_MIME_TYPE_KEY = "exportable_mime_type"
 DOCUMENT_FILE_EXTENSION_KEY = "document_file_extension"
 
-DOWNLOADABLE_DOCUMENTS_MIME_TYPES = defaultdict(
-    lambda: {
-        EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF,
-        DOCUMENT_FILE_EXTENSION_KEY: ".pdf",
-    },  # Default value for unsupported types
-    {
-        GOOGLE_DOC_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_DOC, DOCUMENT_FILE_EXTENSION_KEY: ".docx"},
-        "application/vnd.google-apps.spreadsheet": {
-            EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_SPREADSHEET,
-            DOCUMENT_FILE_EXTENSION_KEY: ".xlsx",
-        },
-        GOOGLE_PRESENTATION_MIME_TYPE: {
-            EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PRESENTATION,
-            DOCUMENT_FILE_EXTENSION_KEY: ".pptx",
-        },
-        GOOGLE_DRAWING_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"},
+DOWNLOADABLE_DOCUMENTS_MIME_TYPES = {
+    GOOGLE_DOC_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_DOC, DOCUMENT_FILE_EXTENSION_KEY: ".docx"},
+    "application/vnd.google-apps.spreadsheet": {
+        EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_SPREADSHEET,
+        DOCUMENT_FILE_EXTENSION_KEY: ".xlsx",
     },
-)
+    GOOGLE_PRESENTATION_MIME_TYPE: {
+        EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PRESENTATION,
+        DOCUMENT_FILE_EXTENSION_KEY: ".pptx",
+    },
+    GOOGLE_DRAWING_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"},
+}
+
+# Default value for unsupported types
+FALLBACK_DOWNLOADABLE_DOCUMENTS_TYPES = {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"}
 
 
 def get_file_extension(mime_type: str) -> str:
@@ -217,7 +214,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         Returns the mime type to export Google App documents as.
         """
         if self.use_file_transfer():
-            return DOWNLOADABLE_DOCUMENTS_MIME_TYPES[original_mime_type][EXPORT_MEDIA_MIME_TYPE_KEY]
+            return DOWNLOADABLE_DOCUMENTS_MIME_TYPES.get(original_mime_type, FALLBACK_DOWNLOADABLE_DOCUMENTS_TYPES)[
+                EXPORT_MEDIA_MIME_TYPE_KEY
+            ]
 
         if original_mime_type.startswith(GOOGLE_DOC_MIME_TYPE):
             # Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
@@ -267,7 +266,10 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
             if file.original_mime_type.startswith("application/vnd.google-apps."):
                 request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
-                file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES[file.original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
+
+                file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES.get(file.original_mime_type, FALLBACK_DOWNLOADABLE_DOCUMENTS_TYPES)[
+                    DOCUMENT_FILE_EXTENSION_KEY
+                ]
                 local_file_path += file_extension
                 absolute_file_path += file_extension
                 file_relative_path += file_extension
@@ -278,10 +280,10 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 downloader = MediaIoBaseDownload(local_file, request)
                 done = False
                 while not done:
-                    status, done = downloader.next_chunk(num_retries=3)
+                    status, done = downloader.next_chunk(num_retries=5)
                     logger.info(f"Processing file {file.uri}, progress: {status}%")
 
-            # native google objects seems to be reporting lower size through the api than the final download
+            # native google objects seems to be reporting lower size through the api than the final download size
             file_size = getsize(local_file_path)
 
             return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
