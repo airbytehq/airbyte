@@ -58,11 +58,6 @@ DOWNLOADABLE_DOCUMENTS_MIME_TYPES = {
 FALLBACK_DOWNLOADABLE_DOCUMENTS_TYPES = {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"}
 
 
-def get_file_extension(mime_type: str) -> str:
-    extension_map = {}
-    return extension_map.get(mime_type, ".bin")  # Default to `.bin` for unknown types
-
-
 class GoogleDriveRemoteFile(RemoteFile):
     id: str
     # The mime type of the file as returned by the Google Drive API
@@ -254,6 +249,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
         Returns:
             Dict[str, str | int]: Contains the local file path and file size in bytes.
+        ref: https://developers.google.com/drive/api/guides/manage-downloads#python
         """
         file_size = self.file_size(file)
         # I'm putting this check here so we can remove the safety wheels per connector when ready.
