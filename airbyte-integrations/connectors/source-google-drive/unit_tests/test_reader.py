@@ -4,8 +4,8 @@
 
 
 import datetime
-from unittest.mock import MagicMock, call, patch, ANY
 from typing import Dict
+from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
 from source_google_drive.spec import ServiceAccountCredentials, SourceGoogleDriveSpec
@@ -14,6 +14,7 @@ from source_google_drive.stream_reader import GoogleDriveRemoteFile, SourceGoogl
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
+
 
 TEST_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 
