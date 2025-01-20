@@ -1140,6 +1140,9 @@ class TestBasicRead(BaseTest):
                 configured_catalog=configured_catalog,
             )
 
+        for message in output:
+            print(message)
+
         if should_validate_stream_statuses:
             all_statuses = [
                 message.trace.stream_status
