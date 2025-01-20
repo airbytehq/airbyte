@@ -1,0 +1,89 @@
+version: 6.13.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - moves
+
+definitions:
+  streams:
+    moves:
+      type: DeclarativeStream
+      name: moves
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/move/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/moves"
+  base_requester:
+    type: HttpRequester
+    url_base: https://pokeapi.co
+
+streams:
+  - $ref: "#/definitions/streams/moves"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+schemas:
+  moves:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - number
+          - "null"
+      next:
+        type:
+          - string
+          - "null"
+      previous:
+        type:
+          - string
+          - "null"
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+
