@@ -272,7 +272,7 @@
                   "required": ["filetype"]
                 },
                 {
-                  "title": "Document File Type Format (Experimental)",
+                  "title": "Unstructured Document Format",
                   "type": "object",
                   "properties": {
                     "filetype": {
@@ -325,6 +325,21 @@
                   },
                   "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
                   "required": ["filetype"]
+                },
+                {
+                  "title": "Excel Format",
+                  "type": "object",
+                  "properties": {
+                    "filetype": {
+                      "title": "Filetype",
+                      "default": "excel",
+                      "const": "excel",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "filetype"
+                  ]
                 }
               ]
             },
@@ -333,6 +348,12 @@
               "description": "When enabled, syncs will not validate or structure records against the stream's schema.",
               "default": false,
               "type": "boolean"
+            },
+            "recent_n_files_to_read_for_schema_discovery": {
+              "title": "Files To Read For Schema Discover",
+              "description": "The number of resent files which will be used to discover the schema for this stream.",
+              "exclusiveMinimum": 0,
+              "type": "integer"
             }
           },
           "required": ["name", "format"]
@@ -373,9 +394,9 @@
                 "type": "string"
               },
               "preserve_directory_structure": {
-                "default": true,
-                "description": "If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.",
                 "title": "Preserve Sub-Directories in File Paths",
+                "description": "If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.",
+                "default": true,
                 "type": "boolean"
               }
             },
