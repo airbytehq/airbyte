@@ -16,7 +16,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
     request_headers:
-      Intercom-Version: "'2.11'"
+      Intercom-Version: "2.11"
       Accept: "application/json"
     error_handler:
       type: CustomErrorHandler
