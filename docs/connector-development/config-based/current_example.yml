@@ -41,8 +41,10 @@ definitions:
     authenticator:
       type: OAuthAuthenticator
       refresh_request_body: {}
+      grant_type: refresh_token
       client_id: "{{ config[\"client_id\"] }}"
       client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
       access_token_value: "{{ config[\"client_access_token\"] }}"
 
 streams:
@@ -83,10 +85,11 @@ spec:
           https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
           redirect_uri }}&state={{ state }}
         access_token_url: >-
-          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
+          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&code={{auth_code_value}}
         extract_output:
           - access_token
-        access_token_headers: {}
+        access_token_headers:
+          SECRETHEADER: "{{ client_secret_value }}"
         access_token_params: {}
       complete_oauth_output_specification:
         required:

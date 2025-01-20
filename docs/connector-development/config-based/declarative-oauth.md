@@ -185,8 +185,8 @@ Example Response:
 ```diff
 diff --git a/docs/connector-development/config-based/current_example.yml b/docs/connector-development/config-based/current_example.yml
 index e4d1ddd655..f7d69fd182 100644
---- a/docs/connector-development/config-based/current_example.yml
-+++ b/docs/connector-development/config-based/current_example.yml
+--- manifest.yml
++++ simple_oauth_manifest.yml
 @@ -38,6 +38,14 @@ definitions:
    base_requester:
      type: HttpRequester
@@ -270,6 +270,33 @@ index e4d1ddd655..f7d69fd182 100644
                  - string
                  - "null"
 -
+
+```
+
+### Advanced Case: client secret is a request header not a query parameter
+Imagine that the OAuth flow is updated so that the client secret is a request header instead of a query parameter.
+
+#### Example Declarative OAuth Change
+Here is the change you would make to the spec to support this:
+```diff
+diff --git a/docs/connector-development/config-based/current_example.yml b/docs/connector-development/config-based/current_example.yml
+index 58a4db9d73..9f20a44f70 100644
+--- simple_oauth_manifest.yml
++++ secret_header_manifest.yml
+@@ -83,10 +85,11 @@ spec:
+           https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
+           redirect_uri }}&state={{ state }}
+         access_token_url: >-
+-          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
++          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&code={{auth_code_value}}
+         extract_output:
+           - access_token
+-        access_token_headers: {}
++        access_token_headers:
++          SECRETHEADER: "{{ client_secret_value }}"
+         access_token_params: {}
+       complete_oauth_output_specification:
+         required:
 
 ```
 
