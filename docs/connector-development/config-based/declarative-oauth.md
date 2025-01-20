@@ -183,11 +183,110 @@ Example Response:
 
 #### Example Declarative OAuth Spec
 ```diff
+diff --git a/docs/connector-development/config-based/current_example.yml b/docs/connector-development/config-based/current_example.yml
+index e4d1ddd655..f7d69fd182 100644
+--- a/docs/connector-development/config-based/current_example.yml
++++ b/docs/connector-development/config-based/current_example.yml
+@@ -38,6 +38,14 @@ definitions:
+   base_requester:
+     type: HttpRequester
+     url_base: https://pokeapi.co
++    authenticator:
++      type: OAuthAuthenticator
++      refresh_request_body: {}
++      client_id: "{{ config[\"client_id\"] }}"
++      client_secret: "{{ config[\"client_secret\"] }}"
++      access_token_value: "{{ config[\"client_access_token\"] }}"
+
+ streams:
+   - $ref: "#/definitions/streams/moves"
+@@ -47,9 +55,85 @@ spec:
+   connection_specification:
+     type: object
+     $schema: http://json-schema.org/draft-07/schema#
+-    required: []
+-    properties: {}
++    required:
++      - client_id
++      - client_secret
++      - client_access_token
++    properties:
++      client_id:
++        type: string
++      client_secret:
++        type: string
++      client_access_token:
++        type: string
++        airbyte_secret: true
+     additionalProperties: true
++  advanced_auth:
++    auth_flow_type: oauth2.0
++    oauth_config_specification:
++      oauth_connector_input_specification:
++        consent_url: >-
++          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
++          redirect_uri }}&state={{ state }}
++        access_token_url: >-
++          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
++        extract_output:
++          - access_token
++        access_token_headers: {}
++        access_token_params: {}
++      complete_oauth_output_specification:
++        required:
++          - access_token
++        properties:
++          access_token:
++            type: string
++            path_in_connector_config:
++              - access_token
++      complete_oauth_server_input_specification:
++        required:
++          - client_id
++          - client_secret
++        properties:
++          client_id:
++            type: string
++          client_secret:
++            type: string
++      complete_oauth_server_output_specification:
++        required:
++          - client_id
++          - client_secret
++        properties:
++          client_id:
++            type: string
++            path_in_connector_config:
++              - client_id
++          client_secret:
++            type: string
++            path_in_connector_config:
++              - client_secret
+
+ schemas:
+   moves:
+@@ -86,4 +170,3 @@ schemas:
+               type:
+                 - string
+                 - "null"
+-
 
 ```
 
-### Custom Parameter Keys
-TODO: Show how to customize OAuth parameter names using client_id_key, client_secret_key, etc.
+### Advanced Case: access token is returned in a different or nested field
+Now imagine that the OAuth flow is updated so that the access token returned by `/oauth/token` is in a non standard / nested field. Specifically, the response is now:
+```json
+{
+  "data": {
+    "super_duperaccess_token": "YOUR_ACCESS_TOKEN_123"
+  }
+}
+```
+
+#### Example Declarative OAuth Change
+```diff
+
+```
 
 ### Query Parameters
 TODO: Demonstrate adding custom query parameters and using oauth_user_input_from_connector_config_specification
