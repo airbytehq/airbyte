@@ -96,6 +96,7 @@ Once you've configured PubSub as a destination, delete the Service Account Key f
 
 | Version | Date              | Pull Request                                             | Subject                                                    |
 | :------ | :---------------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.2.2 | 2025-01-10 | [51481](https://github.com/airbytehq/airbyte/pull/51481) | Use a non root base image |
 | 0.2.1 | 2024-12-18 | [49878](https://github.com/airbytehq/airbyte/pull/49878) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.0   | August 16, 2022   | [15705](https://github.com/airbytehq/airbyte/pull/15705) | Add configuration for Batching and Ordering                |
 | 0.1.5   | 2022-06-17        | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors     |

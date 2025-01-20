@@ -9,7 +9,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 0b75218b-f702-4a28-85ac-34d3d84c0fc2
-  dockerImageTag: 0.0.40
+  dockerImageTag: 0.0.41
   dockerRepository: airbyte/destination-chroma
   githubIssueLabel: destination-chroma
   icon: chroma.svg
