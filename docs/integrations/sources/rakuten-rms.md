@@ -26,9 +26,9 @@ Generate Service Secret and Licence key on the dashboard
 3. On the source setup page, select **Rakuten-RMS** from the Source type dropdown and enter a name for this connector;
 4. Enter `Licence Key`;
 5. Enter `Service Secret`;
-6. (Optional) Enter `min_inventories`
-7. (Optional) Enter `max_inventories`
-8. (Optional) Enter `step_interval`
+6. (Optional) Enter `Minimum Stock Quantity`
+7. (Optional) Enter `Maximum Stock Quantity`
+8. (Optional) Enter `Step interval`
 7. click `Set up source`.
 <!-- /env:oss -->
 
