@@ -342,7 +342,7 @@
         "title": "Delivery Method",
         "default": "use_records_transfer",
         "type": "object",
-        "order": 7,
+        "order": 1,
         "display_type": "radio",
         "group": "advanced",
         "oneOf": [
