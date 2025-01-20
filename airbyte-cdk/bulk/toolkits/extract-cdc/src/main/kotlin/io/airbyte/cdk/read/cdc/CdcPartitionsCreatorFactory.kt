@@ -11,6 +11,7 @@ import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.PartitionsCreatorFactory
 import io.micronaut.core.annotation.Order
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 @Singleton
@@ -34,6 +35,9 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
      */
     private val upperBoundReference = AtomicReference<T>()
 
+    /** [AtomicBoolean] used to trigger resetting a sync. */
+    private val reset = AtomicBoolean()
+
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
         if (feedBootstrap !is GlobalFeedBootstrap) {
             // Fall through on non-Global streams.
@@ -46,6 +50,7 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
             debeziumOps,
             lowerBoundReference,
             upperBoundReference,
+            reset,
         )
     }
 }

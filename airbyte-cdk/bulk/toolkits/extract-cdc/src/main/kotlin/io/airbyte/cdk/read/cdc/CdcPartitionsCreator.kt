@@ -12,6 +12,7 @@ import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.Stream
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /** [PartitionsCreator] implementation for CDC with Debezium. */
@@ -22,11 +23,10 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val lowerBoundReference: AtomicReference<T>,
     val upperBoundReference: AtomicReference<T>,
+    val reset: AtomicBoolean,
 ) : PartitionsCreator {
     private val log = KotlinLogging.logger {}
     private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
-
-    class OffsetInvalidNeedsResyncIllegalStateException() : IllegalStateException()
 
     override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
         val acquiredThread: ConcurrencyResource.AcquiredThread =
@@ -41,42 +41,64 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     }
 
     override suspend fun run(): List<PartitionReader> {
-        if (CDCNeedsRestart) {
+        if (reset.get()) {
+            feedBootstrap.stateQuerier.resetFeedStates()
             throw TransientErrorException(
-                "Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch."
+                "Saved offset no longer present on the server, " +
+                    "Airbyte is going to trigger a sync from scratch."
             )
         }
         val activeStreams: List<Stream> by lazy {
             feedBootstrap.feed.streams.filter { feedBootstrap.stateQuerier.current(it) != null }
         }
-        val syntheticInput: DebeziumInput by lazy { creatorOps.synthesize() }
+        val syntheticOffset: DebeziumOffset by lazy { creatorOps.generateColdStartOffset() }
         // Ensure that the WAL position upper bound has been computed for this sync.
         val upperBound: T =
-            upperBoundReference.updateAndGet {
-                it ?: creatorOps.position(syntheticInput.state.offset)
-            }
+            upperBoundReference.updateAndGet { it ?: creatorOps.position(syntheticOffset) }
         // Deserialize the incumbent state value, if it exists.
-        val input: DebeziumInput =
-            when (val incumbentOpaqueStateValue = feedBootstrap.currentState) {
-                null -> syntheticInput
-                else -> {
-                    // validate if existing state is still valid on DB.
-                    try {
-                        creatorOps.deserialize(incumbentOpaqueStateValue, activeStreams)
-                    } catch (ex: ConfigErrorException) {
-                        log.error(ex) { "Existing state is invalid." }
-                        throw ex
-                    } catch (_: OffsetInvalidNeedsResyncIllegalStateException) {
-                        // If deserialization concludes we need a re-sync we rollback stream states
-                        // and put the creator in a Need Restart mode.
-                        // The next round will throw a transient error to kickoff the resync
-                        feedBootstrap.stateQuerier.resetFeedStates()
-                        CDCNeedsRestart = true
-                        syntheticInput
-                    }
+        val warmStartState: DebeziumWarmStartState? =
+            feedBootstrap.currentState?.let {
+                try {
+                    creatorOps.deserializeState(it)
+                } catch (e: Exception) {
+                    // This catch should be redundant for well-behaved implementations
+                    // but is included anyway for safety.
+                    AbortDebeziumWarmStartState(e.toString())
                 }
             }
-
+        val debeziumProperties: Map<String, String>
+        val startingOffset: DebeziumOffset
+        val startingSchemaHistory: DebeziumSchemaHistory?
+        when (warmStartState) {
+            null -> {
+                debeziumProperties = creatorOps.generateColdStartProperties()
+                startingOffset = syntheticOffset
+                startingSchemaHistory = null
+            }
+            is ValidDebeziumWarmStartState -> {
+                debeziumProperties = creatorOps.generateWarmStartProperties(activeStreams)
+                startingOffset = warmStartState.offset
+                startingSchemaHistory = warmStartState.schemaHistory
+            }
+            is AbortDebeziumWarmStartState -> {
+                val e =
+                    ConfigErrorException(
+                        "Incumbent state is invalid, reason: ${warmStartState.reason}"
+                    )
+                log.error(e) { "Aborting. ${e.message}." }
+                throw e
+            }
+            is ResetDebeziumWarmStartState -> {
+                reset.set(true)
+                log.warn {
+                    "Triggering reset. " +
+                        "Incumbent state is invalid, reason: ${warmStartState.reason}."
+                }
+                debeziumProperties = creatorOps.generateColdStartProperties()
+                startingOffset = syntheticOffset
+                startingSchemaHistory = null
+            }
+        }
         // Build and return PartitionReader instance, if applicable.
         val partitionReader =
             CdcPartitionReader(
@@ -84,11 +106,14 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                 feedBootstrap.streamRecordConsumers(),
                 readerOps,
                 upperBound,
-                input
+                debeziumProperties,
+                startingOffset,
+                startingSchemaHistory,
+                warmStartState !is ValidDebeziumWarmStartState,
             )
-        val lowerBound: T = creatorOps.position(input.state.offset)
+        val lowerBound: T = creatorOps.position(startingOffset)
         val lowerBoundInPreviousRound: T? = lowerBoundReference.getAndSet(lowerBound)
-        if (input.isSynthetic) {
+        if (partitionReader.isInputStateSynthetic) {
             // Handle synthetic offset edge-case, which always needs to run.
             // Debezium needs to run to generate the full state, which might include schema history.
             log.info { "Current offset is synthetic." }
@@ -112,9 +137,5 @@ class CdcPartitionsCreator<T : Comparable<T>>(
         // Handle common case.
         log.info { "Current position '$lowerBound' does not exceed target position '$upperBound'." }
         return listOf(partitionReader)
-    }
-
-    companion object {
-        var CDCNeedsRestart: Boolean = false
     }
 }
