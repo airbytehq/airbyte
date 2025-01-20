@@ -146,7 +146,7 @@ for more information.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
-| 3.1.3 | 2025-01-20 | [38554](https://github.com/airbytehq/airbyte/pull/38554) | Upgrade to API v21.0 |
+| 3.1.3 | 2025-01-20 | [52035](https://github.com/airbytehq/airbyte/pull/52035) | Upgrade to API v21.0 |
 | 3.1.2 | 2025-01-11 | [44223](https://github.com/airbytehq/airbyte/pull/44223) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 3.1.1 | 2025-01-09 | [51018](https://github.com/airbytehq/airbyte/pull/51018) | Remove deprecated metrics from `StoryInsights` and `MediaInsights` streams. |
 | 3.1.0 | 2024-07-13 | [41937](https://github.com/airbytehq/airbyte/pull/41937) | New metrics added for `StoryInsights` and `MediaInsights` streams. |
