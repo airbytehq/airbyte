@@ -35,19 +35,6 @@ The feature is configured through the `advanced_auth.oauth_config_specification`
 
 TODO: Explain high-level concepts, when to use Declarative OAuth vs custom implementation, and the core workflow of how it processes OAuth configurations.
 
-## Configuration Fields
-
-TODO: Document each field in the oauth_connector_input_specification schema, explaining their purpose, requirements, and behavior. Include code examples.
-
-### Required Fields
-TODO: Document mandatory fields like consent_url, access_token_url
-
-### Optional Fields
-TODO: Document optional configuration like custom keys, headers, params
-
-## Available Template Variables
-
-TODO: Create comprehensive table of all template variables available for string interpolation, their default values, and usage examples.
 
 ## Implementation Examples
 
@@ -424,3 +411,48 @@ and we need to make sure that updating the spec to use Declarative OAuth doesn't
 ```diff
 
 ```
+
+
+## Configuration Fields
+
+TODO: Document each field in the oauth_connector_input_specification schema, explaining their purpose, requirements, and behavior. Include code examples.
+
+### Required Fields
+TODO: Document mandatory fields like consent_url, access_token_url
+| Field | Description | Default Value |
+|-------|-------------|---------------|
+| consent_url | The URL where the user will be redirected to authorize the connector | |
+| access_token_url | The URL where the connector will exchange the authorization code for an access token | |
+
+
+
+### Optional Fields
+TODO: Document optional configuration like custom keys, headers, params
+| Field | Description | Default Value |
+|-------|-------------|---------------|
+| | | |
+
+
+## Available Template Variables
+| Variable | Description | Default Value |
+|----------|-------------|---------------|
+| client_id_key | The key used to identify the client ID in request bodies | "client_id" |
+| client_id_value | The client ID value retrieved from the config location specified by client_id_key | Value from config[client_id_key] |
+| client_id_param | The parameter name and value pair used for the client ID in URLs | "{{client_id_key}}={{client_id_value}}" |
+| client_secret_key | The key used to identify the client secret in request bodies | "client_secret" |
+| client_secret_value | The client secret value retrieved from the config location specified by client_secret_key | Value from config[client_secret_key] |
+| client_secret_param | The parameter name and value pair used for the client secret in URLs | "{{client_secret_key}}={{client_secret_value}}" |
+| redirect_uri_key | The key used to identify the redirect URI in request bodies | "redirect_uri" |
+| redirect_uri_value | The redirect URI value used for OAuth callbacks | Value configured in Airbyte |
+| redirect_uri_param | The parameter name and value pair used for the redirect URI in URLs | "{{redirect_uri_key}}={{redirect_uri_value}}" |
+| scope_key | The key used to identify the scope in request bodies | "scope" |
+| scope_value | The scope value specifying the access permissions being requested | Value from config[scope_key] |
+| scope_param | The parameter name and value pair used for the scope in URLs | "{{scope_key}}={{scope_value}}" |
+| state_key | The key used to identify the state parameter in request bodies | "state" |
+| state_value | A random string used to prevent CSRF attacks | Randomly generated string |
+| state_param | The parameter name and value pair used for the state in URLs | "{{state_key}}={{state_value}}" |
+| auth_code_key | The key used to identify the authorization code in request bodies | "code" |
+| auth_code_value | The authorization code received from the OAuth provider | Value from OAuth callback |
+| auth_code_param | The parameter name and value pair used for the auth code in URLs | "{{auth_code_key}}={{auth_code_value}}" |
+| access_token | The access token received from the OAuth provider used for API authentication | Value from OAuth token response |
+| refresh_token | The refresh token received from the OAuth provider used to obtain new access tokens | Value from OAuth token response |
