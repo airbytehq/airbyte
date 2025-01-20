@@ -33,7 +33,11 @@ from airbyte_cdk.utils import AirbyteTracedException
         ),
         ({"date_ranges_start_date": "2022-20-20"}, Status.FAILED, "\"time data '2022-20-20' does not match format '%Y-%m-%d'\""),
         ({"date_ranges_end_date": "2022-20-20"}, Status.FAILED, "\"time data '2022-20-20' does not match format '%Y-%m-%d'\""),
-        ({"date_ranges_start_date": "2022-12-20", "date_ranges_end_date": "2022-12-10"}, Status.FAILED, "\"End date '2022-12-10' can not be before start date '2022-12-20'\""),
+        (
+            {"date_ranges_start_date": "2022-12-20", "date_ranges_end_date": "2022-12-10"},
+            Status.FAILED,
+            "\"End date '2022-12-10' can not be before start date '2022-12-20'\"",
+        ),
         (
             {"credentials": {"auth_type": "Service", "credentials_json": "invalid"}},
             Status.FAILED,

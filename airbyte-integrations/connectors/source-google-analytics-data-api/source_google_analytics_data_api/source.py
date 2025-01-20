@@ -556,7 +556,13 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         )
 
         if config["date_ranges_start_date"] > config["date_ranges_end_date"]:
-            raise ConfigurationError("End date '" + config["date_ranges_end_date"].strftime("%Y-%m-%d") + "' can not be before start date '" + config["date_ranges_start_date"].strftime("%Y-%m-%d") + "'")
+            raise ConfigurationError(
+                "End date '"
+                + config["date_ranges_end_date"].strftime("%Y-%m-%d")
+                + "' can not be before start date '"
+                + config["date_ranges_start_date"].strftime("%Y-%m-%d")
+                + "'"
+            )
 
         if not config.get("window_in_days"):
             source_spec = self.spec(logging.getLogger("airbyte"))
