@@ -129,6 +129,13 @@ class S3DataLakeTableSynchronizer(
             }
         }
 
+        // 5) Update identifier fields
+        if (diff.identifierFieldsChanged) {
+            val updatedIdentifierFields = incomingSchema.identifierFieldNames().toList()
+            updatedIdentifierFields.forEach { update.requireColumn(it) }
+            update.setIdentifierFields(updatedIdentifierFields)
+        }
+
         // Commit all changes and refresh the table schema
         update.commit()
         table.refresh()
