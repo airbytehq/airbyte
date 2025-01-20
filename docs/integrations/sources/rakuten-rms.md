@@ -58,3 +58,52 @@ Several output streams are available from this source
 - category_relation_report
 - bundles
 - version
+
+## Perfomance considerations
+
+The connector is restricted by Rakuten RMS [rate limits](https://api.slack.com/docs/rate-limits).
+
+We highly recommend only syncing required streams.
+
+## Data type map
+
+| Integration Type | Airbyte Type |
+| :--------------- | :----------- |
+| `string`         | `string`     |
+| `number`         | `number`     |
+| `array`          | `array`      |
+| `object`         | `object`     |
+
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Rakuten RMS connector
+<summary>
+
+## Connector limitations
+
+#### Rate limiting
+
+Rakuten RMS has rate limit restrictions
+
+| API | Limit | Notes |
+| :--------------- | :----------- | :------------- |
+| inventories         | 5 per second | |
+| items         | 1 per second     | | 
+| items          | 1 per second      | |
+| version         | 1 per second     | |
+
+### Troubleshooting
+
+- Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
+
+</HideInUI>
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+</details>
