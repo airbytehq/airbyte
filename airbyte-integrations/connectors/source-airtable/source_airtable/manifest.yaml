@@ -93,6 +93,8 @@ definitions:
         record_selector:
           type: RecordSelector
           schema_normalization: Default
+          record_filter:
+            condition: "{{ record['fields'] | length > 0}}"
           extractor:
             type: DpathExtractor
             field_path:
@@ -270,8 +272,10 @@ definitions:
               target_type: array
               current_type: formula
       transformations:
-        - type: FlattenFields
-          flatten_lists: false
+        - type: DpathFlattenFields
+          field_path:
+            - "fields"
+          delete_origin_value: true
         - type: KeysToLower
         - type: KeysReplace
           old: " "
