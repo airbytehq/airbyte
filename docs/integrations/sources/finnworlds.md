@@ -33,6 +33,10 @@ Docs : https://finnworlds.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-01-18 | [51630](https://github.com/airbytehq/airbyte/pull/51630) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51099](https://github.com/airbytehq/airbyte/pull/51099) | Update dependencies |
+| 0.0.5 | 2024-12-28 | [50519](https://github.com/airbytehq/airbyte/pull/50519) | Update dependencies |
+| 0.0.4 | 2024-12-21 | [50049](https://github.com/airbytehq/airbyte/pull/50049) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49513](https://github.com/airbytehq/airbyte/pull/49513) | Update dependencies |
 | 0.0.2 | 2024-12-12 | [49206](https://github.com/airbytehq/airbyte/pull/49206) | Update dependencies |
 | 0.0.1 | 2024-11-05 | | Initial release by [@marcosmarxm](https://github.com/marcosmarxm) via Connector Builder |

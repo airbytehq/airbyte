@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f9b6c538-ee12-42fe-8d4b-0c10f5955417
-  dockerImageTag: 0.1.28
+  dockerImageTag: 0.1.32
   dockerRepository: airbyte/source-tplcentral
   githubIssueLabel: source-tplcentral
   icon: tplcentral.svg

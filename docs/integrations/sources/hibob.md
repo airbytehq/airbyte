@@ -80,6 +80,10 @@ Link to HiBob API documentation [here](https://apidocs.hibob.com/docs/).
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.8 | 2025-01-18 | [51802](https://github.com/airbytehq/airbyte/pull/51802) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51201](https://github.com/airbytehq/airbyte/pull/51201) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50628](https://github.com/airbytehq/airbyte/pull/50628) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50132](https://github.com/airbytehq/airbyte/pull/50132) | Update dependencies |
 | 0.2.4 | 2024-12-14 | [49595](https://github.com/airbytehq/airbyte/pull/49595) | Update dependencies |
 | 0.2.3 | 2024-12-12 | [49240](https://github.com/airbytehq/airbyte/pull/49240) | Update dependencies |
 | 0.2.2 | 2024-12-11 | [48972](https://github.com/airbytehq/airbyte/pull/48972) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

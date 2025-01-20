@@ -43,6 +43,9 @@ MARID is the Master Address Repository ID associated with all addresses within t
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2025-01-18 | [51893](https://github.com/airbytehq/airbyte/pull/51893) | Update dependencies |
+| 0.0.8 | 2025-01-11 | [51349](https://github.com/airbytehq/airbyte/pull/51349) | Update dependencies |
+| 0.0.7 | 2024-12-28 | [50239](https://github.com/airbytehq/airbyte/pull/50239) | Update dependencies |
 | 0.0.6 | 2024-12-14 | [49703](https://github.com/airbytehq/airbyte/pull/49703) | Update dependencies |
 | 0.0.5 | 2024-12-12 | [49364](https://github.com/airbytehq/airbyte/pull/49364) | Update dependencies |
 | 0.0.4 | 2024-12-11 | [49096](https://github.com/airbytehq/airbyte/pull/49096) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

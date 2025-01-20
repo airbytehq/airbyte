@@ -34,7 +34,7 @@ class ObjectStorageDestinationStateTest {
     companion object {
         val stream1 = MockDestinationCatalogFactory.stream1
         const val PERSISTED =
-            """{"generations_by_state":{"FINALIZED":{"0":{"key1":0,"key2":1},"1":{"key3":0,"key4":1}}}}"""
+            """{"generations_by_state":{"FINALIZED":{"0":{"key1":0,"key2":1},"1":{"key3":0,"key4":1}}},"count_by_key":{}}"""
     }
 
     @Singleton
@@ -210,7 +210,7 @@ class ObjectStorageDestinationStateTest {
         ): List<Triple<Int, String, Long>> {
             val genIdKey = ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY
             val prefix =
-                "${d.pathFactory.prefix}/${stream.descriptor.namespace}/${stream.descriptor.name}"
+                "${d.pathFactory.finalPrefix}/${stream.descriptor.namespace}/${stream.descriptor.name}"
             val generations =
                 listOf(
                     Triple(0, "$prefix/key1-0", 0L),

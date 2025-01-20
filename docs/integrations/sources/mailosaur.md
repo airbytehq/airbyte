@@ -24,6 +24,10 @@ Docs : https://mailosaur.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-01-18 | [51834](https://github.com/airbytehq/airbyte/pull/51834) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51159](https://github.com/airbytehq/airbyte/pull/51159) | Update dependencies |
+| 0.0.5 | 2024-12-28 | [50639](https://github.com/airbytehq/airbyte/pull/50639) | Update dependencies |
+| 0.0.4 | 2024-12-21 | [50098](https://github.com/airbytehq/airbyte/pull/50098) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49607](https://github.com/airbytehq/airbyte/pull/49607) | Update dependencies |
 | 0.0.2 | 2024-12-12 | [49260](https://github.com/airbytehq/airbyte/pull/49260) | Update dependencies |
 | 0.0.1 | 2024-11-04 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |

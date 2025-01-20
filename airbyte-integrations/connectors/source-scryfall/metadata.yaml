@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-scryfall
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.11.1@sha256:0d0f562a70c0ed19ab605f0c83802a2e052712587692e2f3a1cc794fe7cd7007
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
   connectorSubtype: api
   connectorType: source
   definitionId: f76b7649-322b-44a0-8cef-23aeaae89c42
-  dockerImageTag: 0.0.6
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-scryfall
   githubIssueLabel: source-scryfall
   icon: icon.svg

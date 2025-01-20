@@ -64,6 +64,10 @@ The Lokalise source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.8 | 2025-01-18 | [51803](https://github.com/airbytehq/airbyte/pull/51803) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51204](https://github.com/airbytehq/airbyte/pull/51204) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50635](https://github.com/airbytehq/airbyte/pull/50635) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50121](https://github.com/airbytehq/airbyte/pull/50121) | Update dependencies |
 | 0.2.4 | 2024-12-14 | [49216](https://github.com/airbytehq/airbyte/pull/49216) | Update dependencies |
 | 0.2.3 | 2024-12-11 | [48995](https://github.com/airbytehq/airbyte/pull/48995) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.2 | 2024-11-04 | [47935](https://github.com/airbytehq/airbyte/pull/47935) | Update dependencies |

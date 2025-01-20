@@ -15,11 +15,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.11.1@sha256:0d0f562a70c0ed19ab605f0c83802a2e052712587692e2f3a1cc794fe7cd7007
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
   connectorSubtype: api
   connectorType: source
   definitionId: c2c25d04-9bb1-4171-8a7a-bb7cead8add0
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.9
   dockerRepository: airbyte/source-goldcast
   githubIssueLabel: source-goldcast
   icon: goldcast.svg

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.24"
+version = "0.2.29"
 name = "source-commercetools"
 description = "Source implementation for Commercetools."
 authors = [ "Airbyte <contact@airbyte.io>",]

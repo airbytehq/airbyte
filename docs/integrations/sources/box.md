@@ -38,6 +38,10 @@ Follow [this](https://developer.box.com/guides/authentication/client-credentials
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.8 | 2025-01-18 | [51757](https://github.com/airbytehq/airbyte/pull/51757) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51291](https://github.com/airbytehq/airbyte/pull/51291) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50497](https://github.com/airbytehq/airbyte/pull/50497) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50209](https://github.com/airbytehq/airbyte/pull/50209) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49580](https://github.com/airbytehq/airbyte/pull/49580) | Update dependencies |
 | 0.0.3 | 2024-12-12 | [49276](https://github.com/airbytehq/airbyte/pull/49276) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [48933](https://github.com/airbytehq/airbyte/pull/48933) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

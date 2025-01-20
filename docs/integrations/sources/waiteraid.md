@@ -61,6 +61,10 @@ The Waiteraid source connector supports the following [sync modes](https://docs.
 
 | Version | Date       | Pull Request                                           | Subject               |
 | :------ | :--------- | :----------------------------------------------------- | :-------------------- |
+| 0.2.9 | 2025-01-18 | [52002](https://github.com/airbytehq/airbyte/pull/52002) | Update dependencies |
+| 0.2.8 | 2025-01-11 | [51386](https://github.com/airbytehq/airbyte/pull/51386) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50810](https://github.com/airbytehq/airbyte/pull/50810) | Update dependencies |
+| 0.2.6 | 2024-12-21 | [50372](https://github.com/airbytehq/airbyte/pull/50372) | Update dependencies |
 | 0.2.5 | 2024-12-14 | [49770](https://github.com/airbytehq/airbyte/pull/49770) | Update dependencies |
 | 0.2.4 | 2024-12-12 | [49405](https://github.com/airbytehq/airbyte/pull/49405) | Update dependencies |
 | 0.2.3 | 2024-10-29 | [47835](https://github.com/airbytehq/airbyte/pull/47835) | Update dependencies |

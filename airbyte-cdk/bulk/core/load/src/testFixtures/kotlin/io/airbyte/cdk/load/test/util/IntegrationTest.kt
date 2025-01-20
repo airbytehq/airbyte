@@ -55,6 +55,8 @@ abstract class IntegrationTest(
     val nameMapper: NameMapper = NoopNameMapper,
     /** See [RecordDiffer.nullEqualsUnset]. */
     val nullEqualsUnset: Boolean = false,
+    val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
+    val envVars: Map<String, String> = emptyMap(),
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -135,7 +137,7 @@ abstract class IntegrationTest(
             DestinationCatalog(listOf(stream)),
             messages,
             streamStatus,
-            useFileTransfer
+            useFileTransfer,
         )
 
     /**
@@ -177,6 +179,7 @@ abstract class IntegrationTest(
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
+                envVars = envVars,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -219,6 +222,7 @@ abstract class IntegrationTest(
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
+                envVars
             )
         return runBlocking(Dispatchers.IO) {
             launch {
@@ -261,6 +265,8 @@ abstract class IntegrationTest(
             outputStateMessage
         }
     }
+
+    fun updateConfig(config: String): String = configUpdater.update(config)
 
     companion object {
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")

@@ -58,6 +58,10 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.3.8 | 2025-01-18 | [51724](https://github.com/airbytehq/airbyte/pull/51724) | Update dependencies |
+| 0.3.7 | 2025-01-11 | [51224](https://github.com/airbytehq/airbyte/pull/51224) | Update dependencies |
+| 0.3.6 | 2024-12-28 | [50464](https://github.com/airbytehq/airbyte/pull/50464) | Update dependencies |
+| 0.3.5 | 2024-12-21 | [50194](https://github.com/airbytehq/airbyte/pull/50194) | Update dependencies |
 | 0.3.4 | 2024-12-14 | [49568](https://github.com/airbytehq/airbyte/pull/49568) | Update dependencies |
 | 0.3.3 | 2024-12-12 | [49312](https://github.com/airbytehq/airbyte/pull/49312) | Update dependencies |
 | 0.3.2 | 2024-12-11 | [49016](https://github.com/airbytehq/airbyte/pull/49016) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

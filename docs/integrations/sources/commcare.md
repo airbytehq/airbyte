@@ -40,6 +40,9 @@ The Commcare source connector supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------- |
+| 0.1.27 | 2025-01-18 | [51097](https://github.com/airbytehq/airbyte/pull/51097) | Update dependencies |
+| 0.1.26 | 2024-12-28 | [50509](https://github.com/airbytehq/airbyte/pull/50509) | Update dependencies |
+| 0.1.25 | 2024-12-21 | [50064](https://github.com/airbytehq/airbyte/pull/50064) | Update dependencies |
 | 0.1.24 | 2024-12-14 | [49172](https://github.com/airbytehq/airbyte/pull/49172) | Update dependencies |
 | 0.1.23 | 2024-11-25 | [48645](https://github.com/airbytehq/airbyte/pull/48645) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.1.22 | 2024-10-29 | [47767](https://github.com/airbytehq/airbyte/pull/47767) | Update dependencies |
