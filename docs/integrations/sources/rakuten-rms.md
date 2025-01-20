@@ -46,7 +46,7 @@ The Rakuten RMS source connector supports the following [sync modes](https://doc
 
 Several output streams are available from this source
 
-- inventories
+- inventories（incremental）
 - items
 - items_sku_report
 - purchase_order
@@ -57,11 +57,11 @@ Several output streams are available from this source
 - category_set_lists
 - category_relation_report
 - bundles
-- version
+- version（Incremental）
 
-## Perfomance considerations
+## Performance considerations
 
-The connector is restricted by Rakuten RMS [rate limits](https://api.slack.com/docs/rate-limits).
+The connector is restricted by Rakuten RMS rate limits.
 
 We highly recommend only syncing required streams.
 
@@ -78,10 +78,10 @@ We highly recommend only syncing required streams.
 
 <details>
 <summary>
-Expand to see details about Rakuten RMS connector
+Expand to see details about Rakuten RMS connector limitations and troubleshooting.
 <summary>
 
-## Connector limitations
+### Connector limitations
 
 #### Rate limiting
 
@@ -89,14 +89,19 @@ Rakuten RMS has rate limit restrictions
 
 | API | Limit | Notes |
 | :--------------- | :----------- | :------------- |
-| inventories         | 5 per second | |
-| items         | 1 per second     | | 
-| items          | 1 per second      | |
-| version         | 1 per second     | |
+| inventories      | 5 per second | |
+| items            | 5 per second | | 
+| version          | 1 per second | |
+| genres           | 1 per second | | 
+| category_mapping       | 5 per second | | 
+| category_relation_report | 1 per second |
+| category_set_lists | 1 per second | |
+| purchase order   | 1 per second | |
+| bundles          | 1 per second | |
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Rakuten RMS source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
