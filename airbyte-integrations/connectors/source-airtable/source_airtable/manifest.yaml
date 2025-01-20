@@ -406,7 +406,7 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - transformations
-            - 3
+            - 0
             - fields
             - 0
             - value
