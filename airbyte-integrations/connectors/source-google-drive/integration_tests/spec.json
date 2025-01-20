@@ -337,9 +337,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "filetype"
-                  ]
+                  "required": ["filetype"]
                 }
               ]
             },
