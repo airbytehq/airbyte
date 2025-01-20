@@ -42,10 +42,10 @@ definitions:
       type: OAuthAuthenticator
       refresh_request_body: {}
       grant_type: refresh_token
-      client_id: "{{ config[\"client_id\"] }}"
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token\"] }}"
-      access_token_value: "{{ config[\"client_access_token\"] }}"
+      client_id: '{{ config["client_id"] }}'
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_token: '{{ config["client_refresh_token"] }}'
+      access_token_value: '{{ config["client_access_token"] }}'
 
 streams:
   - $ref: "#/definitions/streams/moves"

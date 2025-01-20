@@ -300,8 +300,21 @@ index 58a4db9d73..9f20a44f70 100644
 
 ```
 
-### Advanced Case: access token is returned in a different or nested field
-Now imagine that the OAuth flow is updated so that the access token returned by `/oauth/token` is in a non standard / nested field. Specifically, the response is now:
+### Advanced Case: access token is returned in a different field
+Now imagine that the OAuth flow is updated so that the access token returned by `/oauth/token` is in a non standard field. Specifically, the response is now:
+```json
+{
+  "super_duperaccess_token": "YOUR_ACCESS_TOKEN_123"
+}
+```
+
+#### Example Declarative OAuth Change
+```diff
+
+```
+
+### Advanced Case: access token is returned in a nested field
+Now imagine that the OAuth flow is updated so that the access token returned by `/oauth/token` is in a nested non standard field. Specifically, the response is now:
 ```json
 {
   "data": {
@@ -315,34 +328,99 @@ Now imagine that the OAuth flow is updated so that the access token returned by 
 
 ```
 
-### Query Parameters
-TODO: Demonstrate adding custom query parameters and using oauth_user_input_from_connector_config_specification
+### Advanced Case: refresh token support
+Imagine that the OAuth flow is updated so that the OAuth flow now supports refresh tokens.
 
-### Authorization Headers
-TODO: Show how to add custom auth headers with access_token_headers
+Meaning that the OAuth flow now has an additional endpoint:
+`/oauth/refresh` - This is the refresh token URL that the connector will use to exchange the refresh token for an access token
 
-### Complete Example with Refresh Flow
-TODO: Show a complete production example incorporating all features including refresh token support
+Example URL: https://yourconnectorservice.com/oauth/refresh?client_id={{client_id_value}}&client_secret={{client_secret_value}}&&refresh_token={{refresh_token}}
 
-## Best Practices
+and the response of `/oauth/token` now includes a refresh token field.
+```json
+{
+  "access_token": "YOUR_ACCESS_TOKEN_123",
+  "refresh_token": "YOUR_REFRESH_TOKEN_123"
+}
+```
 
-TODO: Document recommended patterns, common pitfalls to avoid, and security considerations.
+#### Example Declarative OAuth Change
+```diff
+diff --git a/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml b/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/refresh_token.yml
+index 58a4db9d73..23c39503e3 100644
+--- a/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml
++++ b/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/refresh_token.yml
+@@ -41,9 +41,18 @@ definitions:
+     authenticator:
+       type: OAuthAuthenticator
+       refresh_request_body: {}
++      grant_type: refresh_token
+       client_id: "{{ config[\"client_id\"] }}"
+       client_secret: "{{ config[\"client_secret\"] }}"
++      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+       access_token_value: "{{ config[\"client_access_token\"] }}"
++      access_token_name: access_token
++      refresh_token_updater:
++        refresh_token_name: refresh_token
++        refresh_token_config_path:
++          - client_refresh_token
++      token_refresh_endpoint: >-
++        https://yourconnectorservice.com/oauth/refresh?client_id={{client_id_value}}&client_secret={{client_secret_value}}&&refresh_token={{refresh_token}}
 
-## Troubleshooting
+ streams:
+   - $ref: "#/definitions/streams/moves"
+@@ -56,7 +65,7 @@ spec:
+     required:
+       - client_id
+       - client_secret
+-      - client_access_token
++      - client_refresh_token
+     properties:
+       client_id:
+         type: string
+@@ -68,9 +77,9 @@ spec:
+-      client_access_token:
++      client_refresh_token:
+         type: string
+-        title: Access token
++        title: Refresh token
+@@ -86,16 +95,22 @@ spec:
+           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
+         extract_output:
+           - access_token
++          - refresh_token
+         access_token_headers: {}
+         access_token_params: {}
+       complete_oauth_output_specification:
+         required:
+           - access_token
++          - refresh_token
+         properties:
+           access_token:
+             type: string
+             path_in_connector_config:
+               - access_token
++          refresh_token:
++            type: string
++            path_in_connector_config:
++              - refresh_token
+       complete_oauth_server_input_specification:
+         required:
+           - client_id
 
-TODO: Add common issues and their solutions, debugging tips, and how to validate configurations.
+```
 
-# Declarative OAuth (experimental)
-This is an experimental feature that allows you to configure OAuth authentication via a connectors spec output.
+### Advanced Case: The Connector is already using Legacy OAuth and the credentials are stored in a strange place
+Imagine that the connector is already using Legacy OAuth and the credentials are stored in a strange place.
 
-This feature is available for all connectors and has support in both our CDK and Connector Builder.
+Specifically:
+1. `client_id` is located in a users config file at `airbyte.super_secret_credentials.pokemon_client_id`
+2. `client_secret` is located in a users config file at `airbyte.super_secret_credentials.pokemon_client_secret`
+3. `access_token` is located in a users config file at `airbyte.super_secret_credentials.pokemon_access_token`
 
-## Overview
-This feature is primarily concerned with the `OAuthConfigSpecification` type as defined in the [protocol](https://github.com/airbytehq/airbyte-protocol/blob/d14cffb8123a8debe2d1c9c32c466f127ac1fb19/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L658C7-L658C42) and made available for use in the connector `spec` at `advanced_auth.oauth_config`.
+and we need to make sure that updating the spec to use Declarative OAuth doesn't break existing syncs.
 
+#### Example Declarative OAuth Change
+```diff
 
-
-## Progressive Example
-
-### Simple OAuth with no overrides
-
+```
