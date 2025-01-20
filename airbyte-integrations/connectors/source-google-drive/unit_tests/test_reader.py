@@ -782,11 +782,16 @@ def test_download_file(
 
     def mock_next_chunk(num_retries):
         handle = mock_basedownload.call_args[0][0]
+        total_size = len(file_content)
+        mock_progress = MagicMock()
+        mock_progress.total_size = total_size
+        mock_progress.resumable_progress = handle.tell()
+
         if handle.tell() > 0:
-            return (None, True)
+            return (mock_progress, True)
         else:
             handle.write(file_content)
-            return (None, False)
+            return (mock_progress, False)
 
     mock_downloader.next_chunk.side_effect = mock_next_chunk
 

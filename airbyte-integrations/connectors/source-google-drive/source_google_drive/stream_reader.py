@@ -6,7 +6,6 @@
 import io
 import json
 import logging
-from collections import defaultdict
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
@@ -29,6 +28,7 @@ from .spec import SourceGoogleDriveSpec
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
 GOOGLE_DOC_MIME_TYPE = "application/vnd.google-apps.document"
 GOOGLE_PRESENTATION_MIME_TYPE = "application/vnd.google-apps.presentation"
+GOOGLE_SPREADSHEET_MIME_TYPE = "application/vnd.google-apps.spreadsheet"
 GOOGLE_DRAWING_MIME_TYPE = "application/vnd.google-apps.drawing"
 EXPORTABLE_DOCUMENTS_MIME_TYPES = [GOOGLE_DOC_MIME_TYPE, GOOGLE_PRESENTATION_MIME_TYPE, GOOGLE_DRAWING_MIME_TYPE]
 
@@ -43,7 +43,7 @@ DOCUMENT_FILE_EXTENSION_KEY = "document_file_extension"
 
 DOWNLOADABLE_DOCUMENTS_MIME_TYPES = {
     GOOGLE_DOC_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_DOC, DOCUMENT_FILE_EXTENSION_KEY: ".docx"},
-    "application/vnd.google-apps.spreadsheet": {
+    GOOGLE_SPREADSHEET_MIME_TYPE: {
         EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_SPREADSHEET,
         DOCUMENT_FILE_EXTENSION_KEY: ".xlsx",
     },
@@ -53,9 +53,6 @@ DOWNLOADABLE_DOCUMENTS_MIME_TYPES = {
     },
     GOOGLE_DRAWING_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"},
 }
-
-# Default value for unsupported types
-FALLBACK_DOWNLOADABLE_DOCUMENTS_TYPES = {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"}
 
 
 class GoogleDriveRemoteFile(RemoteFile):
@@ -177,6 +174,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         """
         Returns true if the given file is a Google App document that can be exported.
         """
+        if self.use_file_transfer():
+            return mime_type in DOWNLOADABLE_DOCUMENTS_MIME_TYPES
         return mime_type in EXPORTABLE_DOCUMENTS_MIME_TYPES
 
     def open_file(self, file: GoogleDriveRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
@@ -209,9 +208,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         Returns the mime type to export Google App documents as.
         """
         if self.use_file_transfer():
-            return DOWNLOADABLE_DOCUMENTS_MIME_TYPES.get(original_mime_type, FALLBACK_DOWNLOADABLE_DOCUMENTS_TYPES)[
-                EXPORT_MEDIA_MIME_TYPE_KEY
-            ]
+            return DOWNLOADABLE_DOCUMENTS_MIME_TYPES[original_mime_type][EXPORT_MEDIA_MIME_TYPE_KEY]
 
         if original_mime_type.startswith(GOOGLE_DOC_MIME_TYPE):
             # Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
@@ -260,12 +257,10 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         try:
             file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
 
-            if file.original_mime_type.startswith("application/vnd.google-apps."):
+            if self._is_exportable_document(file.original_mime_type):
                 request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
 
-                file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES.get(file.original_mime_type, FALLBACK_DOWNLOADABLE_DOCUMENTS_TYPES)[
-                    DOCUMENT_FILE_EXTENSION_KEY
-                ]
+                file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES[file.original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
                 local_file_path += file_extension
                 absolute_file_path += file_extension
                 file_relative_path += file_extension
@@ -277,7 +272,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 done = False
                 while not done:
                     status, done = downloader.next_chunk(num_retries=5)
-                    logger.info(f"Processing file {file.uri}, progress: {status}%")
+                    progress = status.resumable_progress / status.total_size * 100 if status.total_size else 0
+                    logger.info(f"Processing file {file.uri}, progress: {progress:.2f}%")
 
             # native google objects seems to be reporting lower size through the api than the final download size
             file_size = getsize(local_file_path)
