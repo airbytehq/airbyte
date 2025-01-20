@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "additionalProperties": true,
+    "properties": {
+        "bundleManageNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bundleName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bundleDescription": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bundleState": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "parentItemManageNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "bundleItems": {
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "createdDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "updatedDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "type": [
+        "object",
+        "null"
+    ]
+}

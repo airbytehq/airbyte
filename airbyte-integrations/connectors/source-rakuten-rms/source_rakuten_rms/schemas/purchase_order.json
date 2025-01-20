@@ -1,0 +1,362 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "orderNumber": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "orderProgress": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "subStatusId": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "orderDatetime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shopOrderCfmDatetime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "orderFixDatetime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shippingInstDatetime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shippingCmplRptDatetime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deliveryDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shippingTerm": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "giftCheckFlag": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "isolatedIslandFlag": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "orderType": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "reserveNumber": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reserveDeliveryCount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "goodsPrice": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "postagePrice": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "deliveryPrice": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "paymentCharge": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "paymentChargeTaxRate": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "totalPrice": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "requestPrice": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "couponAllTotalPrice": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "couponShopPrice": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "couponOtherPrice": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "additionalFeeOccurAmountToUser": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "additionalFeeOccurAmountToShop": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "asurakuFlag": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "drugFlag": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "dealFlag": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "deliveryCertPrgFlag": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "oneDayOperationFlag": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "OrdererModel": {
+      "properties": {
+        "prefecture": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "SettlementModel": {
+      "properties": {
+        "settlementMethodCode": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "DeliveryModel": {
+      "properties": {
+        "deliveryName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deliveryClass": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "PointModel": {
+      "properties": {
+        "usedPoint": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "WrappingModel1": {
+      "properties": {
+        "title": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "price": {
+          "type": [
+            "number"
+          ]
+        },
+        "includeTaxFlag": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "taxRate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "taxPrice": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "WrappingModel2": {
+      "properties": {
+        "title": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "price": {
+          "type": [
+            "number"
+          ]
+        },
+        "includeTaxFlag": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "taxRate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "taxPrice": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "TaxSummaryModelList": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "PackageModelList": {
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "type": [
+    "object",
+    "null"
+  ]
+}

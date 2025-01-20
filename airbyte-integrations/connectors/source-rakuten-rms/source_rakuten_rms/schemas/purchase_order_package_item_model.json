@@ -1,0 +1,115 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "additionalProperties": true,
+    "properties": {
+        "orderNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "basketId": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "itemDetailId": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "itemName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "itemId": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "itemNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "manageNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "price": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "units": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "includePostageFlag": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "includeCashOnDeliveryPostageFlag": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "selectedChoice": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "dealFlag": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "drugFlag": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "taxRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "priceTaxIncl": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "isSingleItemShipping": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "SkuModelList": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "type": "object"
+}

@@ -1,0 +1,91 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": true,
+    "properties": {
+        "genreId": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "genreIdPath": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "type": "number"
+            }
+        },
+        "nameJa": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "nameJaPath": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "level": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "lowest": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "properties": {
+            "itemRegisterFlg": {
+                "type": [
+                    "boolean",
+                    "null"
+                ]
+            },
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "ancestors": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "type": "object"
+            }
+        },
+        "siblings": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "type": "object"
+            }
+        },
+        "children": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "type": "object"
+            }
+        } 
+    },
+    "type": [
+        "object",
+        "null"
+    ]
+}

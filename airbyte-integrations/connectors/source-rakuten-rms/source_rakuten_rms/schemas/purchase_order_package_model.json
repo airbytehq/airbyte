@@ -1,0 +1,61 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "additionalProperties": true,
+    "properties": {
+        "orderNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "basketId": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "postagePrice": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "deliveryPrice": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "deliveryTaxRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "goodsPrice": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "ItemModelList": {
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "totalPrice": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "defaultDeliveryCompanyCode": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "type": "object"
+}

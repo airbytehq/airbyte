@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "additionalProperties": true,
+    "properties": {
+        "categorySetId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "title": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "categorySetFeatures": {
+            "properties": {
+                "display": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "created": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "updated": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "type": [
+        "object",
+        "null"
+    ]
+}

@@ -1,0 +1,72 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "additionalProperties": true,
+    "properties": {
+        "manageNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "categoryId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "categorySetId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "categoryFeatures": {
+            "properties": {
+                "display": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "categoryPageViewModel": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "layout": {
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "breadcrumbs": {
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "created": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "updated": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "type": [
+        "object",
+        "null"
+    ]
+}

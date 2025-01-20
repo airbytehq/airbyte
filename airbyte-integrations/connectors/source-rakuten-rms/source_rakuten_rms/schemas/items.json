@@ -1,0 +1,257 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "created": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "features": {
+      "properties": {
+        "displayManufacturerContents": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "displayNormalCartButton": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "displaySubscriptionCartButton": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "inventoryDisplay": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "searchVisibility": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "shopContact": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "genreId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hideItem": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "itemDisplaySequence": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "itemNumber": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "itemType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "layout": {
+      "properties": {
+        "itemLayoutId": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "largeDescriptionId": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "layoutSequenceId": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "navigationId": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "showcaseId": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "smallDescriptionId": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "manageNumber": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "payment": {
+      "properties": {
+        "cashOnDeliveryFeeIncluded": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "taxIncluded": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "productDescription": {
+      "properties": {
+        "pc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sp": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "purchasablePeriod": {
+      "properties": {
+        "end": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "tagline": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "unlimitedInventoryFlag": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "variants": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "updated": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "customizazaionOptions": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "variantSelectors": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "images": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

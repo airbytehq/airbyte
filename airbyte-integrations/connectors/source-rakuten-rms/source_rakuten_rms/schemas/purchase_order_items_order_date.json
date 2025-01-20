@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "additionalProperties": true,
+    "properties": {
+        "orderNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "type": [
+        "object",
+        "null"
+    ]
+}

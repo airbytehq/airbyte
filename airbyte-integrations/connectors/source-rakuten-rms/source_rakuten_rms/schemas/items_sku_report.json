@@ -1,0 +1,127 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "additionalProperties": true,
+    "properties": {
+        "manageNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "variantId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "restockOnCancel": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "backOrderFlag": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "normalDeliveryDateId": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "articleNumber": {
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "standardPrice": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "referencePrice": {
+            "properties": {
+                "displayType": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "shipping": {
+            "properties": {
+                "postageIncluded": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "singleItemShipping": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                }
+            },
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "orderQuantityLimit": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "merchantDefinedSkuId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "hidden": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "features": {
+            "properties": {
+                "restockNotification": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "noshi": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                }
+            },
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "attributes": {
+            "type": [
+                "array",
+                "null"
+            ]
+        }
+    },
+    "type": "object"
+}

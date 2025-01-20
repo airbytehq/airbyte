@@ -1,0 +1,31 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-rakuten-rms"
+description = "Source implementation for rakuten-rms."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/rakuten-rms"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [ { include = "source_rakuten_rms" }, {include = "main.py" } ]
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = "^6"
+python-dateutil = "^2.9.0.post0"
+requests = "^2.32.3"
+
+[tool.poetry.scripts]
+source-rakuten-rms = "source_rakuten_rms.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"
+freezegun = "^1.5.1"
+

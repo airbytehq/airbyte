@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "manageNumber": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "variantId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "operationLeadTime": {
+      "properties": {
+        "backOrderDeliveryTimeId": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "normalDeliveryTimeId": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "quantity": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "shipFromIds": {
+      "items": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "created": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": "2024-11-25T10:00:00+09:00" },
+      "stream_descriptor": { "name": "inventories" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": "2024-11-25T10:00:00+09:00" },
+      "stream_descriptor": { "name": "items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "fixedAt": "2024-11-25T10:00:00+09:00" },
+      "stream_descriptor": { "name": "version" }
+    }
+  },
+]

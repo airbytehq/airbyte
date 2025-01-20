@@ -1,0 +1,97 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "inventories",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "items",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "version",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "genres",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "purchase_order",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "bundles",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "category_set_lists",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "category_relation_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "category_mapping_mapping",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

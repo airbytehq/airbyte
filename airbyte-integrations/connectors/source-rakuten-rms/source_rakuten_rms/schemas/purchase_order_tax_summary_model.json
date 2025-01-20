@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "additionalProperties": true,
+    "properties": {
+        "orderNumber": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "taxRate": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "reqPriceTax": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "totalPrice": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "paymentCharge": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "couponPrice": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "point": {
+            "type": [
+                "number",
+                "null"
+            ]
+        }
+    },
+    "type": "object"
+}

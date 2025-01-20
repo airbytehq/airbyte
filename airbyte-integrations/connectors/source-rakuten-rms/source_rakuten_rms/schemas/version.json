@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "fixedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  },
+  "type": [
+    "object",
+    "null"
+  ]
+}
