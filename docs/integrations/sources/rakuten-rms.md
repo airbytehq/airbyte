@@ -1,7 +1,7 @@
 # Rakuten-RMS
 
-This source can sync data for the Rakuten RMS API.
-The Rakuten RMS API reference is only available to subscribers.
+This source can sync data for the Rakuten RMS API.  
+The Rakuten RMS API reference is only available to subscribers.  
 This page guides you through the process of setting up the Rakuten RMS source connector.
 
 ## Prerequisites
