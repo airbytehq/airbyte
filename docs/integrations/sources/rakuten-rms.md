@@ -26,9 +26,9 @@ Generate Service Secret and Licence key on the dashboard
 3. On the source setup page, select **Rakuten-RMS** from the Source type dropdown and enter a name for this connector;
 4. Enter `Licence Key`;
 5. Enter `Service Secret`;
-6. (Optional) min_inventories
-7. (Optional) max_inventories
-8. (Optional) step_interval
+6. (Optional) Enter `min_inventories`
+7. (Optional) Enter `max_inventories`
+8. (Optional) Enter `step_interval`
 7. click `Set up source`.
 <!-- /env:oss -->
 
@@ -77,9 +77,7 @@ We highly recommend only syncing required streams.
 ## Limitations & Troubleshooting
 
 <details>
-<summary>
-Expand to see details about Rakuten RMS connector limitations and troubleshooting.
-<summary>
+<summary>Expand to see details about Rakuten RMS connector limitations and troubleshooting.</summary>
 
 ### Connector limitations
 
@@ -107,7 +105,6 @@ Rakuten RMS has rate limit restrictions
 
 </HideInUI>
 
-## Changelog
 
 <details>
   <summary>Expand to review</summary>
