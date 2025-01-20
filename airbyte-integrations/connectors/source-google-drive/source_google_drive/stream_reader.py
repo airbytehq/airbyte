@@ -281,4 +281,4 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
 
         except Exception as e:
-            raise ErrorDownloadingFile(f"There was an error while trying to download the file: {str(e)}")
+            raise ErrorDownloadingFile(f"There was an error while trying to download the file {file.uri}: {str(e)}")
