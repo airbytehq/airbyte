@@ -272,6 +272,18 @@ definitions:
               target_type: array
               current_type: formula
       transformations:
+        - type: AddFields
+          fields:
+            - path: ["_airtable_table_name"]
+              value: ""
+            - path: ["_airtable_id"]
+              value: "{{ record.id }}"
+            - path: ["_airtable_created_time"]
+              value: "{{ record.createdTime }}"
+        - type: RemoveFields
+          field_pointers:
+            - ["id"]
+            - ["createdTime"]
         - type: DpathFlattenFields
           field_path:
             - "fields"
@@ -280,18 +292,6 @@ definitions:
         - type: KeysReplace
           old: " "
           new: "_"
-        - type: AddFields
-          fields:
-            - path: ["_airtable_table_name"]
-              value: ""
-            - path: ["_airtable_id"]
-              value: "{{ record.id }}"
-            - path: ["_airtable_created_time"]
-              value: "{{ record.createdtime }}"
-        - type: RemoveFields
-          field_pointers:
-            - ["id"]
-            - ["createdtime"]
 
   oauth_authenticator:
     # https://airtable.com/developers/web/api/oauth-reference
