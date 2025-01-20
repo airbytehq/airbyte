@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.21.1.dev0"
+version = "6.22.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.21.1.dev0-py3-none-any.whl", hash = "sha256:96fc04bfdbf83af94b2209705e3acb403297b513be56f884bc00335eb4b4dfe0"},
-    {file = "airbyte_cdk-6.21.1.dev0.tar.gz", hash = "sha256:f0b5b96c2d8f69d6ce28825217d6f8e9f2fdef5c5e96c729bd85add4e9a51893"},
+    {file = "airbyte_cdk-6.22.0-py3-none-any.whl", hash = "sha256:9a69140b75ba5bc413c39ffdeec3bfd2031d7de7ecc134d12fc3fc856d63249a"},
+    {file = "airbyte_cdk-6.22.0.tar.gz", hash = "sha256:35053432ed3a3a17d18a67649ccb1382305fc8b1e1ff42667bb85a12f4517d7c"},
 ]
 
 [package.dependencies]
@@ -43,7 +43,7 @@ requests_cache = "*"
 serpyco-rs = ">=1.10.2,<2.0.0"
 Unidecode = ">=1.3,<2.0"
 wcmatch = "10.0"
-xmltodict = ">=0.13.0,<0.14.0"
+xmltodict = ">=0.13,<0.15"
 
 [package.extras]
 file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
@@ -2003,16 +2003,16 @@ bracex = ">=2.1.1"
 
 [[package]]
 name = "xmltodict"
-version = "0.13.0"
+version = "0.14.2"
 description = "Makes working with XML feel like you are working with JSON"
 optional = false
-python-versions = ">=3.4"
+python-versions = ">=3.6"
 files = [
-    {file = "xmltodict-0.13.0-py2.py3-none-any.whl", hash = "sha256:aa89e8fd76320154a40d19a0df04a4695fb9dc5ba977cbb68ab3e4eb225e7852"},
-    {file = "xmltodict-0.13.0.tar.gz", hash = "sha256:341595a488e3e01a85a9d8911d8912fd922ede5fecc4dce437eb4b6c8d037e56"},
+    {file = "xmltodict-0.14.2-py2.py3-none-any.whl", hash = "sha256:20cc7d723ed729276e808f26fb6b3599f786cbc37e06c65e192ba77c40f20aac"},
+    {file = "xmltodict-0.14.2.tar.gz", hash = "sha256:201e7c28bb210e374999d1dde6382923ab0ed1a8a5faeece48ab525b7810a553"},
 ]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "dc0f890a30ea76f261beb80a33922fcbbead22103a115d5587a0cba0e55c9ee6"
+content-hash = "07010436127ce767440418c5c4187d7e49be131770e2796fa5abb5ba0c8d5809"
