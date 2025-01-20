@@ -183,10 +183,10 @@ definitions:
               target_type: string
               current_type: email
             - type: TypesMap
-              target_type: string
+              target_type: date
               current_type: date
             - type: TypesMap
-              target_type: string
+              target_type: timestamp_with_timezone
               current_type: dateTime
             - type: TypesMap
               target_type: number
