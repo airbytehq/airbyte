@@ -42,7 +42,6 @@ class CdcPartitionsCreator<T : Comparable<T>>(
 
     override suspend fun run(): List<PartitionReader> {
         if (reset.get()) {
-            feedBootstrap.stateQuerier.resetFeedStates()
             throw TransientErrorException(
                 "Saved offset no longer present on the server, " +
                     "Airbyte is going to trigger a sync from scratch."
@@ -89,6 +88,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                 throw e
             }
             is ResetDebeziumWarmStartState -> {
+                feedBootstrap.stateQuerier.resetFeedStates()
                 reset.set(true)
                 log.warn {
                     "Triggering reset. " +
