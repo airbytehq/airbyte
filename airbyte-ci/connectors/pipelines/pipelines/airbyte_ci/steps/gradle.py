@@ -201,7 +201,7 @@ class GradleTask(Step, ABC):
             gradle_container = gradle_container.with_(await secrets.mounted_connector_secrets(self.context, secrets_dir, self.secrets))
         if self.bind_to_docker_host:
             # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
-            gradle_container = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, gradle_container)
+            gradle_container = await pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, gradle_container)
             # This installation should be cheap, as the package has already been downloaded, and its dependencies are already installed.
             gradle_container = gradle_container.with_exec(["yum", "install", "-y", "docker"], use_entrypoint=True)
 
