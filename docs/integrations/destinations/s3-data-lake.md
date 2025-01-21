@@ -17,6 +17,7 @@ for more information.
 
 | Version | Date       | Pull Request                                               | Subject                                                                      |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.2.19  | 2025-01-16 | [\#51595](https://github.com/airbytehq/airbyte/pull/51595) | Clarifications in connector config options                                   |
 | 0.2.18  | 2025-01-15 | [\#51042](https://github.com/airbytehq/airbyte/pull/51042) | Write structs as JSON strings instead of Iceberg structs.                    |
 | 0.2.17  | 2025-01-14 | [\#51542](https://github.com/airbytehq/airbyte/pull/51542) | New identifier fields should be marked as required.                          |
 | 0.2.16  | 2025-01-14 | [\#51538](https://github.com/airbytehq/airbyte/pull/51538) | Update identifier fields if incoming fields are different than existing ones |
