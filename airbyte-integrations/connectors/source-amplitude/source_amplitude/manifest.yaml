@@ -367,6 +367,7 @@ definitions:
       datetime_format: "%Y%m%dT%H"
       cursor_granularity: PT1H
       step: PT{{ config.get("request_time_range", 24)}}H
+      lookback_window: PT2H
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config["start_date"] }}'
