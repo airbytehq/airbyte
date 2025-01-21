@@ -20,24 +20,30 @@ interface TableIdGenerator {
     fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier
 }
 
-class SimpleTableIdGenerator : TableIdGenerator {
-    override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier =
-        tableIdOf(stream.namespace!!, stream.name)
+class SimpleTableIdGenerator(private val s3DataLakeConfiguration: S3DataLakeConfiguration) : TableIdGenerator {
+    override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
+        val namespace = stream.namespace ?: s3DataLakeConfiguration.icebergCatalogConfiguration.databaseName
+        return tableIdOf(namespace!!, stream.name)
+    }
 }
 
 /** AWS Glue requires lowercase database+table names. */
-class GlueTableIdGenerator : TableIdGenerator {
-    override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier =
-        tableIdOf(stream.namespace!!.lowercase(), stream.name.lowercase())
+class GlueTableIdGenerator (private val s3DataLakeConfiguration: S3DataLakeConfiguration) : TableIdGenerator {
+    override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
+        val fallbackNamespace = s3DataLakeConfiguration.icebergCatalogConfiguration.databaseName
+        val namespace = (stream.namespace ?: fallbackNamespace)?.lowercase()
+
+        return tableIdOf(namespace!!, stream.name.lowercase())
+    }
 }
 
 @Factory
-class TableIdGeneratorFactory(private val icebergConfiguration: S3DataLakeConfiguration) {
+class TableIdGeneratorFactory(private val s3DataLakeConfiguration: S3DataLakeConfiguration) {
     @Singleton
     fun create() =
-        when (icebergConfiguration.icebergCatalogConfiguration.catalogConfiguration) {
-            is GlueCatalogConfiguration -> GlueTableIdGenerator()
-            else -> SimpleTableIdGenerator()
+        when (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration) {
+            is GlueCatalogConfiguration -> GlueTableIdGenerator(s3DataLakeConfiguration)
+            else -> SimpleTableIdGenerator(s3DataLakeConfiguration)
         }
 }
 
