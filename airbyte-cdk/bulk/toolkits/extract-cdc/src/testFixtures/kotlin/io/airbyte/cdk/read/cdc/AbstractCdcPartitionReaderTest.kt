@@ -42,7 +42,7 @@ import org.junit.jupiter.api.Test
  * integration test and this class is subclassed for multiple Debezium implementations which connect
  * to a corresponding testcontainer data source.
  */
-abstract class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
+abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     namespace: String?,
     val heartbeat: Duration = Duration.ofMillis(100),
     val timeout: Duration = Duration.ofSeconds(10),
@@ -142,7 +142,7 @@ abstract class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
             mapOf(
                 stream.id to
                     object : StreamRecordConsumer {
-                        override val stream: Stream = this@CdcPartitionReaderTest.stream
+                        override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
 
                         override fun accept(
                             recordData: ObjectNode,

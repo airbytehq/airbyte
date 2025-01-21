@@ -14,7 +14,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 
 class CdcPartitionReaderPostgresTest :
-    CdcPartitionReaderTest<LogSequenceNumber, PostgreSQLContainer<*>>(
+    AbstractCdcPartitionReaderTest<LogSequenceNumber, PostgreSQLContainer<*>>(
         namespace = "public",
     ) {
 

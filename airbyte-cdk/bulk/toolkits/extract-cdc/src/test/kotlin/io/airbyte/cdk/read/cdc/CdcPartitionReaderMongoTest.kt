@@ -23,7 +23,7 @@ import org.bson.Document
 import org.bson.conversions.Bson
 
 class CdcPartitionReaderMongoTest :
-    CdcPartitionReaderTest<BsonTimestamp, MongoDbReplicaSet>(
+    AbstractCdcPartitionReaderTest<BsonTimestamp, MongoDbReplicaSet>(
         namespace = "test",
     ) {
 

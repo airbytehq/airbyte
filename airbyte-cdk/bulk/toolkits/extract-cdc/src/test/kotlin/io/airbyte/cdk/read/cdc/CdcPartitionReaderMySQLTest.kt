@@ -15,7 +15,7 @@ import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.utility.DockerImageName
 
 class CdcPartitionReaderMySQLTest :
-    CdcPartitionReaderTest<CdcPartitionReaderMySQLTest.Position, MySQLContainer<*>>(
+    AbstractCdcPartitionReaderTest<CdcPartitionReaderMySQLTest.Position, MySQLContainer<*>>(
         namespace = "test",
     ) {
 
