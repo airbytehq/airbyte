@@ -41,7 +41,6 @@ data:
       - events_list
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
