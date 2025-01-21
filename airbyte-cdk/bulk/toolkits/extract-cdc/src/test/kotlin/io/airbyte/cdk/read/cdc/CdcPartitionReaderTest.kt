@@ -96,8 +96,9 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     abstract fun C.delete24()
 
     abstract fun C.currentPosition(): T
-    abstract fun C.syntheticInput(): DebeziumInput
-    abstract fun C.debeziumProperties(): Map<String, String>
+    abstract fun C.coldStartOffset(): DebeziumOffset
+    abstract fun C.coldStartProperties(): Map<String, String>
+    abstract fun C.warmStartProperties(): Map<String, String>
 
     @Test
     /**
@@ -105,14 +106,15 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
      * using [createContainer] and provisions it using [createStream], [insert12345], [update135]
      * and [delete24].
      *
-     * While doing so, it creates several [CdcPartitionReader] instances using [currentPosition],
-     * [syntheticInput] and [debeziumProperties], and exercises all [PartitionReader] methods.
+     * While doing so, it creates several [CdcPartitionReader] instances and exercises all
+     * [PartitionReader] methods.
      */
     fun integrationTest() {
         createContainer().use { container: C ->
             container.createStream()
             val p0: T = container.currentPosition()
-            val r0: ReadResult = read(container.syntheticInput(), p0)
+            val o0: DebeziumOffset = container.coldStartOffset()
+            val r0: ReadResult = read(container.coldStartProperties(), p0, o0, isColdStart = true)
             Assertions.assertEquals(emptyList<Record>(), r0.records)
             Assertions.assertNotEquals(
                 CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
@@ -144,12 +146,13 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
                 )
             val p2: T = container.currentPosition()
 
-            val input = DebeziumInput(container.debeziumProperties(), r0.state, isSynthetic = false)
-            val r1: ReadResult = read(input, p1)
+            val o1: DebeziumOffset = r0.offset
+            val h1: DebeziumSchemaHistory? = r0.schemaHistory
+            val r1: ReadResult = read(container.warmStartProperties(), p1, o1, h1)
             Assertions.assertEquals(insert + update, r1.records.take(insert.size + update.size))
             Assertions.assertNotNull(r1.closeReason)
 
-            val r2: ReadResult = read(input, p2)
+            val r2: ReadResult = read(container.warmStartProperties(), p2, o1, h1)
             Assertions.assertEquals(
                 insert + update + delete,
                 r2.records.take(insert.size + update.size + delete.size),
@@ -163,8 +166,11 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     }
 
     private fun read(
-        input: DebeziumInput,
+        debeziumProperties: Map<String, String>,
         upperBound: T,
+        startingOffset: DebeziumOffset,
+        startingSchemaHistory: DebeziumSchemaHistory? = null,
+        isColdStart: Boolean = false,
     ): ReadResult {
         val outputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
         val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer> =
@@ -192,7 +198,10 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
                 streamRecordConsumers,
                 this,
                 upperBound,
-                input,
+                debeziumProperties,
+                startingOffset,
+                startingSchemaHistory,
+                isColdStart,
             )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
@@ -224,16 +233,20 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
         Assertions.assertEquals(0, reader.numEventsWithoutSourceRecord.get())
         Assertions.assertEquals(0, reader.numSourceRecordsWithoutPosition.get())
         Assertions.assertEquals(0, reader.numEventValuesWithoutPosition.get())
+        val (offset: DebeziumOffset, schemaHistory: DebeziumSchemaHistory?) =
+            deserialize(checkpoint.opaqueStateValue)
         return ReadResult(
             outputConsumer.records().map { Jsons.treeToValue(it.data, Record::class.java) },
-            deserialize(checkpoint.opaqueStateValue),
+            offset,
+            schemaHistory,
             reader.closeReasonReference.get(),
         )
     }
 
     data class ReadResult(
         val records: List<Record>,
-        val state: DebeziumState,
+        val offset: DebeziumOffset,
+        val schemaHistory: DebeziumSchemaHistory?,
         val closeReason: CdcPartitionReader.CloseReason?,
     )
 
@@ -250,7 +263,7 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     data class Update(override val id: Int, val v: Int) : Record
     data class Delete(override val id: Int) : Record
 
-    override fun deserialize(
+    override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
         stream: Stream,
@@ -277,23 +290,28 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
     override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
         stream.id.name
 
-    override fun serialize(debeziumState: DebeziumState): OpaqueStateValue =
+    override fun serializeState(
+        offset: DebeziumOffset,
+        schemaHistory: DebeziumSchemaHistory?
+    ): OpaqueStateValue =
         Jsons.valueToTree(
             mapOf(
                 "offset" to
-                    debeziumState.offset.wrapped
+                    offset.wrapped
                         .map {
                             Jsons.writeValueAsString(it.key) to Jsons.writeValueAsString(it.value)
                         }
                         .toMap(),
                 "schemaHistory" to
-                    debeziumState.schemaHistory?.wrapped?.map {
+                    schemaHistory?.wrapped?.map {
                         DocumentWriter.defaultWriter().write(it.document())
                     },
             ),
         )
 
-    private fun deserialize(opaqueStateValue: OpaqueStateValue): DebeziumState {
+    private fun deserialize(
+        opaqueStateValue: OpaqueStateValue
+    ): Pair<DebeziumOffset, DebeziumSchemaHistory?> {
         val offsetNode: ObjectNode = opaqueStateValue["offset"] as ObjectNode
         val offset =
             DebeziumOffset(
@@ -304,15 +322,14 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
                     .toMap(),
             )
         val historyNode: ArrayNode =
-            opaqueStateValue["schemaHistory"] as? ArrayNode
-                ?: return DebeziumState(offset, schemaHistory = null)
+            opaqueStateValue["schemaHistory"] as? ArrayNode ?: return offset to null
         val schemaHistory =
             DebeziumSchemaHistory(
                 historyNode.elements().asSequence().toList().map {
                     HistoryRecord(DocumentReader.defaultReader().read(it.asText()))
                 },
             )
-        return DebeziumState(offset, schemaHistory)
+        return offset to schemaHistory
     }
 }
 
@@ -390,7 +407,7 @@ class CdcPartitionReaderMySQLTest :
             }
         }
 
-    override fun MySQLContainer<*>.syntheticInput(): DebeziumInput {
+    override fun MySQLContainer<*>.coldStartOffset(): DebeziumOffset {
         val position: Position = currentPosition()
         val timestamp: Instant = Instant.now()
         val key: ArrayNode =
@@ -404,18 +421,17 @@ class CdcPartitionReaderMySQLTest :
                 put("file", position.file)
                 put("pos", position.pos)
             }
-        val offset = DebeziumOffset(mapOf(key to value))
-        val state = DebeziumState(offset, schemaHistory = null)
-        val syntheticProperties: Map<String, String> =
-            DebeziumPropertiesBuilder()
-                .with(debeziumProperties())
-                .with("snapshot.mode", "recovery")
-                .withStreams(listOf())
-                .buildMap()
-        return DebeziumInput(syntheticProperties, state, isSynthetic = true)
+        return DebeziumOffset(mapOf(key to value))
     }
 
-    override fun MySQLContainer<*>.debeziumProperties(): Map<String, String> =
+    override fun MySQLContainer<*>.coldStartProperties(): Map<String, String> =
+        DebeziumPropertiesBuilder()
+            .with(warmStartProperties())
+            .with("snapshot.mode", "recovery")
+            .withStreams(listOf())
+            .buildMap()
+
+    override fun MySQLContainer<*>.warmStartProperties(): Map<String, String> =
         DebeziumPropertiesBuilder()
             .withDefault()
             .withConnector(MySqlConnector::class.java)
@@ -512,7 +528,7 @@ class CdcPartitionReaderPostgresTest :
             }
         }
 
-    override fun PostgreSQLContainer<*>.syntheticInput(): DebeziumInput {
+    override fun PostgreSQLContainer<*>.coldStartOffset(): DebeziumOffset {
         val (position: LogSequenceNumber, txID: Long) =
             withStatement { statement: Statement ->
                 statement.executeQuery("SELECT pg_current_wal_lsn(), txid_current()").use {
@@ -532,13 +548,13 @@ class CdcPartitionReaderPostgresTest :
                 put("lsn", position.asLong())
                 put("txId", txID)
             }
-        val offset = DebeziumOffset(mapOf(key to value))
-        val state = DebeziumState(offset, schemaHistory = null)
-        val syntheticProperties: Map<String, String> = debeziumProperties()
-        return DebeziumInput(syntheticProperties, state, isSynthetic = true)
+        return DebeziumOffset(mapOf(key to value))
     }
 
-    override fun PostgreSQLContainer<*>.debeziumProperties(): Map<String, String> =
+    override fun PostgreSQLContainer<*>.coldStartProperties(): Map<String, String> =
+        warmStartProperties()
+
+    override fun PostgreSQLContainer<*>.warmStartProperties(): Map<String, String> =
         DebeziumPropertiesBuilder()
             .withDefault()
             .withConnector(PostgresConnector::class.java)
@@ -628,7 +644,7 @@ class CdcPartitionReaderMongoTest :
     override fun MongoDbReplicaSet.currentPosition(): BsonTimestamp =
         ResumeTokens.getTimestamp(currentResumeToken())
 
-    override fun MongoDbReplicaSet.syntheticInput(): DebeziumInput {
+    override fun MongoDbReplicaSet.coldStartOffset(): DebeziumOffset {
         val resumeToken: BsonDocument = currentResumeToken()
         val timestamp: BsonTimestamp = ResumeTokens.getTimestamp(resumeToken)
         val resumeTokenString: String = ResumeTokens.getData(resumeToken).asString().value
@@ -643,10 +659,7 @@ class CdcPartitionReaderMongoTest :
                 put("sec", timestamp.time)
                 put("resume_token", resumeTokenString)
             }
-        val offset = DebeziumOffset(mapOf(key to value))
-        val state = DebeziumState(offset, schemaHistory = null)
-        val syntheticProperties: Map<String, String> = debeziumProperties()
-        return DebeziumInput(syntheticProperties, state, isSynthetic = true)
+        return DebeziumOffset(mapOf(key to value))
     }
 
     private fun MongoDbReplicaSet.currentResumeToken(): BsonDocument =
@@ -658,7 +671,10 @@ class CdcPartitionReaderMongoTest :
             }
         }
 
-    override fun MongoDbReplicaSet.debeziumProperties(): Map<String, String> =
+    override fun MongoDbReplicaSet.coldStartProperties(): Map<String, String> =
+        warmStartProperties()
+
+    override fun MongoDbReplicaSet.warmStartProperties(): Map<String, String> =
         DebeziumPropertiesBuilder()
             .withDefault()
             .withConnector(MongoDbConnector::class.java)
@@ -678,7 +694,7 @@ class CdcPartitionReaderMongoTest :
             .withOffset()
             .buildMap()
 
-    override fun deserialize(
+    override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
         stream: Stream,
