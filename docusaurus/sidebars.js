@@ -644,7 +644,12 @@ module.exports = {
             type: "doc",
             id: "access-management/rbac",
           },
-          items: [{ type: "doc", id: "access-management/role-mapping" }],
+          items: [
+            { 
+              type: "doc", 
+              id: "access-management/role-mapping" 
+            },
+          ],
         },
       ],
     },
