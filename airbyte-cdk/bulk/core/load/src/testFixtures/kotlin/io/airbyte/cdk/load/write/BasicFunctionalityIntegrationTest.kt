@@ -185,7 +185,6 @@ abstract class BasicFunctionalityIntegrationTest(
     val nullUnknownTypes: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
-    envVars: Map<String, String> = emptyMap(),
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -195,7 +194,6 @@ abstract class BasicFunctionalityIntegrationTest(
         nameMapper = nameMapper,
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = configUpdater,
-        envVars = envVars,
         micronautProperties = micronautProperties,
     ) {
     val parsedConfig =
