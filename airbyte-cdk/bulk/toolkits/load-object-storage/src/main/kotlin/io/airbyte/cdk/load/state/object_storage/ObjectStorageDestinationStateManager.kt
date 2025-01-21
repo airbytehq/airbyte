@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.file.object_storage.StateObjectStorageLite
 import io.airbyte.cdk.load.state.DestinationState
 import io.airbyte.cdk.load.state.DestinationStatePersister
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
@@ -146,7 +147,7 @@ class ObjectStorageStagingPersister(
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     private val log = KotlinLogging.logger {}
-    private val fallbackPersister = ObjectStorageFallbackPersister(client, pathFactory)
+//    private val fallbackPersister = ObjectStorageFallbackPersister(client, pathFactory)
 
     companion object {
         const val STATE_FILENAME = "__airbyte_state.json"
@@ -164,7 +165,8 @@ class ObjectStorageStagingPersister(
             }
         } catch (e: Exception) {
             log.info { "No destination state found at $key: $e; falling back to metadata search" }
-            return fallbackPersister.load(stream)
+//            return fallbackPersister.load(stream)
+            throw e
         }
     }
 
@@ -175,7 +177,8 @@ class ObjectStorageStagingPersister(
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class ObjectStorageFallbackPersister(
-    private val client: ObjectStorageClient<*>,
+//    private val client: ObjectStorageClient<*>,
+    private val client: StateObjectStorageLite<RemoteObject<*>>,
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     private val log = KotlinLogging.logger {}
@@ -231,15 +234,15 @@ class ObjectStorageFallbackPersister(
 
 @Factory
 class ObjectStorageDestinationStatePersisterFactory<T : RemoteObject<*>>(
-    private val client: ObjectStorageClient<T>,
+    private val client: StateObjectStorageLite<RemoteObject<*>>,
     private val pathFactory: PathFactory
 ) {
     @Singleton
     @Secondary
     fun create(): DestinationStatePersister<ObjectStorageDestinationState> =
-        if (pathFactory.supportsStaging) {
-            ObjectStorageStagingPersister(client, pathFactory)
-        } else {
+//        if (pathFactory.supportsStaging) {
+//            ObjectStorageStagingPersister(client, pathFactory)
+//        } else {
             ObjectStorageFallbackPersister(client, pathFactory)
-        }
+//        }
 }

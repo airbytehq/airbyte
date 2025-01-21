@@ -20,6 +20,21 @@ import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toInputStream
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.net.url.Url
+import com.amazonaws.ClientConfiguration
+import com.amazonaws.Protocol
+import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider
+import com.amazonaws.client.builder.AwsClientBuilder
+import com.amazonaws.endpointdiscovery.DaemonThreadFactory
+import com.amazonaws.metrics.AwsSdkMetrics.getCredentialProvider
+import com.amazonaws.regions.Regions
+import com.amazonaws.retry.RetryMode
+import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
@@ -39,6 +54,7 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.concurrent.Executors
 import kotlinx.coroutines.flow.flow
 
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
@@ -98,7 +114,7 @@ class S3Client(
             val inputStream =
                 it.body?.toInputStream()
                     ?: throw IllegalStateException(
-                        "S3 object body is null (this indicates a failure, not an empty object)"
+                        "S3 object body is null (this indicates a failure, not an empty object)",
                     )
             block(inputStream)
         }
@@ -109,7 +125,8 @@ class S3Client(
             bucket = bucketConfig.s3BucketName
             this.key = key
         }
-        return client.headObject(request).metadata ?: emptyMap()
+        val resp = client.headObject(request)
+        return resp.metadata ?: emptyMap()
     }
 
     override suspend fun put(key: String, bytes: ByteArray): S3Object {
@@ -161,7 +178,7 @@ class S3Client(
                 response,
                 ByteArrayOutputStream(),
                 streamProcessor ?: NoopProcessor,
-                uploadConfig
+                uploadConfig,
             )
         upload.runUsing(block)
         return S3Object(key, bucketConfig)
@@ -195,16 +212,96 @@ class S3ClientFactory(
         const val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
 
         fun <T> make(config: T) where
-        T : S3BucketConfigurationProvider,
-        T : AWSAccessKeyConfigurationProvider,
-        T : AWSArnRoleConfigurationProvider,
-        T : ObjectStorageUploadConfigurationProvider =
+            T : S3BucketConfigurationProvider,
+            T : AWSAccessKeyConfigurationProvider,
+            T : AWSArnRoleConfigurationProvider,
+            T : ObjectStorageUploadConfigurationProvider =
             S3ClientFactory(config, config, config, config).make()
     }
 
     private val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
     private val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
     private val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
+
+    /**
+     * Testing replacing the kotlin sdk with the java sdk in the state persister.
+     * Wiring might be not quite right.
+     */
+    @Singleton
+    fun javaSdkLiteClient(): AmazonS3 {
+        val endpoint = bucketConfig.s3BucketConfiguration.s3Endpoint
+        val region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
+
+        val credsProvider: AWSCredentialsProvider?
+        if (keyConfig.awsAccessKeyConfiguration.accessKeyId != null) {
+            val accessKeyId = keyConfig.awsAccessKeyConfiguration.accessKeyId
+            val secretAccessKey = keyConfig.awsAccessKeyConfiguration.secretAccessKey
+
+            credsProvider = AWSStaticCredentialsProvider(
+                BasicAWSCredentials(
+                    accessKeyId,
+                    secretAccessKey,
+                ),
+            )
+        } else if (arnRole.awsArnRoleConfiguration.roleArn != null) {
+            // The Platform is expected to inject via credentials if ROLE_ARN is present.
+            val externalId = System.getenv(EXTERNAL_ID) // Consider injecting this dependency
+            val staticProvider = AWSStaticCredentialsProvider(
+                BasicAWSCredentials(
+                    System.getenv(AWS_ACCESS_KEY_ID),
+                    System.getenv(AWS_SECRET_ACCESS_KEY),
+                ),
+            )
+            val roleArn = arnRole.awsArnRoleConfiguration.roleArn!!
+            credsProvider =
+                STSAssumeRoleSessionCredentialsProvider.Builder(roleArn, AIRBYTE_STS_SESSION_NAME)
+                    .withExternalId(externalId)
+                    .withStsClient(
+                        AWSSecurityTokenServiceClient.builder()
+                            .withRegion(Regions.DEFAULT_REGION)
+                            .withCredentials(staticProvider)
+                            .build(),
+                    )
+                    .withAsyncRefreshExecutor(Executors.newSingleThreadExecutor(DaemonThreadFactory()))
+                    .build()
+        } else {
+            credsProvider = DefaultAWSCredentialsProviderChain()
+        }
+
+        val clientBuilder = AmazonS3ClientBuilder.standard().withCredentials(credsProvider)
+        when (credsProvider) {
+            is DefaultAWSCredentialsProviderChain,
+            is STSAssumeRoleSessionCredentialsProvider ->
+                clientBuilder
+                    .withRegion(region)
+                    // the SDK defaults to RetryMode.LEGACY
+                    // (https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html)
+                    // this _can_ be configured via environment variable, but it seems more reliable
+                    // to
+                    // configure it
+                    // programmatically
+                    .withClientConfiguration(
+                        ClientConfiguration().withRetryMode(RetryMode.STANDARD),
+                    )
+
+            else -> {
+                if (null == endpoint || endpoint.isEmpty()) {
+                    clientBuilder.withRegion(region)
+                } else {
+                    val clientConfiguration = ClientConfiguration().withProtocol(Protocol.HTTPS)
+                    clientConfiguration.signerOverride = "AWSS3V4SignerType"
+
+                    clientBuilder
+                        .withEndpointConfiguration(
+                            AwsClientBuilder.EndpointConfiguration(endpoint, region),
+                        )
+                        .withPathStyleAccessEnabled(true)
+                        .withClientConfiguration(clientConfiguration)
+                }
+            }
+        }
+        return clientBuilder.build()
+    }
 
     @Singleton
     @Secondary
@@ -222,7 +319,7 @@ class S3ClientFactory(
                     AssumeRoleParameters(
                         roleArn = arnRole.awsArnRoleConfiguration.roleArn!!,
                         roleSessionName = AIRBYTE_STS_SESSION_NAME,
-                        externalId = externalId
+                        externalId = externalId,
                     )
                 val creds = StaticCredentialsProvider {
                     accessKeyId = System.getenv(AWS_ACCESS_KEY_ID)
@@ -230,7 +327,7 @@ class S3ClientFactory(
                 }
                 StsAssumeRoleCredentialsProvider(
                     bootstrapCredentialsProvider = creds,
-                    assumeRoleParameters = assumeRoleParams
+                    assumeRoleParameters = assumeRoleParams,
                 )
             } else {
                 DefaultChainCredentialsProvider()
@@ -255,7 +352,7 @@ class S3ClientFactory(
         return S3Client(
             s3SdkClient,
             bucketConfig.s3BucketConfiguration,
-            uploadConfig?.objectStorageUploadConfiguration
+            uploadConfig?.objectStorageUploadConfiguration,
         )
     }
 }
