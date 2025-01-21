@@ -59,6 +59,7 @@ data object CliRunner {
         state: List<AirbyteStateMessage>? = null,
         inputStream: InputStream,
         additionalMicronautEnvs: List<String> = emptyList(),
+        micronautProperties: Map<String, String> = emptyMap(),
         vararg featureFlags: FeatureFlag,
     ): CliRunnable {
         val inputBeanDefinition: RuntimeBeanDefinition<InputStream> =
@@ -73,6 +74,7 @@ data object CliRunner {
                     args,
                     additionalMicronautEnvs = additionalMicronautEnvs,
                     featureFlags.systemEnv,
+                    micronautProperties,
                     inputBeanDefinition,
                     out.beanDefinition,
                 )
@@ -88,6 +90,7 @@ data object CliRunner {
         state: List<AirbyteStateMessage>? = null,
         featureFlags: Set<FeatureFlag> = setOf(),
         additionalMicronautEnvs: List<String> = emptyList(),
+        micronautProperties: Map<String, String> = emptyMap(),
         vararg input: AirbyteMessage,
     ): CliRunnable {
         val inputJsonBytes: ByteArray =
@@ -106,6 +109,7 @@ data object CliRunner {
             state,
             inputStream,
             additionalMicronautEnvs,
+            micronautProperties,
             *featureFlags.toTypedArray()
         )
     }

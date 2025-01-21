@@ -24,6 +24,6 @@ data class AwsAssumeRoleCredentials(
     @Value("\${$EXTERNAL_ID_PROPERTY}") val externalId: String,
 )
 
-private const val ACCESS_KEY_PROPERTY = "airbyte.destination.aws.assume-role.access-key"
-private const val SECRET_KEY_PROPERTY = "airbyte.destination.aws.assume-role.secret-key"
-private const val EXTERNAL_ID_PROPERTY = "airbyte.destination.aws.assume-role.external-id"
+const val ACCESS_KEY_PROPERTY = "airbyte.destination.aws.assume-role.access-key"
+const val SECRET_KEY_PROPERTY = "airbyte.destination.aws.assume-role.secret-key"
+const val EXTERNAL_ID_PROPERTY = "airbyte.destination.aws.assume-role.external-id"

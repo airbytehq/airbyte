@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.destination_process.Property
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToPrettyPrintedString
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -34,12 +35,16 @@ import org.junit.jupiter.api.assertAll
  * of the diff. This diff is _really messy_ for the initial migration from the old CDK to the new
  * one, but after that, it should be pretty readable.
  */
-abstract class SpecTest(additionalMicronautEnvs: List<String> = emptyList()) :
+abstract class SpecTest(
+    additionalMicronautEnvs: List<String> = emptyList(),
+    micronautProperties: Map<Property, String> = emptyMap(),
+) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
         dataDumper = FakeDataDumper,
         destinationCleaner = NoopDestinationCleaner,
         recordMangler = NoopExpectedRecordMapper,
+        micronautProperties = micronautProperties,
     ) {
     private val testResourcesPath = Path.of("src/test-integration/resources")
 
@@ -68,6 +73,7 @@ abstract class SpecTest(additionalMicronautEnvs: List<String> = emptyList()) :
             destinationProcessFactory.createDestinationProcess(
                 "spec",
                 featureFlags = featureFlags,
+                micronautProperties = micronautProperties,
             )
         runBlocking { process.run() }
         val messages = process.readMessages()

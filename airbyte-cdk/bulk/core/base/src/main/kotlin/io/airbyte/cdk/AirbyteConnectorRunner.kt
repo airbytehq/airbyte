@@ -9,6 +9,7 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.context.RuntimeBeanDefinition
 import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
+import io.micronaut.context.env.MapPropertySource
 import io.micronaut.core.cli.CommandLine as MicronautCommandLine
 import java.nio.file.Path
 import kotlin.system.exitProcess
@@ -39,6 +40,7 @@ class AirbyteSourceRunner(
         args,
         additionalMicronautEnvs,
         systemEnv,
+        micronautProperties = emptyMap(),
         testBeanDefinitions
     ) {
     companion object {
@@ -56,6 +58,7 @@ class AirbyteDestinationRunner(
     additionalMicronautEnvs: List<String> = emptyList(),
     /** Environment variables. */
     systemEnv: Map<String, String> = System.getenv(),
+    micronautProperties: Map<String, String> = emptyMap(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
 ) :
@@ -64,6 +67,7 @@ class AirbyteDestinationRunner(
         args,
         additionalMicronautEnvs,
         systemEnv,
+        micronautProperties,
         testBeanDefinitions
     ) {
     companion object {
@@ -83,6 +87,7 @@ sealed class AirbyteConnectorRunner(
     val args: Array<out String>,
     additionalMicronautEnvs: List<String> = emptyList(),
     systemEnv: Map<String, String>,
+    val micronautProperties: Map<String, String> = emptyMap(),
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
 ) {
     val envs: Array<String> =
@@ -105,6 +110,8 @@ sealed class AirbyteConnectorRunner(
                 picocliCommandLineFactory.commands.options().map { it.longestName() },
             )
         val commandLinePropertySource = CommandLinePropertySource(micronautCommandLine)
+        val additionalPropertiesSource =
+            MapPropertySource("additional_properties", micronautProperties)
         val ctx: ApplicationContext =
         // note that we put the override envs last.
         // This ensures that micronaut gives those environments precedence
@@ -115,6 +122,7 @@ sealed class AirbyteConnectorRunner(
                             airbytePropertySource,
                             commandLinePropertySource,
                             MetadataYamlPropertySource(),
+                            additionalPropertiesSource,
                         )
                         .toTypedArray(),
                 )

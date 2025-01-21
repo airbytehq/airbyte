@@ -49,6 +49,7 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.destination_process.Property
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -148,6 +149,7 @@ abstract class BasicFunctionalityIntegrationTest(
     recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     nameMapper: NameMapper = NoopNameMapper,
     additionalMicronautEnvs: List<String> = emptyList(),
+    micronautProperties: Map<Property, String> = emptyMap(),
     /**
      * Whether to actually verify that the connector wrote data to the destination. This should only
      * ever be disabled for test destinations (dev-null, etc.).
@@ -194,6 +196,7 @@ abstract class BasicFunctionalityIntegrationTest(
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = configUpdater,
         envVars = envVars,
+        micronautProperties = micronautProperties,
     ) {
     val parsedConfig =
         ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))

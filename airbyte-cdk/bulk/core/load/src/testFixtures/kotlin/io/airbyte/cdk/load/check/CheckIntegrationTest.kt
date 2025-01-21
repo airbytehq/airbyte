@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.destination_process.Property
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.charset.StandardCharsets
@@ -30,6 +31,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
     val successConfigFilenames: List<CheckTestConfig>,
     val failConfigFilenamesAndFailureReasons: Map<CheckTestConfig, Pattern>,
     additionalMicronautEnvs: List<String> = emptyList(),
+    micronautProperties: Map<Property, String> = emptyMap(),
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
 ) :
     IntegrationTest(
@@ -38,6 +40,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
         destinationCleaner = NoopDestinationCleaner,
         recordMangler = NoopExpectedRecordMapper,
         configUpdater = configUpdater,
+        micronautProperties = micronautProperties,
     ) {
     @Test
     open fun testSuccessConfigs() {
@@ -48,6 +51,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     "check",
                     configContents = config,
                     featureFlags = featureFlags.toTypedArray(),
+                    micronautProperties = micronautProperties,
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()
@@ -76,6 +80,7 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     "check",
                     configContents = config,
                     featureFlags = featureFlags.toTypedArray(),
+                    micronautProperties = micronautProperties,
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()

@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_v2
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
+import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Test
@@ -44,6 +45,7 @@ class S3V2CheckTest :
             ),
         failConfigFilenamesAndFailureReasons = emptyMap(),
         additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,
+        micronautProperties = S3V2TestUtils.assumeRoleCredentials.asMicronautProperties(),
     ) {
     @Test
     @Timeout(5, unit = TimeUnit.MINUTES)
