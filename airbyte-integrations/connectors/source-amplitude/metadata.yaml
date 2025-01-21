@@ -4,10 +4,11 @@ data:
     sl: 200
   allowedHosts:
     hosts:
-      - amplitude.com
-      - analytics.eu.amplitude.com
+    - amplitude.com
+    - analytics.eu.amplitude.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: 
+      docker.io/airbyte/source-declarative-manifest:6.22.0@sha256:c387c8387c4e8feb25f0df7b4a0bd0e7a29aa5494162e7c3584b58217828b920
   connectorSubtype: api
   connectorType: source
   definitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
@@ -21,7 +22,7 @@ data:
   name: Amplitude
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-amplitude
   registryOverrides:
     cloud:
@@ -34,32 +35,33 @@ data:
       enableProgressiveRollout: true
   suggestedStreams:
     streams:
-      - events
-      - active_users
-      - annotations
-      - cohorts
-      - events_list
+    - events
+    - active_users
+    - annotations
+    - cohorts
+    - events_list
   supportLevel: certified
   tags:
-    - cdk:low-code
+  - cdk:low-code
+  - language:manifest-only
   connectorTestSuitesOptions:
-    - suite: liveTests
-      testConnections:
-        - name: amplitude_config_dev_null
-          id: 1dbb29a0-973a-49e5-bae3-546e311fd90a
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_SOURCE-AMPLITUDE__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-AMPLITUDE__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+  - suite: liveTests
+    testConnections:
+    - name: amplitude_config_dev_null
+      id: 1dbb29a0-973a-49e5-bae3-546e311fd90a
+  - suite: unitTests
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_SOURCE-AMPLITUDE__CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  - suite: acceptanceTests
+    testSecrets:
+    - name: SECRET_SOURCE-AMPLITUDE__CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
