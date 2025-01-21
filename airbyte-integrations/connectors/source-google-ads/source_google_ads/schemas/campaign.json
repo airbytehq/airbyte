@@ -4,419 +4,2538 @@
   "properties": {
     "campaign.accessible_bidding_strategy": {
       "description": "The accessible bidding strategy of the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.ad_serving_optimization_status": {
       "description": "The optimization status for serving ads within the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.advertising_channel_sub_type": {
       "description": "The sub-type of advertising channel for the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.advertising_channel_type": {
       "description": "The type of advertising channel for the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.app_campaign_setting.app_id": {
       "description": "The ID of the app associated with the app campaign setting.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.app_campaign_setting.app_store": {
       "description": "The app store for the mobile app associated with the app campaign setting.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.app_campaign_setting.bidding_strategy_goal_type": {
       "description": "The goal type for the app campaign's bidding strategy.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.asset_automation_settings": {
+      "description": "Contains the opt-in/out status for each AssetAutomationType.",
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "object"
+      }
+    },
+    "campaign.audience_setting.use_audience_grouped": {
+      "description": "If true, uses an Audience resource for targeting; if false, uses audience segment criteria.",
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.base_campaign": {
       "description": "The base campaign linked to the current campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.bidding_strategy": {
       "description": "The bidding strategy used for the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.bidding_strategy_system_status": {
+      "description": "The system status of the campaign's bidding strategy.",
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.bidding_strategy_type": {
       "description": "The type of bidding strategy employed for the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.campaign_budget": {
       "description": "The budget allocated for the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.campaign_group": {
+      "description": "The resource name of the campaign group this campaign belongs to.",
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign_budget.amount_micros": {
       "description": "The budget amount in micros allocated for the campaign.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.commission.commission_rate_micros": {
       "description": "The commission rate in micros for the campaign.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "campaign.demand_gen_campaign_settings.upgraded_targeting": {
+      "description": "Specifies whether this Demand Gen campaign uses upgraded targeting options.",
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.dynamic_search_ads_setting.domain_name": {
       "description": "The domain name set for dynamic search ads within the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.dynamic_search_ads_setting.feeds": {
       "description": "List of feeds utilized for dynamic search ads.",
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "string"
       }
     },
     "campaign.dynamic_search_ads_setting.language_code": {
       "description": "The language code associated with dynamic search ads.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.dynamic_search_ads_setting.use_supplied_urls_only": {
       "description": "Flag indicating whether only supplied URLs are used for dynamic search ads.",
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.end_date": {
       "description": "The end date of the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.excluded_parent_asset_field_types": {
       "description": "Types of parent asset fields excluded from the campaign.",
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "campaign.excluded_parent_asset_set_types": {
+      "description": "The asset set types that should be excluded from this campaign.",
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "string"
       }
     },
     "campaign.experiment_type": {
       "description": "The type of experiment conducted for the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.final_url_suffix": {
       "description": "The final URL suffix used for tracking in the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.fixed_cpm.goal": {
+      "description": "The bidding goal for fixed CPM campaigns.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.fixed_cpm.target_frequency_info.target_count": {
+      "description": "The target frequency count for fixed CPM bidding.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "campaign.fixed_cpm.target_frequency_info.time_unit": {
+      "description": "The time unit for target frequency in fixed CPM bidding.",
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.frequency_caps": {
       "description": "Caps on ad serving frequency for the campaign.",
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "string"
       }
     },
     "campaign.geo_target_type_setting.negative_geo_target_type": {
       "description": "The negative geo target type settings for the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.geo_target_type_setting.positive_geo_target_type": {
       "description": "The positive geo target type settings for the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.hotel_property_asset_set": {
+      "description": "The set of hotel properties for Performance Max for travel goals campaigns.",
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.hotel_setting.hotel_center_id": {
       "description": "The hotel center ID associated with hotel campaigns.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.id": {
       "description": "The unique identifier of the campaign.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "campaign.keyword_match_type": {
+      "description": "Keyword match type for the campaign (e.g. BROAD).",
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.labels": {
       "description": "Labels associated with the campaign.",
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "string"
       }
     },
+    "campaign.listing_type": {
+      "description": "Listing type of ads served for this campaign (used for Performance Max).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
     "campaign.local_campaign_setting.location_source_type": {
       "description": "The source type for location targeting in local campaigns.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.local_services_campaign_settings.category_bids": {
+      "description": "Categorical level bids for MANUAL_CPA strategy in Local Services campaigns.",
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "object"
+      }
+    },
+    "campaign.manual_cpa": {
+      "description": "Manual CPA bidding strategy (Local Services only).",
+      "type": [
+        "null",
+        "object"
+      ]
     },
     "campaign.manual_cpc.enhanced_cpc_enabled": {
       "description": "Indication of whether Enhanced CPC is enabled for manual CPC campaigns.",
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.manual_cpm": {
       "description": "Manual CPM bidding used in the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.manual_cpv": {
       "description": "Manual CPV bidding used in the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.maximize_conversion_value.target_roas": {
       "description": "Target ROAS set for maximizing conversion value in the campaign.",
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "campaign.maximize_conversions.target_cpa_micros": {
       "description": "Target CPA in micros set for maximizing conversions in the campaign.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.name": {
       "description": "The name of the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.network_settings.target_content_network": {
       "description": "Indication of targeting the content network in network settings.",
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.network_settings.target_google_search": {
       "description": "Indication of targeting Google Search in network settings.",
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "campaign.network_settings.target_google_tv_network": {
+      "description": "Indication of targeting the Google TV network in network settings.",
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.network_settings.target_partner_search_network": {
       "description": "Indication of targeting partner search network in network settings.",
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.network_settings.target_search_network": {
       "description": "Indication of targeting search network in network settings.",
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "campaign.network_settings.target_youtube": {
+      "description": "Indication of targeting YouTube in network settings.",
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.optimization_goal_setting.optimization_goal_types": {
       "description": "Types of optimization goals set for the campaign.",
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "string"
       }
     },
     "campaign.optimization_score": {
       "description": "The optimization score of the campaign.",
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "campaign.payment_mode": {
       "description": "The payment mode chosen for the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.percent_cpc.cpc_bid_ceiling_micros": {
       "description": "The CPC bid ceiling in micros for percent CPC bidding.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.percent_cpc.enhanced_cpc_enabled": {
       "description": "Indication of Enhanced CPC enabled for percent CPC bidding.",
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "campaign.performance_max_upgrade.performance_max_campaign": {
+      "description": "Performance Max campaign that this campaign is upgraded to.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.performance_max_upgrade.pre_upgrade_campaign": {
+      "description": "Legacy campaign upgraded to Performance Max.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.performance_max_upgrade.status": {
+      "description": "The upgrade status of a campaign requested to be upgraded to Performance Max.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.primary_status": {
+      "description": "Primary status of the campaign, indicating serving or other constraints.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.primary_status_reasons": {
+      "description": "Reasons underlying the primary status of the campaign.",
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "string"
+      }
     },
     "campaign.real_time_bidding_setting.opt_in": {
       "description": "Opt-in status for real-time bidding within the campaign.",
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.resource_name": {
       "description": "The resource name of the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.selective_optimization.conversion_actions": {
       "description": "Conversion actions selected for selective optimization within the campaign.",
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "string"
       }
     },
     "campaign.serving_status": {
       "description": "The serving status of the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.shopping_setting.advertising_partner_ids": {
+      "description": "Ads account IDs of advertising partners in the campaign.",
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "integer"
+      }
     },
     "campaign.shopping_setting.campaign_priority": {
       "description": "Campaign priority set for shopping campaigns.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "campaign.shopping_setting.disable_product_feed": {
+      "description": "Disable the optional product feed (only for Demand Gen campaigns).",
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.shopping_setting.enable_local": {
       "description": "Flag indicating whether local shopping is enabled for the campaign.",
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "campaign.shopping_setting.feed_label": {
+      "description": "Feed label for included products. Can be a country code (e.g., 'US') or any valid label.",
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.shopping_setting.merchant_id": {
       "description": "The merchant ID associated with shopping campaigns.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "campaign.shopping_setting.use_vehicle_inventory": {
+      "description": "Whether to target vehicle listing inventory (for certain Smart Shopping campaigns).",
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "campaign.start_date": {
       "description": "The start date of the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.status": {
       "description": "The status of the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.target_cpa.cpc_bid_ceiling_micros": {
       "description": "The CPC bid ceiling in micros for target CPA bidding.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.target_cpa.cpc_bid_floor_micros": {
       "description": "The CPC bid floor in micros for target CPA bidding.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.target_cpa.target_cpa_micros": {
       "description": "The target CPA in micros for target CPA bidding.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.target_cpm.target_frequency_goal.target_count": {
       "description": "The target count set for target frequency goal in target CPM bidding.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.target_cpm.target_frequency_goal.time_unit": {
       "description": "The time unit set for target frequency goal in target CPM bidding.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.target_impression_share.cpc_bid_ceiling_micros": {
       "description": "The CPC bid ceiling in micros for target impression share bidding.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.target_impression_share.location": {
       "description": "The location targeted for target impression share bidding.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.target_impression_share.location_fraction_micros": {
       "description": "The location fraction in micros for target impression share bidding.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.target_roas.cpc_bid_ceiling_micros": {
       "description": "The CPC bid ceiling in micros for target ROAS bidding.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.target_roas.cpc_bid_floor_micros": {
       "description": "The CPC bid floor in micros for target ROAS bidding.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.target_roas.target_roas": {
       "description": "The target ROAS set for target ROAS bidding.",
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "campaign.target_spend.cpc_bid_ceiling_micros": {
       "description": "The CPC bid ceiling in micros for target spend bidding.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.target_spend.target_spend_micros": {
-      "description": "The target spend in micros for target spend bidding.",
-      "type": ["null", "integer"]
+      "description": "The target spend in micros for target spend bidding (deprecated).",
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.targeting_setting.target_restrictions": {
       "description": "Restrictions applied to targeting within the campaign.",
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "string"
       }
     },
     "campaign.tracking_setting.tracking_url": {
       "description": "The tracking URL set for campaign tracking.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.tracking_url_template": {
       "description": "The template for tracking URLs in the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign.travel_campaign_settings.travel_account_id": {
+      "description": "The Travel account ID associated with the Travel campaign.",
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "campaign.url_custom_parameters": {
       "description": "Custom parameters added to campaign URLs.",
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "string"
       }
     },
+    "campaign.url_expansion_opt_out": {
+      "description": "Flag for opting out of URL expansion in Performance Max campaigns.",
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
     "campaign.vanity_pharma.vanity_pharma_display_url_mode": {
       "description": "The display URL mode set for vanity pharma in the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.vanity_pharma.vanity_pharma_text": {
       "description": "The text used for vanity pharma in the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "campaign.video_brand_safety_suitability": {
       "description": "The brand safety suitability settings for video ads within the campaign.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
-    "metrics.clicks": {
-      "description": "Total number of clicks in the campaign.",
-      "type": ["null", "integer"]
+    "campaign.video_campaign_settings.video_ad_inventory_control.allow_in_feed": {
+      "description": "Whether VideoResponsiveAds can be used for in-feed video ads.",
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
-    "metrics.ctr": {
-      "description": "Click-through rate (CTR) metric for the campaign.",
-      "type": ["null", "number"]
+    "campaign.video_campaign_settings.video_ad_inventory_control.allow_in_stream": {
+      "description": "Whether VideoResponsiveAds can be used for in-stream video ads.",
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
-    "metrics.conversions": {
-      "description": "Total number of conversions in the campaign.",
-      "type": ["null", "number"]
-    },
-    "metrics.conversions_value": {
-      "description": "Total value of conversions in the campaign.",
-      "type": ["null", "number"]
-    },
-    "metrics.cost_micros": {
-      "description": "Total cost in micros incurred for the campaign.",
-      "type": ["null", "integer"]
-    },
-    "metrics.impressions": {
-      "description": "Total number of impressions for the campaign.",
-      "type": ["null", "integer"]
-    },
-    "metrics.video_views": {
-      "description": "Total number of video views in the campaign.",
-      "type": ["null", "integer"]
-    },
-    "metrics.video_quartile_p100_rate": {
-      "description": "Rate of viewers reaching the 100% quartile in video ads.",
-      "type": ["null", "number"]
+    "campaign.video_campaign_settings.video_ad_inventory_control.allow_shorts": {
+      "description": "Whether VideoResponsiveAds can be used as shorts format.",
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "metrics.active_view_cpm": {
       "description": "Active View CPM metric for the campaign.",
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "metrics.active_view_ctr": {
       "description": "Active View CTR metric for the campaign.",
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "metrics.active_view_impressions": {
       "description": "Number of active view impressions for the campaign.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "metrics.active_view_measurability": {
       "description": "Active view measurability metric for the campaign.",
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "metrics.active_view_measurable_cost_micros": {
       "description": "Cost in micros for measurable active view impressions.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "metrics.active_view_measurable_impressions": {
       "description": "Number of measurable active view impressions.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "metrics.active_view_viewability": {
       "description": "Active view viewability metric for the campaign.",
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions": {
+      "description": "Total number of conversions, including those not counted in the 'conversions' metric.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_by_conversion_date": {
+      "description": "All conversions attributed to the date of conversion.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_click_to_call": {
+      "description": "Number of call button clicks after clicking an ad.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_directions": {
+      "description": "Number of directions clicks after clicking an ad.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_interactions_rate": {
+      "description": "All conversions from interactions / total ad interactions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_interactions_value_per_interaction": {
+      "description": "Value of all conversions / total number of interactions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_location_asset_click_to_call": {
+      "description": "Number of call button clicks from location asset after an interaction.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_location_asset_directions": {
+      "description": "Number of directions clicks from location asset after an interaction.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_location_asset_menu": {
+      "description": "Number of menu link clicks from location asset after an interaction.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_location_asset_order": {
+      "description": "Number of order clicks from location asset after an interaction.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_location_asset_other_engagement": {
+      "description": "Number of other local action clicks from location asset after an interaction.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_location_asset_store_visits": {
+      "description": "Estimated store visits from location asset after an interaction.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_location_asset_website": {
+      "description": "Number of website URL clicks from location asset after an interaction.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_menu": {
+      "description": "Number of menu link clicks after clicking an ad (feed items).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_order": {
+      "description": "Number of orders placed after clicking an ad (feed items).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_other_engagement": {
+      "description": "Number of other conversions (e.g., reviews) after clicking an ad (feed items).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_store_visit": {
+      "description": "Estimated store visits after clicking an ad (feed items).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_from_store_website": {
+      "description": "Number of times users visited the store's website after clicking an ad (feed items).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_value": {
+      "description": "The total value of all conversions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_value_by_conversion_date": {
+      "description": "Total value of all conversions by the date of conversion.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_conversions_value_per_cost": {
+      "description": "Value of all conversions / total cost.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.all_new_customer_lifetime_value": {
+      "description": "All of new customers' lifetime conversion value (if using customer acquisition goals).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.average_cart_size": {
+      "description": "Average number of products purchased per order (cart data).",
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "metrics.average_cost": {
-      "description": "Average cost metric for the campaign.",
-      "type": ["null", "number"]
+      "description": "Average cost per interaction (cost / interactions).",
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "metrics.average_cpc": {
-      "description": "Average CPC metric for the campaign.",
-      "type": ["null", "number"]
+      "description": "Average cost per click (total cost / clicks).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.average_cpe": {
+      "description": "Average cost per engagement (total cost / engagements).",
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "metrics.average_cpm": {
-      "description": "Average CPM metric for the campaign.",
-      "type": ["null", "number"]
+      "description": "Average cost per thousand impressions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.average_cpv": {
+      "description": "Average cost per view (total cost / video views).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.average_impression_frequency_per_user": {
+      "description": "Average number of times a unique user saw your ad within a limited date range.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.average_order_value_micros": {
+      "description": "Average order value (in micros), from cart data.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.average_page_views": {
+      "description": "Average number of pages viewed per session (Google Analytics).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.average_target_cpa_micros": {
+      "description": "Average Target CPA in micros (or unset).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.average_target_roas": {
+      "description": "Average Target ROAS (or unset).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.average_time_on_site": {
+      "description": "Average duration (in seconds) of site visits (Google Analytics).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.benchmark_average_max_cpc": {
+      "description": "Competitive benchmark for average max CPC on similar products.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.bounce_rate": {
+      "description": "Percentage of single-page visits (Google Analytics).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.clicks": {
+      "description": "Total number of clicks in the campaign.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.content_budget_lost_impression_share": {
+      "description": "Estimated % of times your ads didn't show on Display due to low budget.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.content_impression_share": {
+      "description": "Impressions on the Display Network / eligible impressions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.content_rank_lost_impression_share": {
+      "description": "Estimated % of times your ads didn't show on Display due to Ad Rank.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.conversions": {
+      "description": "Total number of conversions (includes only actions set to count in 'conversions').",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.conversions_by_conversion_date": {
+      "description": "Conversions attributed to their actual conversion date.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.conversions_from_interactions_rate": {
+      "description": "Conversions from interactions / ad interactions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.conversions_from_interactions_value_per_interaction": {
+      "description": "Value of conversions / total interactions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.conversions_value": {
+      "description": "Total value of conversions (counted in 'conversions').",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.conversions_value_by_conversion_date": {
+      "description": "Value of conversions attributed to the date of conversion.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.conversions_value_per_cost": {
+      "description": "Value of conversions / total cost.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.cost_micros": {
+      "description": "Total cost in micros incurred for the campaign.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.cost_of_goods_sold_micros": {
+      "description": "Cost of goods sold for orders attributed to your ads (in micros).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.cost_per_all_conversions": {
+      "description": "Cost / all_conversions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.cost_per_conversion": {
+      "description": "Cost / conversions (only includes 'conversions' actions).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.cost_per_current_model_attributed_conversion": {
+      "description": "Cost / current_model_attributed_conversions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.cross_device_conversions": {
+      "description": "Conversions from one device to another.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.cross_device_conversions_value_micros": {
+      "description": "Sum of cross-device conversions' values in micros.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.cross_sell_cost_of_goods_sold_micros": {
+      "description": "Cost of goods sold for cross-sold products (in micros).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.cross_sell_gross_profit_micros": {
+      "description": "Gross profit from cross-sold products (in micros).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.cross_sell_revenue_micros": {
+      "description": "Revenue from cross-sold products (in micros).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.cross_sell_units_sold": {
+      "description": "Number of cross-sold products sold in total.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.ctr": {
+      "description": "Click-through rate (clicks / impressions).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.current_model_attributed_conversions": {
+      "description": "Conversions as measured by the currently selected attribution model.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.current_model_attributed_conversions_from_interactions_rate": {
+      "description": "Current model conversions / interactions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.current_model_attributed_conversions_from_interactions_value_per_interaction": {
+      "description": "Value of current model conversions / total interactions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.current_model_attributed_conversions_value": {
+      "description": "Value of current model attributed conversions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.current_model_attributed_conversions_value_per_cost": {
+      "description": "Current model conversions value / cost.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.eligible_impressions_from_location_asset_store_reach": {
+      "description": "Number of impressions where a location was shown or used for targeting.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.engagement_rate": {
+      "description": "Engagements / impressions for certain ad formats (e.g., Lightbox).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.engagements": {
+      "description": "Number of engagements (expansions of Lightbox ads, etc.).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.gmail_forwards": {
+      "description": "Number of times a Gmail ad was forwarded.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.gmail_saves": {
+      "description": "Number of times a Gmail ad was saved.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.gmail_secondary_clicks": {
+      "description": "Number of clicks to the landing page on the expanded Gmail ad.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.gross_profit_margin": {
+      "description": "Percentage gross profit margin from orders (after COGS).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.gross_profit_micros": {
+      "description": "Gross profit from orders (revenue minus COGS), in micros.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.historical_creative_quality_score": {
+      "description": "The historical creative quality score (enum bucket).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "metrics.historical_landing_page_quality_score": {
+      "description": "The historical landing page quality score (enum bucket).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "metrics.historical_quality_score": {
+      "description": "The historical overall quality score.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.historical_search_predicted_ctr": {
+      "description": "The historical search predicted CTR (enum bucket).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "metrics.hotel_average_lead_value_micros": {
+      "description": "Average lead value for Hotel Ads in micros.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.hotel_eligible_impressions": {
+      "description": "Number of impressions for which Hotel Ads were eligible.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.hotel_price_difference_percentage": {
+      "description": "Average price difference between your price and the cheapest competitor.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.impressions": {
+      "description": "Total number of impressions for the campaign.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.interaction_event_types": {
+      "description": "Types of payable/free interactions in the campaign metrics.",
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "string"
+        ]
+      }
+    },
+    "metrics.interaction_rate": {
+      "description": "Interactions / impressions.",
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "metrics.interactions": {
       "description": "Total number of interactions in the campaign.",
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
-    "metrics.interaction_event_types": {
-      "description": "Types of interaction events recorded in the campaign metrics.",
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+    "metrics.invalid_click_rate": {
+      "description": "Percentage of clicks considered invalid.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.invalid_clicks": {
+      "description": "Number of clicks deemed invalid.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.lead_cost_of_goods_sold_micros": {
+      "description": "COGS for items that match the advertised product, in micros.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.lead_gross_profit_micros": {
+      "description": "Gross profit for items that match the advertised product, in micros.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.lead_revenue_micros": {
+      "description": "Revenue from items that match the advertised product, in micros.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.lead_units_sold": {
+      "description": "Number of units sold that match the advertised product.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.message_chat_rate": {
+      "description": "message_chats / message_impressions for Click To Message ads.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.message_chats": {
+      "description": "Number of message chats initiated.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.message_impressions": {
+      "description": "Number of Click To Message impressions that were eligible for tracking.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.mobile_friendly_clicks_percentage": {
+      "description": "Percentage of mobile clicks going to a valid AMP page.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.new_customer_lifetime_value": {
+      "description": "New customers' lifetime conversion value (if using acquisition goals).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.optimization_score_uplift": {
+      "description": "Total optimization score uplift of all recommendations.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.optimization_score_url": {
+      "description": "URL for the optimization score page in Google Ads UI.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "metrics.orders": {
+      "description": "Number of purchase conversions (from cart data).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.percent_new_visitors": {
+      "description": "Percentage of first-time sessions (Google Analytics).",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.phone_calls": {
+      "description": "Number of offline phone calls.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.phone_impressions": {
+      "description": "Number of offline phone impressions.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.phone_through_rate": {
+      "description": "phone_calls / phone_impressions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.publisher_organic_clicks": {
+      "description": "Clicks from non-paid publisher sources.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.publisher_purchased_clicks": {
+      "description": "Clicks from paid or incentivized traffic sources.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.publisher_unknown_clicks": {
+      "description": "Clicks from unknown sources of traffic.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.relative_ctr": {
+      "description": "CTR relative to other advertisers on the same Display Network sites.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.revenue_micros": {
+      "description": "Total revenue from orders attributed to ads (in micros).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.search_absolute_top_impression_share": {
+      "description": "Percent of ad impressions shown in the most prominent position in search.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.search_budget_lost_absolute_top_impression_share": {
+      "description": "Estimated % of times ads didn't appear in the top position due to low budget.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.search_budget_lost_impression_share": {
+      "description": "Estimated % of times ads didn't show on search due to low budget.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.search_budget_lost_top_impression_share": {
+      "description": "Estimated % of times ads didn't show above organic results due to low budget.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.search_click_share": {
+      "description": "Clicks received on Search / total eligible clicks.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.search_exact_match_impression_share": {
+      "description": "Impressions for exact match keywords / total eligible exact match impressions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.search_impression_share": {
+      "description": "Impressions on search / total eligible impressions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.search_rank_lost_absolute_top_impression_share": {
+      "description": "Estimated % of times ads didn't appear in top position due to Ad Rank.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.search_rank_lost_impression_share": {
+      "description": "Estimated % of times ads didn't show on search due to Ad Rank.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.search_rank_lost_top_impression_share": {
+      "description": "Estimated % of times ads didn't show above organic results due to Ad Rank.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.search_top_impression_share": {
+      "description": "Impressions above organic results / total eligible top impressions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.sk_ad_network_installs": {
+      "description": "Number of iOS Store Kit Ad Network installs.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.sk_ad_network_total_conversions": {
+      "description": "Total iOS Store Kit Ad Network conversions.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.speed_score": {
+      "description": "Mobile page speed score (1 to 10).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.top_impression_percentage": {
+      "description": "Percent of ad impressions shown above the organic results.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.unique_users": {
+      "description": "Number of unique users who saw your ad (92-day limit).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.units_sold": {
+      "description": "Total products sold from all orders attributed to ads.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.valid_accelerated_mobile_pages_clicks_percentage": {
+      "description": "Percentage of clicks to AMP landing pages that reach valid AMP.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.value_per_all_conversions": {
+      "description": "All conversions value / all conversions.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.value_per_all_conversions_by_conversion_date": {
+      "description": "All conversions value / all conversions, by conversion date.",
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "metrics.value_per_conversion": {
-      "description": "Average value per conversion in the campaign.",
-      "type": ["null", "number"]
+      "description": "Conversions value / conversions.",
+      "type": [
+        "null",
+        "number"
+      ]
     },
-    "metrics.cost_per_conversion": {
-      "description": "Cost per conversion metric for the campaign.",
-      "type": ["null", "number"]
+    "metrics.value_per_conversions_by_conversion_date": {
+      "description": "Conversions value / conversions, attributed to the date of conversion.",
+      "type": [
+        "null",
+        "number"
+      ]
     },
-    "segments.date": {
-      "description": "Date segment used for campaign data.",
-      "type": ["null", "string"],
-      "format": "date"
+    "metrics.value_per_current_model_attributed_conversion": {
+      "description": "Current model conversions value / number of those conversions.",
+      "type": [
+        "null",
+        "number"
+      ]
     },
-    "segments.hour": {
-      "description": "Hour segment used for campaign data.",
-      "type": ["null", "integer"]
+    "metrics.video_quartile_p100_rate": {
+      "description": "Rate of viewers who watched 100% of the video.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.video_quartile_p25_rate": {
+      "description": "Rate of viewers who watched 25% of the video.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.video_quartile_p50_rate": {
+      "description": "Rate of viewers who watched 50% of the video.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.video_quartile_p75_rate": {
+      "description": "Rate of viewers who watched 75% of the video.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.video_view_rate": {
+      "description": "Views / impressions for video ads.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.video_views": {
+      "description": "Total number of video views in the campaign.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.view_through_conversions": {
+      "description": "Total number of view-through conversions.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.view_through_conversions_from_location_asset_click_to_call": {
+      "description": "Number of call button clicks from location asset after an impression.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.view_through_conversions_from_location_asset_directions": {
+      "description": "Number of directions clicks from location asset after an impression.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.view_through_conversions_from_location_asset_menu": {
+      "description": "Menu link clicks from location asset after an impression.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.view_through_conversions_from_location_asset_order": {
+      "description": "Order clicks from location asset after an impression.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.view_through_conversions_from_location_asset_other_engagement": {
+      "description": "Other local action clicks from location asset after an impression.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.view_through_conversions_from_location_asset_store_visits": {
+      "description": "Estimated store visits from location asset after an impression.",
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "metrics.view_through_conversions_from_location_asset_website": {
+      "description": "Website URL clicks from location asset after an impression.",
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "segments.ad_network_type": {
       "description": "The type of ad network used for segmentation.",
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.date": {
+      "description": "Date segment used for campaign data.",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date"
+    },
+    "segments.hour": {
+      "description": "Hour segment used for campaign data (0-23).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.activity_account_id": {
+      "description": "Activity account ID for travel activity.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.activity_city": {
+      "description": "City where the travel activity is available.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.activity_country": {
+      "description": "Country where the travel activity is available.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.activity_rating": {
+      "description": "Rating of the travel activity.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.activity_state": {
+      "description": "State where the travel activity is available.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.ad_destination_type": {
+      "description": "Ad destination type (e.g. WEBSITE, APP_DEEP_LINK, etc).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.ad_format_type": {
+      "description": "Ad format type for segmentation.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.asset_interaction_target.asset": {
+      "description": "Resource name of the asset.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.asset_interaction_target.interaction_on_this_asset": {
+      "description": "True if interactions occurred on this asset specifically.",
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "segments.auction_insight_domain": {
+      "description": "Domain (visible URL) in Auction Insights.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.budget_campaign_association_status.campaign": {
+      "description": "Resource name of the campaign in a budget association.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.budget_campaign_association_status.status": {
+      "description": "Budget campaign association status.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.click_type": {
+      "description": "Type of click (e.g. HEADLINE, SITELINK, etc).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.conversion_action": {
+      "description": "Resource name of the conversion action.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.conversion_action_category": {
+      "description": "Category of the conversion action.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.conversion_action_name": {
+      "description": "Name of the conversion action.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.conversion_adjustment": {
+      "description": "True if the row represents an adjustment to a prior conversion.",
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "segments.conversion_attribution_event_type": {
+      "description": "Attribution event type for the conversion.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.conversion_lag_bucket": {
+      "description": "Days between the impression and the conversion (bucket).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.conversion_or_adjustment_lag_bucket": {
+      "description": "Days between the impression and conversion/adjustment (bucket).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.conversion_value_rule_primary_dimension": {
+      "description": "Primary dimension of the applied conversion value rule.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.day_of_week": {
+      "description": "Day of the week (e.g. MONDAY).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.device": {
+      "description": "Type of device (e.g. MOBILE, DESKTOP).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.external_activity_id": {
+      "description": "Advertiser-supplied external activity ID.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.external_conversion_source": {
+      "description": "Source of the external conversion (e.g. ANALYTICS).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_airport": {
+      "description": "Geo target constant for an airport.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_canton": {
+      "description": "Geo target constant for a canton.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_city": {
+      "description": "Geo target constant for a city.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_country": {
+      "description": "Geo target constant for a country.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_county": {
+      "description": "Geo target constant for a county.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_district": {
+      "description": "Geo target constant for a district.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_metro": {
+      "description": "Geo target constant for a metro area.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_most_specific_location": {
+      "description": "Geo target constant for the most specific location.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_postal_code": {
+      "description": "Geo target constant for a postal code.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_province": {
+      "description": "Geo target constant for a province.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_region": {
+      "description": "Geo target constant for a region.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.geo_target_state": {
+      "description": "Geo target constant for a state.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.hotel_booking_window_days": {
+      "description": "Hotel booking window in days.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.hotel_center_id": {
+      "description": "Segment for the hotel center ID.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.hotel_check_in_date": {
+      "description": "Hotel check-in date (yyyy-MM-dd).",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date"
+    },
+    "segments.hotel_check_in_day_of_week": {
+      "description": "Day of week for the hotel check-in.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.hotel_city": {
+      "description": "Hotel city.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.hotel_class": {
+      "description": "Hotel class (1-5).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.hotel_country": {
+      "description": "Hotel country.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.hotel_date_selection_type": {
+      "description": "Type of the hotel date selection.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.hotel_length_of_stay": {
+      "description": "Length of stay for a hotel booking.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.hotel_price_bucket": {
+      "description": "Hotel price bucket.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.hotel_rate_rule_id": {
+      "description": "Hotel rate rule ID.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.hotel_rate_type": {
+      "description": "Hotel rate type (e.g., per night, per stay).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.hotel_state": {
+      "description": "Hotel state.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.interaction_on_this_extension": {
+      "description": "True if the interaction occurred on this extension itself.",
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "segments.month": {
+      "description": "Month (yyyy-MM-dd) for the first day of a month.",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date"
+    },
+    "segments.month_of_year": {
+      "description": "Month of the year (e.g. JANUARY).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.new_versus_returning_customers": {
+      "description": "Segments conversions by new vs returning customers.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.partner_hotel_id": {
+      "description": "Partner hotel ID.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.placeholder_type": {
+      "description": "Placeholder type for feed item metrics.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_aggregator_id": {
+      "description": "Aggregator ID of the product.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.product_brand": {
+      "description": "Brand of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_category_level1": {
+      "description": "Category level 1 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_category_level2": {
+      "description": "Category level 2 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_category_level3": {
+      "description": "Category level 3 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_category_level4": {
+      "description": "Category level 4 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_category_level5": {
+      "description": "Category level 5 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_channel": {
+      "description": "Channel of the product (e.g. ONLINE, LOCAL).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_channel_exclusivity": {
+      "description": "Channel exclusivity of the product (e.g. SINGLE_CHANNEL, MULTI_CHANNEL).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_condition": {
+      "description": "Condition of the product (NEW, USED, etc).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_country": {
+      "description": "Geo target constant for the country of sale of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_custom_attribute0": {
+      "description": "Custom attribute 0 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_custom_attribute1": {
+      "description": "Custom attribute 1 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_custom_attribute2": {
+      "description": "Custom attribute 2 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_custom_attribute3": {
+      "description": "Custom attribute 3 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_custom_attribute4": {
+      "description": "Custom attribute 4 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_feed_label": {
+      "description": "Feed label of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_item_id": {
+      "description": "Item ID of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_language": {
+      "description": "Resource name of the language constant for the product's language.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_merchant_id": {
+      "description": "Merchant ID of the product.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.product_store_id": {
+      "description": "Store ID of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_title": {
+      "description": "Title of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_type_l1": {
+      "description": "Type level 1 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_type_l2": {
+      "description": "Type level 2 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_type_l3": {
+      "description": "Type level 3 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_type_l4": {
+      "description": "Type level 4 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.product_type_l5": {
+      "description": "Type level 5 of the product.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.quarter": {
+      "description": "Quarter start date (yyyy-MM-dd), e.g. 2018-04-01 for Q2 2018.",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date"
+    },
+    "segments.recommendation_type": {
+      "description": "Recommendation type.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.search_engine_results_page_type": {
+      "description": "Type of the search engine results page.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.sk_ad_network_ad_event_type": {
+      "description": "iOS Store Kit Ad Network ad event type.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.sk_ad_network_attribution_credit": {
+      "description": "iOS Store Kit Ad Network attribution credit type.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.sk_ad_network_coarse_conversion_value": {
+      "description": "iOS Store Kit Ad Network coarse conversion value.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.sk_ad_network_fine_conversion_value": {
+      "description": "iOS Store Kit Ad Network fine conversion value (int64).",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.sk_ad_network_postback_sequence_index": {
+      "description": "iOS Store Kit Ad Network postback sequence index.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.sk_ad_network_redistributed_fine_conversion_value": {
+      "description": "Sum of modeled and observed SKAN fine conversion values.",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "segments.sk_ad_network_source_app.sk_ad_network_source_app_id": {
+      "description": "App ID where the SKAN-driving ad was shown.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.sk_ad_network_source_domain": {
+      "description": "Website domain of the SKAN-driving ad.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.sk_ad_network_source_type": {
+      "description": "Source type of the SKAN-driving ad.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.sk_ad_network_user_type": {
+      "description": "iOS Store Kit Ad Network user type.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.sk_ad_network_version": {
+      "description": "Version of the SKAdNetwork API used.",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.slot": {
+      "description": "Position of the ad (e.g., SEARCH, CONTENT).",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segments.week": {
+      "description": "Week start date (yyyy-MM-dd) for Monday of that week.",
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date"
+    },
+    "segments.year": {
+      "description": "Year (e.g. 2023).",
+      "type": [
+        "null",
+        "integer"
+      ]
     }
   }
 }
