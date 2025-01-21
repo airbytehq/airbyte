@@ -22,7 +22,12 @@ def config():
 
 @pytest.fixture(scope="module")
 def streams(config):
-    catalog = CatalogBuilder().with_stream("annotations_stream", sync_mode=SyncMode.full_refresh).with_stream("cohorts_stream", sync_mode=SyncMode.full_refresh).build()
+    catalog = (
+        CatalogBuilder()
+        .with_stream("annotations_stream", sync_mode=SyncMode.full_refresh)
+        .with_stream("cohorts_stream", sync_mode=SyncMode.full_refresh)
+        .build()
+    )
     return SourceAmplitude(catalog=catalog, config=config, state={}).streams(config=config)
 
 
