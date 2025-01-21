@@ -189,7 +189,8 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
-| 0.9.4   | 2025-01-06 | [50843](https://github.com/airbytehq/airbyte/pull/50843) | Migrate low code                                                                  |
+| 0.9.0   | 2025-01-27 | [50843](https://github.com/airbytehq/airbyte/pull/50843) | Migrate low code                                                                  |
+| 0.8.5   | 2025-01-11 | [44270](https://github.com/airbytehq/airbyte/pull/44270) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.8.4   | 2024-12-09 | [48835](https://github.com/airbytehq/airbyte/pull/48835) | Implementing integration tests                                                    |
 | 0.7.4   | 2024-09-09 | [45108](https://github.com/airbytehq/airbyte/pull/45108) | Google Sheets API errors now cause syncs to fail                                  |
 | 0.7.3   | 2024-08-12 | [43921](https://github.com/airbytehq/airbyte/pull/43921) | Update dependencies                                                               |

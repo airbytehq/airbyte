@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.state
 
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream2
@@ -133,7 +134,7 @@ class SyncManagerTest {
         val manager1 = syncManager.getStreamManager(stream1.descriptor)
         manager1.markEndOfStream(true)
         // This should fail, because stream2 was not marked with end of stream
-        val e = assertThrows<IllegalStateException> { syncManager.markInputConsumed() }
+        val e = assertThrows<TransientErrorException> { syncManager.markInputConsumed() }
         assertEquals(
             // stream1 is fine, so the message only includes stream2
             "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: [test.stream2]",
