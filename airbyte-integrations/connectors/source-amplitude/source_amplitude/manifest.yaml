@@ -352,8 +352,6 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: []
-        record_filter:
-          condition: "{{ record[parameters['cursor_field']] > stream_slice.get('start', config['start_date']) }}"
       decoder:
         type: ZipfileDecoder
         parser:
@@ -368,7 +366,7 @@ definitions:
         - "%Y-%m-%d %H:%M:%S.%f"
       datetime_format: "%Y%m%dT%H"
       cursor_granularity: PT1H
-      step: PT1{{ config.get("request_time_range", 24)}}H
+      step: PT{{ config.get("request_time_range", 24)}}H
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config["start_date"] }}'
@@ -388,9 +386,6 @@ definitions:
     transformations:
       - type: CustomTransformation
         class_name: source_amplitude.components.TransformDatetimesToRFC3339
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_amplitude.components.EventsStateMigration
     $parameters:
       name: events
       primary_key: uuid
