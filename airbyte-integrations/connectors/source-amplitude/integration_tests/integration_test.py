@@ -11,6 +11,7 @@ from source_amplitude.source import SourceAmplitude
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 
 
 @pytest.fixture(scope="module")
@@ -21,7 +22,8 @@ def config():
 
 @pytest.fixture(scope="module")
 def streams(config):
-    return SourceAmplitude().streams(config=config)
+    catalog = CatalogBuilder().with_stream("annotations_stream", sync_mode=SyncMode.full_refresh).with_stream("cohorts_stream", sync_mode=SyncMode.full_refresh).build()
+    return SourceAmplitude(catalog=catalog, config=config, state={}).streams(config=config)
 
 
 @pytest.fixture(scope="module")
