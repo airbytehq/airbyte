@@ -25,8 +25,9 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/incremental_catalog.json"
-        future_state:
-          future_state_path: "integration_tests/abnormal_state.json"
+        # Commenting due to update with moving to concurrency (CDK >= 6) and backward compatible
+        # future_state:
+        #   future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
