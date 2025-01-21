@@ -22,7 +22,7 @@ object AvroExpectedRecordMapper : ExpectedRecordMapper {
     }
 
     /**
-     * Avro doesn't have distinguish between temporal types having/not having timezone. So we map
+     * Avro doesn't distinguish between temporal types having/not having timezone. So we map
      * all temporal types to their "with timezone" variant, defaulting to UTC.
      */
     private fun timestampsToInteger(value: AirbyteValue): AirbyteValue =
