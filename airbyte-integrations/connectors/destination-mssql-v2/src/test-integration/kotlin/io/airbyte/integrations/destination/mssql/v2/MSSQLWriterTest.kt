@@ -11,7 +11,9 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
+import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.integrations.destination.mssql.v2.config.DataSourceFactory
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfigurationFactory
@@ -35,16 +37,19 @@ abstract class MSSQLWriterTest(
         dataDumper = dataDumper,
         destinationCleaner = dataCleaner,
         isStreamSchemaRetroactive = true,
-        supportsDedup = false,
+        supportsDedup = true,
         stringifySchemalessObjects = false,
-        promoteUnionToObject = true,
         preserveUndeclaredFields = false,
         commitDataIncrementally = true,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         supportFileTransfer = false,
         envVars = emptyMap(),
-        configUpdater = MSSQLConfigUpdater()
+        configUpdater = MSSQLConfigUpdater(),
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
+        nullUnknownTypes = false,
     )
 
 class MSSQLDataDumper : DestinationDataDumper {
@@ -57,8 +62,7 @@ class MSSQLDataDumper : DestinationDataDumper {
         val dataSource = DataSourceFactory().dataSource(config)
         val output = mutableListOf<OutputRecord>()
         dataSource.connection.use { connection ->
-            val statement = connection.prepareStatement(sqlBuilder.selectAllRecords())
-            statement.executeQuery().use { rs ->
+            SELECT_FROM.toQuery(sqlBuilder.fqTableName).executeQuery(connection) { rs ->
                 while (rs.next()) {
                     val objectValue = sqlBuilder.readResult(rs, sqlBuilder.finalTableSchema)
                     val record =
