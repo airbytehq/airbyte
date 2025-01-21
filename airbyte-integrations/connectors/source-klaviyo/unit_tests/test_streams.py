@@ -548,7 +548,10 @@ class TestCampaignsStream:
                 {"updated_at": "2023-10-10T00:00:00+00:00"},
                 {"archived": False},
                 None,
-                {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(messages.channel,'email'))", "sort": "updated_at"},
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(messages.channel,'email'))",
+                    "sort": "updated_at",
+                },
             ),
             (
                 {"archived": {"updated_at": "2023-10-10T00:00:00+00:00"}},
@@ -583,7 +586,11 @@ class TestCampaignsStream:
                 {},
                 {"archived": True},
                 {"page[cursor]": "next_page_cursor"},
-                {"filter": "and(equals(archived,true),equals(messages.channel,'email'))", "sort": "updated_at", "page[cursor]": "next_page_cursor"},
+                {
+                    "filter": "and(equals(archived,true),equals(messages.channel,'email'))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
             ),
             (
                 {},
@@ -595,7 +602,10 @@ class TestCampaignsStream:
                 {"updated_at": "2023-10-10T00:00:00+00:00", "archived": {"updated_at": "2024-10-10T00:00:00+00:00"}},
                 {"archived": False},
                 None,
-                {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(messages.channel,'email'))", "sort": "updated_at"},
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(messages.channel,'email'))",
+                    "sort": "updated_at",
+                },
             ),
             (
                 {"updated_at": "2023-10-10T00:00:00+00:00", "archived": {"updated_at": "2022-10-10T00:00:00+00:00"}},
