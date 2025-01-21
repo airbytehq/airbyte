@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
+import com.microsoft.sqlserver.jdbc.SQLServerException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -100,6 +101,8 @@ class MSSQLQueryBuilder(
     private val stream: DestinationStream,
 ) {
     companion object {
+
+        const val SQL_ERROR_OBJECT_EXISTS = 2714
 
         const val AIRBYTE_RAW_ID = "_airbyte_raw_id"
         const val AIRBYTE_EXTRACTED_AT = "_airbyte_extracted_at"
@@ -212,7 +215,14 @@ class MSSQLQueryBuilder(
     }
 
     fun createTableIfNotExists(connection: Connection) {
-        CREATE_SCHEMA_QUERY.executeUpdate(connection, outputSchema)
+        try {
+            CREATE_SCHEMA_QUERY.executeUpdate(connection, outputSchema)
+        } catch (e: SQLServerException) {
+            // MSSQL create schema if not exists isn't atomic. Ignoring this error when it happens.
+            if (e.sqlServerError.errorNumber != SQL_ERROR_OBJECT_EXISTS) {
+                throw e
+            }
+        }
 
         connection.createStatement().use {
             it.executeUpdate(createTableIfNotExists(fqTableName, finalTableSchema))
