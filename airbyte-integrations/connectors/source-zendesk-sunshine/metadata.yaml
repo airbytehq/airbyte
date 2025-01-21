@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 325e0640-e7b3-4e24-b823-3361008f603f
-  dockerImageTag: 0.2.16
+  dockerImageTag: 0.2.24
   dockerRepository: airbyte/source-zendesk-sunshine
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sunshine
   githubIssueLabel: source-zendesk-sunshine

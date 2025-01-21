@@ -76,7 +76,8 @@ async def run_connector_version_bump_pipeline(
     async with semaphore:
         steps_results = []
         async with context:
-            bump_version = BumpConnectorVersion(context, bump_type)
+            connector_directory = await context.get_connector_dir()
+            bump_version = BumpConnectorVersion(context, connector_directory, bump_type)
             bump_version_result = await bump_version.run()
             steps_results.append(bump_version_result)
             if not bump_version_result.success:
@@ -88,9 +89,9 @@ async def run_connector_version_bump_pipeline(
             for modified_file in bump_version.modified_files:
                 await updated_connector_directory.file(modified_file).export(str(context.connector.code_directory / modified_file))
                 context.logger.info(f"Exported {modified_file} following the version bump.")
-
+            documentation_directory = await context.get_repo_dir(include=[str(context.connector.local_connector_documentation_directory)])
             add_changelog_entry = AddChangelogEntry(
-                context, bump_version.new_version, changelog_entry, pull_request_number=pull_request_number
+                context, documentation_directory, bump_version.new_version, changelog_entry, pull_request_number=pull_request_number
             )
             add_changelog_entry_result = await add_changelog_entry.run()
             steps_results.append(add_changelog_entry_result)

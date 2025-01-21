@@ -98,22 +98,30 @@ Firebolt. Each table will contain 3 columns:
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------- |
-| 0.2.14  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                     |
-| 0.2.13  | 2024-08-17 | [44239](https://github.com/airbytehq/airbyte/pull/44239) | Update dependencies |
-| 0.2.12  | 2024-08-10 | [43682](https://github.com/airbytehq/airbyte/pull/43682) | Update dependencies |
-| 0.2.11  | 2024-08-03 | [43143](https://github.com/airbytehq/airbyte/pull/43143) | Update dependencies |
-| 0.2.10  | 2024-07-27 | [42703](https://github.com/airbytehq/airbyte/pull/42703) | Update dependencies |
-| 0.2.9   | 2024-07-20 | [42211](https://github.com/airbytehq/airbyte/pull/42211) | Update dependencies |
-| 0.2.8   | 2024-07-13 | [41789](https://github.com/airbytehq/airbyte/pull/41789) | Update dependencies |
-| 0.2.7   | 2024-07-10 | [41602](https://github.com/airbytehq/airbyte/pull/41602) | Update dependencies |
-| 0.2.6   | 2024-07-09 | [41118](https://github.com/airbytehq/airbyte/pull/41118) | Update dependencies |
-| 0.2.5   | 2024-07-06 | [40854](https://github.com/airbytehq/airbyte/pull/40854) | Update dependencies |
-| 0.2.4   | 2024-06-27 | [40578](https://github.com/airbytehq/airbyte/pull/40578) | Replaced deprecated AirbyteLogger with logging.Logger |
-| 0.2.3   | 2024-06-25 | [40494](https://github.com/airbytehq/airbyte/pull/40494) | Update dependencies |
-| 0.2.2   | 2024-06-22 | [40078](https://github.com/airbytehq/airbyte/pull/40078) | Update dependencies |
-| 0.2.1   | 2024-06-06 | [39157](https://github.com/airbytehq/airbyte/pull/39157) | [autopull] Upgrade base image to v1.2.2 |
-| 0.2.0   | 2024-05-08 | [36443](https://github.com/airbytehq/airbyte/pull/36443) | Service account authentication support |
-| 0.1.1   | 2024-03-05 | [35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector |
-| 0.1.0   | 2022-05-18 | [13118](https://github.com/airbytehq/airbyte/pull/13118) | New Destination: Firebolt |
+| 0.2.22 | 2024-10-12 | [46841](https://github.com/airbytehq/airbyte/pull/46841) | Update dependencies |
+| 0.2.21 | 2024-10-05 | [46420](https://github.com/airbytehq/airbyte/pull/46420) | Update dependencies |
+| 0.2.20 | 2024-09-28 | [46144](https://github.com/airbytehq/airbyte/pull/46144) | Update dependencies |
+| 0.2.19 | 2024-09-21 | [45744](https://github.com/airbytehq/airbyte/pull/45744) | Update dependencies |
+| 0.2.18 | 2024-09-14 | [45562](https://github.com/airbytehq/airbyte/pull/45562) | Update dependencies |
+| 0.2.17 | 2024-09-07 | [45245](https://github.com/airbytehq/airbyte/pull/45245) | Update dependencies |
+| 0.2.16 | 2024-08-31 | [44991](https://github.com/airbytehq/airbyte/pull/44991) | Update dependencies |
+| 0.2.15 | 2024-08-24 | [44698](https://github.com/airbytehq/airbyte/pull/44698) | Update dependencies |
+| 0.2.14 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.2.13 | 2024-08-17 | [44239](https://github.com/airbytehq/airbyte/pull/44239) | Update dependencies |
+| 0.2.12 | 2024-08-10 | [43682](https://github.com/airbytehq/airbyte/pull/43682) | Update dependencies |
+| 0.2.11 | 2024-08-03 | [43143](https://github.com/airbytehq/airbyte/pull/43143) | Update dependencies |
+| 0.2.10 | 2024-07-27 | [42703](https://github.com/airbytehq/airbyte/pull/42703) | Update dependencies |
+| 0.2.9 | 2024-07-20 | [42211](https://github.com/airbytehq/airbyte/pull/42211) | Update dependencies |
+| 0.2.8 | 2024-07-13 | [41789](https://github.com/airbytehq/airbyte/pull/41789) | Update dependencies |
+| 0.2.7 | 2024-07-10 | [41602](https://github.com/airbytehq/airbyte/pull/41602) | Update dependencies |
+| 0.2.6 | 2024-07-09 | [41118](https://github.com/airbytehq/airbyte/pull/41118) | Update dependencies |
+| 0.2.5 | 2024-07-06 | [40854](https://github.com/airbytehq/airbyte/pull/40854) | Update dependencies |
+| 0.2.4 | 2024-06-27 | [40578](https://github.com/airbytehq/airbyte/pull/40578) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.2.3 | 2024-06-25 | [40494](https://github.com/airbytehq/airbyte/pull/40494) | Update dependencies |
+| 0.2.2 | 2024-06-22 | [40078](https://github.com/airbytehq/airbyte/pull/40078) | Update dependencies |
+| 0.2.1 | 2024-06-06 | [39157](https://github.com/airbytehq/airbyte/pull/39157) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.0 | 2024-05-08 | [36443](https://github.com/airbytehq/airbyte/pull/36443) | Service account authentication support |
+| 0.1.1 | 2024-03-05 | [35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector |
+| 0.1.0 | 2022-05-18 | [13118](https://github.com/airbytehq/airbyte/pull/13118) | New Destination: Firebolt |
 
 </details>

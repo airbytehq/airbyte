@@ -74,7 +74,7 @@ properties:
     type: string
     description: The URL where you can visualize the ERD
   releases:
-    "$ref": ConnectorReleases.yaml
+    "$ref": ConnectorRegistryReleases.yaml
   ab_internal:
     "$ref": AirbyteInternal.yaml
   generated:

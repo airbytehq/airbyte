@@ -110,3 +110,22 @@ You can pull your connector image from your private registry to validate the pre
    This documentation will be linked in your connector setting's page.
 
 5. `Add` the connector to save the configuration. You can now select your new connector when setting up a new connection!
+
+
+# Troubleshooting
+
+## Loading connector docker containers into kind
+If you are running Airbyte in kind (kubernetes in docker -- this is the default method for abctl), you must load the docker image of that connector into the cluster. If you are seeing the following error, it likely means that the docker image has not been properly loaded into the cluster.
+
+![Screenshot of UI error when custom connector container is not loaded in the cluster](./assets/custom-connector-error1.png)
+
+![Screenshot of K8s error when custom connector container is not loaded in the cluster](./assets/custom-connector-error2.png)
+
+A connector container can be loaded using the following command:
+```
+kind load docker-image <image-name>:<image-tag> -n airbyte-abctl
+```
+For the example above, the command would be:
+```
+kind load docker-image airbyte/source-custom:1 -n airbyte-abctl
+```

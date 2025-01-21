@@ -4,12 +4,12 @@
 
 package io.airbyte.cdk.discover
 
-import io.airbyte.cdk.data.AirbyteType
+import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.JsonEncoder
-import io.airbyte.cdk.data.LeafAirbyteType
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 
 data object IntFieldType : FieldType {
-    override val airbyteType: AirbyteType = LeafAirbyteType.INTEGER
+    override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.INTEGER
     override val jsonEncoder: JsonEncoder<*> = IntCodec
 }

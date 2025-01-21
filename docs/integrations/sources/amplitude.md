@@ -58,6 +58,15 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.6.12 | 2024-10-12 | [46771](https://github.com/airbytehq/airbyte/pull/46771) | Update dependencies |
+| 0.6.11 | 2024-10-11 | [46736](https://github.com/airbytehq/airbyte/pull/46736) | Added possibility to toggle groupping by `Country` for `Active Users` stream |
+| 0.6.10 | 2024-10-05 | [46489](https://github.com/airbytehq/airbyte/pull/46489) | Update dependencies |
+| 0.6.9 | 2024-09-28 | [46121](https://github.com/airbytehq/airbyte/pull/46121) | Update dependencies |
+| 0.6.8 | 2024-09-21 | [45732](https://github.com/airbytehq/airbyte/pull/45732) | Update dependencies |
+| 0.6.7 | 2024-09-14 | [45501](https://github.com/airbytehq/airbyte/pull/45501) | Update dependencies |
+| 0.6.6 | 2024-09-07 | [45318](https://github.com/airbytehq/airbyte/pull/45318) | Update dependencies |
+| 0.6.5 | 2024-08-31 | [45047](https://github.com/airbytehq/airbyte/pull/45047) | Update dependencies |
+| 0.6.4 | 2024-08-24 | [44709](https://github.com/airbytehq/airbyte/pull/44709) | Update dependencies |
 | 0.6.3 | 2024-08-17 | [44250](https://github.com/airbytehq/airbyte/pull/44250) | Update dependencies |
 | 0.6.2 | 2024-08-12 | [43876](https://github.com/airbytehq/airbyte/pull/43876) | Update dependencies |
 | 0.6.1 | 2024-08-10 | [43473](https://github.com/airbytehq/airbyte/pull/43473) | Update dependencies |
@@ -115,6 +124,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 | 0.1.3 | 2021-10-12 | [6375](https://github.com/airbytehq/airbyte/pull/6375) | Log Transient 404 Error in Events stream |
 | 0.1.2 | 2021-09-21 | [6353](https://github.com/airbytehq/airbyte/pull/6353) | Correct output schemas on cohorts, events, active_users, and average_session_lengths streams |
 | 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for kubernetes support |
+| 0.1.0 | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664) | New Source: Amplitude |
 | 0.1.0 | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664) | New Source: Amplitude |
 
 </details>

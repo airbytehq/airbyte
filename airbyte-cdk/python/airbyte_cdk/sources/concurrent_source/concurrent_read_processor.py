@@ -5,7 +5,7 @@ import logging
 from typing import Dict, Iterable, List, Optional, Set
 
 from airbyte_cdk.exception_handler import generate_failed_streams_error_message
-from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
+from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus, FailureType, StreamDescriptor
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
@@ -21,7 +21,6 @@ from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_messa
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
-from airbyte_protocol.models import FailureType, StreamDescriptor
 
 
 class ConcurrentReadProcessor:
@@ -76,7 +75,7 @@ class ConcurrentReadProcessor:
         if self._is_stream_done(stream_name) or len(self._streams_to_running_partitions[stream_name]) == 0:
             yield from self._on_stream_is_done(stream_name)
         if self._stream_instances_to_start_partition_generation:
-            yield self.start_next_partition_generator()
+            yield self.start_next_partition_generator()  # type:ignore # None may be yielded
 
     def on_partition(self, partition: Partition) -> None:
         """
@@ -123,20 +122,22 @@ class ConcurrentReadProcessor:
         1. Convert the record to an AirbyteMessage
         2. If this is the first record for the stream, mark the stream as RUNNING
         3. Increment the record counter for the stream
-        4. Emit the message
-        5. Emit messages that were added to the message repository
+        4. Ensures the cursor knows the record has been successfully emitted
+        5. Emit the message
+        6. Emit messages that were added to the message repository
         """
         # Do not pass a transformer or a schema
         # AbstractStreams are expected to return data as they are expected.
         # Any transformation on the data should be done before reaching this point
-        message = stream_data_to_airbyte_message(record.stream_name, record.data)
-        stream = self._stream_name_to_instance[record.stream_name]
+        message = stream_data_to_airbyte_message(record.partition.stream_name(), record.data)
+        stream = self._stream_name_to_instance[record.partition.stream_name()]
 
         if message.type == MessageType.RECORD:
             if self._record_counter[stream.name] == 0:
                 self._logger.info(f"Marking stream {stream.name} as RUNNING")
                 yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.RUNNING)
             self._record_counter[stream.name] += 1
+            stream.cursor.observe(record)
         yield message
         yield from self._message_repository.consume_queue()
 

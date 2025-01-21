@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.20
   dockerRepository: airbyte/source-genesys
   githubIssueLabel: source-genesys
   icon: genesys.svg

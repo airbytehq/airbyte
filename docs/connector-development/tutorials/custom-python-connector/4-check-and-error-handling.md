@@ -21,6 +21,11 @@ We'll do this by trying to read a single record from the stream, and fail the co
 read any.
 
 ```python
+# import the following libraries
+from airbyte_cdk.models import AirbyteMessage, SyncMode
+```
+
+```python
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         first_stream = next(iter(self.streams(config)))
 
@@ -46,6 +51,10 @@ Next, we'll improve the error handling.
 
 First, we'll disable the availability strategy. Availability strategies are a legacy concept used to
 filter out streams that might not be available given a user's permissions.
+```python
+# import this library
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+```
 
 ```python
     @property
@@ -56,6 +65,10 @@ filter out streams that might not be available given a user's permissions.
 
 Instead of using an availability strategy, we'll raise a config error if we're unable to
 authenticate:
+```python
+# import the following library
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
+```
 
 ```python
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:

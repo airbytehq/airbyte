@@ -6,11 +6,11 @@ data:
     hosts:
       - api.harvestapp.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.11.1@sha256:f48a7ddc1f3acecbd8eb6a10a3146e8d0396e9a4dede77beafb76924f416df65
   connectorSubtype: api
   connectorType: source
   definitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
-  dockerImageTag: 1.0.13
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-harvest
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
   githubIssueLabel: source-harvest
@@ -20,7 +20,7 @@ data:
   name: Harvest
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-harvest
   registryOverrides:
     cloud:
@@ -59,7 +59,7 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

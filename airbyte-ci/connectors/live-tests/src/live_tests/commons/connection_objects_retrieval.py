@@ -11,11 +11,16 @@ import rich
 from connection_retriever import ConnectionObject, retrieve_objects  # type: ignore
 from connection_retriever.errors import NotPermittedError  # type: ignore
 from live_tests.commons.models import ConnectionSubset
+from live_tests.commons.utils import build_connection_url
 
 from .models import AirbyteCatalog, Command, ConfiguredAirbyteCatalog, ConnectionObjects, SecretDict
 
 LOGGER = logging.getLogger(__name__)
 console = rich.get_console()
+
+
+class InvalidConnectionError(Exception):
+    pass
 
 
 def parse_config(config: dict | str | None) -> Optional[SecretDict]:
@@ -224,11 +229,18 @@ def _get_connection_objects_from_retrieved_objects(
     retrieved_state = parse_state(retrieved_objects.get(ConnectionObject.STATE))
 
     retrieved_source_docker_image = retrieved_objects.get(ConnectionObject.SOURCE_DOCKER_IMAGE)
+    connection_url = build_connection_url(retrieved_objects.get(ConnectionObject.WORKSPACE_ID), connection_id)
     if retrieved_source_docker_image is None:
-        raise ValueError(f"A docker image was not found for connection ID {connection_id}.")
+        raise InvalidConnectionError(
+            f"No docker image was found for connection ID {connection_id}. Please double check that the latest job run used version {source_docker_image_tag}. Connection URL: {connection_url}"
+        )
     elif retrieved_source_docker_image.split(":")[0] != source_docker_repository:
-        raise NotPermittedError(
-            f"The provided docker image ({source_docker_repository}) does not match the image for connection ID {connection_id}."
+        raise InvalidConnectionError(
+            f"The provided docker image ({source_docker_repository}) does not match the image for connection ID {connection_id}. Please double check that this connection is using the correct image. Connection URL: {connection_url}"
+        )
+    elif retrieved_source_docker_image.split(":")[1] != source_docker_image_tag:
+        raise InvalidConnectionError(
+            f"The provided docker image tag ({source_docker_image_tag}) does not match the image tag for connection ID {connection_id}. Please double check that this connection is using the correct image tag and the latest job ran using this version. Connection URL: {connection_url}"
         )
 
     return ConnectionObjects(

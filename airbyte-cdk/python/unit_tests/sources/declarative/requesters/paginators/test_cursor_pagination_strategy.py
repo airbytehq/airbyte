@@ -50,7 +50,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         "test_static_token_with_string_stop_condition",
         "test_token_from_header",
         "test_token_from_response_header_links",
-    ]
+    ],
 )
 def test_cursor_pagination_strategy(template_string, stop_condition, expected_token, page_size):
     decoder = JsonDecoder(parameters={})

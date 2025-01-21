@@ -79,6 +79,14 @@ Once you've configured Firebase Realtime Database as a source, delete the Servic
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.25 | 2024-10-12 | [46799](https://github.com/airbytehq/airbyte/pull/46799) | Update dependencies |
+| 0.1.24 | 2024-10-05 | [46457](https://github.com/airbytehq/airbyte/pull/46457) | Update dependencies |
+| 0.1.23 | 2024-09-28 | [46135](https://github.com/airbytehq/airbyte/pull/46135) | Update dependencies |
+| 0.1.22 | 2024-09-21 | [45804](https://github.com/airbytehq/airbyte/pull/45804) | Update dependencies |
+| 0.1.21 | 2024-09-14 | [45505](https://github.com/airbytehq/airbyte/pull/45505) | Update dependencies |
+| 0.1.20 | 2024-09-07 | [45272](https://github.com/airbytehq/airbyte/pull/45272) | Update dependencies |
+| 0.1.19 | 2024-08-31 | [45055](https://github.com/airbytehq/airbyte/pull/45055) | Update dependencies |
+| 0.1.18 | 2024-08-24 | [44674](https://github.com/airbytehq/airbyte/pull/44674) | Update dependencies |
 | 0.1.17 | 2024-08-17 | [44299](https://github.com/airbytehq/airbyte/pull/44299) | Update dependencies |
 | 0.1.16 | 2024-08-12 | [43795](https://github.com/airbytehq/airbyte/pull/43795) | Update dependencies |
 | 0.1.15 | 2024-08-10 | [43600](https://github.com/airbytehq/airbyte/pull/43600) | Update dependencies |

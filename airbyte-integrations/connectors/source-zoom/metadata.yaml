@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
-  dockerImageTag: 1.1.12
+  dockerImageTag: 1.1.20
   dockerRepository: airbyte/source-zoom
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
   githubIssueLabel: source-zoom

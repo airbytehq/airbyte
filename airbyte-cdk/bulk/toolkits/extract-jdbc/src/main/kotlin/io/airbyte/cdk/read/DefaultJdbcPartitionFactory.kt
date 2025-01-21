@@ -15,7 +15,6 @@ import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.output.ResetStream
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.SyncMode
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
@@ -50,7 +49,7 @@ class DefaultJdbcPartitionFactory(
         val pkMap: Map<Field, JsonNode> =
             sv.pkMap(stream)
                 ?: run {
-                    handler.accept(ResetStream(stream.name, stream.namespace))
+                    handler.accept(ResetStream(stream.id))
                     streamState.reset()
                     return coldStart(streamState)
                 }
@@ -60,18 +59,18 @@ class DefaultJdbcPartitionFactory(
             } else {
                 sv.cursorPair(stream)
                     ?: run {
-                        handler.accept(ResetStream(stream.name, stream.namespace))
+                        handler.accept(ResetStream(stream.id))
                         streamState.reset()
                         return coldStart(streamState)
                     }
             }
 
         val isCursorBasedIncremental: Boolean =
-            stream.configuredSyncMode == SyncMode.INCREMENTAL && !configuration.global
+            stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL && !configuration.global
 
         return if (cursorPair == null) {
             if (isCursorBasedIncremental) {
-                handler.accept(ResetStream(stream.name, stream.namespace))
+                handler.accept(ResetStream(stream.id))
                 streamState.reset()
                 coldStart(streamState)
             } else if (pkMap.isEmpty()) {
@@ -90,7 +89,7 @@ class DefaultJdbcPartitionFactory(
         } else {
             val (cursor: Field, cursorCheckpoint: JsonNode) = cursorPair
             if (!isCursorBasedIncremental) {
-                handler.accept(ResetStream(stream.name, stream.namespace))
+                handler.accept(ResetStream(stream.id))
                 streamState.reset()
                 coldStart(streamState)
             } else if (pkMap.isNotEmpty()) {
@@ -128,7 +127,7 @@ class DefaultJdbcPartitionFactory(
         val fields: List<Field> = stream.configuredPrimaryKey ?: listOf()
         if (primaryKey.keys != fields.map { it.id }.toSet()) {
             handler.accept(
-                InvalidPrimaryKey(stream.name, stream.namespace, primaryKey.keys.toList()),
+                InvalidPrimaryKey(stream.id, primaryKey.keys.toList()),
             )
             return null
         }
@@ -138,7 +137,7 @@ class DefaultJdbcPartitionFactory(
     private fun DefaultJdbcStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
-                InvalidCursor(stream.name, stream.namespace, cursors.keys.toString()),
+                InvalidCursor(stream.id, cursors.keys.toString()),
             )
             return null
         }
@@ -146,13 +145,13 @@ class DefaultJdbcPartitionFactory(
         val cursor: FieldOrMetaField? = stream.fields.find { it.id == cursorLabel }
         if (cursor !is Field) {
             handler.accept(
-                InvalidCursor(stream.name, stream.namespace, cursorLabel),
+                InvalidCursor(stream.id, cursorLabel),
             )
             return null
         }
         if (stream.configuredCursor != cursor) {
             handler.accept(
-                InvalidCursor(stream.name, stream.namespace, cursorLabel),
+                InvalidCursor(stream.id, cursorLabel),
             )
             return null
         }
@@ -162,7 +161,7 @@ class DefaultJdbcPartitionFactory(
     private fun coldStart(streamState: DefaultJdbcStreamState): DefaultJdbcPartition {
         val stream: Stream = streamState.stream
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
-        if (stream.configuredSyncMode == SyncMode.FULL_REFRESH || configuration.global) {
+        if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH || configuration.global) {
             if (pkChosenFromCatalog.isEmpty()) {
                 return DefaultJdbcUnsplittableSnapshotPartition(
                     selectQueryGenerator,

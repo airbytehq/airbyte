@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 6.2.9
+  dockerImageTag: 6.2.18-rc.1
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   githubIssueLabel: source-faker
@@ -23,6 +23,8 @@ data:
       enabled: true
   releaseStage: beta
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message: This is a breaking change message
@@ -55,8 +57,6 @@ data:
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
-        - name: faker_ben_test_config_dev_null
-          id: 64b8f520-d7c1-4328-9451-c88ce03fc771
         - name: faker_config_dev_null
           id: 73abc3a9-3fea-4e7c-b58d-2c8236464a95
     - suite: unitTests

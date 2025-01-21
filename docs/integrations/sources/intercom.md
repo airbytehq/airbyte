@@ -31,7 +31,7 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 
 ### Set up the Intercom connector in Airbyte
 
-#### For Airbyte Cloud: 
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -70,15 +70,15 @@ The Intercom source connector supports the following [sync modes](https://docs.a
 
 The Intercom source connector supports the following streams:
 
-- [Admins](https://developers.intercom.com/intercom-api-reference/reference/listadmins) \(Full table\)
+- [Admins](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/admins/listadmins) \(Full table\)
 - [Companies](https://developers.intercom.com/intercom-api-reference/reference/listallcompanies) \(Incremental\)
   - [Company Segments](https://developers.intercom.com/intercom-api-reference/reference/listattachedsegmentsforcompanies) \(Incremental\)
-- [Conversations](https://developers.intercom.com/intercom-api-reference/reference/listconversations) \(Incremental\)
-  - [Conversation Parts](https://developers.intercom.com/intercom-api-reference/reference/retrieveconversation) \(Incremental\)
-- [Data Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
-  - [Customer Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
-  - [Company Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
-- [Contacts](https://developers.intercom.com/intercom-api-reference/reference/listcontacts) \(Incremental\)
+- [Conversations](https://developers.intercom.com/docs/references/2.9/rest-api/api.intercom.io/conversations/listconversations) \(Incremental\)
+  - [Conversation Parts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/conversations/retrieveconversation) \(Incremental\)
+- [Data Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+  - [Customer Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+  - [Company Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+- [Contacts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/contacts/listcontacts) \(Incremental\)
 - [Segments](https://developers.intercom.com/intercom-api-reference/reference/listsegments) \(Incremental\)
 - [Tags](https://developers.intercom.com/intercom-api-reference/reference/listtags) \(Full table\)
 - [Teams](https://developers.intercom.com/intercom-api-reference/reference/listteams) \(Full table\)
@@ -96,6 +96,12 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.4 | 2024-10-12 | [46831](https://github.com/airbytehq/airbyte/pull/46831) | Update dependencies |
+| 0.7.3 | 2024-10-05 | [46447](https://github.com/airbytehq/airbyte/pull/46447) | Update dependencies |
+| 0.7.2 | 2024-09-28 | [45279](https://github.com/airbytehq/airbyte/pull/45279) | Update dependencies |
+| 0.7.1 | 2024-08-31 | [44966](https://github.com/airbytehq/airbyte/pull/44966) | Update dependencies |
+| 0.7.0 | 2024-08-29 | [44911](https://github.com/airbytehq/airbyte/pull/44911) | Migrate to CDK v4 |
+| 0.6.21 | 2024-08-24 | [44672](https://github.com/airbytehq/airbyte/pull/44672) | Update dependencies |
 | 0.6.20 | 2024-08-17 | [44296](https://github.com/airbytehq/airbyte/pull/44296) | Update dependencies |
 | 0.6.19 | 2024-08-12 | [43878](https://github.com/airbytehq/airbyte/pull/43878) | Update dependencies |
 | 0.6.18 | 2024-08-10 | [43500](https://github.com/airbytehq/airbyte/pull/43500) | Update dependencies |

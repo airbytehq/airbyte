@@ -40,13 +40,7 @@ def test_page_increment_paginator_strategy(page_size, start_from, last_page_size
     assert start_from == paginator_strategy._page
 
 
-@pytest.mark.parametrize(
-    "page_size",
-    [
-        pytest.param("{{ config['value'] }}"),
-        pytest.param("not-an-integer")
-    ]
-)
+@pytest.mark.parametrize("page_size", [pytest.param("{{ config['value'] }}"), pytest.param("not-an-integer")])
 def test_page_increment_paginator_strategy_malformed_page_size(page_size):
     with pytest.raises(Exception, match=".* is of type <class '.*'>. Expected <class 'int'>"):
         PageIncrement(page_size=page_size, parameters={}, start_from_page=0, config={"value": "not-an-integer"})

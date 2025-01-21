@@ -52,20 +52,18 @@ class CraneClient:
         return (
             self.bare_container.with_secret_variable("DOCKER_HUB_USERNAME", self.docker_hub_username_secret)
             .with_secret_variable("DOCKER_HUB_PASSWORD", self.docker_hub_username_password)
-            .with_exec(
-                ["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"], skip_entrypoint=True
-            )
+            .with_exec(["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"])
         )
 
     async def digest(self, repository_and_tag: str) -> str:
         console.log(f"Fetching digest for {repository_and_tag}...")
-        return (await self.authenticated_container.with_exec(["digest", repository_and_tag]).stdout()).strip()
+        return (await self.authenticated_container.with_exec(["digest", repository_and_tag], use_entrypoint=True).stdout()).strip()
 
     async def ls(self, registry_name: str, repository_name: str) -> List[str]:
         repository_address = f"{registry_name}/{repository_name}"
         console.log(f"Fetching published images in {repository_address}...")
         try:
-            crane_ls_output = await self.authenticated_container.with_exec(["ls", repository_address]).stdout()
+            crane_ls_output = await self.authenticated_container.with_exec(["ls", repository_address], use_entrypoint=True).stdout()
             return crane_ls_output.splitlines()
         except dagger.ExecError as exec_error:
             # When the repository does not exist, crane ls returns an error with NAME_UNKNOWN in the stderr.

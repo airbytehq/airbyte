@@ -30,7 +30,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "generated_timestamp": 8001820514 },
+      "stream_state": { "generated_timestamp": 7969616486 },
       "stream_descriptor": { "name": "tickets" }
     }
   },
@@ -58,7 +58,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "generated_timestamp": 8001820514 },
+      "stream_state": { "_ab_updated_at": 7969616486 },
       "stream_descriptor": { "name": "ticket_metrics" }
     }
   },

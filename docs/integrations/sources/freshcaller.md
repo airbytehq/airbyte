@@ -46,6 +46,14 @@ Please read [How to find your API key](https://support.freshdesk.com/en/support/
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.4.16 | 2024-10-12 | [46796](https://github.com/airbytehq/airbyte/pull/46796) | Update dependencies |
+| 0.4.15 | 2024-10-05 | [46435](https://github.com/airbytehq/airbyte/pull/46435) | Update dependencies |
+| 0.4.14 | 2024-09-28 | [46173](https://github.com/airbytehq/airbyte/pull/46173) | Update dependencies |
+| 0.4.13 | 2024-09-21 | [45760](https://github.com/airbytehq/airbyte/pull/45760) | Update dependencies |
+| 0.4.12 | 2024-09-14 | [45522](https://github.com/airbytehq/airbyte/pull/45522) | Update dependencies |
+| 0.4.11 | 2024-09-07 | [45323](https://github.com/airbytehq/airbyte/pull/45323) | Update dependencies |
+| 0.4.10 | 2024-08-31 | [44973](https://github.com/airbytehq/airbyte/pull/44973) | Update dependencies |
+| 0.4.9 | 2024-08-24 | [44718](https://github.com/airbytehq/airbyte/pull/44718) | Update dependencies |
 | 0.4.8 | 2024-08-17 | [44256](https://github.com/airbytehq/airbyte/pull/44256) | Update dependencies |
 | 0.4.7 | 2024-08-10 | [43691](https://github.com/airbytehq/airbyte/pull/43691) | Update dependencies |
 | 0.4.6 | 2024-08-03 | [43238](https://github.com/airbytehq/airbyte/pull/43238) | Update dependencies |

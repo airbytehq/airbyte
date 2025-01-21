@@ -1,11 +1,9 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldOrMetaField
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
-import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.airbyte.protocol.models.v0.SyncMode
 
 /**
  * [Feed] identifies part of the data consumed during a READ operation.
@@ -31,19 +29,26 @@ data class Global(
  * Roughly equivalent to a [io.airbyte.protocol.models.v0.ConfiguredAirbyteStream].
  */
 data class Stream(
-    val name: String,
-    val namespace: String?,
+    val id: StreamIdentifier,
     val fields: List<Field>,
-    val configuredSyncMode: SyncMode,
+    val configuredSyncMode: ConfiguredSyncMode,
     val configuredPrimaryKey: List<Field>?,
     val configuredCursor: FieldOrMetaField?,
 ) : Feed {
-    val namePair: AirbyteStreamNameNamespacePair
-        get() = AirbyteStreamNameNamespacePair(name, namespace)
+    val name: String
+        get() = id.name
 
-    val streamDescriptor: StreamDescriptor
-        get() = StreamDescriptor().withName(name).withNamespace(namespace)
+    val namespace: String?
+        get() = id.namespace
 
     override val label: String
-        get() = namePair.toString()
+        get() = id.toString()
 }
+
+/** List of [Stream]s this [Feed] emits records for. */
+val Feed.streams
+    get() =
+        when (this) {
+            is Global -> streams
+            is Stream -> listOf(this)
+        }

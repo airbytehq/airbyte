@@ -77,22 +77,28 @@ You should now have all the requirements needed to configure Chroma as a destina
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |:--------|:-----------| :-------------------------------------------------------- |:-------------------------------------------------------------|
-| 0.0.26  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                     |
-| 0.0.25  | 2024-08-17 | [44292](https://github.com/airbytehq/airbyte/pull/44292) | Update dependencies                                          |
-| 0.0.24  | 2024-08-12 | [43734](https://github.com/airbytehq/airbyte/pull/43734) | Update dependencies                                          |
-| 0.0.23  | 2024-08-10 | [43702](https://github.com/airbytehq/airbyte/pull/43702) | Update dependencies                                          |
-| 0.0.22  | 2024-08-03 | [43133](https://github.com/airbytehq/airbyte/pull/43133) | Update dependencies                                          |
-| 0.0.21  | 2024-07-27 | [42628](https://github.com/airbytehq/airbyte/pull/42628) | Update dependencies                                          |
-| 0.0.20  | 2024-07-20 | [42160](https://github.com/airbytehq/airbyte/pull/42160) | Update dependencies                                          |
-| 0.0.19  | 2024-07-13 | [41802](https://github.com/airbytehq/airbyte/pull/41802) | Update dependencies                                          |
-| 0.0.18  | 2024-07-10 | [41384](https://github.com/airbytehq/airbyte/pull/41384) | Update dependencies                                          |
-| 0.0.17  | 2024-07-09 | [41165](https://github.com/airbytehq/airbyte/pull/41165) | Update dependencies                                          |
-| 0.0.16  | 2024-07-06 | [40926](https://github.com/airbytehq/airbyte/pull/40926) | Update dependencies                                          |
-| 0.0.15  | 2024-06-29 | [40634](https://github.com/airbytehq/airbyte/pull/40634) | Update dependencies                                          |
-| 0.0.14  | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger        |
-| 0.0.13  | 2024-06-25 | [40431](https://github.com/airbytehq/airbyte/pull/40431) | Update dependencies                                          |
-| 0.0.12  | 2024-06-23 | [40222](https://github.com/airbytehq/airbyte/pull/40222) | Update dependencies                                          |
-| 0.0.11  | 2024-06-22 | [40068](https://github.com/airbytehq/airbyte/pull/40068) | Update dependencies                                          |
+| 0.0.32 | 2024-10-12 | [46434](https://github.com/airbytehq/airbyte/pull/46434) | Update dependencies |
+| 0.0.31 | 2024-09-28 | [46192](https://github.com/airbytehq/airbyte/pull/46192) | Update dependencies |
+| 0.0.30 | 2024-09-21 | [45553](https://github.com/airbytehq/airbyte/pull/45553) | Update dependencies |
+| 0.0.29 | 2024-09-07 | [45322](https://github.com/airbytehq/airbyte/pull/45322) | Update dependencies |
+| 0.0.28 | 2024-08-31 | [45017](https://github.com/airbytehq/airbyte/pull/45017) | Update dependencies |
+| 0.0.27 | 2024-08-24 | [44717](https://github.com/airbytehq/airbyte/pull/44717) | Update dependencies |
+| 0.0.26 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.0.25 | 2024-08-17 | [44292](https://github.com/airbytehq/airbyte/pull/44292) | Update dependencies |
+| 0.0.24 | 2024-08-12 | [43734](https://github.com/airbytehq/airbyte/pull/43734) | Update dependencies |
+| 0.0.23 | 2024-08-10 | [43702](https://github.com/airbytehq/airbyte/pull/43702) | Update dependencies |
+| 0.0.22 | 2024-08-03 | [43133](https://github.com/airbytehq/airbyte/pull/43133) | Update dependencies |
+| 0.0.21 | 2024-07-27 | [42628](https://github.com/airbytehq/airbyte/pull/42628) | Update dependencies |
+| 0.0.20 | 2024-07-20 | [42160](https://github.com/airbytehq/airbyte/pull/42160) | Update dependencies |
+| 0.0.19 | 2024-07-13 | [41802](https://github.com/airbytehq/airbyte/pull/41802) | Update dependencies |
+| 0.0.18 | 2024-07-10 | [41384](https://github.com/airbytehq/airbyte/pull/41384) | Update dependencies |
+| 0.0.17 | 2024-07-09 | [41165](https://github.com/airbytehq/airbyte/pull/41165) | Update dependencies |
+| 0.0.16 | 2024-07-06 | [40926](https://github.com/airbytehq/airbyte/pull/40926) | Update dependencies |
+| 0.0.15 | 2024-06-29 | [40634](https://github.com/airbytehq/airbyte/pull/40634) | Update dependencies |
+| 0.0.14 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.0.13 | 2024-06-25 | [40431](https://github.com/airbytehq/airbyte/pull/40431) | Update dependencies |
+| 0.0.12 | 2024-06-23 | [40222](https://github.com/airbytehq/airbyte/pull/40222) | Update dependencies |
+| 0.0.11 | 2024-06-22 | [40068](https://github.com/airbytehq/airbyte/pull/40068) | Update dependencies |
 | 0.0.10  | 2024-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Updated CDK & pytest version to fix security vulnerabilities |
 | 0.0.9   | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                        |
 | 0.0.8   | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text                                      |

@@ -11,6 +11,7 @@ from typing import List, Optional, Tuple, Union
 
 import orchestrator.hacks as HACKS
 import pandas as pd
+import semver
 import sentry_sdk
 from dagster import AutoMaterializePolicy, DynamicPartitionsDefinition, MetadataValue, OpExecutionContext, Output, asset
 from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
@@ -90,25 +91,29 @@ def calculate_migration_documentation_url(releases_or_breaking_change: dict, doc
 
 
 @deep_copy_params
-def apply_connector_release_defaults(metadata: dict) -> Optional[pd.DataFrame]:
-    metadata_releases = metadata.get("releases")
+def apply_connector_releases(metadata: dict) -> Optional[pd.DataFrame]:
     documentation_url = metadata.get("documentationUrl")
-    if metadata_releases is None:
-        return None
+    final_registry_releases = {}
+    releases = metadata.get("releases")
+    if releases is not None and releases.get("breakingChanges"):
+        # apply defaults for connector releases
+        final_registry_releases["migrationDocumentationUrl"] = calculate_migration_documentation_url(
+            metadata["releases"], documentation_url
+        )
 
-    # apply defaults for connector releases
-    metadata_releases["migrationDocumentationUrl"] = calculate_migration_documentation_url(metadata_releases, documentation_url)
+        # releases has a dictionary field called breakingChanges, where the key is the version and the value is the data for the breaking change
+        # each breaking change has a migrationDocumentationUrl field that is optional, so we need to apply defaults to it
+        breaking_changes = metadata["releases"]["breakingChanges"]
+        if breaking_changes is not None:
+            for version, breaking_change in breaking_changes.items():
+                breaking_change["migrationDocumentationUrl"] = calculate_migration_documentation_url(
+                    breaking_change, documentation_url, version
+                )
+            final_registry_releases["breakingChanges"] = breaking_changes
 
-    # releases has a dictionary field called breakingChanges, where the key is the version and the value is the data for the breaking change
-    # each breaking change has a migrationDocumentationUrl field that is optional, so we need to apply defaults to it
-    breaking_changes = metadata_releases["breakingChanges"]
-    if breaking_changes is not None:
-        for version, breaking_change in breaking_changes.items():
-            breaking_change["migrationDocumentationUrl"] = calculate_migration_documentation_url(
-                breaking_change, documentation_url, version
-            )
-
-    return metadata_releases
+    if releases is not None and releases.get("rolloutConfiguration"):
+        final_registry_releases["rolloutConfiguration"] = metadata["releases"]["rolloutConfiguration"]
+    return final_registry_releases
 
 
 @deep_copy_params
@@ -278,9 +283,26 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
 
     # apply generated fields
     overridden_metadata_data["iconUrl"] = metadata_entry.icon_url
-    overridden_metadata_data["releases"] = apply_connector_release_defaults(overridden_metadata_data)
-
+    overridden_metadata_data["releases"] = apply_connector_releases(overridden_metadata_data)
     return overridden_metadata_data
+
+
+def apply_entry_schema_migrations(registry_entry: dict) -> dict:
+    """Apply schema migrations to the registry entry.
+
+    Args:
+        registry_entry (dict): The registry entry.
+
+    Returns:
+        dict: The registry entry with the schema migrations applied.
+    """
+    # Remove the isReleaseCandidate field from the registry entry
+    if registry_entry.get("releases", {}).get("isReleaseCandidate") is not None:
+        registry_entry["releases"].pop("isReleaseCandidate")
+    # Remove the releases field if it is empty
+    if registry_entry.get("releases") == dict():
+        registry_entry.pop("releases")
+    return registry_entry
 
 
 @sentry_sdk.trace
@@ -289,6 +311,7 @@ def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistr
     registry_entry_dict = json.loads(json_string)
 
     connector_type, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_dict)
+    registry_entry_dict = apply_entry_schema_migrations(registry_entry_dict)
     registry_entry = ConnectorModel.parse_obj(registry_entry_dict)
 
     return connector_type, registry_entry
@@ -303,7 +326,7 @@ def get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegist
         raise Exception("Could not determine connector type from registry entry")
 
 
-def _get_latest_entry_write_path(metadata_path: Optional[str], registry_name: str) -> str:
+def _get_directory_write_path(metadata_path: Optional[str], registry_name: str) -> str:
     """Get the write path for the registry entry, assuming the metadata entry is the latest version."""
     if metadata_path is None:
         raise Exception(f"Metadata entry {metadata_entry} does not have a file path")
@@ -316,9 +339,9 @@ def get_registry_entry_write_path(
     registry_entry: Optional[PolymorphicRegistryEntry], metadata_entry: LatestMetadataEntry, registry_name: str
 ) -> str:
     """Get the write path for the registry entry."""
-    if metadata_entry.is_latest_version_path:
-        # if the metadata entry is the latest version, write the registry entry to the same path as the metadata entry
-        return _get_latest_entry_write_path(metadata_entry.file_path, registry_name)
+    if metadata_entry.is_latest_version_path or metadata_entry.is_release_candidate_version_path:
+        # if the metadata entry is the latest or RC version, write the registry entry to the same path as the metadata entry
+        return _get_directory_write_path(metadata_entry.file_path, registry_name)
     else:
         if registry_entry is None:
             raise Exception(f"Could not determine write path for registry entry {registry_entry} because it is None")
@@ -353,6 +376,30 @@ def persist_registry_entry_to_json(
     return file_handle
 
 
+def generate_registry_entry(
+    metadata_entry: LatestMetadataEntry,
+    spec_cache: SpecCache,
+    registry_name: str,
+) -> PolymorphicRegistryEntry:
+    """Generate a registry entry given a metadata entry.
+    Enriches the metadata entry with spec and release candidate information.
+
+    Args:
+        metadata_entry (LatestMetadataEntry): The metadata entry.
+        spec_cache (SpecCache): The spec cache.
+        registry_name (str): The name of the registry_entry. One of "cloud" or "oss".
+
+    Returns:
+        PolymorphicRegistryEntry: The registry entry (could be a source or destination entry).
+    """
+    raw_entry_dict = metadata_to_registry_entry(metadata_entry, registry_name)
+    registry_entry_with_spec = apply_spec_to_registry_entry(raw_entry_dict, spec_cache, registry_name)
+
+    _, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_with_spec)
+
+    return ConnectorModel.parse_obj(registry_entry_with_spec)
+
+
 @sentry_sdk.trace
 def generate_and_persist_registry_entry(
     metadata_entry: LatestMetadataEntry,
@@ -363,19 +410,14 @@ def generate_and_persist_registry_entry(
     """Generate the selected registry from the metadata files, and persist it to GCS.
 
     Args:
-        context (OpExecutionContext): The execution context.
-        metadata_entry (List[LatestMetadataEntry]): The metadata definitions.
-        cached_specs (OutputDataFrame): The cached specs.
-
+        metadata_entry (List[LatestMetadataEntry]): The metadata entry.
+        spec_cache (SpecCache): The spec cache.
+        metadata_directory_manager (GCSFileManager): The metadata directory manager.
+        registry_name (str): The name of the registry_entry. One of "cloud" or "oss".
     Returns:
-        Output[ConnectorRegistryV0]: The registry.
+        str: The public url of the registry entry.
     """
-    raw_entry_dict = metadata_to_registry_entry(metadata_entry, registry_name)
-    registry_entry_with_spec = apply_spec_to_registry_entry(raw_entry_dict, spec_cache, registry_name)
-
-    _, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_with_spec)
-
-    registry_model = ConnectorModel.parse_obj(registry_entry_with_spec)
+    registry_model = generate_registry_entry(metadata_entry, spec_cache, registry_name)
 
     file_handle = persist_registry_entry_to_json(registry_model, registry_name, metadata_entry, metadata_directory_manager)
 
@@ -585,7 +627,10 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
 @sentry.instrument_asset_op
-def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry]) -> Output[Optional[dict]]:
+def registry_entry(
+    context: OpExecutionContext,
+    metadata_entry: Optional[LatestMetadataEntry],
+) -> Output[Optional[dict]]:
     """
     Generate the registry entry files from the given metadata file, and persist it to GCS.
     """
@@ -613,7 +658,12 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
     enabled_registries, disabled_registries = get_registry_status_lists(metadata_entry)
 
     persisted_registry_entries = {
-        registry_name: generate_and_persist_registry_entry(metadata_entry, spec_cache, root_metadata_directory_manager, registry_name)
+        registry_name: generate_and_persist_registry_entry(
+            metadata_entry,
+            spec_cache,
+            root_metadata_directory_manager,
+            registry_name,
+        )
         for registry_name in enabled_registries
     }
 
@@ -663,3 +713,36 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
         )
 
     return Output(metadata=dagster_metadata, value=persisted_registry_entries)
+
+
+def get_registry_entries(blob_resource) -> Output[List]:
+    registry_entries = []
+    for blob in blob_resource:
+        _, registry_entry = read_registry_entry_blob(blob)
+        registry_entries.append(registry_entry)
+
+    return Output(registry_entries)
+
+
+@asset(required_resource_keys={"latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
+def latest_cloud_registry_entries(context: OpExecutionContext) -> Output[List]:
+    return get_registry_entries(context.resources.latest_cloud_registry_entries_file_blobs)
+
+
+@asset(required_resource_keys={"latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
+def latest_oss_registry_entries(context: OpExecutionContext) -> Output[List]:
+    return get_registry_entries(context.resources.latest_oss_registry_entries_file_blobs)
+
+
+@asset(required_resource_keys={"release_candidate_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
+def release_candidate_cloud_registry_entries(context: OpExecutionContext) -> Output[List]:
+    return get_registry_entries(context.resources.release_candidate_cloud_registry_entries_file_blobs)
+
+
+@asset(required_resource_keys={"release_candidate_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
+def release_candidate_oss_registry_entries(context: OpExecutionContext) -> Output[List]:
+    return get_registry_entries(context.resources.release_candidate_oss_registry_entries_file_blobs)

@@ -3,11 +3,11 @@
 from dataclasses import dataclass
 from typing import Any, Mapping, MutableMapping, Optional
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.streams.checkpoint.per_partition_key_serializer import PerPartitionKeySerializer
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 FULL_REFRESH_COMPLETE_STATE: Mapping[str, Any] = {"__ab_full_refresh_sync_complete": True}
 
@@ -19,17 +19,7 @@ class SubstreamResumableFullRefreshCursor(Cursor):
         self._partition_serializer = PerPartitionKeySerializer()
 
     def get_stream_state(self) -> StreamState:
-        states = []
-        for partition_tuple, partition_state in self._per_partition_state.items():
-            states.append(
-                {
-                    "partition": self._to_dict(partition_tuple),
-                    "cursor": partition_state,
-                }
-            )
-        state: dict[str, Any] = {"states": states}
-
-        return state
+        return {"states": list(self._per_partition_state.values())}
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
@@ -76,7 +66,7 @@ class SubstreamResumableFullRefreshCursor(Cursor):
             )
 
         for state in stream_state["states"]:
-            self._per_partition_state[self._to_partition_key(state["partition"])] = state["cursor"]
+            self._per_partition_state[self._to_partition_key(state["partition"])] = state
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         """
@@ -85,7 +75,10 @@ class SubstreamResumableFullRefreshCursor(Cursor):
         pass
 
     def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
-        self._per_partition_state[self._to_partition_key(stream_slice.partition)] = FULL_REFRESH_COMPLETE_STATE
+        self._per_partition_state[self._to_partition_key(stream_slice.partition)] = {
+            "partition": stream_slice.partition,
+            "cursor": FULL_REFRESH_COMPLETE_STATE,
+        }
 
     def should_be_synced(self, record: Record) -> bool:
         """
@@ -104,7 +97,7 @@ class SubstreamResumableFullRefreshCursor(Cursor):
         if not stream_slice:
             raise ValueError("A partition needs to be provided in order to extract a state")
 
-        return self._per_partition_state.get(self._to_partition_key(stream_slice.partition))
+        return self._per_partition_state.get(self._to_partition_key(stream_slice.partition), {}).get("cursor")
 
     def _to_partition_key(self, partition: Mapping[str, Any]) -> str:
         return self._partition_serializer.to_partition_key(partition)

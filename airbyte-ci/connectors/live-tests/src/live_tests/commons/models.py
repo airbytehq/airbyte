@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from __future__ import annotations
 
 import json
@@ -149,12 +150,20 @@ class ActorType(Enum):
 
 
 class ConnectionSubset(Enum):
+    """Signals which connection pool to consider for this live test — just the Airbyte sandboxes, or all possible connctions on Cloud."""
+
     SANDBOXES = "sandboxes"
     ALL = "all"
 
 
 @dataclass
 class ConnectorUnderTest:
+    """Represents a connector being tested.
+    In validation tests, there would be one connector under test.
+    When running regression tests, there would be two connectors under test: the target and the control versions of the same connector.
+    """
+
+    # connector image, assuming it's in the format "airbyte/{actor_type}-{connector_name}:{version}"
     image_name: str
     container: dagger.Container
     target_or_control: TargetOrControl

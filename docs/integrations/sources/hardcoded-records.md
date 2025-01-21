@@ -149,6 +149,15 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.16 | 2024-10-12 | [46773](https://github.com/airbytehq/airbyte/pull/46773) | Update dependencies |
+| 0.0.15 | 2024-10-05 | [46492](https://github.com/airbytehq/airbyte/pull/46492) | Update dependencies |
+| 0.0.14 | 2024-09-28 | [46200](https://github.com/airbytehq/airbyte/pull/46200) | Update dependencies |
+| 0.0.13 | 2024-09-21 | [45756](https://github.com/airbytehq/airbyte/pull/45756) | Update dependencies |
+| 0.0.12 | 2024-09-14 | [45496](https://github.com/airbytehq/airbyte/pull/45496) | Update dependencies |
+| 0.0.11 | 2024-09-07 | [45280](https://github.com/airbytehq/airbyte/pull/45280) | Update dependencies |
+| 0.0.10 | 2024-09-03 | [45097](https://github.com/airbytehq/airbyte/pull/45097) | Update CDK version to ^5 |
+| 0.0.9 | 2024-08-31 | [45003](https://github.com/airbytehq/airbyte/pull/45003) | Update dependencies |
+| 0.0.8 | 2024-08-24 | [44630](https://github.com/airbytehq/airbyte/pull/44630) | Update dependencies |
 | 0.0.7 | 2024-08-17 | [44331](https://github.com/airbytehq/airbyte/pull/44331) | Update dependencies |
 | 0.0.6 | 2024-08-12 | [43823](https://github.com/airbytehq/airbyte/pull/43823) | Update dependencies |
 | 0.0.5 | 2024-08-10 | [43645](https://github.com/airbytehq/airbyte/pull/43645) | Update dependencies |

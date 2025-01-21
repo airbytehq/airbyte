@@ -198,12 +198,19 @@ For more information regarding configuration parameters, please see [MongoDb Doc
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-|:--------| :--------- | :------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------|
-| 1.5.4   |  2024-08-20 | [44490](https://github.com/airbytehq/airbyte/pull/44490) | Add read permission check on oplog.rs collection used by CDC.                                             | 
-| 1.5.3   | 2024-08-08 | [43410](https://github.com/airbytehq/airbyte/pull/43410)   | Adopt latest CDK.                                                                                         |
-| 1.5.2   | 2024-08-06 | [42869](https://github.com/airbytehq/airbyte/pull/42869)   | Adopt latest CDK.                                                                                         |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 1.5.11  | 2024-09-24 | [45883](https://github.com/airbytehq/airbyte/pull/45883) | Lazy init mongocursor to prevent timeout.                                                                 |
+| 1.5.10  | 2024-09-17 | [45639](https://github.com/airbytehq/airbyte/pull/45639) | Adopt latest CDK to use the latest apache sshd mina to handle tcpkeepalive requests.                      |
+| 1.5.9   | 2024-08-28 | [42927](https://github.com/airbytehq/airbyte/pull/42927) | Support binary subtype.                                                                                   |
+| 1.5.8   | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841) | Adopt latest CDK.                                                                                         |
+| 1.5.7   | 2024-08-27 | [44846](https://github.com/airbytehq/airbyte/pull/44846) | DBZ filters in related streams only.                                                                      |
+| 1.5.6   | 2024-08-27 | [44839](https://github.com/airbytehq/airbyte/pull/44839) | DBZ filters in related streams only.                                                                      |
+| 1.5.5   | 2024-08-26 | [44779](https://github.com/airbytehq/airbyte/pull/44779) | Revert permission check on oplog.rs.                                                                      |
+| 1.5.4   | 2024-08-20 | [44490](https://github.com/airbytehq/airbyte/pull/44490) | Add read permission check on oplog.rs collection used by CDC.                                             | 
+| 1.5.3   | 2024-08-08 | [43410](https://github.com/airbytehq/airbyte/pull/43410) | Adopt latest CDK.                                                                                         |
+| 1.5.2   | 2024-08-06 | [42869](https://github.com/airbytehq/airbyte/pull/42869) | Adopt latest CDK.                                                                                         |
 | 1.5.1   | 2024-08-01 | [42549](https://github.com/airbytehq/airbyte/pull/42549) | Centered the connector icon.                                                                              |
-| 1.5.0   | 2024-07-26 | [42561](https://github.com/airbytehq/airbyte/pull/42561)  | Implement WASS algorithm.                                                                                 |
+| 1.5.0   | 2024-07-26 | [42561](https://github.com/airbytehq/airbyte/pull/42561) | Implement WASS algorithm.                                                                                 |
 | 1.4.3   | 2024-07-22 | [39145](https://github.com/airbytehq/airbyte/pull/39145) | Warn (vs fail) on different \_id types in collection.                                                     |
 | 1.4.2   | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz hearbeat.                                                                                      |
 | 1.4.1   | 2024-06-11 | [39530](https://github.com/airbytehq/airbyte/pull/39530) | Adopt new CDK.                                                                                            |

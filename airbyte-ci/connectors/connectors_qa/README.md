@@ -108,10 +108,18 @@ poe lint
 
 ## Changelog
 
+### 1.9.1
+
+Fail assets icon check if the icon is the default Airbyte icon.
+
+### 1.8.0
+
+Added minimum sl threshold value to documentation checks to skip them for connectors for which sl is 0.
+
 ### 1.7.0
 
-Added  `CheckDocumentationLinks`, `CheckDocumentationHeadersOrder`, `CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec`, 
-`CheckSourceSectionContent`, `CheckForAirbyteCloudSectionContent`, `CheckForAirbyteOpenSectionContent`, `CheckSupportedSyncModesSectionContent`, 
+Added  `CheckDocumentationLinks`, `CheckDocumentationHeadersOrder`, `CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec`,
+`CheckSourceSectionContent`, `CheckForAirbyteCloudSectionContent`, `CheckForAirbyteOpenSectionContent`, `CheckSupportedSyncModesSectionContent`,
 `CheckTutorialsSectionContent`, `CheckChangelogSectionContent` checks that verifies that documentation file follow standard template.
 
 ### 1.6.0

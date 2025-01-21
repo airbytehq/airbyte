@@ -1,0 +1,40 @@
+// simply declaring the source sets is sufficient to populate them with
+// src/integrationTest/java+resources + src/integrationTest/kotlin.
+sourceSets {
+    integrationTest {
+    }
+}
+kotlin {
+    sourceSets {
+        testIntegration {
+        }
+    }
+}
+
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
+
+    // For ranges and rangesets
+    implementation("com.google.guava:guava:33.3.0-jre")
+
+    testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
+
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    implementation "org.jetbrains.kotlin:kotlin-reflect:2.0.20"
+    testFixturesImplementation "uk.org.webcompere:system-stubs-jupiter:2.1.7"
+}
+
+task integrationTest(type: Test) {
+    description = 'Runs the integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    useJUnitPlatform()
+}
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+// These tests are lightweight enough to run on every PR.
+rootProject.check.dependsOn(integrationTest)

@@ -138,7 +138,7 @@ class SetCDKVersion(Step):
         connector_container = base_container.with_mounted_directory("/connector", updated_connector_dir).with_workdir("/connector")
 
         poetry_lock_file = await connector_container.file(POETRY_LOCK_FILENAME).contents()
-        updated_container = await connector_container.with_exec(["poetry", "lock", "--no-update"])
+        updated_container = await connector_container.with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True)
         updated_poetry_lock_file = await updated_container.file(POETRY_LOCK_FILENAME).contents()
 
         if poetry_lock_file != updated_poetry_lock_file:

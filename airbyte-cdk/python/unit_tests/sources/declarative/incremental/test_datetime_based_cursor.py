@@ -333,7 +333,7 @@ def mock_datetime_now(monkeypatch):
             [
                 {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-31T23:59:59.999999+0000"},
             ],
-        )
+        ),
     ],
 )
 def test_stream_slices(
@@ -580,10 +580,11 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
 
 
 @pytest.mark.parametrize(
-    "stream_slice", [
+    "stream_slice",
+    [
         pytest.param(None, id="test_none_stream_slice"),
         pytest.param({}, id="test_none_stream_slice"),
-    ]
+    ],
 )
 def test_request_option_with_empty_stream_slice(stream_slice):
     start_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="starttime")

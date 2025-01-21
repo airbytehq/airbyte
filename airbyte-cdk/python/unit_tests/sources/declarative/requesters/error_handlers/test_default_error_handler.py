@@ -18,42 +18,42 @@ SOME_BACKOFF_TIME = 60
 
 
 @pytest.mark.parametrize(
-        "test_name, http_status_code, expected_error_resolution",
-        [
-            (
-                "_with_http_response_status_200",
-                200,
-                ErrorResolution(
-                    response_action=ResponseAction.SUCCESS,
-                    failure_type=None,
-                    error_message=None,
-                ),
+    "test_name, http_status_code, expected_error_resolution",
+    [
+        (
+            "_with_http_response_status_200",
+            200,
+            ErrorResolution(
+                response_action=ResponseAction.SUCCESS,
+                failure_type=None,
+                error_message=None,
             ),
-            (
-                "_with_http_response_status_400",
-                400,
-                DEFAULT_ERROR_MAPPING[400],
+        ),
+        (
+            "_with_http_response_status_400",
+            400,
+            DEFAULT_ERROR_MAPPING[400],
+        ),
+        (
+            "_with_http_response_status_404",
+            404,
+            DEFAULT_ERROR_MAPPING[404],
+        ),
+        (
+            "_with_http_response_status_408",
+            408,
+            DEFAULT_ERROR_MAPPING[408],
+        ),
+        (
+            "_with_unmapped_http_status_418",
+            418,
+            ErrorResolution(
+                response_action=ResponseAction.RETRY,
+                failure_type=FailureType.system_error,
+                error_message="Unexpected response with HTTP status 418",
             ),
-            (
-                "_with_http_response_status_404",
-                404,
-                DEFAULT_ERROR_MAPPING[404],
-            ),
-            (
-                "_with_http_response_status_408",
-                408,
-                DEFAULT_ERROR_MAPPING[408],
-            ),
-            (
-                "_with_unmapped_http_status_418",
-                418,
-                ErrorResolution(
-                    response_action=ResponseAction.RETRY,
-                    failure_type=FailureType.system_error,
-                    error_message="Unexpected response with HTTP status 418",
-                ),
-            )
-        ],
+        ),
+    ],
 )
 def test_default_error_handler_with_default_response_filter(test_name, http_status_code: int, expected_error_resolution: ErrorResolution):
     response_mock = create_response(http_status_code)
@@ -65,76 +65,78 @@ def test_default_error_handler_with_default_response_filter(test_name, http_stat
 
 
 @pytest.mark.parametrize(
-        "test_name, http_status_code, test_response_filter, response_action, failure_type, error_message",
-        [
-            (
-                "_with_http_response_status_400_fail_with_default_failure_type",
-                400,
-                HttpResponseFilter(
-                    http_codes=[400],
-                    action=ResponseAction.RETRY,
-                    config={},
-                    parameters={},
-                ),
-                ResponseAction.RETRY,
-                FailureType.system_error,
-                "Bad request. Please check your request parameters.",
+    "test_name, http_status_code, test_response_filter, response_action, failure_type, error_message",
+    [
+        (
+            "_with_http_response_status_400_fail_with_default_failure_type",
+            400,
+            HttpResponseFilter(
+                http_codes=[400],
+                action=ResponseAction.RETRY,
+                config={},
+                parameters={},
             ),
-            (
-                "_with_http_response_status_402_fail_with_default_failure_type",
-                402,
-                HttpResponseFilter(
-                    http_codes=[402],
-                    action=ResponseAction.FAIL,
-                    config={},
-                    parameters={},
-                ),
-                ResponseAction.FAIL,
-                FailureType.system_error,
-                "",
+            ResponseAction.RETRY,
+            FailureType.system_error,
+            "Bad request. Please check your request parameters.",
+        ),
+        (
+            "_with_http_response_status_402_fail_with_default_failure_type",
+            402,
+            HttpResponseFilter(
+                http_codes=[402],
+                action=ResponseAction.FAIL,
+                config={},
+                parameters={},
             ),
-            (
-                "_with_http_response_status_403_fail_with_default_failure_type",
-                403,
-                HttpResponseFilter(
-                    http_codes=[403],
-                    action="FAIL",
-                    config={},
-                    parameters={},
-                ),
-                ResponseAction.FAIL,
-                FailureType.config_error,
-                "Forbidden. You don't have permission to access this resource.",
+            ResponseAction.FAIL,
+            FailureType.system_error,
+            "",
+        ),
+        (
+            "_with_http_response_status_403_fail_with_default_failure_type",
+            403,
+            HttpResponseFilter(
+                http_codes=[403],
+                action="FAIL",
+                config={},
+                parameters={},
             ),
-            (
-                "_with_http_response_status_200_fail_with_contained_error_message",
-                418,
-                HttpResponseFilter(
-                    action=ResponseAction.FAIL,
-                    error_message_contains="test",
-                    config={},
-                    parameters={},
-                ),
-                ResponseAction.FAIL,
-                FailureType.system_error,
-                "",
+            ResponseAction.FAIL,
+            FailureType.config_error,
+            "Forbidden. You don't have permission to access this resource.",
+        ),
+        (
+            "_with_http_response_status_200_fail_with_contained_error_message",
+            418,
+            HttpResponseFilter(
+                action=ResponseAction.FAIL,
+                error_message_contains="test",
+                config={},
+                parameters={},
             ),
-            (
-                "_fail_with_predicate",
-                418,
-                HttpResponseFilter(
-                    action=ResponseAction.FAIL,
-                    predicate="{{ 'error' in response }}",
-                    config={},
-                    parameters={},
-                ),
-                ResponseAction.FAIL,
-                FailureType.system_error,
-                "",
+            ResponseAction.FAIL,
+            FailureType.system_error,
+            "",
+        ),
+        (
+            "_fail_with_predicate",
+            418,
+            HttpResponseFilter(
+                action=ResponseAction.FAIL,
+                predicate="{{ 'error' in response }}",
+                config={},
+                parameters={},
             ),
-        ],
+            ResponseAction.FAIL,
+            FailureType.system_error,
+            "",
+        ),
+    ],
 )
-def test_default_error_handler_with_custom_response_filter(test_name, http_status_code, test_response_filter, response_action, failure_type, error_message):
+def test_default_error_handler_with_custom_response_filter(
+    test_name, http_status_code, test_response_filter, response_action, failure_type, error_message
+):
     response_mock = create_response(http_status_code)
     if http_status_code == 418:
         response_mock.json.return_value = {"error": "test"}
@@ -148,11 +150,11 @@ def test_default_error_handler_with_custom_response_filter(test_name, http_statu
 
 
 @pytest.mark.parametrize(
-        "http_status_code, expected_response_action",
-        [
-            (400, ResponseAction.RETRY),
-            (402, ResponseAction.FAIL),
-        ],
+    "http_status_code, expected_response_action",
+    [
+        (400, ResponseAction.RETRY),
+        (402, ResponseAction.FAIL),
+    ],
 )
 def test_default_error_handler_with_multiple_response_filters(http_status_code, expected_response_action):
     response_filter_one = HttpResponseFilter(
@@ -175,15 +177,17 @@ def test_default_error_handler_with_multiple_response_filters(http_status_code, 
 
 
 @pytest.mark.parametrize(
-        "first_response_filter_action, second_response_filter_action, expected_response_action",
-        [
-            (ResponseAction.RETRY, ResponseAction.FAIL, ResponseAction.RETRY),
-            (ResponseAction.FAIL, ResponseAction.RETRY, ResponseAction.FAIL),
-            (ResponseAction.IGNORE, ResponseAction.IGNORE, ResponseAction.IGNORE),
-            (ResponseAction.SUCCESS, ResponseAction.IGNORE, ResponseAction.SUCCESS),
-        ]
+    "first_response_filter_action, second_response_filter_action, expected_response_action",
+    [
+        (ResponseAction.RETRY, ResponseAction.FAIL, ResponseAction.RETRY),
+        (ResponseAction.FAIL, ResponseAction.RETRY, ResponseAction.FAIL),
+        (ResponseAction.IGNORE, ResponseAction.IGNORE, ResponseAction.IGNORE),
+        (ResponseAction.SUCCESS, ResponseAction.IGNORE, ResponseAction.SUCCESS),
+    ],
 )
-def test_default_error_handler_with_conflicting_response_filters(first_response_filter_action, second_response_filter_action, expected_response_action):
+def test_default_error_handler_with_conflicting_response_filters(
+    first_response_filter_action, second_response_filter_action, expected_response_action
+):
     response_filter_one = HttpResponseFilter(
         http_codes=[400],
         action=first_response_filter_action,
@@ -205,19 +209,29 @@ def test_default_error_handler_with_conflicting_response_filters(first_response_
 
 def test_default_error_handler_with_constant_backoff_strategy():
     response_mock = create_response(429)
-    error_handler = DefaultErrorHandler(config={}, parameters={}, backoff_strategies=[ConstantBackoffStrategy(SOME_BACKOFF_TIME, config={}, parameters={})])
+    error_handler = DefaultErrorHandler(
+        config={}, parameters={}, backoff_strategies=[ConstantBackoffStrategy(SOME_BACKOFF_TIME, config={}, parameters={})]
+    )
     assert error_handler.backoff_time(response_or_exception=response_mock, attempt_count=0) == SOME_BACKOFF_TIME
 
 
 @pytest.mark.parametrize(
     "attempt_count",
     [
-        0, 1, 2, 3, 4, 5, 6,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
     ],
 )
 def test_default_error_handler_with_exponential_backoff_strategy(attempt_count):
     response_mock = create_response(429)
-    error_handler = DefaultErrorHandler(config={}, parameters={}, backoff_strategies=[ExponentialBackoffStrategy(factor=1, config={}, parameters={})])
+    error_handler = DefaultErrorHandler(
+        config={}, parameters={}, backoff_strategies=[ExponentialBackoffStrategy(factor=1, config={}, parameters={})]
+    )
     assert error_handler.backoff_time(response_or_exception=response_mock, attempt_count=attempt_count) == (1 * 2**attempt_count)
 
 

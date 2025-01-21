@@ -30,9 +30,8 @@ class MetadataValidation(SimpleDockerStep):
             title=f"Validate metadata for {context.connector.technical_name}",
             context=context,
             paths_to_mount=[
-                MountPath(context.connector.metadata_file_path),
+                MountPath(context.connector.code_directory),
                 MountPath(DOCS_DIRECTORY_ROOT_PATH),
-                MountPath(context.connector.icon_path, optional=True),
             ],
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
@@ -80,9 +79,8 @@ class MetadataUpload(SimpleDockerStep):
             context=context,
             paths_to_mount=[
                 MountPath(GIT_DIRECTORY_ROOT_PATH),
-                MountPath(context.connector.metadata_file_path),
                 MountPath(DOCS_DIRECTORY_ROOT_PATH),
-                MountPath(context.connector.icon_path, optional=True),
+                MountPath(context.connector.code_directory),
             ],
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
@@ -94,6 +92,76 @@ class MetadataUpload(SimpleDockerStep):
             },
             env_variables={
                 # The cache buster ensures we always run the upload command (in case of remote bucket change)
+                "CACHEBUSTER": str(uuid.uuid4()),
+            },
+            command=command_to_run,
+        )
+
+
+class MetadataRollbackReleaseCandidate(SimpleDockerStep):
+    def __init__(
+        self,
+        context: ConnectorContext,
+        metadata_bucket_name: str,
+        metadata_service_gcs_credentials: Secret,
+    ) -> None:
+        docker_repository = context.connector.metadata["dockerRepository"]
+        version = context.connector.metadata["dockerImageTag"]
+        title = f"Rollback release candidate for {docker_repository} v{version}"
+        command_to_run = [
+            "metadata_service",
+            "rollback-release-candidate",
+            docker_repository,
+            version,
+            metadata_bucket_name,
+        ]
+
+        super().__init__(
+            title=title,
+            context=context,
+            internal_tools=[
+                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
+            ],
+            secret_env_variables={
+                "GCS_CREDENTIALS": metadata_service_gcs_credentials,
+            },
+            env_variables={
+                # The cache buster ensures we always run the rollback command (in case of remote bucket change)
+                "CACHEBUSTER": str(uuid.uuid4()),
+            },
+            command=command_to_run,
+        )
+
+
+class MetadataPromoteReleaseCandidate(SimpleDockerStep):
+    def __init__(
+        self,
+        context: ConnectorContext,
+        metadata_bucket_name: str,
+        metadata_service_gcs_credentials: Secret,
+    ) -> None:
+        docker_repository = context.connector.metadata["dockerRepository"]
+        version = context.connector.metadata["dockerImageTag"]
+        title = f"Promote release candidate for {docker_repository} v{version}"
+        command_to_run = [
+            "metadata_service",
+            "promote-release-candidate",
+            docker_repository,
+            version,
+            metadata_bucket_name,
+        ]
+
+        super().__init__(
+            title=title,
+            context=context,
+            internal_tools=[
+                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
+            ],
+            secret_env_variables={
+                "GCS_CREDENTIALS": metadata_service_gcs_credentials,
+            },
+            env_variables={
+                # The cache buster ensures we always run the rollback command (in case of remote bucket change)
                 "CACHEBUSTER": str(uuid.uuid4()),
             },
             command=command_to_run,
@@ -131,12 +199,12 @@ class DeployOrchestrator(Step):
         self.context.logger.info(f"Deploying to deployment: {target_deployment}")
 
         container_to_run = (
-            python_with_dependencies.with_mounted_directory("/src", parent_dir)
+            python_with_dependencies.with_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
             .with_env_variable("DAGSTER_CLOUD_DEPLOYMENT", target_deployment)
             .with_workdir("/src/orchestrator")
-            .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
-            .with_exec(["/bin/sh", "-c", "cat setup.py"])
+            .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"], use_entrypoint=True)
+            .with_exec(["/bin/sh", "-c", "cat setup.py"], use_entrypoint=True)
             .with_exec(self.deploy_dagster_command)
         )
         return await self.get_step_result(container_to_run)
@@ -185,7 +253,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
         ci_context=ci_context,
     )
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
+        metadata_pipeline_context.dagger_client = dagger_client
 
         async with metadata_pipeline_context:
             steps: STEP_TREE = [

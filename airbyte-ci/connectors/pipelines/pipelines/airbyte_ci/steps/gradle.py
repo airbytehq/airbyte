@@ -83,7 +83,6 @@ class GradleTask(Step, ABC):
             ".root",
             ".env",
             "build.gradle",
-            "deps.toml",
             "gradle.properties",
             "gradle",
             "gradlew",
@@ -203,7 +202,7 @@ class GradleTask(Step, ABC):
             # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
             gradle_container = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, gradle_container)
             # This installation should be cheap, as the package has already been downloaded, and its dependencies are already installed.
-            gradle_container = gradle_container.with_exec(["yum", "install", "-y", "docker"])
+            gradle_container = gradle_container.with_exec(["yum", "install", "-y", "docker"], use_entrypoint=True)
 
         # Run the gradle task that we actually care about.
         connector_gradle_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"

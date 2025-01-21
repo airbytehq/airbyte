@@ -17,8 +17,8 @@ def output_dataframe(result_df: pd.DataFrame) -> Output[pd.DataFrame]:
     Returns a Dagster Output object with a dataframe as the result and a markdown preview.
     """
 
-    # Truncate to 100 rows to avoid dagster throwing a "too large" error
-    MAX_PREVIEW_ROWS = 100
+    # Truncate to 10 rows to avoid dagster throwing a "too large" error
+    MAX_PREVIEW_ROWS = 10
     is_truncated = len(result_df) > MAX_PREVIEW_ROWS
     preview_result_df = result_df.head(MAX_PREVIEW_ROWS)
 

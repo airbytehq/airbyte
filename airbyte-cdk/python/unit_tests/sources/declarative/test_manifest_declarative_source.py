@@ -29,7 +29,6 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from jsonschema.exceptions import ValidationError
-from pydantic import AnyUrl
 
 logger = logging.getLogger("airbyte")
 
@@ -210,7 +209,7 @@ class TestManifestDeclarativeSource:
         source = ManifestDeclarativeSource(source_config=manifest)
         connector_specification = source.spec(logger)
         assert connector_specification is not None
-        assert connector_specification.documentationUrl == AnyUrl("https://airbyte.com/#yaml-from-manifest")
+        assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-manifest"
         assert connector_specification.connectionSpecification["title"] == "Test Spec"
         assert connector_specification.connectionSpecification["required"][0] == "api_key"
         assert connector_specification.connectionSpecification["additionalProperties"] is False
@@ -277,7 +276,7 @@ class TestManifestDeclarativeSource:
 
         connector_specification = source.spec(logger)
 
-        assert connector_specification.documentationUrl == AnyUrl("https://airbyte.com/#yaml-from-external")
+        assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-external"
         assert connector_specification.connectionSpecification == EXTERNAL_CONNECTION_SPECIFICATION
 
     def test_source_is_not_created_if_toplevel_fields_are_unknown(self):
@@ -1045,8 +1044,12 @@ def _create_page(response_body):
             ),
             [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"ABC": 2, "partition": 1}],
             [
-                call({'states': []}, {"partition": "0"}, None),
-                call({'states': [{'partition': {'partition': '0'}, 'cursor': {'__ab_full_refresh_sync_complete': True}}]}, {"partition": "1"}, None),
+                call({"states": []}, {"partition": "0"}, None),
+                call(
+                    {"states": [{"partition": {"partition": "0"}, "cursor": {"__ab_full_refresh_sync_complete": True}}]},
+                    {"partition": "1"},
+                    None,
+                ),
             ],
         ),
         (
@@ -1119,9 +1122,13 @@ def _create_page(response_body):
             ),
             [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"USD": 3, "partition": 0}, {"ABC": 2, "partition": 1}],
             [
-                call({'states': []}, {"partition": "0"}, None),
-                call({'states': []}, {"partition": "0"}, {"next_page_token": "next"}),
-                call({'states': [{'partition': {'partition': '0'}, 'cursor': {'__ab_full_refresh_sync_complete': True}}]}, {'partition': '1'}, None),
+                call({"states": []}, {"partition": "0"}, None),
+                call({"states": []}, {"partition": "0"}, {"next_page_token": "next"}),
+                call(
+                    {"states": [{"partition": {"partition": "0"}, "cursor": {"__ab_full_refresh_sync_complete": True}}]},
+                    {"partition": "1"},
+                    None,
+                ),
             ],
         ),
     ],
@@ -1269,14 +1276,14 @@ def _run_read(manifest: Mapping[str, Any], stream_name: str) -> List[AirbyteMess
 
 def test_declarative_component_schema_valid_ref_links():
     def load_yaml(file_path) -> Mapping[str, Any]:
-        with open(file_path, 'r') as file:
+        with open(file_path, "r") as file:
             return yaml.safe_load(file)
 
-    def extract_refs(data, base_path='#') -> List[str]:
+    def extract_refs(data, base_path="#") -> List[str]:
         refs = []
         if isinstance(data, dict):
             for key, value in data.items():
-                if key == '$ref' and isinstance(value, str) and value.startswith('#'):
+                if key == "$ref" and isinstance(value, str) and value.startswith("#"):
                     ref_path = value
                     refs.append(ref_path)
                 else:
@@ -1287,11 +1294,11 @@ def test_declarative_component_schema_valid_ref_links():
         return refs
 
     def resolve_pointer(data: Mapping[str, Any], pointer: str) -> bool:
-        parts = pointer.split('/')[1:]  # Skip the first empty part due to leading '#/'
+        parts = pointer.split("/")[1:]  # Skip the first empty part due to leading '#/'
         current = data
         try:
             for part in parts:
-                part = part.replace('~1', '/').replace('~0', '~')  # Unescape JSON Pointer
+                part = part.replace("~1", "/").replace("~0", "~")  # Unescape JSON Pointer
                 current = current[part]
             return True
         except (KeyError, TypeError):
@@ -1300,8 +1307,10 @@ def test_declarative_component_schema_valid_ref_links():
     def validate_refs(yaml_file: str) -> List[str]:
         data = load_yaml(yaml_file)
         refs = extract_refs(data)
-        invalid_refs = [ref for ref in refs if not resolve_pointer(data, ref.replace('#', ''))]
+        invalid_refs = [ref for ref in refs if not resolve_pointer(data, ref.replace("#", ""))]
         return invalid_refs
 
-    yaml_file_path = Path(__file__).resolve().parent.parent.parent.parent / 'airbyte_cdk/sources/declarative/declarative_component_schema.yaml'
+    yaml_file_path = (
+        Path(__file__).resolve().parent.parent.parent.parent / "airbyte_cdk/sources/declarative/declarative_component_schema.yaml"
+    )
     assert not validate_refs(yaml_file_path)

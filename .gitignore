@@ -10,6 +10,7 @@ out
 .project
 .settings
 .vscode
+.kotlin
 **/gmon.out
 static_checker_reports/
 

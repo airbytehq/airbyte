@@ -23,7 +23,7 @@ async def check_env_var_with_printenv(
         errors.SanityCheckError: Raised if the environment variable is not defined or if it has an unexpected value.
     """
     try:
-        printenv_output = await container.with_exec(["printenv"], skip_entrypoint=True).stdout()
+        printenv_output = await container.with_exec(["printenv"]).stdout()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
     env_vars = {line.split("=")[0]: line.split("=")[1] for line in printenv_output.splitlines()}
@@ -45,7 +45,7 @@ async def check_timezone_is_utc(container: dagger.Container):
         errors.SanityCheckError: Raised if the date command could not be executed or if the outputted timezone is not UTC.
     """
     try:
-        tz_output: str = await container.with_exec(["date"], skip_entrypoint=True).stdout()
+        tz_output: str = await container.with_exec(["date"]).stdout()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
     if "UTC" not in tz_output:
@@ -63,7 +63,7 @@ async def check_a_command_is_available_using_version_option(container: dagger.Co
         errors.SanityCheckError: Raised if the command could not be executed or if the outputted version is not the expected one.
     """
     try:
-        command_version_output: str = await container.with_exec([command, version_option], skip_entrypoint=True).stdout()
+        command_version_output: str = await container.with_exec([command, version_option]).stdout()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
     if command_version_output == "":
@@ -81,7 +81,7 @@ async def check_socat_version(container: dagger.Container, expected_socat_versio
         errors.SanityCheckError: Raised if the socat --version command could not be executed or if the outputted version is not the expected one.
     """
     try:
-        socat_version_output: str = await container.with_exec(["socat", "-V"], skip_entrypoint=True).stdout()
+        socat_version_output: str = await container.with_exec(["socat", "-V"]).stdout()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
     socat_version_line = None

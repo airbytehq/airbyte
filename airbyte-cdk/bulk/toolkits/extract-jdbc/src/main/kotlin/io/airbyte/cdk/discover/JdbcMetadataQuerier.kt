@@ -1,7 +1,11 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.JdbcSourceConfiguration
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.NullFieldType
 import io.airbyte.cdk.read.From
@@ -10,7 +14,7 @@ import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.optimize
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.Connection
@@ -22,20 +26,32 @@ import java.sql.Statement
 
 /** Default implementation of [MetadataQuerier]. */
 class JdbcMetadataQuerier(
+    val constants: DefaultJdbcConstants,
     val config: JdbcSourceConfiguration,
     val selectQueryGenerator: SelectQueryGenerator,
     val fieldTypeMapper: FieldTypeMapper,
+    val checkQueries: JdbcCheckQueries,
     jdbcConnectionFactory: JdbcConnectionFactory,
 ) : MetadataQuerier {
     val conn: Connection = jdbcConnectionFactory.get()
 
     private val log = KotlinLogging.logger {}
 
-    override fun streamNamespaces(): List<String> =
-        memoizedTableNames.mapNotNull { it.schema ?: it.catalog }.distinct()
+    fun TableName.namespace(): String? =
+        when (constants.namespaceKind) {
+            NamespaceKind.CATALOG_AND_SCHEMA,
+            NamespaceKind.CATALOG -> catalog
+            NamespaceKind.SCHEMA -> schema
+        }
 
-    override fun streamNames(streamNamespace: String?): List<String> =
-        memoizedTableNames.filter { (it.schema ?: it.catalog) == streamNamespace }.map { it.name }
+    override fun streamNamespaces(): List<String> =
+        memoizedTableNames.mapNotNull { it.namespace() }.distinct()
+
+    override fun streamNames(streamNamespace: String?): List<StreamIdentifier> =
+        memoizedTableNames
+            .filter { it.namespace() == streamNamespace }
+            .map { StreamDescriptor().withName(it.name).withNamespace(it.namespace()) }
+            .map(StreamIdentifier::from)
 
     fun <T> swallow(supplier: () -> T): T? {
         try {
@@ -51,8 +67,14 @@ class JdbcMetadataQuerier(
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = conn.metaData
-            for (schema in config.schemas + config.schemas.map { it.uppercase() }) {
-                dbmd.getTables(null, schema, null, null).use { rs: ResultSet ->
+            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
+                val (catalog: String?, schema: String?) =
+                    when (constants.namespaceKind) {
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
+                    }
+                dbmd.getTables(catalog, schema, null, null).use { rs: ResultSet ->
                     while (rs.next()) {
                         allTables.add(
                             TableName(
@@ -65,22 +87,15 @@ class JdbcMetadataQuerier(
                     }
                 }
             }
-            log.info { "Discovered ${allTables.size} table(s) in schemas ${config.schemas}." }
-            return@lazy allTables.toList().sortedBy {
-                "${it.catalog ?: ""}.${it.schema!!}.${it.name}.${it.type}"
-            }
+            log.info { "Discovered ${allTables.size} table(s) in namespaces ${config.namespaces}." }
+            return@lazy allTables.toList().sortedBy { "${it.namespace()}.${it.name}.${it.type}" }
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
         }
     }
 
-    fun findTableName(
-        streamName: String,
-        streamNamespace: String?,
-    ): TableName? =
-        memoizedTableNames.find {
-            it.name == streamName && (it.schema ?: it.catalog) == streamNamespace
-        }
+    fun findTableName(streamID: StreamIdentifier): TableName? =
+        memoizedTableNames.find { it.name == streamID.name && it.namespace() == streamID.namespace }
 
     val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
         val joinMap: Map<TableName, TableName> =
@@ -90,7 +105,7 @@ class JdbcMetadataQuerier(
         try {
             val dbmd: DatabaseMetaData = conn.metaData
             memoizedTableNames
-                .filter { it.catalog != null || it.schema != null }
+                .filter { it.namespace() != null }
                 .map { it.catalog to it.schema }
                 .distinct()
                 .forEach { (catalog: String?, schema: String?) ->
@@ -186,10 +201,9 @@ class JdbcMetadataQuerier(
     }
 
     override fun fields(
-        streamName: String,
-        streamNamespace: String?,
+        streamID: StreamIdentifier,
     ): List<Field> {
-        val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
+        val table: TableName = findTableName(streamID) ?: return listOf()
         return columnMetadata(table).map { Field(it.label, fieldTypeMapper.toFieldType(it)) }
     }
 
@@ -221,7 +235,7 @@ class JdbcMetadataQuerier(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
-                From(table.name, table.schema ?: table.catalog),
+                From(table.name, table.namespace()),
                 limit = Limit(0),
             )
         return selectQueryGenerator.generate(querySpec.optimize()).sql
@@ -271,15 +285,13 @@ class JdbcMetadataQuerier(
     val memoizedPrimaryKeys = mutableMapOf<TableName, List<List<String>>>()
 
     override fun primaryKey(
-        streamName: String,
-        streamNamespace: String?,
+        streamID: StreamIdentifier,
     ): List<List<String>> {
-        val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
+        val table: TableName = findTableName(streamID) ?: return listOf()
         val memoized: List<List<String>>? = memoizedPrimaryKeys[table]
         if (memoized != null) return memoized
         val results = mutableListOf<PrimaryKeyRow>()
-        val streamPair = AirbyteStreamNameNamespacePair(streamName, streamNamespace)
-        log.info { "Querying primary keys in '$streamPair' for catalog discovery." }
+        log.info { "Querying primary keys in '$streamID' for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = conn.metaData
             dbmd.getPrimaryKeys(table.catalog, table.schema, table.name).use { rs: ResultSet ->
@@ -293,7 +305,7 @@ class JdbcMetadataQuerier(
                     )
                 }
             }
-            log.info { "Discovered all primary keys in '$streamPair'." }
+            log.info { "Discovered all primary keys in '$streamID'." }
         } catch (e: Exception) {
             throw RuntimeException("Primary key discovery query failed: ${e.message}", e)
         }
@@ -309,6 +321,17 @@ class JdbcMetadataQuerier(
         val columnName: String,
     )
 
+    override fun extraChecks() {
+        checkQueries.executeAll(conn)
+    }
+
+    override fun commonCursorOrNull(cursorColumnID: String): FieldOrMetaField? {
+        return when (cursorColumnID) {
+            CommonMetaField.CDC_LSN.id -> CommonMetaField.CDC_LSN
+            else -> null
+        }
+    }
+
     override fun close() {
         log.info { "Closing JDBC connection." }
         conn.close()
@@ -319,14 +342,18 @@ class JdbcMetadataQuerier(
     class Factory(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: FieldTypeMapper,
+        val checkQueries: JdbcCheckQueries,
+        val constants: DefaultJdbcConstants,
     ) : MetadataQuerier.Factory<JdbcSourceConfiguration> {
         /** The [JdbcSourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: JdbcSourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
             return JdbcMetadataQuerier(
+                constants,
                 config,
                 selectQueryGenerator,
                 fieldTypeMapper,
+                checkQueries,
                 jdbcConnectionFactory,
             )
         }

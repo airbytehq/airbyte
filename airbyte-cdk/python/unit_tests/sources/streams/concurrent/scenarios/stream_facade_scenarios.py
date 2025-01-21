@@ -343,6 +343,7 @@ test_incremental_stream_with_slice_boundaries = (
                         ({"from": 1, "to": 2}, [{"id": "3", "cursor_field": 2}, {"id": "4", "cursor_field": 3}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -361,8 +362,8 @@ test_incremental_stream_with_slice_boundaries = (
             {"cursor_field": 1},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"cursor_field": 2},
-            {"cursor_field": 2},  # see Cursor.ensure_at_least_one_state_emitted
+            {"cursor_field": 3},
+            {"cursor_field": 3},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -389,6 +390,7 @@ test_incremental_stream_without_slice_boundaries = (
                         (None, [{"id": "1", "cursor_field": 0}, {"id": "2", "cursor_field": 3}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -419,7 +421,7 @@ test_incremental_stream_without_slice_boundaries = (
 
 test_incremental_stream_with_many_slices_but_without_slice_boundaries = (
     TestScenarioBuilder()
-    .set_name("test_incremental_stream_with_many_slices_byt_without_slice_boundaries")
+    .set_name("test_incremental_stream_with_many_slices_but_without_slice_boundaries")
     .set_config({})
     .set_source_builder(
         StreamFacadeSourceBuilder()
@@ -431,6 +433,7 @@ test_incremental_stream_with_many_slices_but_without_slice_boundaries = (
                         ({"parent_id": 309}, [{"id": "3", "cursor_field": 0}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {

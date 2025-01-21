@@ -1,2 +1,2 @@
 {"type": "RECORD", "record": {"stream": "data_stream", "emitted_at": 1602637589000, "data": { "field1" : true }}}
-{"type": "STATE", "state": { "data": {"start_date": "2022-08-17"}}}
+{"type": "STATE", "state": { "type": "GLOBAL", "global": {"shared_state":  {"start_date": "2022-08-17"}}}}

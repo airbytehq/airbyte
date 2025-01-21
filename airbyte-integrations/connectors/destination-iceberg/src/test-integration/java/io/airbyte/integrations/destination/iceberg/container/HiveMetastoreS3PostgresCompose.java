@@ -17,8 +17,8 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_EN
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_SECRET_KEY_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_WAREHOUSE_URI_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil.WAREHOUSE_BUCKET_NAME;
-import static io.airbyte.integrations.destination.iceberg.container.MinioContainer.DEFAULT_ACCESS_KEY;
-import static io.airbyte.integrations.destination.iceberg.container.MinioContainer.DEFAULT_SECRET_KEY;
+import static io.airbyte.integrations.destination.iceberg.container.MinioContainerOldToDelete.DEFAULT_ACCESS_KEY;
+import static io.airbyte.integrations.destination.iceberg.container.MinioContainerOldToDelete.DEFAULT_SECRET_KEY;
 import static java.util.Map.entry;
 import static java.util.Map.ofEntries;
 
@@ -56,8 +56,8 @@ public class HiveMetastoreS3PostgresCompose extends DockerComposeContainer<HiveM
         Wait.forLogMessage(".*database system is ready to accept connections.*\\s", 2)
             .withStartupTimeout(Duration.ofSeconds(60)))
                 .withExposedService(MINIO_SERVICE_NAME,
-                    MinioContainer.MINIO_PORT,
-                    Wait.forHttp(MinioContainer.HEALTH_ENDPOINT).withStartupTimeout(Duration.ofSeconds(60)))
+                    MinioContainerOldToDelete.DEFAULT_PORT,
+                    Wait.forHttp(MinioContainerOldToDelete.HEALTH_ENDPOINT).withStartupTimeout(Duration.ofSeconds(60)))
                 .withExposedService(METASTORE_SERVICE_NAME,
                     METASTORE_PORT,
                     Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(5)))
@@ -69,13 +69,13 @@ public class HiveMetastoreS3PostgresCompose extends DockerComposeContainer<HiveM
     long startTime = System.currentTimeMillis();
     super.start();
     LOGGER.info("PostgreSQL port: {}", getServicePort(POSTGRES_SERVICE_NAME, PostgreSQLContainer.POSTGRESQL_PORT));
-    LOGGER.info("Minio port: {}", getServicePort(MINIO_SERVICE_NAME, MinioContainer.MINIO_PORT));
+    LOGGER.info("Minio port: {}", getServicePort(MINIO_SERVICE_NAME, MinioContainerOldToDelete.DEFAULT_PORT));
     LOGGER.info("Hive Metastore port: {}", getServicePort(METASTORE_SERVICE_NAME, METASTORE_PORT));
     LOGGER.info("Hive Metastore docker-compose startup cost: {} ms", System.currentTimeMillis() - startTime);
   }
 
   public String s3Endpoint() {
-    return "http://localhost:" + getServicePort(MINIO_SERVICE_NAME, MinioContainer.MINIO_PORT);
+    return "http://localhost:" + getServicePort(MINIO_SERVICE_NAME, MinioContainerOldToDelete.DEFAULT_PORT);
   }
 
   public String thriftUri() {

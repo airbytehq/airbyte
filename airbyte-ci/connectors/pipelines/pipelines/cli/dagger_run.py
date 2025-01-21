@@ -113,7 +113,7 @@ def call_current_command_with_dagger_run() -> None:
 
     exit_code = 0
     dagger_path = check_dagger_cli_install()
-    command = [dagger_path, "run"] + sys.argv
+    command = [dagger_path, "--silent", "run"] + sys.argv
     try:
         try:
             LOGGER.info(f"Running command: {command}")

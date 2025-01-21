@@ -4,16 +4,15 @@ from unittest import TestCase
 
 import requests
 import requests_mock
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction, create_fallback_error_resolution
 from airbyte_cdk.utils.airbyte_secrets_utils import update_secrets
-from airbyte_protocol.models import FailureType
 
 _A_SECRET = "a-secret"
 _A_URL = "https://a-url.com"
 
 
 class DefaultErrorResolutionTest(TestCase):
-
     def setUp(self) -> None:
         update_secrets([_A_SECRET])
 
@@ -26,7 +25,10 @@ class DefaultErrorResolutionTest(TestCase):
 
         assert error_resolution.failure_type == FailureType.system_error
         assert error_resolution.response_action == ResponseAction.RETRY
-        assert error_resolution.error_message == "Error handler did not receive a valid response or exception. This is unexpected please contact Airbyte Support"
+        assert (
+            error_resolution.error_message
+            == "Error handler did not receive a valid response or exception. This is unexpected please contact Airbyte Support"
+        )
 
     def test_given_exception_when_create_fallback_error_resolution_then_return_error_resolution(self) -> None:
         exception = ValueError("This is an exception")

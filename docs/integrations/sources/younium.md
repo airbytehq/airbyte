@@ -46,6 +46,13 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.3.22 | 2024-10-05 | [46432](https://github.com/airbytehq/airbyte/pull/46432) | Update dependencies |
+| 0.3.21 | 2024-09-28 | [46176](https://github.com/airbytehq/airbyte/pull/46176) | Update dependencies |
+| 0.3.20 | 2024-09-21 | [45807](https://github.com/airbytehq/airbyte/pull/45807) | Update dependencies |
+| 0.3.19 | 2024-09-14 | [45475](https://github.com/airbytehq/airbyte/pull/45475) | Update dependencies |
+| 0.3.18 | 2024-09-07 | [45276](https://github.com/airbytehq/airbyte/pull/45276) | Update dependencies |
+| 0.3.17 | 2024-08-31 | [45054](https://github.com/airbytehq/airbyte/pull/45054) | Update dependencies |
+| 0.3.16 | 2024-08-24 | [44711](https://github.com/airbytehq/airbyte/pull/44711) | Update dependencies |
 | 0.3.15 | 2024-08-17 | [44362](https://github.com/airbytehq/airbyte/pull/44362) | Update dependencies |
 | 0.3.14 | 2024-08-12 | [43925](https://github.com/airbytehq/airbyte/pull/43925) | Update dependencies |
 | 0.3.13 | 2024-08-10 | [43475](https://github.com/airbytehq/airbyte/pull/43475) | Update dependencies |

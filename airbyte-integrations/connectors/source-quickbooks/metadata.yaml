@@ -9,7 +9,7 @@ data:
     baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorType: source
   definitionId: cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e
-  dockerImageTag: 3.0.18
+  dockerImageTag: 3.0.26-rc.1
   dockerRepository: airbyte/source-quickbooks
   githubIssueLabel: source-quickbooks
   icon: quickbooks.svg
@@ -21,11 +21,13 @@ data:
       packageName: airbyte-source-quickbooks
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
     breakingChanges:
       3.0.0:
         message:

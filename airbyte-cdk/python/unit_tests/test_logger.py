@@ -51,12 +51,15 @@ def test_level_transform(logger, caplog):
 
 def test_debug(logger, caplog):
     # Test debug logger in isolation since the default logger is initialized to TRACE (15) instead of DEBUG (10).
+    formatter = AirbyteLogFormatter()
     debug_logger = logging.getLogger("airbyte.Debuglogger")
     debug_logger.setLevel(logging.DEBUG)
-    debug_logger.debug("Test debug 1")
+    debug_logger.debug("Test debug 1", extra={"extra_field": "extra value"})
     record = caplog.records[0]
-    assert record.levelname == "DEBUG"
-    assert record.message == "Test debug 1"
+    formatted_record = json.loads(formatter.format(record))
+    assert formatted_record["type"] == "DEBUG"
+    assert formatted_record["message"] == "Test debug 1"
+    assert formatted_record["data"]["extra_field"] == "extra value"
 
 
 def test_default_debug_is_ignored(logger, caplog):

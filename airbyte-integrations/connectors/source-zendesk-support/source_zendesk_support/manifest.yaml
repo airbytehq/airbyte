@@ -199,6 +199,17 @@ definitions:
       path: "tags"
       primary_key: "name"
 
+  automations_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "automations"
+      path: "automations"
+      primary_key: "id"
+
   # Incremental cursor-based streams
   audit_logs_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -554,6 +565,14 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  triggers_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    $parameters:
+      name: "triggers"
+      path: "triggers"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
   users_stream:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
@@ -581,6 +600,7 @@ streams:
   - $ref: "#/definitions/ticket_forms_stream"
   - $ref: "#/definitions/topics_stream"
   - $ref: "#/definitions/user_fields_stream"
+  - $ref: "#/definitions/automations_stream"
   # Incremental streams
   - $ref: "#/definitions/audit_logs_stream"
   - $ref: "#/definitions/groups_stream"
@@ -595,4 +615,5 @@ streams:
   - $ref: "#/definitions/ticket_comments_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
+  - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"

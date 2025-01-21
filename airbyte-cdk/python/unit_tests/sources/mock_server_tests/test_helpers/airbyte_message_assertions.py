@@ -5,13 +5,16 @@
 from typing import List
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, Type
-from airbyte_protocol.models import AirbyteStreamStatus
+from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus, Type
 
 
 def emits_successful_sync_status_messages(status_messages: List[AirbyteStreamStatus]) -> bool:
-    return (len(status_messages) == 3 and status_messages[0] == AirbyteStreamStatus.STARTED
-            and status_messages[1] == AirbyteStreamStatus.RUNNING and status_messages[2] == AirbyteStreamStatus.COMPLETE)
+    return (
+        len(status_messages) == 3
+        and status_messages[0] == AirbyteStreamStatus.STARTED
+        and status_messages[1] == AirbyteStreamStatus.RUNNING
+        and status_messages[2] == AirbyteStreamStatus.COMPLETE
+    )
 
 
 def validate_message_order(expected_message_order: List[Type], messages: List[AirbyteMessage]):
@@ -20,4 +23,6 @@ def validate_message_order(expected_message_order: List[Type], messages: List[Ai
 
     for i, message in enumerate(messages):
         if message.type != expected_message_order[i]:
-            pytest.fail(f"At index {i} actual message type {message.type.name} did not match expected message type {expected_message_order[i].name}")
+            pytest.fail(
+                f"At index {i} actual message type {message.type.name} did not match expected message type {expected_message_order[i].name}"
+            )

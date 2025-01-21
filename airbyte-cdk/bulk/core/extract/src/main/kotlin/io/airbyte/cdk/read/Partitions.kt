@@ -17,11 +17,14 @@ fun interface PartitionsCreatorFactory {
      * synchronizing the READ for this [feed] by waiting for other [Feed]s to reach a desired state
      * before proceeding; the waiting may be triggered by [PartitionsCreator.tryAcquireResources] or
      * [PartitionReader.tryAcquireResources].
+     *
+     * Returns null when the factory is unable to generate a [PartitionsCreator]. This causes
+     * another factory to be used instead.
      */
     fun make(
         stateQuerier: StateQuerier,
         feed: Feed,
-    ): PartitionsCreator
+    ): PartitionsCreator?
 }
 
 /**

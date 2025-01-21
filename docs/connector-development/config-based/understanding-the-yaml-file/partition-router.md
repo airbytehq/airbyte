@@ -146,6 +146,7 @@ retriever:
       - stream: "#/repositories_stream"
         parent_key: "id"
         partition_field: "repository"
+        incremental_dependency: true
 ```
 
 ## Nested streams

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.9"
+version = "0.1.17"
 name = "source-railz"
 description = "Source implementation for Railz."
 authors = [ "Airbyte <contact@airbyte.io>",]

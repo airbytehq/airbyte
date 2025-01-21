@@ -2,12 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.models import AirbyteAnalyticsTraceMessage
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import SyncMode
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
@@ -417,8 +416,8 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                             "properties": {
                                                 "filetype": {"title": "Filetype", "default": "excel", "const": "excel", "type": "string"}
                                             },
-                                            "required": ["filetype"]
-                                        }
+                                            "required": ["filetype"],
+                                        },
                                     ],
                                 },
                                 "schemaless": {
@@ -432,7 +431,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                     "description": "The number of resent files which will be used to discover the schema for this stream.",
                                     "exclusiveMinimum": 0,
                                     "type": "integer",
-                                }
+                                },
                             },
                             "required": ["name", "format"],
                         },
@@ -440,6 +439,8 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "required": ["streams"],
             },
+            "supportsDBT": False,
+            "supportsNormalization": False,
         }
     )
     .set_expected_catalog(
@@ -505,7 +506,7 @@ csv_analytics_scenario: TestScenario[InMemoryFilesSource] = (
                     "format": {"filetype": "csv"},
                     "globs": ["b.csv"],
                     "validation_policy": "Emit Record",
-                }
+                },
             ]
         }
     )
@@ -568,50 +569,52 @@ csv_analytics_scenario: TestScenario[InMemoryFilesSource] = (
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
                     "is_resumable": True,
-                }
+                },
             ]
         }
     )
-    .set_expected_records([
-        {
-            "data": {
-                "col1": "val11a",
-                "col2": "val12a",
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                "_ab_source_file_url": "a.csv",
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
             },
-            "stream": "stream1",
-        },
-        {
-            "data": {
-                "col1": "val21a",
-                "col2": "val22a",
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                "_ab_source_file_url": "a.csv",
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
             },
-            "stream": "stream1",
-        },
-        {
-            "data": {
-                "col1": "val11b",
-                "col2": "val12b",
-                "col3": "val13b",
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                "_ab_source_file_url": "b.csv",
+            {
+                "data": {
+                    "col1": "val11b",
+                    "col2": "val12b",
+                    "col3": "val13b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream2",
             },
-            "stream": "stream2",
-        },
-        {
-            "data": {
-                "col1": "val21b",
-                "col2": "val22b",
-                "col3": "val23b",
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                "_ab_source_file_url": "b.csv",
+            {
+                "data": {
+                    "col1": "val21b",
+                    "col2": "val22b",
+                    "col3": "val23b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream2",
             },
-            "stream": "stream2",
-        },
-    ])
+        ]
+    )
     .set_expected_analytics(
         [
             AirbyteAnalyticsTraceMessage(type="file-cdk-csv-stream-count", value="2"),
@@ -1937,7 +1940,7 @@ schemaless_with_user_input_schema_fails_connection_check_scenario: TestScenario[
         }
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_check_error(None, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
@@ -2027,7 +2030,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario: 
         }
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_check_error(None, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
@@ -2094,7 +2097,6 @@ csv_string_can_be_null_with_input_schemas_scenario: TestScenario[InMemoryFilesSo
             {
                 "data": {
                     "col1": "2",
-                    "col2": None,
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
@@ -2305,7 +2307,6 @@ csv_strings_can_be_null_not_quoted_scenario: TestScenario[InMemoryFilesSource] =
             {
                 "data": {
                     "col1": "2",
-                    "col2": None,
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
@@ -3174,7 +3175,6 @@ csv_custom_null_values_scenario: TestScenario[InMemoryFilesSource] = (
         [
             {
                 "data": {
-                    "col1": None,
                     "col2": "na",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
@@ -3315,11 +3315,7 @@ csv_no_files_scenario: TestScenario[InMemoryFilesSource] = (
             "start_date": "2023-06-10T03:54:07.000000Z",
         }
     )
-    .set_source_builder(
-        FileBasedSourceBuilder()
-        .set_files({})
-        .set_file_type("csv")
-    )
+    .set_source_builder(FileBasedSourceBuilder().set_files({}).set_file_type("csv"))
     .set_expected_check_status("FAILED")
     .set_expected_catalog(
         {

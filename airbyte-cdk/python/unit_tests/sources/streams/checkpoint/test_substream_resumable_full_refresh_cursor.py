@@ -14,22 +14,8 @@ def test_substream_resumable_full_refresh_cursor():
 
     expected_ending_state = {
         "states": [
-            {
-                "partition": {
-                    "musician_id": "kousei_arima"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "musician_id": "kaori_miyazono"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            }
+            {"partition": {"musician_id": "kousei_arima"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"musician_id": "kaori_miyazono"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
         ]
     }
 
@@ -58,65 +44,18 @@ def test_substream_resumable_full_refresh_cursor_with_state():
     """
     initial_state = {
         "states": [
-            {
-                "partition": {
-                    "musician_id": "kousei_arima"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "musician_id": "kaori_miyazono"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "musician_id": "takeshi_aiza"
-                },
-                "cursor": {}
-            }
+            {"partition": {"musician_id": "kousei_arima"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"musician_id": "kaori_miyazono"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"musician_id": "takeshi_aiza"}, "cursor": {}},
         ]
     }
 
     expected_ending_state = {
         "states": [
-            {
-                "partition": {
-                    "musician_id": "kousei_arima"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "musician_id": "kaori_miyazono"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "musician_id": "takeshi_aiza"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "musician_id": "emi_igawa"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            }
+            {"partition": {"musician_id": "kousei_arima"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"musician_id": "kaori_miyazono"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"musician_id": "takeshi_aiza"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"musician_id": "emi_igawa"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
         ]
     }
 
@@ -146,9 +85,7 @@ def test_substream_resumable_full_refresh_cursor_with_state():
 
 
 def test_set_initial_state_invalid_incoming_state():
-    bad_state = {
-        "next_page_token": 2
-    }
+    bad_state = {"next_page_token": 2}
     cursor = SubstreamResumableFullRefreshCursor()
 
     with pytest.raises(AirbyteTracedException):

@@ -51,10 +51,10 @@ class AbstractStreamStateConverter(ABC):
         """
         if not slices:
             raise RuntimeError("Expected at least one slice but there were none. This is unexpected; please contact Support.")
-
         merged_intervals = self.merge_intervals(slices)
         first_interval = merged_intervals[0]
-        return first_interval[self.END_KEY]
+
+        return first_interval.get("most_recent_cursor_value") or first_interval[self.START_KEY]
 
     def deserialize(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
@@ -120,17 +120,27 @@ class AbstractStreamStateConverter(ABC):
         if not intervals:
             return []
 
-        sorted_intervals = sorted(intervals, key=lambda x: (x[self.START_KEY], x[self.END_KEY]))
+        sorted_intervals = sorted(intervals, key=lambda interval: (interval[self.START_KEY], interval[self.END_KEY]))
         merged_intervals = [sorted_intervals[0]]
 
-        for interval in sorted_intervals[1:]:
-            last_end_time = merged_intervals[-1][self.END_KEY]
-            current_start_time = interval[self.START_KEY]
-            if bool(self.increment(last_end_time) >= current_start_time):
-                merged_end_time = max(last_end_time, interval[self.END_KEY])
-                merged_intervals[-1][self.END_KEY] = merged_end_time
+        for current_interval in sorted_intervals[1:]:
+            last_interval = merged_intervals[-1]
+            last_interval_end = last_interval[self.END_KEY]
+            current_interval_start = current_interval[self.START_KEY]
+
+            if self.increment(last_interval_end) >= current_interval_start:
+                last_interval[self.END_KEY] = max(last_interval_end, current_interval[self.END_KEY])
+                last_interval_cursor_value = last_interval.get("most_recent_cursor_value")
+                current_interval_cursor_value = current_interval.get("most_recent_cursor_value")
+
+                last_interval["most_recent_cursor_value"] = (
+                    max(current_interval_cursor_value, last_interval_cursor_value)
+                    if current_interval_cursor_value and last_interval_cursor_value
+                    else current_interval_cursor_value or last_interval_cursor_value
+                )
             else:
-                merged_intervals.append(interval)
+                # Add a new interval if no overlap
+                merged_intervals.append(current_interval)
 
         return merged_intervals
 

@@ -65,6 +65,14 @@ Specify credentials and a start date.
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.1.18 | 2024-10-12 | [46775](https://github.com/airbytehq/airbyte/pull/46775) | Update dependencies |
+| 0.1.17 | 2024-10-05 | [46403](https://github.com/airbytehq/airbyte/pull/46403) | Update dependencies |
+| 0.1.16 | 2024-09-28 | [46195](https://github.com/airbytehq/airbyte/pull/46195) | Update dependencies |
+| 0.1.15 | 2024-09-21 | [45832](https://github.com/airbytehq/airbyte/pull/45832) | Update dependencies |
+| 0.1.14 | 2024-09-14 | [45502](https://github.com/airbytehq/airbyte/pull/45502) | Update dependencies |
+| 0.1.13 | 2024-09-07 | [45240](https://github.com/airbytehq/airbyte/pull/45240) | Update dependencies |
+| 0.1.12 | 2024-08-31 | [45024](https://github.com/airbytehq/airbyte/pull/45024) | Update dependencies |
+| 0.1.11 | 2024-08-24 | [44737](https://github.com/airbytehq/airbyte/pull/44737) | Update dependencies |
 | 0.1.10 | 2024-08-17 | [44351](https://github.com/airbytehq/airbyte/pull/44351) | Update dependencies |
 | 0.1.9 | 2024-08-10 | [43605](https://github.com/airbytehq/airbyte/pull/43605) | Update dependencies |
 | 0.1.8 | 2024-08-03 | [43068](https://github.com/airbytehq/airbyte/pull/43068) | Update dependencies |

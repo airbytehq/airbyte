@@ -11,8 +11,7 @@ class MockStream:
         self.records = records
         self._exit_on_rate_limit = exit_on_rate_limit
         type(self).exit_on_rate_limit = property(
-            lambda self: self._get_exit_on_rate_limit(),
-            lambda self, value: self._set_exit_on_rate_limit(value)
+            lambda self: self._get_exit_on_rate_limit(), lambda self, value: self._set_exit_on_rate_limit(value)
         )
 
     def _get_exit_on_rate_limit(self):
@@ -31,7 +30,7 @@ class MockStream:
         ([{"id": 1}], None, True, {"id": 1}, False),  # Single record, with setter
         ([{"id": 1}, {"id": 2}], None, True, {"id": 1}, False),  # Multiple records, with setter
         ([], None, True, None, True),  # No records, with setter
-    ]
+    ],
 )
 def test_get_first_record_for_slice(records, stream_slice, exit_on_rate_limit, expected_result, raises_exception):
     stream = MockStream(records, exit_on_rate_limit)

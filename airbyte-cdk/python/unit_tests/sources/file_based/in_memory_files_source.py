@@ -16,7 +16,7 @@ import avro.schema as avro_schema
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
@@ -53,7 +53,7 @@ class InMemoryFilesSource(FileBasedSource):
         self.files = files
         self.file_type = file_type
         self.catalog = catalog
-        self.configured_catalog = ConfiguredAirbyteCatalog(streams=self.catalog["streams"]) if self.catalog else None
+        self.configured_catalog = ConfiguredAirbyteCatalogSerializer.load(self.catalog) if self.catalog else None
         self.config = config
         self.state = state
 
@@ -224,8 +224,8 @@ class TemporaryExcelFilesStreamReader(InMemoryFilesStreamReader):
         df = pd.DataFrame(contents)
 
         with io.BytesIO() as fp:
-            writer = pd.ExcelWriter(fp, engine='xlsxwriter')
-            df.to_excel(writer, index=False, sheet_name='Sheet1')
+            writer = pd.ExcelWriter(fp, engine="xlsxwriter")
+            df.to_excel(writer, index=False, sheet_name="Sheet1")
             writer._save()
             fp.seek(0)
             return fp.read()

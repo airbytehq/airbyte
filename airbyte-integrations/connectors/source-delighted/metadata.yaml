@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-delighted
   documentationUrl: https://docs.airbyte.com/integrations/sources/delighted
   githubIssueLabel: source-delighted

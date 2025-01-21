@@ -3,13 +3,12 @@ package io.airbyte.cdk.command
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.AirbyteStreamState
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -35,6 +34,8 @@ class InputStateFactory {
     ): InputState {
         val list: List<AirbyteStateMessage> =
             ValidatedJsonUtils.parseList(AirbyteStateMessage::class.java, json ?: "[]")
+                // Discard states messages with unset type to allow {} as a valid input state.
+                .filter { it.type != null }
         if (list.isEmpty()) {
             return EmptyInputState
         }
@@ -47,8 +48,7 @@ class InputStateFactory {
                     if (msg.stream == null) {
                         msg.type.toString()
                     } else {
-                        val desc: StreamDescriptor = msg.stream.streamDescriptor
-                        AirbyteStreamNameNamespacePair(desc.name, desc.namespace).toString()
+                        StreamIdentifier.from(msg.stream.streamDescriptor).toString()
                     }
                 }
                 .mapNotNull { (groupKey, groupValues) ->
@@ -60,7 +60,7 @@ class InputStateFactory {
                     }
                     groupValues.last()
                 }
-        val nonGlobalStreams: Map<AirbyteStreamNameNamespacePair, OpaqueStateValue> =
+        val nonGlobalStreams: Map<StreamIdentifier, OpaqueStateValue> =
             streamStates(deduped.mapNotNull { it.stream })
         val globalState: AirbyteGlobalState? =
             deduped.find { it.type == AirbyteStateMessage.AirbyteStateType.GLOBAL }?.global
@@ -72,30 +72,36 @@ class InputStateFactory {
                 globalState.sharedState,
                 OpaqueStateValue::class.java,
             )
-        val globalStreams: Map<AirbyteStreamNameNamespacePair, OpaqueStateValue> =
+        val globalStreams: Map<StreamIdentifier, OpaqueStateValue> =
             streamStates(globalState.streamStates)
         return GlobalInputState(globalStateValue, globalStreams, nonGlobalStreams)
     }
 
     private fun streamStates(
         streamStates: List<AirbyteStreamState>?,
-    ): Map<AirbyteStreamNameNamespacePair, OpaqueStateValue> =
+    ): Map<StreamIdentifier, OpaqueStateValue> =
         (streamStates ?: listOf()).associate { msg: AirbyteStreamState ->
-            val sd: StreamDescriptor = msg.streamDescriptor
-            val key = AirbyteStreamNameNamespacePair(sd.name, sd.namespace)
+            val streamID: StreamIdentifier = StreamIdentifier.from(msg.streamDescriptor)
             val jsonValue: JsonNode = msg.streamState ?: Jsons.objectNode()
-            key to ValidatedJsonUtils.parseUnvalidated(jsonValue, OpaqueStateValue::class.java)
+            streamID to ValidatedJsonUtils.parseUnvalidated(jsonValue, OpaqueStateValue::class.java)
         }
 
     private fun validateStateMessage(message: AirbyteStateMessage) {
         when (message.type) {
-            AirbyteStateMessage.AirbyteStateType.GLOBAL,
-            AirbyteStateMessage.AirbyteStateType.STREAM, -> Unit
-            AirbyteStateMessage.AirbyteStateType.LEGACY ->
-                throw ConfigErrorException("Unsupported LEGACY state type in $message.")
-            null -> throw ConfigErrorException("State type not set in $message.")
+            AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
+                if (message.global == null) {
+                    throw ConfigErrorException("global state not set in $message.")
+                }
+            }
+            AirbyteStateMessage.AirbyteStateType.STREAM -> {
+                if (message.stream == null) {
+                    throw ConfigErrorException("stream state not set in $message.")
+                }
+            }
+            else -> {
+                throw ConfigErrorException("Unsupported state type ${message.type} in $message.")
+            }
         }
-        // TODO: add more validation?
     }
 
     @Singleton

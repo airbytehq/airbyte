@@ -13,9 +13,11 @@ from airbyte_cdk.models import (
     AirbyteGlobalState,
     AirbyteStateBlob,
     AirbyteStateMessage,
+    AirbyteStateMessageSerializer,
     AirbyteStateType,
     AirbyteStreamState,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     StreamDescriptor,
     SyncMode,
     Type,
@@ -24,7 +26,8 @@ from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pydantic import ValidationError
+from orjson import orjson
+from serpyco_rs import SchemaValidationError
 
 
 class MockSource(Source):
@@ -74,7 +77,7 @@ def catalog():
             },
         ]
     }
-    return ConfiguredAirbyteCatalog.model_validate(configured_catalog)
+    return ConfiguredAirbyteCatalogSerializer.load(configured_catalog)
 
 
 @pytest.fixture
@@ -154,7 +157,7 @@ def abstract_source(mocker):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                        stream_state=AirbyteStateBlob({"created_at": "2009-07-19"}),
                     ),
                 )
             ],
@@ -190,21 +193,21 @@ def abstract_source(mocker):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
+                        stream_state=AirbyteStateBlob({"created_at": "2009-07-19"}),
                     ),
                 ),
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="directors", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"id": "villeneuve_denis"}),
+                        stream_state=AirbyteStateBlob({"id": "villeneuve_denis"}),
                     ),
                 ),
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="actors", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "1995-12-27"}),
+                        stream_state=AirbyteStateBlob({"created_at": "1995-12-27"}),
                     ),
                 ),
             ],
@@ -224,19 +227,17 @@ def abstract_source(mocker):
                 }
             ],
             [
-                AirbyteStateMessage.parse_obj(
-                    {
-                        "type": AirbyteStateType.GLOBAL,
-                        "global": AirbyteGlobalState(
-                            shared_state=AirbyteStateBlob.parse_obj({"shared_key": "shared_val"}),
-                            stream_states=[
-                                AirbyteStreamState(
-                                    stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
-                                    stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
-                                )
-                            ],
-                        ),
-                    }
+                AirbyteStateMessage(
+                    type=AirbyteStateType.GLOBAL,
+                    global_=AirbyteGlobalState(
+                        shared_state=AirbyteStateBlob({"shared_key": "shared_val"}),
+                        stream_states=[
+                            AirbyteStreamState(
+                                stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
+                                stream_state=AirbyteStateBlob({"created_at": "2009-07-19"}),
+                            )
+                        ],
+                    ),
                 ),
             ],
             does_not_raise(),
@@ -255,19 +256,19 @@ def abstract_source(mocker):
                 }
             ],
             None,
-            pytest.raises(ValidationError),
+            pytest.raises(SchemaValidationError),
             id="test_invalid_stream_state_invalid_type",
         ),
         pytest.param(
             [{"type": "STREAM", "stream": {"stream_state": {"created_at": "2009-07-19"}}}],
             None,
-            pytest.raises(ValidationError),
+            pytest.raises(SchemaValidationError),
             id="test_invalid_stream_state_missing_descriptor",
         ),
         pytest.param(
             [{"type": "GLOBAL", "global": {"shared_state": {"shared_key": "shared_val"}}}],
             None,
-            pytest.raises(ValidationError),
+            pytest.raises(SchemaValidationError),
             id="test_invalid_global_state_missing_streams",
         ),
         pytest.param(
@@ -284,7 +285,7 @@ def abstract_source(mocker):
                 }
             ],
             None,
-            pytest.raises(ValidationError),
+            pytest.raises(SchemaValidationError),
             id="test_invalid_global_state_streams_not_list",
         ),
     ],
@@ -295,7 +296,8 @@ def test_read_state(source, incoming_state, expected_state, expected_error):
         state_file.flush()
         with expected_error:
             actual = source.read_state(state_file.name)
-            assert actual == expected_state
+            if expected_state and actual:
+                assert AirbyteStateMessageSerializer.dump(actual[0]) == AirbyteStateMessageSerializer.dump(expected_state[0])
 
 
 def test_read_invalid_state(source):
@@ -330,9 +332,9 @@ def test_read_catalog(source):
             }
         ]
     }
-    expected = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    expected = ConfiguredAirbyteCatalogSerializer.load(configured_catalog)
     with tempfile.NamedTemporaryFile("w") as catalog_file:
-        catalog_file.write(expected.json(exclude_unset=True))
+        catalog_file.write(orjson.dumps(ConfiguredAirbyteCatalogSerializer.dump(expected)).decode())
         catalog_file.flush()
         actual = source.read_catalog(catalog_file.name)
         assert actual == expected

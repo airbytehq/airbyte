@@ -61,6 +61,8 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.0 | 2024-08-26 | [44776](https://github.com/airbytehq/airbyte/pull/44776) | Refactor connector to manifest-only format |
+| 0.1.17 | 2024-08-24 | [44727](https://github.com/airbytehq/airbyte/pull/44727) | Update dependencies |
 | 0.1.16 | 2024-08-17 | [44294](https://github.com/airbytehq/airbyte/pull/44294) | Update dependencies |
 | 0.1.15 | 2024-08-10 | [43626](https://github.com/airbytehq/airbyte/pull/43626) | Update dependencies |
 | 0.1.14 | 2024-08-03 | [43255](https://github.com/airbytehq/airbyte/pull/43255) | Update dependencies |

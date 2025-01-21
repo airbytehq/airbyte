@@ -310,7 +310,12 @@ def test_legacy_cursor_based_checkpoint_reader_resumable_full_refresh():
         {"parent_id": 400, "next_page_token": 2, "partition": {"parent_id": 400}, "cursor_slice": {"next_page_token": 2}},
         {"parent_id": 400, "next_page_token": 3, "partition": {"parent_id": 400}, "cursor_slice": {"next_page_token": 3}},
         {"parent_id": 400, "next_page_token": 4, "partition": {"parent_id": 400}, "cursor_slice": {"next_page_token": 4}},
-        {"parent_id": 400, "__ab_full_refresh_sync_complete": True, "partition": {"parent_id": 400}, "cursor_slice": {"__ab_full_refresh_sync_complete": True}},
+        {
+            "parent_id": 400,
+            "__ab_full_refresh_sync_complete": True,
+            "partition": {"parent_id": 400},
+            "cursor_slice": {"__ab_full_refresh_sync_complete": True},
+        },
     ]
 
     mocked_state = [

@@ -20,8 +20,8 @@ An Airbyte source for Breezy applicant tracking system.
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-08-20 | Initial release by natikgadzhi via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-08-20 | | Initial release by natikgadzhi via Connector Builder |
 
 </details>

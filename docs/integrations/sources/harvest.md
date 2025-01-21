@@ -91,6 +91,14 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                           |
 |:--------| :--------- | :------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.0 | 2024-10-14 | [46898](https://github.com/airbytehq/airbyte/pull/46898) | Promoting release candidate 1.1.0-rc1 to a main version. |
+| 1.1.0-rc1  | 2024-10-09 | [46685](https://github.com/airbytehq/airbyte/pull/46685) | Migrate to Manifest-only |
+| 1.0.19 | 2024-10-05 | [46470](https://github.com/airbytehq/airbyte/pull/46470) | Update dependencies |
+| 1.0.18 | 2024-09-28 | [46143](https://github.com/airbytehq/airbyte/pull/46143) | Update dependencies |
+| 1.0.17 | 2024-09-21 | [45835](https://github.com/airbytehq/airbyte/pull/45835) | Update dependencies |
+| 1.0.16 | 2024-09-14 | [45537](https://github.com/airbytehq/airbyte/pull/45537) | Update dependencies |
+| 1.0.15 | 2024-09-07 | [44986](https://github.com/airbytehq/airbyte/pull/44986) | Update dependencies |
+| 1.0.14 | 2024-08-24 | [44681](https://github.com/airbytehq/airbyte/pull/44681) | Update dependencies |
 | 1.0.13 | 2024-08-17 | [44263](https://github.com/airbytehq/airbyte/pull/44263) | Update dependencies |
 | 1.0.12 | 2024-08-10 | [43463](https://github.com/airbytehq/airbyte/pull/43463) | Update dependencies |
 | 1.0.11 | 2024-08-03 | [43123](https://github.com/airbytehq/airbyte/pull/43123) | Update dependencies |

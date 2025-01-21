@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: 5.8.0
 
 definitions:
   nested_selector:
@@ -111,6 +111,7 @@ definitions:
             stream: "#/definitions/item_stream"
             parent_key: "id"
             partition_field: "item_id"
+            incremental_dependency: true
     $parameters:
       name: "attached_item"
       primary_key: "id"
@@ -133,6 +134,7 @@ definitions:
             stream: "#/definitions/customer_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
       requester:
         $ref: "#/definitions/requester"
         error_handler:
@@ -360,6 +362,7 @@ definitions:
             stream: "#/definitions/quote_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
       requester:
         $ref: "#/definitions/requester"
         error_handler:

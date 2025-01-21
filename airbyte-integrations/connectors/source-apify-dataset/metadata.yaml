@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
-  dockerImageTag: 2.1.17
+  dockerImageTag: 2.1.26
   dockerRepository: airbyte/source-apify-dataset
   documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
   githubIssueLabel: source-apify-dataset

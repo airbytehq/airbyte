@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
-  dockerImageTag: 0.3.15
+  dockerImageTag: 0.3.22
   dockerRepository: airbyte/source-younium
   githubIssueLabel: source-younium
   icon: younium.svg

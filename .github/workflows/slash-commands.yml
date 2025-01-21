@@ -22,6 +22,7 @@ jobs:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           permission: write
           commands: |
+            bump-version
             format-fix
             test
             test-performance

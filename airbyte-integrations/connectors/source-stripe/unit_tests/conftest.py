@@ -13,6 +13,11 @@ os.environ["CACHE_DISABLED"] = "true"
 os.environ["DEPLOYMENT_MODE"] = "testing"
 
 
+def pytest_collection_modifyitems(items):
+    for item in items:
+        item.add_marker(pytest.mark.timeout(20))
+
+
 @pytest.fixture(name="config")
 def config_fixture():
     config = {"client_secret": "sk_test(live)_<secret>", "account_id": "<account_id>", "start_date": "2020-05-01T00:00:00Z"}

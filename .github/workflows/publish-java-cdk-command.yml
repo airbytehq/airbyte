@@ -165,7 +165,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
-          channel-id: C04J1M66D8B
+          channel-id: C07K1P3UL6Q # The `#dev-java-cdk-releases` channel
           payload: |
             {
                 "text": "Error during `publish-cdk` while publishing Java CDK!",
@@ -194,7 +194,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
-          channel-id: C04J1M66D8B
+          channel-id: C07K1P3UL6Q # The `#dev-java-cdk-releases` channel
           payload: |
             {
                 "text": "New `${{ env.CDK_VERSION }}` version of Java CDK was successfully published!",

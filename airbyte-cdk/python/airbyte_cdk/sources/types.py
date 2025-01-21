@@ -53,15 +53,27 @@ class Record(Mapping[str, Any]):
 
 
 class StreamSlice(Mapping[str, Any]):
-    def __init__(self, *, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]) -> None:
+    def __init__(
+        self, *, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any], extra_fields: Optional[Mapping[str, Any]] = None
+    ) -> None:
+        """
+        :param partition: The partition keys representing a unique partition in the stream.
+        :param cursor_slice: The incremental cursor slice keys, such as dates or pagination tokens.
+        :param extra_fields: Additional fields that should not be part of the partition but passed along, such as metadata from the parent stream.
+        """
         self._partition = partition
         self._cursor_slice = cursor_slice
+        self._extra_fields = extra_fields or {}
+
+        # Ensure that partition keys do not overlap with cursor slice keys
         if partition.keys() & cursor_slice.keys():
             raise ValueError("Keys for partition and incremental sync cursor should not overlap")
+
         self._stream_slice = dict(partition) | dict(cursor_slice)
 
     @property
     def partition(self) -> Mapping[str, Any]:
+        """Returns the partition portion of the stream slice."""
         p = self._partition
         while isinstance(p, StreamSlice):
             p = p.partition
@@ -69,10 +81,16 @@ class StreamSlice(Mapping[str, Any]):
 
     @property
     def cursor_slice(self) -> Mapping[str, Any]:
+        """Returns the cursor slice portion of the stream slice."""
         c = self._cursor_slice
         while isinstance(c, StreamSlice):
             c = c.cursor_slice
         return c
+
+    @property
+    def extra_fields(self) -> Mapping[str, Any]:
+        """Returns the extra fields that are not part of the partition."""
+        return self._extra_fields
 
     def __repr__(self) -> str:
         return repr(self._stream_slice)
@@ -114,3 +132,6 @@ class StreamSlice(Mapping[str, Any]):
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
+
+    def __json_serializable__(self) -> Any:
+        return self._stream_slice

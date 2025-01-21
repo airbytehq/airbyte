@@ -5,31 +5,19 @@
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_http_response_filter import DefaultHttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
-from airbyte_protocol.models import FailureType
 from requests import RequestException, Response
 
 
 @pytest.mark.parametrize(
     "http_code, expected_error_resolution",
     [
-        pytest.param(
-            403,
-            DEFAULT_ERROR_MAPPING[403],
-            id="403 mapping"
-        ),
-        pytest.param(
-            404,
-            DEFAULT_ERROR_MAPPING[404],
-            id="404 mapping"
-        ),
-        pytest.param(
-            408,
-            DEFAULT_ERROR_MAPPING[408],
-            id="408 mapping"
-        ),
+        pytest.param(403, DEFAULT_ERROR_MAPPING[403], id="403 mapping"),
+        pytest.param(404, DEFAULT_ERROR_MAPPING[404], id="404 mapping"),
+        pytest.param(408, DEFAULT_ERROR_MAPPING[408], id="408 mapping"),
     ],
 )
 def test_matches_mapped_http_status_code(http_code, expected_error_resolution):

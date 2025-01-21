@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 59c5501b-9f95-411e-9269-7143c939adbd
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.21
   dockerRepository: airbyte/source-bigcommerce
   documentationUrl: https://docs.airbyte.com/integrations/sources/bigcommerce
   githubIssueLabel: source-bigcommerce

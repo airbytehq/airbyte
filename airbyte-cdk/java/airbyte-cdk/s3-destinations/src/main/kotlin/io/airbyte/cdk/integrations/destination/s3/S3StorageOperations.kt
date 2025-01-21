@@ -45,6 +45,7 @@ open class S3StorageOperations(
     private val s3FilenameTemplateManager: S3FilenameTemplateManager = S3FilenameTemplateManager()
 
     private val partCounts: ConcurrentMap<String, AtomicInteger> = ConcurrentHashMap()
+    private val objectNameByPrefix: ConcurrentMap<String, Set<String>> = ConcurrentHashMap()
 
     override fun getBucketObjectPath(
         namespace: String?,
@@ -167,6 +168,32 @@ open class S3StorageOperations(
      * @return the uploaded filename, which is different from the serialized buffer filename
      * </extension></partId>
      */
+    @VisibleForTesting
+    fun getFileName(
+        objectPath: String,
+        recordsData: SerializableBuffer,
+    ): String {
+        var fullObjectKey: String
+        do {
+            val partId: String = getPartId(objectPath)
+            val fileExtension: String = getExtension(recordsData.filename)
+            fullObjectKey =
+                if (!s3Config.fileNamePattern.isNullOrBlank()) {
+                    s3FilenameTemplateManager.applyPatternToFilename(
+                        S3FilenameTemplateParameterObject.builder()
+                            .partId(partId)
+                            .recordsData(recordsData)
+                            .objectPath(objectPath)
+                            .fileExtension(fileExtension)
+                            .fileNamePattern(s3Config.fileNamePattern)
+                            .build(),
+                    )
+                } else {
+                    objectPath + partId + fileExtension
+                }
+        } while (objectNameByPrefix.getValue(objectPath).contains(fullObjectKey))
+        return fullObjectKey
+    }
     @Throws(IOException::class)
     private fun loadDataIntoBucket(
         objectPath: String,
@@ -175,22 +202,7 @@ open class S3StorageOperations(
     ): String {
         val partSize: Long = DEFAULT_PART_SIZE.toLong()
         val bucket: String? = s3Config.bucketName
-        val partId: String = getPartId(objectPath)
-        val fileExtension: String = getExtension(recordsData.filename)
-        val fullObjectKey: String =
-            if (!s3Config.fileNamePattern.isNullOrBlank()) {
-                s3FilenameTemplateManager.applyPatternToFilename(
-                    S3FilenameTemplateParameterObject.builder()
-                        .partId(partId)
-                        .recordsData(recordsData)
-                        .objectPath(objectPath)
-                        .fileExtension(fileExtension)
-                        .fileNamePattern(s3Config.fileNamePattern)
-                        .build(),
-                )
-            } else {
-                objectPath + partId + fileExtension
-            }
+        val fullObjectKey: String = getFileName(objectPath, recordsData)
         val metadata: MutableMap<String, String> = HashMap()
         for (blobDecorator: BlobDecorator in blobDecorators) {
             blobDecorator.updateMetadata(metadata, getMetadataMapping())
@@ -263,31 +275,14 @@ open class S3StorageOperations(
             ) {
                 AtomicInteger(0)
             }
-
-        if (partCount.get() == 0) {
-            var objects: ObjectListing?
-            var objectCount = 0
-
-            val bucket: String? = s3Config.bucketName
-            objects = s3Client.listObjects(bucket, objectPath)
-
-            if (objects != null) {
-                objectCount += objects.objectSummaries.size
-                while (objects != null && objects.nextMarker != null) {
-                    objects =
-                        s3Client.listObjects(
-                            ListObjectsRequest()
-                                .withBucketName(bucket)
-                                .withPrefix(objectPath)
-                                .withMarker(objects.nextMarker),
-                        )
-                    if (objects != null) {
-                        objectCount += objects.objectSummaries.size
-                    }
-                }
+        objectNameByPrefix.computeIfAbsent(
+            objectPath,
+        ) {
+            var objectList: Set<String> = setOf()
+            forObjectsByPage(objectPath) { objectSummaries ->
+                objectList = objectList + objectSummaries.map { it.key }
             }
-
-            partCount.set(objectCount)
+            objectList
         }
 
         return partCount.getAndIncrement().toString()

@@ -29,7 +29,7 @@ def generate_init_module_content() -> str:
 
 
 async def post_process_codegen(codegen_container: dagger.Container):
-    codegen_container = codegen_container.with_exec(["mkdir", "/generated_post_processed"])
+    codegen_container = codegen_container.with_exec(["mkdir", "/generated_post_processed"], use_entrypoint=True)
     for generated_file in await codegen_container.directory("/generated").entries():
         if generated_file.endswith(".py"):
             original_content = await codegen_container.file(f"/generated/{generated_file}").contents()
@@ -49,8 +49,8 @@ async def main():
         codegen_container = (
             dagger_client.container()
             .from_(PYTHON_IMAGE)
-            .with_exec(["mkdir", "/generated"])
-            .with_exec(["pip", "install", " ".join(PIP_DEPENDENCIES)])
+            .with_exec(["mkdir", "/generated"], use_entrypoint=True)
+            .with_exec(["pip", "install", " ".join(PIP_DEPENDENCIES)], use_entrypoint=True)
             .with_mounted_directory("/yaml", dagger_client.host().directory(LOCAL_YAML_DIR_PATH, include=["*.yaml"]))
             .with_new_file("/generated/__init__.py", contents=init_module_content)
         )
@@ -66,7 +66,8 @@ async def main():
                     "--enum-field-as-literal",
                     "one",
                     "--set-default-enum-member",
-                ]
+                ],
+                use_entrypoint=True,
             )
 
         await ((await post_process_codegen(codegen_container)).directory("/generated_post_processed").export(LOCAL_OUTPUT_DIR_PATH))

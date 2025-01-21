@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 4.2.3
+  dockerImageTag: 4.3.6
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   githubIssueLabel: source-tiktok-marketing

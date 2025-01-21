@@ -26,10 +26,12 @@ def test_given_ok_response_http_status_error_handler_returns_success_action(mock
     "error, expected_action, expected_failure_type, expected_error_message",
     [
         (403, ResponseAction.FAIL, FailureType.config_error, "Forbidden. You don't have permission to access this resource."),
-        (404, ResponseAction.FAIL, FailureType.system_error, "Not found. The requested resource was not found on the server.")
-    ]
+        (404, ResponseAction.FAIL, FailureType.system_error, "Not found. The requested resource was not found on the server."),
+    ],
 )
-def test_given_error_code_in_response_http_status_error_handler_returns_expected_actions(error, expected_action, expected_failure_type, expected_error_message):
+def test_given_error_code_in_response_http_status_error_handler_returns_expected_actions(
+    error, expected_action, expected_failure_type, expected_error_message
+):
     response = requests.Response()
     response.status_code = error
     error_resolution = HttpStatusErrorHandler(logger).interpret_response(response)
@@ -98,14 +100,10 @@ def test_given_injected_error_mapping_returns_expected_action():
     assert default_error_resolution.error_message == f"Unexpected HTTP Status Code in error handler: {mock_response.status_code}"
 
     mapped_error_resolution = ErrorResolution(
-            response_action=ResponseAction.IGNORE,
-            failure_type=FailureType.transient_error,
-            error_message="Injected mapping"
-        )
+        response_action=ResponseAction.IGNORE, failure_type=FailureType.transient_error, error_message="Injected mapping"
+    )
 
-    error_mapping = {
-        509: mapped_error_resolution
-    }
+    error_mapping = {509: mapped_error_resolution}
 
     actual_error_resolution = HttpStatusErrorHandler(logger, error_mapping).interpret_response(mock_response)
 

@@ -81,7 +81,7 @@ class TestUnitTests:
             "Total coverage:" in result.stdout
         ), "The pytest-cov package should be installed in the test environment and test coverage report should be displayed."
         assert "Required test coverage of" in result.stdout, "A test coverage threshold should be defined for certified connectors."
-        pip_freeze_output = await result.output.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
+        pip_freeze_output = await result.output.with_exec(["pip", "freeze"]).stdout()
         assert (
             context_for_certified_connector_with_setup.connector.technical_name in pip_freeze_output
         ), "The connector should be installed in the test environment."
@@ -94,7 +94,7 @@ class TestUnitTests:
         assert isinstance(result, StepResult)
         # We only check for the presence of "test session starts" because we have no guarantee that the tests will pass
         assert "test session starts" in result.stdout or "test session starts" in result.stderr, "The pytest tests should have started."
-        pip_freeze_output = await result.output.with_exec(["poetry", "run", "pip", "freeze"], skip_entrypoint=True).stdout()
+        pip_freeze_output = await result.output.with_exec(["poetry", "run", "pip", "freeze"]).stdout()
 
         assert (
             context_for_connector_with_poetry.connector.technical_name in pip_freeze_output
@@ -122,7 +122,7 @@ class TestPyAirbyteValidationTests:
     @pytest.fixture
     def context_for_valid_connector(self, compatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
-            pipeline_name="test pyairbyte validation",
+            pipeline_name="CLI smoke test with PyAirbyte",
             connector=compatible_connector,
             git_branch="test",
             git_revision="test",
@@ -138,7 +138,7 @@ class TestPyAirbyteValidationTests:
     @pytest.fixture
     def context_for_invalid_connector(self, incompatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
-            pipeline_name="test pyairbyte validation",
+            pipeline_name="CLI smoke test with PyAirbyte",
             connector=incompatible_connector,
             git_branch="test",
             git_revision="test",
@@ -155,7 +155,7 @@ class TestPyAirbyteValidationTests:
         result = await PyAirbyteValidation(context_for_valid_connector)._run(mocker.MagicMock())
         assert isinstance(result, StepResult)
         assert result.status == StepStatus.SUCCESS
-        assert "Creating source and validating spec is returned successfully..." in result.stdout
+        assert "Getting `spec` output from connector..." in result.stdout
 
     async def test__run_validation_skip_unpublished_connector(
         self,

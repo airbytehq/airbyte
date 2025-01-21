@@ -94,24 +94,32 @@ which will be translated for compatibility with the Glue Data Catalog:
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 |:--------| :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
-| 0.1.25  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                  |
-| 0.1.24  | 2024-08-17 | [44341](https://github.com/airbytehq/airbyte/pull/44341) | Update dependencies |
-| 0.1.23  | 2024-08-12 | [43822](https://github.com/airbytehq/airbyte/pull/43822) | Update dependencies |
-| 0.1.22  | 2024-08-10 | [43497](https://github.com/airbytehq/airbyte/pull/43497) | Update dependencies |
-| 0.1.21  | 2024-08-03 | [43139](https://github.com/airbytehq/airbyte/pull/43139) | Update dependencies |
-| 0.1.20  | 2024-07-27 | [42821](https://github.com/airbytehq/airbyte/pull/42821) | Update dependencies |
-| 0.1.19  | 2024-07-20 | [42174](https://github.com/airbytehq/airbyte/pull/42174) | Update dependencies |
-| 0.1.18  | 2024-07-13 | [41819](https://github.com/airbytehq/airbyte/pull/41819) | Update dependencies |
-| 0.1.17  | 2024-07-10 | [41590](https://github.com/airbytehq/airbyte/pull/41590) | Update dependencies |
-| 0.1.16  | 2024-07-09 | [41083](https://github.com/airbytehq/airbyte/pull/41083) | Update dependencies |
-| 0.1.15  | 2024-07-06 | [40907](https://github.com/airbytehq/airbyte/pull/40907) | Update dependencies |
-| 0.1.14  | 2024-06-29 | [40631](https://github.com/airbytehq/airbyte/pull/40631) | Update dependencies |
-| 0.1.13  | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
-| 0.1.12  | 2024-06-26 | [40535](https://github.com/airbytehq/airbyte/pull/40535) | Update dependencies |
-| 0.1.11  | 2024-06-25 | [40458](https://github.com/airbytehq/airbyte/pull/40458) | Update dependencies |
-| 0.1.10  | 2024-06-22 | [39958](https://github.com/airbytehq/airbyte/pull/39958) | Update dependencies |
-| 0.1.9   | 2024-06-04 | [39033](https://github.com/airbytehq/airbyte/pull/39033) | [autopull] Upgrade base image to v1.2.1 |
-| 0.1.8   | 2024-05-20 | [38413](https://github.com/airbytehq/airbyte/pull/38413) | [autopull] base image + poetry + up_to_date |
+| 0.1.33 | 2024-10-12 | [46790](https://github.com/airbytehq/airbyte/pull/46790) | Update dependencies |
+| 0.1.32 | 2024-10-05 | [46400](https://github.com/airbytehq/airbyte/pull/46400) | Update dependencies |
+| 0.1.31 | 2024-09-28 | [46126](https://github.com/airbytehq/airbyte/pull/46126) | Update dependencies |
+| 0.1.30 | 2024-09-21 | [45821](https://github.com/airbytehq/airbyte/pull/45821) | Update dependencies |
+| 0.1.29 | 2024-09-14 | [45533](https://github.com/airbytehq/airbyte/pull/45533) | Update dependencies |
+| 0.1.28 | 2024-09-07 | [45328](https://github.com/airbytehq/airbyte/pull/45328) | Update dependencies |
+| 0.1.27 | 2024-08-31 | [45032](https://github.com/airbytehq/airbyte/pull/45032) | Update dependencies |
+| 0.1.26 | 2024-08-24 | [44677](https://github.com/airbytehq/airbyte/pull/44677) | Update dependencies |
+| 0.1.25 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.1.24 | 2024-08-17 | [44341](https://github.com/airbytehq/airbyte/pull/44341) | Update dependencies |
+| 0.1.23 | 2024-08-12 | [43822](https://github.com/airbytehq/airbyte/pull/43822) | Update dependencies |
+| 0.1.22 | 2024-08-10 | [43497](https://github.com/airbytehq/airbyte/pull/43497) | Update dependencies |
+| 0.1.21 | 2024-08-03 | [43139](https://github.com/airbytehq/airbyte/pull/43139) | Update dependencies |
+| 0.1.20 | 2024-07-27 | [42821](https://github.com/airbytehq/airbyte/pull/42821) | Update dependencies |
+| 0.1.19 | 2024-07-20 | [42174](https://github.com/airbytehq/airbyte/pull/42174) | Update dependencies |
+| 0.1.18 | 2024-07-13 | [41819](https://github.com/airbytehq/airbyte/pull/41819) | Update dependencies |
+| 0.1.17 | 2024-07-10 | [41590](https://github.com/airbytehq/airbyte/pull/41590) | Update dependencies |
+| 0.1.16 | 2024-07-09 | [41083](https://github.com/airbytehq/airbyte/pull/41083) | Update dependencies |
+| 0.1.15 | 2024-07-06 | [40907](https://github.com/airbytehq/airbyte/pull/40907) | Update dependencies |
+| 0.1.14 | 2024-06-29 | [40631](https://github.com/airbytehq/airbyte/pull/40631) | Update dependencies |
+| 0.1.13 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.1.12 | 2024-06-26 | [40535](https://github.com/airbytehq/airbyte/pull/40535) | Update dependencies |
+| 0.1.11 | 2024-06-25 | [40458](https://github.com/airbytehq/airbyte/pull/40458) | Update dependencies |
+| 0.1.10 | 2024-06-22 | [39958](https://github.com/airbytehq/airbyte/pull/39958) | Update dependencies |
+| 0.1.9 | 2024-06-04 | [39033](https://github.com/airbytehq/airbyte/pull/39033) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.8 | 2024-05-20 | [38413](https://github.com/airbytehq/airbyte/pull/38413) | [autopull] base image + poetry + up_to_date |
 | `0.1.7` | 2024-04-29 | [#33853](https://github.com/airbytehq/airbyte/pull/33853)  | Enable STS Role Credential Refresh for Long Sync     |
 | `0.1.6` | 2024-03-22 | [#36386](https://github.com/airbytehq/airbyte/pull/36386)  | Support new state message protocol                   |
 | `0.1.5` | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)  | Add new ap-southeast-3 AWS region                    |

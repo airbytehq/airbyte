@@ -21,6 +21,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING, SchemaType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from orjson import orjson
 
 DIALECT_NAME = "_config_dialect"
 
@@ -52,7 +53,12 @@ class _CsvReader:
             quoting=csv.QUOTE_MINIMAL,
         )
         with stream_reader.open_file(file, file_read_mode, config_format.encoding, logger) as fp:
-            headers = self._get_headers(fp, config_format, dialect_name)
+            try:
+                headers = self._get_headers(fp, config_format, dialect_name)
+            except UnicodeError:
+                raise AirbyteTracedException(
+                    message=f"{FileBasedSourceError.ENCODING_ERROR.value} Expected encoding: {config_format.encoding}",
+                )
 
             rows_to_skip = (
                 config_format.skip_rows_before_header
@@ -274,7 +280,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _cast_types(
-        row: Dict[str, str], deduped_property_types: Dict[str, str], config_format: CsvFormat, logger: logging.Logger
+        row: Dict[str, str], deduped_property_types: Mapping[str, str], config_format: CsvFormat, logger: logging.Logger
     ) -> Dict[str, Any]:
         """
         Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
@@ -308,8 +314,8 @@ class CsvParser(FileTypeParser):
                 elif python_type == dict:
                     try:
                         # we don't re-use _value_to_object here because we type the column as object as long as there is only one object
-                        cast_value = json.loads(value)
-                    except json.JSONDecodeError:
+                        cast_value = orjson.loads(value)
+                    except orjson.JSONDecodeError:
                         warnings.append(_format_warning(key, value, prop_type))
 
                 elif python_type == list:

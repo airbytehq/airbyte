@@ -1,0 +1,235 @@
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+
+class AirbyteBulkConnectorExtension {
+
+    String core // 'extract' or 'load'
+    List<String> toolkits = []  // 'extract-jdbc', etc...
+    String cdk // 'local' or a specific version
+
+    AirbyteBulkConnectorExtension(Project project) {
+        this.project = project
+    }
+
+    private Project project
+
+    void setCore(String core) {
+        this.core = core
+        if (core != "extract" && core != "load") {
+            throw new IllegalArgumentException("'core' should be either 'extract' or 'load'")
+        }
+        if (cdk != null) {
+            throw new IllegalArgumentException("'core' should be defined before 'cdk'")
+        }
+    }
+
+    void setToolkits(List<String> toolkits) {
+        this.toolkits = toolkits
+        if (cdk != null) {
+            throw new IllegalArgumentException("'toolkits' should be defined before 'cdk'")
+        }
+    }
+
+    void setCdk(String cdk) {
+        this.cdk = cdk
+        if (cdk != "local" && !cdk.matches("^[0-9]+\\.[0-9]+")) {
+            throw new IllegalArgumentException("'cdk' should be either a well-formed version number or 'local'")
+        }
+
+        project.processResources {
+            // The metadata.yaml file is required by Micronaut.
+            from(project.projectDir) {
+                include 'metadata.yaml'
+                duplicatesStrategy DuplicatesStrategy.EXCLUDE
+            }
+        }
+
+        List<Project> fromSource = []
+        List<String> fromJar = []
+        if (cdk == "local") {
+            fromSource = [
+                    project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-base"),
+                    project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-$core"),
+            ]
+            for (toolkit in toolkits) {
+                fromSource << project.project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-$toolkit")
+            }
+        } else {
+            fromJar = [
+                    "io.airbyte.bulk-cdk:bulk-cdk-core-base:$cdk",
+                    "io.airbyte.bulk-cdk:bulk-cdk-core-$core:$cdk",
+            ]
+            for (toolkit in toolkits) {
+                fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit:$cdk"
+            }
+        }
+
+        String micronautVersion = null
+        // Use a temporary configuration to find the Micronaut version
+        // in the transitive dependencies of the Bulk CDK base.
+        def tempConfiguration = project.configurations.detachedConfiguration()
+        def baseDependency = (cdk == "local")
+                ? project.dependencies.create(fromSource.first)
+                : project.dependencies.create(fromJar.first)
+        tempConfiguration.dependencies.add(baseDependency)
+        tempConfiguration.resolvedConfiguration.firstLevelModuleDependencies.each {resolvedDependency ->
+            resolvedDependency.children.each { transitiveDependency ->
+                if (micronautVersion == null &&
+                        transitiveDependency.moduleGroup == TARGET_GROUP &&
+                        transitiveDependency.moduleName == TARGET_MODULE) {
+                    micronautVersion = transitiveDependency.moduleVersion
+                }
+            }
+        }
+        if (micronautVersion == null) {
+            throw new IllegalArgumentException(
+                    "Micronaut version number not found; $TARGET_GROUP:$TARGET_MODULE is not a transitive dependency."
+            )
+        }
+        final String kspDependency = "io.micronaut:micronaut-inject-kotlin:$micronautVersion"
+
+        final boolean isDestination = project.name.startsWith('destination-')
+        project.dependencies {
+            ksp kspDependency
+            kspTestFixtures kspDependency
+            kspTest kspDependency
+
+            for (dep in fromSource) {
+                implementation dep
+                testFixturesImplementation dep
+                testFixturesImplementation testFixtures(dep)
+                testImplementation dep
+                testImplementation testFixtures(dep)
+                if (isDestination) {
+                    integrationTestImplementation dep
+                    integrationTestImplementation testFixtures(dep)
+                    integrationTestLegacyImplementation dep
+                    integrationTestLegacyImplementation testFixtures(dep)
+                }
+            }
+            for (dep in fromJar) {
+                implementation dep
+                testFixturesImplementation dep
+                testFixturesImplementation testFixtures(dep)
+                testImplementation dep
+                testImplementation testFixtures(dep)
+                if (isDestination) {
+                    integrationTestImplementation dep
+                    integrationTestImplementation testFixtures(dep)
+                    integrationTestLegacyImplementation dep
+                    integrationTestLegacyImplementation testFixtures(dep)
+                }
+            }
+        }
+    }
+
+    static private final String TARGET_GROUP = "io.micronaut"
+    static private final String TARGET_MODULE = "micronaut-runtime"
+}
+
+class AirbyteBulkConnectorPlugin implements Plugin<Project> {
+
+    @Override
+    void apply(Project project) {
+
+        project.plugins.apply('application')
+
+        project.application {
+            applicationDefaultJvmArgs = [
+                    '-XX:+ExitOnOutOfMemoryError',
+                    '-XX:InitialRAMPercentage=75.0',
+                    '-XX:MaxRAMPercentage=75.0',
+            ]
+        }
+
+        if (project.name.startsWith('destination-')) {
+            project.sourceSets {
+                // This is the source set where most of our integration tests should live.
+                integrationTest {
+                    kotlin {
+                        srcDir 'src/test-integration/kotlin'
+                    }
+                    resources {
+                        srcDir 'src/test-integration/resources'
+                    }
+                }
+                // This source set should only be used for tests based on the old CDK's test classes,
+                // in particular DestinationAcceptanceTest / BaseTypingDedupingTest.
+                integrationTestLegacy {
+                    kotlin {
+                        srcDir 'src/test-integration-legacy/kotlin'
+                    }
+                    resources {
+                        srcDir 'src/test-integration-legacy/resources'
+                    }
+                }
+            }
+
+            // This task exists solely so that we can run the "modern" integration tests
+            // in non-docker mode on our laptops.
+            // It's not a dependency of any other task.
+            project.tasks.register('integrationTestNonDocker', Test) {
+                description = 'Runs the integration tests in non-docker mode.'
+                group = 'verification'
+                testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
+                classpath = project.sourceSets.integrationTest.runtimeClasspath
+                useJUnitPlatform()
+
+                jvmArgs = project.test.jvmArgs
+                systemProperties = project.test.systemProperties
+                maxParallelForks = project.test.maxParallelForks
+                maxHeapSize = project.test.maxHeapSize
+            }
+
+            // For historical reasons (i.e. airbyte-ci), this task is called integrationTestJava.
+            // airbyte-ci only wants to run a task with exactly that name.
+            // There's intentionally no equivalent to run integrationTestNonDocker + integrationTestLegacy.
+            // It's an actual Test task (rather than just depending on two sub-tasks integrationTestDocker + integrationTestLegacy)
+            // so that gradle args (e.g. `--tests`) work as expected.
+            project.tasks.register('integrationTestJava', Test) {
+                description = 'Runs the integration tests in docker mode.'
+                group = 'verification'
+                testClassesDirs = project.sourceSets.integrationTest.output.classesDirs + project.sourceSets.integrationTestLegacy.output.classesDirs
+                classpath = project.sourceSets.integrationTest.runtimeClasspath + project.sourceSets.integrationTestLegacy.runtimeClasspath
+                useJUnitPlatform()
+                // We need a docker image to run this task, so depend on assemble
+                dependsOn project.tasks.assemble
+                environment "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", "docker"
+
+                jvmArgs = project.test.jvmArgs
+                systemProperties = project.test.systemProperties
+                maxParallelForks = project.test.maxParallelForks
+                maxHeapSize = project.test.maxHeapSize
+            }
+
+            project.dependencies {
+                // integration tests depend on the runtime code
+                integrationTestImplementation project
+                integrationTestLegacyImplementation project
+            }
+
+            project.tasks.named('build').configure {
+                dependsOn project.tasks.integrationTestJava
+            }
+        }
+
+        project.tasks.matching {
+                it.name == 'spotbugsIntegrationTestLegacy' ||
+                it.name == 'spotbugsIntegrationTest' ||
+                it.name == 'spotbugsTest'
+            }.configureEach {
+            enabled = false
+        }
+
+        project.tasks.named('check').configure {
+            dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
+        }
+
+        project.configurations {
+            testFixturesImplementation.extendsFrom implementation
+            testFixturesRuntimeOnly.extendsFrom runtimeOnly
+        }
+
+        project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
+    }
+}

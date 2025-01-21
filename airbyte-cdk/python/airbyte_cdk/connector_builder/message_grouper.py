@@ -18,13 +18,7 @@ from airbyte_cdk.connector_builder.models import (
     StreamReadSlices,
 )
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
-from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_cdk.sources.utils.types import JsonType
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
-from airbyte_cdk.utils.schema_inferrer import SchemaInferrer, SchemaValidationException
-from airbyte_protocol.models.airbyte_protocol import (
+from airbyte_cdk.models import (
     AirbyteControlMessage,
     AirbyteLogMessage,
     AirbyteMessage,
@@ -34,7 +28,13 @@ from airbyte_protocol.models.airbyte_protocol import (
     OrchestratorType,
     TraceType,
 )
-from airbyte_protocol.models.airbyte_protocol import Type as MessageType
+from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.sources.utils.types import JsonType
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
+from airbyte_cdk.utils.schema_inferrer import SchemaInferrer, SchemaValidationException
 
 
 class MessageGrouper:
@@ -182,19 +182,19 @@ class MessageGrouper:
             if (
                 at_least_one_page_in_group
                 and message.type == MessageType.LOG
-                and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX)
+                and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX)  # type: ignore[union-attr] # AirbyteMessage with MessageType.LOG has log.message
             ):
                 yield StreamReadSlices(
                     pages=current_slice_pages,
                     slice_descriptor=current_slice_descriptor,
                     state=[latest_state_message] if latest_state_message else [],
                 )
-                current_slice_descriptor = self._parse_slice_description(message.log.message)
+                current_slice_descriptor = self._parse_slice_description(message.log.message)  # type: ignore[union-attr] # AirbyteMessage with MessageType.LOG has log.message
                 current_slice_pages = []
                 at_least_one_page_in_group = False
-            elif message.type == MessageType.LOG and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX):
+            elif message.type == MessageType.LOG and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX):  # type: ignore[union-attr] # AirbyteMessage with MessageType.LOG has log.message
                 # parsing the first slice
-                current_slice_descriptor = self._parse_slice_description(message.log.message)
+                current_slice_descriptor = self._parse_slice_description(message.log.message)  # type: ignore[union-attr] # AirbyteMessage with MessageType.LOG has log.message
             elif message.type == MessageType.LOG:
                 if json_message is not None and self._is_http_log(json_message):
                     if self._is_auxiliary_http_request(json_message):
@@ -221,17 +221,17 @@ class MessageGrouper:
                 else:
                     yield message.log
             elif message.type == MessageType.TRACE:
-                if message.trace.type == TraceType.ERROR:
+                if message.trace.type == TraceType.ERROR:  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has trace.type
                     yield message.trace
             elif message.type == MessageType.RECORD:
-                current_page_records.append(message.record.data)
+                current_page_records.append(message.record.data)  # type: ignore[union-attr] # AirbyteMessage with MessageType.RECORD has record.data
                 records_count += 1
                 schema_inferrer.accumulate(message.record)
                 datetime_format_inferrer.accumulate(message.record)
-            elif message.type == MessageType.CONTROL and message.control.type == OrchestratorType.CONNECTOR_CONFIG:
+            elif message.type == MessageType.CONTROL and message.control.type == OrchestratorType.CONNECTOR_CONFIG:  # type: ignore[union-attr] # AirbyteMessage with MessageType.CONTROL has control.type
                 yield message.control
             elif message.type == MessageType.STATE:
-                latest_state_message = message.state
+                latest_state_message = message.state  # type: ignore[assignment]
         else:
             if current_page_request or current_page_response or current_page_records:
                 self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
@@ -246,7 +246,7 @@ class MessageGrouper:
         return (
             at_least_one_page_in_group
             and message.type == MessageType.LOG
-            and (MessageGrouper._is_page_http_request(json_message) or message.log.message.startswith("slice:"))
+            and (MessageGrouper._is_page_http_request(json_message) or message.log.message.startswith("slice:"))  # type: ignore[union-attr] # AirbyteMessage with MessageType.LOG has log.message
         )
 
     @staticmethod

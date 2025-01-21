@@ -32,6 +32,14 @@ You need a n8n instance or use cloud version
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.2.0  | 2024-10-06 | [46520](https://github.com/airbytehq/airbyte/pull/46520) | Migrate to Manifest-only |
+| 0.1.21 | 2024-10-05 | [46407](https://github.com/airbytehq/airbyte/pull/46407) | Update dependencies |
+| 0.1.20 | 2024-09-28 | [46125](https://github.com/airbytehq/airbyte/pull/46125) | Update dependencies |
+| 0.1.19 | 2024-09-21 | [45745](https://github.com/airbytehq/airbyte/pull/45745) | Update dependencies |
+| 0.1.18 | 2024-09-14 | [45507](https://github.com/airbytehq/airbyte/pull/45507) | Update dependencies |
+| 0.1.17 | 2024-09-07 | [45271](https://github.com/airbytehq/airbyte/pull/45271) | Update dependencies |
+| 0.1.16 | 2024-08-31 | [45042](https://github.com/airbytehq/airbyte/pull/45042) | Update dependencies |
+| 0.1.15 | 2024-08-24 | [44695](https://github.com/airbytehq/airbyte/pull/44695) | Update dependencies |
 | 0.1.14 | 2024-08-17 | [44314](https://github.com/airbytehq/airbyte/pull/44314) | Update dependencies |
 | 0.1.13 | 2024-08-12 | [43862](https://github.com/airbytehq/airbyte/pull/43862) | Update dependencies |
 | 0.1.12 | 2024-08-10 | [43499](https://github.com/airbytehq/airbyte/pull/43499) | Update dependencies |

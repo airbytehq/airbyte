@@ -65,6 +65,11 @@ RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT = [
             [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}],
             [{"id": 3, "created_at": "06-08-21"}],
         ),
+        (
+            "{{ record['created_at'] > stream_slice.extra_fields['created_at'] }}",
+            [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}],
+            [{"id": 3, "created_at": "06-08-21"}],
+        ),
     ],
     ids=[
         "test_using_state_filter",
@@ -72,13 +77,14 @@ RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT = [
         "test_with_next_page_token_filter",
         "test_missing_filter_fields_return_no_results",
         "test_using_parameters_filter",
+        "test_using_extra_fields_filter",
     ],
 )
 def test_record_filter(filter_template: str, records: List[Mapping], expected_records: List[Mapping]):
     config = {"response_override": "stop_if_you_see_me"}
     parameters = {"created_at": "06-07-21"}
     stream_state = {"created_at": "06-06-21"}
-    stream_slice = {"last_seen": "06-10-21"}
+    stream_slice = StreamSlice(partition={}, cursor_slice={"last_seen": "06-10-21"}, extra_fields={"created_at": "06-07-21"})
     next_page_token = {"last_seen_id": 14}
     record_filter = RecordFilter(config=config, condition=filter_template, parameters=parameters)
 

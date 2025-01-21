@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.4@sha256:b07a521add11f987c63c0db68c1b57e90bec0c985f1cb6f3c5a1940cde628a70
   connectorSubtype: api
   connectorType: source
   definitionId: 2446953b-b794-429b-a9b3-c821ba992a48
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-twilio-taskrouter
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio-taskrouter
   githubIssueLabel: source-twilio-taskrouter
@@ -22,12 +22,12 @@ data:
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-twilio-taskrouter
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

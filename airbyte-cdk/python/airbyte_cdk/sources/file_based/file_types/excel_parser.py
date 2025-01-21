@@ -17,6 +17,7 @@ from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 from numpy import datetime64
 from numpy import dtype as dtype_
 from numpy import issubdtype
+from orjson import orjson
 from pydantic.v1 import BaseModel
 
 
@@ -97,7 +98,10 @@ class ExcelParser(FileTypeParser):
             with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
                 df = self.open_and_parse_file(fp)
                 # Yield records as dictionaries
-                yield from df.to_dict(orient="records")
+                # DataFrame.to_dict() method returns datetime values in pandas.Timestamp values, which are not serializable by orjson
+                # DataFrame.to_json() returns string with datetime values serialized to iso8601 with microseconds to align with pydantic behavior
+                # see PR description: https://github.com/airbytehq/airbyte/pull/44444/
+                yield from orjson.loads(df.to_json(orient="records", date_format="iso", date_unit="us"))
 
         except Exception as exc:
             # Raise a RecordParseError if any exception occurs during parsing

@@ -115,6 +115,7 @@ class VersionIncrementCheck(VersionCheck):
         "src/test-performance",
         "build.gradle",
         "erd",
+        "build_customization.py",
     ]
 
     @property
@@ -299,7 +300,7 @@ class AcceptanceTests(Step):
         connector_container_id = await connector_under_test_container.id()
         cat_container = (
             cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
-            .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
+            .with_exec(["mkdir", "/dagger_share"])
             .with_env_variable("CACHEBUSTER", self.get_cache_buster())
             .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
             .with_workdir("/test_input")
@@ -691,9 +692,9 @@ class LiveTests(Step):
             # Outside of CI we use ssh to get the connection-retriever package from airbyte-platform-internal
             container_requirements += ["openssh-client"]
         container = (
-            container.with_exec(["apt-get", "update"])
+            container.with_exec(["apt-get", "update"], use_entrypoint=True)
             .with_exec(container_requirements)
-            .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"])
+            .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"], use_entrypoint=True)
             .with_env_variable("PATH", "/root/google-cloud-sdk/bin:$PATH", expand=True)
             .with_mounted_directory("/app", self.context.live_tests_dir)
             .with_workdir("/app")
@@ -715,16 +716,15 @@ class LiveTests(Step):
 
         if self.context.is_ci:
             container = (
-                container
-                # In CI, use https to get the connection-retriever package from airbyte-platform-internal instead of ssh
-                .with_exec(
+                container.with_exec(
                     [
                         "sed",
                         "-i",
                         "-E",
                         rf"s,git@github\.com:{self.platform_repo_url},https://github.com/{self.platform_repo_url}.git,",
                         "pyproject.toml",
-                    ]
+                    ],
+                    use_entrypoint=True,
                 )
                 .with_exec(
                     [
@@ -734,7 +734,8 @@ class LiveTests(Step):
                         "--priority=supplemental",
                         "airbyte-platform-internal-source",
                         "https://github.com/airbytehq/airbyte-platform-internal.git",
-                    ]
+                    ],
+                    use_entrypoint=True,
                 )
                 .with_secret_variable(
                     "CI_GITHUB_ACCESS_TOKEN",
@@ -747,10 +748,11 @@ class LiveTests(Step):
                         "/bin/sh",
                         "-c",
                         f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $CI_GITHUB_ACCESS_TOKEN",
-                    ]
+                    ],
+                    use_entrypoint=True,
                 )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)
-                .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
+                .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS", ""))
                 .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
                 .with_exec(
                     [
@@ -758,15 +760,10 @@ class LiveTests(Step):
                         "-o",
                         "cloud-sql-proxy",
                         "https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64",
-                    ]
+                    ],
+                    use_entrypoint=True,
                 )
-                .with_exec(
-                    [
-                        "chmod",
-                        "+x",
-                        "cloud-sql-proxy",
-                    ]
-                )
+                .with_exec(["chmod", "+x", "cloud-sql-proxy"], use_entrypoint=True)
                 .with_env_variable("CI", "1")
             )
 
@@ -780,5 +777,7 @@ class LiveTests(Step):
                 )
             )
 
-        container = container.with_exec(["poetry", "lock", "--no-update"]).with_exec(["poetry", "install"])
+        container = container.with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True).with_exec(
+            ["poetry", "install"], use_entrypoint=True
+        )
         return container

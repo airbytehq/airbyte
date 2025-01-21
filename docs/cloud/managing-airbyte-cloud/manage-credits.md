@@ -4,15 +4,33 @@ products: cloud
 
 # Manage credits
 
-Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resources when you run a sync. You can purchase credits on Airbyte Cloud to keep your data flowing without interruption.
+Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resources when you run a sync. Credits are purchased on Airbyte Cloud to keep your data flowing without interruption.
+
+## What are credits?
+
+Airbyte uses credits to unify pricing across multiple types of sources. You can refer to the below table to understand how pricing differs across each source.
+
+|Source Type| Billing Type| Price| Credit Equivalent|
+|-|-|-|-|
+|APIs | Rows| $15 per million rows| 6 credits|
+|Databases| GB | $10 per GB| 4 credits|
+|Files| GB | $10 per GB| 4 credits|
+|Custom sources| Rows | $15 per million rows| 6 credits|
+
+The standard price for a credit is $2.50. 
+
+For APIs and custom sources, most syncs will sync incrementally, so the row amount will typically be those rows added, edited, or deleted. For Full Refresh syncs, every row synced will be charged. 
+
+For Databases and File sources, Airbyte measures the data volume observed by the Airbyte Platform during the sync to determine data volumes. When the data is in transit, it is serialized to Airbyte Protocol format records. This is likely to be a larger representation of your data than you would see if you were to query your database directly, and varies depending on how your database stores and compresses data.
 
 ## Buy credits
+You can purchase credits anytime directly through your Airbyte workspace with a credit card. 
 
 1. To purchase credits directly through the UI, click **Billing** in the left-hand sidebar. The billing page displays the available credits, total credit usage, and the credit usage per connection.
 
    :::tip
 
-   If you are unsure of how many credits you need, use our [Cost Estimator](https://www.airbyte.com/pricing) or click **Talk to Sales** to find the right amount for your team.
+   If you are unsure of how many credits you need, use our [Cost Estimator](https://www.airbyte.com/pricing) or [Talk to Sales](https://airbyte.com/company/talk-to-sales) to find the right amount for your team.
 
    :::
 

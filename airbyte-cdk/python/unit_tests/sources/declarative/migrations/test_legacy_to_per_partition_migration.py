@@ -23,12 +23,8 @@ transformer = ManifestComponentTransformer()
 
 def test_migrate_a_valid_legacy_state_to_per_partition():
     input_state = {
-        "13506132": {
-            "last_changed": "2022-12-27T08:34:39+00:00"
-        },
-        "14351124": {
-            "last_changed": "2022-12-27T08:35:39+00:00"
-        },
+        "13506132": {"last_changed": "2022-12-27T08:34:39+00:00"},
+        "14351124": {"last_changed": "2022-12-27T08:35:39+00:00"},
     }
 
     migrator = _migrator()
@@ -37,14 +33,8 @@ def test_migrate_a_valid_legacy_state_to_per_partition():
 
     expected_state = {
         "states": [
-            {
-                "partition": {"parent_id": "13506132"},
-                "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
-            },
-            {
-                "partition": {"parent_id": "14351124"},
-                "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}
-            },
+            {"partition": {"parent_id": "13506132"}, "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}},
+            {"partition": {"parent_id": "14351124"}, "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}},
         ]
     }
 
@@ -52,115 +42,88 @@ def test_migrate_a_valid_legacy_state_to_per_partition():
 
 
 @pytest.mark.parametrize(
-    "input_state",  [
-        pytest.param({
-            "states": [
-                {
-                    "partition": {"id": "13506132"},
-                    "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
-                },
-                {
-                    "partition": {"id": "14351124"},
-                    "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}
-                },
-            ]
-        }, id="test_should_not_migrate_a_per_partition_state"),
-        pytest.param({
-            "states": [
-                {
-                    "partition": {"id": "13506132"},
-                    "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
-                },
-                {
-                    "partition": {"id": "14351124"},
-                },
-            ]
-        }, id="test_should_not_migrate_state_without_a_cursor_component"),
-        pytest.param({
-            "states": [
-                {
-                    "partition": {"id": "13506132"},
-                    "cursor": {"updated_at": "2022-12-27T08:34:39+00:00"}
-                },
-                {
-                    "partition": {"id": "14351124"},
-                    "cursor": {"updated_at": "2022-12-27T08:35:39+00:00"}
-                },
-            ]
-        }, id="test_should_not_migrate_a_per_partition_state_with_wrong_cursor_field"),
-        pytest.param({
-            "states": [
-                {
-                    "partition": {"id": "13506132"},
-                    "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
-                },
-                {
-                    "partition": {"id": "14351124"},
-                    "cursor": {"last_changed": "2022-12-27T08:35:39+00:00", "updated_at": "2021-01-01"}
-                },
-            ]
-        }, id="test_should_not_migrate_a_per_partition_state_with_multiple_cursor_fields"),
+    "input_state",
+    [
         pytest.param(
             {
                 "states": [
-                    {
-                        "partition": {"id": "13506132"},
-                        "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
-                    },
-                    {
-                        "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
-                    },
+                    {"partition": {"id": "13506132"}, "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}},
+                    {"partition": {"id": "14351124"}, "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}},
                 ]
-            }, id="test_should_not_migrate_state_without_a_partition_component"
-        ),
-        pytest.param(
-            {
-                "states": [
-                    {
-                        "partition": {"id": "13506132", "another_id": "A"},
-                        "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
-                    },
-                    {
-                        "partition": {"id": "13506134"},
-                        "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
-                    },
-                ]
-            }, id="test_should_not_migrate_state_if_multiple_partition_keys"
-        ),
-        pytest.param(
-            {
-                "states": [
-                    {
-                        "partition": {"identifier": "13506132"},
-                        "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
-                    },
-                    {
-                        "partition": {"id": "13506134"},
-                        "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
-                    },
-                ]
-            }, id="test_should_not_migrate_state_if_invalid_partition_key"
-        ),
-        pytest.param(
-            {
-                "13506132": {
-                    "last_changed": "2022-12-27T08:34:39+00:00"
-                },
-                "14351124": {
-                    "last_changed": "2022-12-27T08:35:39+00:00",
-                    "another_key": "2022-12-27T08:35:39+00:00"
-                },
-            }, id="test_should_not_migrate_if_the_partitioned_state_has_more_than_one_key"
-        ),
-        pytest.param({
-            "13506132": {
-                "last_changed": "2022-12-27T08:34:39+00:00"
             },
-            "14351124": {
-                "another_key": "2022-12-27T08:35:39+00:00"
+            id="test_should_not_migrate_a_per_partition_state",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {"partition": {"id": "13506132"}, "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}},
+                    {
+                        "partition": {"id": "14351124"},
+                    },
+                ]
             },
-        }, id="test_should_not_migrate_if_the_partitioned_state_key_is_not_the_cursor_field"),
-    ]
+            id="test_should_not_migrate_state_without_a_cursor_component",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {"partition": {"id": "13506132"}, "cursor": {"updated_at": "2022-12-27T08:34:39+00:00"}},
+                    {"partition": {"id": "14351124"}, "cursor": {"updated_at": "2022-12-27T08:35:39+00:00"}},
+                ]
+            },
+            id="test_should_not_migrate_a_per_partition_state_with_wrong_cursor_field",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {"partition": {"id": "13506132"}, "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}},
+                    {"partition": {"id": "14351124"}, "cursor": {"last_changed": "2022-12-27T08:35:39+00:00", "updated_at": "2021-01-01"}},
+                ]
+            },
+            id="test_should_not_migrate_a_per_partition_state_with_multiple_cursor_fields",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {"partition": {"id": "13506132"}, "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}},
+                    {"cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}},
+                ]
+            },
+            id="test_should_not_migrate_state_without_a_partition_component",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {"partition": {"id": "13506132", "another_id": "A"}, "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}},
+                    {"partition": {"id": "13506134"}, "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}},
+                ]
+            },
+            id="test_should_not_migrate_state_if_multiple_partition_keys",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {"partition": {"identifier": "13506132"}, "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}},
+                    {"partition": {"id": "13506134"}, "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}},
+                ]
+            },
+            id="test_should_not_migrate_state_if_invalid_partition_key",
+        ),
+        pytest.param(
+            {
+                "13506132": {"last_changed": "2022-12-27T08:34:39+00:00"},
+                "14351124": {"last_changed": "2022-12-27T08:35:39+00:00", "another_key": "2022-12-27T08:35:39+00:00"},
+            },
+            id="test_should_not_migrate_if_the_partitioned_state_has_more_than_one_key",
+        ),
+        pytest.param(
+            {
+                "13506132": {"last_changed": "2022-12-27T08:34:39+00:00"},
+                "14351124": {"another_key": "2022-12-27T08:35:39+00:00"},
+            },
+            id="test_should_not_migrate_if_the_partitioned_state_key_is_not_the_cursor_field",
+        ),
+    ],
 )
 def test_should_not_migrate(input_state):
     migrator = _migrator()
@@ -169,12 +132,8 @@ def test_should_not_migrate(input_state):
 
 def test_should_not_migrate_stream_with_multiple_parent_streams():
     input_state = {
-        "13506132": {
-            "last_changed": "2022-12-27T08:34:39+00:00"
-        },
-        "14351124": {
-            "last_changed": "2022-12-27T08:35:39+00:00"
-        },
+        "13506132": {"last_changed": "2022-12-27T08:34:39+00:00"},
+        "14351124": {"last_changed": "2022-12-27T08:35:39+00:00"},
     }
 
     migrator = _migrator_with_multiple_parent_streams()
@@ -191,14 +150,10 @@ def _migrator():
                 parent_key="{{ parameters['parent_key_id'] }}",
                 partition_field="parent_id",
                 stream=DeclarativeStream(
-                    type="DeclarativeStream",
-                    retriever=CustomRetriever(
-                        type="CustomRetriever",
-                        class_name="a_class_name"
-                    )
-                )
+                    type="DeclarativeStream", retriever=CustomRetriever(type="CustomRetriever", class_name="a_class_name")
+                ),
             )
-        ]
+        ],
     )
     cursor = DatetimeBasedCursor(
         type="DatetimeBasedCursor",
@@ -220,26 +175,18 @@ def _migrator_with_multiple_parent_streams():
                 parent_key="id",
                 partition_field="parent_id",
                 stream=DeclarativeStream(
-                    type="DeclarativeStream",
-                    retriever=CustomRetriever(
-                        type="CustomRetriever",
-                        class_name="a_class_name"
-                    )
-                )
+                    type="DeclarativeStream", retriever=CustomRetriever(type="CustomRetriever", class_name="a_class_name")
+                ),
             ),
             ParentStreamConfig(
                 type="ParentStreamConfig",
                 parent_key="id",
                 partition_field="parent_id",
                 stream=DeclarativeStream(
-                    type="DeclarativeStream",
-                    retriever=CustomRetriever(
-                        type="CustomRetriever",
-                        class_name="a_class_name"
-                    )
-                )
+                    type="DeclarativeStream", retriever=CustomRetriever(type="CustomRetriever", class_name="a_class_name")
+                ),
             ),
-        ]
+        ],
     )
     cursor = DatetimeBasedCursor(
         type="DatetimeBasedCursor",
@@ -256,10 +203,28 @@ def _migrator_with_multiple_parent_streams():
     "retriever_type, partition_router_class, is_parent_stream_config, expected_exception, expected_error_message",
     [
         (SimpleRetriever, CustomPartitionRouter, True, None, None),
-        (None, CustomPartitionRouter, True, ValueError, "LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got <class 'unittest.mock.MagicMock'>"),
-        (SimpleRetriever, None, False, ValueError, "LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got <class 'NoneType'>"),
-        (SimpleRetriever, CustomPartitionRouter, False, ValueError, "LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration."),
-    ]
+        (
+            None,
+            CustomPartitionRouter,
+            True,
+            ValueError,
+            "LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got <class 'unittest.mock.MagicMock'>",
+        ),
+        (
+            SimpleRetriever,
+            None,
+            False,
+            ValueError,
+            "LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got <class 'NoneType'>",
+        ),
+        (
+            SimpleRetriever,
+            CustomPartitionRouter,
+            False,
+            ValueError,
+            "LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration.",
+        ),
+    ],
 )
 def test_create_legacy_to_per_partition_state_migration(
     retriever_type,
@@ -283,13 +248,30 @@ def test_create_legacy_to_per_partition_state_migration(
     state_migrations_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["state_migrations"][0], {})
 
     if is_parent_stream_config:
-        parent_stream_config = ParentStreamConfig(type="ParentStreamConfig", parent_key="id", partition_field="parent_id", stream=DeclarativeStream(type="DeclarativeStream", retriever=CustomRetriever(type="CustomRetriever", class_name="a_class_name")))
+        parent_stream_config = ParentStreamConfig(
+            type="ParentStreamConfig",
+            parent_key="id",
+            partition_field="parent_id",
+            stream=DeclarativeStream(
+                type="DeclarativeStream", retriever=CustomRetriever(type="CustomRetriever", class_name="a_class_name")
+            ),
+        )
         partition_router.parent_stream_configs = [parent_stream_config]
 
     if expected_exception:
         with pytest.raises(expected_exception) as excinfo:
-            factory.create_component(model_type=LegacyToPerPartitionStateMigrationModel, component_definition=state_migrations_manifest, config={}, declarative_stream=stream)
+            factory.create_component(
+                model_type=LegacyToPerPartitionStateMigrationModel,
+                component_definition=state_migrations_manifest,
+                config={},
+                declarative_stream=stream,
+            )
         assert str(excinfo.value) == expected_error_message
     else:
-        migration_instance = factory.create_component(model_type=LegacyToPerPartitionStateMigrationModel, component_definition=state_migrations_manifest, config={}, declarative_stream=stream)
+        migration_instance = factory.create_component(
+            model_type=LegacyToPerPartitionStateMigrationModel,
+            component_definition=state_migrations_manifest,
+            config={},
+            declarative_stream=stream,
+        )
         assert migration_instance is not None

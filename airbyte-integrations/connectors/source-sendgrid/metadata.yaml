@@ -6,11 +6,11 @@ data:
     hosts:
       - api.sendgrid.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
   connectorSubtype: api
   connectorType: source
   definitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
-  dockerImageTag: 1.0.15
+  dockerImageTag: 1.2.0
   releases:
     breakingChanges:
       1.0.0:
@@ -25,7 +25,7 @@ data:
   name: Sendgrid
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-sendgrid
   registryOverrides:
     cloud:
@@ -35,7 +35,7 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

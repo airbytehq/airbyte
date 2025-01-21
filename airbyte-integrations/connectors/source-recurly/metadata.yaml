@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
-  dockerImageTag: 1.1.3
+  dockerImageTag: 1.1.11
   dockerRepository: airbyte/source-recurly
   documentationUrl: https://docs.airbyte.com/integrations/sources/recurly
   githubIssueLabel: source-recurly

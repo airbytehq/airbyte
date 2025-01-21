@@ -66,6 +66,14 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.1.11 | 2024-10-12 | [46829](https://github.com/airbytehq/airbyte/pull/46829) | Update dependencies |
+| 1.1.10 | 2024-10-05 | [46456](https://github.com/airbytehq/airbyte/pull/46456) | Update dependencies |
+| 1.1.9 | 2024-09-28 | [46140](https://github.com/airbytehq/airbyte/pull/46140) | Update dependencies |
+| 1.1.8 | 2024-09-21 | [45764](https://github.com/airbytehq/airbyte/pull/45764) | Update dependencies |
+| 1.1.7 | 2024-09-14 | [45471](https://github.com/airbytehq/airbyte/pull/45471) | Update dependencies |
+| 1.1.6 | 2024-09-07 | [45274](https://github.com/airbytehq/airbyte/pull/45274) | Update dependencies |
+| 1.1.5 | 2024-08-31 | [45050](https://github.com/airbytehq/airbyte/pull/45050) | Update dependencies |
+| 1.1.4 | 2024-08-24 | [44742](https://github.com/airbytehq/airbyte/pull/44742) | Update dependencies |
 | 1.1.3 | 2024-08-17 | [44210](https://github.com/airbytehq/airbyte/pull/44210) | Update dependencies |
 | 1.1.2 | 2024-08-10 | [43472](https://github.com/airbytehq/airbyte/pull/43472) | Update dependencies |
 | 1.1.1 | 2024-08-03 | [43144](https://github.com/airbytehq/airbyte/pull/43144) | Update dependencies |

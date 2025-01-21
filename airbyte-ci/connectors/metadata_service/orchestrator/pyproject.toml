@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "orchestrator"
-version = "0.4.0"
+version = "0.6.5"
 description = ""
 authors = ["Ben Church <ben@airbyte.io>"]
 readme = "README.md"
@@ -36,6 +36,7 @@ pendulum = "<3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
+pytest-mock = "^3.14.0"
 
 [build-system]
 requires = ["poetry-core"]

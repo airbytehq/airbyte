@@ -16,8 +16,8 @@ import pendulum
 import pytest
 import pytz
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
-from airbyte_protocol.models import SyncMode
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
     DATETIME_FORMAT,
@@ -45,6 +45,8 @@ from source_zendesk_support.streams import (
     Schedules,
     SlaPolicies,
     SourceZendeskIncrementalExportStream,
+    StatefulTicketMetrics,
+    StatelessTicketMetrics,
     Tags,
     TicketAudits,
     TicketComments,
@@ -52,9 +54,9 @@ from source_zendesk_support.streams import (
     TicketForms,
     TicketMetricEvents,
     TicketMetrics,
+    TicketMetricsStateMigration,
     Tickets,
     TicketSkips,
-    TicketSubstream,
     Topics,
     UserFields,
     Users,
@@ -63,7 +65,7 @@ from source_zendesk_support.streams import (
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
 
-TICKET_SUBSTREAMS = [TicketSubstream, TicketMetrics]
+TICKET_SUBSTREAMS = [StatefulTicketMetrics]
 
 # prepared config
 STREAM_ARGS = {
@@ -185,11 +187,11 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 35, [], None),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 37, [], None),
         (
             '{"error": "Not sufficient permissions"}',
             403,
-            32,
+            34,
             [
                 "An exception occurred while trying to access TicketForms stream: Forbidden. You don't have permission to access this resource.. Skipping this stream."
             ],
@@ -198,7 +200,7 @@ def test_check(response, start_date, check_passed):
         (
             "",
             404,
-            32,
+            34,
             [
                 "An exception occurred while trying to access TicketForms stream: Not found. The requested resource was not found on the server.. Skipping this stream."
             ],
@@ -222,21 +224,21 @@ def time_sleep_mock(mocker):
     yield time_mock
 
 
-def test_str2datetime():
+def test_str_to_datetime():
     expected = datetime.strptime(DATETIME_STR, DATETIME_FORMAT)
-    output = BaseZendeskSupportStream.str2datetime(DATETIME_STR)
+    output = BaseZendeskSupportStream.str_to_datetime(DATETIME_STR)
     assert output == expected
 
 
-def test_datetime2str():
+def test_datetime_to_str():
     expected = datetime.strftime(DATETIME_FROM_STR.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
-    output = BaseZendeskSupportStream.datetime2str(DATETIME_FROM_STR)
+    output = BaseZendeskSupportStream.datetime_to_str(DATETIME_FROM_STR)
     assert output == expected
 
 
-def test_str2unixtime():
+def test_str_to_unixtime():
     expected = calendar.timegm(DATETIME_FROM_STR.utctimetuple())
-    output = BaseZendeskSupportStream.str2unixtime(DATETIME_STR)
+    output = BaseZendeskSupportStream.str_to_unixtime(DATETIME_STR)
     assert output == expected
 
 
@@ -303,7 +305,8 @@ class TestAllStreams:
             (TicketComments, "incremental/ticket_events.json"),
             (TicketFields, "ticket_fields"),
             (TicketForms, "ticket_forms"),
-            (TicketMetrics, "tickets/13/metrics"),
+            (StatefulTicketMetrics, "tickets/13/metrics"),
+            (StatelessTicketMetrics, "ticket_metrics"),
             (TicketSkips, "skips.json"),
             (TicketMetricEvents, "incremental/ticket_metric_events"),
             (Tickets, "incremental/tickets/cursor.json"),
@@ -331,7 +334,8 @@ class TestAllStreams:
             "TicketComments",
             "TicketFields",
             "TicketForms",
-            "TicketMetrics",
+            "StatefulTicketMetrics",
+            "StatelessTicketMetrics",
             "TicketSkips",
             "TicketMetricEvents",
             "Tickets",
@@ -370,16 +374,16 @@ class TestSourceZendeskSupportStream:
         expected = expected if isinstance(expected, list) else [expected]
         assert expected == output
 
-    def test_ticket_metrics_parse_response(self, requests_mock):
+    def test_stateful_ticket_metrics_parse_response(self, requests_mock):
         parent = Tickets(**STREAM_ARGS)
-        stream = TicketMetrics(parent=parent, **STREAM_ARGS)
-        expected = {"ticket_id": 13, "generated_timestamp": 1647532987}
+        stream = StatefulTicketMetrics(parent=parent, **STREAM_ARGS)
+        expected = {"ticket_id": 13, "_ab_updated_at": 1647532987}
         response_field = stream.response_list_name
 
         requests_mock.get(STREAM_URL, json={response_field: expected})
         test_response = requests.get(STREAM_URL)
 
-        stream_slice = {"ticket_id": 13, "generated_timestamp": 1647532987}
+        stream_slice = {"ticket_id": 13, "_ab_updated_at": 1647532987}
         output = list(stream.parse_response(response=test_response, stream_state=None, stream_slice=stream_slice))
 
         expected = expected if isinstance(expected, list) else [expected]
@@ -401,8 +405,8 @@ class TestSourceZendeskSupportStream:
 
     @pytest.mark.parametrize(
         "stream_cls",
-        [(Macros), (Organizations), (Posts), (Groups), (SatisfactionRatings), (TicketFields), (TicketMetrics), (Topics)],
-        ids=["Macros", "Organizations", "Posts", "Groups", "SatisfactionRatings", "TicketFields", "TicketMetrics", "Topics"],
+        [(Macros), (Organizations), (Posts), (Groups), (SatisfactionRatings), (TicketFields), (StatefulTicketMetrics), (Topics)],
+        ids=["Macros", "Organizations", "Posts", "Groups", "SatisfactionRatings", "TicketFields", "StatefulTicketMetrics", "Topics"],
     )
     def test_url_base(self, stream_cls):
         stream = get_stream_instance(stream_cls, STREAM_ARGS)
@@ -423,10 +427,9 @@ class TestSourceZendeskSupportStream:
             (Groups, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
-            (TicketMetrics, {}, {"generated_timestamp": 1622505600}, {"generated_timestamp": 1622505600}),
             (Topics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
         ],
-        ids=["Macros", "Posts", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "TicketMetrics", "Topics"],
+        ids=["Macros", "Posts", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "Topics"],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
         stream = get_stream_instance(stream_cls, STREAM_ARGS)
@@ -1052,8 +1055,35 @@ def test_read_non_json_error(requests_mock, caplog):
     read_full_refresh(stream)
     assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
 
+class TestTicketMetrics:
 
-class TestTicketSubstream:
+    @pytest.mark.parametrize(
+            "state, expected_implemented_stream",
+            [
+                ({"_ab_updated_at": 1727334000}, StatefulTicketMetrics),
+                ({}, StatelessTicketMetrics),
+            ]
+    )
+    def test_get_implemented_stream(self, state, expected_implemented_stream):
+        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+        implemented_stream = stream._get_implemented_stream(state)
+        assert isinstance(implemented_stream, expected_implemented_stream)
+
+    @pytest.mark.parametrize(
+            "sync_mode, state, expected_implemented_stream",
+            [
+                (SyncMode.incremental, {"_ab_updated_at": 1727334000}, StatefulTicketMetrics),
+                (SyncMode.full_refresh, {}, StatelessTicketMetrics),
+                (SyncMode.incremental, {}, StatelessTicketMetrics),
+            ]
+    )
+    def test_stream_slices(self, sync_mode, state, expected_implemented_stream):
+        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+        slices = list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
+        assert isinstance(stream.implemented_stream, expected_implemented_stream)
+
+
+class TestStatefulTicketMetrics:
     @pytest.mark.parametrize(
         "stream_state, response, expected_slices",
         [
@@ -1061,16 +1091,16 @@ class TestTicketSubstream:
                 {},
                 {"tickets": [{"id": "13", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp}, {"id": "80", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp}]},
                 [
-                    {"ticket_id": "13", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
-                    {"ticket_id": "80", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
+                    {"ticket_id": "13", "_ab_updated_at": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
+                    {"ticket_id": "80", "_ab_updated_at": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
                 ],
             ),
             (
-                {"generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp},
+                {"_ab_updated_state": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp},
                 {"tickets": [{"id": "80", "generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}]},
-                [{"ticket_id": "80", "generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}],
+                [{"ticket_id": "80", "_ab_updated_at": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}],
             ),
-            ({"generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}, {"tickets": []}, []),
+            ({"_ab_updated_state": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}, {"tickets": []}, []),
         ],
         ids=[
             "read_without_state",
@@ -1079,12 +1109,12 @@ class TestTicketSubstream:
         ],
     )
     def test_stream_slices(self, requests_mock, stream_state, response, expected_slices):
-        stream = get_stream_instance(TicketSubstream, STREAM_ARGS)
+        stream = get_stream_instance(StatefulTicketMetrics, STREAM_ARGS)
         requests_mock.get(f"https://sandbox.zendesk.com/api/v2/incremental/tickets/cursor.json", json=response)
-        assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)) == expected_slices
+        assert list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state)) == expected_slices
 
-    def test_read_ticket_metrics_with_error(self, requests_mock):
-        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+    def test_read_with_error(self, requests_mock):
+        stream = get_stream_instance(StatefulTicketMetrics, STREAM_ARGS)
         requests_mock.get(
             f"https://sandbox.zendesk.com/api/v2/tickets/13/metrics",
             json={"error": "RecordNotFound", "description": "Not found"}
@@ -1104,11 +1134,76 @@ class TestTicketSubstream:
                 (429, ResponseAction.RATE_LIMITED),
         )
     )
-    def test_ticket_metrics_should_retry(self, status_code: int, response_action: bool):
-        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+    def test_should_retry(self, status_code: int, response_action: bool):
+        stream = get_stream_instance(StatefulTicketMetrics, STREAM_ARGS)
         mocked_response = requests.Response()
         mocked_response.status_code = status_code
         assert stream.get_error_handler().interpret_response(mocked_response).response_action == response_action
+
+    @pytest.mark.parametrize(
+        "current_stream_state, record_cursor_value, expected",
+        [
+            ({ "_ab_updated_at": 1727334000}, 1727420400, { "_ab_updated_at": 1727420400}),
+            ({ "_ab_updated_at": 1727334000}, 1700000000, { "_ab_updated_at": 1727334000}),
+        ]
+    )
+    def test_get_updated_state(self, current_stream_state, record_cursor_value, expected):
+        stream = get_stream_instance(StatefulTicketMetrics, STREAM_ARGS)
+        latest_record = { "id": 1, "_ab_updated_at": record_cursor_value}
+        output_state = stream._get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
+        assert output_state == expected
+
+
+class TestStatelessTicketMetrics:
+    @pytest.mark.parametrize(
+            "start_date, response, expected",
+            [
+                (
+                    "2023-01-01T00:00:00Z",
+                    { "ticket_metrics": [{"id": 1, "ticket_id": 999, "updated_at": "2023-02-01T00:00:00Z"}, {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z"}]},
+                    [
+                        {"id": 1, "ticket_id": 999, "updated_at": "2023-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2023-02-01T00:00:00Z").int_timestamp},
+                        {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+                    ]
+                ),
+                (
+                    "2024-01-01T00:00:00Z",
+                    { "ticket_metrics": [{"id": 1, "ticket_id": 999, "updated_at": "2023-02-01T00:00:00Z"}, {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z"}]},
+                    [
+                        {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+                    ]
+                )
+            ]
+    )
+    def test_parse_response(self, requests_mock, start_date, response, expected):
+        stream_args = copy.deepcopy(STREAM_ARGS)
+        stream_args.update({"start_date": start_date})
+        stream = StatelessTicketMetrics(**stream_args)
+        requests_mock.get(STREAM_URL, json=response)
+        test_response = requests.get(STREAM_URL)
+        output = list(stream.parse_response(test_response, {}))
+        assert expected == output
+
+    @pytest.mark.parametrize(
+            "has_more, expected",
+            [
+                (True, {"page[after]": "nextpagecursor"}),
+                (False, None)
+            ]
+    )
+    def test_next_page_token(self, mocker, has_more, expected):
+        stream = StatelessTicketMetrics(**STREAM_ARGS)
+        ticket_metrics_response = mocker.Mock()
+        ticket_metrics_response.json.return_value = {"meta": { "after_cursor": "nextpagecursor", "has_more": has_more}}
+        result = stream.next_page_token(response=ticket_metrics_response)
+        assert expected == result
+
+    def test_get_updated_state(self):
+        stream = StatelessTicketMetrics(**STREAM_ARGS)
+        stream._most_recently_updated_record = {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+        output_state = stream._get_updated_state(current_stream_state={}, latest_record={})
+        expected_state = { "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+        assert output_state == expected_state
 
 
 def test_read_ticket_audits_504_error(requests_mock, caplog):
@@ -1147,3 +1242,18 @@ def test_validate_response_ticket_audits_handle_empty_response(audits_response, 
     response_mock = Mock()
     response_mock.json.return_value = audits_response
     assert stream._validate_response(response_mock, {}) == expected
+
+
+@pytest.mark.parametrize(
+        "initial_state_cursor_field",
+        [
+            "generated_timestamp",
+            "_ab_updated_at"
+        ]
+)
+def test_ticket_metrics_state_migrataion(initial_state_cursor_field):
+    state_migrator = TicketMetricsStateMigration()
+    initial_state = {initial_state_cursor_field: 1672531200}
+    expected_state = {"_ab_updated_at": 1672531200}
+    output_state = state_migrator.migrate(initial_state)
+    assert output_state == expected_state

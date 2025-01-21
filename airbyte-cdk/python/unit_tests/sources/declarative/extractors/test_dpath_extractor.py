@@ -56,12 +56,15 @@ def create_response(body: Union[Dict, bytes]):
             ["data"],
             decoder_jsonl,
             b'{"data": [{"id": 1, "text_field": "This is a text\\n. New paragraph start here."}]}\n{"data": [{"id": 2, "text_field": "This is another text\\n. New paragraph start here."}]}',
-            [{"id": 1, "text_field": "This is a text\n. New paragraph start here."}, {"id": 2, "text_field": "This is another text\n. New paragraph start here."}],
+            [
+                {"id": 1, "text_field": "This is a text\n. New paragraph start here."},
+                {"id": 2, "text_field": "This is another text\n. New paragraph start here."},
+            ],
         ),
         (
             [],
             decoder_iterable,
-            b'user1@example.com\nuser2@example.com',
+            b"user1@example.com\nuser2@example.com",
             [{"record": "user1@example.com"}, {"record": "user2@example.com"}],
         ),
     ],

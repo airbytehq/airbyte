@@ -153,6 +153,13 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 5.0.19 | 2024-10-12 | [46860](https://github.com/airbytehq/airbyte/pull/46860) | Update dependencies |
+| 5.0.18 | 2024-10-05 | [46451](https://github.com/airbytehq/airbyte/pull/46451) | Update dependencies |
+| 5.0.17 | 2024-09-28 | [45794](https://github.com/airbytehq/airbyte/pull/45794) | Update dependencies |
+| 5.0.16 | 2024-09-14 | [45548](https://github.com/airbytehq/airbyte/pull/45548) | Update dependencies |
+| 5.0.15 | 2024-09-07 | [45308](https://github.com/airbytehq/airbyte/pull/45308) | Update dependencies |
+| 5.0.14 | 2024-08-31 | [45051](https://github.com/airbytehq/airbyte/pull/45051) | Update dependencies |
+| 5.0.13 | 2024-08-24 | [44648](https://github.com/airbytehq/airbyte/pull/44648) | Update dependencies |
 | 5.0.12 | 2024-08-17 | [43845](https://github.com/airbytehq/airbyte/pull/43845) | Update dependencies |
 | 5.0.11 | 2024-08-12 | [43354](https://github.com/airbytehq/airbyte/pull/43354) | Fix download request for `sponsored_products_report_stream` |
 | 5.0.10 | 2024-08-10 | [42162](https://github.com/airbytehq/airbyte/pull/42162) | Update dependencies |

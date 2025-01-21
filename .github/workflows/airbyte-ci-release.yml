@@ -54,7 +54,7 @@ jobs:
         working-directory: airbyte-ci/connectors/pipelines/
         run: poetry run poe build-release-binary ${{ env.BINARY_FILE_NAME }}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: airbyte-ci-${{ matrix.os }}-${{ steps.get_short_sha.outputs.sha }}
           path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}

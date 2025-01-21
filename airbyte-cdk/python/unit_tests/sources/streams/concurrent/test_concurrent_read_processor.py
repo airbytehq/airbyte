@@ -75,8 +75,10 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         )
 
         self._record_data = {"id": 1, "value": "A"}
+        self._partition = Mock(spec=Partition)
+        self._partition.stream_name = lambda: _STREAM_NAME
         self._record = Mock(spec=Record)
-        self._record.stream_name = _STREAM_NAME
+        self._record.partition = self._partition
         self._record.data = self._record_data
 
     def test_stream_is_not_done_initially(self):
@@ -566,7 +568,9 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             handler.is_done()
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
-    def test_given_underlying_exception_is_traced_exception_on_exception_return_trace_message_and_on_stream_complete_return_stream_status(self):
+    def test_given_underlying_exception_is_traced_exception_on_exception_return_trace_message_and_on_stream_complete_return_stream_status(
+        self,
+    ):
         stream_instances_to_read_from = [self._stream, self._another_stream]
 
         handler = ConcurrentReadProcessor(

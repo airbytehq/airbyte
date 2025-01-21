@@ -1,9 +1,12 @@
-version: 4.3.0
+version: 4.6.2
+
 type: DeclarativeSource
+
 check:
   type: CheckStream
   stream_names:
     - users
+
 definitions:
   streams:
     users:
@@ -14,12 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: https://api.gong.io/v2/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['access_key'] }}"
-            password: "{{ config['access_key_secret'] }}"
+          $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
           request_parameters:
@@ -48,93 +46,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            active:
-              type:
-                - "null"
-                - boolean
-              description: Indicates if the user is currently active or not
-            created:
-              type:
-                - "null"
-                - string
-              description: The timestamp denoting when the user account was created
-              format: date-time
-            emailAddress:
-              type:
-                - "null"
-                - string
-              description: The primary email address associated with the user
-            emailAliases:
-              type:
-                - "null"
-                - array
-              description:
-                Additional email addresses that can be used to reach the
-                user
-            extension:
-              type:
-                - "null"
-                - string
-              description: The phone extension number for the user
-            firstName:
-              type:
-                - "null"
-                - string
-              description: The first name of the user
-            id:
-              type:
-                - "null"
-                - string
-              description: Unique identifier for the user
-            lastName:
-              type:
-                - "null"
-                - string
-              description: The last name of the user
-            managerId:
-              type:
-                - "null"
-                - string
-              description: The ID of the user's manager
-            meetingConsentPageUrl:
-              type:
-                - "null"
-                - string
-              description: URL for the consent page related to meetings
-            personalMeetingUrls:
-              type:
-                - "null"
-                - array
-              description: URLs for personal meeting rooms assigned to the user
-            phoneNumber:
-              type:
-                - "null"
-                - string
-              description: The phone number associated with the user
-            settings:
-              type:
-                - "null"
-                - object
-              description: User-specific settings and configurations
-            spokenLanguages:
-              type:
-                - "null"
-                - array
-              description: Languages spoken by the user
-            title:
-              type:
-                - "null"
-                - string
-              description: The job title or position of the user
-            trustedEmailAddress:
-              type:
-                - "null"
-                - string
-              description: An email address that is considered trusted for the user
+          $ref: "#/schemas/users"
     calls:
       type: DeclarativeStream
       name: calls
@@ -143,12 +55,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: https://api.gong.io/v2/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['access_key'] }}"
-            password: "{{ config['access_key_secret'] }}"
+          $ref: "#/definitions/base_requester"
           path: /calls
           http_method: GET
           request_parameters:
@@ -172,116 +79,74 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            calendarEventId:
-              type:
-                - "null"
-                - string
-              description:
-                Unique identifier for the calendar event associated with
-                the call.
-            clientUniqueId:
-              type:
-                - "null"
-                - string
-              description: Unique identifier for the client related to the call.
-            customData:
-              type:
-                - "null"
-                - string
-              description: Custom data associated with the call.
-            direction:
-              type:
-                - "null"
-                - string
-              description: Direction of the call (inbound/outbound).
-            duration:
-              type:
-                - "null"
-                - integer
-              description: Duration of the call in seconds.
-            id:
-              type:
-                - "null"
-                - string
-              description: Unique identifier for the call.
-            isPrivate:
-              type:
-                - "null"
-                - boolean
-              description: Indicates if the call is private or not.
-            language:
-              type:
-                - "null"
-                - string
-              description: Language used in the call.
-            media:
-              type:
-                - "null"
-                - string
-              description: Media type used for communication (voice, video, etc.).
-            meetingUrl:
-              type:
-                - "null"
-                - string
-              description: URL for accessing the meeting associated with the call.
-            primaryUserId:
-              type:
-                - "null"
-                - string
-              description:
-                Unique identifier for the primary user involved in the
-                call.
-            purpose:
-              type:
-                - "null"
-                - string
-              description: Purpose or topic of the call.
-            scheduled:
-              type:
-                - "null"
-                - string
-              description: Scheduled date and time of the call.
-              format: date-time
-            scope:
-              type:
-                - "null"
-                - string
-              description: Scope or extent of the call.
-            sdrDisposition:
-              type:
-                - "null"
-                - string
-              description: Disposition set by the sales development representative.
-            started:
-              type:
-                - "null"
-                - string
-              description: Start date and time of the call.
-              format: date-time
-            system:
-              type:
-                - "null"
-                - string
-              description: System information related to the call.
-            title:
-              type:
-                - "null"
-                - string
-              description: Title or headline of the call.
-            url:
-              type:
-                - "null"
-                - string
-              description: URL associated with the call.
-            workspaceId:
-              type:
-                - "null"
-                - string
-              description: Identifier for the workspace to which the call belongs.
+          $ref: "#/schemas/calls"
+    extensiveCalls:
+      type: DeclarativeStream
+      name: extensiveCalls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: calls/extensive
+          http_method: POST
+          request_body_json:
+            filter:
+              fromDateTime: "{{ config['start_date'] }}"
+            contentSelector:
+              exposedFields:
+                media: true
+                content:
+                  brief: true
+                  topics: true
+                  outline: true
+                  trackers: true
+                  keyPoints: true
+                  structure: true
+                  highlights: true
+                  callOutcome: true
+                  pointsOfInterest: true
+                  trackerOccurrences: true
+                parties: true
+                interaction:
+                  video: true
+                  speakers: true
+                  questions: true
+                  personInteractionStats: true
+                collaboration:
+                  publicComments: true
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - calls
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.records.cursor }}"
+            stop_condition: "{{ 'records' not in response }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['metaData']['id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/extensiveCalls"
     scorecards:
       type: DeclarativeStream
       name: scorecards
@@ -290,12 +155,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: https://api.gong.io/v2/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['access_key'] }}"
-            password: "{{ config['access_key_secret'] }}"
+          $ref: "#/definitions/base_requester"
           path: /settings/scorecards
           http_method: GET
           request_parameters:
@@ -324,98 +184,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            created:
-              type:
-                - "null"
-                - string
-              description: The timestamp when the scorecard was created
-              format: date-time
-            enabled:
-              type:
-                - "null"
-                - boolean
-              description: Indicates if the scorecard is enabled or disabled
-            questions:
-              type:
-                - "null"
-                - array
-              description: An array of questions related to the scorecard
-              items:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  created:
-                    type:
-                      - "null"
-                      - string
-                    description: The timestamp when the question was created
-                    format: date-time
-                  isOverall:
-                    type:
-                      - "null"
-                      - boolean
-                    description:
-                      Indicates if the question is an overall score or
-                      not
-                  questionId:
-                    type:
-                      - "null"
-                      - string
-                    description: The unique identifier of the question
-                  questionRevisionId:
-                    type:
-                      - "null"
-                      - string
-                    description: The revision identifier of the question
-                  questionText:
-                    type:
-                      - "null"
-                      - string
-                    description: The text of the question
-                  updated:
-                    type:
-                      - "null"
-                      - string
-                    description: The timestamp when the question was last updated
-                    format: date-time
-                  updaterUserId:
-                    type:
-                      - "null"
-                      - string
-                    description: The user ID of the person who last updated the question
-            scorecardId:
-              type:
-                - "null"
-                - string
-              description: The unique identifier of the scorecard
-            scorecardName:
-              type:
-                - "null"
-                - string
-              description: The name of the scorecard
-            updated:
-              type:
-                - "null"
-                - string
-              description: The timestamp when the scorecard was last updated
-              format: date-time
-            updaterUserId:
-              type:
-                - "null"
-                - string
-              description: The user ID of the person who last updated the scorecard
-            workspaceId:
-              type:
-                - "null"
-                - string
-              description:
-                The unique identifier of the workspace associated with
-                the scorecard
+          $ref: "#/schemas/scorecards"
     answeredScorecards:
       type: DeclarativeStream
       name: answeredScorecards
@@ -424,12 +193,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: https://api.gong.io/v2/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['access_key'] }}"
-            password: "{{ config['access_key_secret'] }}"
+          $ref: "#/definitions/base_requester"
           path: /stats/activity/scorecards
           http_method: POST
           request_parameters:
@@ -460,662 +224,22 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            answeredScorecardId:
-              type:
-                - "null"
-                - string
-              description: Unique identifier for the answered scorecard instance.
-            answers:
-              type:
-                - "null"
-                - array
-              description: Contains the answered questions in the scorecards
-              items:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  answerText:
-                    type:
-                      - "null"
-                      - string
-                    description: Text containing the answer given.
-                  isOverall:
-                    type:
-                      - "null"
-                      - boolean
-                    description: >-
-                      Boolean flag indicating if the answer is for an overall
-                      evaluation.
-                  notApplicable:
-                    type:
-                      - "null"
-                      - boolean
-                    description: >-
-                      Boolean flag indicating if the question is marked as not
-                      applicable.
-                  questionId:
-                    type:
-                      - "null"
-                      - string
-                    description: Unique identifier for the question answered.
-                  questionRevisionId:
-                    type:
-                      - "null"
-                      - string
-                    description:
-                      Unique identifier for the revision of the question
-                      answered.
-                  score:
-                    type:
-                      - "null"
-                      - integer
-                    description: Numeric score assigned to the answer.
-            callId:
-              type:
-                - "null"
-                - string
-              description:
-                Unique identifier for the call associated with the answered
-                scorecard.
-            callStartTime:
-              type:
-                - "null"
-                - string
-              description: Timestamp indicating the start time of the call.
-              format: date-time
-            reviewTime:
-              type:
-                - "null"
-                - string
-              description: >-
-                Timestamp indicating when the review of the answered scorecard was
-                completed.
-              format: date-time
-            reviewedUserId:
-              type:
-                - "null"
-                - string
-              description: Unique identifier for the user whose performance was reviewed.
-            reviewerUserId:
-              type:
-                - "null"
-                - string
-              description: Unique identifier for the user who performed the review.
-            scorecardId:
-              type:
-                - "null"
-                - string
-              description: Unique identifier for the scorecard template used.
-            scorecardName:
-              type:
-                - "null"
-                - string
-              description: Name or title of the scorecard template used.
-            visibilityType:
-              type:
-                - "null"
-                - string
-              description:
-                Type indicating the visibility permissions for the answered
-                scorecard.
+          $ref: "#/schemas/answeredScorecards"
   base_requester:
     type: HttpRequester
     url_base: https://api.gong.io/v2/
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config['access_key'] }}"
-      password: "{{ config['access_key_secret'] }}"
+      username: '{{ config["access_key"] }}'
+      password: '{{ config["access_key_secret"] }}'
+
 streams:
-  - type: DeclarativeStream
-    name: users
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.gong.io/v2/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['access_key'] }}"
-          password: "{{ config['access_key_secret'] }}"
-        path: /users
-        http_method: GET
-        request_parameters:
-          fromDateTime: "{{ config['start_date'] }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - users
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: cursor
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.records.cursor }}"
-          stop_condition: "{{ 'records' not in response }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          active:
-            type:
-              - "null"
-              - boolean
-            description: Indicates if the user is currently active or not
-          created:
-            type:
-              - "null"
-              - string
-            description: The timestamp denoting when the user account was created
-            format: date-time
-          emailAddress:
-            type:
-              - "null"
-              - string
-            description: The primary email address associated with the user
-          emailAliases:
-            type:
-              - "null"
-              - array
-            description: Additional email addresses that can be used to reach the user
-          extension:
-            type:
-              - "null"
-              - string
-            description: The phone extension number for the user
-          firstName:
-            type:
-              - "null"
-              - string
-            description: The first name of the user
-          id:
-            type:
-              - "null"
-              - string
-            description: Unique identifier for the user
-          lastName:
-            type:
-              - "null"
-              - string
-            description: The last name of the user
-          managerId:
-            type:
-              - "null"
-              - string
-            description: The ID of the user's manager
-          meetingConsentPageUrl:
-            type:
-              - "null"
-              - string
-            description: URL for the consent page related to meetings
-          personalMeetingUrls:
-            type:
-              - "null"
-              - array
-            description: URLs for personal meeting rooms assigned to the user
-          phoneNumber:
-            type:
-              - "null"
-              - string
-            description: The phone number associated with the user
-          settings:
-            type:
-              - "null"
-              - object
-            description: User-specific settings and configurations
-          spokenLanguages:
-            type:
-              - "null"
-              - array
-            description: Languages spoken by the user
-          title:
-            type:
-              - "null"
-              - string
-            description: The job title or position of the user
-          trustedEmailAddress:
-            type:
-              - "null"
-              - string
-            description: An email address that is considered trusted for the user
-  - type: DeclarativeStream
-    name: calls
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.gong.io/v2/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['access_key'] }}"
-          password: "{{ config['access_key_secret'] }}"
-        path: /calls
-        http_method: GET
-        request_parameters:
-          fromDateTime: "{{ config['start_date'] }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - calls
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: cursor
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response.records.cursor }}"
-          stop_condition: "{{ 'records' not in response }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          calendarEventId:
-            type:
-              - "null"
-              - string
-            description:
-              Unique identifier for the calendar event associated with the
-              call.
-          clientUniqueId:
-            type:
-              - "null"
-              - string
-            description: Unique identifier for the client related to the call.
-          customData:
-            type:
-              - "null"
-              - string
-            description: Custom data associated with the call.
-          direction:
-            type:
-              - "null"
-              - string
-            description: Direction of the call (inbound/outbound).
-          duration:
-            type:
-              - "null"
-              - integer
-            description: Duration of the call in seconds.
-          id:
-            type:
-              - "null"
-              - string
-            description: Unique identifier for the call.
-          isPrivate:
-            type:
-              - "null"
-              - boolean
-            description: Indicates if the call is private or not.
-          language:
-            type:
-              - "null"
-              - string
-            description: Language used in the call.
-          media:
-            type:
-              - "null"
-              - string
-            description: Media type used for communication (voice, video, etc.).
-          meetingUrl:
-            type:
-              - "null"
-              - string
-            description: URL for accessing the meeting associated with the call.
-          primaryUserId:
-            type:
-              - "null"
-              - string
-            description: Unique identifier for the primary user involved in the call.
-          purpose:
-            type:
-              - "null"
-              - string
-            description: Purpose or topic of the call.
-          scheduled:
-            type:
-              - "null"
-              - string
-            description: Scheduled date and time of the call.
-            format: date-time
-          scope:
-            type:
-              - "null"
-              - string
-            description: Scope or extent of the call.
-          sdrDisposition:
-            type:
-              - "null"
-              - string
-            description: Disposition set by the sales development representative.
-          started:
-            type:
-              - "null"
-              - string
-            description: Start date and time of the call.
-            format: date-time
-          system:
-            type:
-              - "null"
-              - string
-            description: System information related to the call.
-          title:
-            type:
-              - "null"
-              - string
-            description: Title or headline of the call.
-          url:
-            type:
-              - "null"
-              - string
-            description: URL associated with the call.
-          workspaceId:
-            type:
-              - "null"
-              - string
-            description: Identifier for the workspace to which the call belongs.
-  - type: DeclarativeStream
-    name: scorecards
-    primary_key:
-      - scorecardId
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.gong.io/v2/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['access_key'] }}"
-          password: "{{ config['access_key_secret'] }}"
-        path: /settings/scorecards
-        http_method: GET
-        request_parameters:
-          fromDateTime: "{{ config['start_date'] }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - scorecards
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: cursor
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.records.cursor }}"
-          stop_condition: "{{ 'records' not in response }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          created:
-            type:
-              - "null"
-              - string
-            description: The timestamp when the scorecard was created
-            format: date-time
-          enabled:
-            type:
-              - "null"
-              - boolean
-            description: Indicates if the scorecard is enabled or disabled
-          questions:
-            type:
-              - "null"
-              - array
-            description: An array of questions related to the scorecard
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                created:
-                  type:
-                    - "null"
-                    - string
-                  description: The timestamp when the question was created
-                  format: date-time
-                isOverall:
-                  type:
-                    - "null"
-                    - boolean
-                  description: Indicates if the question is an overall score or not
-                questionId:
-                  type:
-                    - "null"
-                    - string
-                  description: The unique identifier of the question
-                questionRevisionId:
-                  type:
-                    - "null"
-                    - string
-                  description: The revision identifier of the question
-                questionText:
-                  type:
-                    - "null"
-                    - string
-                  description: The text of the question
-                updated:
-                  type:
-                    - "null"
-                    - string
-                  description: The timestamp when the question was last updated
-                  format: date-time
-                updaterUserId:
-                  type:
-                    - "null"
-                    - string
-                  description: The user ID of the person who last updated the question
-          scorecardId:
-            type:
-              - "null"
-              - string
-            description: The unique identifier of the scorecard
-          scorecardName:
-            type:
-              - "null"
-              - string
-            description: The name of the scorecard
-          updated:
-            type:
-              - "null"
-              - string
-            description: The timestamp when the scorecard was last updated
-            format: date-time
-          updaterUserId:
-            type:
-              - "null"
-              - string
-            description: The user ID of the person who last updated the scorecard
-          workspaceId:
-            type:
-              - "null"
-              - string
-            description:
-              The unique identifier of the workspace associated with the
-              scorecard
-  - type: DeclarativeStream
-    name: answeredScorecards
-    primary_key:
-      - answeredScorecardId
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.gong.io/v2/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['access_key'] }}"
-          password: "{{ config['access_key_secret'] }}"
-        path: /stats/activity/scorecards
-        http_method: POST
-        request_parameters:
-          fromDateTime: "{{ config['start_date'] }}"
-        request_body_json:
-          filter: '{"callFromDate": "{{ config["start_date"] }}"}'
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - answeredScorecards
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: body_json
-          field_name: cursor
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: body_json
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.records.cursor }}"
-          stop_condition: "{{ 'records' not in response }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          answeredScorecardId:
-            type:
-              - "null"
-              - string
-            description: Unique identifier for the answered scorecard instance.
-          answers:
-            type:
-              - "null"
-              - array
-            description: Contains the answered questions in the scorecards
-            items:
-              type:
-                - "null"
-                - object
-              properties:
-                answerText:
-                  type:
-                    - "null"
-                    - string
-                  description: Text containing the answer given.
-                isOverall:
-                  type:
-                    - "null"
-                    - boolean
-                  description: >-
-                    Boolean flag indicating if the answer is for an overall
-                    evaluation.
-                notApplicable:
-                  type:
-                    - "null"
-                    - boolean
-                  description: >-
-                    Boolean flag indicating if the question is marked as not
-                    applicable.
-                questionId:
-                  type:
-                    - "null"
-                    - string
-                  description: Unique identifier for the question answered.
-                questionRevisionId:
-                  type:
-                    - "null"
-                    - string
-                  description: Unique identifier for the revision of the question answered.
-                score:
-                  type:
-                    - "null"
-                    - integer
-                  description: Numeric score assigned to the answer.
-          callId:
-            type:
-              - "null"
-              - string
-            description:
-              Unique identifier for the call associated with the answered
-              scorecard.
-          callStartTime:
-            type:
-              - "null"
-              - string
-            description: Timestamp indicating the start time of the call.
-            format: date-time
-          reviewTime:
-            type:
-              - "null"
-              - string
-            description: >-
-              Timestamp indicating when the review of the answered scorecard was
-              completed.
-            format: date-time
-          reviewedUserId:
-            type:
-              - "null"
-              - string
-            description: Unique identifier for the user whose performance was reviewed.
-          reviewerUserId:
-            type:
-              - "null"
-              - string
-            description: Unique identifier for the user who performed the review.
-          scorecardId:
-            type:
-              - "null"
-              - string
-            description: Unique identifier for the scorecard template used.
-          scorecardName:
-            type:
-              - "null"
-              - string
-            description: Name or title of the scorecard template used.
-          visibilityType:
-            type:
-              - "null"
-              - string
-            description:
-              Type indicating the visibility permissions for the answered
-              scorecard.
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/calls"
+  - $ref: "#/definitions/streams/extensiveCalls"
+  - $ref: "#/definitions/streams/scorecards"
+  - $ref: "#/definitions/streams/answeredScorecards"
+
 spec:
   type: Spec
   connection_specification:
@@ -1127,35 +251,75 @@ spec:
     properties:
       access_key:
         type: string
-        title: Gong Access Key
         description: Gong Access Key
+        title: Gong Access Key
         airbyte_secret: true
         order: 0
       access_key_secret:
         type: string
-        title: Gong Access Key Secret
         description: Gong Access Key Secret
+        title: Gong Access Key Secret
         airbyte_secret: true
         order: 1
       start_date:
         type: string
-        title: Start date
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         description: >-
           The date from which to list calls, in the ISO-8601 format; if not
           specified, the calls start with the earliest recorded call. For
           web-conference calls recorded by Gong, the date denotes its scheduled
           time, otherwise, it denotes its actual start time.
+        title: Start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2018-02-18T08:00:00Z"
         order: 2
     additionalProperties: true
+
 metadata:
   autoImportSchema:
     users: false
     calls: false
+    extensiveCalls: false
     scorecards: false
     answeredScorecards: false
+  testedStreams:
+    scorecards:
+      streamHash: b4a5aa11ee2cb96554fa359ffec46d50641b0434
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: c6b2bab08397024790447b2ea909e5e2056b3778
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    answeredScorecards:
+      streamHash: 42e030943265c512ecbca24e953416c157210edf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    extensiveCalls:
+      streamHash: 99ac4098c8bba3989f73dff4c7b4b85963c90acd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    calls:
+      streamHash: 4152ed041830ae0728cd87629fcc46f5ab42a394
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
 schemas:
   users:
     type: object
@@ -1252,9 +416,7 @@ schemas:
         type:
           - "null"
           - string
-        description:
-          Unique identifier for the calendar event associated with the
-          call.
+        description: Unique identifier for the calendar event associated with the call.
       clientUniqueId:
         type:
           - "null"
@@ -1352,6 +514,570 @@ schemas:
           - "null"
           - string
         description: Identifier for the workspace to which the call belongs.
+  extensiveCalls:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      collaboration:
+        type:
+          - object
+          - "null"
+        description: Collaboration information added to the call
+        properties:
+          brief:
+            type:
+              - string
+              - "null"
+      content:
+        type:
+          - object
+          - "null"
+        description: Analysis of the interaction content.
+        properties:
+          brief:
+            type:
+              - string
+              - "null"
+          highlights:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                items:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      startTimes:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      text:
+                        type:
+                          - string
+                          - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+          keyPoints:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                text:
+                  type:
+                    - string
+                    - "null"
+          outline:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                duration:
+                  type:
+                    - number
+                    - "null"
+                items:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      startTime:
+                        type:
+                          - number
+                          - "null"
+                      text:
+                        type:
+                          - string
+                          - "null"
+                section:
+                  type:
+                    - string
+                    - "null"
+                startTime:
+                  type:
+                    - number
+                    - "null"
+          pointsOfInterest:
+            type:
+              - object
+              - "null"
+            properties:
+              actionItems:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    snippet:
+                      type:
+                        - string
+                        - "null"
+                    snippetEndTime:
+                      type:
+                        - number
+                        - "null"
+                    snippetStartTime:
+                      type:
+                        - number
+                        - "null"
+                    speakerID:
+                      type:
+                        - string
+                        - "null"
+          topics:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                duration:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          trackers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                count:
+                  type:
+                    - number
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                occurrences:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      speakerId:
+                        type:
+                          - string
+                          - "null"
+                      startTime:
+                        type:
+                          - number
+                          - "null"
+                phrases:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      count:
+                        type:
+                          - number
+                          - "null"
+                      occurrences:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            speakerId:
+                              type:
+                                - string
+                                - "null"
+                            startTime:
+                              type:
+                                - number
+                                - "null"
+                      phrase:
+                        type:
+                          - string
+                          - "null"
+      context:
+        description: A list of the agenda of each part of the call.
+        properties:
+          objects:
+            type: array
+            description: List of objects within the external system.
+            items:
+              type: object
+              properties:
+                fields:
+                  type: array
+                  description: array<External object data>.
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type:
+                          - "null"
+                          - string
+                        description: >-
+                          Field name. For Account supported fields are: Name,
+                          Website, Industry and all the custom fields. For
+                          Opportunity supported fields are Name, LeadSource,
+                          Type, StageName, Probability, Amount, CloseDate and
+                          all the custom fields.
+                      value:
+                        type:
+                          - "null"
+                          - object
+                        description: Field value.
+                objectId:
+                  type:
+                    - "null"
+                    - string
+                  description: Object ID.
+                objectType:
+                  type:
+                    - "null"
+                    - string
+                  description: "Object Type. Allowed: Opportunity, Account"
+                timing:
+                  type:
+                    - "null"
+                    - string
+                  description: "Timing of object. Allowed: Now, TimeOfCall."
+          system:
+            type:
+              - "null"
+              - string
+            description: >-
+              External system name. Allowed: Salesforce, HubSpot,
+              MicrosoftDynamic, Generic.
+      id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the call (from metaData.id).
+      interaction:
+        type:
+          - object
+          - "null"
+        description: Metrics collected around the interaction during the call.
+        properties:
+          interactionStats:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+          questions:
+            type:
+              - object
+              - "null"
+            properties:
+              companyCount:
+                type:
+                  - number
+                  - "null"
+              nonCompanyCount:
+                type:
+                  - number
+                  - "null"
+          speakers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                talkTime:
+                  type:
+                    - number
+                    - "null"
+                userId:
+                  type:
+                    - string
+                    - "null"
+          video:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                duration:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      media:
+        description: The media urls of the call.
+        properties:
+          audioUrl:
+            type:
+              - "null"
+              - string
+            description: >-
+              If true and exist, add audio url of the call. The url will be
+              available for 8 hours.
+          videoUrl:
+            type:
+              - "null"
+              - string
+            description: >-
+              If true and exist, add video url of the call. The url will be
+              available for 8 hours.
+      metaData:
+        type:
+          - object
+          - "null"
+        description: call's metadata.
+        properties:
+          calendarEventId:
+            type:
+              - "null"
+              - string
+            description: Unique identifier for the calendar event associated with the call.
+          clientUniqueId:
+            type:
+              - "null"
+              - string
+            description: Unique identifier for the client related to the call.
+          customData:
+            type:
+              - "null"
+              - string
+            description: Custom data associated with the call.
+          direction:
+            type:
+              - "null"
+              - string
+            description: Direction of the call (inbound/outbound).
+          duration:
+            type:
+              - "null"
+              - integer
+            description: Duration of the call in seconds.
+          id:
+            type:
+              - "null"
+              - string
+            description: Unique identifier for the call.
+          isPrivate:
+            type:
+              - "null"
+              - boolean
+            description: Indicates if the call is private or not.
+          language:
+            type:
+              - "null"
+              - string
+            description: Language used in the call.
+          media:
+            type:
+              - "null"
+              - string
+            description: Media type used for communication (voice, video, etc.).
+          meetingUrl:
+            type:
+              - "null"
+              - string
+            description: URL for accessing the meeting associated with the call.
+          primaryUserId:
+            type:
+              - "null"
+              - string
+            description: Unique identifier for the primary user involved in the call.
+          purpose:
+            type:
+              - "null"
+              - string
+            description: Purpose or topic of the call.
+          scheduled:
+            type:
+              - "null"
+              - string
+            description: Scheduled date and time of the call.
+            format: date-time
+          scope:
+            type:
+              - "null"
+              - string
+            description: Scope or extent of the call.
+          sdrDisposition:
+            type:
+              - "null"
+              - string
+            description: Disposition set by the sales development representative.
+          started:
+            type:
+              - "null"
+              - string
+            description: Start date and time of the call.
+            format: date-time
+          system:
+            type:
+              - "null"
+              - string
+            description: System information related to the call.
+          title:
+            type:
+              - "null"
+              - string
+            description: Title or headline of the call.
+          url:
+            type:
+              - "null"
+              - string
+            description: URL associated with the call.
+          workspaceId:
+            type:
+              - "null"
+              - string
+            description: Identifier for the workspace to which the call belongs.
+      parties:
+        type:
+          - array
+          - "null"
+        description: A list of the call's participants
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            affiliation:
+              type:
+                - string
+                - "null"
+              description: >-
+                Whether the participant is from the company or not. Allowed:
+                Internal, External, Unknown
+            context:
+              type:
+                - object
+                - "null"
+              description: >-
+                A list of links to external systems such as CRM, Dialer, Case
+                Management, etc.
+            emailAddress:
+              type:
+                - string
+                - "null"
+              description: Email address.
+            id:
+              type:
+                - string
+                - "null"
+              description: Unique ID of the participant in the call.
+            methods:
+              type:
+                - array
+                - "null"
+              description: >-
+                Whether the participant was invited to the meeting or only
+                attended the call. Allowed: Invitee, Attendee.
+              items:
+                type:
+                  - string
+                  - "null"
+            name:
+              type:
+                - string
+                - "null"
+              description: The name of the participant.
+            phoneNumber:
+              type:
+                - string
+                - "null"
+              description: The phone number of the participant.
+            speakerId:
+              type:
+                - string
+                - "null"
+              description: >-
+                Unique ID of a participant that spoke in the call. References to
+                this id will appear in the '/v2/calls/transcript' endpoint
+                response.
+            title:
+              type:
+                - string
+                - "null"
+              description: The job title of the participant.
+            userId:
+              type:
+                - string
+                - "null"
+              description: >-
+                The user ID of the participant within the Gong system, if the
+                participant exists in the system.
   scorecards:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1489,7 +1215,8 @@ schemas:
               type:
                 - "null"
                 - string
-              description: Unique identifier for the revision of the question answered.
+              description: Unique identifier for the revision of the question
+                answered.
             score:
               type:
                 - "null"
@@ -1499,7 +1226,8 @@ schemas:
         type:
           - "null"
           - string
-        description: Unique identifier for the call associated with the answered scorecard.
+        description: Unique identifier for the call associated with the answered
+          scorecard.
       callStartTime:
         type:
           - "null"
@@ -1538,4 +1266,5 @@ schemas:
         type:
           - "null"
           - string
-        description: Type indicating the visibility permissions for the answered scorecard.
+        description: Type indicating the visibility permissions for the answered
+          scorecard.

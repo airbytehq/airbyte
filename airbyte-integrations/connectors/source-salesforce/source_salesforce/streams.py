@@ -4,41 +4,54 @@
 
 import csv
 import ctypes
-import math
-import os
-import time
 import urllib.parse
-import uuid
 from abc import ABC
-from contextlib import closing
+from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
-import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk import (
+    BearerAuthenticator,
+    CursorPaginationStrategy,
+    DeclarativeStream,
+    DefaultPaginator,
+    DpathExtractor,
+    HttpMethod,
+    HttpRequester,
+    JsonDecoder,
+    MessageRepository,
+    RecordSelector,
+    RequestOption,
+    RequestOptionType,
+    SimpleRetriever,
+    StreamSlice,
+)
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
+from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.declarative.decoders import NoopDecoder
+from airbyte_cdk.sources.declarative.extractors import ResponseToFileExtractor
+from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever
+from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
+from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
+from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils import AirbyteTracedException
-from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import exceptions
-from requests.models import PreparedRequest
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
-from .exceptions import SalesforceException, TmpFileIOError
-from .rate_limiting import (
-    RESPONSE_CONSUMPTION_EXCEPTIONS,
-    TRANSIENT_EXCEPTIONS,
-    BulkNotSupportedException,
-    SalesforceErrorHandler,
-    default_backoff_handler,
-)
+from .rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
@@ -60,24 +73,40 @@ class SalesforceStream(HttpStream, ABC):
         sf_api: Salesforce,
         pk: str,
         stream_name: str,
+        job_tracker: JobTracker,
+        message_repository: MessageRepository,
         sobject_options: Mapping[str, Any] = None,
         schema: dict = None,
         start_date=None,
         **kwargs,
     ):
-        super().__init__(**kwargs)
-        self.sf_api = sf_api
-        self.pk = pk
         self.stream_name = stream_name
+        self.pk = pk
+        self.sf_api = sf_api
+        super().__init__(**kwargs)
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
         self.start_date = self.format_start_date(start_date)
+        self._job_tracker = job_tracker
+        self._message_repository = message_repository
         self._http_client = HttpClient(
             self.stream_name,
             self.logger,
-            session=self._session,  # no need to specific api_budget and authenticator as HttpStream sets them in self._session
+            session=self._http_client._session,  # no need to specific api_budget and authenticator as HttpStream sets them in self._session
             error_handler=SalesforceErrorHandler(stream_name=self.stream_name, sobject_options=self.sobject_options),
         )
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        """
+        In order to avoid RFR which does uses `_read_single_page` instead of `_read_pages`
+        """
+        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     @staticmethod
     def format_start_date(start_date: Optional[str]) -> Optional[str]:
@@ -101,10 +130,6 @@ class SalesforceStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self.sf_api.instance_url
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return SalesforceAvailabilityStrategy()
 
     @property
     def too_many_properties(self):
@@ -317,18 +342,20 @@ class RestSalesforceStream(SalesforceStream):
         property_chunk: Mapping[str, Any] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        return self._http_client.send_request(
+            http_method=self.http_method,
+            url=self._join_url(
+                self.url_base,
+                self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            ),
             headers=dict(request_headers),
             params=self.request_params(
                 stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk
             ),
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_kwargs={},
         )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        response = self._send_request(request, request_kwargs)
-        return request, response
 
 
 class BatchedSubStream(HttpSubStream):
@@ -356,218 +383,380 @@ class RestSalesforceSubStream(BatchedSubStream, RestSalesforceStream):
     pass
 
 
+class BulkDatetimeStreamSlicer(StreamSlicer):
+    def __init__(self, cursor: Optional[ConcurrentCursor]) -> None:
+        self._cursor = cursor
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
+        return {}
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        if not self._cursor:
+            yield from [StreamSlice(partition={}, cursor_slice={})]
+            return
+
+        for slice_start, slice_end in self._cursor.generate_slices():
+            yield StreamSlice(
+                partition={},
+                cursor_slice={
+                    "start_date": slice_start.isoformat(timespec="milliseconds"),
+                    "end_date": slice_end.isoformat(timespec="milliseconds"),
+                },
+            )
+
+
+class BulkParentStreamStreamSlicer(StreamSlicer):
+    def __init__(
+        self,
+        batched_substream: BatchedSubStream,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]],
+        stream_state: Optional[Mapping[str, Any]],
+        parend_id_field: str,
+    ) -> None:
+        self._batched_substream = batched_substream
+        self._sync_mode = sync_mode
+        self._cursor_field = cursor_field
+        self._stream_state = stream_state
+        self._parend_id_field = parend_id_field
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
+        return {}
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        for batched_parents in self._batched_substream.stream_slices(
+            sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._stream_state
+        ):
+            yield StreamSlice(
+                partition={"parents": [parent[self._parend_id_field] for parent in batched_parents["parents"]]}, cursor_slice={}
+            )
+
+
 class BulkSalesforceStream(SalesforceStream):
-    DEFAULT_WAIT_TIMEOUT_SECONDS = 86400  # 24-hour bulk job running time
+    def __init__(self, **kwargs) -> None:
+        self._stream_slicer_cursor = None
+        self._switch_from_bulk_to_rest = False
+        self._rest_stream = None
+        super().__init__(**kwargs)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        This method needs to be there as `HttpStream.next_page_token` is abstract but it will never get called
+        """
+        pass
+
+    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
+        """
+        This method needs to be there as `HttpStream.path` is abstract but it will never get called
+        """
+        pass
+
+    def _instantiate_declarative_stream(self, stream_slicer: StreamSlicer, has_bulk_parent: bool) -> None:
+        """
+        For streams with a replication key and where filtering is supported, we need to have the cursor in order to instantiate the
+        DeclarativeStream hence why this isn't called in the __init__
+        """
+        config = {}
+        parameters = {}
+        url_base = self.sf_api.instance_url
+        job_query_path = f"/services/data/{self.sf_api.version}/jobs/query"
+        decoder = JsonDecoder(parameters=parameters)
+        authenticator = BearerAuthenticator(
+            token_provider=InterpolatedStringTokenProvider(api_token=self.sf_api.access_token, config=config, parameters=parameters),
+            config=config,
+            parameters=parameters,
+        )
+        error_handler = SalesforceErrorHandler()
+        select_fields = self.get_query_select_fields()
+        query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
+        if self.cursor_field:
+            where_in_query = '{{ " WHERE " if stream_slice["start_date"] or stream_slice["end_date"] else "" }}'
+            lower_boundary_interpolation = (
+                '{{ "' f"{self.cursor_field}" ' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
+            )
+            and_keyword_interpolation = '{{" AND " if stream_slice["start_date"] and stream_slice["end_date"] else "" }}'
+            upper_boundary_interpolation = (
+                '{{ "' f"{self.cursor_field}" ' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
+            )
+            query = query + where_in_query + lower_boundary_interpolation + and_keyword_interpolation + upper_boundary_interpolation
+        elif isinstance(stream_slicer, BulkParentStreamStreamSlicer):
+            where_in_query = " WHERE ContentDocumentId IN ('"
+            parents_interpolation = '{{ "\', \'".join(stream_slice["parents"]) }}'
+            closing_parenthesis = "')"
+            query = query + where_in_query + parents_interpolation + closing_parenthesis
+        creation_requester = HttpRequester(
+            name=f"{self.name} - creation requester",
+            url_base=url_base,
+            path=job_query_path,
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.POST,
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_body_data=None,
+                request_body_json={
+                    "operation": "queryAll",
+                    "query": query,
+                    "contentType": "CSV",
+                    "columnDelimiter": "COMMA",
+                    "lineEnding": "LF",
+                },
+                request_headers=None,
+                request_parameters=None,
+                config=config,
+                parameters=parameters,
+            ),
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            decoder=decoder,
+            stream_response=False,
+        )
+        polling_id_interpolation = "{{stream_slice['create_job_response'].json()['id'] }}"
+        polling_requester = HttpRequester(
+            name=f"{self.name} - polling requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.GET,
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_body_data=None,
+                request_body_json=None,
+                request_headers=None,
+                request_parameters=None,
+                config=config,
+                parameters=parameters,
+            ),
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            decoder=decoder,
+            stream_response=False,
+        )
+        # "GET", url, headers = {"Accept-Encoding": "gzip"}, request_kwargs = {"stream": True}
+        download_id_interpolation = "{{stream_slice['url']}}"
+        job_download_components_name = f"{self.name} - download requester"
+        download_requester = HttpRequester(
+            name=job_download_components_name,
+            url_base=url_base,
+            path=f"{job_query_path}/{download_id_interpolation}/results",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.GET,
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_body_data=None,
+                request_body_json=None,
+                request_headers={"Accept-Encoding": "gzip"},
+                request_parameters=None,
+                config=config,
+                parameters=parameters,
+            ),
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            stream_response=True,
+        )
+        download_retriever = SimpleRetriever(
+            requester=download_requester,
+            record_selector=RecordSelector(
+                extractor=ResponseToFileExtractor(),
+                record_filter=None,
+                transformations=[],
+                schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+                config=config,
+                parameters={},
+            ),
+            primary_key=None,
+            name=job_download_components_name,
+            paginator=DefaultPaginator(
+                decoder=NoopDecoder(),
+                page_size_option=None,
+                page_token_option=RequestOption(
+                    field_name="locator",
+                    inject_into=RequestOptionType.request_parameter,
+                    parameters={},
+                ),
+                pagination_strategy=CursorPaginationStrategy(
+                    cursor_value="{{ headers['Sforce-Locator'] }}",
+                    stop_condition="{{ headers.get('Sforce-Locator', None) == 'null' or not headers.get('Sforce-Locator', None) }}",
+                    decoder=NoopDecoder(),
+                    config=config,
+                    parameters={},
+                ),
+                url_base=url_base,
+                config=config,
+                parameters={},
+            ),
+            config=config,
+            parameters={},
+        )
+
+        abort_requester = HttpRequester(
+            name=f"{self.name} - abort requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.PATCH,
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_body_data=None,
+                request_body_json={"state": "Aborted"},
+                request_headers=None,
+                request_parameters=None,
+                config=config,
+                parameters=parameters,
+            ),
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            stream_response=False,
+        )
+        delete_requester = HttpRequester(
+            name=f"{self.name} - delete requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.DELETE,
+            request_options_provider=None,
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            stream_response=False,
+        )
+        status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["state"], config={}, parameters={})
+        urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
+        job_repository = AsyncHttpJobRepository(
+            creation_requester=creation_requester,
+            polling_requester=polling_requester,
+            download_retriever=download_retriever,
+            abort_requester=abort_requester,
+            delete_requester=delete_requester,
+            status_extractor=status_extractor,
+            status_mapping={
+                "InProgress": AsyncJobStatus.RUNNING,
+                "UploadComplete": AsyncJobStatus.RUNNING,
+                "JobComplete": AsyncJobStatus.COMPLETED,
+                "Aborted": AsyncJobStatus.FAILED,
+                "Failed": AsyncJobStatus.FAILED,
+            },
+            urls_extractor=urls_extractor,
+            job_timeout=self.DEFAULT_WAIT_TIMEOUT,
+        )
+        record_selector = RecordSelector(
+            extractor=None,  # FIXME typing won't like that but it is not used
+            record_filter=None,
+            transformations=[],
+            schema_normalization=self.transformer,
+            config=config,
+            parameters=parameters,
+        )
+        self._bulk_job_stream = DeclarativeStream(
+            retriever=AsyncRetriever(
+                config={},
+                parameters={},
+                record_selector=record_selector,
+                stream_slicer=stream_slicer,
+                job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
+                    job_repository,
+                    stream_slices,
+                    self._job_tracker,
+                    self._message_repository,
+                    exceptions_to_break_on=[BulkNotSupportedException],
+                    has_bulk_parent=has_bulk_parent,
+                ),
+            ),
+            config={},
+            parameters={},
+            name=self.name,
+            primary_key=self.pk,
+            schema_loader=InlineSchemaLoader({}, {}),  # FIXME call get_json_schema?
+            # the interface mentions that this is Optional,
+            # but I get `'NoneType' object has no attribute 'eval'` by passing None
+            stream_cursor_field="",
+        )
+
+    DEFAULT_WAIT_TIMEOUT = timedelta(hours=24)
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
 
-    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
-        return f"/services/data/{self.sf_api.version}/jobs/query"
-
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
-
-    def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
-        """
-        This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
-        the response buffer (which is either by calling `json` or `iter_content`)
-        """
-        headers = headers if headers else self._http_client._session.auth.get_auth_header()
-        return self._http_client.send_request(method, url, headers=headers, json=json, request_kwargs={})[1]
-
-    @default_backoff_handler(max_tries=5, retry_on=RESPONSE_CONSUMPTION_EXCEPTIONS)
-    def _create_stream_job(self, query: str, url: str) -> Optional[str]:
-        json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
-        try:
-            response = self._send_http_request("POST", url, json=json)
-            return response.json().get("id")  # type: ignore  # based on the API, `id` will be a string
-        except BulkNotSupportedException:
-            return None
-
-    def create_stream_job(self, query: str, url: str) -> Optional[str]:
-        """
-        docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
-
-        Note that we want to retry during connection issues as well. Those can occur when calling `.json()`. Even in the case of a
-        connection error during a HTTPError, we will retry as else, we won't be able to take the right action.
-        """
-        return self._create_stream_job(query, url)
-
-    def wait_for_job(self, url: str) -> str:
-        expiration_time: DateTime = pendulum.now().add(seconds=self.DEFAULT_WAIT_TIMEOUT_SECONDS)
-        job_status = "InProgress"
-        delay_timeout = 0.0
-        delay_cnt = 0
-        job_info = None
-        # minimal starting delay is 0.5 seconds.
-        # this value was received empirically
-        time.sleep(0.5)
-        while pendulum.now() < expiration_time:
-            try:
-                job_info = self._send_http_request("GET", url=url).json()
-            except exceptions.HTTPError as error:
-                error_code, error_message = self._extract_error_code_and_message(error.response)
-                if (
-                    "We can't complete the action because enabled transaction security policies took too long to complete." in error_message
-                    and error_code == "TXN_SECURITY_METERING_ERROR"
-                ):
-                    message = 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'
-                    raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
-                else:
-                    raise error
-            job_id = job_info["id"]
-            if job_status != job_info["state"]:
-                self.logger.info(f"Job {self.name}/{job_id} status changed from {job_status} to {job_info['state']}")
-            job_status = job_info["state"]
-            if job_status in ["JobComplete", "Aborted", "Failed"]:
-                if job_status != "JobComplete":
-                    # this is only job metadata without payload
-                    error_message = job_info.get("errorMessage")
-                    if not error_message:
-                        # not all failed response can have "errorMessage" and we need to show full response body
-                        error_message = job_info
-                    self.logger.error(
-                        f"Job: {self.name}/{job_id}, JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                else:
-                    self.logger.info(f"Job: {self.name}/{job_id}, JobStatus: {job_status}")
-                return job_status
-
-            if delay_timeout < self.MAX_CHECK_INTERVAL_SECONDS:
-                delay_timeout = 0.5 + math.exp(delay_cnt) / 1000.0
-                delay_cnt += 1
-
-            time.sleep(delay_timeout)
-            self.logger.debug(
-                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id} to complete. Current state: {job_status}"
-            )
-
-        self.logger.warning(f"Not wait the {self.name} data for {self.DEFAULT_WAIT_TIMEOUT_SECONDS} seconds, data: {job_info}!!")
-        return job_status
-
-    def _extract_error_code_and_message(self, response: requests.Response) -> tuple[Optional[str], str]:
-        try:
-            error_data = response.json()[0]
-            return error_data.get("errorCode"), error_data.get("message", "")
-        except exceptions.JSONDecodeError:
-            self.logger.warning(f"The response for `{response.request.url}` is not a JSON but was `{response.content}`")
-        except IndexError:
-            self.logger.warning(
-                f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`"
-            )
-
-        return None, ""
-
-    def execute_job(self, query: str, url: str) -> Tuple[Optional[str], Optional[str]]:
-        job_status = "Failed"
-        for i in range(0, self.MAX_RETRY_NUMBER):
-            job_id = self.create_stream_job(query=query, url=url)
-            if not job_id:
-                return None, job_status
-            job_full_url = f"{url}/{job_id}"
-            self.logger.info(f"Job: {self.name}/{job_id} created, Job Full Url: {job_full_url}")
-            job_status = self.wait_for_job(url=job_full_url)
-            if job_status not in ["UploadComplete", "InProgress"]:
-                break
-            self.logger.error(f"Waiting error. Try to run this job again {i + 1}/{self.MAX_RETRY_NUMBER}...")
-            self.abort_job(url=job_full_url)
-            job_status = "Aborted"
-
-        if job_status in ["Aborted", "Failed"]:
-            self.delete_job(url=job_full_url)
-            return None, job_status
-        return job_full_url, job_status
-
-    def filter_null_bytes(self, b: bytes):
-        """
-        https://github.com/airbytehq/airbyte/issues/8300
-        """
-        res = b.replace(b"\x00", b"")
-        if len(res) < len(b):
-            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(b), len(res))
-        return res
-
-    def get_response_encoding(self, headers) -> str:
-        """Returns encodings from given HTTP Header Dict.
-
-        :param headers: dictionary to extract encoding from.
-        :rtype: str
-        """
-
-        content_type = headers.get("content-type")
-
-        if not content_type:
-            return self.encoding
-
-        content_type, params = requests.utils._parse_content_type_header(content_type)
-
-        if "charset" in params:
-            return params["charset"].strip("'\"")
-
-        return self.encoding
-
-    @default_backoff_handler(
-        max_tries=5, retry_on=RESPONSE_CONSUMPTION_EXCEPTIONS
-    )  # We need the default_backoff_handler here because the HttpClient does not handle errors during the streaming of the response
-    def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
-        """
-        Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
-        @ url: string - the url of the `executed_job`
-        @ chunk_size: int - the buffer size for each chunk to fetch from stream, in bytes, default: 1024 bytes
-        Return the tuple containing string with file path of downloaded binary data (Saved temporarily) and file encoding.
-        """
-        # set filepath for binary data from response
-        tmp_file = str(uuid.uuid4())
-        _, streamed_response = self._http_client.send_request(
-            "GET", url, headers={"Accept-Encoding": "gzip"}, request_kwargs={"stream": True}
-        )
-        with closing(streamed_response) as response, open(tmp_file, "wb") as data_file:
-            response_headers = response.headers
-            response_encoding = self.get_response_encoding(response_headers)
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                data_file.write(self.filter_null_bytes(chunk))
-        # check the file exists
-        if os.path.isfile(tmp_file):
-            return tmp_file, response_encoding, response_headers
-        else:
-            raise TmpFileIOError(f"The IO/Error occured while verifying binary data. Stream: {self.name}, file {tmp_file} doesn't exist.")
-
-    def read_with_chunks(self, path: str, file_encoding: str, chunk_size: int = 100) -> Iterable[Tuple[int, Mapping[str, Any]]]:
-        """
-        Reads the downloaded binary data, using lines chunks, set by `chunk_size`.
-        @ path: string - the path to the downloaded temporarily binary data.
-        @ file_encoding: string - encoding for binary data file according to Standard Encodings from codecs module
-        @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
-        """
-        try:
-            with open(path, "r", encoding=file_encoding) as data:
-                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix", dtype=object)
-                for chunk in chunks:
-                    chunk = chunk.replace({nan: None}).to_dict(orient="records")
-                    for row in chunk:
-                        yield row
-        except pd.errors.EmptyDataError as e:
-            self.logger.info(f"Empty data received. {e}")
-            yield from []
-        except IOError as ioe:
-            raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
-        finally:
-            # remove binary tmp file, after data is read
-            os.remove(path)
-
-    def abort_job(self, url: str):
-        data = {"state": "Aborted"}
-        self._send_http_request("PATCH", url=url, json=data)
-        self.logger.warning("Broken job was aborted")
-
-    def delete_job(self, url: str):
-        self._send_http_request("DELETE", url=url)
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
-    def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        return None
 
     def get_query_select_fields(self) -> str:
         return ", ".join(
@@ -606,54 +795,36 @@ class BulkSalesforceStream(SalesforceStream):
         stream_state: Mapping[str, Any] = None,
         call_count: int = 0,
     ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {}
-        next_page_token = None
+        if self._is_async_job_slice(stream_slice):
+            if self._switch_from_bulk_to_rest:
+                # ignore as we have switched to rest
+                pass
+            else:
+                yield from self._bulk_job_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        else:
+            yield from self._rest_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
-        params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        job_full_url, job_status = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
-        if not job_full_url:
-            if job_status == "Failed":
-                # As rule as BULK logic returns unhandled error. For instance:
-                # error message: 'Unexpected exception encountered in query processing.
-                #                 Please contact support with the following id: 326566388-63578 (-436445966)'"
-                # Thus we can try to switch to GET sync request because its response returns obvious error message
-                standard_instance = self.get_standard_instance()
-                self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
-                stream_is_available, error = standard_instance.check_availability(self.logger, None)
-                if not stream_is_available:
-                    self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
-                    return
-                yield from standard_instance.read_records(
-                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-                )
-                return
-            raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
-        salesforce_bulk_api_locator = None
-        while True:
-            req = PreparedRequest()
-            req.prepare_url(f"{job_full_url}/results", {"locator": salesforce_bulk_api_locator})
-            try:
-                tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
-            except TRANSIENT_EXCEPTIONS as exception:
-                # We have seen some cases where pulling the job result's data would simply not work even with the retry on `download_data`.
-                # Those cases have unfortunately not been documented and we are unsure of the efficacy of retrying the whole job as we have
-                # done multiple reliability change without tracking the efficacy of each.
-                if call_count >= _JOB_TRANSIENT_ERRORS_MAX_RETRY:
-                    self.logger.error(f"Downloading data failed even after {call_count} retries. Stopping retry and raising exception")
-                    raise exception
-                self.logger.warning(f"Downloading data failed after {call_count} retries. Retrying the whole job...")
-                call_count += 1
-                yield from self.read_records(sync_mode, cursor_field, stream_slice, stream_state, call_count=call_count)
-                return
+    def _is_async_job_slice(self, stream_slice):
+        return isinstance(stream_slice, StreamSlice) and "partition" in stream_slice.partition
 
-            for record in self.read_with_chunks(tmp_file, response_encoding):
-                yield record
-
-            if response_headers.get("Sforce-Locator", "null") == "null":
-                break
-            salesforce_bulk_api_locator = response_headers.get("Sforce-Locator")
-        self.delete_job(url=job_full_url)
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._instantiate_declarative_stream(BulkDatetimeStreamSlicer(self._stream_slicer_cursor), has_bulk_parent=False)
+        try:
+            yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        except BulkNotSupportedException:
+            self.logger.warning(
+                "attempt to switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status"
+            )
+            self._switch_from_bulk_to_rest = True
+            self._rest_stream = self.get_standard_instance()
+            stream_is_available, error = SalesforceAvailabilityStrategy().check_availability(self._rest_stream, self.logger, None)
+            if not stream_is_available:
+                self.logger.warning(f"Skipped syncing stream '{self._rest_stream.name}' because it was unavailable. Error: {error}")
+                yield from []
+            else:
+                yield from self._rest_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def get_standard_instance(self) -> SalesforceStream:
         """Returns a instance of standard logic(non-BULK) with same settings"""
@@ -663,7 +834,9 @@ class BulkSalesforceStream(SalesforceStream):
             stream_name=self.stream_name,
             schema=self.schema,
             sobject_options=self.sobject_options,
-            authenticator=self._session.auth,
+            authenticator=self._http_client._session.auth,
+            job_tracker=self._job_tracker,
+            message_repository=self._message_repository,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
@@ -677,7 +850,16 @@ class BulkSalesforceStream(SalesforceStream):
 
 
 class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
-    pass
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._instantiate_declarative_stream(
+            BulkParentStreamStreamSlicer(
+                super(BulkSalesforceSubStream, self), sync_mode, cursor_field, stream_state, PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+            ),
+            has_bulk_parent=True,
+        )
+        yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
 
 @BulkSalesforceStream.transformer.registerCustomTransform
@@ -697,13 +879,13 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
     _slice = None
 
     def __init__(self, replication_key: str, stream_slice_step: str = "P30D", **kwargs):
-        super().__init__(**kwargs)
         self.replication_key = replication_key
+        super().__init__(**kwargs)
         self._stream_slice_step = stream_slice_step
         self._stream_slicer_cursor = None
         self._state = {}
 
-    def set_cursor(self, cursor: Cursor) -> None:
+    def set_cursor(self, cursor: ConcurrentCursor) -> None:
         self._stream_slicer_cursor = cursor
 
     def stream_slices(

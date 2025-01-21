@@ -10,6 +10,14 @@ The Airbyte Source for [Qonto](https://qonto.com)
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.3.0  | 2024-10-06 | [46523](https://github.com/airbytehq/airbyte/pull/46523) | Migrate to Manifest-only |
+| 0.2.22 | 2024-10-05 | [46414](https://github.com/airbytehq/airbyte/pull/46414) | Update dependencies |
+| 0.2.21 | 2024-09-28 | [46175](https://github.com/airbytehq/airbyte/pull/46175) | Update dependencies |
+| 0.2.20 | 2024-09-21 | [45752](https://github.com/airbytehq/airbyte/pull/45752) | Update dependencies |
+| 0.2.19 | 2024-09-14 | [45521](https://github.com/airbytehq/airbyte/pull/45521) | Update dependencies |
+| 0.2.18 | 2024-09-07 | [45242](https://github.com/airbytehq/airbyte/pull/45242) | Update dependencies |
+| 0.2.17 | 2024-08-31 | [45023](https://github.com/airbytehq/airbyte/pull/45023) | Update dependencies |
+| 0.2.16 | 2024-08-24 | [44721](https://github.com/airbytehq/airbyte/pull/44721) | Update dependencies |
 | 0.2.15 | 2024-08-17 | [44312](https://github.com/airbytehq/airbyte/pull/44312) | Update dependencies |
 | 0.2.14 | 2024-08-12 | [43766](https://github.com/airbytehq/airbyte/pull/43766) | Update dependencies |
 | 0.2.13 | 2024-08-10 | [43585](https://github.com/airbytehq/airbyte/pull/43585) | Update dependencies |

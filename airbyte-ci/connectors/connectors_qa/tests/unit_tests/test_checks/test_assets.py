@@ -15,7 +15,7 @@ class TestCheckConnectorIconIsAvailable:
 
         # Assert
         assert result.status == CheckStatus.FAILED
-        assert result.message == "Icon file is missing. Please create an icon file at the root of the connector code directory."
+        assert result.message == "Icon file is missing. Please create an icon file at the root of the connector code directory"
 
     def test_fail_when_icon_path_is_none(self, mocker):
         # Arrange
@@ -27,7 +27,7 @@ class TestCheckConnectorIconIsAvailable:
 
         # Assert
         assert result.status == CheckStatus.FAILED
-        assert result.message == "Icon file is missing. Please create an icon file at the root of the connector code directory."
+        assert result.message == "Icon file is missing. Please create an icon file at the root of the connector code directory"
 
     def test_fail_when_icon_path_is_not_named_icon_svg(self, tmp_path, mocker):
         # Arrange
@@ -40,17 +40,44 @@ class TestCheckConnectorIconIsAvailable:
 
         # Assert
         assert result.status == CheckStatus.FAILED
-        assert result.message == "Icon file is not named 'icon.svg'"
+        assert result.message == "Icon file is not a SVG file"
 
-    def test_pass_when_icon_path_exists_and_is_named_icon_svg(self, tmp_path, mocker):
+
+    def test_fail_when_icon_file_is_not_valid_svg(self, tmp_path, mocker):
         # Arrange
         connector = mocker.MagicMock()
         connector.icon_path = tmp_path / "icon.svg"
-        connector.icon_path.touch()
+        connector.icon_path.write_text("not an svg file")
+
+        # Act
+        result = assets.CheckConnectorIconIsAvailable()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert result.message == "Icon file is not a valid SVG file"
+
+    def test_fail_when_icon_is_default_airbyte_icon(self, tmp_path, mocker):
+        # Arrange
+        connector = mocker.MagicMock()
+        connector.icon_path = tmp_path / "icon.svg"
+        connector.icon_path.write_text(assets.DEFAULT_AIRBYTE_ICON)
+
+        # Act
+        result = assets.CheckConnectorIconIsAvailable()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert result.message == "Icon file is the default Airbyte icon. Please replace it with a custom square icon"
+
+    def test_pass_when_valid_svg_is_named_icon_svg(self, tmp_path, mocker):
+        # Arrange
+        connector = mocker.MagicMock()
+        connector.icon_path = tmp_path / "icon.svg"
+        connector.icon_path.write_text(assets.DEFAULT_AIRBYTE_ICON.replace('fill="none"', 'fill="#000000"'))
 
         # Act
         result = assets.CheckConnectorIconIsAvailable()._run(connector)
 
         # Assert
         assert result.status == CheckStatus.PASSED
-        assert result.message == "Icon file exists"
+        assert result.message == "Icon file is a valid SVG file"

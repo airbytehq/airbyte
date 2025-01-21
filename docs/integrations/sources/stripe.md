@@ -108,7 +108,7 @@ The Stripe source connector supports the following streams:
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
-- [Payment Methods](https://stripe.com/docs/api/payment_methods/list)
+- [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
@@ -128,6 +128,9 @@ The Stripe source connector supports the following streams:
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
+
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ### Data type map
 
@@ -235,10 +238,16 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
-| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.2 | 2024-10-05 | [43881](https://github.com/airbytehq/airbyte/pull/43881) | Update dependencies |
+| 5.6.1 | 2024-10-03 | [46327](https://github.com/airbytehq/airbyte/pull/46327) | Bump the cdk to 5.10.2 to stop using PrintBuffer optimization due to record count mismatches |
+| 5.6.0 | 2024-09-10 | [44891](https://github.com/airbytehq/airbyte/pull/44891) | Update `Payment Methods` stream |
+| 5.5.4 | 2024-09-09 | [45348](https://github.com/airbytehq/airbyte/pull/45348) | Remove `stripe` python package |
+| 5.5.3 | 2024-09-03 | [45101](https://github.com/airbytehq/airbyte/pull/45101) | Fix regression following pagination issue fix |
+| 5.5.2 | 2024-08-28 | [44862](https://github.com/airbytehq/airbyte/pull/44862) | Fix RFR pagination issue |
 | 5.5.1 | 2024-08-10 | [43105](https://github.com/airbytehq/airbyte/pull/43105) | Update dependencies |
-| 5.5.0 | 2024-08-08 | [43302](https://github.com/airbytehq/airbyte/pull/43302) | Fix problem with state not updating and upgrade cdk 4
-| 5.4.12 | 2024-07-31 | [41985](https://github.com/airbytehq/airbyte/pull/41985) | Expand Invoice discounts and tax rates
+| 5.5.0 | 2024-08-08 | [43302](https://github.com/airbytehq/airbyte/pull/43302) | Fix problem with state not updating and upgrade cdk 4 |
+| 5.4.12 | 2024-07-31 | [41985](https://github.com/airbytehq/airbyte/pull/41985) | Expand Invoice discounts and tax rates |
 | 5.4.11 | 2024-07-27 | [42623](https://github.com/airbytehq/airbyte/pull/42623) | Update dependencies |
 | 5.4.10 | 2024-07-20 | [42305](https://github.com/airbytehq/airbyte/pull/42305) | Update dependencies |
 | 5.4.9 | 2024-07-13 | [41760](https://github.com/airbytehq/airbyte/pull/41760) | Update dependencies |

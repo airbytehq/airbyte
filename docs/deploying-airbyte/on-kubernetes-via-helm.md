@@ -17,13 +17,6 @@ Kubernetes cluster on AWS. Follow [this guide](on-restack.md) to get started.
 
 :::note
 
-Airbyte running on Self-Hosted Kubernetes doesn't support DBT Transformations. Please refer to
-[#5901](https://github.com/airbytehq/airbyte/issues/5091)
-
-:::
-
-:::note
-
 Airbyte Kubernetes Community Edition does not support basic auth by default. To enable basic auth,
 consider adding a reverse proxy in front of Airbyte.
 

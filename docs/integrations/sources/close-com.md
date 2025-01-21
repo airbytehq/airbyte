@@ -109,6 +109,14 @@ The Close.com connector is subject to rate limits. For more information on this 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| 0.5.23 | 2024-10-12 | [46803](https://github.com/airbytehq/airbyte/pull/46803) | Update dependencies |
+| 0.5.22 | 2024-10-05 | [46449](https://github.com/airbytehq/airbyte/pull/46449) | Update dependencies |
+| 0.5.21 | 2024-09-28 | [46116](https://github.com/airbytehq/airbyte/pull/46116) | Update dependencies |
+| 0.5.20 | 2024-09-21 | [45738](https://github.com/airbytehq/airbyte/pull/45738) | Update dependencies |
+| 0.5.19 | 2024-09-14 | [45483](https://github.com/airbytehq/airbyte/pull/45483) | Update dependencies |
+| 0.5.18 | 2024-09-07 | [45300](https://github.com/airbytehq/airbyte/pull/45300) | Update dependencies |
+| 0.5.17 | 2024-08-31 | [44976](https://github.com/airbytehq/airbyte/pull/44976) | Update dependencies |
+| 0.5.16 | 2024-08-24 | [44651](https://github.com/airbytehq/airbyte/pull/44651) | Update dependencies |
 | 0.5.15 | 2024-08-17 | [44305](https://github.com/airbytehq/airbyte/pull/44305) | Update dependencies |
 | 0.5.14 | 2024-08-12 | [43877](https://github.com/airbytehq/airbyte/pull/43877) | Update dependencies |
 | 0.5.13 | 2024-08-10 | [43574](https://github.com/airbytehq/airbyte/pull/43574) | Update dependencies |

@@ -126,6 +126,9 @@ This connector outputs the following incremental streams:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ## Experimental Tables
 
 The following tables depend on undocumented internal Jira API endpoints and are
@@ -151,6 +154,8 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.1 | 2024-10-12 | [44650](https://github.com/airbytehq/airbyte/pull/44650) | Update dependencies |
+| 3.2.0 | 2024-10-10 | [46344](https://github.com/airbytehq/airbyte/pull/46344) | Update CDK v5 |
 | 3.1.1 | 2024-08-17 | [44251](https://github.com/airbytehq/airbyte/pull/44251) | Update dependencies |
 | 3.1.0 | 2024-08-13 | [39558](https://github.com/airbytehq/airbyte/pull/39558) | Ensure config_error when state has improper format |
 | 3.0.14 | 2024-08-12 | [43885](https://github.com/airbytehq/airbyte/pull/43885) | Update dependencies |

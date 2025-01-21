@@ -15,11 +15,13 @@ class MockStream(Stream):
         name,
         json_schema,
         primary_key=None,
+        cursor_field=None,
     ):
         self._slices_and_records_or_exception = slices_and_records_or_exception
         self._name = name
         self._json_schema = json_schema
         self._primary_key = primary_key
+        self._cursor_field = cursor_field
 
     def read_records(
         self,
@@ -42,6 +44,10 @@ class MockStream(Stream):
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return self._cursor_field or []
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._json_schema

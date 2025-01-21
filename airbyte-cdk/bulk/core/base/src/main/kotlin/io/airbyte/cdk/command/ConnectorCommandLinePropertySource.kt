@@ -23,7 +23,6 @@ class ConnectorCommandLinePropertySource(
 const val CONNECTOR_CONFIG_PREFIX: String = "airbyte.connector.config"
 const val CONNECTOR_CATALOG_PREFIX: String = "airbyte.connector.catalog"
 const val CONNECTOR_STATE_PREFIX: String = "airbyte.connector.state"
-const val CONNECTOR_OUTPUT_FILE = "airbyte.connector.output.file"
 
 private fun resolveValues(
     commandLine: CommandLine,
@@ -39,7 +38,6 @@ private fun resolveValues(
     }
     val values: MutableMap<String, Any> = mutableMapOf()
     values[Operation.PROPERTY] = ops.first()
-    commandLine.optionValue("output")?.let { values[CONNECTOR_OUTPUT_FILE] = it }
     for ((cliOptionKey, prefix) in
         mapOf(
             "config" to CONNECTOR_CONFIG_PREFIX,
@@ -55,7 +53,7 @@ private fun resolveValues(
             log.warn { "File '$jsonFile' not found for '$cliOptionKey'." }
             continue
         }
-        values["$prefix.json"] = jsonFile.readText()
+        values["$prefix.json"] = jsonFile.readText().replace("$", "\${:$}")
     }
     return values
 }

@@ -6,11 +6,11 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
-from airbyte_protocol.models import FailureType
 
 SOME_BACKOFF_TIME = 60
 
@@ -34,7 +34,7 @@ SOME_BACKOFF_TIME = 60
                 response_action=ResponseAction.SUCCESS,
                 failure_type=None,
                 error_message=None,
-            )
+            ),
         ),
         (
             "test_chain_retrier_ignore_fail",
@@ -83,7 +83,7 @@ SOME_BACKOFF_TIME = 60
             ErrorResolution(
                 response_action=ResponseAction.IGNORE,
             ),
-        )
+        ),
     ],
 )
 def test_composite_error_handler(test_name, first_handler_behavior, second_handler_behavior, expected_behavior):

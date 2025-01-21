@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d7e23ea6-d741-4314-9209-a33c91a2e945
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-trustpilot
   githubIssueLabel: source-trustpilot
   icon: trustpilot.svg
@@ -10,7 +10,7 @@ data:
   name: TrustPilot
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-trustpilot
   registryOverrides:
     cloud:
@@ -20,8 +20,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/trustpilot
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   ab_internal:
     sl: 100
     ql: 100
@@ -40,5 +40,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.10.2@sha256:81db4f78a92d199f33c38c17f5b63fc87c56739f14dc10276ddec86c7b707b7a
 metadataSpecVersion: "1.0"

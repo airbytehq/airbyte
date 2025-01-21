@@ -10,7 +10,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
-  dockerImageTag: 4.7.6
+  dockerImageTag: 4.9.0
   dockerRepository: airbyte/source-s3
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   githubIssueLabel: source-s3
@@ -29,6 +29,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message: UX improvement, multi-stream support and deprecation of some parsing features
@@ -41,6 +43,7 @@ data:
     - language:python
     - cdk:python-file-based
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: s3_v4_jsonl_config_dev_null

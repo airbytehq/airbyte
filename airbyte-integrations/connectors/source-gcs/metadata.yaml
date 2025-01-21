@@ -2,18 +2,23 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  allowedHosts:
+    hosts:
+      - storage.googleapis.com
+      - accounts.google.com
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
-  dockerImageTag: 0.6.1
+  dockerImageTag: 0.7.4
   dockerRepository: airbyte/source-gcs
   documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
   githubIssueLabel: source-gcs
   icon: gcs.svg
   license: ELv2
-  name: GCS
+  maxSecondsBetweenMessages: 5400
+  name: Google Cloud Storage (GCS)
   remoteRegistries:
     pypi:
       enabled: true
@@ -29,6 +34,8 @@ data:
     - language:python
     - cdk:python-file-based
   connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
     - suite: liveTests
       testConnections:
         - name: gcs_old_config_dev_null
@@ -49,6 +56,11 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-GCS_JSONL__CREDS
           fileName: config_jsonl.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GCS_GLOB__CREDS
+          fileName: config_glob.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

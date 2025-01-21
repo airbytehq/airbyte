@@ -2,7 +2,7 @@
 package io.airbyte.cdk
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.output.ExceptionClassifier
+import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.OutputConsumer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
@@ -20,7 +20,7 @@ class AirbyteConnectorRunnable : Runnable {
 
     @Inject lateinit var outputConsumer: OutputConsumer
 
-    @Inject lateinit var exceptionClassifier: ExceptionClassifier
+    @Inject lateinit var exceptionHandler: ExceptionHandler
 
     override fun run() {
         var operation: Operation? = null
@@ -40,7 +40,7 @@ class AirbyteConnectorRunnable : Runnable {
                     "Failed ${operation::class} operation execution."
                 }
             }
-            outputConsumer.accept(exceptionClassifier.handle(e))
+            outputConsumer.accept(exceptionHandler.handle(e))
             throw e
         } finally {
             log.info { "Flushing output consumer prior to shutdown." }

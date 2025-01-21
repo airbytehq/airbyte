@@ -1,5 +1,10 @@
 # Schema Reference
 
+:::note
+You only need this if you're building a connector with Python or Java CDKs.
+If you're using Connector Builder, you can use [declared schemas](./connector-builder-ui/record-processing#declared-schema) instead.
+:::
+
 This document provides instructions on how to create a static schema for your Airbyte stream, which is necessary for integrating data from various sources.
 You can check out all the supported data types and examples at [this link](../understanding-airbyte/supported-data-types.md).
 
@@ -66,5 +71,3 @@ The schema is then translated into the following JSON format. Please note that i
   }
 }
 ```
-
-We hope this guide helps you create a successful static schema for your Airbyte stream. Please don't hesitate to reach out if you have any further questions or concerns.

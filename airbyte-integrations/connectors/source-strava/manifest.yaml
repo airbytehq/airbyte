@@ -1,0 +1,829 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - athlete_stats
+
+definitions:
+  streams:
+    athlete_stats:
+      type: DeclarativeStream
+      name: athlete_stats
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: athletes/{{ config.athlete_id }}/stats
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/athlete_stats"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: athlete/activities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 30
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: start_date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.strava.com/api/v3/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_token: "{{ config['refresh_token'] }}"
+      token_refresh_endpoint: https://www.strava.com/oauth/token
+      expires_in_name: expires_at
+      scopes:
+        - read_all
+        - activity:read_all
+
+streams:
+  - $ref: "#/definitions/streams/athlete_stats"
+  - $ref: "#/definitions/streams/activities"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - refresh_token
+      - athlete_id
+      - start_date
+    properties:
+      client_id:
+        type: string
+        description: The Client ID of your Strava developer application.
+        title: Client ID
+        pattern: ^[0-9_\-]+$
+        examples:
+          - "12345"
+        order: 0
+      client_secret:
+        type: string
+        description: The Client Secret of your Strava developer application.
+        title: Client Secret
+        pattern: ^[0-9a-fA-F]+$
+        examples:
+          - fc6243f283e51f6ca989aab298b17da125496f50
+        airbyte_secret: true
+        order: 1
+      refresh_token:
+        type: string
+        description: "The Refresh Token with the activity: read_all permissions."
+        title: Refresh Token
+        pattern: ^[0-9a-fA-F]+$
+        examples:
+          - fc6243f283e51f6ca989aab298b17da125496f50
+        airbyte_secret: true
+        order: 2
+      athlete_id:
+        type: integer
+        description: The Athlete ID of your Strava developer application.
+        title: Athlete ID
+        pattern: ^[0-9_\-]+$
+        examples:
+          - "17831421"
+        order: 3
+      start_date:
+        type: string
+        description: UTC date and time. Any data before this date will not be replicated.
+        title: Start Date
+        examples:
+          - "2021-03-01T00:00:00Z"
+        format: date-time
+        order: 4
+      auth_type:
+        type: string
+        const: Client
+        enum:
+          - Client
+        default: Client
+        order: 5
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    athlete_stats: false
+    activities: false
+
+schemas:
+  athlete_stats:
+    type:
+      - "null"
+      - object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      all_ride_totals:
+        type:
+          - "null"
+          - object
+        description: Total cumulative stats for all ride activities
+        additionalProperties: true
+        properties:
+          achievement_count:
+            type:
+              - "null"
+              - integer
+            description: Total number of achievements received in all rides
+          count:
+            type:
+              - "null"
+              - integer
+            description: Total number of rides
+          distance:
+            type:
+              - "null"
+              - number
+            description: Total distance covered in all ride activities
+          elapsed_time:
+            type:
+              - "null"
+              - integer
+            description: Total elapsed time in all ride activities
+          elevation_gain:
+            type:
+              - "null"
+              - number
+            description: Total elevation gain in all ride activities
+          moving_time:
+            type:
+              - "null"
+              - integer
+            description: Total moving time in all ride activities
+      all_run_totals:
+        type:
+          - "null"
+          - object
+        description: Total cumulative stats for all run activities
+        additionalProperties: true
+        properties:
+          achievement_count:
+            type:
+              - "null"
+              - integer
+            description: Total number of achievements received in all runs
+          count:
+            type:
+              - "null"
+              - integer
+            description: Total number of runs
+          distance:
+            type:
+              - "null"
+              - number
+            description: Total distance covered in all run activities
+          elapsed_time:
+            type:
+              - "null"
+              - integer
+            description: Total elapsed time in all run activities
+          elevation_gain:
+            type:
+              - "null"
+              - number
+            description: Total elevation gain in all run activities
+          moving_time:
+            type:
+              - "null"
+              - integer
+            description: Total moving time in all run activities
+      all_swim_totals:
+        type:
+          - "null"
+          - object
+        description: Total cumulative stats for all swim activities
+        additionalProperties: true
+        properties:
+          achievement_count:
+            type:
+              - "null"
+              - integer
+            description: Total number of achievements received in all swim activities
+          count:
+            type:
+              - "null"
+              - integer
+            description: Total number of swims
+          distance:
+            type:
+              - "null"
+              - number
+            description: Total distance covered in all swim activities
+          elapsed_time:
+            type:
+              - "null"
+              - integer
+            description: Total elapsed time in all swim activities
+          elevation_gain:
+            type:
+              - "null"
+              - number
+            description: Total elevation gain in all swim activities
+          moving_time:
+            type:
+              - "null"
+              - integer
+            description: Total moving time in all swim activities
+      biggest_climb_elevation_gain:
+        type:
+          - "null"
+          - number
+        description: Elevation gain of the biggest climb achievement
+      biggest_ride_distance:
+        type:
+          - "null"
+          - number
+        description: Distance covered in the biggest ride achievement
+      recent_ride_totals:
+        type:
+          - "null"
+          - object
+        description: Recent stats for ride activities
+        additionalProperties: true
+        properties:
+          achievement_count:
+            type:
+              - "null"
+              - integer
+            description: Number of achievements received in recent rides
+          count:
+            type:
+              - "null"
+              - integer
+            description: Number of recent rides
+          distance:
+            type:
+              - "null"
+              - number
+            description: Total distance covered in recent ride activities
+          elapsed_time:
+            type:
+              - "null"
+              - integer
+            description: Total elapsed time in recent ride activities
+          elevation_gain:
+            type:
+              - "null"
+              - number
+            description: Total elevation gain in recent ride activities
+          moving_time:
+            type:
+              - "null"
+              - integer
+            description: Total moving time in recent ride activities
+      recent_run_totals:
+        type:
+          - "null"
+          - object
+        description: Recent stats for run activities
+        additionalProperties: true
+        properties:
+          achievement_count:
+            type:
+              - "null"
+              - integer
+            description: Number of achievements received in recent runs
+          count:
+            type:
+              - "null"
+              - integer
+            description: Number of recent runs
+          distance:
+            type:
+              - "null"
+              - number
+            description: Total distance covered in recent run activities
+          elapsed_time:
+            type:
+              - "null"
+              - integer
+            description: Total elapsed time in recent run activities
+          elevation_gain:
+            type:
+              - "null"
+              - number
+            description: Total elevation gain in recent run activities
+          moving_time:
+            type:
+              - "null"
+              - integer
+            description: Total moving time in recent run activities
+      recent_swim_totals:
+        type:
+          - "null"
+          - object
+        description: Recent stats for swim activities
+        additionalProperties: true
+        properties:
+          achievement_count:
+            type:
+              - "null"
+              - integer
+            description: Number of achievements received in recent swim activities
+          count:
+            type:
+              - "null"
+              - integer
+            description: Number of recent swims
+          distance:
+            type:
+              - "null"
+              - number
+            description: Total distance covered in recent swim activities
+          elapsed_time:
+            type:
+              - "null"
+              - integer
+            description: Total elapsed time in recent swim activities
+          elevation_gain:
+            type:
+              - "null"
+              - number
+            description: Total elevation gain in recent swim activities
+          moving_time:
+            type:
+              - "null"
+              - integer
+            description: Total moving time in recent swim activities
+      ytd_ride_totals:
+        type:
+          - "null"
+          - object
+        description: Year-to-date stats for ride activities
+        additionalProperties: true
+        properties:
+          achievement_count:
+            type:
+              - "null"
+              - integer
+            description: >-
+              Total number of achievements received year-to-date in ride
+              activities
+          count:
+            type:
+              - "null"
+              - integer
+            description: Total number of rides year-to-date
+          distance:
+            type:
+              - "null"
+              - number
+            description: Total distance covered year-to-date in ride activities
+          elapsed_time:
+            type:
+              - "null"
+              - integer
+            description: Total elapsed time year-to-date in ride activities
+          elevation_gain:
+            type:
+              - "null"
+              - number
+            description: Total elevation gain year-to-date in ride activities
+          moving_time:
+            type:
+              - "null"
+              - integer
+            description: Total moving time year-to-date in ride activities
+      ytd_run_totals:
+        type:
+          - "null"
+          - object
+        description: Year-to-date stats for run activities
+        additionalProperties: true
+        properties:
+          achievement_count:
+            type:
+              - "null"
+              - integer
+            description: >-
+              Total number of achievements received year-to-date in run
+              activities
+          count:
+            type:
+              - "null"
+              - integer
+            description: Total number of runs year-to-date
+          distance:
+            type:
+              - "null"
+              - number
+            description: Total distance covered year-to-date in run activities
+          elapsed_time:
+            type:
+              - "null"
+              - integer
+            description: Total elapsed time year-to-date in run activities
+          elevation_gain:
+            type:
+              - "null"
+              - number
+            description: Total elevation gain year-to-date in run activities
+          moving_time:
+            type:
+              - "null"
+              - integer
+            description: Total moving time year-to-date in run activities
+      ytd_swim_totals:
+        type:
+          - "null"
+          - object
+        description: Year-to-date stats for swim activities
+        additionalProperties: true
+        properties:
+          achievement_count:
+            type:
+              - "null"
+              - integer
+            description: >-
+              Total number of achievements received year-to-date in swim
+              activities
+          count:
+            type:
+              - "null"
+              - integer
+            description: Total number of swims year-to-date
+          distance:
+            type:
+              - "null"
+              - number
+            description: Total distance covered year-to-date in swim activities
+          elapsed_time:
+            type:
+              - "null"
+              - integer
+            description: Total elapsed time year-to-date in swim activities
+          elevation_gain:
+            type:
+              - "null"
+              - number
+            description: Total elevation gain year-to-date in swim activities
+          moving_time:
+            type:
+              - "null"
+              - integer
+            description: Total moving time year-to-date in swim activities
+  activities:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+        description: Type of activity (e.g., ride, run)
+      achievement_count:
+        type:
+          - "null"
+          - integer
+        description: Total number of achievements in the activity
+      athlete:
+        type: object
+        description: Details of the athlete who recorded the activity
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+            description: ID of the athlete who completed the activity
+          resource_state:
+            type:
+              - "null"
+              - integer
+            description: Resource state of the athlete
+      athlete_count:
+        type:
+          - "null"
+          - integer
+        description: Total number of athletes linked in the activity
+      average_speed:
+        type:
+          - "null"
+          - number
+        description: Average speed of the activity
+      average_temp:
+        type:
+          - "null"
+          - number
+        description: Average temperature during the activity
+      average_watts:
+        type:
+          - "null"
+          - number
+        description: Average power output in watts
+      comment_count:
+        type:
+          - "null"
+          - integer
+        description: Total number of comments on the activity
+      commute:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the activity is a commute or not
+      device_watts:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the power data is from a device
+      display_hide_heartrate_option:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the heart rate option is hidden in the display
+      distance:
+        type:
+          - "null"
+          - number
+        description: Total distance covered in the activity
+      elapsed_time:
+        type:
+          - "null"
+          - integer
+        description: Total time elapsed during the activity
+      elev_high:
+        type:
+          - "null"
+          - number
+        description: Elevation at the highest point of the activity
+      elev_low:
+        type:
+          - "null"
+          - number
+        description: Elevation at the lowest point of the activity
+      end_latlng:
+        type:
+          - "null"
+          - array
+        description: Latitude and longitude coordinates of the end point of the activity
+        items:
+          type:
+            - "null"
+            - number
+          description: End latitude and longitude coordinates of the activity
+      external_id:
+        type:
+          - "null"
+          - string
+        description: External identifier of the activity
+      flagged:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the activity is flagged by the athlete
+      from_accepted_tag:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the activity is from an accepted tag
+      gear_id:
+        type:
+          - "null"
+          - string
+        description: ID of the gear used in the activity
+      has_heartrate:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if heart rate data is available for the activity
+      has_kudoed:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the athlete has given kudos for the activity
+      heartrate_opt_out:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the athlete has opted out of displaying heart rate
+      id:
+        type: integer
+        description: ID of the activity
+      kilojoules:
+        type:
+          - "null"
+          - number
+        description: Total energy expenditure in kilojoules
+      kudos_count:
+        type:
+          - "null"
+          - integer
+        description: Total number of kudos received for the activity
+      location_city:
+        type:
+          - "null"
+          - string
+        description: City where the activity took place
+      location_country:
+        type:
+          - "null"
+          - string
+        description: Country where the activity took place
+      location_state:
+        type:
+          - "null"
+          - string
+        description: State where the activity took place
+      manual:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the activity was manually entered
+      map:
+        type: object
+        description: Information related to the map of the activity route
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+            description: ID of the map associated with the activity
+          resource_state:
+            type:
+              - "null"
+              - integer
+            description: Resource state of the map
+          summary_polyline:
+            type:
+              - "null"
+              - string
+            description: Polyline of the route summary
+      max_speed:
+        type:
+          - "null"
+          - number
+        description: Maximum speed achieved during the activity
+      max_watts:
+        type:
+          - "null"
+          - integer
+        description: Maximum power output in watts
+      moving_time:
+        type:
+          - "null"
+          - integer
+        description: Total time spent moving during the activity
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the activity
+      photo_count:
+        type:
+          - "null"
+          - integer
+        description: Total number of photos attached to the activity
+      pr_count:
+        type:
+          - "null"
+          - integer
+        description: Total number of personal records achieved during the activity
+      private:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the activity is private
+      resource_state:
+        type:
+          - "null"
+          - integer
+        description: Resource state of the activity
+      start_date:
+        type:
+          - "null"
+          - string
+        description: Start date and time of the activity
+      start_date_local:
+        type:
+          - "null"
+          - string
+        description: Start date and time of the activity in local time
+      start_latitude:
+        type:
+          - "null"
+          - number
+        description: Start latitude of the activity
+      start_latlng:
+        type:
+          - "null"
+          - array
+        description: Latitude and longitude coordinates of the start point of the activity
+        items:
+          type:
+            - "null"
+            - number
+          description: Start latitude and longitude coordinates of the activity
+      start_longitude:
+        type:
+          - "null"
+          - number
+        description: Start longitude of the activity
+      timezone:
+        type:
+          - "null"
+          - string
+        description: Timezone of the activity
+      total_elevation_gain:
+        type:
+          - "null"
+          - number
+        description: Total elevation gain during the activity
+      total_photo_count:
+        type:
+          - "null"
+          - integer
+        description: Total number of photos attached to the activity
+      trainer:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the activity was done on a trainer
+      upload_id:
+        type:
+          - "null"
+          - integer
+        description: ID of the upload associated with the activity
+      upload_id_str:
+        type:
+          - "null"
+          - string
+        description: String representation of the upload ID
+      utc_offset:
+        type:
+          - "null"
+          - number
+        description: UTC offset of the activity
+      visibility:
+        type:
+          - "null"
+          - string
+        description: Visibility setting of the activity
+      weighted_average_watts:
+        type:
+          - "null"
+          - integer
+        description: Weighted average power output in watts
+      workout_type:
+        type:
+          - "null"
+          - integer
+        description: Type of workout (if applicable)

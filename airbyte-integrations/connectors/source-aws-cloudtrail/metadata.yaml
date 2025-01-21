@@ -24,7 +24,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
-  dockerImageTag: 1.0.10
+  dockerImageTag: 1.0.18
   dockerRepository: airbyte/source-aws-cloudtrail
   githubIssueLabel: source-aws-cloudtrail
   icon: aws-cloudtrail.svg

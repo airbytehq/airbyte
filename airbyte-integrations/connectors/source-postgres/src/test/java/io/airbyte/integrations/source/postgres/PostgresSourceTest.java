@@ -860,7 +860,7 @@ class PostgresSourceTest {
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
-  private static final String EXPECTED_DEFAULT_PARAMS = "prepareThreshold=0";
+  private static final String EXPECTED_DEFAULT_PARAMS = "prepareThreshold=0&tcpKeepAlive=true";
 
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(

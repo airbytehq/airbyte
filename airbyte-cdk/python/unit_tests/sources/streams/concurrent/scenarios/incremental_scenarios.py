@@ -25,6 +25,7 @@ test_incremental_stream_without_slice_boundaries_no_input_state = (
                         ({"from": 1, "to": 2}, [{"id": "3", "cursor_field": 2}, {"id": "4", "cursor_field": 3}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -58,6 +59,7 @@ test_incremental_stream_with_slice_boundaries_no_input_state = (
                         ({"from": 1, "to": 2}, [{"id": "3", "cursor_field": 2}, {"id": "4", "cursor_field": 3}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -77,8 +79,8 @@ test_incremental_stream_with_slice_boundaries_no_input_state = (
             {"cursor_field": 1},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"cursor_field": 2},
-            {"cursor_field": 2},  # see Cursor.ensure_at_least_one_state_emitted
+            {"cursor_field": 3},
+            {"cursor_field": 3},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -102,6 +104,7 @@ test_incremental_stream_without_slice_boundaries_with_legacy_state = (
                         ({"from": 1, "to": 2}, [{"id": "3", "cursor_field": 2}, {"id": "4", "cursor_field": 3}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -135,6 +138,7 @@ test_incremental_stream_with_slice_boundaries_with_legacy_state = (
                         ({"from": 1, "to": 2}, [{"id": "3", "cursor_field": 2}, {"id": "4", "cursor_field": 3}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -154,8 +158,8 @@ test_incremental_stream_with_slice_boundaries_with_legacy_state = (
             {"cursor_field": 1},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"cursor_field": 2},
-            {"cursor_field": 2},  # see Cursor.ensure_at_least_one_state_emitted
+            {"cursor_field": 3},
+            {"cursor_field": 3},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -189,6 +193,7 @@ test_incremental_stream_without_slice_boundaries_with_concurrent_state = (
                         ({"from": 1, "to": 2}, [{"id": "3", "cursor_field": 2}, {"id": "4", "cursor_field": 3}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -222,6 +227,7 @@ test_incremental_stream_with_slice_boundaries_with_concurrent_state = (
                         ({"from": 1, "to": 2}, [{"id": "3", "cursor_field": 2}, {"id": "4", "cursor_field": 3}]),
                     ],
                     "stream1",
+                    cursor_field="cursor_field",
                     json_schema={
                         "type": "object",
                         "properties": {
@@ -241,8 +247,8 @@ test_incremental_stream_with_slice_boundaries_with_concurrent_state = (
             {"cursor_field": 1},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"cursor_field": 2},
-            {"cursor_field": 2},  # see Cursor.ensure_at_least_one_state_emitted
+            {"cursor_field": 3},
+            {"cursor_field": 3},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})

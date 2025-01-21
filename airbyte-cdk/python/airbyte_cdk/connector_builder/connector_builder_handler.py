@@ -50,6 +50,7 @@ def create_source(config: Mapping[str, Any], limits: TestReadLimits) -> Manifest
             limit_pages_fetched_per_slice=limits.max_pages_per_slice,
             limit_slices_fetched=limits.max_slices,
             disable_retries=True,
+            disable_cache=True,
         ),
     )
 

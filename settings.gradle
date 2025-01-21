@@ -102,12 +102,6 @@ dependencyResolutionManagement {
             }
         }
     }
-
-    versionCatalogs {
-        libs {
-            from(files("deps.toml"))
-        }
-    }
 }
 
 gradleEnterprise {

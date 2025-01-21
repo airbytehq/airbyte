@@ -41,7 +41,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
-          # dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }} Commenting this out as we believe Dagger cloud caching is causing excessively long jobs for such a small check
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

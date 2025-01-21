@@ -53,7 +53,7 @@ class S3StorageOperationsIntegrationTest {
             String.format(
                 "%s_test_%s",
                 FileUploadFormat.CSV.name.lowercase(),
-                RandomStringUtils.randomAlphanumeric(5),
+                RandomStringUtils.insecure().nextAlphanumeric(5),
             )
         (configJson as ObjectNode)
             .put("s3_bucket_path", testBucketPath)

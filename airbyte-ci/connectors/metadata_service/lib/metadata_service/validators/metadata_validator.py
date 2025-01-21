@@ -18,6 +18,7 @@ from pydash.objects import get
 class ValidatorOptions:
     docs_path: str
     prerelease_tag: Optional[str] = None
+    disable_dockerhub_checks: bool = False
 
 
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
@@ -29,6 +30,9 @@ _SOURCE_DECLARATIVE_MANIFEST_DEFINITION_ID = "64a2f99c-542f-4af8-9a6f-355f1217b4
 def validate_metadata_images_in_dockerhub(
     metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
 ) -> ValidationResult:
+    if validator_opts.disable_dockerhub_checks:
+        return True, None
+
     metadata_definition_dict = metadata_definition.dict()
     base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
     base_docker_version = get(metadata_definition_dict, "data.dockerImageTag")
@@ -42,7 +46,8 @@ def validate_metadata_images_in_dockerhub(
     normalization_docker_image = get(metadata_definition_dict, "data.normalizationConfig.normalizationRepository", None)
     normalization_docker_version = get(metadata_definition_dict, "data.normalizationConfig.normalizationTag", None)
 
-    breaking_change_versions = get(metadata_definition_dict, "data.releases.breakingChanges", {}).keys()
+    breaking_changes = get(metadata_definition_dict, "data.releases.breakingChanges", None)
+    breaking_change_versions = breaking_changes.keys() if breaking_changes else []
 
     possible_docker_images = [
         (base_docker_image, base_docker_version),
@@ -111,7 +116,6 @@ def validate_major_version_bump_has_breaking_change_entry(
     if str(metadata_definition.data.definitionId) == _SOURCE_DECLARATIVE_MANIFEST_DEFINITION_ID:
         return True, None
 
-    docker_repo = get(metadata_definition_dict, "data.dockerRepository")
     releases = get(metadata_definition_dict, "data.releases")
     if not releases:
         return (
@@ -120,7 +124,7 @@ def validate_major_version_bump_has_breaking_change_entry(
         )
 
     breaking_changes = get(metadata_definition_dict, "data.releases.breakingChanges")
-    if image_tag not in breaking_changes.keys():
+    if breaking_changes is None or image_tag not in breaking_changes.keys():
         return False, f"Major version {image_tag} needs a 'releases.breakingChanges' entry indicating what changed."
 
     return True, None
@@ -178,6 +182,8 @@ def validate_pypi_only_for_python(
 def validate_docker_image_tag_is_not_decremented(
     metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
 ) -> ValidationResult:
+    if _validator_opts and _validator_opts.prerelease_tag:
+        return True, None
     docker_image_name = get(metadata_definition, "data.dockerRepository")
     if not docker_image_name:
         return False, "The dockerRepository field is not set"
@@ -193,7 +199,84 @@ def validate_docker_image_tag_is_not_decremented(
     current_semver_version = semver.Version.parse(docker_image_tag)
     latest_released_semver_version = semver.Version.parse(latest_released_version)
     if current_semver_version < latest_released_semver_version:
-        return False, f"The dockerImageTag value can't be decremented: it should be equal to or above {latest_released_version}."
+        return (
+            False,
+            f"The dockerImageTag value ({current_semver_version}) can't be decremented: it should be equal to or above {latest_released_version}.",
+        )
+    return True, None
+
+
+def check_is_dev_version(version: str) -> bool:
+    """Check whether the version is a pre-release version."""
+    parsed_version = semver.VersionInfo.parse(version)
+    return parsed_version.prerelease is not None and not "rc" in parsed_version.prerelease
+
+
+def check_is_release_candidate_version(version: str) -> bool:
+    """Check whether the version is a release candidate version."""
+    parsed_version = semver.VersionInfo.parse(version)
+    return parsed_version.prerelease is not None and "rc" in parsed_version.prerelease
+
+
+def check_is_major_release_candidate_version(version: str) -> bool:
+    """Check whether the version is a major release candidate version.
+    Example: 2.0.0-rc.1
+    """
+
+    if not check_is_release_candidate_version(version):
+        return False
+
+    # The version is a release candidate version
+    parsed_version = semver.VersionInfo.parse(version)
+    # No major version exists.
+    if parsed_version.major == 0:
+        return False
+    # The current release candidate is for a major version
+    if parsed_version.minor == 0 and parsed_version.patch == 0:
+        return True
+
+
+def validate_rc_suffix_and_rollout_configuration(
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+) -> ValidationResult:
+    # Bypass validation for pre-releases
+    if _validator_opts and _validator_opts.prerelease_tag:
+        return True, None
+
+    docker_image_tag = get(metadata_definition, "data.dockerImageTag")
+    if docker_image_tag is None:
+        return False, "The dockerImageTag field is not set."
+    try:
+
+        is_major_release_candidate_version = check_is_major_release_candidate_version(docker_image_tag)
+        is_dev_version = check_is_dev_version(docker_image_tag)
+        is_rc_version = check_is_release_candidate_version(docker_image_tag)
+        is_prerelease = is_dev_version or is_rc_version
+        enabled_progressive_rollout = get(metadata_definition, "data.releases.rolloutConfiguration.enableProgressiveRollout", None)
+
+        # Major release candidate versions are not allowed
+        if is_major_release_candidate_version:
+            return (
+                False,
+                "The dockerImageTag has an -rc.<RC #> suffix for a major version. Release candidates for major version (with breaking changes) are not allowed.",
+            )
+
+        # Release candidates must have progressive rollout set to True or False
+        if is_rc_version and enabled_progressive_rollout is None:
+            return (
+                False,
+                "The dockerImageTag field has an -rc.<RC #> suffix but the connector is not set to use progressive rollout (releases.rolloutConfiguration.enableProgressiveRollout).",
+            )
+
+        # Progressive rollout can be enabled only for release candidates
+        if enabled_progressive_rollout is True and not is_prerelease:
+            return (
+                False,
+                "The dockerImageTag field should have an -rc.<RC #> suffix as the connector is set to use progressive rollout (releases.rolloutConfiguration.enableProgressiveRollout). Example: 2.1.0-rc.1",
+            )
+    except ValueError:
+        return False, f"The dockerImageTag field is not a valid semver version: {docker_image_tag}."
+
     return True, None
 
 
@@ -205,6 +288,7 @@ PRE_UPLOAD_VALIDATORS = [
     validate_metadata_base_images_in_dockerhub,
     validate_pypi_only_for_python,
     validate_docker_image_tag_is_not_decremented,
+    validate_rc_suffix_and_rollout_configuration,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [

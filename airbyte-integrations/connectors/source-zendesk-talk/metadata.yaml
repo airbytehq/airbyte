@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c8630570-086d-4a40-99ae-ea5b18673071
-  dockerImageTag: 1.0.12
+  dockerImageTag: 1.0.20
   dockerRepository: airbyte/source-zendesk-talk
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
   githubIssueLabel: source-zendesk-talk

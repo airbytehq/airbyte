@@ -13,7 +13,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 102900e7-a236-4c94-83e4-a4189b99adc2
-  dockerImageTag: 0.2.19
+  dockerImageTag: 0.2.27
   dockerRepository: airbyte/destination-vectara
   githubIssueLabel: destination-vectara
   icon: vectara.svg

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.output.OutputConsumer
 import io.micronaut.context.annotation.DefaultImplementation
+import java.time.Instant
 
 /**
  * Encapsulates database-specific state, both constant or transient, common to all partitions.
@@ -34,6 +35,9 @@ interface JdbcSharedState {
 
     /** Targeted memory footprint of a partition, in bytes. */
     val targetPartitionByteSize: Long
+
+    /** Keeping the time when the read operation started. */
+    val snapshotReadStartTime: Instant
 
     /** Creates a new instance of a [JdbcFetchSizeEstimator]. */
     fun jdbcFetchSizeEstimator(): JdbcFetchSizeEstimator

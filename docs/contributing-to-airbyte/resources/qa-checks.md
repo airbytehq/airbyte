@@ -13,7 +13,7 @@ They are by no mean replacing the need for a manual review of the connector code
 _Applies to the following connector types: source, destination_
 _Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
-_Applies to connector with any internal support level_
+_Applies to connector with 100 internal support level_
 _Applies to connector with any Airbyte usage level_
 
 When a breaking change is introduced, we check that a migration guide is available. It should be stored under `./docs/integrations/<connector-type>s/<connector-name>-migrations.md`.
@@ -24,7 +24,7 @@ This document should contain a section for each breaking change, in order of the
 _Applies to the following connector types: source, destination_
 _Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
-_Applies to connector with any internal support level_
+_Applies to connector with 100 internal support level_
 _Applies to connector with any Airbyte usage level_
 
 The user facing connector documentation should be stored under `./docs/integrations/<connector-type>s/<connector-name>.md`.
@@ -251,7 +251,7 @@ Check verifies that Changelog header section content follows standard template:
 _Applies to the following connector types: source, destination_
 _Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
-_Applies to connector with any internal support level_
+_Applies to connector with 100 internal support level_
 _Applies to connector with any Airbyte usage level_
 
 Each new version of a connector must have a changelog entry defined in the user facing documentation in `./docs/integrations/<connector-type>s/<connector-name>.md`.

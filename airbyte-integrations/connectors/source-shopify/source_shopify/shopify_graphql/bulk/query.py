@@ -80,6 +80,7 @@ class ShopifyBulkTemplates:
 @dataclass
 class ShopifyBulkQuery:
     config: Mapping[str, Any]
+    parent_stream_cursor_alias: Optional[str] = None
 
     @property
     def shop_id(self) -> int:
@@ -131,6 +132,12 @@ class ShopifyBulkQuery:
         https://shopify.dev/docs/api/admin-graphql
         """
         return ["__typename", "id"]
+
+    def inject_parent_cursor_field(self, nodes: List[Field], key: str = "updatedAt", index: int = 2) -> List[Field]:
+        if self.parent_stream_cursor_alias:
+            # inject parent cursor key as alias to the `updatedAt` parent cursor field
+            nodes.insert(index, Field(name=key, alias=self.parent_stream_cursor_alias))
+        return nodes
 
     def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:
         # define filter query string, if passed
@@ -285,15 +292,22 @@ class Metafield(ShopifyBulkQuery):
         List of available fields:
         https://shopify.dev/docs/api/admin-graphql/unstable/objects/Metafield
         """
+
+        nodes = super().query_nodes
+
         # define metafield node
         metafield_node = self.get_edge_node("metafields", self.metafield_fields)
 
         if isinstance(self.type.value, list):
-            return ["__typename", "id", self.get_edge_node(self.type.value[1], ["__typename", "id", metafield_node])]
+            nodes = [*nodes, self.get_edge_node(self.type.value[1], [*nodes, metafield_node])]
         elif isinstance(self.type.value, str):
-            return ["__typename", "id", metafield_node]
+            nodes = [*nodes, metafield_node]
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        nodes = self.inject_parent_cursor_field(nodes)
+
+        return nodes
+
+    def _process_metafield(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         # resolve parent id from `str` to `int`
         record["owner_id"] = self.tools.resolve_str_id(record.get(BULK_PARENT_KEY))
         # add `owner_resource` field
@@ -304,7 +318,25 @@ class Metafield(ShopifyBulkQuery):
         record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
         record = self.tools.fields_names_to_snake_case(record)
-        yield record
+        return record
+
+    def _process_components(self, entity: List[dict]) -> Iterable[MutableMapping[str, Any]]:
+        for item in entity:
+            # resolve the id from string
+            item["admin_graphql_api_id"] = item.get("id")
+            item["id"] = self.tools.resolve_str_id(item.get("id"))
+            yield self._process_metafield(item)
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        # get the joined record components collected for the record
+        record_components = record.get("record_components", {})
+        # process record components
+        if not record_components:
+            yield self._process_metafield(record)
+        else:
+            metafields = record_components.get("Metafield", [])
+            if len(metafields) > 0:
+                yield from self._process_components(metafields)
 
 
 class MetafieldCollection(Metafield):
@@ -343,7 +375,9 @@ class MetafieldCustomer(Metafield):
         customers(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
             edges {
                 node {
+                    __typename
                     id
+                    customer_updated_at: updatedAt
                     metafields {
                         edges {
                             node {
@@ -365,6 +399,11 @@ class MetafieldCustomer(Metafield):
     """
 
     type = MetafieldType.CUSTOMERS
+
+    record_composition = {
+        "new_record": "Customer",
+        "record_components": ["Metafield"],
+    }
 
 
 class MetafieldLocation(Metafield):
@@ -464,7 +503,9 @@ class MetafieldProduct(Metafield):
         products(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
             edges {
                 node {
+                    __typename
                     id
+                    product_updated_at: updatedAt
                     metafields {
                         edges {
                             node {
@@ -487,6 +528,11 @@ class MetafieldProduct(Metafield):
 
     type = MetafieldType.PRODUCTS
 
+    record_composition = {
+        "new_record": "Product",
+        "record_components": ["Metafield"],
+    }
+
 
 class MetafieldProductImage(Metafield):
     """
@@ -496,6 +542,7 @@ class MetafieldProductImage(Metafield):
                 node {
                     __typename
                     id
+                    product_updated_at: updatedAt
                     media {
                         edges {
                             node {
@@ -527,6 +574,13 @@ class MetafieldProductImage(Metafield):
     }
     """
 
+    type = MetafieldType.PRODUCT_IMAGES
+
+    record_composition = {
+        "new_record": "Product",
+        "record_components": ["Metafield"],
+    }
+
     @property
     def query_nodes(self) -> List[Field]:
         """
@@ -537,19 +591,16 @@ class MetafieldProductImage(Metafield):
         More info here:
         https://shopify.dev/docs/api/release-notes/2024-04#productimage-value-removed
         """
+
         # define metafield node
         metafield_node = self.get_edge_node("metafields", self.metafield_fields)
-        media_fields: List[Field] = [
-            "__typename",
-            "id",
-            InlineFragment(type="MediaImage", fields=[metafield_node]),
-        ]
-        # define media node
+        media_fields: List[Field] = ["__typename", "id", InlineFragment(type="MediaImage", fields=[metafield_node])]
         media_node = self.get_edge_node("media", media_fields)
-        fields: List[Field] = ["__typename", "id", media_node]
-        return fields
 
-    type = MetafieldType.PRODUCT_IMAGES
+        fields: List[Field] = ["__typename", "id", media_node]
+        fields = self.inject_parent_cursor_field(fields)
+
+        return fields
 
 
 class MetafieldProductVariant(Metafield):
@@ -2238,6 +2289,7 @@ class ProductImage(ShopifyBulkQuery):
                 node {
                     __typename
                     id
+                    products_updated_at: updatedAt
                     # THE MEDIA NODE IS NEEDED TO PROVIDE THE CURSORS
                     media {
                         edges {
@@ -2314,8 +2366,7 @@ class ProductImage(ShopifyBulkQuery):
     # media property fields
     media_fields: List[Field] = [Field(name="edges", fields=[Field(name="node", fields=media_fragment)])]
 
-    # main query
-    query_nodes: List[Field] = [
+    nodes: List[Field] = [
         "__typename",
         "id",
         Field(name="media", fields=media_fields),
@@ -2329,6 +2380,10 @@ class ProductImage(ShopifyBulkQuery):
         # there could be multiple `MediaImage` and `Image` assigned to the product.
         "record_components": ["MediaImage", "Image"],
     }
+
+    @property
+    def query_nodes(self) -> List[Field]:
+        return self.inject_parent_cursor_field(self.nodes)
 
     def _process_component(self, entity: List[dict]) -> List[dict]:
         for item in entity:
@@ -2413,7 +2468,6 @@ class ProductImage(ShopifyBulkQuery):
             if len(images) > 0:
                 # convert dates from ISO-8601 to RFC-3339
                 record["images"] = self._convert_datetime_to_rfc3339(images)
-
                 yield from self._emit_complete_records(images)
 
 

@@ -5,7 +5,7 @@
 from typing import List, Mapping
 
 import pytest
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage
+from airbyte_cdk.models import AirbyteRecordMessage
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer, SchemaValidationException
 
 NOW = 1234567
@@ -133,7 +133,10 @@ NOW = 1234567
             {
                 "my_stream": {
                     "field_A": {"type": ["string", "null"]},
-                    "nested": {"type": ["array", "null"], "items": {"type": ["object", "null"], "properties": {"field_C": {"type": ["string", "null"]}}}},
+                    "nested": {
+                        "type": ["array", "null"],
+                        "items": {"type": ["object", "null"], "properties": {"field_C": {"type": ["string", "null"]}}},
+                    },
                 }
             },
             id="test_array_nested_null",
@@ -146,7 +149,10 @@ NOW = 1234567
             {
                 "my_stream": {
                     "field_A": {"type": ["string", "null"]},
-                    "nested": {"type": ["array", "null"], "items": {"type": ["object", "null"], "properties": {"field_C": {"type": ["string", "null"]}}}},
+                    "nested": {
+                        "type": ["array", "null"],
+                        "items": {"type": ["object", "null"], "properties": {"field_C": {"type": ["string", "null"]}}},
+                    },
                 }
             },
             id="test_array_top_level_null",
@@ -166,80 +172,42 @@ NOW = 1234567
                     "data": {
                         "root_property_object": {
                             "property_array": [
-                                {
-                                    "title": "Nested_1",
-                                    "type": "multi-value",
-                                    "value": ["XL"]
-                                },
+                                {"title": "Nested_1", "type": "multi-value", "value": ["XL"]},
                                 {
                                     "title": "Nested_2",
                                     "type": "location",
-                                    "value": {
-                                        "nested_key_1": "GB",
-                                        "nested_key_2": "United Kingdom"
-                                    }
-                                }
+                                    "value": {"nested_key_1": "GB", "nested_key_2": "United Kingdom"},
+                                },
                             ],
                         }
-                    }
+                    },
                 },
             ],
             {
                 "data_with_nested_arrays": {
                     "root_property_object": {
-                        "type": [
-                            "object",
-                            "null"
-                        ],
+                        "type": ["object", "null"],
                         "properties": {
                             "property_array": {
-                                "type": [
-                                    "array",
-                                    "null"
-                                ],
+                                "type": ["array", "null"],
                                 "items": {
-                                    "type": [
-                                        "object",
-                                        "null"
-                                    ],
+                                    "type": ["object", "null"],
                                     "properties": {
-                                        "title": {
-                                            "type": [
-                                                "string",
-                                                "null"
-                                            ]
-                                        },
-                                        "type": {
-                                            "type": [
-                                                "string",
-                                                "null"
-                                            ]
-                                        },
+                                        "title": {"type": ["string", "null"]},
+                                        "type": {"type": ["string", "null"]},
                                         "value": {
                                             "anyOf": [
-                                                {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    }
-                                                },
+                                                {"type": "array", "items": {"type": "string"}},
                                                 {
                                                     "type": "object",
-                                                    "properties": {
-                                                        "nested_key_1": {
-                                                            "type": "string"
-                                                        },
-                                                        "nested_key_2": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
+                                                    "properties": {"nested_key_1": {"type": "string"}, "nested_key_2": {"type": "string"}},
+                                                },
                                             ]
-                                        }
-                                    }
-                                }
+                                        },
+                                    },
+                                },
                             }
-                        }
+                        },
                     }
                 }
             },
@@ -277,7 +245,7 @@ def _create_inferrer_with_required_field(is_pk: bool, field: List[List[str]]) ->
     [
         pytest.param(_IS_PK, id="required_field_is_pk"),
         pytest.param(_IS_CURSOR_FIELD, id="required_field_is_cursor_field"),
-    ]
+    ],
 )
 def test_field_is_on_root(is_pk: bool):
     inferrer = _create_inferrer_with_required_field(is_pk, [["property"]])
@@ -293,7 +261,7 @@ def test_field_is_on_root(is_pk: bool):
     [
         pytest.param(_IS_PK, id="required_field_is_pk"),
         pytest.param(_IS_CURSOR_FIELD, id="required_field_is_cursor_field"),
-    ]
+    ],
 )
 def test_field_is_nested(is_pk: bool):
     inferrer = _create_inferrer_with_required_field(is_pk, [["property", "nested_property"]])
@@ -310,11 +278,13 @@ def test_field_is_nested(is_pk: bool):
     [
         pytest.param(_IS_PK, id="required_field_is_pk"),
         pytest.param(_IS_CURSOR_FIELD, id="required_field_is_cursor_field"),
-    ]
+    ],
 )
 def test_field_is_composite(is_pk: bool):
     inferrer = _create_inferrer_with_required_field(is_pk, [["property 1"], ["property 2"]])
-    inferrer.accumulate(AirbyteRecordMessage(stream=_STREAM_NAME, data={"property 1": _ANY_VALUE, "property 2": _ANY_VALUE}, emitted_at=NOW))
+    inferrer.accumulate(
+        AirbyteRecordMessage(stream=_STREAM_NAME, data={"property 1": _ANY_VALUE, "property 2": _ANY_VALUE}, emitted_at=NOW)
+    )
     assert inferrer.get_stream_schema(_STREAM_NAME)["required"] == ["property 1", "property 2"]
 
 
@@ -323,12 +293,14 @@ def test_field_is_composite(is_pk: bool):
     [
         pytest.param(_IS_PK, id="required_field_is_pk"),
         pytest.param(_IS_CURSOR_FIELD, id="required_field_is_cursor_field"),
-    ]
+    ],
 )
 def test_field_is_composite_and_nested(is_pk: bool):
     inferrer = _create_inferrer_with_required_field(is_pk, [["property 1", "nested"], ["property 2"]])
 
-    inferrer.accumulate(AirbyteRecordMessage(stream=_STREAM_NAME, data={"property 1": {"nested": _ANY_VALUE}, "property 2": _ANY_VALUE}, emitted_at=NOW))
+    inferrer.accumulate(
+        AirbyteRecordMessage(stream=_STREAM_NAME, data={"property 1": {"nested": _ANY_VALUE}, "property 2": _ANY_VALUE}, emitted_at=NOW)
+    )
 
     assert inferrer.get_stream_schema(_STREAM_NAME)["required"] == ["property 1", "property 2"]
     assert inferrer.get_stream_schema(_STREAM_NAME)["properties"]["property 1"]["type"] == "object"

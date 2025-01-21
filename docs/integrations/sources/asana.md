@@ -106,6 +106,14 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| 1.2.12 | 2024-10-12 | [46825](https://github.com/airbytehq/airbyte/pull/46825) | Update dependencies |
+| 1.2.11 | 2024-10-05 | [46501](https://github.com/airbytehq/airbyte/pull/46501) | Update dependencies |
+| 1.2.10 | 2024-09-28 | [46166](https://github.com/airbytehq/airbyte/pull/46166) | Update dependencies |
+| 1.2.9 | 2024-09-21 | [45754](https://github.com/airbytehq/airbyte/pull/45754) | Update dependencies |
+| 1.2.8 | 2024-09-14 | [45547](https://github.com/airbytehq/airbyte/pull/45547) | Update dependencies |
+| 1.2.7 | 2024-09-07 | [45277](https://github.com/airbytehq/airbyte/pull/45277) | Update dependencies |
+| 1.2.6 | 2024-08-31 | [44970](https://github.com/airbytehq/airbyte/pull/44970) | Update dependencies |
+| 1.2.5 | 2024-08-24 | [44722](https://github.com/airbytehq/airbyte/pull/44722) | Update dependencies |
 | 1.2.4 | 2024-08-17 | [44275](https://github.com/airbytehq/airbyte/pull/44275) | Update dependencies |
 | 1.2.3 | 2024-08-12 | [43807](https://github.com/airbytehq/airbyte/pull/43807) | Update dependencies |
 | 1.2.2 | 2024-08-10 | [43532](https://github.com/airbytehq/airbyte/pull/43532) | Update dependencies |

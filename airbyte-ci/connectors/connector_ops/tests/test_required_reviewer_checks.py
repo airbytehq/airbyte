@@ -23,7 +23,7 @@ def mock_diffed_branched(mocker):
 
 @pytest.fixture
 def pokeapi_metadata_path():
-    return "airbyte-integrations/connectors/source-pokeapi/metadata.yaml"
+    return "airbyte-integrations/connectors/source-zoho-crm/metadata.yaml"
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def not_tracked_change_expected_team(tmp_path, pokeapi_metadata_path):
     backup_path = tmp_path / "non_strategic_acceptance_test_config.backup"
     shutil.copyfile(pokeapi_metadata_path, backup_path)
     with open(pokeapi_metadata_path, "a") as metadata_file:
-        metadata_file.write("not_tracked")
+        metadata_file.write("\nnot_tracked: true\n")
     yield expected_teams
     shutil.copyfile(backup_path, pokeapi_metadata_path)
 
