@@ -55,13 +55,13 @@ class MSSQLConfigUpdater : ConfigurationUpdater {
 
         // If not running the connector in docker, we must use the mapped port to connect to the
         // database.  Otherwise, get the container's IP address for the host
-        if (System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") != "docker") {
-            updatedConfig =
+        updatedConfig =
+            if (System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") != "docker") {
                 getPort()?.let { updatedConfig.replace("$MS_SQL_SERVER_PORT", it.toString()) }
                     ?: updatedConfig
-        } else {
-            getIpAddress()?.let { config.replace("localhost", it) } ?: updatedConfig
-        }
+            } else {
+                getIpAddress()?.let { config.replace("localhost", it) } ?: updatedConfig
+            }
 
         updatedConfig = updatedConfig.replace("replace_me", MSSQLContainerHelper.getPassword())
         logger.debug { "Using updated MSSQL configuration: $updatedConfig" }
