@@ -2781,7 +2781,6 @@ schemas:
           - "null"
           - boolean
 
-
   ad_campaign_analytics:
     $schema: "http://json-schema.org/draft-07/schema#"
     type:
