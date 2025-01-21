@@ -8,6 +8,10 @@ import logging
 import socket
 from typing import Any, Generator, List, Mapping, MutableMapping, Optional, Union
 
+from apiclient import errors
+from google.auth import exceptions as google_exceptions
+from requests.status_codes import codes as status_codes
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteCatalog,
@@ -24,15 +28,13 @@ from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams.checkpoint import FullRefreshCheckpointReader
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message
-from apiclient import errors
-from google.auth import exceptions as google_exceptions
-from requests.status_codes import codes as status_codes
 
 from .client import GoogleSheetsClient
 from .helpers import Helpers
 from .models.spreadsheet import Spreadsheet
 from .models.spreadsheet_values import SpreadsheetValues
 from .utils import exception_description_by_status_code, safe_name_conversion
+
 
 # override default socket timeout to be 10 mins instead of 60 sec.
 # on behalf of https://github.com/airbytehq/oncall/issues/242

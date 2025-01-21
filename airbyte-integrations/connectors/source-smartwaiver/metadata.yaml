@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.smartwaiver.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-smartwaiver
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 878608e5-4086-4cd2-8b23-32d839616687
+  dockerImageTag: 0.0.9
+  dockerRepository: airbyte/source-smartwaiver
+  githubIssueLabel: source-smartwaiver
+  icon: icon.svg
+  license: MIT
+  name: Smartwaiver
+  releaseDate: 2024-10-09
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smartwaiver
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

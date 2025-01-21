@@ -32,7 +32,18 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 | Version | Date       | Pull Request                                              | Subject                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.12 | 2025-01-18 | [51870](https://github.com/airbytehq/airbyte/pull/51870) | Update dependencies |
+| 0.2.11 | 2025-01-11 | [51322](https://github.com/airbytehq/airbyte/pull/51322) | Update dependencies |
+| 0.2.10 | 2024-12-28 | [50692](https://github.com/airbytehq/airbyte/pull/50692) | Update dependencies |
+| 0.2.9 | 2024-12-21 | [50271](https://github.com/airbytehq/airbyte/pull/50271) | Update dependencies |
+| 0.2.8 | 2024-12-14 | [49691](https://github.com/airbytehq/airbyte/pull/49691) | Update dependencies |
+| 0.2.7 | 2024-12-12 | [49362](https://github.com/airbytehq/airbyte/pull/49362) | Update dependencies |
+| 0.2.6 | 2024-12-11 | [49076](https://github.com/airbytehq/airbyte/pull/49076) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.5 | 2024-11-05 | [48360](https://github.com/airbytehq/airbyte/pull/48360) | Revert to source-declarative-manifest v5.17.0 |
+| 0.2.4 | 2024-11-05 | [48337](https://github.com/airbytehq/airbyte/pull/48337) | Update dependencies |
+| 0.2.3 | 2024-10-29 | [47908](https://github.com/airbytehq/airbyte/pull/47908) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47566](https://github.com/airbytehq/airbyte/pull/47566) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44074](https://github.com/airbytehq/airbyte/pull/44074) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43864](https://github.com/airbytehq/airbyte/pull/43864) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43631](https://github.com/airbytehq/airbyte/pull/43631) | Update dependencies |

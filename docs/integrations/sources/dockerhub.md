@@ -39,7 +39,16 @@ This connector has been tested for the Airbyte organization, which has 266 repos
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.10 | 2025-01-18 | [51663](https://github.com/airbytehq/airbyte/pull/51663) | Update dependencies |
+| 0.3.9 | 2025-01-11 | [51063](https://github.com/airbytehq/airbyte/pull/51063) | Update dependencies |
+| 0.3.8 | 2024-12-28 | [50541](https://github.com/airbytehq/airbyte/pull/50541) | Update dependencies |
+| 0.3.7 | 2024-12-21 | [50011](https://github.com/airbytehq/airbyte/pull/50011) | Update dependencies |
+| 0.3.6 | 2024-12-14 | [49515](https://github.com/airbytehq/airbyte/pull/49515) | Update dependencies |
+| 0.3.5 | 2024-12-12 | [49151](https://github.com/airbytehq/airbyte/pull/49151) | Update dependencies |
+| 0.3.4 | 2024-12-11 | [48306](https://github.com/airbytehq/airbyte/pull/48306) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.3.3 | 2024-10-29 | [47826](https://github.com/airbytehq/airbyte/pull/47826) | Update dependencies |
+| 0.3.2 | 2024-10-28 | [47664](https://github.com/airbytehq/airbyte/pull/47664) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44155](https://github.com/airbytehq/airbyte/pull/44155) | Refactor connector to manifest-only format |
 | 0.2.15 | 2024-08-10 | [43670](https://github.com/airbytehq/airbyte/pull/43670) | Update dependencies |
 | 0.2.14 | 2024-08-03 | [43145](https://github.com/airbytehq/airbyte/pull/43145) | Update dependencies |

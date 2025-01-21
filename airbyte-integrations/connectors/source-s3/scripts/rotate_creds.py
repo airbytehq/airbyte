@@ -30,6 +30,7 @@ from typing import Any, cast
 from airbyte.secrets import get_secret
 from airbyte.secrets.google_gsm import GoogleGSMSecretManager, GSMSecretHandle
 
+
 AIRBYTE_INTERNAL_GCP_PROJECT = "dataline-integration-testing"
 CONNECTOR_NAME = "source-s3"
 

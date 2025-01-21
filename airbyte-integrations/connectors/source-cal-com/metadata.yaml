@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.cal.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-cal-com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3db8a652-88f7-41ee-91a3-2f745322d9ae
+  dockerImageTag: 0.0.7
+  dockerRepository: airbyte/source-cal-com
+  githubIssueLabel: source-cal-com
+  icon: icon.svg
+  license: MIT
+  name: Cal.com
+  releaseDate: 2024-11-11
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/cal-com
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

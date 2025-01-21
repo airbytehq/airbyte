@@ -72,6 +72,7 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.1.2 | 2025-01-11 | [43887](https://github.com/airbytehq/airbyte/pull/43887) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 3.1.1 | 2024-06-06 | [39231](https://github.com/airbytehq/airbyte/pull/39231) | [autopull] Upgrade base image to v1.2.2 |
 | 3.1.0 | 2024-03-12 | [35699](https://github.com/airbytehq/airbyte/pull/35699) | Migrate to low-code |
 | 3.0.7 | 2024-02-12 | [35187](https://github.com/airbytehq/airbyte/pull/35187) | Manage dependencies with Poetry. |

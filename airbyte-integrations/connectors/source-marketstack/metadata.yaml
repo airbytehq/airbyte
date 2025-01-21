@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.marketstack.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-marketstack
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0caeba13-0807-46aa-a6c0-7e8d25d168be
+  dockerImageTag: 0.0.7
+  dockerRepository: airbyte/source-marketstack
+  githubIssueLabel: source-marketstack
+  icon: icon.svg
+  license: MIT
+  name: Marketstack
+  releaseDate: 2024-11-07
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/marketstack
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

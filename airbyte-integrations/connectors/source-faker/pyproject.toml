@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "6.2.18-rc.1"
+version = "6.2.21-rc.1"
 name = "source-faker"
 description = "Source implementation for fake but realistic looking data."
 authors = [ "Airbyte <evan@airbyte.io>",]

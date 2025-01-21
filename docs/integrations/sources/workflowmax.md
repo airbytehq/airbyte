@@ -60,6 +60,12 @@ Then authorize your source with the required information.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-01-18 | [51947](https://github.com/airbytehq/airbyte/pull/51947) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51422](https://github.com/airbytehq/airbyte/pull/51422) | Update dependencies |
+| 0.0.5 | 2024-12-28 | [50782](https://github.com/airbytehq/airbyte/pull/50782) | Update dependencies |
+| 0.0.4 | 2024-12-21 | [50324](https://github.com/airbytehq/airbyte/pull/50324) | Update dependencies |
+| 0.0.3 | 2024-12-14 | [47888](https://github.com/airbytehq/airbyte/pull/47888) | Update dependencies |
+| 0.0.2 | 2024-10-28 | [47527](https://github.com/airbytehq/airbyte/pull/47527) | Update dependencies |
 | 0.0.1 | 2024-10-13 | [46866](https://github.com/airbytehq/airbyte/pull/46866) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

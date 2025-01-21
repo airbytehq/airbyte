@@ -4,22 +4,21 @@ This page contains the setup guide and reference information for the Gridly sour
 
 ## Prerequisites
 
-A Gridly account.
+- Access to an active Gridly account
+- API Key (requires Owner or Administrator access)
 
 ## Setup guide
 
-### Get api Key
+### Find your API Key
 
-1. To quickly get your API key, access your Gridly Dashboard, then select a Grid View and you can find the key in API quick start right panel.
-   ![img.png](../../.gitbook/assets/gridly_api_key1.png)
-2. Owner and Administrators can go to Settings/API keys to create company-level API keys with scoped privileges and accesses.
-   ![img.png](../../.gitbook/assets/gridly_api_key2.png)
+1. Access your Gridly Dashboard
+2. Select **[API]**. The API key will be shown in the API Quickstart panel.
+2. Owner and Administrators can also go to their **Settings** and then **API Keys** to create company-level API keys with scoped privileges and accesses.
 
-### Get grid id
+### Find the Grid ID
 
-The grid id is available in the url.
-Gridly support version control, by default the `grid id` is the same to the `branch id` when `Master` branch is selected. For fetching records on other branches, use `branch id` instead.
-![img.png](../../.gitbook/assets/gridly_grid_id.png)
+1. `Grid ID` is available in the URL when accessing the Grid in the UI. The Grid ID is the ID following `/grids/` in the URL.
+2. `Branch ID` is by default the same as the `Grid ID` when the `Master` branch is selected. To fetch records on other branches, use `Branch ID` instead.
 
 ## Supported sync modes
 
@@ -39,6 +38,12 @@ Gridly support version control, by default the `grid id` is the same to the `bra
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.1.27 | 2025-01-11 | [51195](https://github.com/airbytehq/airbyte/pull/51195) | Update dependencies |
+| 0.1.26 | 2024-12-28 | [50663](https://github.com/airbytehq/airbyte/pull/50663) | Update dependencies |
+| 0.1.25 | 2024-12-21 | [50085](https://github.com/airbytehq/airbyte/pull/50085) | Update dependencies |
+| 0.1.24 | 2024-12-14 | [49000](https://github.com/airbytehq/airbyte/pull/49000) | Update dependencies |
+| 0.1.23 | 2024-11-25 | [48675](https://github.com/airbytehq/airbyte/pull/48675) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.22 | 2024-10-28 | [47075](https://github.com/airbytehq/airbyte/pull/47075) | Update dependencies |
 | 0.1.21 | 2024-10-12 | [46476](https://github.com/airbytehq/airbyte/pull/46476) | Update dependencies |
 | 0.1.20 | 2024-09-28 | [46122](https://github.com/airbytehq/airbyte/pull/46122) | Update dependencies |
 | 0.1.19 | 2024-09-21 | [45723](https://github.com/airbytehq/airbyte/pull/45723) | Update dependencies |

@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -13,8 +12,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.micronaut.context.env.yaml.YamlPropertySourceLoader
 import java.nio.file.Files
 import java.nio.file.Path
-
-const val DOCKERIZED_TEST_ENV = "DOCKERIZED_INTEGRATION_TEST"
 
 /**
  * Represents a destination process, whether running in-JVM via micronaut, or as a separate Docker
@@ -32,6 +29,7 @@ interface DestinationProcess {
      */
     suspend fun run()
 
+    fun sendMessage(string: String)
     fun sendMessage(message: AirbyteMessage)
     fun sendMessages(vararg messages: AirbyteMessage) {
         messages.forEach { sendMessage(it) }
@@ -44,6 +42,11 @@ interface DestinationProcess {
      * Signal the destination to exit (i.e. close its stdin stream), then wait for it to terminate.
      */
     suspend fun shutdown()
+
+    /** Terminate the destination as immediately as possible. */
+    fun kill()
+
+    fun verifyFileDeleted()
 }
 
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
@@ -57,8 +60,10 @@ abstract class DestinationProcessFactory {
 
     abstract fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification? = null,
+        configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
+        useFileTransfer: Boolean = false,
+        envVars: Map<String, String> = emptyMap(),
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 

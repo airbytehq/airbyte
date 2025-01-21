@@ -8,10 +8,12 @@ import os
 from typing import Any, Mapping
 
 import dpath.util
-from airbyte_cdk.models import OrchestratorType, Type
-from airbyte_cdk.sources import Source
 from source_google_analytics_data_api.config_migrations import MigrateCustomReportsCohortSpec
 from source_google_analytics_data_api.source import SourceGoogleAnalyticsDataApi
+
+from airbyte_cdk.models import OrchestratorType, Type
+from airbyte_cdk.sources import Source
+
 
 # BASE ARGS
 CMD = "check"

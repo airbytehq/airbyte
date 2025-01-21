@@ -13,7 +13,9 @@ from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
+
 from source_facebook_marketing.streams.common import retry_pattern
+
 
 logger = logging.getLogger("airbyte")
 

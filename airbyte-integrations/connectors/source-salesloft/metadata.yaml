@@ -12,17 +12,17 @@ data:
       enabled: true
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-salesloft
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
   connectorSubtype: api
   connectorType: source
   definitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
-  dockerImageTag: 1.2.23
+  dockerImageTag: 1.3.1
   dockerRepository: airbyte/source-salesloft
   githubIssueLabel: source-salesloft
   icon: icon.svg
@@ -33,8 +33,8 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

@@ -1,0 +1,334 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  An Airbyte connector for Oveit enables seamless data synchronization by
+  extracting and integrating data from Oveit’s event management platform into
+  your data warehouse. This connector helps automate the flow of information,
+  providing up-to-date insights on event registrations, ticketing, and attendee
+  information.
+
+check:
+  type: CheckStream
+  stream_names:
+    - events
+
+definitions:
+  streams:
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /seller/events
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - events
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    attendees:
+      type: DeclarativeStream
+      name: attendees
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events/attendees
+          http_method: POST
+          request_parameters:
+            id: "{{ stream_partition.event_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - attendees
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: since
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('attendees', [])[-1].get('ticket_code') if
+              response.get('attendees') else None }}
+            stop_condition: "{{ not response.get('attendees') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event_id
+              stream:
+                $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attendees"
+    tickets:
+      type: DeclarativeStream
+      name: tickets
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events/tickets
+          http_method: POST
+          request_parameters:
+            id: "{{ stream_partition.event_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tickets
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event_id
+              stream:
+                $ref: "#/definitions/streams/events"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickets"
+  base_requester:
+    type: HttpRequester
+    url_base: https://l.oveit.com/api
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: https://l.oveit.com/api/seller
+        path: login
+        authenticator:
+          type: NoAuth
+        http_method: POST
+        request_parameters:
+          email: "{{ config['email'] }}"
+          password: "{{ config['password'] }}"
+        request_headers: {}
+      session_token_path:
+        - token
+      expiration_duration: PT8H
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/attendees"
+  - $ref: "#/definitions/streams/tickets"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - email
+      - password
+    properties:
+      email:
+        type: string
+        description: Oveit's login Email
+        order: 0
+        title: Email
+      password:
+        type: string
+        description: Oveit's login Password
+        order: 1
+        title: Password
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    events: true
+    attendees: false
+    tickets: false
+  testedStreams:
+    events:
+      hasRecords: true
+      streamHash: f272daaa63d772d4796ff2cb115233deb778f6a4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    attendees:
+      hasRecords: true
+      streamHash: 617e77af6059788b625edcd74f29a72c8395285f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tickets:
+      hasRecords: true
+      streamHash: 6fb2c2f08030125bcee98b6bab8d99a56b21ebaa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://l.oveit.com/api-documentation/
+
+schemas:
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      hash:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      location:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      starts_at:
+        type:
+          - string
+          - "null"
+      ticket_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            addons:
+              type:
+                - array
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - string
+                - "null"
+      tickets:
+        type:
+          - number
+          - "null"
+      tickets_checked_in:
+        type:
+          - number
+          - "null"
+      tickets_sold:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  attendees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      checkins:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      links:
+        type:
+          - array
+          - "null"
+      order_id:
+        type:
+          - string
+          - "null"
+      order_uuid:
+        type:
+          - string
+          - "null"
+      ticket_code:
+        type:
+          - string
+          - "null"
+      ticket_id:
+        type:
+          - string
+          - "null"
+      ticket_type:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      values:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
+  tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      checked_in:
+        type:
+          - boolean
+          - "null"
+      checkins:
+        type:
+          - array
+          - "null"
+      code:
+        type: string
+      ticket_type_id:
+        type:
+          - number
+          - "null"
+    required:
+      - code

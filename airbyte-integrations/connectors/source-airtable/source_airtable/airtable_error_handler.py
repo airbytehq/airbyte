@@ -7,6 +7,7 @@ from datetime import timedelta
 from typing import Mapping, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator

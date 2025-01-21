@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <script>
+        hljs.highlightAll();
+        function copyToClipboard(elementId) {
+            var toCopy = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(toCopy);
+        }
+        function refreshPage() {
+            {% if not fully_generated %}
+            window.location.reload();
+            {% else %}
+            console.log("Report is fully generated");
+            {% endif %}
+        }
+
+        setInterval(refreshPage, 10000);
+    </script>
+    <style>
+        body {
+            font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            padding: 16px;
+            font-size: 14px;
+        }
+
+        a {
+            color: #4493f8;
+            text-decoration: underline;
+            text-underline-offset: .2rem;
+        }
+
+        button {
+            border: 1px solid #30363d;
+            background-color: #1a1c26;
+            padding: 5px;
+            cursor: pointer;
+            opacity: 0.7;
+            border-radius: 5px;
+            transition: opacity 0.5s;
+        }
+
+        button:hover {
+            opacity: 1;
+        }
+
+        section {
+            margin-bottom: 30px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+        }
+
+        h1 {
+            font-optical-sizing: auto;
+            font-weight: 600;
+            font-size: 2rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            margin: 0;
+            display: block;
+            background-color: #161b22;
+            padding-left: 15px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            margin: 0;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        h4 {
+            font-size: 1rem;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            margin: 0;
+            margin-top: 15px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 15px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #30363d;
+            padding: 8px;
+            text-align: left;
+            min-width: 15px;
+            max-width: 400px;
+            overflow-x: auto;
+            scrollbar-color: hotpink #0d1116;
+        }
+
+        th {
+            text-align: center;
+        }
+
+        code {
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            max-height: 500px;
+            scrollbar-color: hotpink #1a1b26;
+            white-space: pre-wrap;
+        }
+
+        .monospace {
+            font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+            margin: 0;
+            font-size: 85%;
+            color: #fff;
+        }
+
+        .test-name {
+            font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+            font-size: 1.15rem
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .highlighted {
+            background-color: #212c36;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        .section_content {
+            padding: 15px;
+        }
+
+        .no-border {
+            border: none;
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        .test-result {
+            margin-top: 15px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #FFF;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        .loader::after,
+        .loader::before {
+            content: '';
+            box-sizing: border-box;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #FF3D00;
+            width: 6px;
+            height: 6px;
+            transform: translate(150%, 150%);
+            border-radius: 50%;
+        }
+
+        .loader::before {
+            left: auto;
+            top: auto;
+            right: 0;
+            bottom: 0;
+            transform: translate(-150%, -150%);
+        }
+
+        .clipped {
+            max-height: 500px;
+            overflow-y: auto;
+            scrollbar-color: hotpink #0d1116;
+        }
+
+        .testDescription {
+            color: #9c9c9c;
+        }
+
+        .secondaryButton {
+            font-size: 0.75rem;
+            padding: 2px 10px;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">Live test private details</h1>
+        <section>
+            <h2>Context</h2>
+            <div class="section_content">
+                <ul>
+                    <li>Tester: <span class="monospace">{{ user }}</span></li>
+                    <li>Test date: <span class="monospace">{{ test_date }}</span></li>
+                    <li>Connector image: <span class="monospace">{{ connector_image }}</span></li>
+                    <li>Control version: <span class="monospace">{{ control_version }}</span></li>
+                    <li>Target version: <span class="monospace">{{ target_version }}</span></li>
+                </ul>
+            </div>
+        </section>
+        <section>
+            <h2>Connections used for testing</h2>
+            {% for connection_objects in all_connection_objects %}
+            <div class="section_content">
+                <h3>Details for {{ connection_objects['hashed_connection_id'] }} </h3>
+                <ul>
+                    <li><b><a href="{{connection_objects["url"]}}" target="_blank">Connection in Airbyte Cloud</a></b></li>
+                    <li>Workpace ID: {{ connection_objects['workspace_id'] }}</li>
+                    <li>Connection ID: {{ connection_objects['connection_id']}}</li>
+                </ul>
+                <h3>Source configuration <button class="monospace secondaryButton" onclick="copyToClipboard('config')">📋 copy</button></h3>
+                <p class="testDescription">The configuration object taken from the given connection that was passed to each version of the connector during the test.</p>
+                <pre><code class="language-json" id="config">{{ connection_objects['source_config'] }}</code></pre>
+            </div>
+            {% endfor %}
+        </section>
+        <section>
+            {% if not fully_generated %}
+            <h2><span class="loader"></span>Requested URLs</h2>
+            {% else%}
+             <h2>Requested URLs</h2>
+            {% endif %}
+            <div class="section_content">
+                {% for command, flows in requested_urls_per_command.items() %}
+                <h3>{{ command.value.upper() }}</h3>
+                {% if flows %}
+                <div class="clipped">
+                    <table class="full-width">
+                        <thead>
+                            <tr>
+                                <th class="no-border"></th>
+                                <th>Control URL</th>
+                                <th>Target URL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, control_url, target_url in flows %}
+                            <tr>
+                                <td class="monospace highlighted metric">{{ index }}</td>
+                                <td class="monospace">{{ control_url }}</td>
+                                <td class="monospace">{{ target_url }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>No URLs requested</p>
+                {% endif %}
+                {% endfor%}
+            </div>
+        </section>
+    </div>
+</body>
+</html>

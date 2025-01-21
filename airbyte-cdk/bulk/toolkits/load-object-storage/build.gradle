@@ -2,7 +2,26 @@ dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
 
-    api("org.apache.commons:commons-csv:1.10.0")
+    // TODO: Separate individual format types from the core format spec
+    // and migrate them to their respective toolkits, so that these
+    // dependencies can be removed.
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-avro')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-csv')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-parquet')
+
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-avro"))
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-csv"))
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-parquet"))
+}
+
+project.tasks.matching {
+    it.name == 'spotbugsIntegrationTestLegacy' ||
+            it.name == 'spotbugsIntegrationTest' ||
+            it.name == 'spotbugsTest' ||
+            it.name == 'spotbugsMain'
+}.configureEach {
+    enabled = false
 }

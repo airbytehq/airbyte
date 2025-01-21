@@ -99,28 +99,39 @@ class TestCheckManifestOnlyConnectorBaseImage:
         assert "A manifest-only connector must use `source-declarative-manifest` base image" in result.message
 
 
-class TestCheckPublishToPyPiIsEnabled:
-    def test_fail_if_publish_to_pypi_is_not_enabled(self, mocker):
+class TestCheckPublishToPyPiIsDeclared:
+    def test_fail_if_publish_to_pypi_is_not_declared(self, mocker):
         # Arrange
-        connector = mocker.MagicMock(metadata={"remoteRegistries": {"pypi": {"enabled": False}}})
+        connector = mocker.MagicMock(metadata={"remoteRegistries": {}})
 
         # Act
-        result = packaging.CheckPublishToPyPiIsEnabled()._run(connector)
+        result = packaging.CheckPublishToPyPiIsDeclared()._run(connector)
 
         # Assert
         assert result.status == CheckStatus.FAILED
-        assert "PyPi publishing is not enabled" in result.message
+        assert "PyPi publishing is not declared" in result.message
 
     def test_pass_if_publish_to_pypi_is_enabled(self, mocker):
         # Arrange
         connector = mocker.MagicMock(metadata={"remoteRegistries": {"pypi": {"enabled": True}}})
 
         # Act
-        result = packaging.CheckPublishToPyPiIsEnabled()._run(connector)
+        result = packaging.CheckPublishToPyPiIsDeclared()._run(connector)
 
         # Assert
         assert result.status == CheckStatus.PASSED
-        assert "PyPi publishing is enabled" in result.message
+        assert "PyPi publishing is declared" in result.message
+
+    def test_pass_if_publish_to_pypi_is_disabled(self, mocker):
+        # Arrange
+        connector = mocker.MagicMock(metadata={"remoteRegistries": {"pypi": {"enabled": False}}})
+
+        # Act
+        result = packaging.CheckPublishToPyPiIsDeclared()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.PASSED
+        assert "PyPi publishing is declared" in result.message
 
 
 class TestCheckConnectorLicense:
