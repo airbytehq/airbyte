@@ -243,11 +243,10 @@ class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
             params["filter"] = channel_filter
             return params
         params["filter"] = (
-            f"{params['filter'][:-1]},{channel_filter})"
-            if "and(" in params["filter"]
-            else f"and({params['filter']},{channel_filter})"
+            f"{params['filter'][:-1]},{channel_filter})" if "and(" in params["filter"] else f"and({params['filter']},{channel_filter})"
         )
         return params
+
 
 class CampaignsDetailed(Campaigns):
     def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
