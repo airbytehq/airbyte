@@ -109,20 +109,3 @@ class TransformDatetimesToRFC3339(RecordTransformation):
     ) -> None:
         self.date_time_fields = self._get_date_time_items_from_schema(config)
         return self._date_time_to_rfc3339(record)
-
-
-class EventsStateMigration(StateMigration):
-    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        cursor_value = stream_state.get("server_upload_time")
-        if not cursor_value:
-            return False
-        try:
-            pendulum.from_format(cursor_value, "%Y-%m-%d %H:%M:%S.%f")
-            return True
-        except pendulum.exceptions.ParserError:
-            return False
-
-    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        cursor_value = stream_state.get("server_upload_time")
-        stream_state["server_upload_time"] = pendulum.from_format(cursor_value, "%Y-%m-%d %H:%M:%S.%f").to_rfc3339_string()
-        return stream_state
