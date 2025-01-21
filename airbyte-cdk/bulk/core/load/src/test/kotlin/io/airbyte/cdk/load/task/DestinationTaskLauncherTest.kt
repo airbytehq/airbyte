@@ -83,7 +83,6 @@ class DestinationTaskLauncherTest {
     @Inject lateinit var mockInputConsumerTask: MockInputConsumerTaskFactory
     @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
     @Inject lateinit var mockSpillToDiskTaskFactory: MockSpillToDiskTaskFactory
-    @Inject lateinit var mockOpenStreamTaskFactory: MockOpenStreamTaskFactory
     @Inject lateinit var processRecordsTaskFactory: ProcessRecordsTaskFactory
     @Inject lateinit var processBatchTaskFactory: ProcessBatchTaskFactory
     @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
@@ -172,9 +171,7 @@ class DestinationTaskLauncherTest {
     class MockSetupTaskFactory : SetupTaskFactory {
         val hasRun: Channel<Unit> = Channel(Channel.UNLIMITED)
 
-        override fun make(
-            taskLauncher: DestinationTaskLauncher,
-        ): SetupTask {
+        override fun make(): SetupTask {
             return object : SetupTask {
                 override val terminalCondition: TerminalCondition = SelfTerminating
 
@@ -216,22 +213,13 @@ class DestinationTaskLauncherTest {
     @Singleton
     @Replaces(DefaultOpenStreamTaskFactory::class)
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockOpenStreamTaskFactory(catalog: DestinationCatalog) : OpenStreamTaskFactory {
-        val streamHasRun = mutableMapOf<DestinationStream, Channel<Unit>>()
-
-        init {
-            catalog.streams.forEach { streamHasRun[it] = Channel(Channel.UNLIMITED) }
-        }
-
-        override fun make(
-            taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream
-        ): OpenStreamTask {
+    class MockOpenStreamTaskFactory : OpenStreamTaskFactory {
+        override fun make(): OpenStreamTask {
             return object : OpenStreamTask {
                 override val terminalCondition: TerminalCondition = SelfTerminating
 
                 override suspend fun execute() {
-                    streamHasRun[stream]?.send(Unit)
+                    // Do nothing
                 }
             }
         }
@@ -387,13 +375,6 @@ class DestinationTaskLauncherTest {
         )
 
         job.cancel()
-    }
-
-    @Test
-    fun testHandleSetupComplete() = runTest {
-        // Verify that open stream ran for each stream
-        taskLauncher.handleSetupComplete()
-        mockOpenStreamTaskFactory.streamHasRun.values.forEach { it.receive() }
     }
 
     @Test
