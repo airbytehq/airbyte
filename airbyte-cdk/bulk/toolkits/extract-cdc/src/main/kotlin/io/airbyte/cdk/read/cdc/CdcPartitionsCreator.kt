@@ -12,7 +12,6 @@ import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.Stream
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /** [PartitionsCreator] implementation for CDC with Debezium. */
@@ -23,7 +22,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val lowerBoundReference: AtomicReference<T>,
     val upperBoundReference: AtomicReference<T>,
-    val reset: AtomicBoolean,
+    val resetReason: AtomicReference<String?>,
 ) : PartitionsCreator {
     private val log = KotlinLogging.logger {}
     private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
@@ -41,10 +40,9 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     }
 
     override suspend fun run(): List<PartitionReader> {
-        if (reset.get()) {
+        resetReason.get()?.let { reason: String ->
             throw TransientErrorException(
-                "Saved offset no longer present on the server, " +
-                    "Airbyte is going to trigger a sync from scratch."
+                "Triggering reset. Incumbent CDC state is invalid, reason: ${reason}."
             )
         }
         val activeStreams: List<Stream> by lazy {
@@ -82,18 +80,23 @@ class CdcPartitionsCreator<T : Comparable<T>>(
             is AbortDebeziumWarmStartState -> {
                 val e =
                     ConfigErrorException(
-                        "Incumbent state is invalid, reason: ${warmStartState.reason}"
+                        "Incumbent CDC state is invalid, reason: ${warmStartState.reason}"
                     )
                 log.error(e) { "Aborting. ${e.message}." }
                 throw e
             }
             is ResetDebeziumWarmStartState -> {
+                // The incumbent CDC state value is invalid and the sync needs to be reset.
+                // Doing so is not so straightforward as throwing a TransientErrorException because
+                // a STATE message with a post-reset state needs to be emitted first.
+                // This new state is obtained by zeroing all corresponding feeds in the StateManager
+                // and returning a CdcPartitionReader for a cold start with a synthetic offset.
+                // This CdcPartitionReader will run, after which the desired STATE message will be
+                // emitted, and finally the next CdcPartitionsCreator will throw a
+                // TransientErrorException. The next sync will then snapshot the tables.
+                resetReason.set(warmStartState.reason)
+                log.info { "Resetting invalid incumbent CDC state with synthetic state." }
                 feedBootstrap.stateQuerier.resetFeedStates()
-                reset.set(true)
-                log.warn {
-                    "Triggering reset. " +
-                        "Incumbent state is invalid, reason: ${warmStartState.reason}."
-                }
                 debeziumProperties = creatorOps.generateColdStartProperties()
                 startingOffset = syntheticOffset
                 startingSchemaHistory = null
