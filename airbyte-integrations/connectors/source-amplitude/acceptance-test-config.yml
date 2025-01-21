@@ -36,7 +36,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
-          future_state_path: "integration_tests/abnormal_state.json"
+          bypass_reason: "Test `test_state_with_abnormally_large_values` is bypassed as test does not make sense using Concurrent CDK"
         timeout_seconds: 3600
         skip_comprehensive_incremental_tests: yes
   full_refresh:

@@ -17,7 +17,7 @@ include = "source_amplitude"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "==6.21.0.dev0"
+airbyte-cdk = "^6"
 pytest = "^8.3.4"
 
 [tool.poetry.scripts]
