@@ -239,6 +239,9 @@ class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         channel_filter = "equals(messages.channel,'email')"
+        if "filter" not in params:
+            params["filter"] = channel_filter
+            return params
         params["filter"] = (
             f"{params['filter'][:-1]},{channel_filter})"
             if "and(" in params["filter"]

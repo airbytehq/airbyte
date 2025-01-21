@@ -542,20 +542,20 @@ class TestCampaignsStream:
     @pytest.mark.parametrize(
         ("stream_state", "stream_slice", "next_page_token", "expected_params"),
         (
-            ({}, {"archived": False}, None, {"sort": "updated_at"}),
-            ({}, {"archived": True}, None, {"filter": "equals(archived,true)", "sort": "updated_at"}),
+            ({}, {"archived": False}, None, {"filter": "equals(messages.channel,'email')", "sort": "updated_at"}),
+            ({}, {"archived": True}, None, {"filter": "and(equals(archived,true),equals(messages.channel,'email'))", "sort": "updated_at"}),
             (
                 {"updated_at": "2023-10-10T00:00:00+00:00"},
                 {"archived": False},
                 None,
-                {"filter": "greater-than(updated_at,2023-10-10T00:00:00+00:00)", "sort": "updated_at"},
+                {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(messages.channel,'email'))", "sort": "updated_at"},
             ),
             (
                 {"archived": {"updated_at": "2023-10-10T00:00:00+00:00"}},
                 {"archived": True},
                 None,
                 {
-                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true),equals(messages.channel,'email'))",
                     "sort": "updated_at",
                 },
             ),
@@ -564,7 +564,7 @@ class TestCampaignsStream:
                 {"archived": False},
                 {"page[cursor]": "next_page_cursor"},
                 {
-                    "filter": "greater-than(updated_at,2023-10-10T00:00:00+00:00)",
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(messages.channel,'email'))",
                     "sort": "updated_at",
                     "page[cursor]": "next_page_cursor",
                 },
@@ -574,7 +574,7 @@ class TestCampaignsStream:
                 {"archived": True},
                 {"page[cursor]": "next_page_cursor"},
                 {
-                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true),equals(messages.channel,'email'))",
                     "sort": "updated_at",
                     "page[cursor]": "next_page_cursor",
                 },
@@ -583,26 +583,26 @@ class TestCampaignsStream:
                 {},
                 {"archived": True},
                 {"page[cursor]": "next_page_cursor"},
-                {"filter": "equals(archived,true)", "sort": "updated_at", "page[cursor]": "next_page_cursor"},
+                {"filter": "and(equals(archived,true),equals(messages.channel,'email'))", "sort": "updated_at", "page[cursor]": "next_page_cursor"},
             ),
             (
                 {},
                 {"archived": False},
                 {"page[cursor]": "next_page_cursor"},
-                {"sort": "updated_at", "page[cursor]": "next_page_cursor"},
+                {"filter": "equals(messages.channel,'email')", "sort": "updated_at", "page[cursor]": "next_page_cursor"},
             ),
             (
                 {"updated_at": "2023-10-10T00:00:00+00:00", "archived": {"updated_at": "2024-10-10T00:00:00+00:00"}},
                 {"archived": False},
                 None,
-                {"filter": "greater-than(updated_at,2023-10-10T00:00:00+00:00)", "sort": "updated_at"},
+                {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(messages.channel,'email'))", "sort": "updated_at"},
             ),
             (
                 {"updated_at": "2023-10-10T00:00:00+00:00", "archived": {"updated_at": "2022-10-10T00:00:00+00:00"}},
                 {"archived": True},
                 None,
                 {
-                    "filter": "and(greater-than(updated_at,2022-10-10T00:00:00+00:00),equals(archived,true))",
+                    "filter": "and(greater-than(updated_at,2022-10-10T00:00:00+00:00),equals(archived,true),equals(messages.channel,'email'))",
                     "sort": "updated_at",
                 },
             ),
