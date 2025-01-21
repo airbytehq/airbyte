@@ -62,43 +62,15 @@ class ActiveUsersRecordExtractor(RecordExtractor):
 class TransformDatetimesToRFC3339(RecordTransformation):
     def __init__(self):
         self.name = "events"
-
-    def _get_schema(self, config: Config):
-        schema_loader = JsonFileSchemaLoader(config=config, parameters={"name": self.name})
-        return schema_loader.get_json_schema()
-
-    def _get_schema_root_properties(self, config: Config):
-        schema = self._get_schema(config=config)
-        return schema["properties"]
-
-    def _get_date_time_items_from_schema(self, config: Config):
-        """
-        Get all properties from schema with format: 'date-time'
-        """
-        result = []
-        schema = self._get_schema_root_properties(config=config)
-        for key, value in schema.items():
-            if value.get("format") == "date-time":
-                result.append(key)
-        return result
-
-    def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        Transform 'date-time' items to RFC3339 format
-        """
-        for item in record:
-            if item in self.date_time_fields and record[item]:
-                try:
-                    record[item] = pendulum.parse(record[item]).to_rfc3339_string()
-                    # record[item]
-                except Exception as e:
-                    logger.error(f"Error converting {item} to RFC3339 format: {e}")
-                    raise AirbyteTracedException(
-                        message=f"Error converting {item} to RFC3339 format. See logs for more infromation",
-                        internal_message=f"Error converting {item} to RFC3339 format: {e}",
-                        failure_type=FailureType.system_error,
-                    ) from e
-        return record
+        self.date_time_fields = [
+            "event_time",
+            "server_upload_time",
+            "processed_time",
+            "server_received_time",
+            "user_creation_time",
+            "client_upload_time",
+            "client_event_time",
+        ]
 
     def transform(
         self,
@@ -107,5 +79,18 @@ class TransformDatetimesToRFC3339(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
-        self.date_time_fields = self._get_date_time_items_from_schema(config)
-        return self._date_time_to_rfc3339(record)
+        """
+        Transform 'date-time' items to RFC3339 format
+        """
+        for item in record:
+            if item in self.date_time_fields and record[item]:
+                try:
+                    record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+                except Exception as e:
+                    logger.error(f"Error converting {item} to RFC3339 format: {e}")
+                    raise AirbyteTracedException(
+                        message=f"Error converting {item} to RFC3339 format. See logs for more infromation",
+                        internal_message=f"Error converting {item} to RFC3339 format: {e}",
+                        failure_type=FailureType.system_error,
+                    ) from e
+        return record
