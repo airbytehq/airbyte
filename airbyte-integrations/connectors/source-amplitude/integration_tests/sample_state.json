@@ -2,7 +2,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "event_time": "2023-02-15 08:00:00.000000" },
+      "stream_state": { "server_upload_time": "2023-02-15 08:00:00.000000" },
       "stream_descriptor": { "name": "events" }
     }
   },
