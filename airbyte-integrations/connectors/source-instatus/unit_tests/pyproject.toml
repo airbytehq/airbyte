@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 version = "0.1.29"
 name = "source-instatus"
-description = "Source implementation for Instatus."
+description = "Unit tests for Instatus."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
@@ -26,3 +26,9 @@ source-instatus = "source_instatus.run:run"
 requests-mock = "^1.9.3"
 pytest = "^6.2"
 pytest-mock = "^3.6.1"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*"
+]
+
