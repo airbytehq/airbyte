@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.Test
 abstract class S3DataLakeWriteTest(
     configContents: String,
     destinationCleaner: DestinationCleaner,
-    envVars: Map<String, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
         configContents,
@@ -33,6 +33,8 @@ abstract class S3DataLakeWriteTest(
         destinationCleaner,
         S3DataLakeExpectedRecordMapper,
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
+        micronautProperties =
+            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
         isStreamSchemaRetroactive = true,
         supportsDedup = true,
         stringifySchemalessObjects = true,
@@ -42,7 +44,6 @@ abstract class S3DataLakeWriteTest(
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         supportFileTransfer = false,
-        envVars = envVars,
         allTypesBehavior =
             StronglyTyped(
                 integerCanBeLarge = false,
@@ -100,7 +101,6 @@ class GlueAssumeRoleWriteTest :
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
             )
         ),
-        S3DataLakeTestUtil.getAwsAssumeRoleCredentialsAsMap()
     ) {
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
