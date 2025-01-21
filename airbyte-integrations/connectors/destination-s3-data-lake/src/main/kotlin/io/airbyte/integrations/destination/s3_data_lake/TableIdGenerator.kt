@@ -20,15 +20,18 @@ interface TableIdGenerator {
     fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier
 }
 
-class SimpleTableIdGenerator(private val s3DataLakeConfiguration: S3DataLakeConfiguration) : TableIdGenerator {
+class SimpleTableIdGenerator(private val s3DataLakeConfiguration: S3DataLakeConfiguration) :
+    TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
-        val namespace = stream.namespace ?: s3DataLakeConfiguration.icebergCatalogConfiguration.databaseName
+        val namespace =
+            stream.namespace ?: s3DataLakeConfiguration.icebergCatalogConfiguration.databaseName
         return tableIdOf(namespace!!, stream.name)
     }
 }
 
 /** AWS Glue requires lowercase database+table names. */
-class GlueTableIdGenerator (private val s3DataLakeConfiguration: S3DataLakeConfiguration) : TableIdGenerator {
+class GlueTableIdGenerator(private val s3DataLakeConfiguration: S3DataLakeConfiguration) :
+    TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
         val fallbackNamespace = s3DataLakeConfiguration.icebergCatalogConfiguration.databaseName
         val namespace = (stream.namespace ?: fallbackNamespace)?.lowercase()

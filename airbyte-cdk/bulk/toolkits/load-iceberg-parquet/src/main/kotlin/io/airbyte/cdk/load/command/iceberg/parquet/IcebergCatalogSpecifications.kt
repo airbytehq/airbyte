@@ -58,8 +58,8 @@ interface IcebergCatalogSpecifications {
     /**
      * The name of the database to be used when building the Table identifier
      *
-     * This database name will only be used if the stream namespace is null, meaning when
-     * the `Destination Namespace` setting for the connection is set to `Destination-defined` or
+     * This database name will only be used if the stream namespace is null, meaning when the
+     * `Destination Namespace` setting for the connection is set to `Destination-defined` or
      * `Source-defined`
      */
     @get:JsonSchemaTitle("Database Name")
@@ -102,7 +102,12 @@ interface IcebergCatalogSpecifications {
                     )
             }
 
-        return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, databaseName, catalogConfiguration)
+        return IcebergCatalogConfiguration(
+            warehouseLocation,
+            mainBranchName,
+            databaseName,
+            catalogConfiguration
+        )
     }
 }
 
