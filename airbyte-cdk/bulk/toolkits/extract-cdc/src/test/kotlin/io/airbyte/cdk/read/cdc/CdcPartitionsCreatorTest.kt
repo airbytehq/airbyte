@@ -21,7 +21,6 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertThrows
@@ -59,7 +58,7 @@ class CdcPartitionsCreatorTest {
 
     val lowerBoundReference = AtomicReference<CreatorPosition>(null)
     val upperBoundReference = AtomicReference<CreatorPosition>(null)
-    val reset = AtomicBoolean()
+    val reset = AtomicReference<String?>(null)
 
     val creator: CdcPartitionsCreator<CreatorPosition>
         get() =
