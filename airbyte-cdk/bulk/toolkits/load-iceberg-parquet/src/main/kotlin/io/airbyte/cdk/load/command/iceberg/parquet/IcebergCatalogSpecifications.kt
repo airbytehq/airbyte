@@ -56,6 +56,20 @@ interface IcebergCatalogSpecifications {
     val mainBranchName: String
 
     /**
+     * The name of the database to be used when building the Table identifier
+     *
+     * This database name will only be used if the stream namespace is null, meaning when
+     * the `Destination Namespace` setting for the connection is set to `Destination-defined` or
+     * `Source-defined`
+     */
+    @get:JsonSchemaTitle("Database Name")
+    @get:JsonPropertyDescription(
+        """The database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`"""
+    )
+    @get:JsonProperty("database_name")
+    val databaseName: String?
+
+    /**
      * The catalog type.
      *
      * Indicates the type of catalog used (e.g., Nessie or Glue) and provides configuration details
@@ -88,7 +102,7 @@ interface IcebergCatalogSpecifications {
                     )
             }
 
-        return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, catalogConfiguration)
+        return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, databaseName, catalogConfiguration)
     }
 }
 
@@ -216,6 +230,7 @@ data class IcebergCatalogConfiguration(
     @JsonPropertyDescription(
         "The specific configuration details of the chosen Iceberg catalog type."
     )
+    val databaseName: String? = null,
     val catalogConfiguration: CatalogConfiguration
 )
 
