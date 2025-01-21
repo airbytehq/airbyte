@@ -48,26 +48,13 @@ class FeedBootstrapTest {
 
     val global = Global(listOf(stream))
 
-    fun stateQuerier(
+    fun stateManager(
         globalStateValue: OpaqueStateValue? = null,
         streamStateValue: OpaqueStateValue? = null
-    ): StateQuerier =
-        object : StateQuerier {
-            override val feeds: List<Feed> = listOf(global, stream)
+    ): StateManager = StateManager(global, globalStateValue, mapOf(stream to streamStateValue))
 
-            override fun current(feed: Feed): OpaqueStateValue? =
-                when (feed) {
-                    is Global -> globalStateValue
-                    is Stream -> streamStateValue
-                }
-
-            override fun resetFeedStates() {
-                // no-op
-            }
-        }
-
-    fun Feed.bootstrap(stateQuerier: StateQuerier): FeedBootstrap<*> =
-        FeedBootstrap.create(outputConsumer, metaFieldDecorator, stateQuerier, this)
+    fun Feed.bootstrap(stateManager: StateManager): FeedBootstrap<*> =
+        FeedBootstrap.create(outputConsumer, metaFieldDecorator, stateManager, this)
 
     fun expected(vararg data: String): List<String> {
         val ts = outputConsumer.recordEmittedAt.toEpochMilli()
@@ -76,7 +63,7 @@ class FeedBootstrapTest {
 
     @Test
     fun testGlobalColdStart() {
-        val globalBootstrap: FeedBootstrap<*> = global.bootstrap(stateQuerier())
+        val globalBootstrap: FeedBootstrap<*> = global.bootstrap(stateManager())
         Assertions.assertNull(globalBootstrap.currentState)
         Assertions.assertEquals(1, globalBootstrap.streamRecordConsumers().size)
         val (actualStreamID, consumer) = globalBootstrap.streamRecordConsumers().toList().first()
@@ -91,7 +78,7 @@ class FeedBootstrapTest {
     @Test
     fun testGlobalWarmStart() {
         val globalBootstrap: FeedBootstrap<*> =
-            global.bootstrap(stateQuerier(globalStateValue = Jsons.objectNode()))
+            global.bootstrap(stateManager(globalStateValue = Jsons.objectNode()))
         Assertions.assertEquals(Jsons.objectNode(), globalBootstrap.currentState)
         Assertions.assertEquals(1, globalBootstrap.streamRecordConsumers().size)
         val (actualStreamID, consumer) = globalBootstrap.streamRecordConsumers().toList().first()
@@ -104,9 +91,35 @@ class FeedBootstrapTest {
     }
 
     @Test
+    fun testGlobalReset() {
+        val stateManager: StateManager =
+            stateManager(
+                streamStateValue = Jsons.objectNode(),
+                globalStateValue = Jsons.objectNode()
+            )
+        val globalBootstrap: FeedBootstrap<*> = global.bootstrap(stateManager)
+        Assertions.assertEquals(Jsons.objectNode(), globalBootstrap.currentState)
+        Assertions.assertEquals(Jsons.objectNode(), globalBootstrap.currentState(stream))
+        // Reset.
+        globalBootstrap.resetAll()
+        Assertions.assertNull(globalBootstrap.currentState)
+        Assertions.assertNull(globalBootstrap.currentState(stream))
+        // Set new global state and checkpoint
+        stateManager.scoped(global).set(Jsons.arrayNode(), 0L)
+        stateManager.checkpoint().forEach { outputConsumer.accept(it) }
+        // Check that everything is as it should be.
+        Assertions.assertEquals(Jsons.arrayNode(), globalBootstrap.currentState)
+        Assertions.assertNull(globalBootstrap.currentState(stream))
+        Assertions.assertEquals(
+            listOf(RESET_STATE),
+            outputConsumer.states().map(Jsons::writeValueAsString)
+        )
+    }
+
+    @Test
     fun testStreamColdStart() {
         val streamBootstrap: FeedBootstrap<*> =
-            stream.bootstrap(stateQuerier(globalStateValue = Jsons.objectNode()))
+            stream.bootstrap(stateManager(globalStateValue = Jsons.objectNode()))
         Assertions.assertNull(streamBootstrap.currentState)
         Assertions.assertEquals(1, streamBootstrap.streamRecordConsumers().size)
         val (actualStreamID, consumer) = streamBootstrap.streamRecordConsumers().toList().first()
@@ -122,7 +135,7 @@ class FeedBootstrapTest {
     fun testStreamWarmStart() {
         val streamBootstrap: FeedBootstrap<*> =
             stream.bootstrap(
-                stateQuerier(
+                stateManager(
                     globalStateValue = Jsons.objectNode(),
                     streamStateValue = Jsons.arrayNode(),
                 )
@@ -140,15 +153,8 @@ class FeedBootstrapTest {
 
     @Test
     fun testChanges() {
-        val stateQuerier =
-            object : StateQuerier {
-                override val feeds: List<Feed> = listOf(stream)
-                override fun current(feed: Feed): OpaqueStateValue? = null
-                override fun resetFeedStates() {
-                    // no-op
-                }
-            }
-        val streamBootstrap = stream.bootstrap(stateQuerier) as StreamFeedBootstrap
+        val stateManager = StateManager(initialStreamStates = mapOf(stream to null))
+        val streamBootstrap = stream.bootstrap(stateManager) as StreamFeedBootstrap
         val consumer: StreamRecordConsumer = streamBootstrap.streamRecordConsumer()
         val changes =
             mapOf(
@@ -184,5 +190,7 @@ class FeedBootstrapTest {
         const val STREAM_RECORD_INPUT_DATA = """{"k":2,"v":"bar"}"""
         const val STREAM_RECORD_OUTPUT_DATA =
             """{"k":2,"v":"bar","_ab_cdc_lsn":{},"_ab_cdc_updated_at":"2069-04-20T00:00:00.000000Z","_ab_cdc_deleted_at":null}"""
+        const val RESET_STATE =
+            """{"type":"GLOBAL","global":{"shared_state":[],"stream_states":[{"stream_descriptor":{"name":"tbl","namespace":"ns"},"stream_state":{}}]},"sourceStats":{"recordCount":0.0}}"""
     }
 }

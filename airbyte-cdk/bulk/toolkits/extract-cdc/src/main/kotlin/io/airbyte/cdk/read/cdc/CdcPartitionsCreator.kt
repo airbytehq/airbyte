@@ -46,7 +46,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
             )
         }
         val activeStreams: List<Stream> by lazy {
-            feedBootstrap.feed.streams.filter { feedBootstrap.stateQuerier.current(it) != null }
+            feedBootstrap.feed.streams.filter { feedBootstrap.currentState(it) != null }
         }
         val syntheticOffset: DebeziumOffset by lazy { creatorOps.generateColdStartOffset() }
         // Ensure that the WAL position upper bound has been computed for this sync.
@@ -96,7 +96,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                 // TransientErrorException. The next sync will then snapshot the tables.
                 resetReason.set(warmStartState.reason)
                 log.info { "Resetting invalid incumbent CDC state with synthetic state." }
-                feedBootstrap.stateQuerier.resetFeedStates()
+                feedBootstrap.resetAll()
                 debeziumProperties = creatorOps.generateColdStartProperties()
                 startingOffset = syntheticOffset
                 startingSchemaHistory = null
