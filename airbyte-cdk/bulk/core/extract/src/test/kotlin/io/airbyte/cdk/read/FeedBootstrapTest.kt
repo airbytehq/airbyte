@@ -91,6 +91,32 @@ class FeedBootstrapTest {
     }
 
     @Test
+    fun testGlobalReset() {
+        val stateManager: StateManager =
+            stateManager(
+                streamStateValue = Jsons.objectNode(),
+                globalStateValue = Jsons.objectNode()
+            )
+        val globalBootstrap: FeedBootstrap<*> = global.bootstrap(stateManager)
+        Assertions.assertEquals(Jsons.objectNode(), globalBootstrap.currentState)
+        Assertions.assertEquals(Jsons.objectNode(), globalBootstrap.currentState(stream))
+        // Reset.
+        globalBootstrap.resetAll()
+        Assertions.assertNull(globalBootstrap.currentState)
+        Assertions.assertNull(globalBootstrap.currentState(stream))
+        // Set new global state and checkpoint
+        stateManager.scoped(global).set(Jsons.arrayNode(), 0L)
+        stateManager.checkpoint().forEach { outputConsumer.accept(it) }
+        // Check that everything is as it should be.
+        Assertions.assertEquals(Jsons.arrayNode(), globalBootstrap.currentState)
+        Assertions.assertNull(globalBootstrap.currentState(stream))
+        Assertions.assertEquals(
+            listOf(RESET_STATE),
+            outputConsumer.states().map(Jsons::writeValueAsString)
+        )
+    }
+
+    @Test
     fun testStreamColdStart() {
         val streamBootstrap: FeedBootstrap<*> =
             stream.bootstrap(stateManager(globalStateValue = Jsons.objectNode()))
@@ -164,5 +190,7 @@ class FeedBootstrapTest {
         const val STREAM_RECORD_INPUT_DATA = """{"k":2,"v":"bar"}"""
         const val STREAM_RECORD_OUTPUT_DATA =
             """{"k":2,"v":"bar","_ab_cdc_lsn":{},"_ab_cdc_updated_at":"2069-04-20T00:00:00.000000Z","_ab_cdc_deleted_at":null}"""
+        const val RESET_STATE =
+            """{"type":"GLOBAL","global":{"shared_state":[],"stream_states":[{"stream_descriptor":{"name":"tbl","namespace":"ns"},"stream_state":{}}]},"sourceStats":{"recordCount":0.0}}"""
     }
 }
