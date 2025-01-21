@@ -20,6 +20,7 @@ dependencies {
     testFixturesImplementation 'io.mockk:mockk:1.13.12'
     testImplementation 'org.testcontainers:mysql'
     testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:mssqlserver:1.19.0'
 }
 
 test {
