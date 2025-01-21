@@ -62,9 +62,7 @@ class MSSQLDataDumper : DestinationDataDumper {
         val dataSource = DataSourceFactory().dataSource(config)
         val output = mutableListOf<OutputRecord>()
         dataSource.connection.use { connection ->
-            SELECT_FROM
-                .toQuery(sqlBuilder.fqTableName)
-                .executeQuery(connection) { rs ->
+            SELECT_FROM.toQuery(sqlBuilder.fqTableName).executeQuery(connection) { rs ->
                 while (rs.next()) {
                     val objectValue = sqlBuilder.readResult(rs, sqlBuilder.finalTableSchema)
                     val record =
