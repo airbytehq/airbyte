@@ -197,7 +197,7 @@ class TestIncrementalKlaviyoStream:
             base_url = "https://a.klaviyo.com/api/events"
             query_params = {
                 "fields[metric]": "name,created,updated,integration",
-                "include": "metric",
+                "include": "metric,attributions",
                 "filter": f"greater-or-equal(datetime,{start_date_str}),less-or-equal(datetime,{end_date_str})",
                 "sort": "datetime",
             }
