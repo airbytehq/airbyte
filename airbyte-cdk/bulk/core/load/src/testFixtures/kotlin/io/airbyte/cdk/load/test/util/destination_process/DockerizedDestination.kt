@@ -131,8 +131,6 @@ class DockerizedDestination(
                     "$fileTransferMountSource:/tmp",
                     "-e",
                     "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE=1",
-                    "-e",
-                    "USE_FILE_TRANSFER=$useFileTransfer",
                 ) +
                     additionalEnvEntries +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +

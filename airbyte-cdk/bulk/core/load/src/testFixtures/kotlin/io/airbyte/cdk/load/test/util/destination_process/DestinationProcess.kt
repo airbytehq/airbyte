@@ -58,6 +58,10 @@ abstract class DestinationProcessFactory {
      */
     lateinit var testName: String
 
+    /**
+     * If [useFileTransfer] is enabled, the process should create a file for the connector to
+     * transfer.
+     */
     abstract fun createDestinationProcess(
         command: String,
         configContents: String? = null,

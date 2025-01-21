@@ -53,11 +53,8 @@ class NonDockerizedDestination(
         }
 
         if (useFileTransfer) {
-            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "true")
             val fileContentStr = "123"
             file.writeText(fileContentStr)
-        } else {
-            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "false")
         }
         val destinationStdin = PipedInputStream()
         // This could probably be a channel, somehow. But given the current structure,
