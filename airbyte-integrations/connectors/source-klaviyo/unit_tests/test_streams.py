@@ -461,14 +461,14 @@ class TestCampaignsStream:
         stream = Campaigns(api_key=API_KEY)
         requests_mock.register_uri(
             "GET",
-            "https://a.klaviyo.com/api/campaigns?sort=updated_at",
+            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=equals(messages.channel,'email')",
             status_code=200,
             json={"data": input_records},
             complete_qs=True,
         )
         requests_mock.register_uri(
             "GET",
-            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=equals(archived,true)",
+            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=and(equals(archived,true),equals(messages.channel,'email'))",
             status_code=200,
             json={"data": input_records_archived},
             complete_qs=True,
