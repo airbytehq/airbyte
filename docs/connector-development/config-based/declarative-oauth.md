@@ -170,8 +170,6 @@ Example Response:
 
 #### Example Declarative OAuth Spec
 ```diff
-diff --git a/docs/connector-development/config-based/current_example.yml b/docs/connector-development/config-based/current_example.yml
-index e4d1ddd655..f7d69fd182 100644
 --- manifest.yml
 +++ simple_oauth_manifest.yml
 @@ -38,6 +38,14 @@ definitions:
@@ -266,8 +264,6 @@ Imagine that the OAuth flow is updated so that the client secret is a request he
 #### Example Declarative OAuth Change
 Here is the change you would make to the spec to support this:
 ```diff
-diff --git a/docs/connector-development/config-based/current_example.yml b/docs/connector-development/config-based/current_example.yml
-index 58a4db9d73..9f20a44f70 100644
 --- simple_oauth_manifest.yml
 +++ secret_header_manifest.yml
 @@ -83,10 +85,11 @@ spec:
@@ -287,31 +283,36 @@ index 58a4db9d73..9f20a44f70 100644
 
 ```
 
-### Advanced Case: access token is returned in a different field
-Now imagine that the OAuth flow is updated so that the access token returned by `/oauth/token` is in a non standard field. Specifically, the response is now:
-```json
-{
-  "super_duperaccess_token": "YOUR_ACCESS_TOKEN_123"
-}
-```
-
-#### Example Declarative OAuth Change
-```diff
-
-```
-
-### Advanced Case: access token is returned in a nested field
+### Advanced Case: access token is returned in a non standard / nested field
 Now imagine that the OAuth flow is updated so that the access token returned by `/oauth/token` is in a nested non standard field. Specifically, the response is now:
 ```json
 {
   "data": {
-    "super_duperaccess_token": "YOUR_ACCESS_TOKEN_123"
+    "super_duper_access_token": "YOUR_ACCESS_TOKEN_123"
   }
 }
 ```
 
 #### Example Declarative OAuth Change
 ```diff
+--- a/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml
++++ b/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/different_access_token_field.yml
+@@ -86,10 +86,12 @@ spec:
+           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
+       complete_oauth_output_specification:
+         required:
+-          - access_token
++          - super_duper_access_token
+         properties:
+-          access_token:
++          super_duper_access_token:
+             type: string
++            path_in_oauth_response:
++              - data.super_duper_access_token
+             path_in_connector_config:
+               - access_token
+       complete_oauth_server_input_specification:
+
 
 ```
 
@@ -333,8 +334,6 @@ and the response of `/oauth/token` now includes a refresh token field.
 
 #### Example Declarative OAuth Change
 ```diff
-diff --git a/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml b/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/refresh_token.yml
-index 58a4db9d73..23c39503e3 100644
 --- a/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml
 +++ b/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/refresh_token.yml
 @@ -41,9 +41,18 @@ definitions:

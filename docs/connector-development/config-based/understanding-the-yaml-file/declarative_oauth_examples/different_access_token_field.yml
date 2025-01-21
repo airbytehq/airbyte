@@ -86,10 +86,12 @@ spec:
           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
       complete_oauth_output_specification:
         required:
-          - access_token
+          - super_duper_access_token
         properties:
-          access_token:
+          super_duper_access_token:
             type: string
+            path_in_oauth_response:
+              - data.super_duper_access_token
             path_in_connector_config:
               - access_token
       complete_oauth_server_input_specification:
