@@ -8,6 +8,7 @@ import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.data.LocalDateCodec
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.read.TestFixtures.assertFailures
+import io.airbyte.cdk.read.TestFixtures.bootstrap
 import io.airbyte.cdk.read.TestFixtures.factory
 import io.airbyte.cdk.read.TestFixtures.id
 import io.airbyte.cdk.read.TestFixtures.msg
@@ -60,7 +61,7 @@ class JdbcPartitionReaderTest {
                 maxSnapshotReadTime = java.time.Duration.ofMinutes(1),
             )
         val factory = sharedState.factory()
-        val result = factory.create(stream, opaqueStateValue(cursor = cursorLowerBound))
+        val result = factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
         factory.assertFailures()
         Assertions.assertTrue(result is DefaultJdbcCursorIncrementalPartition)
         val partition = result as DefaultJdbcCursorIncrementalPartition
@@ -91,7 +92,7 @@ class JdbcPartitionReaderTest {
         // Check output
         Assertions.assertEquals(
             "hello how are you today",
-            (sharedState.outputConsumer as BufferingOutputConsumer)
+            (partition.streamState.streamFeedBootstrap.outputConsumer as BufferingOutputConsumer)
                 .records()
                 .map { it.data["msg"].asText() }
                 .joinToString(separator = " ")
@@ -139,7 +140,7 @@ class JdbcPartitionReaderTest {
                 maxSnapshotReadTime = java.time.Duration.ofMinutes(1),
             )
         val factory = sharedState.factory()
-        val result = factory.create(stream, opaqueStateValue(cursor = cursorLowerBound))
+        val result = factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
         factory.assertFailures()
         Assertions.assertTrue(result is DefaultJdbcCursorIncrementalPartition)
         val partition = result as DefaultJdbcCursorIncrementalPartition
@@ -180,7 +181,7 @@ class JdbcPartitionReaderTest {
         // Check output
         Assertions.assertEquals(
             "hello how",
-            (sharedState.outputConsumer as BufferingOutputConsumer)
+            (partition.streamState.streamFeedBootstrap.outputConsumer as BufferingOutputConsumer)
                 .records()
                 .map { it.data["msg"].asText() }
                 .joinToString(separator = " ")
@@ -228,7 +229,7 @@ class JdbcPartitionReaderTest {
                 maxSnapshotReadTime = java.time.Duration.ofSeconds(1),
             )
         val factory = sharedState.factory()
-        val result = factory.create(stream, opaqueStateValue(cursor = cursorLowerBound))
+        val result = factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
         factory.assertFailures()
         Assertions.assertTrue(result is DefaultJdbcCursorIncrementalPartition)
         val partition = result as DefaultJdbcCursorIncrementalPartition
@@ -289,7 +290,8 @@ class JdbcPartitionReaderTest {
                 maxSnapshotReadTime = java.time.Duration.ofSeconds(1),
             )
         val factory2 = sharedState2.factory()
-        val result2 = factory2.create(stream2, opaqueStateValue(cursor = cursorLowerBound))
+        val result2 =
+            factory2.create(stream2.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
         factory2.assertFailures()
         Assertions.assertTrue(result2 is DefaultJdbcCursorIncrementalPartition)
         val partition2 = result2 as DefaultJdbcCursorIncrementalPartition

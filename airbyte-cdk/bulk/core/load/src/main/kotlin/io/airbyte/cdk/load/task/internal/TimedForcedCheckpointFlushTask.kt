@@ -10,14 +10,13 @@ import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.state.CheckpointManager
-import io.airbyte.cdk.load.task.InternalScope
-import io.airbyte.cdk.load.task.SyncLevel
+import io.airbyte.cdk.load.task.KillableScope
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface TimedForcedCheckpointFlushTask : SyncLevel, InternalScope
+interface TimedForcedCheckpointFlushTask : KillableScope
 
 @Singleton
 @Secondary

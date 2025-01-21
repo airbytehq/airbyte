@@ -7,11 +7,11 @@ data:
       - linkedin.com
       - api.linkedin.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 4.1.4
+  dockerImageTag: 5.1.1
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
@@ -30,6 +30,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: This upgrade brings changes in primary key to *-analytics streams.
@@ -87,6 +89,10 @@ data:
               - "creatives"
               - "campaign_groups"
               - "conversions"
+      5.0.0:
+        message: We would like to inform you that the Primary Key (PK) for ad_campaign_analytics and Custom Ad Analytics Reports streams has been changed from [string_of_pivot_values, end_date] to [string_of_pivot_values, end_date, sponsoredCampaign] and Primary Key (PK) for account_users stream has been changed from [account] to [account, user]. This update is intended to improve data integrity and ensure optimal performance. Upgrade LinkedIn Ads to apply these changes immediately. Otherwise, LinkedIn Ads will be upgraded automatically on 2024-12-10.
+        upgradeDeadline: "2024-12-10"
+        deadlineAction: "auto_upgrade"
   suggestedStreams:
     streams:
       - accounts

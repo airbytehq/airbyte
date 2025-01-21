@@ -7,6 +7,8 @@ from typing import Optional
 
 import pytest
 import yaml
+from pydash.objects import get
+
 from metadata_service import gcs_upload
 from metadata_service.constants import (
     COMPONENTS_PY_FILE_NAME,
@@ -19,7 +21,6 @@ from metadata_service.constants import (
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import ValidatorOptions
-from pydash.objects import get
 
 MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["99.99.99", "0.0.0"]
 MISSING_SHA = "MISSINGSHA"

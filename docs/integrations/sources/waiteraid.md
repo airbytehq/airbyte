@@ -61,7 +61,15 @@ The Waiteraid source connector supports the following [sync modes](https://docs.
 
 | Version | Date       | Pull Request                                           | Subject               |
 | :------ | :--------- | :----------------------------------------------------- | :-------------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.9 | 2025-01-18 | [52002](https://github.com/airbytehq/airbyte/pull/52002) | Update dependencies |
+| 0.2.8 | 2025-01-11 | [51386](https://github.com/airbytehq/airbyte/pull/51386) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50810](https://github.com/airbytehq/airbyte/pull/50810) | Update dependencies |
+| 0.2.6 | 2024-12-21 | [50372](https://github.com/airbytehq/airbyte/pull/50372) | Update dependencies |
+| 0.2.5 | 2024-12-14 | [49770](https://github.com/airbytehq/airbyte/pull/49770) | Update dependencies |
+| 0.2.4 | 2024-12-12 | [49405](https://github.com/airbytehq/airbyte/pull/49405) | Update dependencies |
+| 0.2.3 | 2024-10-29 | [47835](https://github.com/airbytehq/airbyte/pull/47835) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47610](https://github.com/airbytehq/airbyte/pull/47610) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44047](https://github.com/airbytehq/airbyte/pull/44047) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43789](https://github.com/airbytehq/airbyte/pull/43789) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43568](https://github.com/airbytehq/airbyte/pull/43568) | Update dependencies |

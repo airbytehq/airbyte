@@ -49,6 +49,15 @@ Authentication uses a pre-created API token which can be [created in the UI](htt
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------ |
+| 0.3.9 | 2025-01-18 | [51655](https://github.com/airbytehq/airbyte/pull/51655) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51084](https://github.com/airbytehq/airbyte/pull/51084) | Update dependencies |
+| 0.3.7 | 2024-12-28 | [50565](https://github.com/airbytehq/airbyte/pull/50565) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [50031](https://github.com/airbytehq/airbyte/pull/50031) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49508](https://github.com/airbytehq/airbyte/pull/49508) | Update dependencies |
+| 0.3.4 | 2024-12-12 | [49210](https://github.com/airbytehq/airbyte/pull/49210) | Update dependencies |
+| 0.3.3 | 2024-11-04 | [48291](https://github.com/airbytehq/airbyte/pull/48291) | Update dependencies |
+| 0.3.2 | 2024-10-29 | [47898](https://github.com/airbytehq/airbyte/pull/47898) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47580](https://github.com/airbytehq/airbyte/pull/47580) | Update dependencies |
 | 0.3.0 | 2024-10-05 | [46416](https://github.com/airbytehq/airbyte/pull/46416) | Migrate to Manifest-only CDK |
 | 0.2.20 | 2024-10-05 | [46455](https://github.com/airbytehq/airbyte/pull/46455) | Update dependencies |
 | 0.2.19 | 2024-09-28 | [46199](https://github.com/airbytehq/airbyte/pull/46199) | Update dependencies |

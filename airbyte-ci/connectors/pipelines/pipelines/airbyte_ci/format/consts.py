@@ -37,7 +37,6 @@ DEFAULT_FORMAT_IGNORE_LIST = [
     "**/pnpm-lock.yaml",  # This file is generated and should not be formatted
     "**/normalization_test_output",
     "**/source-amplitude/unit_tests/api_data/zipped.json",  # Zipped file presents as non-UTF-8 making spotless sad
-    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/**",  # These files are generated and should not be formatted
     "airbyte-ci/connectors/metadata_service/lib/metadata_service/models/generated/**",  # These files are generated and should not be formatted
     "**/airbyte-ci/connectors/metadata_service/lib/tests/fixtures/**/invalid",  # This is a test directory with invalid and sometimes unformatted code
     "airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code",  # This is a test directory with badly formatted code

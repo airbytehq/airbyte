@@ -39,6 +39,13 @@ This Airbyte connector for Mode allows you to seamlessly sync data between Mode 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.8 | 2025-01-18 | [51839](https://github.com/airbytehq/airbyte/pull/51839) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51162](https://github.com/airbytehq/airbyte/pull/51162) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50652](https://github.com/airbytehq/airbyte/pull/50652) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50131](https://github.com/airbytehq/airbyte/pull/50131) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49620](https://github.com/airbytehq/airbyte/pull/49620) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [48997](https://github.com/airbytehq/airbyte/pull/48997) | Update dependencies |
+| 0.0.2 | 2024-11-04 | [47868](https://github.com/airbytehq/airbyte/pull/47868) | Update dependencies |
 | 0.0.1 | 2024-10-12 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-lob
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.6.2@sha256:f5fcd3d4703b7590b6166a7853c5ed1686731607cd30a159a8c24e2fe2c1ee98
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
   connectorSubtype: api
   connectorType: source
   definitionId: c6d14c44-cd3e-4f94-8924-201c5615f3a7
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.11
   dockerRepository: airbyte/source-lob
   githubIssueLabel: source-lob
   icon: icon.svg

@@ -9,17 +9,19 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 5.0.19
+  dockerImageTag: 6.2.6
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
   license: MIT
-  maxSecondsBetweenMessages: 5400
+  # Based on https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#checking-report-status, report generation can take up to 3 hours
+  # We've added one minute on top of the three hours because of the waiting time before we poll the report status
+  maxSecondsBetweenMessages: 10860
   name: Amazon Ads
   remoteRegistries:
     pypi:
@@ -33,6 +35,18 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      6.0.0:
+        message:
+          "The Report API V2 is being deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change,
+          and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. We recommend using `SponsoredBrandsV3ReportStream` as an alternative stream with the same dataset."
+        upgradeDeadline: "2024-11-01"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "sponsored_display_report_stream"
+              - "sponsored_brands_report_stream"
+              - "sponsored_brands_video_report_stream"
       5.0.0:
         message: "`SponsoredBrandCampaigns`, `SponsoredBrandsAdGroups`, `SponsoredProductCampaigns`, and `SponsoredProductAdGroupBidRecommendations` streams have updated schemas and must be reset."
         upgradeDeadline: "2024-03-27"

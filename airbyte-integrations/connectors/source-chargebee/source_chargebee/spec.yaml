@@ -38,3 +38,15 @@ connectionSpecification:
       enum: ["1.0", "2.0"]
       default: "2.0"
       order: 3
+    num_workers:
+      type: integer
+      title: Number of concurrent workers
+      minimum: 1
+      maximum: 50
+      default: 3
+      examples: [1, 2, 3]
+      description: >-
+        The number of worker threads to use for the sync.
+        The performance upper boundary is based on the limit of your Chargebee plan.
+        More info about the rate limit plan tiers can be found on Chargebee's API <a href="https://support.chargebee.com/support/solutions/articles/243576-what-are-the-chargebee-api-limits-">docs</a>.
+      order: 4

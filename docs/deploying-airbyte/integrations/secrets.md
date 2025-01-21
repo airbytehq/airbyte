@@ -87,6 +87,7 @@ If authenticating with credentials, ensure you've already created a Kubernetes s
 global:
   secretsManager:
     type: awsSecretManager
+    secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     awsSecretManager:
       region: <aws-region>
       authenticationType: credentials ## Use "credentials" or "instanceProfile"
@@ -111,7 +112,7 @@ Ensure you've already created a Kubernetes secret containing the credentials blo
 global:
   secretsManager:
     type: googleSecretManager
-    secretManagerSecretName: airbyte-config-secrets
+    secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     googleSecretManager:
       projectId: <project-id>
       credentialsSecretKey: gcp.json
@@ -125,6 +126,7 @@ global:
 global:
   secretsManager:
     type: azureKeyVault
+    secretsManagerSecretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     azureKeyVault:
       vaultUrl: ## https://my-vault.vault.azure.net/
       tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e

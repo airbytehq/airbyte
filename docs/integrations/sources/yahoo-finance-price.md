@@ -9,6 +9,14 @@ The Airbyte Source for [Yahoo Finance Price](https://finance.yahoo.com/)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.8 | 2025-01-18 | [51984](https://github.com/airbytehq/airbyte/pull/51984) | Update dependencies |
+| 0.3.7 | 2025-01-11 | [51381](https://github.com/airbytehq/airbyte/pull/51381) | Update dependencies |
+| 0.3.6 | 2024-12-28 | [50794](https://github.com/airbytehq/airbyte/pull/50794) | Update dependencies |
+| 0.3.5 | 2024-12-21 | [50339](https://github.com/airbytehq/airbyte/pull/50339) | Update dependencies |
+| 0.3.4 | 2024-12-14 | [49792](https://github.com/airbytehq/airbyte/pull/49792) | Update dependencies |
+| 0.3.3 | 2024-12-12 | [49407](https://github.com/airbytehq/airbyte/pull/49407) | Update dependencies |
+| 0.3.2 | 2024-10-29 | [47726](https://github.com/airbytehq/airbyte/pull/47726) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47497](https://github.com/airbytehq/airbyte/pull/47497) | Update dependencies |
 | 0.3.0 | 2024-10-06 | [46526](https://github.com/airbytehq/airbyte/pull/46526) | Converting to manifest-only format |
 | 0.2.23 | 2024-10-05 | [46468](https://github.com/airbytehq/airbyte/pull/46468) | Update dependencies |
 | 0.2.22 | 2024-09-28 | [45792](https://github.com/airbytehq/airbyte/pull/45792) | Update dependencies |

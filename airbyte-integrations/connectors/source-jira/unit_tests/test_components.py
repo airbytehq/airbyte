@@ -4,9 +4,10 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_jira.components.extractors import LabelsRecordExtractor
 from source_jira.components.partition_routers import SprintIssuesSubstreamPartitionRouter
+
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @pytest.mark.parametrize(
@@ -72,7 +73,7 @@ def test_sprint_issues_substream_partition_router(fields_data, other_data, expec
     assert slices, "There should be at least one slice generated"
     # Asserting the correct parent stream fields are set in slices
     assert all(
-        _slice.parent_stream_fields == expected_fields for _slice in slices
+        _slice.extra_fields["fields"] == expected_fields for _slice in slices
     ), f"Expected parent stream fields {expected_fields}, but got {slices}"
     assert all(
         _slice.partition["partition_id"] == expected_partition for _slice in slices

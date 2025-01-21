@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import datetime
 import json
 import logging
@@ -17,6 +18,8 @@ import dpath
 import jsonschema
 import pendulum
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -27,7 +30,6 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.utils import AirbyteTracedException
-from requests import HTTPError
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.google_analytics_data_api_base_error_mapping import get_google_analytics_data_api_base_error_mapping
 from source_google_analytics_data_api.google_analytics_data_api_metadata_error_mapping import (
@@ -47,6 +49,7 @@ from .utils import (
     serialize_to_date_string,
     transform_json,
 )
+
 
 # set the quota handler globally since limitations are the same for all streams
 # the initial values should be saved once and tracked for each stream, inclusively.
@@ -354,10 +357,14 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
+        if stream_slice and "startDate" in stream_slice and "endDate" in stream_slice:
+            date_range = {"startDate": stream_slice["startDate"], "endDate": stream_slice["endDate"]}
+        else:
+            date_range = stream_slice
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
-            "dateRanges": [stream_slice],
+            "dateRanges": [date_range],
             "returnPropertyQuota": True,
             "offset": str(0),
             "limit": str(self.page_size),
@@ -414,7 +421,6 @@ class PivotReport(GoogleAnalyticsDataApiBaseStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         payload = super().request_body_json(stream_state, stream_slice, next_page_token)
-
         # remove offset and limit fields according to their absence in
         # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport
         payload.pop("offset", None)

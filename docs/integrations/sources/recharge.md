@@ -57,6 +57,7 @@ Several output streams are available from this source:
 - [Addresses](https://developer.rechargepayments.com/v1-shopify?python#list-addresses) \(Incremental sync\)
 - [Charges](https://developer.rechargepayments.com/v1-shopify?python#list-charges) \(Incremental sync\)
 - [Collections](https://developer.rechargepayments.com/v1-shopify)
+- [Events](https://developer.rechargepayments.com/2021-11/events/events_list)
 - [Customers](https://developer.rechargepayments.com/v1-shopify?python#list-customers) \(Incremental sync\)
 - [Discounts](https://developer.rechargepayments.com/v1-shopify?python#list-discounts) \(Incremental sync\)
 - [Metafields](https://developer.rechargepayments.com/v1-shopify?python#list-metafields)
@@ -79,6 +80,17 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.2 | 2025-01-18 | [51914](https://github.com/airbytehq/airbyte/pull/51914) | Update dependencies |
+| 2.6.1 | 2025-01-11 | [51333](https://github.com/airbytehq/airbyte/pull/51333) | Update dependencies |
+| 2.6.0 | 2025-01-02 | [48382](https://github.com/airbytehq/airbyte/pull/49926) | Add new stream `bundle_selections` |
+| 2.5.4 | 2025-01-04 | [50927](https://github.com/airbytehq/airbyte/pull/50927) | Update dependencies |
+| 2.5.3 | 2024-12-28 | [50724](https://github.com/airbytehq/airbyte/pull/50724) | Update dependencies |
+| 2.5.2 | 2024-12-21 | [50265](https://github.com/airbytehq/airbyte/pull/50265) | Update dependencies |
+| 2.5.1 | 2024-12-14 | [49081](https://github.com/airbytehq/airbyte/pull/49081) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.5.0 | 2024-11-26 | [48382](https://github.com/airbytehq/airbyte/pull/48382) | Add new stream `events` |
+| 2.4.15 | 2024-11-04 | [48242](https://github.com/airbytehq/airbyte/pull/48242) | Update dependencies |
+| 2.4.14 | 2024-10-29 | [47890](https://github.com/airbytehq/airbyte/pull/47890) | Update dependencies |
+| 2.4.13 | 2024-10-28 | [47037](https://github.com/airbytehq/airbyte/pull/47037) | Update dependencies |
 | 2.4.12 | 2024-10-12 | [46797](https://github.com/airbytehq/airbyte/pull/46797) | Update dependencies |
 | 2.4.11 | 2024-10-05 | [46510](https://github.com/airbytehq/airbyte/pull/46510) | Update dependencies |
 | 2.4.10 | 2024-09-28 | [46110](https://github.com/airbytehq/airbyte/pull/46110) | Update dependencies |

@@ -17,17 +17,18 @@ import dateparser
 import pendulum
 import requests
 import xmltodict
+
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import CheckpointMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 from source_amazon_seller_partner.utils import STREAM_THRESHOLD_PERIOD, threshold_period_decorator
+
 
 REPORTS_API_VERSION = "2021-06-30"
 ORDERS_API_VERSION = "v0"
@@ -232,7 +233,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self._replication_start_date = replication_start_date
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
-        self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work
+        self.period_in_days = min(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work
         self._report_options = report_options
         self._http_method = "GET"
         self._stream_name = stream_name
@@ -575,6 +576,7 @@ class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
     report_name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
     primary_key = "amazon-order-id"
     cursor_field = "last-updated-date"
+    replication_start_date_limit_in_days = 30
 
 
 class FbaStorageFeesReports(IncrementalReportsAmazonSPStream):

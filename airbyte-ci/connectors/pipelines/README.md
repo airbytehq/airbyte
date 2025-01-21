@@ -270,6 +270,9 @@ List all connectors:
 
 `airbyte-ci connectors list`
 
+List all connectors and write the output to a file:
+`airbyte-ci connectors list --output=connectors.json`
+
 List certified connectors:
 
 `airbyte-ci connectors --support-level=certified list`
@@ -310,7 +313,7 @@ flowchart TD
     entrypoint[[For each selected connector]]
     subgraph static ["Static code analysis"]
       qa[Run QA checks]
-      sem["Check version follows semantic versionning"]
+      sem["Check version follows semantic versioning"]
       incr["Check version is incremented"]
       metadata_validation["Run metadata validation on metadata.yaml"]
       sem --> incr
@@ -319,7 +322,7 @@ flowchart TD
         build[Build connector docker image]
         unit[Run unit tests]
         integration[Run integration tests]
-        pyairbyte_validation[Run PyAirbyte validation tests]
+        pyairbyte_validation[Python CLI smoke tests via PyAirbyte]
         cat[Run connector acceptance tests]
         secret[Load connector configuration]
 
@@ -348,7 +351,7 @@ flowchart TD
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. 
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
 
 Note:
 
@@ -525,7 +528,6 @@ Options:
   --open-reports    Auto open reports in the browser.
   --create-prs      Create pull requests for each updated connector.
   --auto-merge    Set the auto-merge label on created PRs.
-  --ignore-connector TEXT  Ignore a connector by its technical name (can be used multiple times).
   --help      Show this message and exit.
 ```
 
@@ -553,7 +555,7 @@ Bump source-openweather:
 
 | Argument          | Description                                                            |
 | ----------------- | ---------------------------------------------------------------------- |
-| `BUMP_TYPE`       | major, minor, patch, or version:<explicit-version>                     |
+| `BUMP_TYPE`       | major, minor, patch, rc, or version:<explicit-version>                 |
 | `CHANGELOG_ENTRY` | The changelog entry that will get added to the connector documentation |
 
 #### Options
@@ -561,6 +563,7 @@ Bump source-openweather:
 | Option      | Description                                                                               |
 | ----------- | ----------------------------------------------------------------------------------------- |
 | --pr-number | Explicitly set the PR number in the changelog entry, a placeholder will be set otherwise. |
+| --rc        | Bump the version by the specified bump type and append the release candidate suffix.      |
 
 ### <a id="connectors-upgrade-cdk"></a>`connectors upgrade-cdk` command
 
@@ -851,7 +854,44 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 4.41.1   | [#46914](https://github.com/airbytehq/airbyte/pull/46914)  | Upgrade to Dagger 0.13.3                                                                                                     |
+| 4.48.9  | [#51609](https://github.com/airbytehq/airbyte/pull/51609)  | Fix ownership of shared cache volume for non root connectors                                                                 |
+| 4.48.8  | [#51582](https://github.com/airbytehq/airbyte/pull/51582)  | Fix typo in `migrate-to-inline-schemas` command                                                       |
+| 4.48.7  | [#51579](https://github.com/airbytehq/airbyte/pull/51579)  | Give back the ownership of /tmp to the original user on finalize build                                                       |
+| 4.48.6  | [#51577](https://github.com/airbytehq/airbyte/pull/51577)  | Run finalize build scripts as root                                                                                           |
+| 4.48.5  | [#49827](https://github.com/airbytehq/airbyte/pull/49827)  | Bypasses CI checks for promoted release candidate PRs.                                                                       |
+| 4.48.4  | [#51003](https://github.com/airbytehq/airbyte/pull/51003)  | Install git in the build / test connector container when `--use-cdk-ref` is passed.                                          |
+| 4.48.3  | [#50988](https://github.com/airbytehq/airbyte/pull/50988)  | Remove deprecated `--no-update` flag from poetry commands                                                                    |
+| 4.48.2  | [#50871](https://github.com/airbytehq/airbyte/pull/50871)  | Speed up connector modification detection.                                                                                   |
+| 4.48.1  | [#50410](https://github.com/airbytehq/airbyte/pull/50410)  | Java connector build: give ownership of built artifacts to the current image user.                                           |
+| 4.48.0  | [#49960](https://github.com/airbytehq/airbyte/pull/49960)  | Deprecate airbyte-ci format command                                                                                          |
+| 4.47.0  | [#49832](https://github.com/airbytehq/airbyte/pull/49462)  | Build java connectors from the base image declared in `metadata.yaml`.                                                       |
+| 4.46.5  | [#49835](https://github.com/airbytehq/airbyte/pull/49835)  | Fix connector language discovery for projects with Kotlin Gradle build scripts.                                              |
+| 4.46.4  | [#49462](https://github.com/airbytehq/airbyte/pull/49462)  | Support Kotlin Gradle build scripts in connectors.                                                                           |
+| 4.46.3  | [#49465](https://github.com/airbytehq/airbyte/pull/49465)  | Fix `--use-local-cdk` on rootless connectors.                                                                                |
+| 4.46.2  | [#49136](https://github.com/airbytehq/airbyte/pull/49136)  | Fix failed install of python components due to non-root permissions.                                                         |
+| 4.46.1  | [#49146](https://github.com/airbytehq/airbyte/pull/49146)  | Update `crane` image address as the one we were using has been deleted by the maintainer.                                    |
+| 4.46.0  | [#48790](https://github.com/airbytehq/airbyte/pull/48790)  | Add unit tests step for manifest-only connectors                                                                             |
+| 4.45.3  | [#48927](https://github.com/airbytehq/airbyte/pull/48927)  | Fix bug in determine_changelog_entry_comment                                                                                 |
+| 4.45.2  | [#48868](https://github.com/airbytehq/airbyte/pull/48868)  | Fix ownership issues while using `--use-local-cdk`                                                                           |
+| 4.45.1  | [#48872](https://github.com/airbytehq/airbyte/pull/48872)  | Make the `connectors list` command write its output to a JSON file.                                                          |
+| 4.45.0  | [#48866](https://github.com/airbytehq/airbyte/pull/48866)  | Adds `--rc` option to `bump-version` command                                                                                 |
+| 4.44.2  | [#48725](https://github.com/airbytehq/airbyte/pull/48725)  | up-to-date: specific changelog comment for base image upgrade to rootless.                                                   |
+| 4.44.1  | [#48836](https://github.com/airbytehq/airbyte/pull/48836)  | Manifest-only connector build: give ownership of copied file to the current user.                                            |
+| 4.44.0  | [#48818](https://github.com/airbytehq/airbyte/pull/48818)  | Use local CDK or CDK ref for manifest only connector build.                                                                  |
+| 4.43.1  | [#48824](https://github.com/airbytehq/airbyte/pull/48824)  | Allow uploading CI reports to GCS with fewer permissions set.                                                                |
+| 4.43.0  | [#36545](https://github.com/airbytehq/airbyte/pull/36545)  | Switch to `airbyte` user when available in Python base image.                                                                |
+| 4.42.2  | [#48404](https://github.com/airbytehq/airbyte/pull/48404)  | Include `advanced_auth` in spec migration for manifest-only pipeline                                                         |
+| 4.42.1  | [#47316](https://github.com/airbytehq/airbyte/pull/47316)  | Connector testing: skip incremental acceptance test when the connector is not released.                                      |
+| 4.42.0  | [#47386](https://github.com/airbytehq/airbyte/pull/47386)  | Version increment check: make sure consecutive RC remain on the same version.                                                |
+| 4.41.9  | [#47483](https://github.com/airbytehq/airbyte/pull/47483)  | Fix build logic used in `up-to-date` to support any connector language.                                                      |
+| 4.41.8  | [#47447](https://github.com/airbytehq/airbyte/pull/47447)  | Use `cache_ttl` for base image registry listing in `up-to-date`.                                                             |
+| 4.41.7  | [#47444](https://github.com/airbytehq/airbyte/pull/47444)  | Remove redundant `--ignore-connector` error from up-to-date. `--metadata-query` can be used instead.                         |
+| 4.41.6  | [#47308](https://github.com/airbytehq/airbyte/pull/47308)  | Connector testing: skip incremental acceptance test when the connector is not released.                                      |
+| 4.41.5  | [#47255](https://github.com/airbytehq/airbyte/pull/47255)  | Fix `DisableProgressiveRollout` following Dagger API change.                                                                 |
+| 4.41.4  | [#47203](https://github.com/airbytehq/airbyte/pull/47203)  | Fix some `with_exec` and entrypoint usage following Dagger upgrade                                                           |
+| 4.41.3  | [#47189](https://github.com/airbytehq/airbyte/pull/47189)  | Fix up-to-date which did not export doc to the right path                                                                    |
+| 4.41.2  | [#47185](https://github.com/airbytehq/airbyte/pull/47185)  | Fix the bump version command which did not update the changelog.                                                             |
+| 4.41.1  | [#46914](https://github.com/airbytehq/airbyte/pull/46914)  | Upgrade to Dagger 0.13.3                                                                                                     |
 | 4.41.0  | [#46914](https://github.com/airbytehq/airbyte/pull/46914)  | Rework the connector rollback pipeline for progressive rollout                                                               |
 | 4.40.0  | [#46380](https://github.com/airbytehq/airbyte/pull/46380)  | The `bump-version` command now allows the `rc` bump type.                                                                    |
 | 4.39.0  | [#46696](https://github.com/airbytehq/airbyte/pull/46696)  | Bump PyAirbyte dependency and replace `airbyte-lib-validate-source` CLI command with new `validate` command                  |

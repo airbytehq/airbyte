@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-milvus"
-version = "0.0.35"
+version = "0.0.45"
 description = "Airbyte destination implementation for Milvus."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"

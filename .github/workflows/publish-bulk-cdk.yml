@@ -25,7 +25,7 @@ env:
 jobs:
   publish-bulk-cdk:
     name: Publish Bulk CDK
-    runs-on: connector-test-large
+    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 30
     steps:
       - name: Checkout Airbyte
@@ -75,17 +75,6 @@ jobs:
           concurrent: true
           gradle-distribution-sha-256-sum-warning: false
           arguments: --scan :airbyte-cdk:bulk:bulkCdkBuild
-
-      - name: Integration test Bulk CDK
-        uses: burrunan/gradle-cache-action@v1
-        env:
-          CI: true
-        with:
-          read-only: true
-          job-id: bulk-cdk-publish
-          concurrent: true
-          gradle-distribution-sha-256-sum-warning: false
-          arguments: --scan :airbyte-cdk:bulk:bulkCdkIntegrationTest
 
       - name: Publish Poms and Jars to CloudRepo
         uses: burrunan/gradle-cache-action@v1
