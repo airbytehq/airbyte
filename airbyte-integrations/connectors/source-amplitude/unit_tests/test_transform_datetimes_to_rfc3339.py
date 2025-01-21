@@ -2,16 +2,9 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import os
-import re
-import types
-from contextlib import nullcontext as does_not_raise
-from unittest.mock import MagicMock, patch
+from contextlib import nullcontext
 
-import pendulum
 import pytest
-import requests
-import yaml
 from source_amplitude.components import TransformDatetimesToRFC3339
 
 from airbyte_cdk.utils import AirbyteTracedException
