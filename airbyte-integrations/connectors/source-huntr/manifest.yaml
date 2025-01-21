@@ -1,0 +1,2028 @@
+version: 5.7.5
+
+type: DeclarativeSource
+
+description: A connector for the Huntr application
+
+check:
+  type: CheckStream
+  stream_names:
+    - members
+
+definitions:
+  streams:
+    members:
+      type: DeclarativeStream
+      name: members
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /members
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/members"
+    organization_invitations:
+      type: DeclarativeStream
+      name: organization_invitations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organization-invitations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_invitations"
+    member_fields:
+      type: DeclarativeStream
+      name: member_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /member-fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/member_fields"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['next'] }}"
+            stop_condition: >-
+              {{ 'next' not in response or response['next'] == none or
+              response['next'] == 'inf' }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    notes:
+      type: DeclarativeStream
+      name: notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /notes/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+    actions:
+      type: DeclarativeStream
+      name: actions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /actions
+          http_method: GET
+          request_parameters:
+            action_type: MEMBER_DEACTIVATED
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/actions"
+    candidates:
+      type: DeclarativeStream
+      name: candidates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /candidates
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/candidates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.huntr.co/org
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/members"
+  - $ref: "#/definitions/streams/organization_invitations"
+  - $ref: "#/definitions/streams/member_fields"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/actions"
+  - $ref: "#/definitions/streams/candidates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    members: true
+    organization_invitations: true
+    member_fields: true
+    activities: false
+    notes: true
+    actions: true
+    candidates: true
+  testedStreams:
+    members:
+      hasRecords: true
+      streamHash: f539f7ed13f4ff9f5f921c36603d7a204fa02528
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organization_invitations:
+      hasRecords: true
+      streamHash: afff3fd2ef86e7048184670c751ee5823ddfead1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    member_fields:
+      hasRecords: true
+      streamHash: 2d50c64341e2258416bc816055b01d63f2f4f5d7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    activities:
+      hasRecords: true
+      streamHash: 52d9f7a8dc961b706118783d66369e2e334c8f8a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    notes:
+      hasRecords: true
+      streamHash: 2e5d86b15d5eda66f77560517839a54d1630b300
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    actions:
+      hasRecords: true
+      streamHash: a5fc37dc8d23202af9533019cff90c4cf45d613d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    candidates:
+      streamHash: 05f9cc9ed5977fc1f9eefdeeb5a9cf1e5ede4084
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      advisor:
+        type:
+          - object
+          - "null"
+        properties:
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          fullName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastSeenAt:
+            type:
+              - number
+              - "null"
+      boardIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      familyName:
+        type:
+          - string
+          - "null"
+      fullName:
+        type:
+          - string
+          - "null"
+      givenName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isActive:
+        type:
+          - boolean
+          - "null"
+      lastSeenAt:
+        type:
+          - number
+          - "null"
+      memberFieldValues:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            fieldId:
+              type:
+                - string
+                - "null"
+            value:
+              anyOf:
+                - type: string
+                - type: array
+                  items:
+                    type: string
+      memberFieldValuesKeyedById:
+        type:
+          - object
+          - "null"
+        properties:
+          60c1df50c0ed7d00272923c0:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          60c1e036c0ed7d0027292454:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          60c1e19fc0ed7d002729263f:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          6516d4ca3d98fd0053e5ea66:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          6516d5336f0d78007e63ddea:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          6516d7ce85cdd6006797ce91:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          651fa7960d6b610053131858:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          659f8db0587682007c5f3ea8:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          "666958440297480067932137":
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          666ab8b7af3b43006e5e118f:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          66712d5216511b007d6504f2:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          669786b0867f7f00805862ad:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          669786cf825817005ab3c21c:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          669788b06f8cc80060c52d87:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          6697c9c219442e0075c45d7d:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          66b23ee5376425007bebcbe0:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          66b2f80336e4d8050af4ec60:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          66b2f82182fa370059c82009:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          66ec16249b764b00713e9190:
+            type:
+              - object
+              - "null"
+            properties:
+              fieldId:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+    required:
+      - id
+  organization_invitations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      boardName:
+        type:
+          - string
+          - "null"
+      boardTemplate:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          isDefault:
+            type:
+              - boolean
+              - "null"
+          listNames:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          listTemplates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          name:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      memberFieldValues:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            fieldId:
+              type:
+                - string
+                - "null"
+            value:
+              anyOf:
+                - type: string
+                - type: array
+                  items:
+                    type: string
+      to:
+        type:
+          - object
+          - "null"
+        properties:
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      toEmail:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  member_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      choices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      employerPartnerCanView:
+        type:
+          - boolean
+          - "null"
+      fieldType:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      jobSeekerCanEdit:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      activityCategory:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      completedAt:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      createdByWorkflow:
+        type:
+          - boolean
+          - "null"
+      creatorMember:
+        type:
+          - object
+          - "null"
+        properties:
+          boardIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          fullName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isActive:
+            type:
+              - boolean
+              - "null"
+          lastSeenAt:
+            type:
+              - number
+              - "null"
+          memberFieldValues:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                fieldId:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  anyOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+      employer:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+          foundedYear:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isPartner:
+            type:
+              - boolean
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      job:
+        type:
+          - object
+          - "null"
+        properties:
+          boardId:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          deadline:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          listId:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              address:
+                type:
+                  - string
+                  - "null"
+              lat:
+                type:
+                  - string
+                  - "null"
+              lng:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              placeId:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          salary:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      jobPost:
+        type:
+          - object
+          - "null"
+        properties:
+          createdAt:
+            type:
+              - number
+              - "null"
+          employerId:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isRemote:
+            type:
+              - boolean
+              - "null"
+          jobType:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              address:
+                type:
+                  - string
+                  - "null"
+              lat:
+                type:
+                  - string
+                  - "null"
+              lng:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          locations:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                address:
+                  type:
+                    - string
+                    - "null"
+                lat:
+                  type:
+                    - string
+                    - "null"
+                lng:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          postDate:
+            type:
+              - number
+              - "null"
+          sourceName:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - string
+              - "null"
+          visibleMemberGroupIds:
+            type:
+              - array
+              - "null"
+      note:
+        type:
+          - string
+          - "null"
+      ownerMember:
+        type:
+          - object
+          - "null"
+        properties:
+          boardIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          fullName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isActive:
+            type:
+              - boolean
+              - "null"
+          lastSeenAt:
+            type:
+              - number
+              - "null"
+          memberFieldValues:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                fieldId:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  anyOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+      startAt:
+        type:
+          - number
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      htmlText:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      memberId:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  actions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actionType:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      createdByWorkflow:
+        type:
+          - boolean
+          - "null"
+      creatorMember:
+        type:
+          - object
+          - "null"
+        properties:
+          boardIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          fullName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isActive:
+            type:
+              - boolean
+              - "null"
+          lastSeenAt:
+            type:
+              - number
+              - "null"
+          memberFieldValues:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                fieldId:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  anyOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+          memberFieldValuesKeyedById:
+            type:
+              - object
+              - "null"
+            properties:
+              6516d4ca3d98fd0053e5ea66:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              66ec16249b764b00713e9190:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+      date:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      member:
+        type:
+          - object
+          - "null"
+        properties:
+          boardIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          fullName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isActive:
+            type:
+              - boolean
+              - "null"
+          lastSeenAt:
+            type:
+              - number
+              - "null"
+          memberFieldValues:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                fieldId:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  anyOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+          memberFieldValuesKeyedById:
+            type:
+              - object
+              - "null"
+            properties:
+              6516d4ca3d98fd0053e5ea66:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              6516d5336f0d78007e63ddea:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              6516d7ce85cdd6006797ce91:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              651fa7960d6b610053131858:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              659f8db0587682007c5f3ea8:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              659f9264ed00b30053336771:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              "666958440297480067932137":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              666ab8b7af3b43006e5e118f:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66712d5216511b007d6504f2:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669786b0867f7f00805862ad:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669786cf825817005ab3c21c:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669788b06f8cc80060c52d87:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              6697c9c219442e0075c45d7d:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b23ee5376425007bebcbe0:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b2f80336e4d8050af4ec60:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b2f82182fa370059c82009:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66ec16249b764b00713e9190:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+      memberId:
+        type:
+          - string
+          - "null"
+      ownerMember:
+        type:
+          - object
+          - "null"
+        properties:
+          boardIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          fullName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isActive:
+            type:
+              - boolean
+              - "null"
+          lastSeenAt:
+            type:
+              - number
+              - "null"
+          memberFieldValues:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                fieldId:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  anyOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+          memberFieldValuesKeyedById:
+            type:
+              - object
+              - "null"
+            properties:
+              6516d4ca3d98fd0053e5ea66:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              6516d5336f0d78007e63ddea:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              6516d7ce85cdd6006797ce91:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              651fa7960d6b610053131858:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              659f8db0587682007c5f3ea8:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              659f9264ed00b30053336771:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              "666958440297480067932137":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              666ab8b7af3b43006e5e118f:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66712d5216511b007d6504f2:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669786b0867f7f00805862ad:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669786cf825817005ab3c21c:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669788b06f8cc80060c52d87:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              6697c9c219442e0075c45d7d:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b23ee5376425007bebcbe0:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b2f80336e4d8050af4ec60:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b2f82182fa370059c82009:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66ec16249b764b00713e9190:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  candidates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lastName:
+        type:
+          - string
+          - "null"
+      memberId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
