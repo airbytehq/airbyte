@@ -176,6 +176,11 @@ definitions:
             - type: TypesMap
               target_type: timestamp_with_timezone
               current_type: createdTime
+              condition: "{{ raw_schema['options']['result']['type'] == 'dateTime' }}"
+            - type: TypesMap
+              target_type: date
+              current_type: createdTime
+              condition: "{{ raw_schema['options']['result']['type'] == 'date' }}"
             - type: TypesMap
               target_type: number
               current_type: currency
@@ -197,6 +202,11 @@ definitions:
             - type: TypesMap
               target_type: timestamp_with_timezone
               current_type: lastModifiedTime
+              condition: "{{ raw_schema['options']['result']['type'] == 'dateTime' }}"
+            - type: TypesMap
+              target_type: date
+              current_type: lastModifiedTime
+              condition: "{{ raw_schema['options']['result']['type'] == 'date' }}"
             - type: TypesMap
               target_type: array
               current_type: multipleRecordLinks
