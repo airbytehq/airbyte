@@ -83,6 +83,7 @@ Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for gett
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.0.9 | 2025-01-18 | [51927](https://github.com/airbytehq/airbyte/pull/51927) | Update dependencies |
 | 0.0.8 | 2025-01-11 | [51332](https://github.com/airbytehq/airbyte/pull/51332) | Update dependencies |
 | 0.0.7 | 2024-12-28 | [50698](https://github.com/airbytehq/airbyte/pull/50698) | Update dependencies |
 | 0.0.6 | 2024-12-21 | [50279](https://github.com/airbytehq/airbyte/pull/50279) | Update dependencies |
