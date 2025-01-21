@@ -335,7 +335,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version   | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.0     | 2025-01-21 | []()                                                     | Add more fields synced from the `campaign` model                                                                                                                       |
+| 3.8.0     | 2025-01-21 | [52066](https://github.com/airbytehq/airbyte/pull/52066)                                                     | Add more fields synced from the `campaign` model                                                                                                                       |
 | 3.7.10 | 2025-01-11 | [47090](https://github.com/airbytehq/airbyte/pull/47090) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 3.7.9 | 2024-10-14 | [46893](https://github.com/airbytehq/airbyte/pull/46893) | Update getting customers logic |
 | 3.7.8 | 2024-10-12 | [46120](https://github.com/airbytehq/airbyte/pull/46120) | Update dependencies |
