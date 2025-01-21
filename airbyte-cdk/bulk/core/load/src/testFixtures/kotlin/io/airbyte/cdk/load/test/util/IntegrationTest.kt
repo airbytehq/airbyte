@@ -8,6 +8,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.EnvVarConstants
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.message.InputRecord
@@ -15,7 +17,6 @@ import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestination
-import io.airbyte.cdk.load.test.util.destination_process.Property
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
@@ -178,7 +179,7 @@ abstract class IntegrationTest(
     ): List<AirbyteMessage> {
         val fileTransferProperty =
             if (useFileTransfer) {
-                mapOf(Property("airbyte.file-transfer.enabled", "USE_FILE_TRANSFER") to "true")
+                mapOf(EnvVarConstants.FILE_TRANSFER_ENABLED to "true")
             } else {
                 emptyMap()
             }
@@ -188,7 +189,8 @@ abstract class IntegrationTest(
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
-                micronautProperties = micronautProperties + fileTransferProperty,
+                micronautProperties =
+                    micronautProperties + fileTransferProperty + defaultMicronautProperties,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -231,7 +233,7 @@ abstract class IntegrationTest(
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
-                micronautProperties = micronautProperties,
+                micronautProperties = micronautProperties + defaultMicronautProperties,
             )
         return runBlocking(Dispatchers.IO) {
             launch {
@@ -281,6 +283,8 @@ abstract class IntegrationTest(
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")
+        val defaultMicronautProperties: Map<Property, String> =
+            mapOf(EnvVarConstants.RECORD_BATCH_SIZE to "1")
 
         /**
          * Given a randomizedNamespace (such as `test20241216abcd`), return whether the namespace

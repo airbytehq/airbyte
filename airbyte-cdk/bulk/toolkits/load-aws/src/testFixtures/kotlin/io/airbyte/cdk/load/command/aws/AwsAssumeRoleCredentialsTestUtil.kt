@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.command.aws
 
-import io.airbyte.cdk.load.test.util.destination_process.Property
+import io.airbyte.cdk.load.command.Property
 
 fun AwsAssumeRoleCredentials.asMicronautProperties(): Map<Property, String> =
     mapOf(
