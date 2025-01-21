@@ -17,8 +17,11 @@ import picocli.CommandLine.Model.ArgGroupSpec
 import picocli.CommandLine.Model.OptionSpec
 import picocli.CommandLine.Model.UsageMessageSpec
 
-// A pair of micronaut environments, so that connectors can override micronaut properties
-// without needing to copy an entire application.yaml out of the core CDK
+// A micronaut environment, so that connectors can override micronaut properties
+// without needing to copy an entire application.yaml out of the core CDK.
+// Intended usage is for connectors to create
+// `destination-foo/src/main/resources/application-override.yaml` with the
+// specific properties to override.
 const val OVERRIDE_ENV = "override"
 
 /** Source connector entry point. */
