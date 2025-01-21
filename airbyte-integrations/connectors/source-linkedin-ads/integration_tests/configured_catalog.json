@@ -74,6 +74,24 @@
     },
     {
       "stream": {
+        "name": "lead_forms",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "lead_form_responses",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "ad_campaign_analytics",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
