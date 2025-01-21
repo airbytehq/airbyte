@@ -82,7 +82,6 @@ The Intercom source connector supports the following streams:
 - [Segments](https://developers.intercom.com/intercom-api-reference/reference/listsegments) \(Incremental\)
 - [Tags](https://developers.intercom.com/intercom-api-reference/reference/listtags) \(Full table\)
 - [Teams](https://developers.intercom.com/intercom-api-reference/reference/listteams) \(Full table\)
-- [Tickets](hhttps://developers.intercom.com/docs/references/rest-api/api.intercom.io/tickets/searchtickets) \(Incremental\)
 
 ## Performance considerations
 
