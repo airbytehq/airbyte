@@ -19,7 +19,7 @@ View our documentation [here](./using-airbyte/configuring-api-access.md) to lear
 
 Navigate to our full API documentation to learn how to retrieve your access token, make API requests, and manage resources like sources, destinations, and workspaces.
 
-Our full API documentation is located here: [api.airbyte.com](https://reference.airbyte.com/reference/getting-started).
+Our full API documentation is located here: [reference.airbyte.com](https://reference.airbyte.com/reference/getting-started).
 
 :::note
 Only for OSS users, to access the API in the OSS edition, you need to use the `/api/public/v1` path prefix. (ex: retrieve list of workspaces with `curl http://localhost:8000/api/public/v1/workspaces`)
