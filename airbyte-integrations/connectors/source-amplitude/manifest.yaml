@@ -2192,4 +2192,3 @@ spec:
         description: >
           According to <a href="https://amplitude.com/docs/apis/analytics/dashboard-rest#query-parameters">Amplitude documentation</a>, grouping by `Country` is optional. If you face issues fetching the stream or checking the connection please set this field to `False`.
         default: true
-  advanced_auth:
