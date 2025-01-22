@@ -60,9 +60,9 @@ class MsSqlServerDebeziumOperations(
         }
         val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
         val commitLsn: String = offsetValue["commit_lsn"].asText()
-        val changeLsn: String = offsetValue["change_lsn"].asText()
+        val changeLsn: String? = null//offsetValue["change_lsn"].asText()
         val commitLsn2: String = offsetValue["commit_lsn"].asText()
-        val changeLsn2: String = offsetValue["change_lsn"].asText()
+        val changeLsn2: String? = null//offsetValue["change_lsn"].asText()
         val retVal = TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
         log.info { "SGX offsetValue = $offsetValue, commitLsn=$commitLsn, changeLsn=$changeLsn, commitLsn2=$commitLsn2, changeLsn2=$changeLsn2, retVal=$retVal" }
         return retVal
@@ -71,15 +71,15 @@ class MsSqlServerDebeziumOperations(
     override fun position(recordValue: DebeziumRecordValue): TxLogPosition? {
         val commitLsn: String =
             recordValue.source["commit_lsn"]?.takeIf { it.isTextual }?.asText() ?: return null
-        val changeLsn: String? =
-            recordValue.source["change_lsn"]?.takeIf { it.isTextual }?.asText()
+        val changeLsn: String? = null
+            //recordValue.source["change_lsn"]?.takeIf { it.isTextual }?.asText()
         log.info { "SGX recordValue.source = ${recordValue.source}" }
         return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
     }
 
     override fun position(sourceRecord: SourceRecord): TxLogPosition? {
         val commitLsn: String = sourceRecord.sourceOffset()[("commit_lsn")]?.toString() ?: return null
-        val changeLsn: String? = sourceRecord.sourceOffset()[("change_lsn")]?.toString()
+        val changeLsn: String? = null//sourceRecord.sourceOffset()[("change_lsn")]?.toString()
         log.info { "SGX sourceRecord.sourceOffset() = ${sourceRecord.sourceOffset()}" }
         return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
     }
@@ -97,7 +97,7 @@ class MsSqlServerDebeziumOperations(
         val value: ObjectNode =
             Jsons.objectNode().apply {
                 put("commit_lsn", lsn.toString())
-                put("change_lsn", lsn.toString())
+                //put("change_lsn", lsn.toString())
                 put("snapshot", true)
                 put("snapshot_completed", true)
             }
