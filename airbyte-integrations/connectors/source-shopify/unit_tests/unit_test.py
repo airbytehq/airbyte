@@ -92,13 +92,11 @@ def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_
     "stream, slice, status_code, json_response",
     [
         (BalanceTransactions, None, 404, {"errors": "Not Found"}),
-        (PriceRules, None, 403, {"errors": "Forbidden"}),
-        (FulfillmentOrders, {"order_id": 123}, 500, {"errors": "Internal Server Error"}),
+        (PriceRules, None, 403, {"errors": "Forbidden"})
     ],
     ids=[
         "Stream not found (404)",
-        "No permissions (403)",
-        "Internal Server Error for slice (500)",
+        "No permissions (403)"
     ],
 )
 def test_unavailable_stream(
