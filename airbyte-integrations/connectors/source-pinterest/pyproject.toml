@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.0.22"
+version = "2.0.27"
 name = "source-pinterest"
 description = "Source implementation for Pinterest."
 authors = [ "Airbyte <contact@airbyte.io>",]

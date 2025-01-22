@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 302e4d8e-08d3-4098-acd4-ac67ca365b88
-  dockerImageTag: 0.1.30
+  dockerImageTag: 0.1.35
   dockerRepository: airbyte/destination-databend
   githubIssueLabel: destination-databend
   icon: databend.svg

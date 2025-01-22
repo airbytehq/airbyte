@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d78e5de0-aa44-4744-aa4f-74c818ccfe19
-  dockerImageTag: 0.1.25
+  dockerImageTag: 0.1.31
   dockerRepository: airbyte/source-rki-covid
   githubIssueLabel: source-rki-covid
   icon: rki.svg

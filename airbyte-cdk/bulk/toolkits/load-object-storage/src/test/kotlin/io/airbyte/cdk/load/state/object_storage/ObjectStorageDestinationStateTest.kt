@@ -34,7 +34,7 @@ class ObjectStorageDestinationStateTest {
     companion object {
         val stream1 = MockDestinationCatalogFactory.stream1
         const val PERSISTED =
-            """{"generations_by_state":{"FINALIZED":{"0":{"key1":0,"key2":1},"1":{"key3":0,"key4":1}}}}"""
+            """{"generations_by_state":{"FINALIZED":{"0":{"key1":0,"key2":1},"1":{"key3":0,"key4":1}}},"count_by_key":{}}"""
     }
 
     @Singleton
@@ -68,7 +68,7 @@ class ObjectStorageDestinationStateTest {
             val state = d.stateManager.getState(stream1)
             Assertions.assertEquals(
                 emptyList<ObjectStorageDestinationState.Generation>(),
-                state.generations.toList(),
+                state.getGenerations().toList(),
                 "state should initially be empty"
             )
             state.addObject(0, "key1", 0)
@@ -77,7 +77,7 @@ class ObjectStorageDestinationStateTest {
             state.addObject(1, "key4", 1)
             Assertions.assertEquals(
                 4,
-                state.generations.flatMap { it.objects }.toList().size,
+                state.getGenerations().flatMap { it.objects }.toList().size,
                 "state should contain 4 objects"
             )
 
@@ -96,14 +96,14 @@ class ObjectStorageDestinationStateTest {
             state.removeObject(1, "key4")
             Assertions.assertEquals(
                 emptyList<ObjectStorageDestinationState.ObjectAndPart>(),
-                state.generations.flatMap { it.objects }.toList(),
+                state.getGenerations().flatMap { it.objects }.toList(),
                 "objects should be removed"
             )
 
             val fetchedState = d.stateManager.getState(stream1)
             Assertions.assertEquals(
                 0,
-                fetchedState.generations.flatMap { it.objects }.toList().size,
+                fetchedState.getGenerations().flatMap { it.objects }.toList().size,
                 "state should still contain 0 objects (managed state is in cache)"
             )
         }
@@ -137,11 +137,11 @@ class ObjectStorageDestinationStateTest {
                         )
                     )
                 ),
-                state.generations.toList(),
+                state.getGenerations().toList(),
                 "state should be loaded from storage"
             )
 
-            Assertions.assertEquals(2L, state.nextPartNumber)
+            Assertions.assertEquals(2L, state.getNextPartNumber())
         }
 
         @Test
@@ -150,7 +150,7 @@ class ObjectStorageDestinationStateTest {
                 ObjectStorageDestinationStateTestWithoutStaging().loadMetadata(d, stream1)
             val state = d.stateManager.getState(stream1)
             ObjectStorageDestinationStateTestWithoutStaging().validateMetadata(state, generations)
-            Assertions.assertEquals(2L, state.nextPartNumber)
+            Assertions.assertEquals(2L, state.getNextPartNumber())
         }
 
         @Test
@@ -210,7 +210,7 @@ class ObjectStorageDestinationStateTest {
         ): List<Triple<Int, String, Long>> {
             val genIdKey = ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY
             val prefix =
-                "${d.pathFactory.prefix}/${stream.descriptor.namespace}/${stream.descriptor.name}"
+                "${d.pathFactory.finalPrefix}/${stream.descriptor.namespace}/${stream.descriptor.name}"
             val generations =
                 listOf(
                     Triple(0, "$prefix/key1-0", 0L),
@@ -231,7 +231,7 @@ class ObjectStorageDestinationStateTest {
         fun validateMetadata(
             state: ObjectStorageDestinationState,
             generations: List<Triple<Int, String, Long>>
-        ) {
+        ) = runTest {
             Assertions.assertEquals(
                 generations
                     .groupBy { it.first }
@@ -250,7 +250,7 @@ class ObjectStorageDestinationStateTest {
                                 .toMutableList()
                         )
                     },
-                state.generations.toList().sortedBy { it.generationId },
+                state.getGenerations().toList().sortedBy { it.generationId },
                 "state should be recovered from metadata"
             )
         }
@@ -260,7 +260,7 @@ class ObjectStorageDestinationStateTest {
             val generations = loadMetadata(d, stream1)
             val state = d.stateManager.getState(stream1)
             validateMetadata(state, generations)
-            Assertions.assertEquals(2L, state.nextPartNumber)
+            Assertions.assertEquals(2L, state.getNextPartNumber())
         }
     }
 }

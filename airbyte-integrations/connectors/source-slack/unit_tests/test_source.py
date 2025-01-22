@@ -17,6 +17,7 @@ def get_stream_by_name(stream_name, config):
             return stream
     raise ValueError(f"Stream {stream_name} not found")
 
+
 @parametrized_configs
 def test_streams(conversations_list, config, is_valid):
     source = SourceSlack()

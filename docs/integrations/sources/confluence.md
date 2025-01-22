@@ -63,6 +63,11 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.7 | 2025-01-18 | [51633](https://github.com/airbytehq/airbyte/pull/51633) | Update dependencies |
+| 0.3.6 | 2025-01-11 | [51109](https://github.com/airbytehq/airbyte/pull/51109) | Update dependencies |
+| 0.3.5 | 2024-12-28 | [50564](https://github.com/airbytehq/airbyte/pull/50564) | Update dependencies |
+| 0.3.4 | 2024-12-21 | [49541](https://github.com/airbytehq/airbyte/pull/49541) | Update dependencies |
+| 0.3.3 | 2024-12-12 | [48263](https://github.com/airbytehq/airbyte/pull/48263) | Update dependencies |
 | 0.3.2 | 2024-10-28 | [47553](https://github.com/airbytehq/airbyte/pull/47553) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44162](https://github.com/airbytehq/airbyte/pull/44162) | Refactor connector to manifest-only format |

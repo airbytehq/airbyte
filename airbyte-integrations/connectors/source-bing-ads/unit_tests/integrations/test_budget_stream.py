@@ -1,9 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 import pendulum
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker
 from freezegun import freeze_time
 from test_bulk_stream import TestBulkStream
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.mock_http import HttpMocker
 
 
 class TestBudgetStream(TestBulkStream):

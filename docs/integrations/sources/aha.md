@@ -42,6 +42,13 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------|
+| 0.4.10 | 2025-01-18 | [51732](https://github.com/airbytehq/airbyte/pull/51732) | Update dependencies |
+| 0.4.9 | 2025-01-11 | [51234](https://github.com/airbytehq/airbyte/pull/51234) | Update dependencies |
+| 0.4.8 | 2024-12-28 | [50490](https://github.com/airbytehq/airbyte/pull/50490) | Update dependencies |
+| 0.4.7 | 2024-12-21 | [50158](https://github.com/airbytehq/airbyte/pull/50158) | Update dependencies |
+| 0.4.6 | 2024-12-14 | [49548](https://github.com/airbytehq/airbyte/pull/49548) | Update dependencies |
+| 0.4.5 | 2024-12-12 | [49298](https://github.com/airbytehq/airbyte/pull/49298) | Update dependencies |
+| 0.4.4 | 2024-12-11 | [48246](https://github.com/airbytehq/airbyte/pull/48246) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.4.3 | 2024-10-29 | [47904](https://github.com/airbytehq/airbyte/pull/47904) | Update dependencies |
 | 0.4.2 | 2024-10-28 | [47641](https://github.com/airbytehq/airbyte/pull/47641) | Update dependencies |
 | 0.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |

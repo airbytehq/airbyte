@@ -5,6 +5,7 @@ import json
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional
 
+
 BRAND_REFERRAL_BONUS = "brb_bonus_amount"
 
 METRICS_MAP = {

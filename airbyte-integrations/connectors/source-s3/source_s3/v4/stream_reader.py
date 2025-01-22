@@ -14,24 +14,26 @@ import pendulum
 import psutil
 import pytz
 import smart_open
-from airbyte_cdk import FailureType
-from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
 from botocore.credentials import RefreshableCredentials
 from botocore.exceptions import ClientError
 from botocore.session import get_session
+from typing_extensions import override
+
+from airbyte_cdk import FailureType
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
-from typing_extensions import override
+
 
 AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
-    FILE_SIZE_LIMIT = 1_000_000_000
+    FILE_SIZE_LIMIT = 1_500_000_000
 
     def __init__(self):
         super().__init__()

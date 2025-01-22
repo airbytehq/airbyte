@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e
-  dockerImageTag: 0.1.34
+  dockerImageTag: 0.1.38
   dockerRepository: airbyte/source-linnworks
   documentationUrl: https://docs.airbyte.com/integrations/sources/linnworks
   githubIssueLabel: source-linnworks

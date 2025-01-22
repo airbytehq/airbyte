@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-ruddr
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.4.0@sha256:f20270ba0ac84b315467c706232f3cbfbadab1f5565174eaf4c32cd3c5a43169
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
   connectorSubtype: api
   connectorType: source
   definitionId: 6e87d8e2-47bc-4a0a-a175-62e2b926bb07
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.7
   dockerRepository: airbyte/source-ruddr
   githubIssueLabel: source-ruddr
   icon: icon.svg

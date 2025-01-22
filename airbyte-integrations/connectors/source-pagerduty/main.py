@@ -4,5 +4,6 @@
 
 from source_pagerduty.run import run
 
+
 if __name__ == "__main__":
     run()
