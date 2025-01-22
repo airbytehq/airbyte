@@ -26,18 +26,12 @@ def revert_config(path: str) -> None:
     [
         # Migration is required
         (
-            str(
-                pathlib.Path(__file__).parent
-                / "resource/config_migrations/old_config.json"
-            ),
+            str(pathlib.Path(__file__).parent / "resource/config_migrations/old_config.json"),
             True,
         ),
         # New config format
         (
-            str(
-                pathlib.Path(__file__).parent
-                / "resource/config_migrations/new_config.json"
-            ),
+            str(pathlib.Path(__file__).parent / "resource/config_migrations/new_config.json"),
             False,
         ),
     ],

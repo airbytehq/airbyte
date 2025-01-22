@@ -3,13 +3,14 @@
 import json
 from typing import Any, Dict
 
+from source_falcon.source import SourceFalcon
+from unit_tests.integration.rest.test_base import TestBase
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
-from source_falcon.source import SourceFalcon
-from unit_tests.integration.rest.test_base import TestBase
 
 
 class TestCommon(TestBase):
@@ -24,9 +25,7 @@ class TestWorkersRelatedStreams(TestCommon):
     @HttpMocker()
     def test_read(self, http_mocker):
         http_mocker.get(
-            HttpRequest(
-                url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}?limit=100"
-            ),
+            HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}?limit=100"),
             HttpResponse(
                 body=json.dumps(find_template(f"json/{self.workers}", __file__)),
                 status_code=200,
@@ -34,13 +33,9 @@ class TestWorkersRelatedStreams(TestCommon):
         )
         for id in ["1", "2", "3"]:
             http_mocker.get(
-                HttpRequest(
-                    url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}/{id}/{self.path}?limit=100"
-                ),
+                HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}/{id}/{self.path}?limit=100"),
                 HttpResponse(
-                    body=json.dumps(
-                        find_template(f"json/{self.stream_name}", __file__)
-                    ),
+                    body=json.dumps(find_template(f"json/{self.stream_name}", __file__)),
                     status_code=200,
                 ),
             )
@@ -55,9 +50,7 @@ class TestWorkersRelatedStreams(TestCommon):
         total = 250
 
         http_mocker.get(
-            HttpRequest(
-                url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}?limit=100"
-            ),
+            HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}?limit=100"),
             HttpResponse(
                 body=json.dumps(find_template(f"json/{self.workers}", __file__)),
                 status_code=200,
@@ -66,9 +59,7 @@ class TestWorkersRelatedStreams(TestCommon):
 
         for id in ["1", "2", "3"]:
             http_mocker.get(
-                HttpRequest(
-                    url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}/{id}/{self.path}?limit=100"
-                ),
+                HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}/{id}/{self.path}?limit=100"),
                 HttpResponse(
                     body=json.dumps(
                         {"data": records_page_1, "total": total},
@@ -77,9 +68,7 @@ class TestWorkersRelatedStreams(TestCommon):
                 ),
             )
             http_mocker.get(
-                HttpRequest(
-                    url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}/{id}/{self.path}?limit=100&offset=100"
-                ),
+                HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}/{id}/{self.path}?limit=100&offset=100"),
                 HttpResponse(
                     body=json.dumps(
                         {"data": records_page_2, "total": total},
@@ -88,9 +77,7 @@ class TestWorkersRelatedStreams(TestCommon):
                 ),
             )
             http_mocker.get(
-                HttpRequest(
-                    url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}/{id}/{self.path}?limit=100&offset=200"
-                ),
+                HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}/{id}/{self.path}?limit=100&offset=200"),
                 HttpResponse(
                     body=json.dumps(
                         {"data": records_page_3, "total": total},
@@ -100,9 +87,7 @@ class TestWorkersRelatedStreams(TestCommon):
             )
 
         output = read(SourceFalcon(), self.config(), self.catalog())
-        assert (
-            len(output.records) == total * 3
-        )  # 250 records per worker, workers count is 3
+        assert len(output.records) == total * 3  # 250 records per worker, workers count is 3
 
 
 class TestWorkersRelatedStreamsIncremental(TestWorkersRelatedStreams):
@@ -111,9 +96,7 @@ class TestWorkersRelatedStreamsIncremental(TestWorkersRelatedStreams):
     @HttpMocker()
     def test_read_incremental(self, http_mocker):
         http_mocker.get(
-            HttpRequest(
-                url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}?limit=100"
-            ),
+            HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}?limit=100"),
             HttpResponse(
                 body=json.dumps(find_template(f"json/{self.workers}", __file__)),
                 status_code=200,
@@ -121,13 +104,9 @@ class TestWorkersRelatedStreamsIncremental(TestWorkersRelatedStreams):
         )
         for id in ["1", "2", "3"]:
             http_mocker.get(
-                HttpRequest(
-                    url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}/{id}/{self.path}?limit=100"
-                ),
+                HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}/{id}/{self.path}?limit=100"),
                 HttpResponse(
-                    body=json.dumps(
-                        find_template(f"json/{self.stream_name}", __file__)
-                    ),
+                    body=json.dumps(find_template(f"json/{self.stream_name}", __file__)),
                     status_code=200,
                 ),
             )

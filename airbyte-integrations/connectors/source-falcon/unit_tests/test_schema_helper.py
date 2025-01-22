@@ -38,9 +38,7 @@ from source_falcon.schema_helper import ReportXMLSchemaHelper
                 },
                 "Job_Family_Groups_for_Job_Profile_group": {
                     "items": {
-                        "properties": {
-                            "Job_Family_Group_Ref_ID": {"type": ["string", "null"]}
-                        },
+                        "properties": {"Job_Family_Group_Ref_ID": {"type": ["string", "null"]}},
                         "type": ["object", "null"],
                     },
                     "type": ["array", "null"],

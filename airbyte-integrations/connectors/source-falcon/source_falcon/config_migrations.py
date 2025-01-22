@@ -36,9 +36,7 @@ class MigrateRAASCredentials:
         return config
 
     @classmethod
-    def modify_and_save(
-        cls, config_path: str, source: Source, config: Mapping[str, Any]
-    ) -> Mapping[str, Any]:
+    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
         migrated_config = cls.transform(config)
 
         source.write_config(migrated_config, config_path)
@@ -48,9 +46,7 @@ class MigrateRAASCredentials:
     @classmethod
     def emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
         # add the Airbyte Control Message to message repo
-        cls.message_repository.emit_message(
-            create_connector_config_control_message(migrated_config)
-        )
+        cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
         for message in cls.message_repository._message_queue:
             print(message)

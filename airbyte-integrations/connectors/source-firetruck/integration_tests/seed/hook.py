@@ -14,29 +14,22 @@ from typing import Generator, List, Tuple
 import jaydebeapi
 import pytz
 
+
 ROOT = "/connector"
 CAT_ROOT = f"{ROOT}/integration_tests"
 CAT_GEN_ROOT = f"{CAT_ROOT}/temp"
 SECRETS_DIR = f"{ROOT}/secrets"
 
-FULL_REFRESH_CONFIGURED_CATALOG_TEMPLATE = (
-    f"{CAT_ROOT}/full-refresh-configured-catalog-template.json"
-)
-INCREMENTAL_CONFIGURED_CATALOG_TEMPLATE = (
-    f"{CAT_ROOT}/incremental-configured-catalog-template.json"
-)
-INCREMENTAL_CDC_CONFIGURED_CATALOG_TEMPLATE = (
-    f"{CAT_ROOT}/incremental-cdc-configured-catalog-template.json"
-)
+FULL_REFRESH_CONFIGURED_CATALOG_TEMPLATE = f"{CAT_ROOT}/full-refresh-configured-catalog-template.json"
+INCREMENTAL_CONFIGURED_CATALOG_TEMPLATE = f"{CAT_ROOT}/incremental-configured-catalog-template.json"
+INCREMENTAL_CDC_CONFIGURED_CATALOG_TEMPLATE = f"{CAT_ROOT}/incremental-cdc-configured-catalog-template.json"
 ABNORMAL_STATE_TEMPLATE = f"{CAT_ROOT}/abnormal-state-template.json"
 SECRET_ADMIN_CONFIG = f"{SECRETS_DIR}/config.json"
 SECRET_ADMIN_CDC_CONFIG = f"{SECRETS_DIR}/config-cdc.json"
 
 FULL_REFRESH_CONFIGURED_CATALOG = f"{CAT_GEN_ROOT}/full-refresh-configured-catalog.json"
 INCREMENTAL_CONFIGURED_CATALOG = f"{CAT_GEN_ROOT}/incremental-configured-catalog.json"
-INCREMENTAL_CDC_CONFIGURED_CATALOG = (
-    f"{CAT_GEN_ROOT}/incremental-cdc-configured-catalog.json"
-)
+INCREMENTAL_CDC_CONFIGURED_CATALOG = f"{CAT_GEN_ROOT}/incremental-cdc-configured-catalog.json"
 ABNORMAL_STATE = f"{CAT_GEN_ROOT}/abnormal-state.json"
 SECRET_CONFIG = f"{CAT_GEN_ROOT}/temp-user-config.json"
 SECRET_CDC_CONFIG = f"{CAT_GEN_ROOT}/temp-user-cdc-config.json"
@@ -120,9 +113,7 @@ CDC_PRIVILEGES = [
 
 
 def create_schema(conn: jaydebeapi.Connection, schema_name: str) -> None:
-    create_sql = (
-        f'CREATE USER {schema_name} IDENTIFIED BY "{schema_password(schema_name)}"'
-    )
+    create_sql = f'CREATE USER {schema_name} IDENTIFIED BY "{schema_password(schema_name)}"'
     grant_sql = f"GRANT CONNECT, RESOURCE, CREATE SESSION TO {schema_name}"
     tablespace_sql = f"ALTER USER {schema_name} DEFAULT TABLESPACE users"
     quota_sql = f"ALTER USER {schema_name} QUOTA 50M ON USERS"
@@ -140,9 +131,7 @@ def create_schema(conn: jaydebeapi.Connection, schema_name: str) -> None:
             print(f"Error creating schema: {error}")
 
 
-def write_supporting_file(
-    schema_name: str, admin_config_path: str, user_config_path: str
-) -> None:
+def write_supporting_file(schema_name: str, admin_config_path: str, user_config_path: str) -> None:
     print(f"writing schema name to files: {schema_name}")
     Path(CAT_GEN_ROOT).mkdir(parents=False, exist_ok=True)
 
@@ -168,9 +157,7 @@ def write_supporting_file(
             json.dump(secret, f)
 
 
-def create_table(
-    conn: jaydebeapi.Connection, schema_name: str, table_name: str
-) -> None:
+def create_table(conn: jaydebeapi.Connection, schema_name: str, table_name: str) -> None:
     plsql = f"""
     DECLARE
         table_count INTEGER;

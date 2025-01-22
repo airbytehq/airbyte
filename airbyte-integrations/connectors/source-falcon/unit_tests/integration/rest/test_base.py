@@ -5,13 +5,14 @@ from copy import deepcopy
 from typing import Any, Dict, List
 from unittest import TestCase
 
+from source_falcon.source import SourceFalcon
+from unit_tests.integration.config_builder import ConfigBuilder
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
-from source_falcon.source import SourceFalcon
-from unit_tests.integration.config_builder import ConfigBuilder
 
 
 class TestBase(TestCase):
@@ -30,11 +31,7 @@ class TestBase(TestCase):
         return self.path
 
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
-        return (
-            CatalogBuilder()
-            .with_stream(name=self.stream_name, sync_mode=sync_mode)
-            .build()
-        )
+        return CatalogBuilder().with_stream(name=self.stream_name, sync_mode=sync_mode).build()
 
     def config(self):
         return ConfigBuilder().with_access_token("test access token").rest_build()
@@ -42,9 +39,7 @@ class TestBase(TestCase):
     @HttpMocker()
     def test_read(self, http_mocker):
         http_mocker.get(
-            HttpRequest(
-                url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100"
-            ),
+            HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100"),
             HttpResponse(
                 body=json.dumps(find_template(f"json/{self.stream_name}", __file__)),
                 status_code=200,
@@ -53,12 +48,7 @@ class TestBase(TestCase):
         output = read(SourceFalcon(), self.config(), self.catalog())
         assert len(output.records) == self.output_records_count
         # verify auth method
-        assert (
-            http_mocker._mocker._adapter._matchers[0].last_request.headers[
-                "Authorization"
-            ]
-            == "Bearer test access token"
-        )
+        assert http_mocker._mocker._adapter._matchers[0].last_request.headers["Authorization"] == "Bearer test access token"
 
     def create_range_of_records(self, start: int, end: int) -> List[Dict[str, Any]]:
         record = find_template(f"json/{self.stream_name}", __file__)["data"][0]
@@ -76,9 +66,7 @@ class TestBase(TestCase):
         records_page_3 = self.create_range_of_records(201, 250)
         total = 250
         http_mocker.get(
-            HttpRequest(
-                url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100"
-            ),
+            HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100"),
             HttpResponse(
                 body=json.dumps(
                     {"data": records_page_1, "total": total},
@@ -87,9 +75,7 @@ class TestBase(TestCase):
             ),
         )
         http_mocker.get(
-            HttpRequest(
-                url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100&offset=100"
-            ),
+            HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100&offset=100"),
             HttpResponse(
                 body=json.dumps(
                     {"data": records_page_2, "total": total},
@@ -98,9 +84,7 @@ class TestBase(TestCase):
             ),
         )
         http_mocker.get(
-            HttpRequest(
-                url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100&offset=200"
-            ),
+            HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.get_path()}?limit=100&offset=200"),
             HttpResponse(
                 body=json.dumps(
                     {"data": records_page_3, "total": total},
