@@ -58,11 +58,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-S3-V2-JSONL-STAGING
-          fileName: s3_dest_v2_jsonl_staging_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-S3-V2-CSV
           fileName: s3_dest_v2_csv_config.json
           secretStore:
