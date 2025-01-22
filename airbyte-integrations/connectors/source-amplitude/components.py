@@ -4,15 +4,13 @@
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, List, Optional
 
 import pendulum
 import requests
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
