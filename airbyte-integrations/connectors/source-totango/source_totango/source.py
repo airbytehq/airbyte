@@ -10,6 +10,7 @@ import logging
 import requests
 import dpath
 import datetime
+import time
 from airbyte_cdk.models import SyncMode, FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -22,6 +23,31 @@ _TOTANGO_URL_BASE = "https://api-gw-us.totango.com"
 class TotangoStream(HttpStream, ABC):
     # Base URL for the Totango API
     url_base = _TOTANGO_URL_BASE
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        """
+        https://support.totango.com/hc/en-us/articles/15312978301588-API-rate-limit
+        """
+        try:
+            self.logger.info("Backing off...")
+            self.logger.info(f"X-RateLimit-Limit: {response.headers.get('X-RateLimit-Limit')}")
+            self.logger.info(f"X-RateLimit-Remaining: {response.headers.get('X-RateLimit-Remaining')}")
+            self.logger.info(f"X-RateLimit-Reset: {response.headers.get('X-RateLimit-Reset')}")
+
+            rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining'))
+            next_attempt_ts = int(response.headers.get('X-RateLimit-Reset', time.time() + (60 * 3)))
+
+            if rate_limit_remaining <= 5:
+                delay = next_attempt_ts - time.time() + 15.0
+                self.logger.info(f"Backing off, will retry in {delay} seconds")
+                return delay
+            else:
+                self.logger("Plenty remaining, not backing off")
+                return 0
+
+        except:
+            self.logger.warn("Exception getting backoff time, defaulting to 4m")
+            return 4.0 * 60.0
 
 
 class TotangoAuthenticator(requests.auth.AuthBase):
