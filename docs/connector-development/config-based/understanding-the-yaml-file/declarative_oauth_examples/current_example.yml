@@ -82,15 +82,12 @@ spec:
     oauth_config_specification:
       oauth_connector_input_specification:
         consent_url: >-
-          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
-          redirect_uri }}&state={{ state }}
+          https://yourconnectorservice.com/oauth/consent?client_id={{ client_id_value }}&redirect_uri={{
+          redirect_uri_value }}&state={{ state_value }}
         access_token_url: >-
           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&code={{auth_code_value}}
-        extract_output:
-          - access_token
         access_token_headers:
           SECRETHEADER: "{{ client_secret_value }}"
-        access_token_params: {}
       complete_oauth_output_specification:
         required:
           - access_token
@@ -98,6 +95,8 @@ spec:
           access_token:
             type: string
             path_in_connector_config:
+              - access_token
+            path_in_oauth_response:
               - access_token
       complete_oauth_server_input_specification:
         required:

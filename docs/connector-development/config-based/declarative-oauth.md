@@ -153,7 +153,7 @@ This service has two endpoints:
 **Consent URL**
 `/oauth/consent` - This is the consent URL that the user will be redirected to in order to authorize the connector
 
-Example: `https://yourconnectorservice.com/oauth/consent?client_id=YOUR_CLIENT_ID_123&redirect_uri=cloud.airbyte.com&state=some_random_state_string`
+Example: `https://yourconnectorservice.com/oauth/consent?client_id=YOUR_CLIENT_ID_123&redirect_uri=https://cloud.airbyte.com&state=some_random_state_string`
 
 **Token URL**
 `/oauth/token` - This is the token URL that the connector will use to exchange the code for an access token
@@ -210,13 +210,9 @@ Example Response:
 +      oauth_connector_input_specification:
 +        consent_url: >-
 +          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
-+          redirect_uri }}&state={{ state }}
++          redirect_uri_value}}&state={{state}}
 +        access_token_url: >-
 +          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
-+        extract_output:
-+          - access_token
-+        access_token_headers: {}
-+        access_token_params: {}
 +      complete_oauth_output_specification:
 +        required:
 +          - access_token
@@ -224,6 +220,8 @@ Example Response:
 +          access_token:
 +            type: string
 +            path_in_connector_config:
++              - access_token
++            path_in_oauth_response:
 +              - access_token
 +      complete_oauth_server_input_specification:
 +        required:
@@ -307,13 +305,12 @@ Now imagine that the OAuth flow is updated so that the access token returned by 
 -          access_token:
 +          super_duper_access_token:
              type: string
-+            path_in_oauth_response:
-+              - data.super_duper_access_token
              path_in_connector_config:
                - access_token
++            path_in_oauth_response:
++              - data
++              - super_duper_access_token
        complete_oauth_server_input_specification:
-
-
 ```
 
 ### Advanced Case: refresh token support
@@ -322,7 +319,7 @@ Imagine that the OAuth flow is updated so that the OAuth flow now supports refre
 Meaning that the OAuth flow now has an additional endpoint:
 `/oauth/refresh` - This is the refresh token URL that the connector will use to exchange the refresh token for an access token
 
-Example URL: https://yourconnectorservice.com/oauth/refresh?client_id={{client_id_value}}&client_secret={{client_secret_value}}&&refresh_token={{refresh_token}}
+Example URL: https://yourconnectorservice.com/oauth/refresh/endpoint
 
 and the response of `/oauth/token` now includes a refresh token field.
 ```json
@@ -351,7 +348,7 @@ and the response of `/oauth/token` now includes a refresh token field.
 +        refresh_token_config_path:
 +          - client_refresh_token
 +      token_refresh_endpoint: >-
-+        https://yourconnectorservice.com/oauth/refresh?client_id={{client_id_value}}&client_secret={{client_secret_value}}&&refresh_token={{refresh_token}}
++        https://yourconnectorservice.com/oauth/refresh/endpoint
 
  streams:
    - $ref: "#/definitions/streams/moves"
@@ -375,8 +372,6 @@ and the response of `/oauth/token` now includes a refresh token field.
          extract_output:
            - access_token
 +          - refresh_token
-         access_token_headers: {}
-         access_token_params: {}
        complete_oauth_output_specification:
          required:
            - access_token
@@ -386,9 +381,13 @@ and the response of `/oauth/token` now includes a refresh token field.
              type: string
              path_in_connector_config:
                - access_token
++            path_in_oauth_response:
++              - access_token
 +          refresh_token:
 +            type: string
 +            path_in_connector_config:
++              - refresh_token
++            path_in_oauth_response:
 +              - refresh_token
        complete_oauth_server_input_specification:
          required:
@@ -414,44 +413,48 @@ and we need to make sure that updating the spec to use Declarative OAuth doesn't
 
 ## Configuration Fields
 
-TODO: Document each field in the oauth_connector_input_specification schema, explaining their purpose, requirements, and behavior. Include code examples.
-
 ### Required Fields
-TODO: Document mandatory fields like consent_url, access_token_url
+
 | Field | Description | Default Value |
 |-------|-------------|---------------|
-| consent_url | The URL where the user will be redirected to authorize the connector | |
-| access_token_url | The URL where the connector will exchange the authorization code for an access token | |
-
+| `consent_url` | The URL where the user will be redirected to authorize the connector | NA |
+| `access_token_url` | The URL where the connector will exchange the authorization code for an access token | NA |
 
 
 ### Optional Fields
-TODO: Document optional configuration like custom keys, headers, params
+
 | Field | Description | Default Value |
 |-------|-------------|---------------|
-| | | |
-
+| `access_token_headers` | The optional headers to inject while exchanging the `auth_code` to `access_token` | NA |
+| `access_token_params` | The optional query parameters to inject while exchanging the `auth_code` to `access_token` | NA |
+| `auth_code_key` | The optional override to provide the custom `code` key name to something like `auth_code` or `custom_auth_code`, if required by data-provider  | "code" |
+| `client_id_key` | The optional override to provide the custom `client_id` key name, if required by data-provider  | "client_id" |
+| `client_secret_key` | The optional override to provide the custom `client_secret` key name, if required by data-provider  | "client_secret" |
+| `redirect_uri_key` | The optional override to provide the custom `redirect_uri` key name to something like `callback_uri`, if required by data-provider  | "redirect_uri" |
+| `scope` | The optional string of the scopes needed to be grant for authenticated user, should be pre-defined as a `string` in a format that is expected by the data-provider  | NA |
+| `scope_key` | The optional override to provide the custom `scope` key name, if required by data-provider  | "scope" |
+| `state` | The object to provide the criteria of how the `state` query param should be constructed, including length and complexity | NA |
+| `state_key` | The optional override to provide the custom `state` key name, if required by data-provider  | "state" |
+| `token_expiry_key` | The optional override to provide the custom key name to something like `expires_at`, if required by data-provider  | "expires_in" |
 
 ## Available Template Variables
 | Variable | Description | Default Value |
 |----------|-------------|---------------|
-| client_id_key | The key used to identify the client ID in request bodies | "client_id" |
-| client_id_value | The client ID value retrieved from the config location specified by client_id_key | Value from config[client_id_key] |
-| client_id_param | The parameter name and value pair used for the client ID in URLs | "{{client_id_key}}={{client_id_value}}" |
-| client_secret_key | The key used to identify the client secret in request bodies | "client_secret" |
-| client_secret_value | The client secret value retrieved from the config location specified by client_secret_key | Value from config[client_secret_key] |
-| client_secret_param | The parameter name and value pair used for the client secret in URLs | "{{client_secret_key}}={{client_secret_value}}" |
-| redirect_uri_key | The key used to identify the redirect URI in request bodies | "redirect_uri" |
-| redirect_uri_value | The redirect URI value used for OAuth callbacks | Value configured in Airbyte |
-| redirect_uri_param | The parameter name and value pair used for the redirect URI in URLs | "{{redirect_uri_key}}={{redirect_uri_value}}" |
-| scope_key | The key used to identify the scope in request bodies | "scope" |
-| scope_value | The scope value specifying the access permissions being requested | Value from config[scope_key] |
-| scope_param | The parameter name and value pair used for the scope in URLs | "{{scope_key}}={{scope_value}}" |
-| state_key | The key used to identify the state parameter in request bodies | "state" |
-| state_value | A random string used to prevent CSRF attacks | Randomly generated string |
-| state_param | The parameter name and value pair used for the state in URLs | "{{state_key}}={{state_value}}" |
-| auth_code_key | The key used to identify the authorization code in request bodies | "code" |
-| auth_code_value | The authorization code received from the OAuth provider | Value from OAuth callback |
-| auth_code_param | The parameter name and value pair used for the auth code in URLs | "{{auth_code_key}}={{auth_code_value}}" |
-| access_token | The access token received from the OAuth provider used for API authentication | Value from OAuth token response |
-| refresh_token | The refresh token received from the OAuth provider used to obtain new access tokens | Value from OAuth token response |
+| `{{ client_id_key }}` | The key used to identify the client ID in request bodies | "client_id" |
+| `{{ client_id_value }}` | The client ID value retrieved from the config location specified by client_id_key | Value from config[client_id_key] |
+| `{{ client_id_param }}` | The parameter name and value pair used for the client ID in URLs | "client_id=client id value here" |
+| `{{ client_secret_key }}` | The key used to identify the client secret in request bodies | "client_secret" |
+| `{{ client_secret_value }}` | The client secret value retrieved from the config location specified by client_secret_key | Value from config[client_secret_key] |
+| `{{ client_secret_param }}` | The parameter name and value pair used for the client secret in URLs | "client_secret=client secret value here" |
+| `{{ redirect_uri_key }}` | The key used to identify the redirect URI in request bodies | "redirect_uri" |
+| `{{ redirect_uri_value }}` | The redirect URI value used for OAuth callbacks | Value configured in Airbyte |
+| `{{ redirect_uri_param }}` | The parameter name and value pair used for the redirect URI in URLs | "redirect_uri=redirect uri value here" |
+| `{{ scope_key }}` | The key used to identify the scope in request bodies | "scope" |
+| `{{ scope_value }}` | The scope value specifying the access permissions being requested | Value from config[scope_key] |
+| `{{ scope_param }}` | The parameter name and value pair used for the scope in URLs | "scope=scope value here" |
+| `{{ state_key }}` | The key used to identify the state parameter in request bodies | "state" |
+| `{{ state_value }}` | A random string used to prevent CSRF attacks | Randomly generated string |
+| `{{ state_param }}` | The parameter name and value pair used for the state in URLs | "state=state value here" |
+| `{{ auth_code_key }}` | The key used to identify the authorization code in request bodies | "code" |
+| `{{ auth_code_value }}` | The authorization code received from the OAuth provider | Value from OAuth callback |
+| `{{ auth_code_param }}` | The parameter name and value pair used for the auth code in URLs | "code=auth code value here" |

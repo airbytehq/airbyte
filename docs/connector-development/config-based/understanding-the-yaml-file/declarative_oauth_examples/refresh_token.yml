@@ -52,7 +52,7 @@ definitions:
         refresh_token_config_path:
           - client_refresh_token
       token_refresh_endpoint: >-
-        https://yourconnectorservice.com/oauth/refresh?client_id={{client_id_value}}&client_secret={{client_secret_value}}&&refresh_token={{refresh_token}}
+        https://yourconnectorservice.com/oauth/refresh/endpoint
 
 streams:
   - $ref: "#/definitions/streams/moves"
@@ -89,15 +89,10 @@ spec:
     oauth_config_specification:
       oauth_connector_input_specification:
         consent_url: >-
-          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
-          redirect_uri }}&state={{ state }}
+          https://yourconnectorservice.com/oauth/consent?client_id={{ client_id_value }}&redirect_uri={{
+          redirect_uri_value }}&state={{ state_value }}
         access_token_url: >-
-          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
-        extract_output:
-          - access_token
-          - refresh_token
-        access_token_headers: {}
-        access_token_params: {}
+          https://yourconnectorservice.com/oauth/token?client_id={{ client_id_value }}&client_secret={{ client_secret_value }}&code={{ auth_code_value }}
       complete_oauth_output_specification:
         required:
           - access_token
@@ -107,9 +102,13 @@ spec:
             type: string
             path_in_connector_config:
               - access_token
+            path_in_oauth_response:
+              - access_token
           refresh_token:
             type: string
             path_in_connector_config:
+              - refresh_token
+            path_in_oauth_response:
               - refresh_token
       complete_oauth_server_input_specification:
         required:
