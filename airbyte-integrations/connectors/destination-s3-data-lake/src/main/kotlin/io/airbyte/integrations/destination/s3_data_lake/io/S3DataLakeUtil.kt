@@ -240,11 +240,11 @@ class S3DataLakeUtil(
     ): Map<String, String> {
         val awsAccessKeyId =
             requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
-                "AWS Access Key ID is required for Nessie configuration"
+                "AWS Access Key ID is required for Rest configuration"
             }
         val awsSecretAccessKey =
             requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
-                "AWS Secret Access Key is required for Nessie configuration"
+                "AWS Secret Access Key is required for Rest configuration"
             }
 
         val restProperties = buildMap {

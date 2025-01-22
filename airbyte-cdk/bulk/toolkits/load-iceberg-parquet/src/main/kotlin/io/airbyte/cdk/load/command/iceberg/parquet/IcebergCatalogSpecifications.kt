@@ -294,11 +294,11 @@ data class NessieCatalogConfiguration(
  *
  * Stores information required to connect to a Rest server.
  */
-@JsonSchemaTitle("Nessie Catalog Configuration")
-@JsonSchemaDescription("Nessie-specific configuration details for connecting an Iceberg catalog.")
+@JsonSchemaTitle("Rest Catalog Configuration")
+@JsonSchemaDescription("Rest-specific configuration details for connecting an Iceberg catalog.")
 data class RestCatalogConfiguration(
     @JsonSchemaTitle("Rest Server URI")
-    @JsonPropertyDescription("The base URL of the Nessie server.")
+    @JsonPropertyDescription("The base URL of the Rest server.")
     val serverUri: String,
 ) : CatalogConfiguration
 
