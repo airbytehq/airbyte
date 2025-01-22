@@ -60,21 +60,16 @@ abstract class S3DataLakeWriteTest(
     }
 
     @Test
-    @Disabled(
-        "This is currently hanging forever and we should look into why https://github.com/airbytehq/airbyte-internal-issues/issues/11162"
-    )
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
     }
 
     @Test
-    @Disabled("This is currently hanging forever and we should look into why")
     override fun testInterruptedTruncateWithoutPriorData() {
         super.testInterruptedTruncateWithoutPriorData()
     }
 
     @Test
-    @Disabled("This is currently hanging forever and we should look into why")
     override fun resumeAfterCancelledTruncate() {
         super.resumeAfterCancelledTruncate()
     }
