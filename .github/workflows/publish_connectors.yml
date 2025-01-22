@@ -46,7 +46,7 @@ jobs:
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           max_attempts: 2
           retry_wait_seconds: 600 # 10 minutes
-
+          set_java_environment: true
       - name: Publish connectors [manual]
         id: publish-connectors
         if: github.event_name == 'workflow_dispatch'
@@ -69,7 +69,7 @@ jobs:
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
           max_attempts: 2
-
+          set_java_environment: true
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
     runs-on: ubuntu-24.04

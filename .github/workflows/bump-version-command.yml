@@ -86,6 +86,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          set_java_environment: false
           subcommand: |
             connectors --modified bump-version \
               ${{ github.event.inputs.type }} \

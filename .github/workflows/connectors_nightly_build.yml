@@ -22,6 +22,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "master"
+          set_java_environment: false
           subcommand: "connectors --support-level=certified list --output=selected_connectors.json"
       - name: Generate matrix - 30 connectors per job
         id: generate_matrix
