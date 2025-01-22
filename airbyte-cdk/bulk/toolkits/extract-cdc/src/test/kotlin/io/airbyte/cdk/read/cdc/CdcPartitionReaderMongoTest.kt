@@ -96,10 +96,12 @@ class CdcPartitionReaderMongoTest :
                 return ResumeTokens.getTimestamp(ResumeTokens.fromBase64(resumeTokenBase64))
             }
 
-            override fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput {
+            override fun deserialize(
+                opaqueStateValue: OpaqueStateValue,
+                streams: List<Stream>
+            ): DebeziumInput {
                 return super.deserialize(opaqueStateValue, streams).let {
                     DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
-
                 }
             }
 
