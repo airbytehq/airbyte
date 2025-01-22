@@ -31,6 +31,11 @@ Try not to make a lot of requests (thousands) in a short amount of time (minutes
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.8 | 2025-01-18 | [51874](https://github.com/airbytehq/airbyte/pull/51874) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51360](https://github.com/airbytehq/airbyte/pull/51360) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50677](https://github.com/airbytehq/airbyte/pull/50677) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50252](https://github.com/airbytehq/airbyte/pull/50252) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49682](https://github.com/airbytehq/airbyte/pull/49682) | Update dependencies |
 | 0.2.3 | 2024-12-12 | [48312](https://github.com/airbytehq/airbyte/pull/48312) | Update dependencies |
 | 0.2.2 | 2024-10-28 | [47528](https://github.com/airbytehq/airbyte/pull/47528) | Update dependencies |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |

@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
-  dockerImageTag: 1.1.26
+  dockerImageTag: 1.1.31
   dockerRepository: airbyte/source-smartsheets
   documentationUrl: https://docs.airbyte.com/integrations/sources/smartsheets
   githubIssueLabel: source-smartsheets

@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d30fb809-6456-484d-8e2c-ee12e0f6888d
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.7
   dockerRepository: airbyte/source-partnerstack
   githubIssueLabel: source-partnerstack
   icon: partnerstack.svg

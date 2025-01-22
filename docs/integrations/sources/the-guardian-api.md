@@ -111,8 +111,13 @@ The key that you are assigned is rate-limited and as such any applications that 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                        |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.10 | 2025-01-18 | [51417](https://github.com/airbytehq/airbyte/pull/51417) | Update dependencies |
+| 0.2.9 | 2025-01-13 | [50855](https://github.com/airbytehq/airbyte/pull/50855) | Update to latest CDK and fix custom pagination strategy |
+| 0.2.8 | 2024-12-28 | [50818](https://github.com/airbytehq/airbyte/pull/50818) | Update dependencies |
+| 0.2.7 | 2024-12-21 | [50341](https://github.com/airbytehq/airbyte/pull/50341) | Update dependencies |
+| 0.2.6 | 2024-12-14 | [49797](https://github.com/airbytehq/airbyte/pull/49797) | Update dependencies |
 | 0.2.5 | 2024-12-12 | [49378](https://github.com/airbytehq/airbyte/pull/49378) | Update dependencies |
 | 0.2.4 | 2024-12-11 | [48790](https://github.com/airbytehq/airbyte/pull/48790) | Add unit tests for custom components |
 | 0.2.3 | 2024-12-11 | [48201](https://github.com/airbytehq/airbyte/pull/48201) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

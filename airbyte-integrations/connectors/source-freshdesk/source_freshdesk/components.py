@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
@@ -109,7 +110,9 @@ class FreshdeskTicketsIncrementalSync(DatetimeBasedCursor):
             start_time = stream_slice.get(self._partition_field_start.eval(self.config)) if not self.updated_slice else self.updated_slice
             options[self.start_time_option.field_name.eval(config=self.config)] = start_time  # type: ignore # field_name is always casted to an interpolated string
         if self.end_time_option and self.end_time_option.inject_into == option_type:
-            options[self.end_time_option.field_name.eval(config=self.config)] = stream_slice.get(self._partition_field_end.eval(self.config))  # type: ignore # field_name is always casted to an interpolated string
+            options[self.end_time_option.field_name.eval(config=self.config)] = stream_slice.get(
+                self._partition_field_end.eval(self.config)
+            )  # type: ignore # field_name is always casted to an interpolated string
         return options
 
 

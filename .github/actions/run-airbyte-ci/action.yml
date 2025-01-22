@@ -115,7 +115,9 @@ runs:
         ls -la
         ls -la airbyte-python-cdk || echo "No airbyte-python-cdk directory"
         ls -laL ../airbyte-python-cdk || echo "No airbyte-python-cdk symlink"
-
+    - name: Install Java Environment
+      id: install-java-environment
+      uses: ./.github/actions/install-java-environment
     - name: Docker login
       id: docker-login
       uses: docker/login-action@v3
@@ -199,7 +201,7 @@ runs:
       id: hash-subcommand
       shell: bash
       if: always()
-      run: echo "::set-output name=subcommand_hash::$(echo ${{ inputs.subcommand }} | sha256sum | cut -d ' ' -f 1)"
+      run: echo "subcommand_hash=$(echo ${{ inputs.subcommand }} | sha256sum | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
 
     - name: Upload logs to GitHub
       id: upload-dagger-engine-logs

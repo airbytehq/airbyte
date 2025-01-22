@@ -93,8 +93,14 @@ contain the `predictive_analytics` field and workflows depending on this field w
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                               | Subject                                                                                                                       |
-|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.9 | 2025-01-11 | [51198](https://github.com/airbytehq/airbyte/pull/51198) | Update dependencies |
+| 2.11.8 | 2025-01-09 | [51010](https://github.com/airbytehq/airbyte/pull/51010) | Fix AirbyteMessage serialization with integers bigger than 64 bits |
+| 2.11.7 | 2025-01-04 | [50893](https://github.com/airbytehq/airbyte/pull/50893) | Update dependencies |
+| 2.11.6 | 2024-12-28 | [50653](https://github.com/airbytehq/airbyte/pull/50653) | Update dependencies |
+| 2.11.5 | 2024-12-21 | [50088](https://github.com/airbytehq/airbyte/pull/50088) | Update dependencies |
+| 2.11.4 | 2024-12-14 | [49250](https://github.com/airbytehq/airbyte/pull/49250) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.11.3 | 2024-12-12 | [49144](https://github.com/airbytehq/airbyte/pull/49144) | Update dependencies |
 | 2.11.2 | 2024-12-02 | [48748](https://github.com/airbytehq/airbyte/pull/48748) | Bump CDK to evict non retriable requests to avoid high memory usage |
 | 2.11.1 | 2024-11-26 | [48710](https://github.com/airbytehq/airbyte/pull/48710) | Retry on "Temporary failure in name resolution" |
@@ -155,16 +161,16 @@ contain the `predictive_analytics` field and workflows depending on this field w
 | 0.3.2 | 2023-06-20 | [27498](https://github.com/airbytehq/airbyte/pull/27498) | Do not store state in the future |
 | 0.3.1 | 2023-06-08 | [27162](https://github.com/airbytehq/airbyte/pull/27162) | Anonymize check connection error message |
 | 0.3.0 | 2023-02-18 | [23236](https://github.com/airbytehq/airbyte/pull/23236) | Add ` Email Templates` stream |
-| 0.2.0   | 2023-03-13 | [22942](https://github.com/airbytehq/airbyte/pull/23968)   | Add `Profiles` stream                                                                                                         |
-| 0.1.13  | 2023-02-13 | [22942](https://github.com/airbytehq/airbyte/pull/22942)   | Specified date formatting in specification                                                                                    |
-| 0.1.12  | 2023-01-30 | [22071](https://github.com/airbytehq/airbyte/pull/22071)   | Fix `Events` stream schema                                                                                                    |
-| 0.1.11  | 2023-01-27 | [22012](https://github.com/airbytehq/airbyte/pull/22012)   | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                   |
-| 0.1.10  | 2022-09-29 | [17422](https://github.com/airbytehq/airbyte/issues/17422) | Update CDK dependency                                                                                                         |
-| 0.1.9   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/issues/17304) | Migrate to per-stream state.                                                                                                  |
-| 0.1.6   | 2022-07-20 | [14872](https://github.com/airbytehq/airbyte/issues/14872) | Increase test coverage                                                                                                        |
-| 0.1.5   | 2022-07-12 | [14617](https://github.com/airbytehq/airbyte/issues/14617) | Set max_retries = 10 for `lists` stream.                                                                                      |
-| 0.1.4   | 2022-04-15 | [11723](https://github.com/airbytehq/airbyte/issues/11723) | Enhance klaviyo source for flows stream and update to events stream.                                                          |
-| 0.1.3   | 2021-12-09 | [8592](https://github.com/airbytehq/airbyte/pull/8592)     | Improve performance, make Global Exclusions stream incremental and enable Metrics stream.                                     |
-| 0.1.2   | 2021-10-19 | [6952](https://github.com/airbytehq/airbyte/pull/6952)     | Update schema validation in SAT                                                                                               |
+| 0.2.0   | 2023-03-13 | [22942](https://github.com/airbytehq/airbyte/pull/23968)   | Add `Profiles` stream                                                                                                                                                  |
+| 0.1.13  | 2023-02-13 | [22942](https://github.com/airbytehq/airbyte/pull/22942)   | Specified date formatting in specification                                                                                                                             |
+| 0.1.12  | 2023-01-30 | [22071](https://github.com/airbytehq/airbyte/pull/22071)   | Fix `Events` stream schema                                                                                                                                             |
+| 0.1.11  | 2023-01-27 | [22012](https://github.com/airbytehq/airbyte/pull/22012)   | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                            |
+| 0.1.10  | 2022-09-29 | [17422](https://github.com/airbytehq/airbyte/issues/17422) | Update CDK dependency                                                                                                                                                  |
+| 0.1.9   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/issues/17304) | Migrate to per-stream state.                                                                                                                                           |
+| 0.1.6   | 2022-07-20 | [14872](https://github.com/airbytehq/airbyte/issues/14872) | Increase test coverage                                                                                                                                                 |
+| 0.1.5   | 2022-07-12 | [14617](https://github.com/airbytehq/airbyte/issues/14617) | Set max_retries = 10 for `lists` stream.                                                                                                                               |
+| 0.1.4   | 2022-04-15 | [11723](https://github.com/airbytehq/airbyte/issues/11723) | Enhance klaviyo source for flows stream and update to events stream.                                                                                                   |
+| 0.1.3   | 2021-12-09 | [8592](https://github.com/airbytehq/airbyte/pull/8592)     | Improve performance, make Global Exclusions stream incremental and enable Metrics stream.                                                                              |
+| 0.1.2   | 2021-10-19 | [6952](https://github.com/airbytehq/airbyte/pull/6952)     | Update schema validation in SAT                                                                                                                                        |
 
 </details>

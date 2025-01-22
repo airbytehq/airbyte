@@ -7,9 +7,10 @@ from pathlib import Path
 
 import asyncclick as click
 from connector_ops.utils import console  # type: ignore
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from rich.table import Table
 from rich.text import Text
+
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
 @click.command(cls=DaggerPipelineCommand, help="List all selected connectors.", name="list")

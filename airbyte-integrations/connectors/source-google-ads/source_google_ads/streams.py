@@ -8,14 +8,15 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 
 import backoff
 import pendulum
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources.streams import CheckpointMixin, Stream
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v17.services.services.google_ads_service.pagers import SearchPager
 from google.ads.googleads.v17.services.types.google_ads_service import SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests, Unauthenticated
+
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.streams import CheckpointMixin, Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
 
 from .google_ads import GoogleAds, logger
 from .models import CustomerModel

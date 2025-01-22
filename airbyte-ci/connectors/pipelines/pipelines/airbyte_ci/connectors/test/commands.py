@@ -6,6 +6,7 @@ import shutil
 from typing import Dict, List
 
 import asyncclick as click
+
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines

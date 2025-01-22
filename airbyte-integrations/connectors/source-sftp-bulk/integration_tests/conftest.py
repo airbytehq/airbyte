@@ -14,9 +14,11 @@ from typing import Any, Mapping, Tuple
 import docker
 import paramiko
 import pytest
+
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 from .utils import get_docker_ip, load_config
+
 
 logger = logging.getLogger("airbyte")
 
@@ -118,6 +120,27 @@ def config_fixture_use_file_transfer(docker_client) -> Mapping[str, Any]:
 @pytest.fixture(name="config_fixture_use_all_files_transfer", scope="session")
 def config_fixture_use_all_files_transfer(docker_client) -> Mapping[str, Any]:
     config = load_config("config_use_all_files_transfer.json")
+    config["host"] = get_docker_ip()
+    yield config
+
+
+@pytest.fixture(name="config_fixture_not_duplicates", scope="session")
+def config_fixture_not_duplicates(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_not_duplicates.json")
+    config["host"] = get_docker_ip()
+    yield config
+
+
+@pytest.fixture(name="config_fixture_not_mirroring_paths_not_duplicates", scope="session")
+def config_fixture_not_mirroring_paths_not_duplicates(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_not_preserve_subdirectories_not_duplicates.json")
+    config["host"] = get_docker_ip()
+    yield config
+
+
+@pytest.fixture(name="config_fixture_not_mirroring_paths_with_duplicates", scope="session")
+def config_fixture_not_mirroring_paths_with_duplicates(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_not_preserve_subdirectories_with_duplicates.json")
     config["host"] = get_docker_ip()
     yield config
 

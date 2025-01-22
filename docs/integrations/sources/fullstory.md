@@ -73,6 +73,11 @@ FullStory [API reference](https://api.fullstory.com) has v1 at present. The conn
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.7 | 2025-01-18 | [51657](https://github.com/airbytehq/airbyte/pull/51657) | Update dependencies |
+| 0.2.6 | 2025-01-11 | [51078](https://github.com/airbytehq/airbyte/pull/51078) | Update dependencies |
+| 0.2.5 | 2025-01-04 | [50587](https://github.com/airbytehq/airbyte/pull/50587) | Update dependencies |
+| 0.2.4 | 2024-12-21 | [50050](https://github.com/airbytehq/airbyte/pull/50050) | Update dependencies |
+| 0.2.3 | 2024-12-14 | [49524](https://github.com/airbytehq/airbyte/pull/49524) | Update dependencies |
 | 0.2.2 | 2024-12-12 | [49156](https://github.com/airbytehq/airbyte/pull/49156) | Update dependencies |
 | 0.2.1 | 2024-10-29 | [47794](https://github.com/airbytehq/airbyte/pull/47794) | Update dependencies |
 | 0.2.0 | 2024-08-23 | [44612](https://github.com/airbytehq/airbyte/pull/44612) | Refactor connector to manifest-only format |

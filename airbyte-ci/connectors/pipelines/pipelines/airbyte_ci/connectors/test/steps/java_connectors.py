@@ -3,12 +3,14 @@
 #
 
 """This module groups steps made to run tests for a specific Java connector given a test context."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 import anyio
 from dagger import File, QueryError
+
 from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorDistributionTar,
     BuildConnectorImages,
@@ -89,7 +91,6 @@ def _create_integration_step_args_factory(context: ConnectorTestContext) -> Call
     """
 
     async def _create_integration_step_args(results: RESULTS_DICT) -> Dict[str, Optional[File]]:
-
         connector_container = results["build"].output[LOCAL_BUILD_PLATFORM]
         connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container, LOCAL_BUILD_PLATFORM)
 
@@ -165,9 +166,7 @@ def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.BUILD,
                 step=BuildConnectorImages(context),
-                args=lambda results: {
-                    "dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output.directory(dist_tar_directory_path(context))
-                },
+                args=lambda results: {"dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output.directory("build/distributions")},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
             ),
         ],

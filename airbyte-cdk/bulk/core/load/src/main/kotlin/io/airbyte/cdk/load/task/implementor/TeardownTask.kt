@@ -7,13 +7,15 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.SelfTerminating
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface TeardownTask : ImplementorScope
+interface TeardownTask : Task
 
 /**
  * Wraps @[DestinationWriter.teardown] and stops the task launcher.
@@ -28,12 +30,14 @@ class DefaultTeardownTask(
 ) : TeardownTask {
     val log = KotlinLogging.logger {}
 
+    override val terminalCondition: TerminalCondition = SelfTerminating
+
     override suspend fun execute() {
         syncManager.awaitInputProcessingComplete()
 
-        log.info { "Teardown task awaiting stream completion" }
-        if (!syncManager.awaitAllStreamsCompletedSuccessfully()) {
-            log.info { "Streams failed to complete successfully, doing nothing." }
+        log.info { "Teardown task awaiting stream processing completion" }
+        if (!syncManager.awaitAllStreamsProcessedSuccessfully()) {
+            log.info { "Streams failed to be processed successfully, doing nothing." }
             return
         }
 
@@ -41,7 +45,7 @@ class DefaultTeardownTask(
         log.info { "Starting teardown task" }
         destination.teardown()
         log.info { "Teardown task complete, marking sync succeeded." }
-        syncManager.markSucceeded()
+        syncManager.markDestinationSucceeded()
         taskLauncher.handleTeardownComplete()
     }
 }

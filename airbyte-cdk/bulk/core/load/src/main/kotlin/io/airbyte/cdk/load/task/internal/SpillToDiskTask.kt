@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.task.internal
 
 import com.google.common.collect.Range
 import com.google.common.collect.TreeRangeSet
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.SpillFileProvider
 import io.airbyte.cdk.load.message.Batch
@@ -15,7 +16,7 @@ import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.QueueReader
 import io.airbyte.cdk.load.message.SimpleBatch
-import io.airbyte.cdk.load.message.StreamCompleteEvent
+import io.airbyte.cdk.load.message.StreamEndEvent
 import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.state.FlushStrategy
@@ -23,7 +24,9 @@ import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.InternalScope
+import io.airbyte.cdk.load.task.SelfTerminating
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
@@ -39,7 +42,7 @@ import kotlin.io.path.deleteExisting
 import kotlin.io.path.outputStream
 import kotlinx.coroutines.flow.fold
 
-interface SpillToDiskTask : InternalScope
+interface SpillToDiskTask : Task
 
 /**
  * Reads records from the message queue and writes them to disk. Completes once the upstream
@@ -54,20 +57,22 @@ class DefaultSpillToDiskTask(
     private val flushStrategy: FlushStrategy,
     val streamDescriptor: DestinationStream.Descriptor,
     private val diskManager: ReservationManager,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationTaskLauncher,
+    private val processEmptyFiles: Boolean,
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
+
+    override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
         val initialAccumulator = fileAccFactory.make()
 
-        val registration = outputQueue.registerProducer()
-        registration.use {
+        outputQueue.use {
             inputQueue.consume().fold(initialAccumulator) { acc, reserved ->
                 reserved.use {
                     when (val event = it.value) {
                         is StreamRecordEvent -> accRecordEvent(acc, event)
-                        is StreamCompleteEvent -> accStreamCompleteEvent(acc, event)
+                        is StreamEndEvent -> accStreamEndEvent(acc, event)
                         is StreamFlushEvent -> accFlushEvent(acc)
                     }
                 }
@@ -91,7 +96,7 @@ class DefaultSpillToDiskTask(
         diskManager.reserve(event.sizeBytes)
 
         // write to disk
-        outputStream.write(event.record.serialized)
+        outputStream.write(event.payload.serialized)
         outputStream.write("\n")
 
         // calculate whether we should flush
@@ -117,15 +122,15 @@ class DefaultSpillToDiskTask(
     }
 
     /**
-     * Handles accumulation of stream completion events, triggering a final flush if the aggregate
-     * isn't empty.
+     * Handles accumulation of stream end events (complete or incomplete), triggering a final flush
+     * if the aggregate isn't empty.
      */
-    private suspend fun accStreamCompleteEvent(
+    private suspend fun accStreamEndEvent(
         acc: FileAccumulator,
-        event: StreamCompleteEvent,
+        event: StreamEndEvent,
     ): FileAccumulator {
         val (spillFile, outputStream, timeWindow, range, sizeBytes) = acc
-        if (sizeBytes == 0L) {
+        if (sizeBytes == 0L && !processEmptyFiles) {
             log.info { "Skipping empty file $spillFile" }
             // Cleanup empty file
             spillFile.deleteExisting()
@@ -135,10 +140,16 @@ class DefaultSpillToDiskTask(
                 BatchEnvelope(
                     SimpleBatch(Batch.State.COMPLETE),
                     TreeRangeSet.create(),
+                    streamDescriptor
                 )
             taskLauncher.handleNewBatch(streamDescriptor, empty)
         } else {
-            val nextRange = range.withNextAdjacentValue(event.index)
+            val nextRange =
+                if (sizeBytes == 0L) {
+                    null
+                } else {
+                    range.withNextAdjacentValue(event.index)
+                }
             val file =
                 SpilledRawMessagesLocalFile(
                     spillFile,
@@ -203,6 +214,7 @@ interface SpillToDiskTaskFactory {
 
 @Singleton
 class DefaultSpillToDiskTaskFactory(
+    private val config: DestinationConfiguration,
     private val fileAccFactory: FileAccumulatorFactory,
     private val queueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
@@ -224,6 +236,7 @@ class DefaultSpillToDiskTaskFactory(
             stream,
             diskManager,
             taskLauncher,
+            config.processEmptyFiles,
         )
     }
 }
@@ -255,6 +268,9 @@ data class FileAccumulator(
 data class SpilledRawMessagesLocalFile(
     val localFile: Path,
     val totalSizeBytes: Long,
-    val indexRange: Range<Long>,
+    val indexRange: Range<Long>?,
     val endOfStream: Boolean = false
-)
+) {
+    val isEmpty
+        get() = totalSizeBytes == 0L
+}

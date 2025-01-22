@@ -72,6 +72,10 @@ The Braintree connector should not run into Braintree API limitations under norm
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 0.3.26 | 2025-01-11 | [51238](https://github.com/airbytehq/airbyte/pull/51238) | Update dependencies |
+| 0.3.25 | 2024-12-28 | [50500](https://github.com/airbytehq/airbyte/pull/50500) | Update dependencies |
+| 0.3.24 | 2024-12-21 | [50211](https://github.com/airbytehq/airbyte/pull/50211) | Update dependencies |
+| 0.3.23 | 2024-12-14 | [49556](https://github.com/airbytehq/airbyte/pull/49556) | Update dependencies |
 | 0.3.22 | 2024-12-12 | [49032](https://github.com/airbytehq/airbyte/pull/49032) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.21 | 2024-11-04 | [48212](https://github.com/airbytehq/airbyte/pull/48212) | Update dependencies |
 | 0.3.20 | 2024-10-21 | [47062](https://github.com/airbytehq/airbyte/pull/47062) | Update dependencies |

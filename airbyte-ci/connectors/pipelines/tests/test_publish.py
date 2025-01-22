@@ -8,6 +8,7 @@ from typing import List
 
 import anyio
 import pytest
+
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.airbyte_ci.connectors.publish.context import RolloutMode
 from pipelines.models.steps import StepStatus
@@ -361,7 +362,6 @@ async def test_run_connector_python_registry_publish_pipeline(
     expect_build_connector_called,
     api_token,
 ):
-
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 

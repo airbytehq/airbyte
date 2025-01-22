@@ -19,4 +19,3 @@ class ErrorResponseBuilder:
         if not file_path:
             return HttpResponse(json.dumps(find_template(str(self._status_code), __file__)), self._status_code)
         return HttpResponse(json.dumps(find_template(str(file_path), __file__)), self._status_code)
-

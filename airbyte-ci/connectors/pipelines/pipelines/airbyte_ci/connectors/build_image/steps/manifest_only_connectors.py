@@ -6,13 +6,14 @@
 from typing import Any
 
 from dagger import Container, Platform
+from pydash.objects import get  # type: ignore
+
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import COMPONENTS_FILE_PATH, MANIFEST_FILE_PATH
 from pipelines.dagger.actions.python.common import apply_python_development_overrides
 from pipelines.models.steps import StepResult
-from pydash.objects import get  # type: ignore
 
 
 class BuildConnectorImages(BuildConnectorImagesBase):

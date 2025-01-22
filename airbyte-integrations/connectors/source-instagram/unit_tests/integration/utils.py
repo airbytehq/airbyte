@@ -5,10 +5,11 @@
 
 from typing import List, Optional
 
+from source_instagram import SourceInstagram
+
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
-from source_instagram import SourceInstagram
 
 from .config import ConfigBuilder
 

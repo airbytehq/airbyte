@@ -85,6 +85,11 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
+| 1.0.20 | 2025-01-11 | [51196](https://github.com/airbytehq/airbyte/pull/51196) | Update dependencies |
+| 1.0.19 | 2025-01-04 | [50897](https://github.com/airbytehq/airbyte/pull/50897) | Update dependencies |
+| 1.0.18 | 2024-12-28 | [50654](https://github.com/airbytehq/airbyte/pull/50654) | Update dependencies |
+| 1.0.17 | 2024-12-21 | [50086](https://github.com/airbytehq/airbyte/pull/50086) | Update dependencies |
+| 1.0.16 | 2024-12-14 | [49628](https://github.com/airbytehq/airbyte/pull/49628) | Update dependencies |
 | 1.0.15 | 2024-12-11 | [48992](https://github.com/airbytehq/airbyte/pull/48992) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.0.14 | 2024-11-04 | [47086](https://github.com/airbytehq/airbyte/pull/47086) | Update dependencies |
 | 1.0.13 | 2024-10-12 | [46805](https://github.com/airbytehq/airbyte/pull/46805) | Update dependencies |

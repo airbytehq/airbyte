@@ -9,7 +9,7 @@ env:
 
 jobs:
   assign_one_project:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Assign to Airbyte Github Project
     steps:
       - name: Assign documentation issues to the Documentation Roadmap project

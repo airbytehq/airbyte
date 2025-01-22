@@ -47,6 +47,11 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                              | Subject                          |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------- |
+| 0.3.10 | 2025-01-18 | [51869](https://github.com/airbytehq/airbyte/pull/51869) | Update dependencies |
+| 0.3.9 | 2025-01-11 | [51324](https://github.com/airbytehq/airbyte/pull/51324) | Update dependencies |
+| 0.3.8 | 2024-12-28 | [50676](https://github.com/airbytehq/airbyte/pull/50676) | Update dependencies |
+| 0.3.7 | 2024-12-21 | [50264](https://github.com/airbytehq/airbyte/pull/50264) | Update dependencies |
+| 0.3.6 | 2024-12-14 | [49679](https://github.com/airbytehq/airbyte/pull/49679) | Update dependencies |
 | 0.3.5 | 2024-12-12 | [49334](https://github.com/airbytehq/airbyte/pull/49334) | Update dependencies |
 | 0.3.4 | 2024-12-11 | [48161](https://github.com/airbytehq/airbyte/pull/48161) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.3 | 2024-10-29 | [47936](https://github.com/airbytehq/airbyte/pull/47936) | Update dependencies |

@@ -45,6 +45,10 @@ To set up the Appcues source connector, you'll need your Appcues [`API Key` and 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ----- | ---------------- |
+| 0.0.9 | 2025-01-11 | [51260](https://github.com/airbytehq/airbyte/pull/51260) | Update dependencies |
+| 0.0.8 | 2024-12-28 | [50451](https://github.com/airbytehq/airbyte/pull/50451) | Update dependencies |
+| 0.0.7 | 2024-12-21 | [50174](https://github.com/airbytehq/airbyte/pull/50174) | Update dependencies |
+| 0.0.6 | 2024-12-14 | [49586](https://github.com/airbytehq/airbyte/pull/49586) | Update dependencies |
 | 0.0.5 | 2024-12-12 | [49277](https://github.com/airbytehq/airbyte/pull/49277) | Update dependencies |
 | 0.0.4 | 2024-12-11 | [48931](https://github.com/airbytehq/airbyte/pull/48931) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.3 | 2024-11-04 | [48267](https://github.com/airbytehq/airbyte/pull/48267) | Update dependencies |

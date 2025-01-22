@@ -7,7 +7,6 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 class PerPartitionRecordFilter(RecordFilter):
-
     """
     Prepares per partition stream state to be used in the Record Filter condition.
     Gets current stream state cursor value for stream slice and passes it to condition.

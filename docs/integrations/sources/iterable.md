@@ -83,6 +83,11 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.24 | 2025-01-11 | [51163](https://github.com/airbytehq/airbyte/pull/51163) | Update dependencies |
+| 0.6.23 | 2025-01-04 | [50889](https://github.com/airbytehq/airbyte/pull/50889) | Update dependencies |
+| 0.6.22 | 2024-12-28 | [50608](https://github.com/airbytehq/airbyte/pull/50608) | Update dependencies |
+| 0.6.21 | 2024-12-21 | [50101](https://github.com/airbytehq/airbyte/pull/50101) | Update dependencies |
+| 0.6.20 | 2024-12-14 | [49211](https://github.com/airbytehq/airbyte/pull/49211) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.6.19 | 2024-12-12 | [48993](https://github.com/airbytehq/airbyte/pull/48993) | Update dependencies |
 | 0.6.18 | 2024-11-04 | [48294](https://github.com/airbytehq/airbyte/pull/48294) | Update dependencies |
 | 0.6.17 | 2024-10-29 | [47803](https://github.com/airbytehq/airbyte/pull/47803) | Update dependencies |

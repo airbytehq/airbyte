@@ -38,6 +38,11 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                         |
 |:--------|:-----------| :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.7 | 2025-01-18 | [51971](https://github.com/airbytehq/airbyte/pull/51971) | Update dependencies |
+| 0.2.6 | 2025-01-11 | [51401](https://github.com/airbytehq/airbyte/pull/51401) | Update dependencies |
+| 0.2.5 | 2025-01-04 | [50749](https://github.com/airbytehq/airbyte/pull/50749) | Update dependencies |
+| 0.2.4 | 2024-12-21 | [50348](https://github.com/airbytehq/airbyte/pull/50348) | Update dependencies |
+| 0.2.3 | 2024-12-14 | [49782](https://github.com/airbytehq/airbyte/pull/49782) | Update dependencies |
 | 0.2.2 | 2024-12-12 | [49426](https://github.com/airbytehq/airbyte/pull/49426) | Update dependencies |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44061](https://github.com/airbytehq/airbyte/pull/44061) | Refactor connector to manifest-only format |

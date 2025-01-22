@@ -56,6 +56,12 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.0.29 | 2025-01-18 | [51871](https://github.com/airbytehq/airbyte/pull/51871) | Update dependencies |
+| 1.0.28 | 2025-01-11 | [51354](https://github.com/airbytehq/airbyte/pull/51354) | Update dependencies |
+| 1.0.27 | 2025-01-04 | [50931](https://github.com/airbytehq/airbyte/pull/50931) | Update dependencies |
+| 1.0.26 | 2024-12-28 | [50722](https://github.com/airbytehq/airbyte/pull/50722) | Update dependencies |
+| 1.0.25 | 2024-12-21 | [50245](https://github.com/airbytehq/airbyte/pull/50245) | Update dependencies |
+| 1.0.24 | 2024-12-14 | [49654](https://github.com/airbytehq/airbyte/pull/49654) | Update dependencies |
 | 1.0.23 | 2024-12-12 | [49049](https://github.com/airbytehq/airbyte/pull/49049) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.0.22 | 2024-10-28 | [47055](https://github.com/airbytehq/airbyte/pull/47055) | Update dependencies |
 | 1.0.21 | 2024-10-12 | [46764](https://github.com/airbytehq/airbyte/pull/46764) | Update dependencies |

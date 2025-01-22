@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "live-tests"
-version = "0.19.10"
+version = "0.20.0"
 description = "Contains utilities for testing connectors against live data."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -29,8 +29,7 @@ pytest = "^8.1.1"
 pydash = "~=7.0.7"
 docker = ">=6,<7"
 asyncclick = "^8.1.7.1"
-# Pinning until we can manage multiple connections returned by the new connection-retriever version
-connection-retriever = {git = "git@github.com:airbytehq/airbyte-platform-internal", subdirectory = "tools/connection-retriever", rev = "f7359106b28e5197e45b3c8524c4f72a314805a2"}
+connection-retriever = {git = "git@github.com:airbytehq/airbyte-platform-internal", subdirectory = "tools/connection-retriever"}
 duckdb = "<=0.10.1"  # Pinned due to this issue https://github.com/duckdb/duckdb/issues/11152
 pandas = "^2.2.1"
 pytest-sugar = "^1.0.0"
@@ -53,10 +52,12 @@ pandas-stubs = "^2.2.0.240218"
 types-requests = "^2.31.0.20240311"
 types-pyyaml = "^6.0.12.20240311"
 
-[tool.ruff.lint]
-select = ["I", "F"]
+[tool.ruff]
 target-version = "py310"
 line-length = 140
+
+[tool.ruff.lint]
+select = ["I", "F"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["connection-retriever"]

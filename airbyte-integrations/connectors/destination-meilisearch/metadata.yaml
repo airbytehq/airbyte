@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
-  dockerImageTag: 1.0.7
+  dockerImageTag: 1.0.12
   dockerRepository: airbyte/destination-meilisearch
   githubIssueLabel: destination-meilisearch
   icon: meilisearch.svg

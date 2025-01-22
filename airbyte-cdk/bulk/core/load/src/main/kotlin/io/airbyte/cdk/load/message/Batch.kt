@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.message
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
+import io.airbyte.cdk.load.command.DestinationStream
 
 /**
  * Represents an accumulated batch of records in some stage of processing.
@@ -20,7 +21,7 @@ import com.google.common.collect.TreeRangeSet
  * the associated ranges have been persisted remotely, and that platform checkpoint messages can be
  * emitted.
  *
- * [State.LOCAL] is used internally to indicate that records have been spooled to disk for
+ * [State.STAGED] is used internally to indicate that records have been spooled to disk for
  * processing and should not be used by implementors.
  *
  * When a stream has been read to End-of-stream, and all ranges between 0 and End-of-stream are
@@ -53,7 +54,8 @@ interface Batch {
     val groupId: String?
 
     enum class State {
-        LOCAL,
+        PROCESSED,
+        STAGED,
         PERSISTED,
         COMPLETE
     }
@@ -66,6 +68,13 @@ interface Batch {
         }
 
     val state: State
+
+    /**
+     * If a [Batch] is [State.COMPLETE], there's nothing further to do. If it is part of a group,
+     * then its state will be updated by the next batch in the group that advances.
+     */
+    val requiresProcessing: Boolean
+        get() = state != State.COMPLETE && groupId == null
 }
 
 /** Simple batch: use if you need no other metadata for processing. */
@@ -80,14 +89,20 @@ data class SimpleBatch(
  */
 data class BatchEnvelope<B : Batch>(
     val batch: B,
-    val ranges: RangeSet<Long> = TreeRangeSet.create()
+    val ranges: RangeSet<Long> = TreeRangeSet.create(),
+    val streamDescriptor: DestinationStream.Descriptor
 ) {
     constructor(
         batch: B,
-        range: Range<Long>
-    ) : this(batch = batch, ranges = TreeRangeSet.create(listOf(range)))
+        range: Range<Long>?,
+        streamDescriptor: DestinationStream.Descriptor
+    ) : this(
+        batch = batch,
+        ranges = range?.let { TreeRangeSet.create(listOf(range)) } ?: TreeRangeSet.create(),
+        streamDescriptor = streamDescriptor
+    )
 
     fun <C : Batch> withBatch(newBatch: C): BatchEnvelope<C> {
-        return BatchEnvelope(newBatch, ranges)
+        return BatchEnvelope(newBatch, ranges, streamDescriptor)
     }
 }

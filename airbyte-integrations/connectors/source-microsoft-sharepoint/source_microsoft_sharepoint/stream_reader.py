@@ -11,11 +11,12 @@ from typing import Iterable, List, Optional, Tuple
 
 import requests
 import smart_open
+from msal import ConfidentialClientApplication
+from office365.graph_client import GraphClient
+
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from msal import ConfidentialClientApplication
-from office365.graph_client import GraphClient
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
 from .utils import FolderNotFoundException, MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls

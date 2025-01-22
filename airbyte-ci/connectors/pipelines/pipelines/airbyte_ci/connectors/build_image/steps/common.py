@@ -11,6 +11,7 @@ from base_images.bases import AirbyteConnectorBaseImage  # type: ignore
 from click import UsageError
 from connector_ops.utils import Connector  # type: ignore
 from dagger import Container, ExecError, Platform, QueryError
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.utils import export_container_to_tarball, sh_dash_c
 from pipelines.models.steps import Step, StepResult, StepStatus

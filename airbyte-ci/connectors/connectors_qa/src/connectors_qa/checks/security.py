@@ -4,9 +4,10 @@ from pathlib import Path
 from typing import Iterable, Optional, Set, Tuple
 
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
+from pydash.objects import get  # type: ignore
+
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
-from pydash.objects import get  # type: ignore
 
 
 class SecurityCheck(Check):

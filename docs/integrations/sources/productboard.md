@@ -36,6 +36,11 @@ A manifest only source for Productboard. https://www.productboard.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.12 | 2025-01-18 | [51902](https://github.com/airbytehq/airbyte/pull/51902) | Update dependencies |
+| 0.0.11 | 2025-01-11 | [51300](https://github.com/airbytehq/airbyte/pull/51300) | Update dependencies |
+| 0.0.10 | 2024-12-28 | [50705](https://github.com/airbytehq/airbyte/pull/50705) | Update dependencies |
+| 0.0.9 | 2024-12-21 | [50290](https://github.com/airbytehq/airbyte/pull/50290) | Update dependencies |
+| 0.0.8 | 2024-12-14 | [49686](https://github.com/airbytehq/airbyte/pull/49686) | Update dependencies |
 | 0.0.7 | 2024-12-12 | [49331](https://github.com/airbytehq/airbyte/pull/49331) | Update dependencies |
 | 0.0.6 | 2024-12-11 | [49087](https://github.com/airbytehq/airbyte/pull/49087) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.5 | 2024-11-05 | [48365](https://github.com/airbytehq/airbyte/pull/48365) | Revert to source-declarative-manifest v5.17.0 |

@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.state.DestinationState
 import io.airbyte.cdk.load.state.DestinationStatePersister
+import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
 import io.airbyte.cdk.load.util.readIntoClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -20,6 +21,7 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
@@ -29,22 +31,27 @@ import kotlinx.coroutines.sync.withLock
 class ObjectStorageDestinationState(
     // (State -> (GenerationId -> (Key -> PartNumber)))
     @JsonProperty("generations_by_state")
-    var generationMap: MutableMap<State, MutableMap<Long, MutableMap<String, Long>>> =
-        mutableMapOf(),
+    var generationMap:
+        ConcurrentHashMap<State, ConcurrentHashMap<Long, ConcurrentHashMap<String, Long>>> =
+        ConcurrentHashMap(),
+    @JsonProperty("count_by_key") var countByKey: MutableMap<String, Long> = mutableMapOf()
 ) : DestinationState {
     enum class State {
         STAGED,
         FINALIZED
     }
 
+    @JsonIgnore private val countByKeyLock = Mutex()
+
     companion object {
         const val METADATA_GENERATION_ID_KEY = "ab-generation-id"
+        const val STREAM_NAMESPACE_KEY = "ab-stream-namespace"
+        const val STREAM_NAME_KEY = "ab-stream-name"
+        const val OPTIONAL_ORDINAL_SUFFIX_PATTERN = "(-[0-9]+)?"
 
         fun metadataFor(stream: DestinationStream): Map<String, String> =
             mapOf(METADATA_GENERATION_ID_KEY to stream.generationId.toString())
     }
-
-    @JsonIgnore private val accessLock = Mutex()
 
     suspend fun addObject(
         generationId: Long,
@@ -53,23 +60,19 @@ class ObjectStorageDestinationState(
         isStaging: Boolean = false
     ) {
         val state = if (isStaging) State.STAGED else State.FINALIZED
-        accessLock.withLock {
-            generationMap
-                .getOrPut(state) { mutableMapOf() }
-                .getOrPut(generationId) { mutableMapOf() }[key] = partNumber ?: 0L
-        }
+        generationMap
+            .getOrPut(state) { ConcurrentHashMap() }
+            .getOrPut(generationId) { ConcurrentHashMap() }[key] = partNumber ?: 0L
     }
 
     suspend fun removeObject(generationId: Long, key: String, isStaging: Boolean = false) {
         val state = if (isStaging) State.STAGED else State.FINALIZED
-        accessLock.withLock { generationMap[state]?.get(generationId)?.remove(key) }
+        generationMap[state]?.get(generationId)?.remove(key)
     }
 
     suspend fun dropGenerationsBefore(minimumGenerationId: Long) {
-        accessLock.withLock {
-            State.entries.forEach { state ->
-                (0 until minimumGenerationId).forEach { generationMap[state]?.remove(it) }
-            }
+        State.entries.forEach { state ->
+            (0 until minimumGenerationId).forEach { generationMap[state]?.remove(it) }
         }
     }
 
@@ -84,30 +87,29 @@ class ObjectStorageDestinationState(
         val partNumber: Long,
     )
 
-    @get:JsonIgnore
-    val generations: Sequence<Generation>
-        get() =
-            generationMap.entries
-                .asSequence()
-                .map { (state, gens) ->
-                    val isStaging = state == State.STAGED
-                    gens.map { (generationId, objects) ->
-                        Generation(
-                            isStaging,
-                            generationId,
-                            objects.map { (key, partNumber) -> ObjectAndPart(key, partNumber) }
-                        )
-                    }
+    suspend fun getGenerations(): Sequence<Generation> =
+        generationMap.entries
+            .asSequence()
+            .map { (state, gens) ->
+                val isStaging = state == State.STAGED
+                gens.map { (generationId, objects) ->
+                    Generation(
+                        isStaging,
+                        generationId,
+                        objects.map { (key, partNumber) -> ObjectAndPart(key, partNumber) }
+                    )
                 }
-                .flatten()
+            }
+            .flatten()
 
-    @get:JsonIgnore
-    val nextPartNumber: Long
-        get() = generations.flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
+    suspend fun getNextPartNumber(): Long =
+        getGenerations().flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
 
     /** Returns generationId -> objectAndPart for all staged objects that should be kept. */
-    fun getStagedObjectsToFinalize(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> =
-        generations
+    suspend fun getStagedObjectsToFinalize(
+        minimumGenerationId: Long
+    ): Sequence<Pair<Long, ObjectAndPart>> =
+        getGenerations()
             .filter { it.isStaging && it.generationId >= minimumGenerationId }
             .flatMap { it.objects.map { obj -> it.generationId to obj } }
 
@@ -115,11 +117,25 @@ class ObjectStorageDestinationState(
      * Returns generationId -> objectAndPart for all objects (staged and unstaged) that should be
      * cleaned up.
      */
-    fun getObjectsToDelete(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> {
-        val (toKeep, toDrop) = generations.partition { it.generationId >= minimumGenerationId }
+    suspend fun getObjectsToDelete(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> {
+        val (toKeep, toDrop) = getGenerations().partition { it.generationId >= minimumGenerationId }
         val keepKeys = toKeep.flatMap { it.objects.map { obj -> obj.key } }.toSet()
         return toDrop.asSequence().flatMap {
             it.objects.filter { obj -> obj.key !in keepKeys }.map { obj -> it.generationId to obj }
+        }
+    }
+
+    /** Used to guarantee the uniqueness of a key */
+    suspend fun ensureUnique(key: String): String {
+        val ordinal =
+            countByKeyLock.withLock {
+                countByKey.merge(key, 0L) { old, new -> maxOf(old + 1, new) }
+            }
+                ?: 0L
+        return if (ordinal > 0L) {
+            "$key-$ordinal"
+        } else {
+            key
         }
     }
 }
@@ -164,35 +180,48 @@ class ObjectStorageFallbackPersister(
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     private val log = KotlinLogging.logger {}
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
-        val matcher = pathFactory.getPathMatcher(stream)
+        // Add a suffix matching an OPTIONAL -[0-9]+ ordinal
+        val matcher =
+            pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
         val longestUnambiguous =
             pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
         log.info {
             "Searching path $longestUnambiguous (matching ${matcher.regex}) for destination state metadata"
         }
-        client
-            .list(longestUnambiguous)
-            .mapNotNull { matcher.match(it.key) }
-            .toList()
-            .groupBy {
-                client
-                    .getMetadata(it.path)[ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY]
-                    ?.toLong()
-                    ?: 0L
-            }
-            .mapValues { (_, matches) ->
-                matches.associate { it.path to (it.partNumber ?: 0L) }.toMutableMap()
-            }
-            .toMutableMap()
-            .let {
-                val generationSizes = it.map { gen -> gen.key to gen.value.size }
-                log.info {
-                    "Inferred state for generations with size: $generationSizes (minimum=${stream.minimumGenerationId}; current=${stream.generationId})"
-                }
-                return ObjectStorageDestinationState(
-                    mutableMapOf(ObjectStorageDestinationState.State.FINALIZED to it)
+        val matches = client.list(longestUnambiguous).mapNotNull { matcher.match(it.key) }.toList()
+
+        /* Initialize the unique key counts. */
+        val countByKey = mutableMapOf<String, Long>()
+        matches.forEach {
+            val key = it.path.replace(Regex("-[0-9]+$"), "")
+            val ordinal = it.customSuffix?.substring(1)?.toLongOrNull() ?: 0
+            countByKey.merge(key, ordinal) { a, b -> maxOf(a, b) }
+        }
+
+        /* Build (generationId -> (key -> fileNumber)). */
+        val generationIdToKeyAndFileNumber =
+            ConcurrentHashMap(
+                matches
+                    .groupBy {
+                        client
+                            .getMetadata(it.path)[
+                                ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY]
+                            ?.toLong()
+                            ?: 0L
+                    }
+                    .mapValues { (_, matches) ->
+                        ConcurrentHashMap(matches.associate { it.path to (it.partNumber ?: 0L) })
+                    }
+            )
+
+        return ObjectStorageDestinationState(
+            ConcurrentHashMap(
+                mapOf(
+                    ObjectStorageDestinationState.State.FINALIZED to generationIdToKeyAndFileNumber
                 )
-            }
+            ),
+            countByKey
+        )
     }
 
     override suspend fun persist(stream: DestinationStream, state: ObjectStorageDestinationState) {

@@ -24,6 +24,11 @@ The Airbyte connector for Fillout.com enables seamless data synchronization betw
 
 | Version | Date       | Pull Request | Subject                                                                             |
 | ------- | ---------- | ------------ | ----------------------------------------------------------------------------------- |
+| 0.2.6 | 2025-01-18 | [51689](https://github.com/airbytehq/airbyte/pull/51689) | Update dependencies |
+| 0.2.5 | 2025-01-11 | [51112](https://github.com/airbytehq/airbyte/pull/51112) | Update dependencies |
+| 0.2.4 | 2024-12-28 | [50515](https://github.com/airbytehq/airbyte/pull/50515) | Update dependencies |
+| 0.2.3 | 2024-12-21 | [50068](https://github.com/airbytehq/airbyte/pull/50068) | Update dependencies |
+| 0.2.2 | 2024-12-14 | [49530](https://github.com/airbytehq/airbyte/pull/49530) | Update dependencies |
 | 0.2.1 | 2024-12-12 | [49189](https://github.com/airbytehq/airbyte/pull/49189) | Update dependencies |
 | 0.2.0   | 2024-11-14 |              | Add `formId` to `submissions` stream                                                |
 | 0.0.1   | 2024-10-28 |              | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
