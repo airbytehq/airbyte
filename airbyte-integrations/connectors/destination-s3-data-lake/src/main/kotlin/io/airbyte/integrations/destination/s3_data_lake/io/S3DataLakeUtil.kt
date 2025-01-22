@@ -225,7 +225,7 @@ class S3DataLakeUtil(
             }
             is GlueCatalogConfiguration ->
                 buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region)
-            is RestCatalogConfiguration -> buildRestProperties(catalogConfig, s3Properties)
+            is RestCatalogConfiguration -> buildRestProperties(config, catalogConfig, s3Properties)
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"
@@ -234,13 +234,24 @@ class S3DataLakeUtil(
     }
 
     private fun buildRestProperties(
+        config: S3DataLakeConfiguration,
         catalogConfig: RestCatalogConfiguration,
         s3Properties: Map<String, String>
     ): Map<String, String> {
+        val awsAccessKeyId =
+            requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
+                "AWS Access Key ID is required for Nessie configuration"
+            }
+        val awsSecretAccessKey =
+            requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
+                "AWS Secret Access Key is required for Nessie configuration"
+            }
 
         val restProperties = buildMap {
             put(CatalogUtil.ICEBERG_CATALOG_TYPE, ICEBERG_CATALOG_TYPE_REST)
             put(URI, catalogConfig.serverUri)
+            put(S3FileIOProperties.ACCESS_KEY_ID, awsAccessKeyId)
+            put(S3FileIOProperties.SECRET_ACCESS_KEY, awsSecretAccessKey)
         }
 
         return restProperties + s3Properties
