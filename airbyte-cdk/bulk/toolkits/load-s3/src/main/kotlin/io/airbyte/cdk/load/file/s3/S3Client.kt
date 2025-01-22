@@ -29,7 +29,6 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.endpointdiscovery.DaemonThreadFactory
-import com.amazonaws.metrics.AwsSdkMetrics.getCredentialProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.retry.RetryMode
 import com.amazonaws.services.s3.AmazonS3
