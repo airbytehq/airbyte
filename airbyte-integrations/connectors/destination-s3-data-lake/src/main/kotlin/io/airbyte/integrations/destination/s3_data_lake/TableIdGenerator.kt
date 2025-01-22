@@ -21,18 +21,15 @@ interface TableIdGenerator {
     fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier
 }
 
-class SimpleTableIdGenerator(private val configNamespace: String?) :
-    TableIdGenerator {
+class SimpleTableIdGenerator(private val configNamespace: String?) : TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
-        val namespace =
-            stream.namespace ?: configNamespace
+        val namespace = stream.namespace ?: configNamespace
         return tableIdOf(namespace!!, stream.name)
     }
 }
 
 /** AWS Glue requires lowercase database+table names. */
-class GlueTableIdGenerator(private val databaseName: String?) :
-    TableIdGenerator {
+class GlueTableIdGenerator(private val databaseName: String?) : TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
         val namespace = (stream.namespace ?: databaseName)?.lowercase()
 
@@ -45,8 +42,18 @@ class TableIdGeneratorFactory(private val s3DataLakeConfiguration: S3DataLakeCon
     @Singleton
     fun create() =
         when (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration) {
-            is GlueCatalogConfiguration -> GlueTableIdGenerator((s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration as GlueCatalogConfiguration).databaseName)
-            is NessieCatalogConfiguration -> SimpleTableIdGenerator((s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration as NessieCatalogConfiguration).namespace)
+            is GlueCatalogConfiguration ->
+                GlueTableIdGenerator(
+                    (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
+                            as GlueCatalogConfiguration)
+                        .databaseName
+                )
+            is NessieCatalogConfiguration ->
+                SimpleTableIdGenerator(
+                    (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
+                            as NessieCatalogConfiguration)
+                        .namespace
+                )
         }
 }
 

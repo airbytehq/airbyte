@@ -90,11 +90,7 @@ interface IcebergCatalogSpecifications {
                     )
             }
 
-        return IcebergCatalogConfiguration(
-            warehouseLocation,
-            mainBranchName,
-            catalogConfiguration
-        )
+        return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, catalogConfiguration)
     }
 }
 
@@ -214,7 +210,6 @@ class GlueCatalogSpecification(
     @JsonProperty("glue_id")
     @JsonSchemaInject(json = """{"order":1}""")
     val glueId: String,
-
     override val roleArn: String? = null,
 
     /**
@@ -230,7 +225,6 @@ class GlueCatalogSpecification(
     )
     @get:JsonProperty("database_name")
     val databaseName: String?
-
 ) : CatalogType(catalogType), AWSArnRoleSpecification
 
 /**
