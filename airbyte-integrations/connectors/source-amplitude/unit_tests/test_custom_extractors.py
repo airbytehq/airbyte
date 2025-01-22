@@ -6,14 +6,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessionLengthRecordExtractor
 
 
 @pytest.mark.parametrize(
     "custom_extractor, data, expected",
     [
         (
-            ActiveUsersRecordExtractor,
+            "ActiveUsersRecordExtractor",
             {
                 "xValues": ["2021-01-01", "2021-01-02"],
                 "series": [[1, 5]],
@@ -24,7 +23,7 @@ from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessi
             [{"date": "2021-01-01", "statistics": {0: 1}}, {"date": "2021-01-02", "statistics": {0: 5}}],
         ),
         (
-            ActiveUsersRecordExtractor,
+            "ActiveUsersRecordExtractor",
             {
                 "xValues": ["2021-01-01", "2021-01-02"],
                 "series": [],
@@ -35,7 +34,7 @@ from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessi
             [],
         ),
         (
-            AverageSessionLengthRecordExtractor,
+            "AverageSessionLengthRecordExtractor",
             {
                 "xValues": ["2019-05-23", "2019-05-24"],
                 "series": [[2, 6]],
@@ -46,7 +45,7 @@ from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessi
             [{"date": "2019-05-23", "length": 2}, {"date": "2019-05-24", "length": 6}],
         ),
         (
-            AverageSessionLengthRecordExtractor,
+            "AverageSessionLengthRecordExtractor",
             {
                 "xValues": ["2019-05-23", "2019-05-24"],
                 "series": [],
@@ -59,8 +58,8 @@ from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessi
     ],
     ids=["ActiveUsers", "EmptyActiveUsers", "AverageSessionLength", "EmptyAverageSessionLength"],
 )
-def test_parse_response(custom_extractor, data, expected):
-    extractor = custom_extractor()
+def test_parse_response(components_module, custom_extractor, data, expected):
+    extractor = getattr(components_module, custom_extractor)()
     response = requests.Response()
     response.json = MagicMock(return_value={"data": data})
     result = extractor.extract_records(response)
