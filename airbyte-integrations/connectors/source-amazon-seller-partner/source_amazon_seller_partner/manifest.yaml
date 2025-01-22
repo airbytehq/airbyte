@@ -1449,6 +1449,11 @@ definitions:
       type: DeclarativeStream
       name: GET_MERCHANT_LISTINGS_ALL_DATA
       primary_key: ["listing-id"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ stream_slice['end_time'] }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
