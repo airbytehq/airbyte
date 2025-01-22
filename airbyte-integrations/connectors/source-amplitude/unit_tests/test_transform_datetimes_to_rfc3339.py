@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
-import json
 
 import pytest
 from source_amplitude.components import TransformDatetimesToRFC3339

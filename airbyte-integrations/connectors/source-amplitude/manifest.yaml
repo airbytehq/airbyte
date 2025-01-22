@@ -2180,19 +2180,16 @@ spec:
       request_time_range:
         type: integer
         title: Request time range
-        description: According to <a 
-          href="https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations">Considerations</a>
-          too big time range in request can cause a timeout error. In this case, set
-          shorter time interval in hours.
+        description: >
+          According to <a href="https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations">Considerations</a>
+          too large of a time range in te request can cause a timeout error. In this case, please provide a shorter time interval in hours.
         default: 24
         minimum: 1
         maximum: 8760
       active_users_group_by_country:
         type: boolean
         title: Active Users Group by Country
-        description: According to <a 
-          href="https://amplitude.com/docs/apis/analytics/dashboard-rest#query-parameters">Considerations</a>
-          the grouping by `Country` is optional, if you're facing issues fetching
-          the stream, or checking the connection please set this to `False` instead.
+        description: >
+          According to <a href="https://amplitude.com/docs/apis/analytics/dashboard-rest#query-parameters">Amplitude documentation</a>, grouping by `Country` is optional. If you face issues fetching the stream or checking the connection please set this field to `False`.
         default: true
   advanced_auth:

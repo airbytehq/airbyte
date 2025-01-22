@@ -5,44 +5,47 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "manifest.yaml"
-      backward_compatibility_tests_config:
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
           # added new `active_users_group_by_country` prop to toggle grouping by country
-        disable_for_version: 0.6.10
+          disable_for_version: 0.6.10
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: 0.3.5   # `date` format changed to format: date-time in the AverageSessionLength stream
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.3.5 # `date` format changed to format: date-time in the AverageSessionLength stream
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      empty_streams:
-      - name: "cohorts"
-        bypass_reason: "This stream is empty due to free subscription plan for the
-          sandbox."
-      - name: "annotations"
-        bypass_reason: "This stream is empty due to free subscription plan for the
-          sandbox."
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-        exact_order: no
+      - config_path: "secrets/config.json"
+        empty_streams:
+          - name: "cohorts"
+            bypass_reason:
+              "This stream is empty due to free subscription plan for the
+              sandbox."
+          - name: "annotations"
+            bypass_reason:
+              "This stream is empty due to free subscription plan for the
+              sandbox."
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
   incremental:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state:
-        bypass_reason: "Test `test_state_with_abnormally_large_values` is bypassed
-          as test does not make sense using Concurrent CDK"
-      timeout_seconds: 3600
-      skip_comprehensive_incremental_tests: yes
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          bypass_reason:
+            "Test `test_state_with_abnormally_large_values` is bypassed
+            as test does not make sense using Concurrent CDK"
+        timeout_seconds: 3600
+        skip_comprehensive_incremental_tests: yes
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
