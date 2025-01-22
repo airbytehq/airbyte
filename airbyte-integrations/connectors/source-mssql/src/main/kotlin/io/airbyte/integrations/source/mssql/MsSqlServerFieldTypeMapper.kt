@@ -140,7 +140,7 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 // But this breaks on discover integrationt tests,
                 JDBCType.INTEGER -> {
                     log.info { "SGXXX" }
-                    DoubleFieldType
+                    IntFieldType
                 }
                 JDBCType.BIGINT -> BigIntegerFieldType
                 JDBCType.FLOAT -> FloatFieldType

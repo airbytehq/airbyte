@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.TestMetaFieldDecorator
@@ -48,6 +47,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     val heartbeat: Duration = Duration.ofMillis(100),
     val timeout: Duration = Duration.ofSeconds(10),
 ) {
+
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace(namespace)),
@@ -60,9 +60,6 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     val global: Global
         get() = Global(listOf(stream))
 
-    val container: C = createContainer()
-    val debeziumOperations = getCdcOperations()
-
     abstract fun createContainer(): C
     abstract fun C.createStream()
     abstract fun C.insert12345()
@@ -74,14 +71,14 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     val debeziumOperations by lazy { createDebeziumOperations() }
 
     @Test
-    /**
-     * The [integrationTest] method sets up (and tears down) a testcontainer for the data source
-     * using [createContainer] and provisions it using [createStream], [insert12345], [update135]
-     * and [delete24].
-     *
-     * While doing so, it creates several [CdcPartitionReader] instances using [currentPosition],
-     * [syntheticInput] and [debeziumProperties], and exercises all [PartitionReader] methods.
-     */
+            /**
+             * The [integrationTest] method sets up (and tears down) a testcontainer for the data source
+             * using [createContainer] and provisions it using [createStream], [insert12345], [update135]
+             * and [delete24].
+             *
+             * While doing so, it creates several [CdcPartitionReader] instances using [currentPosition],
+             * [syntheticInput] and [debeziumProperties], and exercises all [PartitionReader] methods.
+             */
     fun integrationTest() {
         container.createStream()
         val p0: T = debeziumOperations.position(debeziumOperations.synthesize().state.offset)
@@ -176,21 +173,21 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer> =
             mapOf(
                 stream.id to
-                    object : StreamRecordConsumer {
-                        override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
+                        object : StreamRecordConsumer {
+                            override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
 
-                        override fun accept(
-                            recordData: ObjectNode,
-                            changes: Map<Field, FieldValueChange>?
-                        ) {
-                            outputConsumer.accept(
-                                AirbyteRecordMessage()
-                                    .withStream(stream.name)
-                                    .withNamespace(stream.namespace)
-                                    .withData(recordData)
-                            )
+                            override fun accept(
+                                recordData: ObjectNode,
+                                changes: Map<Field, FieldValueChange>?
+                            ) {
+                                outputConsumer.accept(
+                                    AirbyteRecordMessage()
+                                        .withStream(stream.name)
+                                        .withNamespace(stream.namespace)
+                                        .withData(recordData)
+                                )
+                            }
                         }
-                    }
             )
         val reader =
             CdcPartitionReader(
@@ -222,9 +219,9 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         Assertions.assertEquals(
             reader.numEvents.get(),
             reader.numEmittedRecords.get() +
-                reader.numDiscardedRecords.get() +
-                reader.numHeartbeats.get() +
-                reader.numTombstones.get()
+                    reader.numDiscardedRecords.get() +
+                    reader.numHeartbeats.get() +
+                    reader.numTombstones.get()
         )
         Assertions.assertEquals(0, reader.numDiscardedRecords.get())
         Assertions.assertEquals(0, reader.numEventsWithoutSourceRecord.get())
@@ -237,25 +234,18 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         )
     }
 
-    fun translateRecords(airbyteRecords: List<AirbyteRecordMessage>): List<Record> {
-        return airbyteRecords.map {
-            val data = it.data
-            val id = data.get("id").asInt()
-            if (data.get(CommonMetaField.CDC_DELETED_AT.id).isNull) {
-                val v = data.get("v").asInt()
-                InsertOrUpdate(id, v)
-            } else {
-                Delete(id)
-            }
-        }
-    }
-
     data class ReadResult(
         val records: List<Record>,
         val state: DebeziumState,
         val closeReason: CdcPartitionReader.CloseReason?,
     )
 
+    @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
+    @JsonSubTypes(
+        JsonSubTypes.Type(value = Insert::class),
+        JsonSubTypes.Type(value = Update::class),
+        JsonSubTypes.Type(value = Delete::class),
+    )
     sealed interface Record {
         val id: Int
     }
@@ -276,12 +266,14 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
             val record: Record =
                 if (after == null) {
                     Delete(id)
+                } else if (value.before["v"] == null) {
+                    Insert(id, after)
                 } else {
-                    InsertOrUpdate(id, after)
+                    Update(id, after)
                 }
             return DeserializedRecord(
                 data = Jsons.valueToTree(record) as ObjectNode,
-                changes = emptyMap()
+                changes = emptyMap(),
             )
         }
 
@@ -295,21 +287,20 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
             value: DebeziumRecordValue
         ): String? = stream.id.namespace
 
-        override fun serialize(debeziumState: DebeziumState): OpaqueStateValue {
-            log.info{"SGX debeziumState=$debeziumState, thread=${Thread.currentThread().stackTrace.toList()}"}
-            return Jsons.valueToTree(
+        override fun serialize(debeziumState: DebeziumState): OpaqueStateValue =
+            Jsons.valueToTree(
                 mapOf(
                     "offset" to
-                        debeziumState.offset.wrapped
-                            .map {
-                                Jsons.writeValueAsString(it.key) to
-                                    Jsons.writeValueAsString(it.value)
-                            }
-                            .toMap(),
+                            debeziumState.offset.wrapped
+                                .map {
+                                    Jsons.writeValueAsString(it.key) to
+                                            Jsons.writeValueAsString(it.value)
+                                }
+                                .toMap(),
                     "schemaHistory" to
-                        debeziumState.schemaHistory?.wrapped?.map {
-                            DocumentWriter.defaultWriter().write(it.document())
-                        },
+                            debeziumState.schemaHistory?.wrapped?.map {
+                                DocumentWriter.defaultWriter().write(it.document())
+                            },
                 ),
             )
 

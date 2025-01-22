@@ -50,25 +50,25 @@ class MsSqlServerCdcPartitionReaderTest :
 
         }
 
-        override fun MsSqlServercontainerWithCdc.insert(vararg id: Int) {
-            for (i in id) {
+        override fun MsSqlServercontainerWithCdc.insert12345() {
+            for (i in 1..5) {
                 withStatement { it.execute("INSERT INTO test.tbl (v) VALUES ($i)") }
             }
-            waitForCdcNewRecords(id.size)
+            waitForCdcNewRecords(5)
         }
 
-        override fun MsSqlServercontainerWithCdc.update(vararg id: Int) {
-            for (i in id) {
+        override fun MsSqlServercontainerWithCdc.update135() {
+            for (i in listOf(1, 3, 5)) {
                 withStatement { it.execute("UPDATE test.tbl SET v = ${i + 1} WHERE id = $i") }
             }
-            waitForCdcNewRecords(id.size)
+            waitForCdcNewRecords(3)
         }
 
-        override fun MsSqlServercontainerWithCdc.delete(vararg id: Int) {
-            for (i in id) {
+        override fun MsSqlServercontainerWithCdc.delete24() {
+            for (i in listOf(2, 4)) {
                 withStatement { it.execute("DELETE FROM test.tbl WHERE id = $i") }
             }
-            waitForCdcNewRecords(id.size)
+            waitForCdcNewRecords(2)
         }
 
         private fun <X> MsSqlServercontainerWithCdc.withStatement(fn: (Statement) -> X): X {
@@ -106,7 +106,7 @@ class MsSqlServerCdcPartitionReaderTest :
             }
         }
 
-        override fun getCdcOperations(): DebeziumOperations<TxLogPosition> {
+    override fun createDebeziumOperations(): DebeziumOperations<TxLogPosition> {
             val config = MsSqlServerSourceConfigurationFactory().make(container.config)
             return MsSqlServerDebeziumOperations(JdbcConnectionFactory(config), config)
         }
