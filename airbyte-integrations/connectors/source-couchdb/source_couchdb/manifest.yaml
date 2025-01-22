@@ -6,13 +6,12 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: [] # Ajustaremos isso conforme necessário para as respostas da API CouchDB
+      field_path: []
   requester:
-    type: HttpRequester
-    url_base: "http://{{ config['host'] }}:{{ config['port'] }}" # URL base diretamente no manifest
+    url_base: "http://{{ config['host'] }}:{{ config['port'] }}"
     http_method: "GET"
     authenticator:
-      type: BasicHttpAuthenticator # CouchDB usa autenticação básica
+      type: BasicHttpAuthenticator
       username: "{{ config['username'] }}"
       password: "{{ config['password'] }}"
   retriever:
@@ -27,14 +26,14 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
-  documents_stream: # Stream para documentos de um banco de dados específico
+  documents_stream:
     $ref: "#/definitions/base_stream"
-    name: "{{ config['database_name'] }}_documents" # Nome do stream inclui o nome do banco de dados
+    name: "{{ config['database_name'] }}_documents"
     primary_key: "_id"
-    schema: # Você pode definir o schema inline ou usar um arquivo schemas/documents.json
+    schema:
       type: DeclarativeStreamSchema
       method: GET
-      path: "/{{ config['database_name'] }}/_all_docs?include_docs=true" # Path para _all_docs com include_docs
+      path: "/{{ config['database_name'] }}/_all_docs?include_docs=true"
 
 streams:
   # - "#/definitions/databases_stream"
@@ -43,8 +42,7 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - "{{ config['database_name'] }}_documents" # Verifica o stream de documentos para testar a conexão
-
+    - "{{ config['database_name'] }}_documents"
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/couchdb
@@ -80,12 +78,12 @@ spec:
         title: Password
         description: Senha para autenticação no CouchDB.
         airbyte_secret: true
-      database_name: # database_name, singular e obrigatório
+      database_name:
         type: string
         title: Database Name
         description: Nome do banco de dados CouchDB a ser replicado.
         examples: ["mydatabase"]
-      base_url: # Propriedade interna para construir a URL base
+      base_url:
         type: string
         title: Base URL (Internal)
         description: URL base construída internamente. Não precisa ser configurado diretamente.
