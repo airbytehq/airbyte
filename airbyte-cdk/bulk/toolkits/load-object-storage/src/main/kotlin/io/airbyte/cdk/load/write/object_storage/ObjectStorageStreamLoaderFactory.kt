@@ -32,7 +32,6 @@ import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.OutputStream
-import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
 @Secondary
@@ -79,28 +78,20 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
-    // Used for naming files. Distinct from part index, which is used to track uploads.
-    private val fileNumber = AtomicLong(0L)
     private val objectAccumulator = PartToObjectAccumulator(stream, client)
 
-    override suspend fun start() {
-        val state = destinationStateManager.getState(stream)
-        // This is the number used to populate {part_number} on the object path.
-        // We'll call it file number here to avoid confusion with the part index used for uploads.
-        val fileNumber = state.getNextPartNumber()
-        log.info { "Got next file number from destination state: $fileNumber" }
-        this.fileNumber.set(fileNumber)
-    }
-
     override suspend fun createBatchAccumulator(): BatchAccumulator {
+        val state = destinationStateManager.getState(stream)
         return RecordToPartAccumulator(
             pathFactory,
             bufferedWriterFactory,
             partSizeBytes = partSizeBytes,
             fileSizeBytes = fileSizeBytes,
             stream,
-            fileNumber
-        ) { name -> destinationStateManager.getState(stream).ensureUnique(name) }
+            state.getPartIdCounter(pathFactory.getFinalDirectory(stream)),
+        ) { name ->
+            state.ensureUnique(name)
+        }
     }
 
     override suspend fun createFileBatchAccumulator(
@@ -113,18 +104,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val nextBatch = objectAccumulator.processBatch(batch) as ObjectStorageBatch
         when (nextBatch) {
             is LoadedObject<*> -> {
-                // Mark that we've completed the upload and persist the state before returning the
-                // persisted batch.
-                // Otherwise, we might lose track of the upload if the process crashes before
-                // persisting.
-                // TODO: Migrate all state bookkeeping to the CDK if possible
-                val state = destinationStateManager.getState(stream)
-                state.addObject(
-                    stream.generationId,
-                    nextBatch.remoteObject.key,
-                    nextBatch.fileNumber,
-                    isStaging = pathFactory.supportsStaging
-                )
                 destinationStateManager.persistState(stream)
             }
             else -> {} // Do nothing
@@ -135,34 +114,19 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     override suspend fun close(streamFailure: StreamProcessingFailed?) {
         if (streamFailure != null) {
             log.info { "Sync failed, persisting destination state for next run" }
-            destinationStateManager.persistState(stream)
-        } else {
+        } else if (stream.shouldBeTruncatedAtEndOfSync()) {
+            log.info { "Truncate sync succeeded, Removing old files" }
             val state = destinationStateManager.getState(stream)
-            log.info { "Sync succeeded, Removing old files" }
-            state.getObjectsToDelete(stream.minimumGenerationId).forEach {
-                (generationId, objectAndPart) ->
+
+            state.getObjectsToDelete().forEach { (generationId, objectAndPart) ->
                 log.info {
                     "Deleting old object for generation $generationId: ${objectAndPart.key}"
                 }
                 client.delete(objectAndPart.key)
-                state.removeObject(generationId, objectAndPart.key)
-            }
-
-            log.info { "Moving all current data out of staging" }
-            state.getStagedObjectsToFinalize(stream.minimumGenerationId).forEach {
-                (generationId, objectAndPart) ->
-                val newKey =
-                    pathFactory.getPathToFile(stream, objectAndPart.partNumber, isStaging = false)
-                log.info {
-                    "Moving staged object of generation $generationId: ${objectAndPart.key} to $newKey"
-                }
-                val newObject = client.move(objectAndPart.key, newKey)
-                state.removeObject(generationId, objectAndPart.key, isStaging = true)
-                state.addObject(generationId, newObject.key, objectAndPart.partNumber)
             }
 
             log.info { "Persisting state" }
-            destinationStateManager.persistState(stream)
         }
+        destinationStateManager.persistState(stream)
     }
 }

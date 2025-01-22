@@ -46,7 +46,7 @@ class RecordToPartAccumulator<U : OutputStream>(
         // Start a new object if there is not one in progress.
         val partialUpload =
             currentObject.getOrPut(key) {
-                val fileNo = fileNumber.getAndIncrement()
+                val fileNo = fileNumber.incrementAndGet()
                 ObjectInProgress(
                     partFactory =
                         PartFactory(

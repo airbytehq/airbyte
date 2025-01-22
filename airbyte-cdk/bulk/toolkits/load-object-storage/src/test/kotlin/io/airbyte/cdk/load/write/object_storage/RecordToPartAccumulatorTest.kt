@@ -58,7 +58,7 @@ class RecordToPartAccumulatorTest {
 
     @Test
     fun `test parts are emitted correctly`() = runTest {
-        val fileNumber = AtomicLong(111L)
+        val fileNumber = AtomicLong(110L)
         val acc =
             RecordToPartAccumulator(
                 pathFactory = pathFactory,
