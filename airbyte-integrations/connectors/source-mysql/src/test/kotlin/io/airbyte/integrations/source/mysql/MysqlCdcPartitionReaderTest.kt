@@ -46,40 +46,37 @@ class MysqlCdcPartitionReaderTest :
             withStatement { it.execute("CREATE TABLE tbl (id INT AUTO_INCREMENT PRIMARY KEY, v INT)") }
         }
 
-        override fun MySQLContainer<*>.insert(vararg id: Int) {
-            for (i in id) {
-                withStatement { it.execute("INSERT INTO tbl (v) VALUES ($i)") }
-            }
+    override fun MySQLContainer<*>.insert12345() {
+        for (i in 1..5) {
+            withStatement { it.execute("INSERT INTO tbl (v) VALUES ($i)") }
+        }
+    }
+
+    override fun MySQLContainer<*>.update135() {
+        withStatement { it.execute("UPDATE tbl SET v = 6 WHERE id = 1") }
+        withStatement { it.execute("UPDATE tbl SET v = 7 WHERE id = 3") }
+        withStatement { it.execute("UPDATE tbl SET v = 8 WHERE id = 5") }
+    }
+
+    override fun MySQLContainer<*>.delete24() {
+        withStatement { it.execute("DELETE FROM tbl WHERE id = 2") }
+        withStatement { it.execute("DELETE FROM tbl WHERE id = 4") }
+    }
+
+    private fun <X> MySQLContainer<*>.withStatement(fn: (Statement) -> X): X =
+        createConnection("").use { connection: Connection ->
+            connection.createStatement().use { fn(it) }
         }
 
-        override fun MySQLContainer<*>.update(vararg id: Int) {
-            for (i in id) {
-                withStatement { it.execute("UPDATE tbl SET v = ${i+1} WHERE id = $i") }
-            }
-        }
-
-        override fun MySQLContainer<*>.delete(vararg id: Int) {
-            for (i in id) {
-                withStatement { it.execute("DELETE FROM tbl WHERE id = $i") }
-            }
-        }
-
-        private fun <X> MySQLContainer<*>.withStatement(fn: (Statement) -> X): X =
-            createConnection("").use { connection: Connection ->
-                connection.createStatement().use { fn(it) }
-            }
-
-    override fun getCdcOperations(): DebeziumOperations<Position> {
+    override fun createDebeziumOperations(): DebeziumOperations<Position> {
         return object: AbstractCdcPartitionReaderDebeziumOperationsForTest<Position>(stream) {
             override fun position(offset: DebeziumOffset): Position {
                 val offsetAsJson = offset.wrapped.values.first()
                 val retVal = Position(offsetAsJson["file"].asText(), offsetAsJson["pos"].asLong())
-                log.info { "SGX returning retval=$retVal, offset=$offset" }
                 return retVal
             }
 
             override fun position(recordValue: DebeziumRecordValue): Position? {
-                log.info{"SGX MySqlCdcPartitionReaderTest.position. recordValue=$recordValue"}
                 val file: String =
                     recordValue.source["file"]?.takeIf { it.isTextual }?.asText() ?: return null
                 val pos: Long =
@@ -88,7 +85,6 @@ class MysqlCdcPartitionReaderTest :
             }
 
             override fun position(sourceRecord: SourceRecord): Position? {
-                log.info{"SGX MySqlCdcPartitionReaderTest.position. sourceRecord=$sourceRecord"}
                 val offset: Map<String, *> = sourceRecord.sourceOffset()
                 val file: String = offset["file"]?.toString() ?: return null
                 val pos: Long = offset["pos"] as? Long ?: return null
