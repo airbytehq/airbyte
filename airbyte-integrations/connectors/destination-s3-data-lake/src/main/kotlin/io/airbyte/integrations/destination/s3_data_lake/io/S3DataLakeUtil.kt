@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
@@ -37,6 +38,7 @@ import org.apache.iceberg.CatalogProperties.URI
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_GLUE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE
+import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_REST
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
@@ -223,11 +225,25 @@ class S3DataLakeUtil(
             }
             is GlueCatalogConfiguration ->
                 buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region)
+            is RestCatalogConfiguration -> buildRestProperties(catalogConfig, s3Properties)
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"
                 )
         }
+    }
+
+    private fun buildRestProperties(
+        catalogConfig: RestCatalogConfiguration,
+        s3Properties: Map<String, String>
+    ): Map<String, String> {
+
+        val restProperties = buildMap {
+            put(CatalogUtil.ICEBERG_CATALOG_TYPE, ICEBERG_CATALOG_TYPE_REST)
+            put(URI, catalogConfig.serverUri)
+        }
+
+        return restProperties + s3Properties
     }
 
     private fun buildS3Properties(
