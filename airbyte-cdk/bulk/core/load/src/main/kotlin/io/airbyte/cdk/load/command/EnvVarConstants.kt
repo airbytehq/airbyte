@@ -23,12 +23,12 @@ data class Property(val micronautProperty: String, val environmentVariable: Stri
 object EnvVarConstants {
     val FILE_TRANSFER_ENABLED =
         Property(
-            "airbyte.file-transfer.enabled",
+            "airbyte.destination.core.file-transfer.enabled",
             "USE_FILE_TRANSFER",
         )
     val RECORD_BATCH_SIZE =
         Property(
-            "airbyte.destination.record-batch-size-override",
+            "airbyte.destination.core.record-batch-size-override",
             "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE",
         )
 }
