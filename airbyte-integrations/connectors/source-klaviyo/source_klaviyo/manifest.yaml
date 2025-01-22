@@ -774,12 +774,14 @@ definitions:
             type: ["null", object]
             properties:
               data:
-                type: ["null", object]
-                properties:
-                  type:
-                    type: string
-                  id:
-                    type: string
+                type: ["null", array]
+                items:
+                  type: ["null", object]
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
               links:
                 type: ["null", object]
                 additionalProperties: true
