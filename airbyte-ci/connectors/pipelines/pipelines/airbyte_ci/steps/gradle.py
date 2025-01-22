@@ -80,7 +80,7 @@ class GradleTask(Step, ABC):
     @property
     def gradle_command(self) -> str:
         connector_gradle_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
-        return self._get_gradle_command(connector_gradle_task)
+        return self._get_gradle_command(connector_gradle_task, task_options=self.params_as_cli_options)
 
     def timeout_handler(self, signum: int, frame: Any) -> None:
         raise GradleTimeoutError(f"Gradle operation timed out after {self.GRADLE_TIMEOUT} seconds")
