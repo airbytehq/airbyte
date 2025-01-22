@@ -22,7 +22,8 @@ on:
       - opened
       - synchronize
 jobs:
-  changes:
+  pr_changes:
+    if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork != true)
     runs-on: ubuntu-24.04
     outputs:
       connectors: ${{ steps.changes.outputs.connectors }}
@@ -71,15 +72,113 @@ jobs:
             "target_url": "${{ github.event.workflow_run.html_url }}"
             }' \
 
-  connectors_ci:
-    needs: changes
-    # We only run the Connectors CI job if there are changes to the connectors on a non-forked PR
-    # Forked PRs are handled by the community_ci.yml workflow
-    # If the condition is not met the job will be skipped (it will not fail)
-    if: (github.event_name == 'pull_request' && needs.changes.outputs.connectors == 'true' && github.event.pull_request.head.repo.fork != true) || github.event_name == 'workflow_dispatch'
-    name: Connectors CI
+  pr_generate_connectors_matrix:
+    needs: pr_changes
+    if: needs.pr_changes.outputs.connectors == 'true'
+    runs-on: ubuntu-24.04
+    outputs:
+      java_connectors_matrix: ${{ steps.generate_matrix.outputs.generate_java_connectors_matrix }}
+      other_connectors_matrix: ${{ steps.generate_matrix.outputs.generate_other_connectors_matrix }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: List modified java connectors
+        id: list_modified_java_connectors
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          set_java_environment: false
+          context: "pull_request"
+          subcommand: "connectors --language=java --modified list --output=selected_connectors.json"
+      - name: Generate java connectors matrix (1 connector per job)
+        id: generate_java_connectors_matrix
+        run: |
+          matrix=$(jq -c -r '{include: [.[] | "--name=" + .] | to_entries | group_by(.key / 1 | floor) | map(map(.value) | {"connector_names": join(" ")})}' selected_connectors.json)
+          echo "java_connectors_matrix=$matrix" >> $GITHUB_OUTPUT
+      - name: List modified other connectors
+        id: list_modified_other_connectors
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          set_java_environment: false
+          context: "pull_request"
+          subcommand: "connectors --language=python  --language=manifest-only --modified  list --output=selected_connectors.json"
+      - name: Generate other connectors matrix (10 connectors per job)
+        id: generate_other_connectors_matrix
+        run: |
+          matrix=$(jq -c -r '{include: [.[] | "--name=" + .] | to_entries | group_by(.key / 10 | floor) | map(map(.value) | {"connector_names": join(" ")})}' selected_connectors.json)
+          echo "other_connectors_matrix=$matrix" >> $GITHUB_OUTPUT
+  pr_java_connectors_ci:
+    needs: pr_generate_connectors_matrix
+    name: Java Connectors CI [PULL REQUEST]
     runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
-    timeout-minutes: 360 # 6 hours
+    strategy:
+      matrix: ${{fromJson(needs.pr_generate_connectors_matrix.outputs.java_connectors_matrix)}}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+      - name: Fetch last commit id from remote branch
+        id: fetch_last_commit_id_pr
+        run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+      - name: Test connectors
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcp_integration_tester_credentials: ${{ secrets.GCLOUD_INTEGRATION_TESTER }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ env.PAT }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
+          subcommand: "connectors --execute-timeout=18000 ${{ matrix.connector_names}} test"
+          set_java_environment: true
+  pr_other_connectors_ci:
+    needs: pr_generate_connectors_matrix
+    name: Other Connectors CI [PULL REQUEST]
+    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
+    strategy:
+      matrix: ${{fromJson(needs.pr_generate_connectors_matrix.outputs.other_connectors_matrix)}}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+      - name: Fetch last commit id from remote branch
+        id: fetch_last_commit_id_pr
+        run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+      - name: Test connectors
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcp_integration_tester_credentials: ${{ secrets.GCLOUD_INTEGRATION_TESTER }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ env.PAT }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
+          subcommand: "connectors --execute-timeout=18000 ${{ matrix.connector_names}} test"
+          set_java_environment: false
+
+  workflow_dispatch_connectors_ci:
+    if: github.event_name == 'workflow_dispatch'
+    name: Connectors CI [WORKFLOW DISPATCH]
+    runs-on: linux-20.04-large
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -116,21 +215,4 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
-      - name: Test connectors [PULL REQUESTS]
-        if: github.event_name == 'pull_request'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcp_integration_tester_credentials: ${{ secrets.GCLOUD_INTEGRATION_TESTER }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          git_branch: ${{ github.head_ref }}
-          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ env.PAT }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
-          subcommand: "connectors --execute-timeout=18000 --modified  test"
+          set_java_environment: true

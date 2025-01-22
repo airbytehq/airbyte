@@ -28,6 +28,7 @@ jobs:
         with:
           context: "master"
           subcommand: 'connectors --language=python --language=low-code --language=manifest-only  --metadata-query="\"-rc.\" not in data.dockerImageTag and \"source-declarative-manifest\" not in data.dockerRepository" list --output=selected_connectors.json'
+          set_java_environment: false
       - name: Run airbyte-ci connectors list [MANUAL TRIGGER]
         if: github.event_name == 'workflow_dispatch'
         id: airbyte-ci-connectors-list-workflow-dispatch
@@ -35,6 +36,8 @@ jobs:
         with:
           context: "master"
           subcommand: 'connectors ${{ github.event.inputs.connectors-options }} --metadata-query="\"-rc.\" not in data.dockerImageTag and \"source-declarative-manifest\" not in data.dockerRepository" list --output=selected_connectors.json'
+          set_java_environment: false
+
       # We generate a dynamic matrix from the list of selected connectors.
       # A matrix is required in this situation because the number of connectors is large and running them all in a single job would exceed the maximum job time limit of 6 hours.
       - name: Generate matrix - 100 connectors per job

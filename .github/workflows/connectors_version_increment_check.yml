@@ -52,3 +52,4 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --modified test --only-step=version_inc_check --global-status-check-context='Version increment check for Java connectors' --global-status-check-description='Checking if java connectors modified in this PR got their version bumped'"
+          set_java_environment: false

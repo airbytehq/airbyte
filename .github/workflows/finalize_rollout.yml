@@ -45,6 +45,7 @@ jobs:
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           subcommand: "connectors --name=${{ github.event.inputs.connector_name }} publish --promote-release-candidate"
+          set_java_environment: true
       - name: Rollback ${{ github.event.inputs.connector_name }} release candidate
         id: rollback-release-candidate
         if: ${{ env.ACTION == 'rollback' }}
@@ -62,3 +63,4 @@ jobs:
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           subcommand: "connectors --name=${{ github.event.inputs.connector_name }} publish --rollback-release-candidate"
+          set_java_environment: true

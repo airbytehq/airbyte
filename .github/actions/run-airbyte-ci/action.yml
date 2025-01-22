@@ -99,7 +99,11 @@ inputs:
     description: "Number of seconds to wait between retry attempts"
     required: false
     default: 60
-
+  set_java_environment:
+    description: "Whether to set the Java environment"
+    required: false
+    default: "true"
+    type: boolean
 runs:
   using: "composite"
   steps:
@@ -117,6 +121,7 @@ runs:
         ls -laL ../airbyte-python-cdk || echo "No airbyte-python-cdk symlink"
     - name: Install Java Environment
       id: install-java-environment
+      if: ${{ inputs.set_java_environment == 'true' }}
       uses: ./.github/actions/install-java-environment
     - name: Docker login
       id: docker-login
