@@ -3,6 +3,6 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "$ref": "./source_klaviyo/schemas/shared/campaign_properties.json"
+    "$ref": "campaign_properties.json"
   }
 }

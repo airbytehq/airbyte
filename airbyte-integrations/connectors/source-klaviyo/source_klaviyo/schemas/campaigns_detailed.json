@@ -3,7 +3,7 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "$ref": "./source_klaviyo/schemas/shared/campaign_properties.json",
+    "$ref": "campaign_properties.json",
     "estimated_recipient_count": { "type": ["null", "integer"] },
     "campaign_message": {
       "type": ["null", "object"],
