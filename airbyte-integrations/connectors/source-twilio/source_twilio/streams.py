@@ -58,7 +58,7 @@ class TwilioStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
         try:
-            next_page_uri = stream_data['meta'].get("next_page_url")
+            next_page_uri = stream_data["meta"].get("next_page_url")
         except KeyError:
             next_page_uri = stream_data.get("next_page_uri")
         if next_page_uri:
