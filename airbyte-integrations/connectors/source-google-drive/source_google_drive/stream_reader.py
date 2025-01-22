@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
-from typing import Dict, Iterable, List, Optional, Set, Any, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
@@ -23,7 +23,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .spec import SourceGoogleDriveSpec, RemoteFileIdentity
+from .spec import RemoteFileIdentity, SourceGoogleDriveSpec
 
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
