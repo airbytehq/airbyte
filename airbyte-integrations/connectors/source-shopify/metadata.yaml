@@ -75,11 +75,11 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["countries"]
-      2.6.0:
+      2.6.1:
         message:
           "The `ProductsGraphQL` and the `CustomerSavedSearch` streams have been deprecated by Shopify and removed from Airbyte.
-          Use the `Products` stream instead. More details here: https://github.com/airbytehq/airbyte/pull/51037."
-        upgradeDeadline: "2025-02-15"
+          Please the `Products` stream instead. As of 2025-01-16, Spotify no longer provides data for the affected streams. More details here: https://github.com/airbytehq/airbyte/pull/51037."
+        upgradeDeadline: "2025-01-16"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["products_graph_ql", "customer_saved_search"]

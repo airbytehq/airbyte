@@ -1,0 +1,7691 @@
+version: 6.5.2
+
+type: DeclarativeSource
+
+description: >-
+  Retail Express by Maropost is an Australian retail point-of-sale, inventory
+  management, fulfilment and multichannel ecommerce platform.
+
+check:
+  type: CheckStream
+  stream_names:
+    - countries
+
+definitions:
+  streams:
+    countries:
+      type: DeclarativeStream
+      name: countries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /countries
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/countries"
+    credit_notes:
+      type: DeclarativeStream
+      name: credit_notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /creditnotes
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/credit_notes"
+    credit_note_items:
+      type: DeclarativeStream
+      name: credit_note_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /creditnotes/{{ stream_partition.parent_id }}/creditnoteitems
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/credit_notes"
+              incremental_dependency: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/credit_note_items"
+    currencies:
+      type: DeclarativeStream
+      name: currencies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /currencies
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/currencies"
+    customer_logs:
+      type: DeclarativeStream
+      name: customer_logs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customerlogs
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: created_on:gte:%Y-%m-%dT%H:%M:%S%z
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter_by
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_logs"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customers
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - delivery_addresses
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    customer_delivery_addresses:
+      type: DeclarativeStream
+      name: customer_delivery_addresses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customers/{{ stream_partition.parent_id }}/deliveryaddresses
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/customers"
+              incremental_dependency: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_delivery_addresses"
+    customer_types:
+      type: DeclarativeStream
+      name: customer_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customertypes
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: modified_since:gte:%Y-%m-%dT%H:%M:%S%z
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter_by
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_types"
+    freight_types:
+      type: DeclarativeStream
+      name: freight_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /freighttypes
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/freight_types"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    order_items:
+      type: DeclarativeStream
+      name: order_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders/{{ stream_partition.parent_id }}/orderitems
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/orders"
+              incremental_dependency: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_on
+              value: "{{ record['modified_on'] or '1970-01-01T00:00:00Z' }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/order_items"
+    order_fulfilments:
+      type: DeclarativeStream
+      name: order_fulfilments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orderfulfilments
+          http_method: GET
+          request_parameters:
+            order_by: created_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: created_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/order_fulfilments"
+    order_payments:
+      type: DeclarativeStream
+      name: order_payments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orderpayments
+          http_method: GET
+          request_parameters:
+            order_by: created_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: created_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/order_payments"
+    outlets:
+      type: DeclarativeStream
+      name: outlets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /outlets
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/outlets"
+    product_attributes:
+      type: DeclarativeStream
+      name: product_attributes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /productattributes
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_attributes"
+    product_attribute_values:
+      type: DeclarativeStream
+      name: product_attribute_values
+      primary_key:
+        - id
+        - attribute_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /productattributes/{{ stream_partition.parent_id }}/values
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/product_attributes"
+              incremental_dependency: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_attribute_values"
+    product_replenishment_methods:
+      type: DeclarativeStream
+      name: product_replenishment_methods
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /productreplenishmentmethods
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_replenishment_methods"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    product_types:
+      type: DeclarativeStream
+      name: product_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /producttypes
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_types"
+    purchase_orders:
+      type: DeclarativeStream
+      name: purchase_orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /purchaseorders
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: modified_on:gt:%Y-%m-%dT%H:%M:%S%z
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter_by
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchase_orders"
+    purchase_order_items:
+      type: DeclarativeStream
+      name: purchase_order_items
+      primary_key:
+        - po_item_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /purchaseorders/{{ stream_partition.parent_id }}/purchaseorderitems
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/purchase_orders"
+              incremental_dependency: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        lookback_window: PT1H
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_on
+              value: "{{ record['modified_on'] or '1970-01-01T00:00:00Z' }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchase_order_items"
+    transfers:
+      type: DeclarativeStream
+      name: transfers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /transfers
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: modified_on:gt:%Y-%m-%dT%H:%M:%S%z
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter_by
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_on
+              value: >-
+                {{ record['modified_on'] or record['created_on'] or
+                '1970-01-01T00:00:00Z' }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transfers"
+    transfer_items:
+      type: DeclarativeStream
+      name: transfer_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /transferitems
+          http_method: GET
+          request_parameters:
+            order_by: modified_on desc
+            filter_by: transfer_id:eq:{{ stream_partition.parent_id }}
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/transfers"
+              incremental_dependency: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_on
+              value: >-
+                {{ record['modified_on'] or record['created_on'] or
+                '1970-01-01T00:00:00Z' }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transfer_items"
+    receipt_variance_reasons:
+      type: DeclarativeStream
+      name: receipt_variance_reasons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /receiptvariancereasons
+          http_method: GET
+          request_parameters:
+            order_by: modified_on desc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_on
+              value: >-
+                {{ record['modified_on'] or record['created_on'] or
+                '1970-01-01T00:00:00Z' }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/receipt_variance_reasons"
+    shipment_types:
+      type: DeclarativeStream
+      name: shipment_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /shipmenttypes
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shipment_types"
+    shipping_ports:
+      type: DeclarativeStream
+      name: shipping_ports
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /shippingports
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shipping_ports"
+    shipping_status:
+      type: DeclarativeStream
+      name: shipping_status
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /shippingstatus
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shipping_status"
+    stock_receipts:
+      type: DeclarativeStream
+      name: stock_receipts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stockreceipts
+          http_method: GET
+          request_parameters:
+            order_by: created_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: created_on:gt:%Y-%m-%dT%H:%M:%S%z
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter_by
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stock_receipts"
+    supplier_invoices:
+      type: DeclarativeStream
+      name: supplier_invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /supplierinvoices
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: modified_on:gt:%Y-%m-%dT%H:%M:%S%z
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter_by
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/supplier_invoices"
+    supplier_return_item_source:
+      type: DeclarativeStream
+      name: supplier_return_item_source
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /supplierreturnitemsource
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/supplier_return_item_source"
+    supplier_return_item_status:
+      type: DeclarativeStream
+      name: supplier_return_item_status
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /supplierreturnitemstatus
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/supplier_return_item_status"
+    supplier_return_reasons:
+      type: DeclarativeStream
+      name: supplier_return_reasons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /supplierreturnreasons
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/supplier_return_reasons"
+    supplier_return_status:
+      type: DeclarativeStream
+      name: supplier_return_status
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /supplierreturnstatus
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/supplier_return_status"
+    supplier_returns:
+      type: DeclarativeStream
+      name: supplier_returns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /supplierreturns
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/supplier_returns"
+    suppliers:
+      type: DeclarativeStream
+      name: suppliers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /suppliers
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suppliers"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    vouchers:
+      type: DeclarativeStream
+      name: vouchers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /vouchers
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - balance
+              value: "{{ record.balance or 0 }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vouchers"
+    voucher_types:
+      type: DeclarativeStream
+      name: voucher_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /vouchertypes
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/voucher_types"
+    inventory:
+      type: DeclarativeStream
+      name: inventory
+      primary_key:
+        - product_id
+        - outlet_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /inventory
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inventory"
+    inventory_movement_logs:
+      type: DeclarativeStream
+      name: inventory_movement_logs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /inventorymovementlogs
+          http_method: GET
+          request_parameters:
+            order_by: modified_on desc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 250
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: created_on:gt:%Y-%m-%dT%H:%M:%S%z
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter_by
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inventory_movement_logs"
+    customer_survey_segments:
+      type: DeclarativeStream
+      name: customer_survey_segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customersurveysegments
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_survey_segments"
+    loyalty_adjustment_reasons:
+      type: DeclarativeStream
+      name: loyalty_adjustment_reasons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /loyaltyadjustmentreasons
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/loyalty_adjustment_reasons"
+    max_discount_rules:
+      type: DeclarativeStream
+      name: max_discount_rules
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /maxdiscountrules
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/max_discount_rules"
+    price_groups_fixed:
+      type: DeclarativeStream
+      name: price_groups_fixed
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /pricegroups/fixed
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/price_groups_fixed"
+    price_groups_standard:
+      type: DeclarativeStream
+      name: price_groups_standard
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /pricegroups/standard
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/price_groups_standard"
+    product_barcodes:
+      type: DeclarativeStream
+      name: product_barcodes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /productbarcodes
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modified_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_barcodes"
+    product_prices:
+      type: DeclarativeStream
+      name: product_prices
+      primary_key:
+        - product_id
+        - outlet_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /productprices
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_prices"
+    return_reasons:
+      type: DeclarativeStream
+      name: return_reasons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /returnreasons
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: modified_on:gt:%Y-%m-%dT%H:%M:%S%z
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter_by
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_on
+              value: >-
+                {{ record['modified_on'] or record['created_on'] or
+                '1970-01-01T00:00:00Z' }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/return_reasons"
+    stock_adjustment_reasons:
+      type: DeclarativeStream
+      name: stock_adjustment_reasons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stockadjustmentreasons
+          http_method: GET
+          request_parameters:
+            order_by: modified_on asc
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified_on
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: modified_on:gt:%Y-%m-%dT%H:%M:%S%z
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter_by
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - modified_on
+              value: >-
+                {{ record['modified_on'] or record['created_on'] or
+                '1970-01-01T00:00:00Z' }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stock_adjustment_reasons"
+    transfer_status:
+      type: DeclarativeStream
+      name: transfer_status
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /transferstatus
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transfer_status"
+    transfer_types:
+      type: DeclarativeStream
+      name: transfer_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /transfertypes
+          http_method: GET
+          request_headers:
+            x-api-key: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_number
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transfer_types"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.retailexpress.com.au/v2.1
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: https://api.retailexpress.com.au/v2.1/auth
+        path: token
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config[\"api_key\"] }}"
+          inject_into:
+            type: RequestOption
+            field_name: x-api-key
+            inject_into: header
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+      session_token_path:
+        - access_token
+      expiration_duration: PT1H
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/countries"
+  - $ref: "#/definitions/streams/credit_notes"
+  - $ref: "#/definitions/streams/credit_note_items"
+  - $ref: "#/definitions/streams/currencies"
+  - $ref: "#/definitions/streams/customer_logs"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/customer_delivery_addresses"
+  - $ref: "#/definitions/streams/customer_types"
+  - $ref: "#/definitions/streams/freight_types"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/order_items"
+  - $ref: "#/definitions/streams/order_fulfilments"
+  - $ref: "#/definitions/streams/order_payments"
+  - $ref: "#/definitions/streams/outlets"
+  - $ref: "#/definitions/streams/product_attributes"
+  - $ref: "#/definitions/streams/product_attribute_values"
+  - $ref: "#/definitions/streams/product_replenishment_methods"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/product_types"
+  - $ref: "#/definitions/streams/purchase_orders"
+  - $ref: "#/definitions/streams/purchase_order_items"
+  - $ref: "#/definitions/streams/transfers"
+  - $ref: "#/definitions/streams/transfer_items"
+  - $ref: "#/definitions/streams/receipt_variance_reasons"
+  - $ref: "#/definitions/streams/shipment_types"
+  - $ref: "#/definitions/streams/shipping_ports"
+  - $ref: "#/definitions/streams/shipping_status"
+  - $ref: "#/definitions/streams/stock_receipts"
+  - $ref: "#/definitions/streams/supplier_invoices"
+  - $ref: "#/definitions/streams/supplier_return_item_source"
+  - $ref: "#/definitions/streams/supplier_return_item_status"
+  - $ref: "#/definitions/streams/supplier_return_reasons"
+  - $ref: "#/definitions/streams/supplier_return_status"
+  - $ref: "#/definitions/streams/supplier_returns"
+  - $ref: "#/definitions/streams/suppliers"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/vouchers"
+  - $ref: "#/definitions/streams/voucher_types"
+  - $ref: "#/definitions/streams/inventory"
+  - $ref: "#/definitions/streams/inventory_movement_logs"
+  - $ref: "#/definitions/streams/customer_survey_segments"
+  - $ref: "#/definitions/streams/loyalty_adjustment_reasons"
+  - $ref: "#/definitions/streams/max_discount_rules"
+  - $ref: "#/definitions/streams/price_groups_fixed"
+  - $ref: "#/definitions/streams/price_groups_standard"
+  - $ref: "#/definitions/streams/product_barcodes"
+  - $ref: "#/definitions/streams/product_prices"
+  - $ref: "#/definitions/streams/return_reasons"
+  - $ref: "#/definitions/streams/stock_adjustment_reasons"
+  - $ref: "#/definitions/streams/transfer_status"
+  - $ref: "#/definitions/streams/transfer_types"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    countries: true
+    credit_notes: true
+    credit_note_items: true
+    currencies: true
+    customer_logs: true
+    customers: true
+    customer_delivery_addresses: true
+    customer_types: true
+    freight_types: true
+    orders: true
+    order_items: true
+    order_fulfilments: true
+    order_payments: true
+    outlets: true
+    product_attributes: true
+    product_attribute_values: true
+    product_replenishment_methods: true
+    products: true
+    product_types: true
+    purchase_orders: true
+    purchase_order_items: true
+    transfers: true
+    transfer_items: true
+    receipt_variance_reasons: true
+    shipment_types: true
+    shipping_ports: true
+    shipping_status: true
+    stock_receipts: true
+    supplier_invoices: true
+    supplier_return_item_source: true
+    supplier_return_item_status: true
+    supplier_return_reasons: true
+    supplier_return_status: true
+    supplier_returns: true
+    suppliers: true
+    users: true
+    vouchers: true
+    voucher_types: true
+    inventory: true
+    inventory_movement_logs: true
+    customer_survey_segments: true
+    loyalty_adjustment_reasons: true
+    max_discount_rules: true
+    price_groups_fixed: true
+    price_groups_standard: true
+    product_barcodes: true
+    product_prices: true
+    return_reasons: true
+    stock_adjustment_reasons: true
+    transfer_status: true
+    transfer_types: true
+  testedStreams:
+    countries:
+      streamHash: 661bcb9faa66b4270a95b9b9de43014eca851ebd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    credit_notes:
+      streamHash: 315eb4de8c7ee728dfa3db31dfcc5eccec1cb388
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    credit_note_items:
+      streamHash: 96a91f8ac710f474f1b65bbeaacd6f52387fa535
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    currencies:
+      streamHash: 200ccd75c8ab6bd4b5f4abdea47e6377ab99291d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_logs:
+      streamHash: 71c0a1a350675c954e3fcd3781e6faafd8e9ae45
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customers:
+      streamHash: f950734398e2110d909d0e8e652677727526af48
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_delivery_addresses:
+      streamHash: 4c6f0188e55d87ee768c6d3cb71313a681e32006
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_types:
+      streamHash: 5a9f1829b1ce7b970019f856ff414fbeb25c98c0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    freight_types:
+      hasRecords: true
+      streamHash: ff507531b90c83022f5f46c887fb8590c91f4c02
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    orders:
+      streamHash: c75827c41115f073ffa1197ce3cd39a5ab3812a4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    order_items:
+      streamHash: f0b2fcd8cedf823bf51093739b8195e8bc80c61c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    order_fulfilments:
+      streamHash: 78bcda61841e48c5f9ebda0113e25044ca7cc6f8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    order_payments:
+      streamHash: 24b23513d1cb303f5722914ca3547dc1c1ef78e8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    outlets:
+      hasRecords: true
+      streamHash: 8863af98b1371170f034e5c717a53eba6c54e2f1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_attributes:
+      hasRecords: true
+      streamHash: 619ef9415c8afbcc5d17197927d3349f1a5c8b8d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_attribute_values:
+      hasRecords: true
+      streamHash: c8ced53d50942a5082749267ae73d123b7cb0d4e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_replenishment_methods:
+      hasRecords: true
+      streamHash: 795cc151c449f7f2bc80c07b1ff8abdcd2191eed
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      streamHash: e1d78e72434873c66918330ad080bbf4bce50e38
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_types:
+      hasRecords: true
+      streamHash: cdbdae1c8b97b07139ff996e6f487ac55bb0344e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    purchase_orders:
+      streamHash: 0fd6b3d1c316ab101d21366b54aab854090ed532
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    purchase_order_items:
+      streamHash: 68dd686fa0912f390ace015dcaed7740e5e7557d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    transfers:
+      streamHash: 32a368bcb02c88158a9a25629d77a03ceb022757
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    transfer_items:
+      streamHash: 56ac4382f8641112c7d33cf5bdfe9c590ebf1a64
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    receipt_variance_reasons:
+      hasRecords: true
+      streamHash: e19c1e583469d802f990b13708f7bae76b067641
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    shipment_types:
+      hasRecords: true
+      streamHash: cb3aaefcb71c17288b4061e88614263ae318e1a2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    shipping_ports:
+      streamHash: 434219d73b930bd8a6aef3dee69df26a8bc98676
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    shipping_status:
+      hasRecords: true
+      streamHash: 17f39ba69e960063310b7026440665fac64a31d6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stock_receipts:
+      hasRecords: true
+      streamHash: b08037eecbade297e487ccfd25f9f74e005479aa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    supplier_invoices:
+      streamHash: 6abd0d2e63bc9eb000c39d35f08584e18683fb60
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    supplier_return_item_source:
+      streamHash: 2aa2281ad2d3f978e11d3b6eaffaa74f7913d3b7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    supplier_return_item_status:
+      streamHash: 063848eed8e7f24abe954755cb4507e98efaee43
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    supplier_return_reasons:
+      streamHash: 495f37c64d5c04e2b6e219d97dc81e2202ae7206
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    supplier_return_status:
+      streamHash: b846f8cb0bc1660a953c4716a557a47faa87ea85
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    supplier_returns:
+      streamHash: 6e5ef0f65285dfc54ec800f44b88c9cc70e70969
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    suppliers:
+      streamHash: 44ae7e428fc9900899216f072e638f46e8ec8c7e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 3ef0a64651007a09bb7064c9cf481b908463f46f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    vouchers:
+      streamHash: 10bdda2bc08c11610ce17bdb985628027952a6b5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    voucher_types:
+      streamHash: fd325ba23478890c670b0918a70ffd13d9642418
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    inventory:
+      streamHash: 45a5dce1c1964a40fddcc365b90def548ad7f5c8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    inventory_movement_logs:
+      streamHash: 5e5aeea1fbf23844749edd172006794a33cb6bb4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_survey_segments:
+      streamHash: d163df441e17af6b99ec4408cdd593b612f1c3e2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    loyalty_adjustment_reasons:
+      streamHash: 5664de23a7786a31f8e72f37835a78f4240c7a54
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    max_discount_rules:
+      streamHash: e9bc0569e157b5a61fc6871990bc8fdaea5a8017
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    price_groups_fixed:
+      streamHash: 65546150dac7a610e75e4db91e146d9a7821677a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    price_groups_standard:
+      streamHash: c10a0c92c75963e18999d4f4901b0a64e275098d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_barcodes:
+      streamHash: bcce22d4becbb657be1a0d507e4cbcff4e819949
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_prices:
+      streamHash: 9a233290218bfc8398322d4ab9757a87c411fda8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    return_reasons:
+      streamHash: c6e89dd3e3cd4ba32909025a143f724ceaf7b780
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stock_adjustment_reasons:
+      streamHash: cf499fd6c756d16d4aa85fc59ac03039c2b96dab
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    transfer_status:
+      streamHash: afce29e876fe0d646514ec6f372fba10b1747c63
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    transfer_types:
+      streamHash: b323f085b1542280d07d372c96cab1d7037c070a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  countries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      code:
+        type:
+          - string
+          - "null"
+      currency_multiplier:
+        type:
+          - number
+          - "null"
+      fob_currency:
+        type:
+          - object
+          - "null"
+        properties:
+          currency_code:
+            type:
+              - string
+              - "null"
+          currency_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      tax_label:
+        type:
+          - string
+          - "null"
+      tax_rate:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  credit_notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      include_tax:
+        type:
+          - boolean
+          - "null"
+      modified_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      modified_on:
+        type: string
+      outlet:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      rounding_adjustment:
+        type:
+          - number
+          - "null"
+      supplier:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          supplier_code:
+            type:
+              - string
+              - "null"
+      supplier_credited_on:
+        type:
+          - string
+          - "null"
+      supplier_reference:
+        type:
+          - string
+          - "null"
+      supplier_return_id:
+        type:
+          - number
+          - "null"
+      total_applied_credit_amount_ex:
+        type:
+          - number
+          - "null"
+      total_applied_credit_amount_inc:
+        type:
+          - number
+          - "null"
+      total_applied_credit_quantity:
+        type:
+          - number
+          - "null"
+      total_applied_credit_tax:
+        type:
+          - number
+          - "null"
+      total_credit_amount_ex:
+        type:
+          - number
+          - "null"
+      total_credit_amount_inc:
+        type:
+          - number
+          - "null"
+      total_credit_amount_tax:
+        type:
+          - number
+          - "null"
+      total_credit_quantity:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  credit_note_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      applied_credit_amount_ex:
+        type:
+          - number
+          - "null"
+      applied_credit_amount_inc:
+        type:
+          - number
+          - "null"
+      applied_credit_quantity:
+        type:
+          - number
+          - "null"
+      applied_credit_tax:
+        type:
+          - number
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      credit_amount_ex:
+        type:
+          - number
+          - "null"
+      credit_note_id:
+        type:
+          - number
+          - "null"
+      credit_quantity:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      modified_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      modified_on:
+        type: string
+      product:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          short_description:
+            type:
+              - string
+              - "null"
+          size:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          supplier_sku:
+            type:
+              - string
+              - "null"
+          supplier_sku2:
+            type:
+              - string
+              - "null"
+      supplier_return_item_id:
+        type:
+          - number
+          - "null"
+      total_applied_credit_amount_ex:
+        type:
+          - number
+          - "null"
+      total_applied_credit_amount_inc:
+        type:
+          - number
+          - "null"
+      total_applied_credit_tax:
+        type:
+          - number
+          - "null"
+      total_credit_amount_ex:
+        type:
+          - number
+          - "null"
+      total_credit_amount_inc:
+        type:
+          - number
+          - "null"
+      total_credit_amount_tax:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  currencies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+    required:
+      - id
+      - modified_on
+  customer_logs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      created_on:
+        type: string
+      customer_id:
+        type:
+          - number
+          - "null"
+      customer_number:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      loyalty_points_balance:
+        type:
+          - number
+          - "null"
+      master_customer_id:
+        type:
+          - number
+          - "null"
+      master_customer_number:
+        type:
+          - string
+          - "null"
+      price_groups:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+      - created_on
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_customer:
+        type:
+          - object
+          - "null"
+        properties:
+          credit_blocked:
+            type:
+              - boolean
+              - "null"
+          credit_limit:
+            type:
+              - number
+              - "null"
+          credit_remaining:
+            type:
+              - number
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          payment_terms:
+            type:
+              - number
+              - "null"
+      billing_address:
+        type:
+          - object
+          - "null"
+        properties:
+          address_line1:
+            type:
+              - string
+              - "null"
+          address_line2:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          postcode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          suburb:
+            type:
+              - string
+              - "null"
+      company:
+        type:
+          - string
+          - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      custom_reference:
+        type:
+          - string
+          - "null"
+      customer_number:
+        type:
+          - string
+          - "null"
+      customer_type:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      date_of_birth_withheld:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      export_to_web:
+        type:
+          - boolean
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      home_outlet:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      last_name:
+        type:
+          - string
+          - "null"
+      loyalty_program:
+        type:
+          - object
+          - "null"
+        properties:
+          auto_price_group:
+            type:
+              - boolean
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          points_available:
+            type:
+              - number
+              - "null"
+          points_redeemed:
+            type:
+              - number
+              - "null"
+          points_to_date:
+            type:
+              - number
+              - "null"
+      marketing:
+        type:
+          - object
+          - "null"
+        properties:
+          receive_email:
+            type:
+              - boolean
+              - "null"
+          receive_post:
+            type:
+              - boolean
+              - "null"
+          receive_sms:
+            type:
+              - boolean
+              - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      modified_on:
+        type: string
+      phone:
+        type:
+          - string
+          - "null"
+      price_groups:
+        type:
+          - array
+          - "null"
+      sales_channels:
+        type:
+          - array
+          - "null"
+      survey_responses:
+        type:
+          - array
+          - "null"
+      total_payments:
+        type:
+          - number
+          - "null"
+      total_transactions:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  customer_delivery_addresses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_line1:
+        type:
+          - string
+          - "null"
+      address_line2:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      default:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      last_name:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      modified_on:
+        type: string
+      phone:
+        type:
+          - string
+          - "null"
+      postcode:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      suburb:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified_on
+  customer_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      default:
+        type:
+          - boolean
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified_on
+  freight_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      deleted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billing_address:
+        type:
+          - object
+          - "null"
+        properties:
+          address_line1:
+            type:
+              - string
+              - "null"
+          address_line2:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          mobile:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          postcode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          suburb:
+            type:
+              - string
+              - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          custom_reference:
+            type:
+              - string
+              - "null"
+          customer_number:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+      delivery_address:
+        type:
+          - object
+          - "null"
+        properties:
+          address_line1:
+            type:
+              - string
+              - "null"
+          address_line2:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          mobile:
+            type:
+              - string
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          postcode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          suburb:
+            type:
+              - string
+              - "null"
+      ext_unique_id:
+        type:
+          - string
+          - "null"
+      freight_total:
+        type:
+          - number
+          - "null"
+      fulfilled_in_full_on:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      order_number:
+        type:
+          - string
+          - "null"
+      order_status:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      order_total:
+        type:
+          - number
+          - "null"
+      outlet:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      paid_in_full_on:
+        type:
+          - string
+          - "null"
+      private_comments:
+        type:
+          - string
+          - "null"
+      public_comments:
+        type:
+          - string
+          - "null"
+      sales_person:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      taxable:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  order_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      applied_promotional_campaigns:
+        type:
+          - array
+          - "null"
+      cogs_ex:
+        type:
+          - number
+          - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      direct_costs_ex:
+        type:
+          - number
+          - "null"
+      fulfil_outlet:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      fulfilment_method:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type:
+          - string
+          - "null"
+      order_item_discount_total:
+        type:
+          - number
+          - "null"
+      order_item_total:
+        type:
+          - number
+          - "null"
+      order_item_type:
+        type:
+          - string
+          - "null"
+      original_price:
+        type:
+          - number
+          - "null"
+      product:
+        type:
+          - object
+          - "null"
+        properties:
+          has_package_products:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          package:
+            type:
+              - boolean
+              - "null"
+          product_type:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              modified_on:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          short_description:
+            type:
+              - string
+              - "null"
+          supplier_sku:
+            type:
+              - string
+              - "null"
+      quantity_fulfiled:
+        type:
+          - number
+          - "null"
+      quantity_ordered:
+        type:
+          - number
+          - "null"
+      sell_price:
+        type:
+          - number
+          - "null"
+      source_outlet:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      supplier_buy_ex:
+        type:
+          - number
+          - "null"
+      tax_rate:
+        type:
+          - number
+          - "null"
+      taxable:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  order_fulfilments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_on:
+        type: string
+      fulfil_outlet:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      order_id:
+        type:
+          - number
+          - "null"
+      order_item_id:
+        type:
+          - number
+          - "null"
+      order_number:
+        type:
+          - string
+          - "null"
+      quantity_fulfiled:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - created_on
+  order_payments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - number
+          - "null"
+      created_on:
+        type: string
+      id:
+        type: number
+      order_id:
+        type:
+          - number
+          - "null"
+      order_number:
+        type:
+          - string
+          - "null"
+      payment_method:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - created_on
+  outlets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          address_line1:
+            type:
+              - string
+              - "null"
+          address_line2:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          postcode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          suburb:
+            type:
+              - string
+              - "null"
+      bank_details:
+        type:
+          - object
+          - "null"
+        properties: {}
+      billing_type:
+        type:
+          - number
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      company_registration_label:
+        type:
+          - string
+          - "null"
+      company_registration_number:
+        type:
+          - string
+          - "null"
+      display_address_on_invoice:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      fob_currency:
+        type:
+          - object
+          - "null"
+        properties:
+          currency_code:
+            type:
+              - string
+              - "null"
+          currency_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      id:
+        type: number
+      invoice_email_template:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      invoice_receipt_comments:
+        type:
+          - string
+          - "null"
+      logo:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      modified_on:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      store_type:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  product_attributes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  product_attribute_values:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attribute_id:
+        type: number
+      id:
+        type: number
+      list_order:
+        type:
+          - number
+          - "null"
+      modified_on:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - attribute_id
+  product_replenishment_methods:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      code:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            modified_on:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      breadth:
+        type:
+          - number
+          - "null"
+      buy_price_ex:
+        type:
+          - number
+          - "null"
+      carton_quantity:
+        type:
+          - string
+          - "null"
+      cogs_ex:
+        type:
+          - number
+          - "null"
+      core_product:
+        type:
+          - boolean
+          - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      cubic:
+        type:
+          - number
+          - "null"
+      custom_properties:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      depth:
+        type:
+          - number
+          - "null"
+      direct_costs_ex:
+        type:
+          - number
+          - "null"
+      disabled:
+        type:
+          - boolean
+          - "null"
+      export_to_web:
+        type:
+          - boolean
+          - "null"
+      external_links:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      fixed_price_groups:
+        type:
+          - array
+          - "null"
+      freight_inc:
+        type:
+          - number
+          - "null"
+      has_package_products:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      inventory:
+        type:
+          - array
+          - "null"
+      last_fulfiled_on:
+        type:
+          - string
+          - "null"
+      last_sold_on:
+        type:
+          - string
+          - "null"
+      lead_time:
+        type:
+          - number
+          - "null"
+      length:
+        type:
+          - number
+          - "null"
+      manufacturer_sku:
+        type:
+          - string
+          - "null"
+      modified_on:
+        type: string
+      package:
+        type:
+          - boolean
+          - "null"
+      prevent_disabling:
+        type:
+          - boolean
+          - "null"
+      price_groups:
+        type:
+          - array
+          - "null"
+      product_type:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      promotional_price_expiry:
+        type:
+          - string
+          - "null"
+      replenishment_method:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      requires_assembly:
+        type:
+          - boolean
+          - "null"
+      rrp_inc:
+        type:
+          - number
+          - "null"
+      sales_channels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            enabled:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            shopify_channel:
+              type:
+                - boolean
+                - "null"
+            source_group:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+      sell_price_inc:
+        type:
+          - number
+          - "null"
+      short_description:
+        type:
+          - string
+          - "null"
+      supplier:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          supplier_code:
+            type:
+              - string
+              - "null"
+      supplier_buy_ex:
+        type:
+          - number
+          - "null"
+      supplier_sku:
+        type:
+          - string
+          - "null"
+      supplier_sku2:
+        type:
+          - string
+          - "null"
+      voucher_product:
+        type:
+          - boolean
+          - "null"
+      weight:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  product_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      modified_on:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  purchase_orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bill_of_lading_documents:
+        type:
+          - string
+          - "null"
+      certificate_of_original_documents:
+        type:
+          - string
+          - "null"
+      container_number:
+        type:
+          - string
+          - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      deliver_to:
+        type:
+          - string
+          - "null"
+      deposit:
+        type:
+          - number
+          - "null"
+      eta:
+        type:
+          - string
+          - "null"
+      fob_currency:
+        type:
+          - object
+          - "null"
+        properties:
+          currency_code:
+            type:
+              - string
+              - "null"
+          currency_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      fumes_documents:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      internal_comments:
+        type:
+          - string
+          - "null"
+      invoice_documents:
+        type:
+          - string
+          - "null"
+      modified_on:
+        type: string
+      outlet:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      packing_declaration_documents:
+        type:
+          - string
+          - "null"
+      packing_list_documents:
+        type:
+          - string
+          - "null"
+      payment_terms:
+        type:
+          - string
+          - "null"
+      purchase_order_template:
+        type:
+          - string
+          - "null"
+      received_on:
+        type:
+          - string
+          - "null"
+      sent_on:
+        type:
+          - string
+          - "null"
+      shipping_terms:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      supplier:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      supplier_comments:
+        type:
+          - string
+          - "null"
+      supplier_invoice_number:
+        type:
+          - string
+          - "null"
+      total_cubic:
+        type:
+          - number
+          - "null"
+      total_quantity_cancelled:
+        type:
+          - number
+          - "null"
+      total_quantity_linked_transfers:
+        type:
+          - number
+          - "null"
+      total_quantity_ordered:
+        type:
+          - number
+          - "null"
+      total_quantity_received:
+        type:
+          - number
+          - "null"
+      total_quantity_remaining:
+        type:
+          - number
+          - "null"
+      total_quantity_special_order:
+        type:
+          - number
+          - "null"
+      total_supplier_buy_ex:
+        type:
+          - number
+          - "null"
+      total_weight:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  purchase_order_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      gross_profit:
+        type:
+          - number
+          - "null"
+      inventory:
+        type:
+          - object
+          - "null"
+        properties:
+          msl:
+            type:
+              - number
+              - "null"
+          outlet:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          quantity_available:
+            type:
+              - number
+              - "null"
+          quantity_on_order:
+            type:
+              - number
+              - "null"
+      is_linked_to_transfer:
+        type:
+          - boolean
+          - "null"
+      mark_up:
+        type:
+          - number
+          - "null"
+      modified_on:
+        type: string
+      po_id:
+        type:
+          - number
+          - "null"
+      po_item_id:
+        type: number
+      pricing:
+        type:
+          - object
+          - "null"
+        properties:
+          outlet_id:
+            type:
+              - number
+              - "null"
+          product_id:
+            type:
+              - number
+              - "null"
+          promotional_price_inc:
+            type:
+              - number
+              - "null"
+          sell_price_inc:
+            type:
+              - number
+              - "null"
+          taxable:
+            type:
+              - boolean
+              - "null"
+      product:
+        type:
+          - object
+          - "null"
+        properties:
+          attributes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                modified_on:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+          breadth:
+            type:
+              - number
+              - "null"
+          buy_price_ex:
+            type:
+              - number
+              - "null"
+          cogs_ex:
+            type:
+              - number
+              - "null"
+          core_product:
+            type:
+              - boolean
+              - "null"
+          created_on:
+            type:
+              - string
+              - "null"
+          cubic:
+            type:
+              - number
+              - "null"
+          custom_properties:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          depth:
+            type:
+              - number
+              - "null"
+          direct_costs_ex:
+            type:
+              - number
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          export_to_web:
+            type:
+              - boolean
+              - "null"
+          external_links:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          fixed_price_groups:
+            type:
+              - array
+              - "null"
+          freight_inc:
+            type:
+              - number
+              - "null"
+          has_package_products:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          inventory:
+            type:
+              - array
+              - "null"
+          last_fulfiled_on:
+            type:
+              - string
+              - "null"
+          last_sold_on:
+            type:
+              - string
+              - "null"
+          lead_time:
+            type:
+              - number
+              - "null"
+          length:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          package:
+            type:
+              - boolean
+              - "null"
+          prevent_disabling:
+            type:
+              - boolean
+              - "null"
+          price_groups:
+            type:
+              - array
+              - "null"
+          product_type:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              modified_on:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          replenishment_method:
+            type:
+              - object
+              - "null"
+            properties:
+              code:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          requires_assembly:
+            type:
+              - boolean
+              - "null"
+          rrp_inc:
+            type:
+              - number
+              - "null"
+          sales_channels:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                enabled:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                shopify_channel:
+                  type:
+                    - boolean
+                    - "null"
+                source_group:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+          sell_price_inc:
+            type:
+              - number
+              - "null"
+          short_description:
+            type:
+              - string
+              - "null"
+          supplier:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              modified_on:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              supplier_code:
+                type:
+                  - string
+                  - "null"
+          supplier_buy_ex:
+            type:
+              - number
+              - "null"
+          supplier_sku:
+            type:
+              - string
+              - "null"
+          supplier_sku2:
+            type:
+              - string
+              - "null"
+          voucher_product:
+            type:
+              - boolean
+              - "null"
+          weight:
+            type:
+              - number
+              - "null"
+      quantity_back_order:
+        type:
+          - number
+          - "null"
+      quantity_ordered:
+        type:
+          - number
+          - "null"
+      quantity_received:
+        type:
+          - number
+          - "null"
+      quantity_received_variance:
+        type:
+          - number
+          - "null"
+      quantity_remaining:
+        type:
+          - number
+          - "null"
+      quantity_special_order:
+        type:
+          - number
+          - "null"
+      supplier_buy_ex:
+        type:
+          - number
+          - "null"
+      total_cubic:
+        type:
+          - number
+          - "null"
+      total_supplier_buy_ex:
+        type:
+          - number
+          - "null"
+      total_weight:
+        type:
+          - number
+          - "null"
+    required:
+      - po_item_id
+      - modified_on
+  transfers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      approved:
+        type:
+          - boolean
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      notes:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - object
+          - "null"
+        properties:
+          created_on:
+            type:
+              - string
+              - "null"
+          customer:
+            type:
+              - object
+              - "null"
+            properties:
+              custom_reference:
+                type:
+                  - string
+                  - "null"
+              customer_number:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+          id:
+            type:
+              - number
+              - "null"
+          order_number:
+            type:
+              - string
+              - "null"
+      outlet_from:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      outlet_to:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      purchase_order:
+        type:
+          - object
+          - "null"
+        properties:
+          created_on:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          received_on:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          supplier_invoice_number:
+            type:
+              - string
+              - "null"
+      simple_mode:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      total_picked_buy_price_ex:
+        type:
+          - number
+          - "null"
+      total_picked_cogs_ex:
+        type:
+          - number
+          - "null"
+      total_picked_direct_costs_ex:
+        type:
+          - number
+          - "null"
+      transfer_items:
+        type:
+          - array
+          - "null"
+      transfer_type:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - modified_on
+  transfer_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      buy_price_ex:
+        type:
+          - number
+          - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      direct_costs_ex:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      product:
+        type:
+          - object
+          - "null"
+        properties:
+          attributes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                modified_on:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+          breadth:
+            type:
+              - number
+              - "null"
+          carton_quantity:
+            type:
+              - string
+              - "null"
+          cubic:
+            type:
+              - number
+              - "null"
+          custom_properties:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          depth:
+            type:
+              - number
+              - "null"
+          export_to_web:
+            type:
+              - boolean
+              - "null"
+          external_links:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          fixed_price_groups:
+            type:
+              - array
+              - "null"
+          has_package_products:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          last_fulfiled_on:
+            type:
+              - string
+              - "null"
+          last_sold_on:
+            type:
+              - string
+              - "null"
+          length:
+            type:
+              - number
+              - "null"
+          manufacturer_sku:
+            type:
+              - string
+              - "null"
+          package:
+            type:
+              - boolean
+              - "null"
+          price_groups:
+            type:
+              - array
+              - "null"
+          product_type:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              modified_on:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          rrp_inc:
+            type:
+              - number
+              - "null"
+          sales_channels:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                enabled:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                shopify_channel:
+                  type:
+                    - boolean
+                    - "null"
+                source_group:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+          sell_price_inc:
+            type:
+              - number
+              - "null"
+          short_description:
+            type:
+              - string
+              - "null"
+          supplier:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              modified_on:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              supplier_code:
+                type:
+                  - string
+                  - "null"
+          supplier_sku:
+            type:
+              - string
+              - "null"
+          supplier_sku2:
+            type:
+              - string
+              - "null"
+          weight:
+            type:
+              - number
+              - "null"
+      quantity_allocated:
+        type:
+          - number
+          - "null"
+      quantity_dispatched:
+        type:
+          - number
+          - "null"
+      quantity_made_available:
+        type:
+          - number
+          - "null"
+      quantity_picked:
+        type:
+          - number
+          - "null"
+      quantity_proposed:
+        type:
+          - number
+          - "null"
+      quantity_received:
+        type:
+          - number
+          - "null"
+      quantity_requested:
+        type:
+          - number
+          - "null"
+      transfer_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  receipt_variance_reasons:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      enabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified_on
+  shipment_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  shipping_ports:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+  shipping_status:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  stock_receipts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      buy_price_ex:
+        type:
+          - number
+          - "null"
+      created_on:
+        type: string
+      direct_costs_ex:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      outlet:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      product:
+        type:
+          - object
+          - "null"
+        properties:
+          attributes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                value:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+          breadth:
+            type:
+              - number
+              - "null"
+          carton_quantity:
+            type:
+              - string
+              - "null"
+          cubic:
+            type:
+              - number
+              - "null"
+          custom_properties:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          depth:
+            type:
+              - number
+              - "null"
+          export_to_web:
+            type:
+              - boolean
+              - "null"
+          external_links:
+            type:
+              - array
+              - "null"
+          has_package_products:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          length:
+            type:
+              - number
+              - "null"
+          manufacturer_sku:
+            type:
+              - string
+              - "null"
+          package:
+            type:
+              - boolean
+              - "null"
+          product_type:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              modified_on:
+                type:
+                  - string
+                  - "null"
+          rrp_inc:
+            type:
+              - number
+              - "null"
+          sell_price_inc:
+            type:
+              - number
+              - "null"
+          short_description:
+            type:
+              - string
+              - "null"
+          supplier:
+            type:
+              - object
+              - "null"
+            properties:
+              modified_on:
+                type:
+                  - string
+                  - "null"
+              supplier_code:
+                type:
+                  - string
+                  - "null"
+          supplier_sku:
+            type:
+              - string
+              - "null"
+          supplier_sku2:
+            type:
+              - string
+              - "null"
+          weight:
+            type:
+              - number
+              - "null"
+      received_quantity:
+        type:
+          - number
+          - "null"
+      source_id:
+        type:
+          - number
+          - "null"
+      tax_rate:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - created_on
+  supplier_invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      currency_conversion:
+        type:
+          - number
+          - "null"
+      direct_costs:
+        type:
+          - object
+          - "null"
+        properties:
+          applied_on:
+            type:
+              - string
+              - "null"
+          apply_pending:
+            type:
+              - boolean
+              - "null"
+          duty:
+            type:
+              - object
+              - "null"
+            properties:
+              includes_tax:
+                type:
+                  - boolean
+                  - "null"
+              total_ex:
+                type:
+                  - number
+                  - "null"
+              total_inc:
+                type:
+                  - number
+                  - "null"
+              total_tax:
+                type:
+                  - number
+                  - "null"
+          freight:
+            type:
+              - object
+              - "null"
+            properties:
+              includes_tax:
+                type:
+                  - boolean
+                  - "null"
+              total_ex:
+                type:
+                  - number
+                  - "null"
+              total_inc:
+                type:
+                  - number
+                  - "null"
+              total_tax:
+                type:
+                  - number
+                  - "null"
+          misc:
+            type:
+              - object
+              - "null"
+            properties:
+              includes_tax:
+                type:
+                  - boolean
+                  - "null"
+              total_ex:
+                type:
+                  - number
+                  - "null"
+              total_inc:
+                type:
+                  - number
+                  - "null"
+              total_tax:
+                type:
+                  - number
+                  - "null"
+      distribute_costs_by:
+        type:
+          - string
+          - "null"
+      finalised_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      finalised_on:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      international_order:
+        type:
+          - boolean
+          - "null"
+      landed_costs_calculation:
+        type:
+          - string
+          - "null"
+      modified_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      modified_on:
+        type: string
+      notes:
+        type:
+          - string
+          - "null"
+      origin_country:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      purchase_order_receipts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            purchase_order_id:
+              type:
+                - number
+                - "null"
+      rounding_adjustment:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      supplier_invoice_number:
+        type:
+          - string
+          - "null"
+      supplier_invoiced_on:
+        type:
+          - string
+          - "null"
+      total_applied_buy_price_ex:
+        type:
+          - number
+          - "null"
+      total_buy_price_ex:
+        type:
+          - number
+          - "null"
+      total_buy_price_inc:
+        type:
+          - number
+          - "null"
+      total_tax:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  supplier_return_item_source:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  supplier_return_item_status:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  supplier_return_reasons:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_on:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified_on
+  supplier_return_status:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  supplier_returns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      finalised_on:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      include_tax:
+        type:
+          - boolean
+          - "null"
+      modified_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      modified_on:
+        type: string
+      notes:
+        type:
+          - string
+          - "null"
+      outlet:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      return_authorisation:
+        type:
+          - string
+          - "null"
+      started_on:
+        type:
+          - string
+          - "null"
+      supplier:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          modified_on:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          supplier_code:
+            type:
+              - string
+              - "null"
+      supplier_address:
+        type:
+          - object
+          - "null"
+        properties:
+          address_line1:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          postcode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          suburb:
+            type:
+              - string
+              - "null"
+      supplier_return_status:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      total_claim_amount_ex:
+        type:
+          - number
+          - "null"
+      total_claim_amount_inc:
+        type:
+          - number
+          - "null"
+      total_claim_amount_tax:
+        type:
+          - number
+          - "null"
+      total_credit_received_ex:
+        type:
+          - number
+          - "null"
+      total_credit_received_inc:
+        type:
+          - number
+          - "null"
+      total_return_quantity:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  suppliers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          address_line1:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          postcode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          suburb:
+            type:
+              - string
+              - "null"
+      admin_only_orders:
+        type:
+          - boolean
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      contact_email:
+        type:
+          - string
+          - "null"
+      contact_name:
+        type:
+          - string
+          - "null"
+      country_of_origin:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      deposit_required:
+        type:
+          - boolean
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      order_email:
+        type:
+          - string
+          - "null"
+      payment_terms:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      purchase_order_template:
+        type:
+          - string
+          - "null"
+      supplier_code:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified_on
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      enabled:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_admin:
+        type:
+          - boolean
+          - "null"
+      modified_on:
+        type:
+          - string
+          - "null"
+      outlets:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      security_profile:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      stock_outlets:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      surname:
+        type:
+          - string
+          - "null"
+      user_code:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  vouchers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      expires_on:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      initial_value:
+        type:
+          - number
+          - "null"
+      order:
+        type:
+          - object
+          - "null"
+        properties:
+          created_on:
+            type:
+              - string
+              - "null"
+          customer:
+            type:
+              - object
+              - "null"
+            properties:
+              custom_reference:
+                type:
+                  - string
+                  - "null"
+              customer_number:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+          id:
+            type:
+              - number
+              - "null"
+          order_number:
+            type:
+              - string
+              - "null"
+          vouchers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                balance:
+                  type:
+                    - number
+                    - "null"
+                code:
+                  type:
+                    - string
+                    - "null"
+                created_on:
+                  type:
+                    - string
+                    - "null"
+                expires_on:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                initial_value:
+                  type:
+                    - number
+                    - "null"
+    required:
+      - id
+  voucher_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      valid_for_days:
+        type:
+          - number
+          - "null"
+      voucher_text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  inventory:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      allocated:
+        type:
+          - number
+          - "null"
+      available:
+        type:
+          - number
+          - "null"
+      bin_location:
+        type:
+          - string
+          - "null"
+      faulty:
+        type:
+          - number
+          - "null"
+      last_fulfiled_on:
+        type:
+          - string
+          - "null"
+      last_sold_on:
+        type:
+          - string
+          - "null"
+      modified_on:
+        type: string
+      msl:
+        type:
+          - number
+          - "null"
+      on_order:
+        type:
+          - number
+          - "null"
+      outlet_id:
+        type: number
+      picked:
+        type:
+          - number
+          - "null"
+      product_id:
+        type: number
+      received:
+        type:
+          - number
+          - "null"
+      requested:
+        type:
+          - number
+          - "null"
+      stock_on_hand:
+        type:
+          - number
+          - "null"
+      transit_in:
+        type:
+          - number
+          - "null"
+      transit_out:
+        type:
+          - number
+          - "null"
+    required:
+      - product_id
+      - outlet_id
+      - modified_on
+  inventory_movement_logs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      buy_price_ex:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          change:
+            type:
+              - number
+              - "null"
+      cogs_ex:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          change:
+            type:
+              - number
+              - "null"
+      comment:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          surname:
+            type:
+              - string
+              - "null"
+          user_code:
+            type:
+              - string
+              - "null"
+      created_on:
+        type: string
+      direct_costs_ex:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          change:
+            type:
+              - number
+              - "null"
+      id:
+        type: number
+      movement_type:
+        type:
+          - string
+          - "null"
+      origin:
+        type:
+          - string
+          - "null"
+      outlet:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      product:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          product_type:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              modified_on:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          short_description:
+            type:
+              - string
+              - "null"
+          supplier_sku:
+            type:
+              - string
+              - "null"
+      quantity_allocated:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      quantity_available:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      quantity_faulty:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      quantity_in_transit_inbound:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      quantity_in_transit_outbound:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      quantity_onorder:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      quantity_onreturn:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      quantity_picked:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      quantity_received:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      quantity_requested:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      quantity_soh:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          delta:
+            type:
+              - number
+              - "null"
+      reference_id:
+        type:
+          - string
+          - "null"
+      total_cogs_ex:
+        type:
+          - object
+          - "null"
+        properties:
+          after:
+            type:
+              - number
+              - "null"
+          before:
+            type:
+              - number
+              - "null"
+          change:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+      - created_on
+  customer_survey_segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      options:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+  loyalty_adjustment_reasons:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      is_deleted:
+        type:
+          - boolean
+          - "null"
+      is_system:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  max_discount_rules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  price_groups_fixed:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      modified_on:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  price_groups_standard:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      modified_on:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      rule:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  product_barcodes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      barcode:
+        type:
+          - string
+          - "null"
+      created_on:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      product_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified_on
+  product_prices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      cogs_ex:
+        type:
+          - number
+          - "null"
+      direct_costs_ex:
+        type:
+          - number
+          - "null"
+      outlet_id:
+        type: number
+      product_id:
+        type: number
+      promotional_price_end:
+        type:
+          - string
+          - "null"
+      promotional_price_inc:
+        type:
+          - number
+          - "null"
+      promotional_price_start:
+        type:
+          - string
+          - "null"
+      sell_price_inc:
+        type:
+          - number
+          - "null"
+      supplier_buy_ex:
+        type:
+          - number
+          - "null"
+      taxable:
+        type:
+          - boolean
+          - "null"
+    required:
+      - product_id
+      - outlet_id
+  return_reasons:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_on:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified_on
+  stock_adjustment_reasons:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_on:
+        type:
+          - string
+          - "null"
+      disabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      modified_on:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified_on
+  transfer_status:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  transfer_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id

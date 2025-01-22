@@ -644,7 +644,12 @@ module.exports = {
             type: "doc",
             id: "access-management/rbac",
           },
-          items: [{ type: "doc", id: "access-management/role-mapping" }],
+          items: [
+            { 
+              type: "doc", 
+              id: "access-management/role-mapping" 
+            },
+          ],
         },
       ],
     },
@@ -725,8 +730,10 @@ module.exports = {
       label: "Release Notes",
       link: {
         type: "generated-index",
+        description: "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
       },
       items: [
+        "release_notes/v-1.4",
         "release_notes/v-1.3",
         "release_notes/v-1.2",
         "release_notes/v-1.1",

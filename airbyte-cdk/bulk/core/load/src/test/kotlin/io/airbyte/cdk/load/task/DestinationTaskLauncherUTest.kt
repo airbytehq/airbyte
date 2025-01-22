@@ -158,7 +158,7 @@ class DestinationTaskLauncherUTest {
         destinationTaskLauncher.handleTeardownComplete()
 
         coVerify { failStreamTaskFactory.make(any(), e, any()) }
-        coVerify { taskScopeProvider.launch(match { it.innerTask is FailStreamTask }) }
+        coVerify { taskScopeProvider.launch(match { it is FailStreamTask }) }
     }
 
     @Test
