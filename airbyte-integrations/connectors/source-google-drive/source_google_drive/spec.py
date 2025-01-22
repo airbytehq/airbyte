@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import uuid
+from datetime import datetime
 from typing import Any, Dict, Literal, Union
 
 import dpath.util
@@ -10,6 +11,18 @@ from pydantic.v1 import BaseModel, Field
 
 from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
+
+
+class RemoteFileIdentity(BaseModel):
+    id: uuid.UUID
+    remote_id: str
+    parent_id: str | None = None
+    name: str | None = None
+    description: str | None = None
+    email_address: str | None = None
+    member_email_addresses: list[str] | None = None
+    type: str
+    modified_at: datetime
 
 
 class OAuthCredentials(BaseModel):
