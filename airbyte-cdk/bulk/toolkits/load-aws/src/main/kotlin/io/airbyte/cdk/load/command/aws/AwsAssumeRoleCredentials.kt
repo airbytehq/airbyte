@@ -22,7 +22,9 @@ data class AwsAssumeRoleCredentials(
     @Value("\${$ACCESS_KEY_PROPERTY}") val accessKey: String,
     @Value("\${$SECRET_KEY_PROPERTY}") val secretKey: String,
     @Value("\${$EXTERNAL_ID_PROPERTY}") val externalId: String,
-)
+) {
+    override fun toString() = "AwsAssumeRoleCredentials(<redacted>)"
+}
 
 const val ACCESS_KEY_PROPERTY = "airbyte.destination.aws.assume-role.access-key"
 const val SECRET_KEY_PROPERTY = "airbyte.destination.aws.assume-role.secret-key"
