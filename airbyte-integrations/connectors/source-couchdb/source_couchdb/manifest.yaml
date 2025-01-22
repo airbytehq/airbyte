@@ -1,18 +1,20 @@
-version: "0.29.0"
+# airbyte-integrations/connectors/source-couchdb/source_couchdb/manifest.yaml
+version: "0.30.0"
 
 definitions:
   selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: []
+      field_path: [] # Ajustaremos isso conforme necessário para as respostas da API CouchDB
   requester:
     type: HttpRequester
-    url_base: "https://example.com"
+    url_base: "http://{{ config['host'] }}:{{ config['port'] }}" # URL base diretamente no manifest
     http_method: "GET"
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['api_key'] }}"
+      type: BasicHttpAuthenticator # CouchDB usa autenticação básica
+      username: "{{ config['username'] }}"
+      password: "{{ config['password'] }}"
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -25,32 +27,67 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
-  customers_stream:
+  documents_stream: # Stream para documentos de um banco de dados específico
     $ref: "#/definitions/base_stream"
-    name: "customers"
-    primary_key: "id"
-    $parameters:
-      path: "/example"
+    name: "{{ config['database_name'] }}_documents" # Nome do stream inclui o nome do banco de dados
+    primary_key: "_id"
+    schema: # Você pode definir o schema inline ou usar um arquivo schemas/documents.json
+      type: DeclarativeStreamSchema
+      method: GET
+      path: "/{{ config['database_name'] }}/_all_docs?include_docs=true" # Path para _all_docs com include_docs
 
 streams:
-  - "#/definitions/customers_stream"
+  # - "#/definitions/databases_stream"
+  - "#/definitions/documents_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "customers"
+    - "{{ config['database_name'] }}_documents" # Verifica o stream de documentos para testar a conexão
 
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/couchdb
   connection_specification:
-    title: Couchdb Spec
+    $schema: http://json-schema.org/draft-07/schema#
+    title: CouchDB Source Spec
     type: object
     required:
-      - api_key
+      - host
+      - port
+      - username
+      - password
+      - database_name
     additionalProperties: true
     properties:
-      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-      api_key:
+      host:
         type: string
-        description: API Key
+        title: Host
+        description: Endereço do servidor CouchDB.
+        examples: ["localhost", "192.168.1.100"]
+      port:
+        type: integer
+        title: Port
+        description: Porta do servidor CouchDB.
+        default: 5984
+        examples: [5984, 15984]
+      username:
+        type: string
+        title: Username
+        description: Nome de usuário para autenticação no CouchDB.
+      password:
+        type: string
+        title: Password
+        description: Senha para autenticação no CouchDB.
+        airbyte_secret: true
+      database_name: # database_name, singular e obrigatório
+        type: string
+        title: Database Name
+        description: Nome do banco de dados CouchDB a ser replicado.
+        examples: ["mydatabase"]
+      base_url: # Propriedade interna para construir a URL base
+        type: string
+        title: Base URL (Internal)
+        description: URL base construída internamente. Não precisa ser configurado diretamente.
+        default: "http://{{ config.host }}:{{ config.port }}"
+        airbyte_hidden: true
