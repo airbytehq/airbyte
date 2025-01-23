@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import os
+import select
 import shutil
 import signal
 import subprocess
@@ -162,21 +163,58 @@ class GradleTask(Step, ABC):
 
     def _run_gradle_in_subprocess(self) -> Tuple[str, str, int]:
         """
-        Run a gradle command in a subprocess.
+        Run a gradle command in a subprocess and stream output in real-time using non-blocking reads.
         """
         try:
             self.context.logger.info(f"Running gradle command: {self.gradle_command}")
             process = subprocess.Popen(
-                self.gradle_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, universal_newlines=True
+                self.gradle_command,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                universal_newlines=True,
             )
 
-            stdout, stderr = process.communicate()
+            # Store complete output for return value
+            full_stdout = []
+            full_stderr = []
 
-            if process.returncode != 0:
-                stderr = f"Error while running gradle command: {self.gradle_command}\n{stderr}"
-                return stdout, stderr, process.returncode
+            # Get file objects for stdout and stderr
+            stdout = process.stdout
+            stderr = process.stderr
 
-            return stdout, stderr, process.returncode
+            # While the process is running and we have pipes to read from
+            while process.poll() is None or (stdout or stderr):
+                # Wait for data on either pipe (timeout of 0.1 seconds)
+                readable, _, _ = select.select(
+                    [stdout, stderr] if stdout and stderr else [stdout] if stdout else [stderr] if stderr else [], [], [], 0.1
+                )
+
+                for stream in readable:
+                    data = stream.readline()
+                    if data:
+                        if stream == stdout:
+                            self.logger.info(data.rstrip())
+                            full_stdout.append(data)
+                        else:
+                            self.logger.error(data.rstrip())
+                            full_stderr.append(data)
+                    else:
+                        if stream == stdout:
+                            stdout = None
+                        else:
+                            stderr = None
+
+            returncode = process.wait()
+            final_stdout = "".join(full_stdout)
+            final_stderr = "".join(full_stderr)
+
+            if returncode != 0:
+                final_stderr = f"Error while running gradle command: {self.gradle_command}\n{final_stderr}"
+
+            return final_stdout, final_stderr, returncode
+
         finally:
             # Ensure process is terminated if something goes wrong
             if "process" in locals():
@@ -208,13 +246,7 @@ class GradleTask(Step, ABC):
                     artifacts=artifacts,
                 )
                 return step_result
-        except GradleTimeoutError as e:
-            return StepResult(
-                step=self,
-                status=StepStatus.FAILURE,
-                stderr=str(e),
-            )
-        except InvalidGradleEnvironment as e:
+        except (GradleTimeoutError, InvalidGradleEnvironment) as e:
             return StepResult(
                 step=self,
                 status=StepStatus.FAILURE,
