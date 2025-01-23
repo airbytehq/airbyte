@@ -265,6 +265,7 @@ class CampaignsSMS(CampaignsBase):
         )
         return params
 
+
 class CampaignsEmailDetailed(CampaignsEmail):
     def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         for record in super().parse_response(response, **kwargs):
@@ -302,6 +303,7 @@ class CampaignsEmailDetailed(CampaignsEmail):
 
         return HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping, max_retries=self.max_retries)
 
+
 class CampaignsSMSDetailed(CampaignsSMS):
     def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         for record in super().parse_response(response, **kwargs):
@@ -338,6 +340,7 @@ class CampaignsSMSDetailed(CampaignsSMS):
         }
 
         return HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping, max_retries=self.max_retries)
+
 
 class Flows(IncrementalKlaviyoStreamWithArchivedRecords):
     """Docs: https://developers.klaviyo.com/en/reference/get_flows"""

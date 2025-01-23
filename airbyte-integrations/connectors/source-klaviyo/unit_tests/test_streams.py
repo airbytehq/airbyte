@@ -19,7 +19,14 @@ from integration.config import KlaviyoConfigBuilder
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.source import SourceKlaviyo
-from source_klaviyo.streams import CampaignsEmail, CampaignsSMS, CampaignsEmailDetailed, CampaignsSMSDetailed, IncrementalKlaviyoStream, KlaviyoStream
+from source_klaviyo.streams import (
+    CampaignsEmail,
+    CampaignsEmailDetailed,
+    CampaignsSMS,
+    CampaignsSMSDetailed,
+    IncrementalKlaviyoStream,
+    KlaviyoStream,
+)
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
@@ -624,6 +631,7 @@ class TestCampaignsEmailStream:
             stream.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token) == expected_params
         )
 
+
 class TestCampaignsSMSStream:
     def test_read_records(self, requests_mock):
         input_records = [
@@ -800,6 +808,7 @@ class TestCampaignsSMSStream:
             stream.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token) == expected_params
         )
 
+
 class TestCampaignsEmailDetailedStream:
     def test_set_recipient_count(self, requests_mock):
         stream = CampaignsEmailDetailed(api_key=API_KEY)
@@ -851,6 +860,7 @@ class TestCampaignsEmailDetailedStream:
         record = {"id": "123123", "attributes": {"name": "Campaign"}}
         stream._set_campaign_message(record)
         assert "campaign_message" not in record
+
 
 class TestCampaignsSMSDetailedStream:
     def test_set_recipient_count(self, requests_mock):

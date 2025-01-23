@@ -9,7 +9,7 @@ from airbyte_cdk import TState
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from source_klaviyo.streams import CampaignsEmail, CampaignsSMS, CampaignsEmailDetailed, CampaignsSMSDetailed, Flows
+from source_klaviyo.streams import CampaignsEmail, CampaignsEmailDetailed, CampaignsSMS, CampaignsSMSDetailed, Flows
 
 
 class SourceKlaviyo(YamlDeclarativeSource):
