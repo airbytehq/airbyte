@@ -47,8 +47,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 interface DestinationTaskLauncher : TaskLauncher {
-    suspend fun handleSetupComplete()
-    suspend fun handleStreamStarted(stream: DestinationStream.Descriptor)
     suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream.Descriptor)
     suspend fun handleTeardownComplete(success: Boolean = true)
@@ -129,7 +127,9 @@ class DefaultDestinationTaskLauncher(
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-    @Named("fileMessageQueue") private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>
+    @Named("fileMessageQueue")
+    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
+    @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
@@ -184,8 +184,16 @@ class DefaultDestinationTaskLauncher(
 
         // Launch the client interface setup task
         log.info { "Starting startup task" }
-        val setupTask = setupTaskFactory.make(this)
+        val setupTask = setupTaskFactory.make()
         launch(setupTask)
+
+        log.info { "Enqueueing open stream tasks" }
+        catalog.streams.forEach { openStreamQueue.publish(it) }
+        openStreamQueue.close()
+        repeat(config.numOpenStreamWorkers) {
+            log.info { "Launching open stream task $it" }
+            launch(openStreamTaskFactory.make())
+        }
 
         // TODO: pluggable file transfer
         if (!fileTransferEnabled) {
@@ -237,21 +245,6 @@ class DefaultDestinationTaskLauncher(
         } else {
             taskScopeProvider.kill()
         }
-    }
-
-    /** Called when the initial destination setup completes. */
-    override suspend fun handleSetupComplete() {
-        catalog.streams.forEach {
-            log.info { "Starting open stream task for $it" }
-            val task = openStreamTaskFactory.make(this, it)
-            launch(task)
-        }
-    }
-
-    /** Called when a stream is ready for loading. */
-    override suspend fun handleStreamStarted(stream: DestinationStream.Descriptor) {
-        // Nothing to do because the SpillToDiskTask will trigger the next calls
-        log.info { "Stream $stream successfully opened for writing." }
     }
 
     /**

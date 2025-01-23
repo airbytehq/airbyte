@@ -66,7 +66,7 @@ class S3DataLakeSpecification :
     override val mainBranchName: String = ""
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
-    override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "")
+    override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
 }
 
 @Singleton
