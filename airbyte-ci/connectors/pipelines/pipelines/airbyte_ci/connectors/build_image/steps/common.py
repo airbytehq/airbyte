@@ -98,10 +98,9 @@ class BuildConnectorImagesBase(Step, ABC):
 class LoadContainerToLocalDockerHost(Step):
     context: ConnectorContext
 
-    def __init__(self, context: ConnectorContext, containers: dict[Platform, Container], image_tag: str = "dev") -> None:
+    def __init__(self, context: ConnectorContext, image_tag: str = "dev") -> None:
         super().__init__(context)
         self.image_tag = image_tag
-        self.containers = containers
 
     def _generate_dev_tag(self, platform: Platform, multi_platforms: bool) -> str:
         """
@@ -118,11 +117,11 @@ class LoadContainerToLocalDockerHost(Step):
     def image_name(self) -> str:
         return f"airbyte/{self.context.connector.technical_name}"
 
-    async def _run(self) -> StepResult:
+    async def _run(self, containers: dict[Platform, Container]) -> StepResult:
         loaded_images = []
         image_sha = None
-        multi_platforms = len(self.containers) > 1
-        for platform, container in self.containers.items():
+        multi_platforms = len(containers) > 1
+        for platform, container in containers.items():
             _, exported_tar_path = await export_container_to_tarball(self.context, container, platform)
             if not exported_tar_path:
                 return StepResult(
