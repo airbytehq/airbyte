@@ -10,7 +10,11 @@ import dpath.util
 from pydantic.v1 import BaseModel, Field
 
 from airbyte_cdk import OneOfOptionConfig
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
+    AbstractFileBasedSpec,
+    DeliverRawFiles,
+    DeliverRecords as DeliverRecordsBase,
+)
 
 
 class RemoteFileIdentity(BaseModel):
@@ -23,6 +27,24 @@ class RemoteFileIdentity(BaseModel):
     member_email_addresses: list[str] | None = None
     type: str
     modified_at: datetime
+
+
+class RemoteFileMetadata(BaseModel):
+    id: str
+    file_path: str
+    allowed_identity_remote_ids: list[str] | None = None
+    denied_identity_remote_ids: list[str] | None = None
+    publicly_accessible: bool = False
+
+
+class DeliverRecords(DeliverRecordsBase):
+    # Overriding to make visible with airbyte_hidden=False
+    sync_metadata: bool = Field(
+        title="Make stream sync files metadata",
+        description="If enabled, streams will sync files metadata instead of files data.",
+        default=False,
+        airbyte_hidden=False,
+    )
 
 
 class OAuthCredentials(BaseModel):
