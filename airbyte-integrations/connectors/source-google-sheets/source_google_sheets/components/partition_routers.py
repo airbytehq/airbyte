@@ -1,6 +1,7 @@
 #
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from typing import Any, Iterable, Mapping
 

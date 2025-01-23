@@ -1,6 +1,7 @@
 #
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
+
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -62,7 +63,7 @@ class RawSchemaParser:
         3. Removes duplicated fields from the schema.
         Return a list of tuples with correct property index (by found in array), value and raw_schema
         """
-        raw_schema_properties = self._extract_data(raw_schema_data, schema_pointer)
+        raw_schema_properties = self._extract_data(raw_schema_data, schema_pointer, default=[])
         duplicate_fields = set()
         parsed_schema_values = []
         seen_values = set()
@@ -182,7 +183,7 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
         raw_records_extracted = super().extract_records(response=response)
         for raw_record in raw_records_extracted:
-            unmatched_values_collection = raw_record[self._values_to_match_key]
+            unmatched_values_collection = raw_record.get(self._values_to_match_key, [])
             for unmatched_values in unmatched_values_collection:
                 if not DpathSchemaMatchingExtractor.is_row_empty(
                     unmatched_values

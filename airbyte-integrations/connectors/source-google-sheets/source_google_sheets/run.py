@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,6 +13,7 @@ from orjson import orjson
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
 from source_google_sheets.source import SourceGoogleSheets
+from source_google_sheets.config_migrations import MigrateServiceAccountInfo
 
 
 def _get_source(args: List[str]):
@@ -49,5 +50,6 @@ def _get_source(args: List[str]):
 def run():
     _args = sys.argv[1:]
     source = _get_source(_args)
+    MigrateServiceAccountInfo.migrate(sys.argv[1:], source)
     if source:
         launch(source, _args)

@@ -3,8 +3,8 @@ version: 6.7.0
 type: DeclarativeSource
 
 check:
-  stream_names: []
-  type: CheckStream
+  type: CheckDynamicStream
+  stream_count: 1
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -18,6 +18,7 @@ dynamic_streams:
         $parameters:
           row_count: 0
           sheet_id: ""
+          batch_size: 0
         paginator:
           type: NoPagination
         record_selector:
@@ -122,7 +123,7 @@ dynamic_streams:
             - $parameters
             - properties_to_match
           type: ComponentMappingDefinition
-          value: "{{components_values['data'][0]['rowData'][0]}}"
+          value: "{{components_values['data'][0].get('rowData', [{}])[0]}}"
           description: indexed_schema to match with row values.
         - field_path:
             - retriever
@@ -139,7 +140,6 @@ dynamic_streams:
           description: sheet_id for retriever.
         - field_path:
             - retriever
-            - partition_router
             - $parameters
             - batch_size
           type: ComponentMappingDefinition
@@ -220,8 +220,7 @@ definitions:
       type: HttpResponseFilter
       action: FAIL
       predicate: >-
-        {{ 'sheets' in response and response["sheets"] | length !=
-        1  }}
+        {{ 'sheets' in response and response["sheets"] | length != 1  }}
       http_codes: []
       # error lacks of information as error_message can't interpolate stream_slice["potato"]
       error_message: >-
@@ -248,7 +247,7 @@ definitions:
                 {%- endif -%}
             {%- endif -%}
         {%- endfor -%}
-        Duplicate headers found in sheet.
+        Duplicate headers found in sheet {{ response["sheets"][0]["properties"]["title"] }}.
         Ignoring them: {{ duplicate_fields }}
     fail_duplicate_headers:
       $ref: "#/definitions/response_filters/ignore_duplicate_headers"
@@ -323,13 +322,12 @@ definitions:
       - values
   jwt_authenticator:
     type: JwtAuthenticator
-    secret_key: "{{ config['credentials']['private_key'] }}"
+    secret_key: "{{ config['credentials']['service_account']['private_key'] }}"
     algorithm: "RS256"
     token_duration: 3600
-    header_prefix: "Bearer"
     jwt_payload:
-      aud: "https://oauth2.googleapis.com/token"
-      iss: '{{ config["credentials"]["client_email"] }}'
+      aud: "{{ config['credentials']['service_account']['token_uri'] }}"
+      iss: "{{ config['credentials']['service_account']['client_email'] }}"
     additional_jwt_payload:
       scope: "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly"
   oauth_authenticator:
@@ -340,35 +338,20 @@ definitions:
     client_id: '{{ config["credentials"]["client_id"] }}'
     client_secret: '{{ config["credentials"]["client_secret"] }}'
     refresh_token: '{{ config["credentials"]["refresh_token"] }}'
-  session_token_authenticator:
-    type: SessionTokenAuthenticator
-    $parameters:
-      name: "session_token_authenticator"
-    login_requester:
-      type: HttpRequester
-      url_base: https://oauth2.googleapis.com
-      path: token
-      authenticator:
-        type: NoAuth
-      http_method: POST
-      request_parameters: {}
-      request_headers:
-        Content-Type: application/x-www-form-urlencoded
-      request_body_data: >-
-        grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=heregoesthetokenassertion
-    session_token_path:
-      - access_token
-    expiration_duration: PT1H
-    request_authentication:
-      type: Bearer
+  jwt_profile_assertion_oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    refresh_request_headers:
+      Content-Type: application/x-www-form-urlencoded
+    use_profile_assertion: true
+    profile_assertion:
+      $ref: "#/definitions/jwt_authenticator"
   authenticator:
-    $parameters:
-      name: "session_token_authenticator"
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
     authenticators:
       Client: "#/definitions/oauth_authenticator"
-      Service: "#/definitions/session_token_authenticator"
+      Service: "#/definitions/jwt_profile_assertion_oauth_authenticator"
 
 schemas:
   sheets:
