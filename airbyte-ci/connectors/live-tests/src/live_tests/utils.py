@@ -41,7 +41,6 @@ def write_string_to_test_artifact(request: SubRequest, content: str, filename: s
     if subdir:
         test_artifact_directory = test_artifact_directory / subdir
     test_artifact_directory.mkdir(parents=True, exist_ok=True)
-
     artifact_path = test_artifact_directory / filename
     artifact_path.write_text(content)
     return artifact_path
@@ -56,7 +55,6 @@ def get_and_write_diff(
     exclude_paths: Optional[list[str]],
 ) -> str:
     logger = get_test_logger(request)
-    sanitized_filepath = filepath.replace("/", "_")
     diff = DeepDiff(
         control_data,
         target_data,
@@ -69,17 +67,17 @@ def get_and_write_diff(
         parsed_diff = json.loads(diff_json)
         formatted_diff_json = json.dumps(parsed_diff, indent=2)
 
-        diff_path_tree = write_string_to_test_artifact(request, str(diff.tree), f"{sanitized_filepath}_tree.txt", subdir=request.node.name)
+        diff_path_tree = write_string_to_test_artifact(request, str(diff.tree), f"{filepath}_tree.txt", subdir=request.node.name)
         diff_path_text = write_string_to_test_artifact(
             request,
             formatted_diff_json,
-            f"{sanitized_filepath}_text.txt",
+            f"{filepath}_text.txt",
             subdir=Path(request.node.name),
         )
         diff_path_pretty = write_string_to_test_artifact(
             request,
             str(diff.pretty()),
-            f"{sanitized_filepath}_pretty.txt",
+            f"{filepath}_pretty.txt",
             subdir=Path(request.node.name),
         )
 
