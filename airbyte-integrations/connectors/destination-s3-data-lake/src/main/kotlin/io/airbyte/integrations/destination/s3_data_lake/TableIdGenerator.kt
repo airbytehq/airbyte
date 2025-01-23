@@ -58,7 +58,7 @@ class TableIdGeneratorFactory(private val s3DataLakeConfiguration: S3DataLakeCon
             is RestCatalogConfiguration ->
                 SimpleTableIdGenerator(
                     (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
-                        as RestCatalogConfiguration)
+                            as RestCatalogConfiguration)
                         .namespace
                 )
         }

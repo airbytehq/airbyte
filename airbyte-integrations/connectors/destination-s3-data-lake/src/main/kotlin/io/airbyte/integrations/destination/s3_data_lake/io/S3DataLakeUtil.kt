@@ -55,8 +55,6 @@ import org.apache.iceberg.exceptions.AlreadyExistsException
 import org.projectnessie.client.NessieConfigConstants
 import software.amazon.awssdk.services.glue.model.ConcurrentModificationException
 
-import org.apache.iceberg.rest.RESTCatalog
-
 private val logger = KotlinLogging.logger {}
 
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
