@@ -355,8 +355,8 @@ class MSSQLQueryBuilder(
             """
         } else {
             val uniquenessConstraint =
-                uniquenessKey.joinToString(" AND ") { "Target.$it = Source.$it" }
-            val updateStatement = schema.joinToString(", ") { "[${it.name}] = Source.${it.name}" }
+                uniquenessKey.joinToString(" AND ") { "Target.[$it] = Source.[$it]" }
+            val updateStatement = schema.joinToString(", ") { "Target.[${it.name}] = Source.[${it.name}]" }
             """
             MERGE INTO [$outputSchema].[$tableName] AS Target
             USING (VALUES ($templateColumns)) AS Source ($columns)
