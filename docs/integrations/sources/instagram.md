@@ -17,7 +17,7 @@ This page contains the setup guide and reference information for the [Instagram]
 <!-- env:oss -->
 
 - [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-- [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
+- [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-platform/reference/oauth-authorize/)
 
 <!-- /env:oss -->
 
