@@ -282,6 +282,7 @@ If enabled, sends subdirectory folder structure along with source file names to 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.2.0  | 2025-01-23 | [52099](https://github.com/airbytehq/airbyte/pull/52099) | Add implementation to transfer metadata records |
 | 0.1.0-rc.1  | 2025-01-20 | [51585](https://github.com/airbytehq/airbyte/pull/51585) | Bump cdk to enable universal file transfer |
 | 0.0.12 | 2024-06-06 | [39291](https://github.com/airbytehq/airbyte/pull/39291) | [autopull] Upgrade base image to v1.2.2 |
 | 0.0.11 | 2024-05-29 | [38698](https://github.com/airbytehq/airbyte/pull/38698) | Avoid error on empty stream when running discover |
