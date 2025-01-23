@@ -345,7 +345,7 @@ class MSSQLQueryBuilder(
         fqTableName: String,
         schema: List<NamedField>
     ): String {
-        val columns = schema.joinToString(", ") { it.name }
+        val columns = schema.joinToString(", ") { "[${it.name}]" }
         val templateColumns = schema.joinToString(", ") { "?" }
         return if (uniquenessKey.isEmpty()) {
             """
@@ -386,7 +386,7 @@ class MSSQLQueryBuilder(
         separator: String = DEFAULT_SEPARATOR
     ): String {
         return schema.joinToString(separator = separator) {
-            "${it.name} ${toMssqlType.convert(toSqlType.convert(it.type.type)).sqlString} NULL"
+            "[${it.name}] ${toMssqlType.convert(toSqlType.convert(it.type.type)).sqlString} NULL"
         }
     }
 }
