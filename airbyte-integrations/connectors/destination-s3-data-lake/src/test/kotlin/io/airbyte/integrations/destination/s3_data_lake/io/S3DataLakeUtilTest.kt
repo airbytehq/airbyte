@@ -334,7 +334,7 @@ internal class S3DataLakeUtilTest {
         val warehouseLocation = "s3://test/"
         val s3BucketName = "test"
         val s3Endpoint = "http://localhost:9000"
-        val databasename = ""
+        val databaseName = ""
         val awsAccessKeyConfiguration =
             AWSAccessKeyConfiguration(
                 accessKeyId = awsAccessKey,
@@ -350,8 +350,7 @@ internal class S3DataLakeUtilTest {
             IcebergCatalogConfiguration(
                 warehouseLocation,
                 "main",
-                databasename,
-                NessieCatalogConfiguration(nessieServerUri, nessieAccessToken)
+                NessieCatalogConfiguration(nessieServerUri, nessieAccessToken, databaseName),
             )
         val configuration =
             S3DataLakeConfiguration(
