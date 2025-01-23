@@ -68,32 +68,32 @@ const val CREATE_SCHEMA_QUERY =
     """
 
 const val ALTER_TABLE_ADD = """
-        ALTER TABLE ?
-        ADD ? ? NULL;
+        ALTER TABLE [?].[?]
+        ADD [?] ? NULL;
     """
 const val ALTER_TABLE_DROP = """
-        ALTER TABLE ?
-        DROP COLUMN ?;
+        ALTER TABLE [?].[?]
+        DROP COLUMN [?];
     """
 const val ALTER_TABLE_MODIFY = """
-        ALTER TABLE ?
-        ALTER COLUMN ? ? NULL;
+        ALTER TABLE [?].[?]
+        ALTER COLUMN [?] ? NULL;
     """
 
 const val DELETE_WHERE_COL_IS_NOT_NULL =
     """
-        DELETE FROM ?
-        WHERE ? is not NULL
+        DELETE FROM [?].[?]
+        WHERE [?] is not NULL
     """
 
 const val DELETE_WHERE_COL_LESS_THAN = """
-        DELETE FROM ?
-        WHERE ? < ?
+        DELETE FROM [?].[?]
+        WHERE [?] < ?
     """
 
 const val SELECT_FROM = """
         SELECT *
-        FROM ?
+        FROM [?].[?]
     """
 
 class MSSQLQueryBuilder(
@@ -139,8 +139,8 @@ class MSSQLQueryBuilder(
     data class NamedValue(val name: String, val value: AirbyteValue)
     data class NamedSqlField(val name: String, val type: MssqlType)
 
-    private val outputSchema: String = stream.descriptor.namespace ?: config.schema
-    private val tableName: String = stream.descriptor.name
+    val outputSchema: String = stream.descriptor.namespace ?: config.schema
+    val tableName: String = stream.descriptor.name
     val fqTableName = "$outputSchema.$tableName"
     private val uniquenessKey: List<String> =
         when (stream.importType) {
@@ -198,14 +198,16 @@ class MSSQLQueryBuilder(
             StringBuilder()
                 .apply {
                     toDelete.entries.forEach {
-                        appendLine(ALTER_TABLE_DROP.toQuery(fqTableName, it.key))
+                        appendLine(ALTER_TABLE_DROP.toQuery(outputSchema, tableName, it.key))
                     }
                     toAdd.entries.forEach {
-                        appendLine(ALTER_TABLE_ADD.toQuery(fqTableName, it.key, it.value.sqlString))
+                        appendLine(ALTER_TABLE_ADD
+                            .toQuery(outputSchema, tableName, it.key, it.value.sqlString))
                     }
                     toAlter.entries.forEach {
                         appendLine(
-                            ALTER_TABLE_MODIFY.toQuery(fqTableName, it.key, it.value.sqlString)
+                            ALTER_TABLE_MODIFY
+                                .toQuery(outputSchema, tableName, it.key, it.value.sqlString)
                         )
                     }
                 }
@@ -224,21 +226,20 @@ class MSSQLQueryBuilder(
             }
         }
 
-        connection.createStatement().use {
-            it.executeUpdate(createTableIfNotExists(fqTableName, finalTableSchema))
-        }
+        createTableIfNotExists(fqTableName, finalTableSchema).executeUpdate(connection)
     }
 
     fun getFinalTableInsertColumnHeader(): String =
-        getFinalTableInsertColumnHeader(fqTableName, finalTableSchema)
+        getFinalTableInsertColumnHeader(finalTableSchema)
 
     fun deleteCdc(connection: Connection) =
-        DELETE_WHERE_COL_IS_NOT_NULL.toQuery(fqTableName, AIRBYTE_CDC_DELETED_AT)
+        DELETE_WHERE_COL_IS_NOT_NULL.toQuery(outputSchema, tableName, AIRBYTE_CDC_DELETED_AT)
             .executeUpdate(connection)
 
     fun deletePreviousGenerations(connection: Connection, minGenerationId: Long) =
         DELETE_WHERE_COL_LESS_THAN.toQuery(
-                fqTableName,
+                outputSchema,
+                tableName,
                 AIRBYTE_GENERATION_ID,
                 minGenerationId.toString()
             )
@@ -319,9 +320,9 @@ class MSSQLQueryBuilder(
         val cdcIndex = if (hasCdc) createIndex(fqTableName, listOf(AIRBYTE_CDC_DELETED_AT)) else ""
 
         return """
-            IF OBJECT_ID('$fqTableName') IS NULL
+            IF OBJECT_ID('$outputSchema.$tableName') IS NULL
             BEGIN
-                CREATE TABLE $fqTableName
+                CREATE TABLE [$outputSchema].[$tableName]
                 (
                     ${airbyteTypeToSqlSchema(schema)}
                 );
@@ -338,27 +339,26 @@ class MSSQLQueryBuilder(
     ): String {
         val name = "${fqTableName.replace('.', '_')}_${columns.hashCode()}"
         val indexType = if (clustered) "CLUSTERED" else ""
-        return "CREATE $indexType INDEX $name ON $fqTableName (${columns.joinToString(", ")})"
+        return "CREATE $indexType INDEX $name ON [$outputSchema].[$tableName] (${columns.joinToString(", ")})"
     }
 
     private fun getFinalTableInsertColumnHeader(
-        fqTableName: String,
         schema: List<NamedField>
     ): String {
         val columns = schema.joinToString(", ") { "[${it.name}]" }
         val templateColumns = schema.joinToString(", ") { "?" }
         return if (uniquenessKey.isEmpty()) {
             """
-            INSERT INTO $fqTableName ($columns)
+            INSERT INTO [$outputSchema].[$tableName] ($columns)
                 SELECT table_value.*
                 FROM (VALUES ($templateColumns)) table_value($columns)
             """
         } else {
             val uniquenessConstraint =
                 uniquenessKey.joinToString(" AND ") { "Target.$it = Source.$it" }
-            val updateStatement = schema.joinToString(", ") { "${it.name} = Source.${it.name}" }
+            val updateStatement = schema.joinToString(", ") { "[${it.name}] = Source.${it.name}" }
             """
-            MERGE INTO $fqTableName AS Target
+            MERGE INTO [$outputSchema].[$tableName] AS Target
             USING (VALUES ($templateColumns)) AS Source ($columns)
             ON $uniquenessConstraint
             WHEN MATCHED THEN
