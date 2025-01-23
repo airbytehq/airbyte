@@ -208,16 +208,22 @@ definitions:
               current_type: lastModifiedTime
               condition: "{{ raw_schema['options']['result']['type'] == 'date' }}"
             - type: TypesMap
-              target_type: array
+              target_type:
+                field_type: array
+                items: string
               current_type: multipleRecordLinks
             - type: TypesMap
               target_type: string
               current_type: multilineText
             - type: TypesMap
-              target_type: array
+              target_type:
+                field_type: array
+                items: string
               current_type: multipleCollaborators
             - type: TypesMap
-              target_type: array
+              target_type:
+                field_type: array
+                items: string
               current_type: multipleSelects
             - type: TypesMap
               target_type: number
@@ -250,36 +256,156 @@ definitions:
               target_type: string
               current_type: simpleText
             - type: TypesMap
-              target_type: array
+              target_type:
+                field_type: array
+                items: string
               current_type: lookup
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] }}"
             - type: TypesMap
-              target_type: array
-              current_type: multipleLookupValues
+              target_type:
+                field_type: array
+                items: number
+              current_type: lookup
+              items_type:
+                condition: "{{ raw_schema['options']['result']['type'] in ['rating', 'percent', 'number', 'duration', 'currency', 'count', 'autoNumber'] }}"
             - type: TypesMap
-              target_type: array
+              target_type:
+                field_type: array
+                items:
+                  field_type: array
+                  items: string
+              current_type: lookup
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleSelects', 'multipleCollaborators', 'multipleRecordLinks'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: datetime
+              current_type: lookup
+              condition: "{{ raw_schema['options']['result']['type'] in ['lastModifiedTime', 'dateTime', 'createdTime'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: date
+              current_type: lookup
+              condition: "{{ raw_schema['options']['result']['type'] in ['date'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: boolean
+              current_type: lookup
+              condition: "{{ raw_schema['options']['result']['type'] in ['checkbox'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: string
               current_type: rollup
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] }}"
             - type: TypesMap
-              target_type: number
+              target_type:
+                field_type: array
+                items: number
+              current_type: rollup
+              items_type:
+                condition: "{{ raw_schema['options']['result']['type'] in ['rating', 'percent', 'number', 'duration', 'currency', 'count', 'autoNumber'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items:
+                  field_type: array
+                  items: string
+              current_type: rollup
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleSelects', 'multipleCollaborators', 'multipleRecordLinks'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: datetime
+              current_type: rollup
+              condition: "{{ raw_schema['options']['result']['type'] in ['lastModifiedTime', 'dateTime', 'createdTime'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: date
+              current_type: rollup
+              condition: "{{ raw_schema['options']['result']['type'] in ['date'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: boolean
+              current_type: rollup
+              condition: "{{ raw_schema['options']['result']['type'] in ['checkbox'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: string
+              current_type: multipleLookupValues
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: number
+              current_type: multipleLookupValues
+              items_type:
+                condition: "{{ raw_schema['options']['result']['type'] in ['rating', 'percent', 'number', 'duration', 'currency', 'count', 'autoNumber'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items:
+                  field_type: array
+                  items: string
+              current_type: multipleLookupValues
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleSelects', 'multipleCollaborators', 'multipleRecordLinks'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: datetime
+              current_type: multipleLookupValues
+              condition: "{{ raw_schema['options']['result']['type'] in ['lastModifiedTime', 'dateTime', 'createdTime'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: date
+              current_type: multipleLookupValues
+              condition: "{{ raw_schema['options']['result']['type'] in ['date'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: boolean
+              current_type: multipleLookupValues
+              condition: "{{ raw_schema['options']['result']['type'] in ['checkbox'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: number
               current_type: formula
               condition: "{{ raw_schema['options']['result']['type'] in ['number', 'currency', 'percent', 'duration'] }}"
             - type: TypesMap
-              target_type: string
+              target_type:
+                field_type: array
+                items: string
               current_type: formula
               condition: "{{ not raw_schema['options']['formula'].startswith('ARRAYCOMPACT') }}"
             - type: TypesMap
-              target_type: string
+              target_type:
+                field_type: array
+                items: string
               current_type: formula
               condition: "{{ not raw_schema['options']['formula'].startswith('ARRAYFLATTEN') }}"
             - type: TypesMap
-              target_type: string
+              target_type:
+                field_type: array
+                items: string
               current_type: formula
               condition: "{{ not raw_schema['options']['formula'].startswith('ARRAYUNIQUE') }}"
             - type: TypesMap
-              target_type: string
+              target_type:
+                field_type: array
+                items: string
               current_type: formula
               condition: "{{ not raw_schema['options']['formula'].startswith('ARRAYSLICE') }}"
             - type: TypesMap
-              target_type: array
+              target_type:
+                field_type: array
+                items: string
               current_type: formula
       transformations:
         - type: AddFields
