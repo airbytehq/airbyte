@@ -242,5 +242,18 @@ class DestinationTaskLauncherUTest {
         job.join()
 
         coVerify(exactly = numOpenStreamWorkers) { openStreamTaskFactory.make() }
+
+        coVerify(exactly = 0) { openStreamQueue.publish(any()) }
+    }
+
+    @Test
+    fun `test streams opened when setup completes`() = runTest {
+        val launcher = getDefaultDestinationTaskLauncher(false)
+
+        coEvery { openStreamQueue.publish(any()) } returns Unit
+
+        launcher.handleSetupComplete()
+
+        coVerify(exactly = catalog.streams.size) { openStreamQueue.publish(any()) }
     }
 }
