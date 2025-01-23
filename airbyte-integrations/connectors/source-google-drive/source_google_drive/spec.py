@@ -13,6 +13,8 @@ from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
     AbstractFileBasedSpec,
     DeliverRawFiles,
+)
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
     DeliverRecords as DeliverRecordsBase,
 )
 

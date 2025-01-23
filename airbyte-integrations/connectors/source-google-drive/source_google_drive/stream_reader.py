@@ -23,7 +23,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .spec import RemoteFileIdentity, SourceGoogleDriveSpec, RemoteFileMetadata
+from .spec import RemoteFileIdentity, RemoteFileMetadata, SourceGoogleDriveSpec
 
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
@@ -63,11 +63,12 @@ PUBLIC_PERMISSION_IDS = [
 ]
 
 PERMISSIONS_API_SCOPES = [
-                        "https://www.googleapis.com/auth/drive",
-                        "https://www.googleapis.com/auth/admin.directory.group.readonly",
-                        "https://www.googleapis.com/auth/admin.directory.group.member.readonly",
-                        "https://www.googleapis.com/auth/admin.directory.user.readonly",
-                    ]
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/admin.directory.group.readonly",
+    "https://www.googleapis.com/auth/admin.directory.group.member.readonly",
+    "https://www.googleapis.com/auth/admin.directory.user.readonly",
+]
+
 
 class GoogleDriveRemoteFile(RemoteFile):
     id: str
@@ -360,4 +361,3 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             allowed_identity_remote_ids=[p.remote_id for p in remote_identities],
             publicly_accessible=is_public,
         ).dict(exclude_none=True)
-
