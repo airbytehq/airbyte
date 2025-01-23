@@ -230,8 +230,8 @@ class CampaignsBase(IncrementalKlaviyoStreamWithArchivedRecords):
     def path(self, **kwargs) -> str:
         return "campaigns"
 
-class CampaignsEmail(CampaignsBase):
 
+class CampaignsEmail(CampaignsBase):
     def request_params(
         self,
         stream_state: Optional[Mapping[str, Any]],
@@ -248,8 +248,8 @@ class CampaignsEmail(CampaignsBase):
         )
         return params
 
-class CampaignsSMS(CampaignsBase):
 
+class CampaignsSMS(CampaignsBase):
     def request_params(
         self,
         stream_state: Optional[Mapping[str, Any]],
