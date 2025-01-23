@@ -97,7 +97,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, CheckpointMixin, ABC):
     cursor_time_format = "YYYY-MM-DD"
     # Slice duration is set to 14 days, because for conversion_window_days default value is 14.
     # Range less than 14 days will break the integration tests.
-    slice_duration = pendulum.duration(days=14)
+    slice_duration = pendulum.duration(days=0)
     # slice step is difference from one slice end_date and next slice start_date
     slice_step = pendulum.duration(days=1)
 
