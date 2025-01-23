@@ -28,7 +28,7 @@ data:
   suggestedStreams:
     streams:
       - events
-      - campaigns
+      - campaigns_email
       - lists
       - metrics
       - flows

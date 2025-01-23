@@ -19,7 +19,7 @@ from integration.config import KlaviyoConfigBuilder
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.source import SourceKlaviyo
-from source_klaviyo.streams import Campaigns, CampaignsDetailed, IncrementalKlaviyoStream, KlaviyoStream
+from source_klaviyo.streams import CampaignsEmail, CampaignsSMS, CampaignsEmailDetailed, CampaignsSMSDetailed, IncrementalKlaviyoStream, KlaviyoStream
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
@@ -448,7 +448,7 @@ class TestGlobalExclusionsStream:
         ]
 
 
-class TestCampaignsStream:
+class TestCampaignsEmailStream:
     def test_read_records(self, requests_mock):
         input_records = [
             {"attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"}},
@@ -458,7 +458,7 @@ class TestCampaignsStream:
             {"attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"}},
         ]
 
-        stream = Campaigns(api_key=API_KEY)
+        stream = CampaignsEmail(api_key=API_KEY)
         requests_mock.register_uri(
             "GET",
             "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=equals(messages.channel,'email')",
@@ -532,11 +532,11 @@ class TestCampaignsStream:
         ),
     )
     def test_get_updated_state(self, latest_record, current_stream_state, expected_state):
-        stream = Campaigns(api_key=API_KEY)
+        stream = CampaignsEmail(api_key=API_KEY)
         assert stream._get_updated_state(current_stream_state, latest_record) == expected_state
 
     def test_stream_slices(self):
-        stream = Campaigns(api_key=API_KEY)
+        stream = CampaignsEmail(api_key=API_KEY)
         assert stream.stream_slices(sync_mode=SyncMode.full_refresh) == [{"archived": False}, {"archived": True}]
 
     @pytest.mark.parametrize(
@@ -619,15 +619,190 @@ class TestCampaignsStream:
         ),
     )
     def test_request_params(self, stream_state, stream_slice, next_page_token, expected_params):
-        stream = Campaigns(api_key=API_KEY)
+        stream = CampaignsEmail(api_key=API_KEY)
         assert (
             stream.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token) == expected_params
         )
 
+class TestCampaignsSMSStream:
+    def test_read_records(self, requests_mock):
+        input_records = [
+            {"attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"}},
+            {"attributes": {"name": "Some name 2", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"}},
+        ]
+        input_records_archived = [
+            {"attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"}},
+        ]
 
-class TestCampaignsDetailedStream:
+        stream = CampaignsSMS(api_key=API_KEY)
+        requests_mock.register_uri(
+            "GET",
+            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=equals(messages.channel,'sms')",
+            status_code=200,
+            json={"data": input_records},
+            complete_qs=True,
+        )
+        requests_mock.register_uri(
+            "GET",
+            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=and(equals(archived,true),equals(messages.channel,'sms'))",
+            status_code=200,
+            json={"data": input_records_archived},
+            complete_qs=True,
+        )
+
+        expected_records = [
+            {
+                "attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+            {
+                "attributes": {"name": "Some name 2", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+            {
+                "attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+        ]
+
+        records = []
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                records.append(record)
+
+        assert records == expected_records
+
+    @pytest.mark.parametrize(
+        ("latest_record", "current_stream_state", "expected_state"),
+        (
+            (
+                {"attributes": {"archived": False, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {"updated_at": "2023-01-01T00:00:00+00:00", "archived": {"updated_at": "2023-01-01T00:00:00+00:00"}},
+                {"updated_at": "2023-01-02T00:00:00+00:00", "archived": {"updated_at": "2023-01-01T00:00:00+00:00"}},
+            ),
+            (
+                {"attributes": {"archived": False, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {"updated_at": "2023-01-01T00:00:00+00:00"},
+                {"updated_at": "2023-01-02T00:00:00+00:00"},
+            ),
+            (
+                {"attributes": {"archived": True, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {"updated_at": "2023-01-01T00:00:00+00:00", "archived": {"updated_at": "2023-01-01T00:00:00+00:00"}},
+                {"updated_at": "2023-01-01T00:00:00+00:00", "archived": {"updated_at": "2023-01-02T00:00:00+00:00"}},
+            ),
+            (
+                {"attributes": {"archived": True, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {"updated_at": "2023-01-01T00:00:00+00:00"},
+                {"updated_at": "2023-01-01T00:00:00+00:00", "archived": {"updated_at": "2023-01-02T00:00:00+00:00"}},
+            ),
+            (
+                {"attributes": {"archived": False, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {},
+                {"updated_at": "2023-01-02T00:00:00+00:00"},
+            ),
+            (
+                {"attributes": {"archived": True, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {},
+                {"archived": {"updated_at": "2023-01-02T00:00:00+00:00"}},
+            ),
+        ),
+    )
+    def test_get_updated_state(self, latest_record, current_stream_state, expected_state):
+        stream = CampaignsSMS(api_key=API_KEY)
+        assert stream._get_updated_state(current_stream_state, latest_record) == expected_state
+
+    def test_stream_slices(self):
+        stream = CampaignsSMS(api_key=API_KEY)
+        assert stream.stream_slices(sync_mode=SyncMode.full_refresh) == [{"archived": False}, {"archived": True}]
+
+    @pytest.mark.parametrize(
+        ("stream_state", "stream_slice", "next_page_token", "expected_params"),
+        (
+            ({}, {"archived": False}, None, {"filter": "equals(messages.channel,'sms')", "sort": "updated_at"}),
+            ({}, {"archived": True}, None, {"filter": "and(equals(archived,true),equals(messages.channel,'sms'))", "sort": "updated_at"}),
+            (
+                {"updated_at": "2023-10-10T00:00:00+00:00"},
+                {"archived": False},
+                None,
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(messages.channel,'sms'))",
+                    "sort": "updated_at",
+                },
+            ),
+            (
+                {"archived": {"updated_at": "2023-10-10T00:00:00+00:00"}},
+                {"archived": True},
+                None,
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true),equals(messages.channel,'sms'))",
+                    "sort": "updated_at",
+                },
+            ),
+            (
+                {"updated_at": "2023-10-10T00:00:00+00:00"},
+                {"archived": False},
+                {"page[cursor]": "next_page_cursor"},
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(messages.channel,'sms'))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+            ),
+            (
+                {"archived": {"updated_at": "2023-10-10T00:00:00+00:00"}},
+                {"archived": True},
+                {"page[cursor]": "next_page_cursor"},
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true),equals(messages.channel,'sms'))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+            ),
+            (
+                {},
+                {"archived": True},
+                {"page[cursor]": "next_page_cursor"},
+                {
+                    "filter": "and(equals(archived,true),equals(messages.channel,'sms'))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+            ),
+            (
+                {},
+                {"archived": False},
+                {"page[cursor]": "next_page_cursor"},
+                {"filter": "equals(messages.channel,'sms')", "sort": "updated_at", "page[cursor]": "next_page_cursor"},
+            ),
+            (
+                {"updated_at": "2023-10-10T00:00:00+00:00", "archived": {"updated_at": "2024-10-10T00:00:00+00:00"}},
+                {"archived": False},
+                None,
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(messages.channel,'sms'))",
+                    "sort": "updated_at",
+                },
+            ),
+            (
+                {"updated_at": "2023-10-10T00:00:00+00:00", "archived": {"updated_at": "2022-10-10T00:00:00+00:00"}},
+                {"archived": True},
+                None,
+                {
+                    "filter": "and(greater-than(updated_at,2022-10-10T00:00:00+00:00),equals(archived,true),equals(messages.channel,'sms'))",
+                    "sort": "updated_at",
+                },
+            ),
+        ),
+    )
+    def test_request_params(self, stream_state, stream_slice, next_page_token, expected_params):
+        stream = CampaignsSMS(api_key=API_KEY)
+        assert (
+            stream.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token) == expected_params
+        )
+
+class TestCampaignsEmailDetailedStream:
     def test_set_recipient_count(self, requests_mock):
-        stream = CampaignsDetailed(api_key=API_KEY)
+        stream = CampaignsEmailDetailed(api_key=API_KEY)
         campaign_id = "1"
         record = {"id": campaign_id, "attributes": {"name": "Campaign"}}
         estimated_recipient_count = 5
@@ -642,7 +817,7 @@ class TestCampaignsDetailedStream:
         assert record["estimated_recipient_count"] == estimated_recipient_count
 
     def test_set_recipient_count_not_found(self, requests_mock):
-        stream = CampaignsDetailed(api_key=API_KEY)
+        stream = CampaignsEmailDetailed(api_key=API_KEY)
         campaign_id = "1"
         record = {"id": campaign_id, "attributes": {"name": "Campaign"}}
 
@@ -657,7 +832,7 @@ class TestCampaignsDetailedStream:
         assert record["estimated_recipient_count"] == 0
 
     def test_set_campaign_message(self, requests_mock):
-        stream = CampaignsDetailed(api_key=API_KEY)
+        stream = CampaignsEmailDetailed(api_key=API_KEY)
         message_id = "1"
         record = {"id": "123123", "attributes": {"name": "Campaign", "message": message_id}}
         campaign_message_data = {"type": "campaign-message", "id": message_id}
@@ -672,7 +847,59 @@ class TestCampaignsDetailedStream:
         assert record["campaign_message"] == campaign_message_data
 
     def test_set_campaign_message_no_message_id(self):
-        stream = CampaignsDetailed(api_key=API_KEY)
+        stream = CampaignsEmailDetailed(api_key=API_KEY)
+        record = {"id": "123123", "attributes": {"name": "Campaign"}}
+        stream._set_campaign_message(record)
+        assert "campaign_message" not in record
+
+class TestCampaignsSMSDetailedStream:
+    def test_set_recipient_count(self, requests_mock):
+        stream = CampaignsSMSDetailed(api_key=API_KEY)
+        campaign_id = "1"
+        record = {"id": campaign_id, "attributes": {"name": "Campaign"}}
+        estimated_recipient_count = 5
+
+        requests_mock.register_uri(
+            "GET",
+            f"https://a.klaviyo.com/api/campaign-recipient-estimations/{campaign_id}",
+            status_code=200,
+            json={"data": {"attributes": {"estimated_recipient_count": estimated_recipient_count}}},
+        )
+        stream._set_recipient_count(record)
+        assert record["estimated_recipient_count"] == estimated_recipient_count
+
+    def test_set_recipient_count_not_found(self, requests_mock):
+        stream = CampaignsSMSDetailed(api_key=API_KEY)
+        campaign_id = "1"
+        record = {"id": campaign_id, "attributes": {"name": "Campaign"}}
+
+        mocked_response = mock.MagicMock(spec=requests.Response)
+        mocked_response.ok = False
+        mocked_response.status_code = 404
+        mocked_response.json.return_value = {}
+        with patch.object(
+            stream._http_client, "send_request", return_value=(mock.MagicMock(spec=requests.PreparedRequest), mocked_response)
+        ):
+            stream._set_recipient_count(record)
+        assert record["estimated_recipient_count"] == 0
+
+    def test_set_campaign_message(self, requests_mock):
+        stream = CampaignsSMSDetailed(api_key=API_KEY)
+        message_id = "1"
+        record = {"id": "123123", "attributes": {"name": "Campaign", "message": message_id}}
+        campaign_message_data = {"type": "campaign-message", "id": message_id}
+
+        requests_mock.register_uri(
+            "GET",
+            f"https://a.klaviyo.com/api/campaign-messages/{message_id}",
+            status_code=200,
+            json={"data": campaign_message_data},
+        )
+        stream._set_campaign_message(record)
+        assert record["campaign_message"] == campaign_message_data
+
+    def test_set_campaign_message_no_message_id(self):
+        stream = CampaignsSMSDetailed(api_key=API_KEY)
         record = {"id": "123123", "attributes": {"name": "Campaign"}}
         stream._set_campaign_message(record)
         assert "campaign_message" not in record

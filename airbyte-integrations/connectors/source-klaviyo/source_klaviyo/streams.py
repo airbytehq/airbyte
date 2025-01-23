@@ -266,26 +266,9 @@ class CampaignsSMS(CampaignsBase):
         )
         return params
 
-
-class Campaigns(CampaignsEmail, CampaignsSMS):
-    """Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns"""
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        for record in chain(
-                CampaignsEmail.read_records(sync_mode, cursor_field, stream_slice, stream_state), 
-                CampaignsSMS.read_records(sync_mode, cursor_field, stream_slice, stream_state)
-            ):
-            yield record
-
-class CampaignsDetailed(CampaignsEmail, CampaignsSMS):
+class CampaignsEmailDetailed(CampaignsEmail):
     def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        for record in chain(CampaignsEmail.parse_response(response, **kwargs), CampaignsSMS.parse_response(response, **kwargs)):
+        for record in super().parse_response(response, **kwargs):
             yield self._transform_record(record)
 
     def _transform_record(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -320,6 +303,42 @@ class CampaignsDetailed(CampaignsEmail, CampaignsSMS):
 
         return HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping, max_retries=self.max_retries)
 
+class CampaignsSMSDetailed(CampaignsSMS):
+    def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        for record in super().parse_response(response, **kwargs):
+            yield self._transform_record(record)
+
+    def _transform_record(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        self._set_recipient_count(record)
+        self._set_campaign_message(record)
+        return record
+
+    def _set_recipient_count(self, record: Mapping[str, Any]) -> None:
+        campaign_id = record["id"]
+        _, recipient_count_response = self._http_client.send_request(
+            url=f"{self.url_base}campaign-recipient-estimations/{campaign_id}",
+            request_kwargs={},
+            headers=self.request_headers(),
+            http_method="GET",
+        )
+        record["estimated_recipient_count"] = (
+            recipient_count_response.json().get("data", {}).get("attributes", {}).get("estimated_recipient_count", 0)
+        )
+
+    def _set_campaign_message(self, record: Mapping[str, Any]) -> None:
+        message_id = record.get("attributes", {}).get("message")
+        if message_id:
+            _, campaign_message_response = self._http_client.send_request(
+                url=f"{self.url_base}campaign-messages/{message_id}", request_kwargs={}, headers=self.request_headers(), http_method="GET"
+            )
+            record["campaign_message"] = campaign_message_response.json().get("data")
+
+    def get_error_handler(self) -> ErrorHandler:
+        error_mapping = DEFAULT_ERROR_MAPPING | {
+            404: ErrorResolution(ResponseAction.IGNORE, FailureType.config_error, "Resource not found. Ignoring.")
+        }
+
+        return HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping, max_retries=self.max_retries)
 
 class Flows(IncrementalKlaviyoStreamWithArchivedRecords):
     """Docs: https://developers.klaviyo.com/en/reference/get_flows"""
