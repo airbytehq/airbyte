@@ -1804,33 +1804,20 @@ definitions:
           # The default availability_sla_days for most analytics reports streams is 1
           datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('P1D') ), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        clamping:
-          # this is currently hardcoded, but supports DAY / WEEK / MONTH. It is very important that the proper
-          # boundaries for dataStartTime and dataEndTime are specified according to the reportPeriod because
-          # when they are not, Amazon's API is guaranteed to return a FATAL error.
-          # MONTH: dataStartTime = first day of the month, dataEndTime = last day of the month
-          # WEEK = dataStartTime = must be a Sunday, dataEndTime = must be a Saturday
-          # DAY = dataStartTime = start of a day, dataEndTime = end of the same day
-          # See here for more details on how we make requests https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports
-          # This is going be a very painful and ugly interpolation to parse the list of configs to get the right clamping value
-          target: "MONTH"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             reportType: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
-            reportOptions:
-              # Similarly here, we need to parse the list of configs to get the right clamping value using interpolation
-              reportPeriod: "MONTH"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: ["dataByAsin"]
+        download_decoder:
+          type: GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["dataByAsin"]
 
   basic_async_retriever:
     type: AsyncRetriever
