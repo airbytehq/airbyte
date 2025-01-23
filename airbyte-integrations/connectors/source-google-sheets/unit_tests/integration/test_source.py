@@ -108,7 +108,7 @@ class TestSourceCheck(GoogleSheetsBaseTest):
                 stack_trace=ANY,
             ),
         )
-        assert output.is_in_logs('Duplicate headers')
+        assert output.is_in_logs("Duplicate headers")
 
     @HttpMocker()
     def test_given_grid_sheet_type_with_at_least_one_row_when_discover_then_return_stream(self, http_mocker: HttpMocker) -> None:
@@ -215,7 +215,8 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         expected_catalog = AirbyteCatalog(streams=[expected_stream])
         expected_message = AirbyteMessage(type=Type.CATALOG, catalog=expected_catalog)
         expected_log_message = AirbyteMessage(
-            type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Duplicate headers found in sheet a_stream_name. Ignoring them: ['header_2']")
+            type=Type.LOG,
+            log=AirbyteLogMessage(level=Level.INFO, message="Duplicate headers found in sheet a_stream_name. Ignoring them: ['header_2']"),
         )
 
         output = self._discover(self._config, expecting_exception=False)
