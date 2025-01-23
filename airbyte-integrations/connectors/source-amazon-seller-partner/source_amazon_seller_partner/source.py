@@ -104,7 +104,7 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
         if not is_cloud_environment():
             brand_analytics_reports = [
                 # Uncomment this to reuse the legacy Python
-                # BrandAnalyticsMarketBasketReports,
+                BrandAnalyticsMarketBasketReports,
                 BrandAnalyticsSearchTermsReports,
                 BrandAnalyticsRepeatPurchaseReports,
                 SellerAnalyticsSalesAndTrafficReports,

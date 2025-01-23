@@ -87,7 +87,11 @@ def test_check_connection_with_orders_stop_iteration(requests_mock, connector_co
         status_code=201,
         json={"payload": {"Orders": []}},
     )
-    assert SourceAmazonSellerPartner().check_connection(logger, connector_config_with_report_options) == (True, None)
+    assert SourceAmazonSellerPartner(
+        config=connector_config_with_report_options,
+        catalog=None,
+        state=None,
+    ).check_connection(logger, connector_config_with_report_options) == (True, None)
 
 
 def test_check_connection_with_orders(requests_mock, connector_config_with_report_options):
@@ -101,9 +105,13 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
         "GET",
         "https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders",
         status_code=200,
-        json={"payload": {"Orders": [{"LastUpdateDate": "2024-06-02"}]}},
+        json={"payload": {"Orders": [{"LastUpdateDate": "2024-06-02T00:00:00Z"}]}},
     )
-    assert SourceAmazonSellerPartner().check_connection(logger, connector_config_with_report_options) == (True, None)
+    assert SourceAmazonSellerPartner(
+        config=connector_config_with_report_options,
+        catalog=None,
+        state=None,
+    ).check_connection(logger, connector_config_with_report_options) == (True, None)
 
 
 @pytest.mark.parametrize(
@@ -126,7 +134,13 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
 )
 def test_get_stream_report_options_list(connector_config_with_report_options, report_name, stream_name_w_options):
     assert (
-        list(SourceAmazonSellerPartner().get_stream_report_kwargs(report_name, connector_config_with_report_options))
+        list(
+            SourceAmazonSellerPartner(
+                config=connector_config_with_report_options,
+                catalog=None,
+                state=None,
+            ).get_stream_report_kwargs(report_name, connector_config_with_report_options)
+        )
         == stream_name_w_options
     )
 
@@ -134,7 +148,11 @@ def test_get_stream_report_options_list(connector_config_with_report_options, re
 def test_config_report_options_validation_error_duplicated_streams(connector_config_with_report_options):
     connector_config_with_report_options["report_options_list"].append(connector_config_with_report_options["report_options_list"][0])
     with pytest.raises(AmazonConfigException) as e:
-        SourceAmazonSellerPartner().validate_stream_report_options(connector_config_with_report_options)
+        SourceAmazonSellerPartner(
+            config=connector_config_with_report_options,
+            catalog=None,
+            state=None,
+        ).validate_stream_report_options(connector_config_with_report_options)
     assert e.value.message == "Stream name should be unique among all Report options list"
 
 
@@ -143,19 +161,31 @@ def test_config_report_options_validation_error_duplicated_options(connector_con
         connector_config_with_report_options["report_options_list"][0]["options_list"][0]
     )
     with pytest.raises(AmazonConfigException) as e:
-        SourceAmazonSellerPartner().validate_stream_report_options(connector_config_with_report_options)
+        SourceAmazonSellerPartner(
+            config=connector_config_with_report_options,
+            catalog=None,
+            state=None,
+        ).validate_stream_report_options(connector_config_with_report_options)
     assert e.value.message == "Option names should be unique for `GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA` report options"
 
 
 def test_streams(connector_config_without_start_date):
-    for stream in SourceAmazonSellerPartner().streams(connector_config_without_start_date):
+    for stream in SourceAmazonSellerPartner(
+        config=connector_config_without_start_date,
+        catalog=None,
+        state=None,
+    ).streams(connector_config_without_start_date):
         assert isinstance(stream, Stream)
 
 
 @pytest.mark.parametrize(("deployment_mode", "expected_streams_count"), (("cloud", 44), ("oss", 53)))
 def test_streams_count(deployment_mode, expected_streams_count, connector_config_without_start_date, monkeypatch):
     monkeypatch.setenv("DEPLOYMENT_MODE", deployment_mode)
-    streams = SourceAmazonSellerPartner().streams(connector_config_without_start_date)
+    streams = SourceAmazonSellerPartner(
+        config=connector_config_without_start_date,
+        catalog=None,
+        state=None,
+    ).streams(connector_config_without_start_date)
     assert len(streams) == expected_streams_count
 
 
@@ -172,10 +202,21 @@ def test_streams_count(deployment_mode, expected_streams_count, connector_config
 def test_replication_dates_validation(config, should_raise):
     if should_raise:
         with pytest.raises(AmazonConfigException) as e:
-            SourceAmazonSellerPartner().validate_replication_dates(config)
+            SourceAmazonSellerPartner(
+                config=config,
+                catalog=None,
+                state=None,
+            ).validate_replication_dates(config)
         assert e.value.message == "End Date should be greater than or equal to Start Date"
     else:
-        assert SourceAmazonSellerPartner().validate_replication_dates(config) is None
+        assert (
+            SourceAmazonSellerPartner(
+                config=config,
+                catalog=None,
+                state=None,
+            ).validate_replication_dates(config)
+            is None
+        )
 
 
 @pytest.mark.parametrize(("deployment_mode", "common_streams_count"), (("cloud", 0), ("oss", 8)))
@@ -192,7 +233,7 @@ def test_spec(deployment_mode, common_streams_count, monkeypatch):
         "GET_VENDOR_TRAFFIC_REPORT",
     }
     streams_with_report_options = (
-        SourceAmazonSellerPartner()
+        SourceAmazonSellerPartner(config=None, catalog=None, state=None)
         .spec(logger)
         .connectionSpecification["properties"]["report_options_list"]["items"]["properties"]["report_name"]["enum"]
     )
