@@ -2456,9 +2456,9 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     companion object {
-        private val intType = FieldType(IntegerType, nullable = true)
+        val intType = FieldType(IntegerType, nullable = true)
         private val numberType = FieldType(NumberType, nullable = true)
-        private val stringType = FieldType(StringType, nullable = true)
+        val stringType = FieldType(StringType, nullable = true)
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
 }
