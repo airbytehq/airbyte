@@ -4,7 +4,7 @@ data:
       - accounts.snapchat.com
       - adsapi.snapchat.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.24.0dev1@sha256:273570321d5efc646417a9c2134faffe53e4f64be3d1aa04da72a6f68def13ba
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.25.1@sha256:684082313ab983b5b760764c8a728acff345b4ca619a1dfb620b35d1bd2bdc2a
   connectorSubtype: api
   connectorType: source
   definitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
