@@ -21,7 +21,7 @@ interface TableIdGenerator {
     fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier
 }
 
-class SimpleTableIdGenerator(private val configNamespace: String?) : TableIdGenerator {
+class SimpleTableIdGenerator(private val configNamespace: String? = "") : TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
         val namespace = stream.namespace ?: configNamespace
         return tableIdOf(namespace!!, stream.name)

@@ -22,7 +22,7 @@ class S3DataLakeDestinationCleaner(private val catalog: Catalog) : DestinationCl
             }
 
         // we're passing explicit TableIdentifier to clearTable, so just use SimpleTableIdGenerator
-        val tableCleaner = S3DataLakeTableCleaner(S3DataLakeUtil(SimpleTableIdGenerator("")))
+        val tableCleaner = S3DataLakeTableCleaner(S3DataLakeUtil(SimpleTableIdGenerator()))
 
         namespaces.forEach { namespace ->
             catalog.listTables(namespace).forEach { tableId ->
