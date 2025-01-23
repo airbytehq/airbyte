@@ -147,7 +147,6 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Customers](https://shopify.dev/api/admin-rest/2024-04/resources/customer#top)
 - [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/customerjourneysummary)
 - [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Customer#field-customer-addresses)
-- [Customer Saved Search](https://shopify.dev/docs/api/admin-rest/2024-04/resources/customersavedsearch)
 - [Draft Orders](https://shopify.dev/api/admin-rest/2024-04/resources/draftorder#top)
 - [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/unions/DiscountCode)
 - [Disputes](https://shopify.dev/docs/api/admin-rest/2024-04/resources/dispute)
@@ -247,6 +246,11 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.1 | 2025-02-16 | [51602](https://github.com/airbytehq/airbyte/pull/51602) | Updated the `UpgradeDeadline` for the deprecation notice about [this change](https://github.com/airbytehq/airbyte/pull/51037) |
+| 2.6.0 | 2025-01-15 | [51037](https://github.com/airbytehq/airbyte/pull/51037) | Deprecated the `ProductsGraphQL` and `CustomerSavedSearch` stream from the stream catalog |
+| 2.5.18 | 2025-01-11 | [51326](https://github.com/airbytehq/airbyte/pull/51326) | Update dependencies |
+| 2.5.17 | 2025-01-06 | [50884](https://github.com/airbytehq/airbyte/pull/50884) | Add `moments` field `Customer Journey Summary` stream |
+| 2.5.16 | 2025-01-04 | [50938](https://github.com/airbytehq/airbyte/pull/50938) | Update dependencies |
 | 2.5.15 | 2024-12-28 | [50779](https://github.com/airbytehq/airbyte/pull/50779) | Update dependencies |
 | 2.5.14 | 2024-12-21 | [49088](https://github.com/airbytehq/airbyte/pull/49088) | Update dependencies |
 | 2.5.13 | 2024-12-11 | [49134](https://github.com/airbytehq/airbyte/pull/49134) | Added `checkpointed value` collision detection for BULK-supported streams |

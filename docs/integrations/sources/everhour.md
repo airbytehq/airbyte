@@ -28,6 +28,8 @@ This project supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject         |
 |:--------|:-----------| :------------------------------------------------------- | :-------------- |
+| 0.2.8 | 2025-01-18 | [51680](https://github.com/airbytehq/airbyte/pull/51680) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51058](https://github.com/airbytehq/airbyte/pull/51058) | Update dependencies |
 | 0.2.6 | 2024-12-28 | [50518](https://github.com/airbytehq/airbyte/pull/50518) | Update dependencies |
 | 0.2.5 | 2024-12-21 | [50012](https://github.com/airbytehq/airbyte/pull/50012) | Update dependencies |
 | 0.2.4 | 2024-12-14 | [49539](https://github.com/airbytehq/airbyte/pull/49539) | Update dependencies |

@@ -119,12 +119,13 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
-| 3.0.6   | 2024-06-25 | [40498](https://github.com/airbytehq/airbyte/pull/40498) | Fix Pydantic error - add missing type annotation for `max_cursor_time`                               |
-| 3.0.5   | 2024-06-04 | [38871](https://github.com/airbytehq/airbyte/pull/38871) | Refactor: use `client_side_incremental` feature                                                      |
-| 3.0.4   | 2024-06-06 | [38798](https://github.com/airbytehq/airbyte/pull/38798) | Implement CheckpointMixin for state handling                                                         |
-| 3.0.3   | 2024-06-06 | [39204](https://github.com/airbytehq/airbyte/pull/39204) | [autopull] Upgrade base image to v1.2.2                                                              |
-| 3.0.2   | 2024-05-20 | [38266](https://github.com/airbytehq/airbyte/pull/38266) | Replace AirbyteLogger with logging.Logger                                                            |
-| 3.0.1   | 2024-04-24 | [36653](https://github.com/airbytehq/airbyte/pull/36653) | Schema descriptions and CDK 0.80.0                                                                   |
+| 3.0.7 | 2025-01-11 | [43832](https://github.com/airbytehq/airbyte/pull/43832) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 3.0.6 | 2024-06-25 | [40498](https://github.com/airbytehq/airbyte/pull/40498) | Fix Pydantic error - add missing type annotation for `max_cursor_time` |
+| 3.0.5 | 2024-06-04 | [38871](https://github.com/airbytehq/airbyte/pull/38871) | Refactor: use `client_side_incremental` feature |
+| 3.0.4 | 2024-06-06 | [38798](https://github.com/airbytehq/airbyte/pull/38798) | Implement CheckpointMixin for state handling |
+| 3.0.3 | 2024-06-06 | [39204](https://github.com/airbytehq/airbyte/pull/39204) | [autopull] Upgrade base image to v1.2.2 |
+| 3.0.2 | 2024-05-20 | [38266](https://github.com/airbytehq/airbyte/pull/38266) | Replace AirbyteLogger with logging.Logger |
+| 3.0.1 | 2024-04-24 | [36653](https://github.com/airbytehq/airbyte/pull/36653) | Schema descriptions and CDK 0.80.0 |
 | 3.0.0   | 2024-04-12 | [35794](https://github.com/airbytehq/airbyte/pull/35974) | Migrate to low-code CDK (python CDK for Blocks stream)                                               |
 | 2.2.0   | 2024-04-08 | [36890](https://github.com/airbytehq/airbyte/pull/36890) | Unpin CDK version                                                                                    |
 | 2.1.0   | 2024-02-19 | [35409](https://github.com/airbytehq/airbyte/pull/35409) | Update users stream schema with bot type info fields and block schema with mention type info fields. |

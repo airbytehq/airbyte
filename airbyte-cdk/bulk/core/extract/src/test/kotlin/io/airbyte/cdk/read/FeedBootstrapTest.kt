@@ -70,7 +70,7 @@ class FeedBootstrapTest {
         FeedBootstrap.create(outputConsumer, metaFieldDecorator, stateQuerier, this)
 
     fun expected(vararg data: String): List<String> {
-        val ts = outputConsumer.emittedAt.toEpochMilli()
+        val ts = outputConsumer.recordEmittedAt.toEpochMilli()
         return data.map { """{"namespace":"ns","stream":"tbl","data":$it,"emitted_at":$ts}""" }
     }
 

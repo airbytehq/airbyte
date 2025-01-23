@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9b6cc0c0-da81-4103-bbfd-5279e18a849a
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.24
   dockerRepository: airbyte/source-railz
   githubIssueLabel: source-railz
   icon: railz.svg
