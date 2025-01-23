@@ -2,35 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
-from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
 from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
-from requests import HTTPError
 
 from airbyte_cdk import TState
-from airbyte_cdk.models import ConnectorSpecification, SyncMode
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
-from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.streams import (
-    BrandAnalyticsMarketBasketReports,
-    BrandAnalyticsRepeatPurchaseReports,
-    BrandAnalyticsSearchTermsReports,
-    NetPureProductMarginReport,
-    RapidRetailAnalyticsInventoryReport,
     ReportsAmazonSPStream,
-    SellerAnalyticsSalesAndTrafficReports,
     VendorForecastingFreshReport,
     VendorForecastingRetailReport,
-    VendorInventoryReports,
-    VendorSalesReports,
-    VendorTrafficReport,
 )
 from source_amazon_seller_partner.utils import AmazonConfigException
 
@@ -100,22 +84,6 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
             VendorForecastingRetailReport,
         ]
 
-        # TODO: Remove after Brand Analytics will be enabled in CLOUD: https://github.com/airbytehq/airbyte/issues/32353
-        if not is_cloud_environment():
-            brand_analytics_reports = [
-                # Uncomment this to reuse the legacy Python
-                BrandAnalyticsMarketBasketReports,
-                BrandAnalyticsSearchTermsReports,
-                BrandAnalyticsRepeatPurchaseReports,
-                SellerAnalyticsSalesAndTrafficReports,
-                VendorSalesReports,
-                VendorInventoryReports,
-                NetPureProductMarginReport,
-                RapidRetailAnalyticsInventoryReport,
-                VendorTrafficReport,
-            ]
-            stream_list += brand_analytics_reports
-
         for stream in stream_list:
             if not issubclass(stream, ReportsAmazonSPStream):
                 streams.append(stream(**stream_kwargs))
@@ -132,25 +100,6 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
                 }
                 streams.append(stream(**kwargs))
         return streams
-
-    def spec(self, logger: Logger) -> ConnectorSpecification:
-        spec = super().spec(logger)
-        if not is_cloud_environment():
-            oss_only_streams = [
-                "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT",
-                "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT",
-                "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT",
-                "GET_SALES_AND_TRAFFIC_REPORT",
-                "GET_VENDOR_SALES_REPORT",
-                "GET_VENDOR_INVENTORY_REPORT",
-                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
-                "GET_VENDOR_TRAFFIC_REPORT",
-            ]
-            spec.connectionSpecification["properties"]["report_options_list"]["items"]["properties"]["report_name"]["enum"].extend(
-                oss_only_streams
-            )
-
-        return spec
 
     @staticmethod
     def validate_replication_dates(config: Mapping[str, Any]) -> None:

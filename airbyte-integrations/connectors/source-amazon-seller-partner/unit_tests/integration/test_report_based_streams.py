@@ -18,7 +18,7 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
 
-from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, VENDOR_TRAFFIC_REPORT_CONFIG_END_DATE, ConfigBuilder
+from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, ConfigBuilder
 from .request_builder import RequestBuilder
 from .response_builder import build_response, response_with_status
 from .utils import assert_message_in_log_output, config, find_template, get_stream_by_name, mock_auth, read_output
@@ -40,18 +40,13 @@ STREAMS = (
     ("GET_LEDGER_DETAIL_VIEW_DATA", "csv"),
     ("GET_AFN_INVENTORY_DATA_BY_COUNTRY", "csv"),
     ("GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE", "csv"),
-    ("GET_VENDOR_SALES_REPORT", "json"),
-    ("GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT", "json"),
     ("GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA", "csv"),
     ("GET_FBA_SNS_FORECAST_DATA", "csv"),
     ("GET_AFN_INVENTORY_DATA", "csv"),
     ("GET_MERCHANT_CANCELLED_LISTINGS_DATA", "csv"),
     ("GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA", "csv"),
     ("GET_LEDGER_SUMMARY_VIEW_DATA", "csv"),
-    ("GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT", "json"),
-    ("GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT", "json"),
     ("GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE", "csv"),
-    ("GET_VENDOR_INVENTORY_REPORT", "json"),
     ("GET_FBA_SNS_PERFORMANCE_DATA", "csv"),
     ("GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA", "csv"),
     ("GET_FBA_INVENTORY_PLANNING_DATA", "csv"),
@@ -59,9 +54,6 @@ STREAMS = (
     ("GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA", "csv"),
     ("GET_STRANDED_INVENTORY_UI_DATA", "csv"),
     ("GET_FBA_REIMBURSEMENTS_DATA", "csv"),
-    ("GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "json"),
-    ("GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "json"),
-    ("GET_VENDOR_TRAFFIC_REPORT", "json"),
 )
 
 
@@ -70,8 +62,6 @@ def _create_report_request(report_name: str) -> RequestBuilder:
     A POST request needed to start generating a report on Amazon SP platform.
     Performed in ReportsAmazonSPStream._create_report method.
     """
-    if report_name == "GET_VENDOR_TRAFFIC_REPORT":
-        return RequestBuilder.create_vendor_traffic_report_endpoint(report_name)
     return RequestBuilder.create_report_endpoint(report_name)
 
 
@@ -401,8 +391,6 @@ class TestFullRefresh:
         output = self._read(stream_name, config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
         config_end_date = CONFIG_END_DATE
-        if stream_name == "GET_VENDOR_TRAFFIC_REPORT":
-            config_end_date = VENDOR_TRAFFIC_REPORT_CONFIG_END_DATE
         assert (
             f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{config_end_date}. This will be read during the next sync. Report ID: 6789087632. Error: {{'errorDetails': 'Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again.'}}"
         ) in output.errors[-1].trace.error.message

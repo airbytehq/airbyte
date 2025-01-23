@@ -1782,43 +1782,6 @@ definitions:
             - path: ["dataEndTime"]
               value: "{{ stream_slice['end_time'] }}"
 
-    get_brand_analytics_market_basket_report:
-      type: DeclarativeStream
-      name: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
-      primary_key: []
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: endDate
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
-        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
-        cursor_granularity: "PT1S"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', now_utc() - duration('P2Y')), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          # The default availability_sla_days for most analytics reports streams is 1
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('P1D') ), '%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      retriever:
-        $ref: "#/definitions/basic_async_retriever"
-        creation_requester:
-          $ref: "#/definitions/basic_async_retriever/creation_requester"
-          request_body_json:
-            reportType: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
-            marketplaceIds: '{{ [config["marketplace_id"]] }}'
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
-            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
-        download_decoder:
-          type: GzipJsonDecoder
-        download_extractor:
-          type: DpathExtractor
-          field_path: ["dataByAsin"]
-
   basic_async_retriever:
     type: AsyncRetriever
     status_mapping:
@@ -2002,9 +1965,6 @@ streams:
   - $ref: "#/definitions/streams/get_merchant_listings_data"
   - $ref: "#/definitions/streams/get_merchant_listings_inactive_data"
   - $ref: "#/definitions/streams/get_v2_settlement_report_data_flat_file"
-
-  # Analytics Streams
-  - $ref: "#/definitions/streams/get_brand_analytics_market_basket_report"
 
 concurrency_level:
   type: ConcurrencyLevel
