@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-tickettailor
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.17.0@sha256:e722057f4ed36872a78dfe985126b36f601de02ad361184c7e199b5e15d9dad2
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
   connectorSubtype: api
   connectorType: source
   definitionId: e5f3b2f5-5782-46d6-8c6a-980d82686ff6
-  dockerImageTag: 0.0.6
+  dockerImageTag: 0.0.7
   dockerRepository: airbyte/source-tickettailor
   githubIssueLabel: source-tickettailor
   icon: icon.svg
