@@ -81,7 +81,14 @@ class GlueWriteTest :
                 S3DataLakeTestUtil.getAWSSystemCredentials()
             )
         )
-    )
+    ) {
+
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
 
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
@@ -93,7 +100,13 @@ class GlueAssumeRoleWriteTest :
             )
         ),
         S3DataLakeTestUtil.getAWSSystemCredentialsAsMap()
-    )
+    ) {
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
