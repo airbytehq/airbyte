@@ -35,6 +35,7 @@ def report_init_kwargs(init_kwargs) -> Dict[str, Any]:
 def http_mocker() -> None:
     """This fixture is needed to pass http_mocker parameter from the @HttpMocker decorator to a test"""
 
-@pytest.fixture(scope="session")
+
+@pytest.fixture(autouse=True)
 def time_mocker(mocker) -> None:
     mocker.patch("time.sleep", lambda x: None)
