@@ -60,21 +60,6 @@ abstract class S3DataLakeWriteTest(
     }
 
     @Test
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-
-    @Test
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
-    }
-
-    @Test
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
-    }
-
-    @Test
     @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
@@ -97,10 +82,6 @@ class GlueWriteTest :
             )
         )
     ) {
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
 
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
