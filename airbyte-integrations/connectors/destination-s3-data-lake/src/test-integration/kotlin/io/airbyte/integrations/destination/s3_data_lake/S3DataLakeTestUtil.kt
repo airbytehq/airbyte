@@ -39,7 +39,7 @@ object S3DataLakeTestUtil {
             .makeWithoutExceptionHandling(spec as S3DataLakeSpecification)
 
     fun getCatalog(config: S3DataLakeConfiguration, awsSystemCredentials: AWSSystemCredentials) =
-        S3DataLakeUtil(SimpleTableIdGenerator(), awsSystemCredentials).let { icebergUtil ->
+        S3DataLakeUtil(SimpleTableIdGenerator(""), awsSystemCredentials).let { icebergUtil ->
             val props = icebergUtil.toCatalogProperties(config)
             icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)
         }
