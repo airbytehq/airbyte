@@ -139,6 +139,11 @@
               "description" : "The base URL of the Rest server used to connect to the Rest catalog.",
               "title" : "Rest Server URI",
               "order" : 1
+            },
+            "namespace" : {
+              "type" : "string",
+              "description" : "The namespace to be used in the Table identifier. \n                |This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n                | `Destination-defined` or `Source-defined`",
+              "title" : "Namespace"
             }
           },
           "required" : [ "catalog_type", "server_uri" ]

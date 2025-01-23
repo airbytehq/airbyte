@@ -89,7 +89,7 @@ interface IcebergCatalogSpecifications {
                         (catalogType as NessieCatalogSpecification).namespace,
                     )
                 is RestCatalogSpecification ->
-                    RestCatalogConfiguration((catalogType as RestCatalogSpecification).serverUri)
+                    RestCatalogConfiguration((catalogType as RestCatalogSpecification).serverUri, (catalogType as RestCatalogSpecification).namespace)
             }
 
         return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, catalogConfiguration)
@@ -257,6 +257,14 @@ class RestCatalogSpecification(
     @get:JsonProperty("server_uri")
     @JsonSchemaInject(json = """{"order":1}""")
     val serverUri: String,
+
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The namespace to be used in the Table identifier. 
+                |This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+                | `Destination-defined` or `Source-defined`"""
+    )
+    val namespace: String?
 ) : CatalogType(catalogType)
 
 /**
@@ -344,6 +352,13 @@ data class RestCatalogConfiguration(
     @JsonSchemaTitle("Rest Server URI")
     @JsonPropertyDescription("The base URL of the Rest server.")
     val serverUri: String,
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The namespace to be used in the Table identifier. 
+                |This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+                | `Destination-defined` or `Source-defined`"""
+    )
+    val namespace: String?
 ) : CatalogConfiguration
 
 /**
