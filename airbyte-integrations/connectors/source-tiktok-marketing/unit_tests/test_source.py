@@ -23,7 +23,7 @@ from airbyte_cdk.models import ConnectorSpecification
                 "start_date": "2021-04-01",
                 "report_granularity": "LIFETIME",
             },
-            15,
+            36,
         ),
         (
             {
@@ -32,7 +32,7 @@ from airbyte_cdk.models import ConnectorSpecification
                 "start_date": "2021-04-01",
                 "report_granularity": "DAY",
             },
-            27,
+            36,
         ),
     ],
 )
