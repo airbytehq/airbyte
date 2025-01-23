@@ -1,0 +1,89 @@
+version: 6.13.0
+
+type: DeclarativeSource
+
+description: Custom Connectors from Customer.io
+
+check:
+  type: CheckStream
+  stream_names:
+    - Messages
+
+definitions:
+  streams:
+    Messages:
+      type: DeclarativeStream
+      name: Messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/messages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Messages"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.customer.io/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/Messages"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Messages: false
+  testedStreams:
+    Messages:
+      hasRecords: true
+      streamHash: 0307201af3b36533ddd9be14bc9dda804fe80ddb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://docs.customer.io/api/app/#operation/campaignMetrics
+
+schemas:
+  Messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
