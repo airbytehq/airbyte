@@ -50,6 +50,22 @@ fun String.executeUpdate(connection: Connection, vararg args: String) {
 
 fun String.toQuery(vararg args: String): String = this.trimIndent().replace("?", "%s").format(*args)
 
+fun String.toQuery(context: Map<String, String>): String =
+    this.trimIndent().replace(VAR_REGEX) {
+        context[it.groupValues[1]] ?: throw IllegalStateException("Context is missing ${it.value}")
+    }
+
+private val VAR_REGEX = "\\?(\\w+)".toRegex()
+
+private const val SCHEMA_KEY = "schema"
+private const val TABLE_KEY = "table"
+private const val COLUMNS_KEY = "columns"
+private const val TEMPLATE_COLUMNS_KEY = "templateColumns"
+private const val UNIQUENESS_CONSTRAINT_KEY = "uniquenessConstraint"
+private const val UPDATE_STATEMENT_KEY = "updateStatement"
+private const val INDEX_KEY = "index"
+private const val SECONDARY_INDEX_KEY = "secondaryIndex"
+
 const val GET_EXISTING_SCHEMA_QUERY =
     """
         SELECT COLUMN_NAME, DATA_TYPE
@@ -69,14 +85,14 @@ const val CREATE_SCHEMA_QUERY =
 
 const val CREATE_TABLE_QUERY =
     """
-        IF OBJECT_ID('?.?') IS NULL
+        IF OBJECT_ID('?$SCHEMA_KEY.?$TABLE_KEY') IS NULL
         BEGIN
-            CREATE TABLE [?].[?]
+            CREATE TABLE [?$SCHEMA_KEY].[?$TABLE_KEY]
             (
-                ?
+                ?$COLUMNS_KEY
             );
-            ?;
-            ?;
+            ?$INDEX_KEY;
+            ?$SECONDARY_INDEX_KEY;
         END
     """
 
@@ -87,20 +103,20 @@ const val CREATE_INDEX_QUERY =
 
 const val INSERT_INTO_QUERY =
     """
-        INSERT INTO [?].[?] (?)
+        INSERT INTO [?$SCHEMA_KEY].[?$TABLE_KEY] (?$COLUMNS_KEY)
             SELECT table_value.*
-            FROM (VALUES (?)) table_value(?)
+            FROM (VALUES (?$TEMPLATE_COLUMNS_KEY)) table_value(?$COLUMNS_KEY)
     """
 
 const val MERGE_INTO_QUERY =
     """
-        MERGE INTO [?].[?] AS Target
-        USING (VALUES (?)) AS Source (?)
-        ON ?
+        MERGE INTO [?$SCHEMA_KEY].[?$TABLE_KEY] AS Target
+        USING (VALUES (?$TEMPLATE_COLUMNS_KEY)) AS Source (?$COLUMNS_KEY)
+        ON ?$UNIQUENESS_CONSTRAINT_KEY
         WHEN MATCHED THEN
-            UPDATE SET ?
+            UPDATE SET ?$UPDATE_STATEMENT_KEY
         WHEN NOT MATCHED BY TARGET THEN
-            INSERT (?) VALUES (?)
+            INSERT (?$COLUMNS_KEY) VALUES (?$COLUMNS_KEY)
         ;
     """
 
@@ -362,7 +378,13 @@ class MSSQLQueryBuilder(
         val cdcIndex = if (hasCdc) createIndex(fqTableName, listOf(AIRBYTE_CDC_DELETED_AT)) else ""
 
         return CREATE_TABLE_QUERY
-            .toQuery(outputSchema, tableName, outputSchema, tableName, airbyteTypeToSqlSchema(schema), index, cdcIndex)
+            .toQuery(mapOf(
+                SCHEMA_KEY to outputSchema,
+                TABLE_KEY to tableName,
+                COLUMNS_KEY to airbyteTypeToSqlSchema(schema),
+                INDEX_KEY to index,
+                SECONDARY_INDEX_KEY to cdcIndex,
+            ))
     }
 
     private fun createIndex(
@@ -382,14 +404,26 @@ class MSSQLQueryBuilder(
         val columns = schema.joinToString(", ") { "[${it.name}]" }
         val templateColumns = schema.joinToString(", ") { "?" }
         return if (uniquenessKey.isEmpty()) {
-            INSERT_INTO_QUERY.toQuery(outputSchema, tableName, columns, templateColumns, columns)
+            INSERT_INTO_QUERY
+                .toQuery(mapOf(
+                    SCHEMA_KEY to outputSchema,
+                    TABLE_KEY to tableName,
+                    COLUMNS_KEY to columns,
+                    TEMPLATE_COLUMNS_KEY to templateColumns,
+                ))
         } else {
             val uniquenessConstraint =
                 uniquenessKey.joinToString(" AND ") { "Target.[$it] = Source.[$it]" }
             val updateStatement = schema.joinToString(", ") { "Target.[${it.name}] = Source.[${it.name}]" }
             MERGE_INTO_QUERY
-                .toQuery(outputSchema, tableName, templateColumns, columns, uniquenessConstraint,
-                    updateStatement, columns, columns)
+                .toQuery(mapOf(
+                    SCHEMA_KEY to outputSchema,
+                    TABLE_KEY to tableName,
+                    TEMPLATE_COLUMNS_KEY to templateColumns,
+                    COLUMNS_KEY to columns,
+                    UNIQUENESS_CONSTRAINT_KEY to uniquenessConstraint,
+                    UPDATE_STATEMENT_KEY to updateStatement,
+                ))
         }
     }
 
