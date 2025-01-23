@@ -60,21 +60,16 @@ abstract class S3DataLakeWriteTest(
     }
 
     @Test
-    @Disabled(
-        "This is currently hanging forever and we should look into why https://github.com/airbytehq/airbyte-internal-issues/issues/11162"
-    )
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
     }
 
     @Test
-    @Disabled("This is currently hanging forever and we should look into why")
     override fun testInterruptedTruncateWithoutPriorData() {
         super.testInterruptedTruncateWithoutPriorData()
     }
 
     @Test
-    @Disabled("This is currently hanging forever and we should look into why")
     override fun resumeAfterCancelledTruncate() {
         super.resumeAfterCancelledTruncate()
     }
@@ -106,6 +101,12 @@ class GlueWriteTest :
     override fun testUnions() {
         super.testUnions()
     }
+
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
 }
 
 class GlueAssumeRoleWriteTest :
@@ -118,7 +119,13 @@ class GlueAssumeRoleWriteTest :
             )
         ),
         S3DataLakeTestUtil.getAWSSystemCredentialsAsMap()
-    )
+    ) {
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"

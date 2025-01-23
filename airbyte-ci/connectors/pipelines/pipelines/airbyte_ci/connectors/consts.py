@@ -45,6 +45,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     MANIFEST_ONLY_CHECK = "migrate_to_manifest_only.check"
     MANIFEST_ONLY_STRIP = "migrate_to_manifest_only.strip"
     MANIFEST_ONLY_UPDATE = "migrate_to_manifest_only.update"
+    LOAD_IMAGE_TO_LOCAL_DOCKER_HOST = "load_image_to_local_docker_host"
 
     def __str__(self) -> str:
         return self.value

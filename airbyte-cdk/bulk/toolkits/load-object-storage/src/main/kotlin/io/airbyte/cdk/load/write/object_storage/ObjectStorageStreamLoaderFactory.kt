@@ -28,6 +28,7 @@ import io.airbyte.cdk.load.write.FileBatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.OutputStream
@@ -44,6 +45,8 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
         null,
     private val uploadConfigurationProvider: ObjectStorageUploadConfigurationProvider,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
+    @Value("\${airbyte.destination.record-batch-size-override}")
+    private val recordBatchSizeOverride: Long? = null
 ) {
     fun create(stream: DestinationStream): StreamLoader {
         return ObjectStorageStreamLoader(
@@ -54,7 +57,8 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
             bufferedWriterFactory,
             destinationStateManager,
             uploadConfigurationProvider.objectStorageUploadConfiguration.uploadPartSizeBytes,
-            uploadConfigurationProvider.objectStorageUploadConfiguration.fileSizeBytes
+            recordBatchSizeOverride
+                ?: uploadConfigurationProvider.objectStorageUploadConfiguration.fileSizeBytes
         )
     }
 }
