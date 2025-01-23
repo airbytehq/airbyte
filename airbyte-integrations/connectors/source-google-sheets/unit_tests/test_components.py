@@ -12,8 +12,6 @@ import requests
 from source_google_sheets import SourceGoogleSheets
 from source_google_sheets.components import DpathSchemaExtractor, DpathSchemaMatchingExtractor
 from source_google_sheets.components.extractors import RawSchemaParser
-from unit_tests.integration.mock_credentials import oauth_credentials
-from unit_tests.integration.protocol_helpers import catalog_helper
 
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.models import SyncMode
@@ -21,6 +19,8 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import (
     IterableDecoder,
     JsonDecoder,
 )
+from unit_tests.integration.mock_credentials import oauth_credentials
+from unit_tests.integration.protocol_helpers import catalog_helper
 
 
 config = {"field": "record_array"}
