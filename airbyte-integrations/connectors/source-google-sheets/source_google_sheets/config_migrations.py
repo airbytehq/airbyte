@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import json
 from typing import Any, List, Mapping
 
@@ -35,7 +37,6 @@ class MigrateServiceAccountInfo:
         if service_account_info and isinstance(service_account_info, str):
             return True
         return False
-
 
     @classmethod
     def _migrate_service_account(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
