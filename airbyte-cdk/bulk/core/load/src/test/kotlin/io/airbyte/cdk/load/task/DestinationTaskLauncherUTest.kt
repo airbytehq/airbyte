@@ -84,6 +84,8 @@ class DestinationTaskLauncherUTest {
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>> =
         mockk(relaxed = true)
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage> = mockk(relaxed = true)
+    private val openStreamQueue: MessageQueue<DestinationStream> = mockk(relaxed = true)
+
     private fun getDefaultDestinationTaskLauncher(
         useFileTranfer: Boolean
     ): DefaultDestinationTaskLauncher {
@@ -112,6 +114,7 @@ class DestinationTaskLauncherUTest {
             recordQueueSupplier,
             checkpointQueue,
             fileTransferQueue,
+            openStreamQueue,
         )
     }
 
@@ -225,5 +228,19 @@ class DestinationTaskLauncherUTest {
                 match { it.namespace == "namespace" && it.name == "name" }
             )
         }
+    }
+
+    @Test
+    fun `test numOpenStreamWorkers open stream tasks are launched`() = runTest {
+        val numOpenStreamWorkers = 3
+        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(false)
+
+        coEvery { config.numOpenStreamWorkers } returns numOpenStreamWorkers
+
+        val job = launch { destinationTaskLauncher.run() }
+        destinationTaskLauncher.handleTeardownComplete()
+        job.join()
+
+        coVerify(exactly = numOpenStreamWorkers) { openStreamTaskFactory.make() }
     }
 }
