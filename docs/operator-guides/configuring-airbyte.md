@@ -118,6 +118,7 @@ See [State and Logging Storage](../deploying-airbyte/integrations/storage.md) fo
 1. `MAX_CHECK_WORKERS` - Defines the maximum number of Non-Sync workers each Airbyte Worker container can support. Defaults to 5.
 2. `MAX_SYNC_WORKERS` - Defines the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 10.
 3. `TEMPORAL_WORKER_PORTS` - Defines the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Helm Chart.
+4. `DISCOVER_REFRESH_WINDOW_MINUTES` - The minimum number of minutes Airbyte will wait to refresh a schema. By setting a larger number, you delay automatic schema refreshes and improve sync performance. The default in self-managed instances is 1440 (once per day), and in Cloud it's 15 (every 15 minutes). The lowest interval you can set is 1 (once per minute). Set this to 0 to disable automatic schema refreshes.
 
 ## Launcher
 

@@ -33,7 +33,9 @@ import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.KillableScope
+import io.airbyte.cdk.load.task.OnSyncFailureOnly
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -41,7 +43,7 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 
-interface InputConsumerTask : KillableScope
+interface InputConsumerTask : Task
 
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
@@ -67,6 +69,8 @@ class DefaultInputConsumerTask(
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 ) : InputConsumerTask {
     private val log = KotlinLogging.logger {}
+
+    override val terminalCondition: TerminalCondition = OnSyncFailureOnly
 
     private suspend fun handleRecord(
         reserved: Reserved<DestinationStreamAffinedMessage>,
