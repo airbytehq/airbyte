@@ -168,4 +168,4 @@ def test_build_items_incremental_query(monday_requester):
 def test_get_request_headers(monday_requester):
     headers = monday_requester.get_request_headers()
 
-    assert headers == {"API-Version": "2024-01"}
+    assert headers == {"API-Version": "2024-10"}

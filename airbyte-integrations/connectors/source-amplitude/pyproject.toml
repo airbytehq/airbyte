@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.6.17"
+version = "0.6.19"
 name = "source-amplitude"
 description = "Source implementation for Amplitude."
 authors = [ "Airbyte <contact@airbyte.io>",]

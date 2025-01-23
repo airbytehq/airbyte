@@ -47,14 +47,16 @@
       },
       "warehouse_location" : {
         "type" : "string",
-        "description" : "The root location of the data warehouse used by the Iceberg catalog.",
+        "description" : "The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. Must include the storage protocol (such as \"s3://\" for Amazon S3).",
         "title" : "Warehouse Location",
+        "examples" : [ "s3://your-bucket/path/to/store/files/in" ],
         "always_show" : true,
         "order" : 5
       },
       "main_branch_name" : {
         "type" : "string",
-        "description" : "The primary or default branch name in the catalog repository.",
+        "default" : "main",
+        "description" : "The primary or default branch name in the catalog. Most query engines will use \"main\" by default. See <a href=\"https://iceberg.apache.org/docs/latest/branching/\">Iceberg documentation</a> for more information.",
         "title" : "Main Branch Name",
         "always_show" : true,
         "order" : 6
@@ -103,6 +105,11 @@
               "description" : "The AWS Account ID associated with the Glue service used by the Iceberg catalog.",
               "title" : "AWS Account ID",
               "order" : 1
+            },
+            "role_arn" : {
+              "type" : "string",
+              "description" : "The Role ARN.",
+              "title" : "Role ARN"
             }
           },
           "required" : [ "catalog_type", "glue_id" ]

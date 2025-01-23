@@ -48,8 +48,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class DestinationTaskLauncherUTest {
-    private val taskScopeProvider: TaskScopeProvider<WrappedTask<ScopedTask>> =
-        mockk(relaxed = true)
+    private val taskScopeProvider: TaskScopeProvider = mockk(relaxed = true)
     private val catalog: DestinationCatalog = mockk(relaxed = true)
     private val syncManager: SyncManager = mockk(relaxed = true)
 
@@ -85,6 +84,8 @@ class DestinationTaskLauncherUTest {
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>> =
         mockk(relaxed = true)
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage> = mockk(relaxed = true)
+    private val openStreamQueue: MessageQueue<DestinationStream> = mockk(relaxed = true)
+
     private fun getDefaultDestinationTaskLauncher(
         useFileTranfer: Boolean
     ): DefaultDestinationTaskLauncher {
@@ -113,6 +114,7 @@ class DestinationTaskLauncherUTest {
             recordQueueSupplier,
             checkpointQueue,
             fileTransferQueue,
+            openStreamQueue,
         )
     }
 
@@ -159,7 +161,7 @@ class DestinationTaskLauncherUTest {
         destinationTaskLauncher.handleTeardownComplete()
 
         coVerify { failStreamTaskFactory.make(any(), e, any()) }
-        coVerify { taskScopeProvider.launch(match { it.innerTask is FailStreamTask }) }
+        coVerify { taskScopeProvider.launch(match { it is FailStreamTask }) }
     }
 
     @Test
@@ -178,5 +180,67 @@ class DestinationTaskLauncherUTest {
             BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
         )
         coVerify(exactly = 1) { closeStreamTaskFactory.make(any(), any()) }
+    }
+
+    @Test
+    fun `task successful completion triggers scope close`() = runTest {
+        // This should close the scope provider.
+        val taskLauncher = getDefaultDestinationTaskLauncher(false)
+        launch {
+            taskLauncher.run()
+            coVerify { taskScopeProvider.close() }
+        }
+        taskLauncher.handleTeardownComplete()
+    }
+
+    @Test
+    fun `test completion with failure triggers scope kill`() = runTest {
+        val taskLauncher = getDefaultDestinationTaskLauncher(false)
+        launch {
+            taskLauncher.run()
+            coVerify { taskScopeProvider.kill() }
+        }
+        taskLauncher.handleTeardownComplete(success = false)
+    }
+
+    @Test
+    fun `test exceptions in tasks throw`() = runTest {
+        coEvery { spillToDiskTaskFactory.make(any(), any()) } answers
+            {
+                val task = mockk<SpillToDiskTask>(relaxed = true)
+                coEvery { task.execute() } throws Exception("spill to disk task failed")
+                task
+            }
+        coEvery { taskScopeProvider.launch(any()) } coAnswers
+            {
+                val task = firstArg<Task>()
+                task.execute()
+            }
+
+        val taskLauncher = getDefaultDestinationTaskLauncher(false)
+        val job = launch { taskLauncher.run() }
+        taskLauncher.handleTeardownComplete()
+        job.join()
+        coVerify {
+            failStreamTaskFactory.make(
+                any(),
+                any(),
+                match { it.namespace == "namespace" && it.name == "name" }
+            )
+        }
+    }
+
+    @Test
+    fun `test numOpenStreamWorkers open stream tasks are launched`() = runTest {
+        val numOpenStreamWorkers = 3
+        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(false)
+
+        coEvery { config.numOpenStreamWorkers } returns numOpenStreamWorkers
+
+        val job = launch { destinationTaskLauncher.run() }
+        destinationTaskLauncher.handleTeardownComplete()
+        job.join()
+
+        coVerify(exactly = numOpenStreamWorkers) { openStreamTaskFactory.make() }
     }
 }
