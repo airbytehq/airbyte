@@ -106,6 +106,7 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 1.3.6 | 2025-01-18 | [51750](https://github.com/airbytehq/airbyte/pull/51750) | Update dependencies |
 | 1.3.5 | 2025-01-11 | [51246](https://github.com/airbytehq/airbyte/pull/51246) | Update dependencies |
 | 1.3.4 | 2025-01-04 | [50915](https://github.com/airbytehq/airbyte/pull/50915) | Update dependencies |
 | 1.3.3 | 2024-12-28 | [50442](https://github.com/airbytehq/airbyte/pull/50442) | Update dependencies |
