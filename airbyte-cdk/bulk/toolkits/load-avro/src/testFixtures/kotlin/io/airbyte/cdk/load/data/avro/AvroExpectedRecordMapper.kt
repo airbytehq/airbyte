@@ -23,8 +23,23 @@ import java.time.temporal.TemporalAccessor
 
 object AvroExpectedRecordMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
-        return expectedRecord.copy(data = timestampsToInteger(expectedRecord.data) as ObjectValue)
+        val withIntegerTimestamps = timestampsToInteger(expectedRecord.data)
+        val withRemappedFieldNames = fieldNameMangler(withIntegerTimestamps)
+        return expectedRecord.copy(data = withRemappedFieldNames as ObjectValue)
     }
+
+    private fun fieldNameMangler(value: AirbyteValue): AirbyteValue =
+        when (value) {
+            is ObjectValue ->
+                ObjectValue(
+                    LinkedHashMap(
+                        value.values
+                            .map { (k, v) -> k.replace("é", "e") to fieldNameMangler(v) }
+                            .toMap()
+                    )
+                )
+            else -> value
+        }
 
     /**
      * Avro doesn't have true temporal types. Instead, we write dates as epoch days, and other

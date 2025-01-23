@@ -554,6 +554,10 @@ module.exports = {
       id: "using-airbyte/core-concepts/typing-deduping",
     },
     {
+      type: "doc",
+      id: "using-airbyte/mappings",
+    },
+    {
       type: "category",
       label: "Transformations",
       items: ["cloud/managing-airbyte-cloud/dbt-cloud-integration"],
@@ -644,7 +648,12 @@ module.exports = {
             type: "doc",
             id: "access-management/rbac",
           },
-          items: [{ type: "doc", id: "access-management/role-mapping" }],
+          items: [
+            { 
+              type: "doc", 
+              id: "access-management/role-mapping" 
+            },
+          ],
         },
       ],
     },

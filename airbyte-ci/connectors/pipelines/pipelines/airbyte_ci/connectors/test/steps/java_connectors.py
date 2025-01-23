@@ -166,9 +166,7 @@ def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.BUILD,
                 step=BuildConnectorImages(context),
-                args=lambda results: {
-                    "dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output.directory(dist_tar_directory_path(context))
-                },
+                args=lambda results: {"dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output.directory("build/distributions")},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
             ),
         ],

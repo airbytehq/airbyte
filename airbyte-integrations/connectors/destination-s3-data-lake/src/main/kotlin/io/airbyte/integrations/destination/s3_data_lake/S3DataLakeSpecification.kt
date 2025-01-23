@@ -50,7 +50,16 @@ class S3DataLakeSpecification :
 
     @get:JsonSchemaInject(json = """{"order":4}""") override val s3Endpoint: String? = null
 
-    @get:JsonSchemaInject(json = """{"always_show": true,"order":5}""")
+    @get:JsonSchemaInject(
+        json =
+            """
+                {
+                    "examples": ["s3://your-bucket/path/to/store/files/in"],
+                    "always_show": true,
+                    "order":5
+                }
+            """
+    )
     override val warehouseLocation: String = ""
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":6}""")
