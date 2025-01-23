@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.task.internal.ForceFlushEvent
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Value
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Singleton
 import kotlinx.coroutines.test.runTest
@@ -28,6 +29,9 @@ import org.junit.jupiter.api.Test
 class DefaultFlushStrategyTest {
     val stream1 = MockDestinationCatalogFactory.stream1
 
+    @Value("\${airbyte.destination.record-batch-size-override}")
+    private var recordBatchSizeOverride: Long? = null
+
     @Singleton
     @Primary
     @Requires(env = ["FlushStrategyTest"])
@@ -40,7 +44,7 @@ class DefaultFlushStrategyTest {
                 flushStrategy.shouldFlush(
                     stream1.descriptor,
                     Range.all(),
-                    config.recordBatchSizeBytes - 1L
+                    (recordBatchSizeOverride ?: config.recordBatchSizeBytes) - 1L
                 )
             )
             Assertions.assertTrue(
@@ -63,10 +67,10 @@ class DefaultFlushStrategyTest {
     fun testFlushByIndex(
         flushStrategy: DefaultFlushStrategy,
         config: DestinationConfiguration,
-        forceFlushEventProducer: MockForceFlushEventQueue
+        forceFlushEventProducer: MockForceFlushEventQueue,
     ) = runTest {
         // Ensure the size trigger is not a factor
-        val insufficientSize = config.recordBatchSizeBytes - 1L
+        val insufficientSize = (recordBatchSizeOverride ?: config.recordBatchSizeBytes) - 1L
 
         Assertions.assertFalse(
             flushStrategy.shouldFlush(stream1.descriptor, Range.all(), insufficientSize),
