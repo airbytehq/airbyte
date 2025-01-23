@@ -73,7 +73,6 @@ import org.junit.jupiter.api.Test
             "DestinationTaskLauncherTest",
             "MockDestinationConfiguration",
             "MockDestinationCatalog",
-            "MockScopeProvider",
         ]
 )
 class DestinationTaskLauncherTest {
@@ -84,7 +83,6 @@ class DestinationTaskLauncherTest {
     @Inject lateinit var mockInputConsumerTask: MockInputConsumerTaskFactory
     @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
     @Inject lateinit var mockSpillToDiskTaskFactory: MockSpillToDiskTaskFactory
-    @Inject lateinit var mockOpenStreamTaskFactory: MockOpenStreamTaskFactory
     @Inject lateinit var processRecordsTaskFactory: ProcessRecordsTaskFactory
     @Inject lateinit var processBatchTaskFactory: ProcessBatchTaskFactory
     @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
@@ -158,6 +156,8 @@ class DestinationTaskLauncherTest {
             fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
         ): InputConsumerTask {
             return object : InputConsumerTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     hasRun.send(true)
                 }
@@ -171,10 +171,10 @@ class DestinationTaskLauncherTest {
     class MockSetupTaskFactory : SetupTaskFactory {
         val hasRun: Channel<Unit> = Channel(Channel.UNLIMITED)
 
-        override fun make(
-            taskLauncher: DestinationTaskLauncher,
-        ): SetupTask {
+        override fun make(): SetupTask {
             return object : SetupTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -198,6 +198,8 @@ class DestinationTaskLauncherTest {
             stream: DestinationStream.Descriptor
         ): SpillToDiskTask {
             return object : SpillToDiskTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     if (forceFailure.get()) {
                         throw Exception("Forced failure")
@@ -211,20 +213,13 @@ class DestinationTaskLauncherTest {
     @Singleton
     @Replaces(DefaultOpenStreamTaskFactory::class)
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockOpenStreamTaskFactory(catalog: DestinationCatalog) : OpenStreamTaskFactory {
-        val streamHasRun = mutableMapOf<DestinationStream, Channel<Unit>>()
-
-        init {
-            catalog.streams.forEach { streamHasRun[it] = Channel(Channel.UNLIMITED) }
-        }
-
-        override fun make(
-            taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream
-        ): OpenStreamTask {
+    class MockOpenStreamTaskFactory : OpenStreamTaskFactory {
+        override fun make(): OpenStreamTask {
             return object : OpenStreamTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
-                    streamHasRun[stream]?.send(Unit)
+                    // Do nothing
                 }
             }
         }
@@ -241,6 +236,8 @@ class DestinationTaskLauncherTest {
             stream: DestinationStream.Descriptor,
         ): CloseStreamTask {
             return object : CloseStreamTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -256,6 +253,8 @@ class DestinationTaskLauncherTest {
 
         override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
             return object : TeardownTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -271,6 +270,8 @@ class DestinationTaskLauncherTest {
 
         override fun make(): FlushCheckpointsTask {
             return object : FlushCheckpointsTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     hasRun.send(true)
                 }
@@ -282,6 +283,8 @@ class DestinationTaskLauncherTest {
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
     class MockForceFlushTask : TimedForcedCheckpointFlushTask {
+        override val terminalCondition: TerminalCondition = SelfTerminating
+
         val didRun = Channel<Boolean>(Channel.UNLIMITED)
 
         override suspend fun execute() {
@@ -293,6 +296,8 @@ class DestinationTaskLauncherTest {
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
     class MockUpdateCheckpointsTask : UpdateCheckpointsTask {
+        override val terminalCondition: TerminalCondition = SelfTerminating
+
         val didRun = Channel<Boolean>(Channel.UNLIMITED)
         override suspend fun execute() {
             didRun.send(true)
@@ -310,6 +315,8 @@ class DestinationTaskLauncherTest {
             stream: DestinationStream.Descriptor
         ): FailStreamTask {
             return object : FailStreamTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     didRunFor.send(stream)
                 }
@@ -327,6 +334,8 @@ class DestinationTaskLauncherTest {
             exception: Exception
         ): FailSyncTask {
             return object : FailSyncTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     didRun.send(true)
                 }
@@ -366,13 +375,6 @@ class DestinationTaskLauncherTest {
         )
 
         job.cancel()
-    }
-
-    @Test
-    fun testHandleSetupComplete() = runTest {
-        // Verify that open stream ran for each stream
-        taskLauncher.handleSetupComplete()
-        mockOpenStreamTaskFactory.streamHasRun.values.forEach { it.receive() }
     }
 
     @Test
