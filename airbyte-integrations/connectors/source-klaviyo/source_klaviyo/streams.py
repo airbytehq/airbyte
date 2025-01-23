@@ -5,6 +5,7 @@
 
 import urllib.parse
 from abc import ABC, abstractmethod
+from itertools import chain
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
@@ -222,14 +223,14 @@ class IncrementalKlaviyoStreamWithArchivedRecords(IncrementalKlaviyoStream, ABC)
         return params
 
 
-class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
-    """Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns"""
-
+class CampaignsBase(IncrementalKlaviyoStreamWithArchivedRecords):
     cursor_field = "updated_at"
     api_revision = "2024-10-15"
 
     def path(self, **kwargs) -> str:
         return "campaigns"
+
+class CampaignsEmail(CampaignsBase):
 
     def request_params(
         self,
@@ -247,10 +248,44 @@ class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
         )
         return params
 
+class CampaignsSMS(CampaignsBase):
 
-class CampaignsDetailed(Campaigns):
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        channel_filter = "equals(messages.channel,'sms')"
+        if "filter" not in params:
+            params["filter"] = channel_filter
+            return params
+        params["filter"] = (
+            f"{params['filter'][:-1]},{channel_filter})" if "and(" in params["filter"] else f"and({params['filter']},{channel_filter})"
+        )
+        return params
+
+
+class Campaigns(CampaignsEmail, CampaignsSMS):
+    """Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns"""
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        for record in chain(
+                CampaignsEmail.read_records(sync_mode, cursor_field, stream_slice, stream_state), 
+                CampaignsSMS.read_records(sync_mode, cursor_field, stream_slice, stream_state)
+            ):
+            yield record
+
+class CampaignsDetailed(CampaignsEmail, CampaignsSMS):
     def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        for record in super().parse_response(response, **kwargs):
+        for record in chain(CampaignsEmail.parse_response(response, **kwargs), CampaignsSMS.parse_response(response, **kwargs)):
             yield self._transform_record(record)
 
     def _transform_record(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
