@@ -230,8 +230,8 @@ class CampaignsBase(IncrementalKlaviyoStreamWithArchivedRecords):
     def path(self, **kwargs) -> str:
         return "campaigns"
 
-class CampaignsEmail(CampaignsBase):
 
+class CampaignsEmail(CampaignsBase):
     def request_params(
         self,
         stream_state: Optional[Mapping[str, Any]],
@@ -248,8 +248,8 @@ class CampaignsEmail(CampaignsBase):
         )
         return params
 
-class CampaignsSMS(CampaignsBase):
 
+class CampaignsSMS(CampaignsBase):
     def request_params(
         self,
         stream_state: Optional[Mapping[str, Any]],
@@ -278,10 +278,11 @@ class Campaigns(CampaignsEmail, CampaignsSMS):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         for record in chain(
-                CampaignsEmail.read_records(sync_mode, cursor_field, stream_slice, stream_state), 
-                CampaignsSMS.read_records(sync_mode, cursor_field, stream_slice, stream_state)
-            ):
+            CampaignsEmail.read_records(sync_mode, cursor_field, stream_slice, stream_state),
+            CampaignsSMS.read_records(sync_mode, cursor_field, stream_slice, stream_state),
+        ):
             yield record
+
 
 class CampaignsDetailed(CampaignsEmail, CampaignsSMS):
     def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
