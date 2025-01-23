@@ -1,12 +1,12 @@
 [build-system]
-requires = [ "poetry-core>=1.0.0",]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 version = "0.2.25"
 name = "source-appsflyer"
 description = "Source implementation for Appsflyer."
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/appsflyer"
@@ -17,7 +17,7 @@ include = "source_appsflyer"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "1.8.0"
 pendulum = "==2.1.2"
 
 [tool.poetry.scripts]

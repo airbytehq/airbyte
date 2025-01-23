@@ -29,7 +29,10 @@ class CommerceToolsOauth2Authenticator(DeclarativeOauth2Authenticator):
         region = self.config["region"]
         project_key = self.config["project_key"]
         host = self.config["host"]
-        url = f"https://auth.{region}.{host}.commercetools.com/oauth/token?grant_type=client_credentials&scope=manage_project:{project_key}"
+        logger.info(f"Refreshing access token for project {project_key}")
+        scopes = map(lambda s: s + ":" + project_key, self.config["scopes"].split(","))
+        scope_request = " ".join(scopes)
+        url = f"https://auth.{region}.{host}.commercetools.com/oauth/token?grant_type=client_credentials&scope={scope_request}"
         try:
             response = requests.post(url, auth=(self.config["client_id"], self.config["client_secret"]))
             response.raise_for_status()

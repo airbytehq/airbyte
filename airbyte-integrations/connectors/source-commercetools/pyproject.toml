@@ -1,12 +1,12 @@
 [build-system]
-requires = [ "poetry-core>=1.0.0",]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 version = "0.2.29"
 name = "source-commercetools"
 description = "Source implementation for Commercetools."
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/commercetools"
@@ -17,7 +17,7 @@ include = "source_commercetools"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "1.0.0"
+airbyte-cdk = "1.8.0"
 
 [tool.poetry.scripts]
 source-commercetools = "source_commercetools.run:run"

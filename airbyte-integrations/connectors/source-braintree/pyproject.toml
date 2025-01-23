@@ -17,7 +17,7 @@ include = "source_braintree"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0.50"
+airbyte-cdk = "1.8.0"
 braintree = "^4.28.0"
 
 [tool.poetry.scripts]
