@@ -25,10 +25,14 @@ class S3DataLakeStreamLoader(
     private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val pipeline: MapperPipeline,
-    private val stagingBranchName: String,
+    private var stagingBranchName: String,
     private val mainBranchName: String
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
+
+    init {
+        stagingBranchName = mainBranchName
+    }
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecordAirbyteValue>,
