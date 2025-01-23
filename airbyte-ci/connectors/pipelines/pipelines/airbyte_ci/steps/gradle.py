@@ -1,22 +1,39 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import xml.etree.ElementTree as ET
+import os
+import shutil
+import signal
+import subprocess
 from abc import ABC
+from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, ClassVar, List, Optional, Tuple, cast
+from pathlib import Path
+from typing import Any, ClassVar, Dict, Generator, List, Optional, Tuple, cast
 
-import requests
-from dagger import CacheSharingMode, CacheVolume, Container, ExecError
+from dagger import Container, ExecError
 
-import pipelines.dagger.actions.system.docker
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.consts import AIRBYTE_SUBMODULE_DIR_NAME, AMAZONCORRETTO_IMAGE
-from pipelines.dagger.actions import secrets
-from pipelines.hacks import never_fail_exec
-from pipelines.helpers.utils import dagger_directory_as_zip_file, sh_dash_c
+from pipelines.helpers.utils import dagger_directory_as_zip_file
 from pipelines.models.artifacts import Artifact
-from pipelines.models.steps import Step, StepResult
+from pipelines.models.secrets import Secret
+from pipelines.models.steps import Step, StepResult, StepStatus
+
+
+class InvalidGradleEnvironment(Exception):
+    pass
+
+
+class GradleTimeoutError(Exception):
+    """Raised when a Gradle operation times out."""
+
+    pass
+
+
+class GradleExecutionError(Exception):
+    """Raised when a Gradle execution fails due to an unexpected error."""
+
+    pass
 
 
 class GradleTask(Step, ABC):
@@ -32,210 +49,182 @@ class GradleTask(Step, ABC):
 
     context: ConnectorContext
 
-    GRADLE_DEP_CACHE_PATH = "/root/gradle-cache"
-    GRADLE_HOME_PATH = "/root/.gradle"
-    STATIC_GRADLE_OPTIONS = ("--no-daemon", "--no-watch-fs", "--build-cache", "--scan", "--console=plain")
-    CDK_MAVEN_METADATA_URL = (
-        "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/cdk/airbyte-cdk-core/maven-metadata.xml"
-    )
+    STATIC_GRADLE_OPTIONS = ("--build-cache", "--scan", "--no-watch-fs")
     gradle_task_name: ClassVar[str]
-    bind_to_docker_host: ClassVar[bool] = False
-    mount_connector_secrets: ClassVar[bool] = False
+
     with_test_artifacts: ClassVar[bool] = False
     accept_extra_params = True
 
+    GRADLE_TIMEOUT = 3600 * 2  # 2 hour timeout by default
+
     @property
     def gradle_task_options(self) -> Tuple[str, ...]:
-        return self.STATIC_GRADLE_OPTIONS + (f"-Ds3BuildCachePrefix={self.context.connector.technical_name}",)
-
-    @property
-    def dependency_cache_volume(self) -> CacheVolume:
-        """This cache volume is for sharing gradle dependencies (jars and poms) across all pipeline runs."""
-        return self.context.dagger_client.cache_volume("gradle-dependency-cache")
-
-    @property
-    def build_include(self) -> List[str]:
-        """Retrieve the list of source code directory required to run a Java connector Gradle task.
-
-        The list is different according to the connector type.
-
-        Returns:
-            List[str]: List of directories or files to be mounted to the container to run a Java connector Gradle task.
-        """
-        return [
-            str(dependency_directory)
-            for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
-        ]
+        if self.context.s3_build_cache_access_key_id and self.context.s3_build_cache_secret_key:
+            return self.STATIC_GRADLE_OPTIONS + (f"-Ds3BuildCachePrefix={self.context.connector.technical_name}",)
+        return self.STATIC_GRADLE_OPTIONS
 
     def _get_gradle_command(self, task: str, *args: Any, task_options: Optional[List[str]] = None) -> str:
         task_options = task_options or []
         return f"./gradlew {' '.join(self.gradle_task_options + args)} {task} {' '.join(task_options)}"
 
-    def get_last_cdk_update_time(self) -> str:
-        response = requests.get(self.CDK_MAVEN_METADATA_URL)
-        response.raise_for_status()
-        last_updated = ET.fromstring(response.text).find(".//lastUpdated")
-        if last_updated is None or last_updated.text is None:
-            raise ValueError(f"Could not find the lastUpdated field in the CDK maven metadata at {self.CDK_MAVEN_METADATA_URL}")
-        return last_updated.text
+    def check_system_requirements(self) -> None:
+        """
+        Check if the system has all the required commands in the path.
+        This could be improved to check for more specific versions of the commands.
+        """
+        required_commands_in_path = ["docker", "gradle", "jq", "xargs", "java"]
+        for command in required_commands_in_path:
+            if not shutil.which(command):
+                raise ValueError(f"Command {command} is not in the path")
+
+    @property
+    def gradle_command(self) -> str:
+        connector_gradle_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
+        return self._get_gradle_command(connector_gradle_task, task_options=self.params_as_cli_options)
+
+    def timeout_handler(self, signum: int, frame: Any) -> None:
+        raise GradleTimeoutError(f"Gradle operation timed out after {self.GRADLE_TIMEOUT} seconds")
+
+    @contextmanager
+    def gradle_environment(self) -> Generator[None, None, None]:
+        """
+        Context manager to set the gradle environment with timeout:
+        - Check if the system has all the required commands in the path.
+        - Set the S3 build cache environment variables if available.
+        - Enforces a timeout for gradle operations
+        - ... Add whatever setup/teardown logic needed to run a gradle task.
+
+        Raises:
+            InvalidGradleEnvironment: If the gradle environment is not properly set up
+            GradleTimeoutError: If the gradle operation exceeds the timeout
+        """
+
+        def set_env_vars() -> Dict[str, str]:
+            # Set the RUN_IN_AIRBYTE_CI environment variable to True to tell gradle to use the docker image that was previously built in the airbyte-ci pipeline
+            env_vars = {"RUN_IN_AIRBYTE_CI": "True"}
+
+            # Set the S3 build cache environment variables if available.
+            if self.context.s3_build_cache_access_key_id and self.context.s3_build_cache_secret_key:
+                env_vars["S3_BUILD_CACHE_ACCESS_KEY_ID"] = self.context.s3_build_cache_access_key_id.value
+                env_vars["S3_BUILD_CACHE_SECRET_KEY"] = self.context.s3_build_cache_secret_key.value
+
+            for key, value in env_vars.items():
+                os.environ[key] = value
+            return env_vars
+
+        def unset_env_vars(env_vars: Dict[str, str]) -> None:
+            for key in env_vars.keys():
+                del os.environ[key]
+
+        def write_secrets(secrets: List[Secret]) -> List[Path]:
+            secrets_paths = []
+            secrets_dir = f"{self.context.connector.code_directory}/secrets"
+            for secret in secrets:
+                secret_path = Path(f"{secrets_dir}/{secret.file_name}")
+                secret_path.parent.mkdir(parents=True, exist_ok=True)
+                secret_path.write_text(secret.value)
+                secrets_paths.append(secret_path)
+            return secrets_paths
+
+        def remove_secrets(secrets_paths: List[Path]) -> None:
+            for secret_path in secrets_paths:
+                secret_path.unlink()
+
+        # Set the timeout handler for gradle operations
+        original_timeout_handler = signal.signal(signal.SIGALRM, self.timeout_handler)
+
+        try:
+            # Check if the system has all the required commands in the path.
+            self.check_system_requirements()
+            # Set env vars and write secrets - will be undone in the finally block
+            env_vars = set_env_vars()
+            secret_paths = write_secrets(self.secrets)
+
+            # Set the timeout for gradle operations via SIGALRM
+            self.logger.info(f"Setting gradle timeout to {self.GRADLE_TIMEOUT} seconds")
+            signal.alarm(self.GRADLE_TIMEOUT)
+
+            yield None
+        except GradleTimeoutError:
+            raise
+        except InvalidGradleEnvironment:
+            raise
+        except Exception as e:
+            # Wrap any other unexpected exceptions in GradleExecutionError
+            raise GradleExecutionError(f"Unexpected error during gradle execution: {str(e)}") from e
+        finally:
+            signal.alarm(0)  # Disable the alarm
+            signal.signal(signal.SIGALRM, original_timeout_handler)  # Restore original handler
+            unset_env_vars(env_vars)
+            # Remove secrets from the secrets folders only in CI
+            if self.context.is_ci:
+                remove_secrets(secret_paths)
+
+    def _run_gradle_in_subprocess(self) -> Tuple[str, str, int]:
+        """
+        Run a gradle command in a subprocess.
+        """
+        try:
+            self.context.logger.info(f"Running gradle command: {self.gradle_command}")
+            process = subprocess.Popen(
+                self.gradle_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, universal_newlines=True
+            )
+
+            stdout, stderr = process.communicate()
+
+            if process.returncode != 0:
+                stderr = f"Error while running gradle command: {self.gradle_command}\n{stderr}"
+                return stdout, stderr, process.returncode
+
+            return stdout, stderr, process.returncode
+        finally:
+            # Ensure process is terminated if something goes wrong
+            if "process" in locals():
+                self.logger.info("Terminating gradle process")
+                process.terminate()
+                process.wait(timeout=20)  # Give it 20 seconds to terminate gracefully
+                try:
+                    self.logger.info("Force killing gradle process")
+                    process.kill()
+                except ProcessLookupError:
+                    pass
 
     async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
-        include = [
-            ".root",
-            ".env",
-            "build.gradle",
-            "build.gradle.kts",
-            "gradle.properties",
-            "gradle",
-            "gradlew",
-            "settings.gradle",
-            "tools/gradle",
-            "spotbugs-exclude-filter-file.xml",
-            "buildSrc",
-            "tools/bin/build_image.sh",
-            "tools/lib/lib.sh",
-            "pyproject.toml",
-        ] + self.build_include
-        # Support the edge case where the airbyte repo is used as a git submodule.
-        include += [f"{AIRBYTE_SUBMODULE_DIR_NAME}/{i}" for i in include]
-
-        yum_packages_to_install = [
-            "docker",  # required by :integrationTestJava.
-            "findutils",  # gradle requires xargs, which is shipped in findutils.
-            "jq",  # required by :acceptance-test-harness to inspect docker images.
-            "rsync",  # required for gradle cache synchronization.
-        ]
-
-        # Common base container.
-        gradle_container_base = (
-            self.dagger_client.container()
-            # Use a linux+jdk base image with long-term support, such as amazoncorretto.
-            .from_(AMAZONCORRETTO_IMAGE)
-            # Mount the dependency cache volume, but not to $GRADLE_HOME, because gradle doesn't expect concurrent modifications.
-            .with_mounted_cache(self.GRADLE_DEP_CACHE_PATH, self.dependency_cache_volume, sharing=CacheSharingMode.LOCKED)
-            # Set GRADLE_HOME to the directory which will be rsync-ed with the gradle cache volume.
-            .with_env_variable("GRADLE_HOME", self.GRADLE_HOME_PATH)
-            # Same for GRADLE_USER_HOME.
-            .with_env_variable("GRADLE_USER_HOME", self.GRADLE_HOME_PATH)
-            # Install a bunch of packages as early as possible.
-            .with_exec(
-                sh_dash_c(
-                    [
-                        # Update first, but in the same .with_exec step as the package installation.
-                        # Otherwise, we risk caching stale package URLs.
-                        "yum update -y",
-                        f"yum install -y {' '.join(yum_packages_to_install)}",
-                        # Remove any dangly bits.
-                        "yum clean all",
-                        # Deliberately soft-remove docker, so that the `docker` CLI is unavailable by default.
-                        # This is a defensive choice to enforce the expectation that, as a general rule, gradle tasks do not rely on docker.
-                        "yum remove -y --noautoremove docker",  # remove docker package but not its dependencies
-                        "yum install -y --downloadonly docker",  # have docker package in place for quick install
-                    ]
+        try:
+            with self.gradle_environment():
+                stdout, stderr, returncode = self._run_gradle_in_subprocess()
+                artifacts = []
+                if self.with_test_artifacts:
+                    if test_logs := await self._collect_test_logs():
+                        artifacts.append(test_logs)
+                    if test_results := await self._collect_test_results():
+                        artifacts.append(test_results)
+                step_result = StepResult(
+                    step=self,
+                    status=StepStatus.SUCCESS if returncode == 0 else StepStatus.FAILURE,
+                    stdout=stdout,
+                    stderr=stderr,
+                    output=self.context.dagger_client.host().directory(str(self.context.connector.code_directory)),
+                    artifacts=artifacts,
                 )
+                return step_result
+        except GradleTimeoutError as e:
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stderr=str(e),
             )
-            # Set RUN_IN_AIRBYTE_CI to tell gradle how to configure its build cache.
-            # This is consumed by settings.gradle in the repo root.
-            .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
-            # Disable the Ryuk container because it needs privileged docker access which it can't have.
-            .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
-            # Set the current working directory.
-            .with_workdir("/airbyte")
-        )
-
-        # Augment the base container with S3 build cache secrets when available.
-        if self.context.s3_build_cache_access_key_id:
-            gradle_container_base = gradle_container_base.with_secret_variable(
-                "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id.as_dagger_secret(self.dagger_client)
+        except InvalidGradleEnvironment as e:
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stderr=str(e),
             )
-            if self.context.s3_build_cache_secret_key:
-                gradle_container_base = gradle_container_base.with_secret_variable(
-                    "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key.as_dagger_secret(self.dagger_client)
-                )
 
-        # Running a gradle task like "help" with these arguments will trigger updating all dependencies.
-        # When the cache is cold, this downloads many gigabytes of jars and poms from all over the internet.
-        warm_dependency_cache_args = ["--write-verification-metadata", "sha256", "--dry-run"]
-        if self.context.is_local:
-            # When running locally, this dependency update is slower and less useful than within a CI runner. Skip it.
-            warm_dependency_cache_args = ["--dry-run"]
-
-        # Mount the whole git repo to update the cache volume contents.
-        with_whole_git_repo = (
-            gradle_container_base
-            # Mount the whole repo.
-            .with_directory("/airbyte", self.context.get_repo_dir("."))
-            # Burst the cache if a new CDK version was released.
-            .with_env_variable("CDK_LAST_UPDATE", self.get_last_cdk_update_time())
-            # Update the cache in place by executing a gradle task which will update all dependencies.
-            .with_exec(
-                sh_dash_c(
-                    [
-                        # Defensively delete the gradle home directory to avoid dirtying the cache volume.
-                        f"rm -rf {self.GRADLE_HOME_PATH}",
-                        # Load from the cache volume.
-                        f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
-                        # Resolve all dependencies and write their checksums to './gradle/verification-metadata.dryrun.xml'.
-                        self._get_gradle_command("help", *warm_dependency_cache_args),
-                        # Store to the cache volume.
-                        f"(rsync -a --stats {self.GRADLE_HOME_PATH}/ {self.GRADLE_DEP_CACHE_PATH} || true)",
-                    ]
-                )
-            )
-        )
-
-        # Mount only the code needed to build the connector.
-        gradle_container = (
-            gradle_container_base
-            # Copy the gradle home directory and force evaluation of `with_whole_git_repo` container.
-            .with_directory(self.GRADLE_HOME_PATH, await with_whole_git_repo.directory(self.GRADLE_HOME_PATH))
-            # Mount the connector-agnostic whitelisted files in the git repo.
-            .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
-            # Mount the sources for the connector and its dependencies in the git repo.
-            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
-        )
-
-        # From this point on, we add layers which are task-dependent.
-        if self.mount_connector_secrets:
-            secrets_dir = f"{self.context.connector.code_directory}/secrets"
-            gradle_container = gradle_container.with_(await secrets.mounted_connector_secrets(self.context, secrets_dir, self.secrets))
-        if self.bind_to_docker_host:
-            # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
-            gradle_container = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, gradle_container)
-            # This installation should be cheap, as the package has already been downloaded, and its dependencies are already installed.
-            gradle_container = gradle_container.with_exec(["yum", "install", "-y", "docker"], use_entrypoint=True)
-
-        # Run the gradle task that we actually care about.
-        connector_gradle_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
-        gradle_command = self._get_gradle_command(connector_gradle_task, task_options=self.params_as_cli_options)
-        gradle_container = gradle_container.with_(never_fail_exec([gradle_command]))
-
-        # Collect the test artifacts, if applicable.
-        artifacts = []
-        if self.with_test_artifacts:
-            if test_logs := await self._collect_test_logs(gradle_container):
-                artifacts.append(test_logs)
-            if test_results := await self._collect_test_results(gradle_container):
-                artifacts.append(test_results)
-
-        return await self.get_step_result(gradle_container, artifacts)
-
-    async def get_step_result(self, container: Container, outputs: List[Artifact]) -> StepResult:
-        step_result = await super().get_step_result(container)
-        # Decorate with test report, if applicable.
-        return StepResult(
-            step=step_result.step,
-            status=step_result.status,
-            stdout=step_result.stdout,
-            stderr=step_result.stderr,
-            output=step_result.output,
-            artifacts=outputs,
-        )
-
-    async def _collect_test_logs(self, gradle_container: Container) -> Optional[Artifact]:
+    async def _collect_test_logs(self) -> Optional[Artifact]:
         """
-        Exports the java docs from the container into the host filesystem.
-        The docs in the container are expected to be in build/test-logs, and will end up test-artifact directory by default
+        Exports the java docs to the host filesystem as a zip file.
+        The docs are expected to be in build/test-logs, and will end up test-artifact directory by default
         One can change the destination directory by setting the outputs
         """
         test_logs_dir_name_in_container = "test-logs"
@@ -244,14 +233,16 @@ class GradleTask(Step, ABC):
         )
         if (
             test_logs_dir_name_in_container
-            not in await gradle_container.directory(f"{self.context.connector.code_directory}/build").entries()
+            not in await self.dagger_client.host().directory(f"{self.context.connector.code_directory}/build").entries()
         ):
             self.context.logger.warn(f"No {test_logs_dir_name_in_container} found directory in the build folder")
             return None
         try:
             zip_file = await dagger_directory_as_zip_file(
                 self.dagger_client,
-                await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_logs_dir_name_in_container}"),
+                await self.dagger_client.host().directory(
+                    f"{self.context.connector.code_directory}/build/{test_logs_dir_name_in_container}"
+                ),
                 test_logs_dir_name_in_zip,
             )
             return Artifact(
@@ -264,9 +255,9 @@ class GradleTask(Step, ABC):
             self.context.logger.error(str(e))
         return None
 
-    async def _collect_test_results(self, gradle_container: Container) -> Optional[Artifact]:
+    async def _collect_test_results(self) -> Optional[Artifact]:
         """
-        Exports the junit test reports from the container into the host filesystem.
+        Exports the junit test results into the host filesystem as a zip file.
         The docs in the container are expected to be in build/test-results, and will end up test-artifact directory by default
         Only the XML files generated by junit are downloaded into the host filesystem
         One can change the destination directory by setting the outputs
@@ -277,14 +268,16 @@ class GradleTask(Step, ABC):
         )
         if (
             test_results_dir_name_in_container
-            not in await gradle_container.directory(f"{self.context.connector.code_directory}/build").entries()
+            not in await self.dagger_client.host().directory(f"{self.context.connector.code_directory}/build").entries()
         ):
             self.context.logger.warn(f"No {test_results_dir_name_in_container} found directory in the build folder")
             return None
         try:
             zip_file = await dagger_directory_as_zip_file(
                 self.dagger_client,
-                await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_results_dir_name_in_container}"),
+                await self.dagger_client.host().directory(
+                    f"{self.context.connector.code_directory}/build/{test_results_dir_name_in_container}"
+                ),
                 test_results_dir_name_in_zip,
             )
             return Artifact(

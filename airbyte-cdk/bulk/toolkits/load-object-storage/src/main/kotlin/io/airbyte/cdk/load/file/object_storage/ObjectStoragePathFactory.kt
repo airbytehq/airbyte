@@ -45,11 +45,30 @@ interface PathFactory {
 data class PathMatcher(val regex: Regex, val variableToIndex: Map<String, Int>) {
     fun match(path: String): PathMatcherResult? {
         val match = regex.matchEntire(path) ?: return null
-        return PathMatcherResult(
-            path,
-            variableToIndex["part_number"]?.let { match.groupValues[it].toLong() },
-            variableToIndex["suffix"]?.let { match.groupValues[it].let { g -> g.ifBlank { null } } }
-        )
+
+        val partNumber =
+            try {
+                variableToIndex["part_number"]?.let { match.groupValues[it].toLong() }
+            } catch (e: Exception) {
+                throw PathMatcherException(
+                    "Could not parse part number from $path with pattern: ${regex.pattern} at index: ${variableToIndex["part_number"]}",
+                    e,
+                )
+            }
+
+        val suffix =
+            try {
+                variableToIndex["suffix"]?.let {
+                    match.groupValues[it].let { g -> g.ifBlank { null } }
+                }
+            } catch (e: Exception) {
+                throw PathMatcherException(
+                    "Could not parse suffix from $path with pattern: ${regex.pattern} at index: ${variableToIndex["suffix"]}",
+                    e,
+                )
+            }
+
+        return PathMatcherResult(path, partNumber, suffix)
     }
 }
 
@@ -368,12 +387,14 @@ class ObjectStoragePathFactory(
         input: String,
         macroPattern: String,
         variableToPattern: Map<String, String>,
-        variableToIndex: MutableMap<String, Int>
+        variableToIndex: MutableList<Pair<String, Int>>
     ): String {
         return Regex.escapeReplacement(input).replace(macroPattern.toRegex()) {
             val variable = it.groupValues[1]
             val pattern = variableToPattern[variable]
             if (pattern == null) {
+                // This should happen if it wasn't a supported variable and is thus interpreted as
+                // a string literal—e.g. ${FOOBAR} will be inserted as FOOBAR.
                 variable
             } else if (pattern.isBlank()) {
                 // This should only happen in the case of a blank namespace.
@@ -381,7 +402,7 @@ class ObjectStoragePathFactory(
                 // `()/($streamName)` against `$streamName`.
                 ""
             } else {
-                variableToIndex[variable] = variableToIndex.size + 1
+                variableToIndex.add(Pair(variable, variableToIndex.size + 1))
                 "($pattern)"
             }
         }
@@ -389,18 +410,23 @@ class ObjectStoragePathFactory(
 
     override fun getPathMatcher(stream: DestinationStream, suffixPattern: String?): PathMatcher {
         val pathVariableToPattern = getPathVariableToPattern(stream)
-        val variableToIndex = mutableMapOf<String, Int>()
+        val variableIndexTuples = mutableListOf<Pair<String, Int>>()
 
         val pathPattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
 
         val replacedForPath =
-            buildPattern(pathPattern, """\\\$\{(\w+)}""", pathVariableToPattern, variableToIndex)
+            buildPattern(
+                pathPattern,
+                """\\\$\{(\w+)}""",
+                pathVariableToPattern,
+                variableIndexTuples
+            )
         val replacedForFile =
             buildPattern(
                 filePatternResolved,
                 """\{([\w\:]+)}""",
                 pathVariableToPattern,
-                variableToIndex
+                variableIndexTuples
             )
         // NOTE the old code does not actually resolve the path + filename,
         // even tho the documentation says it does.
@@ -409,11 +435,13 @@ class ObjectStoragePathFactory(
         val combined = "$replacedForPathWithEmptyVariablesRemoved$replacedForFile"
         val withSuffix =
             if (suffixPattern != null) {
-                variableToIndex["suffix"] = variableToIndex.size + 1
+                variableIndexTuples.add(Pair("suffix", variableIndexTuples.size + 1))
                 "$combined$suffixPattern"
             } else {
                 combined
             }
+
+        val variableToIndex = variableIndexTuples.toMap()
         return PathMatcher(Regex(withSuffix), variableToIndex)
     }
 }
