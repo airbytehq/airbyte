@@ -49,6 +49,7 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.7.16 | 2025-01-10 | [51493](https://github.com/airbytehq/airbyte/pull/51493) | Use a non root base image |
 | 0.7.15 | 2024-12-19 | [49899](https://github.com/airbytehq/airbyte/pull/49931) | Non-functional CDK changes                                                                                 |
 | 0.7.14      | 2024-12-20 | [49974](https://github.com/airbytehq/airbyte/pull/49974) | Non-functional CDK changes                                                                   |
 | 0.7.13      | 2024-12-18 | [49899](https://github.com/airbytehq/airbyte/pull/49899) | Use a base image: airbyte/java-connector-base:1.0.0                                          |
