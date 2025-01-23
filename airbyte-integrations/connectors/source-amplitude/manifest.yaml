@@ -1,220 +1,4 @@
 version: "5.15.0"
-definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path:
-      - "{{ parameters.get('data_field') }}"
-  requester:
-    type: HttpRequester
-    url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
-      Server' else '' }}amplitude.com/api"
-    http_method: "GET"
-    authenticator:
-      type: BasicHttpAuthenticator
-      username: "{{ config['api_key'] }}"
-      password: "{{ config['secret_key'] }}"
-    error_handler:
-      type: DefaultErrorHandler
-      response_filters:
-      - http_codes:
-        - 400
-        action: FAIL
-        failure_type: config_error
-        error_message: The file size of the exported data is too large. Shorten the
-          time ranges and try again. The limit size is 4GB. Provide a shorter 'request_time_range'
-          interval.
-      - http_codes:
-        - 403
-        action: FAIL
-        failure_type: config_error
-        error_message: Access denied due to lack of permission or invalid API/Secret
-          key or wrong data region.
-      - http_codes:
-        - 404
-        action: IGNORE
-        error_message: No data available for the time range requested.
-      - http_codes:
-        - 504
-        action: FAIL
-        failure_type: config_error
-        error_message: "The amount of data is large and may be causing a timeout.
-          For large amounts of data, the Amazon S3 destination is recommended. Refer
-          to Amplitude documentation for information on setting up the S3 destination:
-          https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - "{{ parameters.get('data_field') }}"
-    paginator:
-      type: NoPagination
-    requester:
-      type: HttpRequester
-      url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
-        Server' else '' }}amplitude.com/api"
-      http_method: "GET"
-      authenticator:
-        type: BasicHttpAuthenticator
-        username: "{{ config['api_key'] }}"
-        password: "{{ config['secret_key'] }}"
-      error_handler:
-        type: DefaultErrorHandler
-        response_filters:
-        - http_codes:
-          - 400
-          action: FAIL
-          failure_type: config_error
-          error_message: The file size of the exported data is too large. Shorten
-            the time ranges and try again. The limit size is 4GB. Provide a shorter
-            'request_time_range' interval.
-        - http_codes:
-          - 403
-          action: FAIL
-          failure_type: config_error
-          error_message: Access denied due to lack of permission or invalid API/Secret
-            key or wrong data region.
-        - http_codes:
-          - 404
-          action: IGNORE
-          error_message: No data available for the time range requested.
-        - http_codes:
-          - 504
-          action: FAIL
-          failure_type: config_error
-          error_message: "The amount of data is large and may be causing a timeout.
-            For large amounts of data, the Amazon S3 destination is recommended. Refer
-            to Amplitude documentation for information on setting up the S3 destination:
-            https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
-  datetime_incremental_sync:
-    type: DatetimeBasedCursor
-    start_datetime:
-      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
-    end_datetime:
-      datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-    datetime_format: "%Y-%m-%d"
-    cursor_datetime_formats:
-    - "%Y-%m-%d"
-    - "%Y-%m-%dT%H:%M:%S"
-    cursor_granularity: P1D
-    step: P15D
-    cursor_field: "{{ parameters['stream_cursor_field'] }}"
-  base_stream:
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - "{{ parameters.get('data_field') }}"
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
-          Server' else '' }}amplitude.com/api"
-        http_method: "GET"
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['api_key'] }}"
-          password: "{{ config['secret_key'] }}"
-        error_handler:
-          type: DefaultErrorHandler
-          response_filters:
-          - http_codes:
-            - 400
-            action: FAIL
-            failure_type: config_error
-            error_message: The file size of the exported data is too large. Shorten
-              the time ranges and try again. The limit size is 4GB. Provide a shorter
-              'request_time_range' interval.
-          - http_codes:
-            - 403
-            action: FAIL
-            failure_type: config_error
-            error_message: Access denied due to lack of permission or invalid API/Secret
-              key or wrong data region.
-          - http_codes:
-            - 404
-            action: IGNORE
-            error_message: No data available for the time range requested.
-          - http_codes:
-            - 504
-            action: FAIL
-            failure_type: config_error
-            error_message: "The amount of data is large and may be causing a timeout.
-              For large amounts of data, the Amazon S3 destination is recommended.
-              Refer to Amplitude documentation for information on setting up the S3
-              destination: https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
-  base_incremental_stream:
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - "{{ parameters.get('data_field') }}"
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
-          Server' else '' }}amplitude.com/api"
-        http_method: "GET"
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['api_key'] }}"
-          password: "{{ config['secret_key'] }}"
-        error_handler:
-          type: DefaultErrorHandler
-          response_filters:
-          - http_codes:
-            - 400
-            action: FAIL
-            failure_type: config_error
-            error_message: The file size of the exported data is too large. Shorten
-              the time ranges and try again. The limit size is 4GB. Provide a shorter
-              'request_time_range' interval.
-          - http_codes:
-            - 403
-            action: FAIL
-            failure_type: config_error
-            error_message: Access denied due to lack of permission or invalid API/Secret
-              key or wrong data region.
-          - http_codes:
-            - 404
-            action: IGNORE
-            error_message: No data available for the time range requested.
-          - http_codes:
-            - 504
-            action: FAIL
-            failure_type: config_error
-            error_message: "The amount of data is large and may be causing a timeout.
-              For large amounts of data, the Amazon S3 destination is recommended.
-              Refer to Amplitude documentation for information on setting up the S3
-              destination: https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
-        request_parameters:
-          start: "{{format_datetime(stream_slice.start_time, '%Y%m%d') }}"
-          end: "{{format_datetime(stream_slice.end_time, '%Y%m%d') }}"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      start_datetime:
-        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
-      end_datetime:
-        datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-      datetime_format: "%Y-%m-%d"
-      cursor_datetime_formats:
-      - "%Y-%m-%d"
-      - "%Y-%m-%dT%H:%M:%S"
-      cursor_granularity: P1D
-      step: P15D
-      cursor_field: "{{ parameters['stream_cursor_field'] }}"
 streams:
 - retriever:
     type: SimpleRetriever
@@ -223,7 +7,7 @@ streams:
       extractor:
         type: DpathExtractor
         field_path:
-        - "{{ parameters.get('data_field') }}"
+        - data
     paginator:
       type: NoPagination
     requester:
@@ -305,7 +89,7 @@ streams:
       extractor:
         type: DpathExtractor
         field_path:
-        - "{{ parameters.get('data_field') }}"
+        - data
     paginator:
       type: NoPagination
     requester:
@@ -496,6 +280,7 @@ streams:
             type: string
   type: DeclarativeStream
   name: "cohorts"
+  data_field: "data"
   primary_key: "id"
 - retriever:
     type: SimpleRetriever
@@ -565,7 +350,7 @@ streams:
     - "%Y-%m-%dT%H:%M:%S"
     cursor_granularity: P1D
     step: P15D
-    cursor_field: "{{ parameters['stream_cursor_field'] }}"
+    cursor_field: date
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -584,7 +369,7 @@ streams:
           - "null"
           - number
   type: DeclarativeStream
-  name: "average_session_length"
+  name: average_session_length
   primary_key: "date"
 - retriever:
     type: SimpleRetriever
@@ -855,7 +640,7 @@ streams:
           type: JsonLineParser
   incremental_sync:
     type: DatetimeBasedCursor
-    cursor_field: "{{ parameters['cursor_field'] }}"
+    cursor_field: server_upload_time
     cursor_datetime_formats:
     - "%Y-%m-%dT%H:%M:%S.%f%z"
     - "%Y-%m-%d %H:%M:%S.%f"
