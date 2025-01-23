@@ -9,6 +9,7 @@ from http import HTTPStatus
 from typing import List, Optional
 
 import freezegun
+import pendulum
 import pytest
 import requests_mock
 from source_amazon_seller_partner.streams import ReportProcessingStatus
@@ -528,6 +529,9 @@ class TestIncremental:
     def test_given_report_when_read_then_state_message_produced_and_state_match_latest_record(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        """
+        This test requires datetime from the records to be higher than the start date of the stream else the cursor value will be the start date
+        """
         _config = config()
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
@@ -547,13 +551,16 @@ class TestIncremental:
         )
 
         output = self._read(stream_name, _config)
-        assert len(output.state_messages) == 1
+        assert (
+            len(output.state_messages) == 2
+        )  # we have two messages here, one for the slice and once of the "ensure_at_least_one_state_emitted"
 
         cursor_field = get_stream_by_name(stream_name, _config.build()).cursor_field
         cursor_value_from_latest_record = output.records[-1].record.data.get(cursor_field)
 
         most_recent_state = output.most_recent_state.stream_state
-        assert most_recent_state == {cursor_field: cursor_value_from_latest_record}
+        # format between record and cursor value can differ hence we rely on pendulum parsing to ignore those discrepancies
+        assert pendulum.parse(most_recent_state.__dict__[cursor_field]) == pendulum.parse(cursor_value_from_latest_record)
 
 
 @freezegun.freeze_time(NOW.isoformat())

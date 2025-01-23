@@ -639,7 +639,7 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - path: ["dataEndTime"]
+            - path: ["last-updated-date"]
               value: "{{ stream_slice['end_time'] }}"
 
     get_flat_file_actionable_order_data_shipping:
@@ -727,7 +727,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: Date
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
@@ -766,7 +766,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: Date
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
@@ -879,8 +879,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
-          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
