@@ -5,7 +5,6 @@
 
 import urllib.parse
 from abc import ABC, abstractmethod
-from itertools import chain
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
