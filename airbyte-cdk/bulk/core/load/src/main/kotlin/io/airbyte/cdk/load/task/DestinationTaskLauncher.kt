@@ -47,6 +47,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 interface DestinationTaskLauncher : TaskLauncher {
+    suspend fun handleSetupComplete()
     suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream.Descriptor)
     suspend fun handleTeardownComplete(success: Boolean = true)
@@ -184,12 +185,9 @@ class DefaultDestinationTaskLauncher(
 
         // Launch the client interface setup task
         log.info { "Starting startup task" }
-        val setupTask = setupTaskFactory.make()
+        val setupTask = setupTaskFactory.make(this)
         launch(setupTask)
 
-        log.info { "Enqueueing open stream tasks" }
-        catalog.streams.forEach { openStreamQueue.publish(it) }
-        openStreamQueue.close()
         repeat(config.numOpenStreamWorkers) {
             log.info { "Launching open stream task $it" }
             launch(openStreamTaskFactory.make())
@@ -245,6 +243,12 @@ class DefaultDestinationTaskLauncher(
         } else {
             taskScopeProvider.kill()
         }
+    }
+
+    override suspend fun handleSetupComplete() {
+        log.info { "Setup task complete, opening streams" }
+        catalog.streams.forEach { openStreamQueue.publish(it) }
+        openStreamQueue.close()
     }
 
     /**

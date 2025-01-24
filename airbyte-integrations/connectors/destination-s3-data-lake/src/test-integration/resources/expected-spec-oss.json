@@ -86,6 +86,11 @@
               "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
               "airbyte_secret" : true,
               "order" : 2
+            },
+            "namespace" : {
+              "type" : "string",
+              "description" : "The Nessie namespace to be used in the Table identifier. \n            |This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n            | `Destination-defined` or `Source-defined`",
+              "title" : "Namespace"
             }
           },
           "required" : [ "catalog_type", "server_uri" ]
@@ -110,6 +115,11 @@
               "type" : "string",
               "description" : "The Role ARN.",
               "title" : "Role ARN"
+            },
+            "database_name" : {
+              "type" : "string",
+              "description" : "The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`",
+              "title" : "Database Name"
             }
           },
           "required" : [ "catalog_type", "glue_id" ]
