@@ -24,6 +24,7 @@ class AirbyteConnectorBaseImage(ABC):
     USER_ID: int = 1000
     CACHE_DIR_PATH: str = "/custom_cache"
     AIRBYTE_DIR_PATH: str = "/airbyte"
+    CONFIG_PATH: str = "/config"
 
     @final
     def __init__(self, dagger_client: dagger.Client, version: semver.VersionInfo):
@@ -116,6 +117,7 @@ class AirbyteConnectorBaseImage(ABC):
             # Create the cache airbyte directories and set the right permissions
             .with_exec(["mkdir", "--mode", "755", self.CACHE_DIR_PATH])
             .with_exec(["mkdir", "--mode", "755", self.AIRBYTE_DIR_PATH])
-            # Change the owner of the airbyte directory to the user 'airbyte'
+            # Change the owner of the airbyte directory and config to the user 'airbyte'
             .with_exec(["chown", f"{self.USER}:{self.USER}", self.AIRBYTE_DIR_PATH])
+            .with_exec(["chown", f"{self.USER}:{self.USER}", self.CONFIG_PATH])
         )
