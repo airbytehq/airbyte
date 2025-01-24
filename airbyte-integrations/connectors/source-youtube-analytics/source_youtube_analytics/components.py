@@ -11,6 +11,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     InterpolatedRequestOptionsProvider,
     RequestInput,
 )
+
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
