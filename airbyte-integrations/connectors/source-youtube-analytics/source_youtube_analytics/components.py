@@ -2,23 +2,22 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import requests
 from dataclasses import dataclass
 from typing import Any, Mapping, Optional, Union
 
+import requests
+
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
     RequestInput,
 )
-
-from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
+
 
 @dataclass
 class CreationRequester(HttpRequester):
-
     request_body_json: Optional[RequestInput] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
@@ -31,10 +30,10 @@ class CreationRequester(HttpRequester):
 
     def send_request(self, **kwargs):
         request, jobs_response = self._http_client.send_request(
-                http_method="GET",
-                url=self._join_url(self.get_url_base(), "jobs"),
-                request_kwargs={"stream": self.stream_response},
-            )
+            http_method="GET",
+            url=self._join_url(self.get_url_base(), "jobs"),
+            request_kwargs={"stream": self.stream_response},
+        )
         jobs_list = jobs_response.json().get("jobs", [])
         stream_name = self.name.split(" - ")[-1]
         if stream_name in [job["reportTypeId"] for job in jobs_list]:
@@ -42,9 +41,9 @@ class CreationRequester(HttpRequester):
         else:
             return super().send_request(**kwargs)
 
+
 @dataclass
 class PollingRequester(HttpRequester):
-
     def send_request(self, **kwargs):
         jobs_response = super().send_request(**kwargs)
         jobs_list = jobs_response.json().get("jobs", [])
@@ -59,9 +58,9 @@ class PollingRequester(HttpRequester):
         )
         return reports_response
 
+
 @dataclass
 class YoutubeAnalyticsErrorHandler(DefaultErrorHandler):
-
     def daily_quota_exceeded(self, response: requests.Response):
         """Response example:
             {
@@ -94,7 +93,7 @@ class YoutubeAnalyticsErrorHandler(DefaultErrorHandler):
                     return True, f"Exceeded daily quota: {detail.get('metadata', {}).get('quota_limit_value')} reqs/day"
                 break
         return False, ""
-    
+
     def should_retry(self, response: requests.Response):
         """
         Override to set different conditions for backoff based on the response from the server.
@@ -137,7 +136,7 @@ class YoutubeAnalyticsErrorHandler(DefaultErrorHandler):
                 error_message=error_message,
             )
         return super().interpret_response(response_or_exception)
-    
+
     def backoff_time(
         self,
         response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
