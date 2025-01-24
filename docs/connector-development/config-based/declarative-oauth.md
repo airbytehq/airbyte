@@ -266,18 +266,68 @@ Here is the change you would make to the spec to support this:
 +++ secret_header_manifest.yml
 @@ -83,10 +85,11 @@ spec:
            https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
-           redirect_uri }}&state={{ state }}
+           redirect_uri_value }}&state={{ state }}
          access_token_url: >-
 -          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
 +          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&code={{auth_code_value}}
-         extract_output:
-           - access_token
--        access_token_headers: {}
 +        access_token_headers:
 +          SECRETHEADER: "{{ client_secret_value }}"
-         access_token_params: {}
        complete_oauth_output_specification:
          required:
+
+```
+
+#### Example with the header value encoded into `base64-string`
+In this case, the header value would be encoded into `base64-encoded` string before being added to the headers.
+
+Here is the change you would make to the spec to support this:
+```diff
+--- secret_header_manifest.yml
++++ secret_header_manifest.yml
+@@ -83,10 +85,11 @@ spec:
+           https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
+           redirect_uri_value }}&state={{ state }}
+         access_token_url: >-
+-          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
++          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&code={{auth_code_value}}
++        access_token_headers:
+-          SECRETHEADER: "{{ client_secret_value }}"
++          SECRETHEADER: "{{ {{client_id_value}}:{{client_secret_value}} | base64Encoder }}"
+       complete_oauth_output_specification:
+         required:
+
+```
+
+### Advanced Case: access token url query parameters should be `JSON-encoded`
+Imagine that the OAuth flow is updated so that the query parameters should be `JSON-encoded` to obtain the `access_token/refresh_token`, during the `code` to `access_token/refresh_token` exchange. In this case the `access_token_url` should not include the variables as a part of the `url` itself. Use the `access_token_params` property to include the `JSON-encoded` params in the `body` of the request.
+
+#### Example Declarative OAuth Change
+Here is the change you would make to the spec to support this:
+```diff
+--- simple_oauth_manifest.yml
++++ secret_header_manifest.yml
+@@ -83,10 +85,11 @@ spec:
+           https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
+           redirect_uri_value }}&state={{ state }}
+         access_token_url: >-
+-          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
++          https://yourconnectorservice.com/oauth/token
++        access_token_params:
++          client_id: "{{ client_id_value }}"
++          client_secret: "{{ client_secret_value }}"
++          redirect_uri: "{{ redirect_uri_value }}"
+       complete_oauth_output_specification:
+         required:
+
+```
+
+The underlying `JSON-encoded` parameters will be included in the `body` of the outgoing request, instead of being a part of the `access_token_url` url value, as follows:
+```json
+{
+   "client_id": "YOUR_CLIENT_ID_123",
+   "client_secret": "YOUR_CLIENT_SECRET_123",
+   "redirect_uri": "https://cloud.airbyte.com",
+}
 
 ```
 
@@ -313,7 +363,7 @@ Now imagine that the OAuth flow is updated so that the access token returned by 
        complete_oauth_server_input_specification:
 ```
 
-### Advanced Case: refresh token support
+### Advanced Case: refresh token / single-use refresh token support 
 Imagine that the OAuth flow is updated so that the OAuth flow now supports refresh tokens.
 
 Meaning that the OAuth flow now has an additional endpoint:
@@ -325,7 +375,8 @@ and the response of `/oauth/token` now includes a refresh token field.
 ```json
 {
   "access_token": "YOUR_ACCESS_TOKEN_123",
-  "refresh_token": "YOUR_REFRESH_TOKEN_123"
+  "refresh_token": "YOUR_REFRESH_TOKEN_123",
+  "expires_in": 7200,
 }
 ```
 
@@ -368,14 +419,12 @@ and the response of `/oauth/token` now includes a refresh token field.
 -        title: Access token
 +        title: Refresh token
 @@ -86,16 +95,22 @@ spec:
-           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
-         extract_output:
-           - access_token
-+          - refresh_token
+           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}           
        complete_oauth_output_specification:
          required:
            - access_token
 +          - refresh_token
++          - token_expiry_date
          properties:
            access_token:
              type: string
@@ -389,11 +438,95 @@ and the response of `/oauth/token` now includes a refresh token field.
 +              - refresh_token
 +            path_in_oauth_response:
 +              - refresh_token
++          token_expiry_date:
++            type: string
++            path_in_connector_config:
++              - token_expiry_date
++            path_in_oauth_response:
++              - expires_in
        complete_oauth_server_input_specification:
          required:
            - client_id
 
 ```
+
+### Advanced Case: scopes should be provided as a query parameter 
+Imagine that the OAuth flow is updated so that you need to mention the `scope` query parameter to get to the `consent screen` and verify / grant the access to the neccessary onces, before moving forward.
+
+#### Example Declarative OAuth Change
+```diff
+--- a/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml
++++ b/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/scopes.yml
+@@ -80,10 +80,10 @@ spec:
+     oauth_config_specification:
+       oauth_connector_input_specification:
+         consent_url: >-
+-          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
+-          redirect_uri_value }}&state={{ state_value }}
++          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{ redirect_uri_value }}&state={{ state_value }}&scope={{scope_value}}
+         access_token_url: >-
+           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
++        scope: my_scope_A:read,my_scope_B:read
+       complete_oauth_output_specification:
+         required:
+           - access_token
+
+```
+
+Example URL:
+`https://yourconnectorservice.com/oauth/consent?client_id=YOUR_CLIENT_ID_123&redirect_uri=https://cloud.airbyte.com&state=some_random_state_string&scope=my_scope_A:read,my_scope_B:read`
+
+#### Example using an url-encoded / url-decoded `scope` parameter
+You can make the `scope` paramter `url-encoded` by specifying the `pipe` (|) + `urlEncoder` or `urlDecoder` in the target url.
+It would be pre-formatted and resolved into the `url-encoded` string before being replaced for the final resolved URL. 
+
+```diff
+--- a/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/scopes.yml.yml
++++ b/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/scopes.yml
+@@ -80,10 +80,10 @@ spec:
+     oauth_config_specification:
+       oauth_connector_input_specification:
+         consent_url: >-
+-          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
+-          redirect_uri_value }}&state={{ state_value }}&scope={{scope_value}}
++          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{ redirect_uri_value }}&state={{ state_value }}&scope={{ {{scope_value}} | urlEncoder }}
+         access_token_url: >-
+           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
+-        scope: my_scope_A:read,my_scope_B:read
++        scope: my_scope_A:read my_scope_B:read
+       complete_oauth_output_specification:
+         required:
+           - access_token
+
+```
+
+Example URL:
+`https://yourconnectorservice.com/oauth/consent?client_id=YOUR_CLIENT_ID_123&redirect_uri=https://cloud.airbyte.com&state=some_random_state_string&scope=my_scope_A%3Aread%20my_scope_B%3Aread`
+
+
+### Advanced Case: get code challenge from the `state_value` and set as a part of the `consent_url` 
+Imagine that the OAuth flow is updated so that you need to generate the `code challenge`, using `SHA-256` hash and include this as a query parameter in the `consent_url` to get to the `Consent Screen`, before moving forward with authentication.
+
+#### Example Declarative OAuth Change
+```diff
+--- base_oauth.yml
++++ base_oauth.yml
+@@ -80,10 +80,10 @@ spec:
+     oauth_config_specification:
+       oauth_connector_input_specification:
+         consent_url: >-
+-          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
+-          redirect_uri_value }}&state={{ state_value }}
++          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
++          redirect_uri_value }}&state={{ state_value }}&code_challenge={{ {{state_value}} | codeChanllengeS256 }}
+         access_token_url: >-
+           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
+       complete_oauth_output_specification:
+         required:
+           - access_token
+
+```
+
 
 ### Advanced Case: The Connector is already using Legacy OAuth and the credentials are stored in a strange place
 Imagine that the connector is already using Legacy OAuth and the credentials are stored in a strange place.
@@ -407,7 +540,132 @@ and we need to make sure that updating the spec to use Declarative OAuth doesn't
 
 #### Example Declarative OAuth Change
 ```diff
-
+--- a/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml
++++ b/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/legacy_to_decl
+arative_oauth.yml
+@@ -41,9 +41,9 @@ definitions:
+     authenticator:
+       type: OAuthAuthenticator
+       refresh_request_body: {}
+-      client_id: '{{ config["client_id"] }}'
+-      client_secret: '{{ config["client_secret"] }}'
+-      access_token_value: '{{ config["client_access_token"] }}'
++      client_id: '{{ config["super_secret_credentials"]["pokemon_client_id"] }}'
++      client_secret: '{{ config["super_secret_credentials"]["pokemon_client_secret"] }}'
++      access_token_value: '{{ config["super_secret_credentials"]["pokemon_access_token"] }}'
+ 
+ streams:
+   - $ref: "#/definitions/streams/moves"
+@@ -54,68 +54,73 @@ spec:
+     type: object
+     $schema: http://json-schema.org/draft-07/schema#
+     required:
+-      - client_id
+-      - client_secret
+-      - client_access_token
++      - super_secret_credentials
+     properties:
+-      client_id:
+-        type: string
+-        title: Client ID
+-        airbyte_secret: true
+-        order: 0
+-      client_secret:
+-        type: string
+-        title: Client secret
+-        airbyte_secret: true
+-        order: 1
+-      client_access_token:
+-        type: string
+-        title: Access token
+-        airbyte_secret: true
+-        airbyte_hidden: false
+-        order: 2
++      super_secret_credentials:
++        required:
++          - pokemon_client_id
++          - pokemon_client_secret
++          - pokemon_access_token
++        pokemon_client_id:
++          type: string
++          title: Client ID
++          airbyte_secret: true
++          order: 0
++        pokemon_client_secret:
++          type: string
++          title: Client secret
++          airbyte_secret: true
++          order: 1
++        pokemon_access_token:
++          type: string
++          title: Access token
++          airbyte_secret: true
++          airbyte_hidden: false
++          order: 2
+     additionalProperties: true
+   advanced_auth:
+     auth_flow_type: oauth2.0
+     oauth_config_specification:
+       oauth_connector_input_specification:
+         consent_url: >-
+-          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
+-          redirect_uri_value }}&state={{ state_value }}
++          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{ redirect_uri_value }}&state={{ s
+tate_value }}
+         access_token_url: >-
+           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_
+code_value}}
+       complete_oauth_output_specification:
+         required:
+-          - access_token
++          - pokemon_access_token
+         properties:
+-          access_token:
++          pokemon_access_token:
+             type: string
+             path_in_connector_config:
+-              - access_token
++              - super_secret_credentials
++              - pokemon_access_token
+             path_in_oauth_response:
+               - access_token
+       complete_oauth_server_input_specification:
+         required:
+-          - client_id
+-          - client_secret
++          - pokemon_client_id
++          - pokemon_client_secret
+         properties:
+-          client_id:
++          pokemon_client_id:
+             type: string
+-          client_secret:
++          pokemon_client_secret:
+             type: string
+       complete_oauth_server_output_specification:
+         required:
+-          - client_id
+-          - client_secret
++          - pokemon_client_id
++          - pokemon_client_secret
+         properties:
+-          client_id:
++          pokemon_client_id:
+             type: string
+             path_in_connector_config:
+-              - client_id
+-          client_secret:
++              - super_secret_credentials
++              - pokemon_client_id
++          pokemon_client_secret:
+             type: string
+             path_in_connector_config:
+-              - client_secret
++              - super_secret_credentials
++              - pokemon_client_secret
+ 
+ metadata:
+   autoImportSchema:
 ```
 
 
@@ -458,3 +716,15 @@ and we need to make sure that updating the spec to use Declarative OAuth doesn't
 | `{{ auth_code_key }}` | The key used to identify the authorization code in request bodies | "code" |
 | `{{ auth_code_value }}` | The authorization code received from the OAuth provider | Value from OAuth callback |
 | `{{ auth_code_param }}` | The parameter name and value pair used for the auth code in URLs | "code=auth code value here" |
+
+## Available Template Variables PIPE methods
+
+You can apply the 
+
+| Method | Description | Input Value | Output Value |
+|----------|-------------|------|------|
+| `base64Encoder` | The variable method to encode the input string into `base64-encoded` string | "client_id_123:client_secret_456" | "Y2xpZW50X2lkXzEyMzpjbGllbnRfc2VjcmV0XzQ1Ng" |
+| `base64Encoder` | The variable method to decode the `base64-encoded` input string into `base64-decoded` string | "Y2xpZW50X2lkXzEyMzpjbGllbnRfc2VjcmV0XzQ1Ng" | "client_id_123:client_secret_456" |
+| `codeChallengeS256` | The variable method to encode the input string into `SHA-256` hashed-string | "id_123:secret_456" | "kdlBQTTftIOzHnzQoqp3dQ5jBsSehFTjg1meg1gL3OY" |
+| `urlEncoder` | The variable method to encode the input string as `URL-string` | "my string input" | "my%20string%20input" |
+| `urlDecoder` | The variable method to decode the input `URL-string` into decoded string | "my%20string%20input" | "my string input" |

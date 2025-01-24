@@ -41,18 +41,9 @@ definitions:
     authenticator:
       type: OAuthAuthenticator
       refresh_request_body: {}
-      grant_type: refresh_token
-      client_id: '{{ config["client_id"] }}'
-      client_secret: '{{ config["client_secret"] }}'
-      refresh_token: '{{ config["client_refresh_token"] }}'
-      access_token_value: '{{ config["client_access_token"] }}'
-      access_token_name: access_token
-      refresh_token_updater:
-        refresh_token_name: refresh_token
-        refresh_token_config_path:
-          - client_refresh_token
-      token_refresh_endpoint: >-
-        https://yourconnectorservice.com/oauth/refresh/endpoint
+      client_id: '{{ config["super_secret_credentials"]["pokemon_client_id"] }}'
+      client_secret: '{{ config["super_secret_credentials"]["pokemon_client_secret"] }}'
+      access_token_value: '{{ config["super_secret_credentials"]["pokemon_access_token"] }}'
 
 streams:
   - $ref: "#/definitions/streams/moves"
@@ -63,89 +54,73 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - client_id
-      - client_secret
-      - client_refresh_token
+      - super_secret_credentials
     properties:
-      client_id:
-        type: string
-        title: Client ID
-        airbyte_secret: true
-        order: 0
-      client_secret:
-        type: string
-        title: Client secret
-        airbyte_secret: true
-        order: 1
-      client_refresh_token:
-        type: string
-        title: Refresh token
-        airbyte_secret: true
-        airbyte_hidden: false
-        order: 2
-      token_expiry_date:
-        type: string
-        title: The datetime when the Access Token expires
-        format: date-time
-        airbyte_secret: false
-        airbyte_hidden: false
-        order: 2
+      super_secret_credentials:
+        required:
+          - pokemon_client_id
+          - pokemon_client_secret
+          - pokemon_access_token
+        pokemon_client_id:
+          type: string
+          title: Client ID
+          airbyte_secret: true
+          order: 0
+        pokemon_client_secret:
+          type: string
+          title: Client secret
+          airbyte_secret: true
+          order: 1
+        pokemon_access_token:
+          type: string
+          title: Access token
+          airbyte_secret: true
+          airbyte_hidden: false
+          order: 2
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
     oauth_config_specification:
       oauth_connector_input_specification:
         consent_url: >-
-          https://yourconnectorservice.com/oauth/consent?client_id={{ client_id_value }}&redirect_uri={{
-          redirect_uri_value }}&state={{ state_value }}
+          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{ redirect_uri_value }}&state={{ state_value }}
         access_token_url: >-
-          https://yourconnectorservice.com/oauth/token?client_id={{ client_id_value }}&client_secret={{ client_secret_value }}&code={{ auth_code_value }}
+          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
       complete_oauth_output_specification:
         required:
-          - access_token
-          - refresh_token
-          - token_expiry_date
+          - pokemon_access_token
         properties:
-          access_token:
+          pokemon_access_token:
             type: string
             path_in_connector_config:
-              - access_token
+              - super_secret_credentials
+              - pokemon_access_token
             path_in_oauth_response:
               - access_token
-          refresh_token:
-            type: string
-            path_in_connector_config:
-              - refresh_token
-            path_in_oauth_response:
-              - refresh_token
-          token_expiry_date:
-            type: string
-            path_in_connector_config:
-              - token_expiry_date
-            path_in_oauth_response:
-              - expires_in
       complete_oauth_server_input_specification:
         required:
-          - client_id
-          - client_secret
+          - pokemon_client_id
+          - pokemon_client_secret
         properties:
-          client_id:
+          pokemon_client_id:
             type: string
-          client_secret:
+          pokemon_client_secret:
             type: string
       complete_oauth_server_output_specification:
         required:
-          - client_id
-          - client_secret
+          - pokemon_client_id
+          - pokemon_client_secret
         properties:
-          client_id:
+          pokemon_client_id:
             type: string
             path_in_connector_config:
-              - client_id
-          client_secret:
+              - super_secret_credentials
+              - pokemon_client_id
+          pokemon_client_secret:
             type: string
             path_in_connector_config:
-              - client_secret
+              - super_secret_credentials
+              - pokemon_client_secret
 
 metadata:
   autoImportSchema:

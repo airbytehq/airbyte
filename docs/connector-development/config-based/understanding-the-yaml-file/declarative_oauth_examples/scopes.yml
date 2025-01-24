@@ -41,18 +41,9 @@ definitions:
     authenticator:
       type: OAuthAuthenticator
       refresh_request_body: {}
-      grant_type: refresh_token
       client_id: '{{ config["client_id"] }}'
       client_secret: '{{ config["client_secret"] }}'
-      refresh_token: '{{ config["client_refresh_token"] }}'
       access_token_value: '{{ config["client_access_token"] }}'
-      access_token_name: access_token
-      refresh_token_updater:
-        refresh_token_name: refresh_token
-        refresh_token_config_path:
-          - client_refresh_token
-      token_refresh_endpoint: >-
-        https://yourconnectorservice.com/oauth/refresh/endpoint
 
 streams:
   - $ref: "#/definitions/streams/moves"
@@ -65,7 +56,7 @@ spec:
     required:
       - client_id
       - client_secret
-      - client_refresh_token
+      - client_access_token
     properties:
       client_id:
         type: string
@@ -77,17 +68,10 @@ spec:
         title: Client secret
         airbyte_secret: true
         order: 1
-      client_refresh_token:
+      client_access_token:
         type: string
-        title: Refresh token
+        title: Access token
         airbyte_secret: true
-        airbyte_hidden: false
-        order: 2
-      token_expiry_date:
-        type: string
-        title: The datetime when the Access Token expires
-        format: date-time
-        airbyte_secret: false
         airbyte_hidden: false
         order: 2
     additionalProperties: true
@@ -96,15 +80,13 @@ spec:
     oauth_config_specification:
       oauth_connector_input_specification:
         consent_url: >-
-          https://yourconnectorservice.com/oauth/consent?client_id={{ client_id_value }}&redirect_uri={{
-          redirect_uri_value }}&state={{ state_value }}
+          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{ redirect_uri_value }}&state={{ state_value }}&scope={{scope_value}}
         access_token_url: >-
-          https://yourconnectorservice.com/oauth/token?client_id={{ client_id_value }}&client_secret={{ client_secret_value }}&code={{ auth_code_value }}
+          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
+        scope: my_scope_A:read,my_scope_B:read
       complete_oauth_output_specification:
         required:
           - access_token
-          - refresh_token
-          - token_expiry_date
         properties:
           access_token:
             type: string
@@ -112,18 +94,6 @@ spec:
               - access_token
             path_in_oauth_response:
               - access_token
-          refresh_token:
-            type: string
-            path_in_connector_config:
-              - refresh_token
-            path_in_oauth_response:
-              - refresh_token
-          token_expiry_date:
-            type: string
-            path_in_connector_config:
-              - token_expiry_date
-            path_in_oauth_response:
-              - expires_in
       complete_oauth_server_input_specification:
         required:
           - client_id
