@@ -854,6 +854,10 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.49.4  | [#52104](https://github.com/airbytehq/airbyte/pull/52104)  | Stream Gradle task output to the step logger                                                                 |
+| 4.49.3  | [#52102](https://github.com/airbytehq/airbyte/pull/52102)  | Load docker image to local docker host for java connectors                                                                 |
+| 4.49.2  | [#52090](https://github.com/airbytehq/airbyte/pull/52090)  | Re-add custom task parameters in GradleTask                                                                                  |
+| 4.49.1  | [#52087](https://github.com/airbytehq/airbyte/pull/52087)  | Wire the `--enable-report-auto-open` correctly for connector tests                                                           |
 | 4.49.0  | [#52033](https://github.com/airbytehq/airbyte/pull/52033)  | Run gradle as a subprocess and not via Dagger                                                                                |
 | 4.48.9  | [#51609](https://github.com/airbytehq/airbyte/pull/51609)  | Fix ownership of shared cache volume for non root connectors                                                                 |
 | 4.48.8  | [#51582](https://github.com/airbytehq/airbyte/pull/51582)  | Fix typo in `migrate-to-inline-schemas` command                                                                              |

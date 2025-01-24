@@ -14,15 +14,10 @@ import jakarta.inject.Singleton
 
 interface SetupTask : Task
 
-/**
- * Wraps @[DestinationWriter.setup] and starts the open stream tasks.
- *
- * TODO: This should call something like "TaskLauncher.setupComplete" and let it decide what to do
- * next.
- */
+/** Wraps @[DestinationWriter.setup] and starts the open stream tasks. */
 class DefaultSetupTask(
     private val destination: DestinationWriter,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationTaskLauncher,
 ) : SetupTask {
     override val terminalCondition: TerminalCondition = SelfTerminating
 

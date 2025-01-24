@@ -7,11 +7,11 @@ data:
       - amplitude.com
       - analytics.eu.amplitude.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.22.0@sha256:c387c8387c4e8feb25f0df7b4a0bd0e7a29aa5494162e7c3584b58217828b920
   connectorSubtype: api
   connectorType: source
   definitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
-  dockerImageTag: 0.6.19
+  dockerImageTag: 0.7.0-rc.1
   dockerRepository: airbyte/source-amplitude
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   githubIssueLabel: source-amplitude
@@ -21,7 +21,7 @@ data:
   name: Amplitude
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-amplitude
   registryOverrides:
     cloud:
@@ -29,6 +29,9 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   suggestedStreams:
     streams:
       - events
@@ -38,8 +41,8 @@ data:
       - events_list
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
