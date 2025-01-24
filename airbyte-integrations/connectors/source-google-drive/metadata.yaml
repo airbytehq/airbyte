@@ -25,7 +25,7 @@ data:
   releaseStage: alpha
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-drive
   tags:
     - language:python
