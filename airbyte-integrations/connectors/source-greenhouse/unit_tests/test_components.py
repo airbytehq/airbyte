@@ -3,12 +3,61 @@
 #
 
 
+# from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
 
 from airbyte_cdk.sources.streams import Stream
+
+
+@pytest.fixture
+def greenhouse_slicer(components_module):
+    GreenHouseSlicer = components_module.GreenHouseSlicer
+    date_time = "2022-09-05T10:10:10.000000Z"
+    return GreenHouseSlicer(cursor_field=date_time, parameters={}, request_cursor_field=None)
+
+
+@pytest.fixture
+def greenhouse_substream_slicer(components_module):
+    GreenHouseSubstreamSlicer = components_module.GreenHouseSubstreamSlicer
+    parent_stream = MagicMock(spec=Stream)
+    return GreenHouseSubstreamSlicer(
+        cursor_field="cursor_field",
+        stream_slice_field="slice_field",
+        parent_stream=parent_stream,
+        parent_key="parent_key",
+        parameters={},
+        request_cursor_field=None,
+    )
+
+
+from unittest.mock import MagicMock, Mock
+
+import pytest
+
+from airbyte_cdk.sources.streams import Stream
+
+
+@pytest.fixture
+def greenhouse_slicer(components_module):
+    GreenHouseSlicer = components_module.GreenHouseSlicer
+    date_time = "2022-09-05T10:10:10.000000Z"
+    return GreenHouseSlicer(cursor_field=date_time, parameters={}, request_cursor_field=None)
+
+
+@pytest.fixture
+def greenhouse_substream_slicer(components_module):
+    GreenHouseSubstreamSlicer = components_module.GreenHouseSubstreamSlicer
+    parent_stream = MagicMock(spec=Stream)
+    return GreenHouseSubstreamSlicer(
+        cursor_field="cursor_field",
+        stream_slice_field="slice_field",
+        parent_stream=parent_stream,
+        parent_key="parent_key",
+        parameters={},
+        request_cursor_field=None,
+    )
 
 
 def test_slicer(greenhouse_slicer):
@@ -33,7 +82,8 @@ def test_slicer(greenhouse_slicer):
         (None, {}, []),
     ],
 )
-def test_sub_slicer(last_record, expected, records):
+def test_sub_slicer(components_module, last_record, expected, records):
+    GreenHouseSubstreamSlicer = components_module.GreenHouseSubstreamSlicer
     date_time = "2022-09-05T10:10:10.000000Z"
     parent_stream = Mock(spec=Stream)
     parent_stream.stream_slices.return_value = [{"a slice": "value"}]
@@ -61,7 +111,8 @@ def test_sub_slicer(last_record, expected, records):
     ],
     ids=["cursor_value_present", "cursor_value_not_present", "cursor_value_is_None", "cursor_value_is_empty_string"],
 )
-def test_slicer_set_initial_state(stream_state, cursor_field, expected_state):
+def test_slicer_set_initial_state(components_module, stream_state, cursor_field, expected_state):
+    GreenHouseSlicer = components_module.GreenHouseSlicer
     slicer = GreenHouseSlicer(cursor_field=cursor_field, parameters={}, request_cursor_field=None)
     # Set initial state
     slicer.set_initial_state(stream_state)
