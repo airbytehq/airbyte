@@ -1,11 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
+import logging
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from box_sdk_gen import BoxCCGAuth, BoxClient, BoxSDKError, CCGConfig, File, FileMini, FolderMini, Items, WebLink
 
+logger = logging.getLogger("airbyte")
 
 @dataclass
 class BoxFileExtended:
@@ -18,6 +19,9 @@ def get_box_ccg_client(config: Mapping[str, Any]) -> BoxClient:
     client_secret = config["client_secret"]
     box_subject_type = config["box_subject_type"]
     box_subject_id = config["box_subject_id"]
+
+    logger.info(f"box_subject_type: {box_subject_type}, box_subject_id: {box_subject_id}")
+
     if box_subject_type == "enterprise":
         enterprise_id = box_subject_id
         user_id = None
