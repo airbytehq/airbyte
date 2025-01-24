@@ -55,7 +55,7 @@ async def migrate_to_base_image(
             git_revision=ctx.obj["git_revision"],
             diffed_branch=ctx.obj["diffed_branch"],
             git_repo_url=ctx.obj["git_repo_url"],
-            ci_report_bucket=ctx.obj["ci_report_bucket_name"],
+            public_artifacts_bucket=ctx.obj["public_artifacts_bucket"],
             report_output_prefix=ctx.obj["report_output_prefix"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             dagger_logs_url=ctx.obj.get("dagger_logs_url"),

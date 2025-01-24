@@ -11,6 +11,12 @@ from pipelines.dagger.actions import remote_storage
 from pipelines.models.secrets import Secret
 
 
+@dataclass
+class ArtifactsBucket:
+    name: str
+    private: bool = False
+
+
 @dataclass(kw_only=True)
 class Artifact:
     """A dataclass to represent an artifact produced by a pipeline execution."""
@@ -21,6 +27,7 @@ class Artifact:
     to_upload: bool = True
     local_path: Optional[Path] = None
     gcs_url: Optional[str] = None
+    private: bool = False
 
     async def save_to_local_path(self, path: Path) -> Path:
         exported = await self.content.export(str(path))
@@ -30,7 +37,12 @@ class Artifact:
         else:
             raise Exception(f"Failed to save artifact {self.name} to local path {path}")
 
-    async def upload_to_gcs(self, dagger_client: dagger.Client, bucket: str, key: str, gcs_credentials: Secret) -> str:
+    async def upload_to_gcs(self, dagger_client: dagger.Client, bucket: ArtifactsBucket, key: str, gcs_credentials: Secret) -> str:
+        if self.private != bucket.private:
+            raise ValueError(
+                f"Artifact {self.name} is marked as {'private' if self.private else 'public'}, but the bucket {bucket.name} is marked as {'private' if bucket.private else 'public'}."
+            )
+
         gcs_cp_flags = [f'--content-disposition=filename="{self.name}"']
         if self.content_type is not None:
             gcs_cp_flags = gcs_cp_flags + [f"--content-type={self.content_type}"]
@@ -39,7 +51,7 @@ class Artifact:
             dagger_client=dagger_client,
             file_to_upload=self.content,
             key=key,
-            bucket=bucket,
+            bucket=bucket.name,
             gcs_credentials=gcs_credentials,
             flags=gcs_cp_flags,
         )

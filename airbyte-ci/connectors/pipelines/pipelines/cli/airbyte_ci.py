@@ -42,6 +42,7 @@ from pipelines.helpers import github
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL, AIRBYTE_GITHUB_REPO_URL_PREFIX
 from pipelines.helpers.utils import get_current_epoch_time
+from pipelines.models.artifacts import ArtifactsBucket
 from pipelines.models.secrets import InMemorySecretStore
 
 
@@ -50,7 +51,7 @@ def log_context_info(ctx: click.Context) -> None:
     main_logger.info(f"Running dagger version {get_dagger_sdk_version()}")
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
-    main_logger.info(f"CI Report Bucket Name: {ctx.obj['ci_report_bucket_name']}")
+    main_logger.info(f"Public artifacts bucket name: {ctx.obj['public_artifacts_bucket'].name}")
     main_logger.info(f"Git Repo URL: {ctx.obj['git_repo_url']}")
     main_logger.info(f"Git Branch: {ctx.obj['git_branch']}")
     main_logger.info(f"Git Revision: {ctx.obj['git_revision']}")
@@ -165,8 +166,18 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
 @click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str, callback=wrap_in_secret)
-@click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
-@click.option("--ci-artifact-bucket-name", envvar="CI_ARTIFACT_BUCKET_NAME", type=str)
+@click.option(
+    "--public-artifacts-bucket",
+    envvar="PUBLIC_ARTIFACTS_BUCKET",
+    type=ArtifactsBucket,
+    callback=lambda _, ___, name: ArtifactsBucket(name, private=False),
+)
+@click.option(
+    "--private-artifacts-bucket",
+    envvar="PRIVATE_ARTIFACTS_BUCKET",
+    type=ArtifactsBucket,
+    callback=lambda _, ___, name: ArtifactsBucket(name, private=True),
+)
 @click.option(
     "--ci-gcp-credentials",
     help="The service account to use during CI.",

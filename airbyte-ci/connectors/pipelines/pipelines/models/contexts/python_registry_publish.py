@@ -9,6 +9,7 @@ from typing import Optional, Type
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_URL
+from pipelines.models.artifacts import ArtifactsBucket
 from pipelines.models.secrets import Secret
 
 
@@ -30,7 +31,7 @@ class PythonRegistryPublishContext(PipelineContext):
         git_revision: str,
         diffed_branch: str,
         git_repo_url: str,
-        ci_report_bucket: Optional[str] = None,
+        public_artifacts_bucket: Optional[ArtifactsBucket] = None,
         registry: str = DEFAULT_PYTHON_PACKAGE_REGISTRY_URL,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
@@ -51,7 +52,7 @@ class PythonRegistryPublishContext(PipelineContext):
         super().__init__(
             pipeline_name=pipeline_name,
             report_output_prefix=report_output_prefix,
-            ci_report_bucket=ci_report_bucket,
+            public_artifacts_bucket=public_artifacts_bucket,
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
@@ -99,7 +100,7 @@ class PythonRegistryPublishContext(PipelineContext):
             package_path=str(connector_context.connector.code_directory),
             package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
             version=version,
-            ci_report_bucket=connector_context.ci_report_bucket,
+            public_artifacts_bucket=connector_context.public_artifacts_bucket,
             report_output_prefix=connector_context.report_output_prefix,
             is_local=connector_context.is_local,
             git_branch=connector_context.git_branch,

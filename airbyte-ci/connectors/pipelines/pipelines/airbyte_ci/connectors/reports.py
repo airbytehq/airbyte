@@ -55,7 +55,8 @@ class ConnectorReport(Report):
         return self.file_remote_storage_key(self.html_report_file_name)
 
     def file_url(self, file_name: str) -> str:
-        return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{self.file_remote_storage_key(file_name)}"
+        # TODO tranform ConnectorReport to use the new Artifact class?
+        return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.public_artifacts_bucket}/{self.file_remote_storage_key(file_name)}"
 
     @property
     def html_report_url(self) -> str:
@@ -153,7 +154,7 @@ class ConnectorReport(Report):
         if self.pipeline_context.remote_storage_enabled:
             gcs_url = await html_report_artifact.upload_to_gcs(
                 dagger_client=self.pipeline_context.dagger_client,
-                bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
+                bucket=self.pipeline_context.public_artifacts_bucket,  # type: ignore
                 key=self.html_report_remote_storage_key,
                 gcs_credentials=self.pipeline_context.ci_gcp_credentials,  # type: ignore
             )

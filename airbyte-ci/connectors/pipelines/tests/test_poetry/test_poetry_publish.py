@@ -10,6 +10,7 @@ from dagger import Client, Platform
 
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.dagger.actions.python.poetry import with_poetry
+from pipelines.models.artifacts import ArtifactsBucket
 from pipelines.models.contexts.python_registry_publish import PythonPackageMetadata, PythonRegistryPublishContext
 from pipelines.models.secrets import InMemorySecretStore, Secret
 from pipelines.models.steps import StepStatus
@@ -37,7 +38,7 @@ def context(dagger_client: Client):
         diffed_branch="test",
         git_repo_url="test",
         report_output_prefix="test",
-        ci_report_bucket="test",
+        public_artifacts_bucket=ArtifactsBucket("test"),
     )
     context.dagger_client = dagger_client
     return context

@@ -108,7 +108,7 @@ class Report:
         if self.pipeline_context.remote_storage_enabled:
             gcs_url = await json_report_artifact.upload_to_gcs(
                 dagger_client=self.pipeline_context.dagger_client,
-                bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
+                bucket=self.pipeline_context.public_artifacts_bucket,  # type: ignore
                 key=self.json_report_remote_storage_key,
                 gcs_credentials=self.pipeline_context.ci_gcp_credentials,  # type: ignore
             )
@@ -127,9 +127,14 @@ class Report:
                 await artifact.save_to_local_path(step_artifacts_dir / artifact.name)
                 if self.pipeline_context.remote_storage_enabled:
                     upload_time = int(time.time())
+                    bucket = (
+                        self.pipeline_context.public_artifacts_bucket
+                        if not artifact.private
+                        else self.pipeline_context.private_artifacts_bucket
+                    )  # type: ignore
                     gcs_url = await artifact.upload_to_gcs(
                         dagger_client=self.pipeline_context.dagger_client,
-                        bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
+                        bucket=bucket,  # type: ignore
                         key=f"{self.report_output_prefix}/artifacts/{slugify(step_result.step.title)}/{upload_time}_{artifact.name}",
                         gcs_credentials=self.pipeline_context.ci_gcp_credentials,  # type: ignore
                     )

@@ -15,6 +15,7 @@ from pipelines.consts import PUBLISH_FAILURE_SLACK_CHANNEL, PUBLISH_UPDATES_SLAC
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL_PREFIX
 from pipelines.helpers.utils import format_duration
+from pipelines.models.artifacts import ArtifactsBucket
 from pipelines.models.secrets import Secret
 
 
@@ -37,7 +38,7 @@ class PublishConnectorContext(ConnectorContext):
         docker_hub_password: Secret,
         ci_gcp_credentials: Secret,
         slack_webhook: str,
-        ci_report_bucket: str,
+        public_artifacts_bucket: ArtifactsBucket,
         report_output_prefix: str,
         is_local: bool,
         git_branch: str,
@@ -79,7 +80,7 @@ class PublishConnectorContext(ConnectorContext):
             pipeline_name=pipeline_name,
             connector=connector,
             report_output_prefix=report_output_prefix,
-            ci_report_bucket=ci_report_bucket,
+            public_artifacts_bucket=public_artifacts_bucket,
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
