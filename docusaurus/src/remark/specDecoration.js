@@ -1,5 +1,5 @@
 const visit = require("unist-util-visit").visit;
-const { catalog, isPypiConnector } = require("../connector_registry");
+const { catalog } = require("../connector_registry");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const plugin = () => {
@@ -36,25 +36,18 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
   if (
     !docsPageInfo.isTrueDocsPage ||
     !registryEntry ||
-    !isPypiConnector(registryEntry) ||
     vfile.value.includes("## Usage with PyAirbyte")
   ) {
     return;
   }
   const connectorName = registryEntry.dockerRepository_oss.split("/").pop();
+  const hasValidSpec = registryEntry.spec_oss && registryEntry.spec_oss.connectionSpecification;
 
   let added = false;
   visit(ast, "heading", (node, index, parent) => {
     if (!added && isChangelogHeading(node)) {
       added = true;
-      parent.children.splice(
-        index,
-        0,
-        {
-          type: "heading",
-          depth: 2,
-          children: [{ type: "text", value: "Reference" }],
-        },
+      const referenceContent = hasValidSpec ? [
         {
           type: "mdxJsxFlowElement",
           name: "SpecSchema",
@@ -66,6 +59,27 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
             },
           ],
         }
+      ] : [
+        {
+          type: "paragraph",
+          children: [
+            {
+              type: "text",
+              value: "No configuration specification is available for this connector."
+            }
+          ]
+        }
+      ];
+
+      parent.children.splice(
+        index,
+        0,
+        {
+          type: "heading",
+          depth: 2,
+          children: [{ type: "text", value: "Reference" }],
+        },
+        ...referenceContent
       );
     }
   });
