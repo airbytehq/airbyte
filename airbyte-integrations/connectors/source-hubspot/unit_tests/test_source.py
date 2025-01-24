@@ -131,12 +131,12 @@ def test_convert_datetime_to_string():
 def test_cast_datetime(common_params, caplog):
     """
     Test for _cast_datetime to ensure it handles pendulum.DateTime inputs correctly.
-    
+
     Updates:
-    - The original test expected a warning when a pendulum.DateTime object was passed, as it was considered an 
-      unexpected type in the previous implementation. However, the updated _cast_datetime function explicitly 
+    - The original test expected a warning when a pendulum.DateTime object was passed, as it was considered an
+      unexpected type in the previous implementation. However, the updated _cast_datetime function explicitly
       handles pendulum.DateTime objects without logging a warning.
-    - This test now verifies that no warnings are logged and that the function correctly converts the input 
+    - This test now verifies that no warnings are logged and that the function correctly converts the input
       to an ISO 8601 string.
     """
     field_value = pendulum.now()
@@ -153,7 +153,7 @@ def test_cast_datetime(common_params, caplog):
     # Ensure no warnings are logged
     assert "Couldn't parse date/datetime string" not in caplog.text
     assert "Unexpected field_value type" not in caplog.text
-    
+
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     """Error once, check that we retry and not fail"""

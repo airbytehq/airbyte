@@ -4,9 +4,9 @@
 
 import json
 import logging
+import re
 import sys
 import time
-import re
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from functools import cached_property, lru_cache
@@ -94,20 +94,17 @@ DATE_FORMATS = {
     # ISO 8601 Date Format: Matches strings like "2023-02-28" or "2023-02-28T12:34:56"
     # Example: "2023-02-28", "2023-02-28T14:45:30+00:00"
     "iso": r"^\d{4}-\d{2}-\d{2}",
-
     # Epoch Timestamp in Milliseconds: Checks if the value is a 13-digit number
     # Example: 1672531200000 (corresponds to 2023-01-01 00:00:00 UTC)
     "epoch_ms": lambda x: len(str(x)) == 13 and str(x).isdigit(),
-
     # Epoch Timestamp in Seconds: Checks if the value is a 10-digit number
     # Example: 1672531200 (corresponds to 2023-01-01 00:00:00 UTC)
     "epoch_s": lambda x: len(str(x)) == 10 and str(x).isdigit(),
-
     # Year-Only Strings: Matches 4-digit year strings
     # Example: "2020"
     "year_only": lambda x: str(x).isdigit() and len(str(x)) == 4,
-
 }
+
 
 def retry_token_expired_handler(**kwargs):
     """Retry helper when token expired"""
@@ -630,7 +627,7 @@ class Stream(HttpStream, ABC):
 
         if not field_value:
             return field_value
-        
+
         if isinstance(field_value, pendulum.DateTime):
             return cls._convert_datetime_to_string(field_value, declared_format=declared_format)
 
@@ -638,7 +635,7 @@ class Stream(HttpStream, ABC):
             if isinstance(field_value, str) and re.match(DATE_FORMATS["iso"], field_value):
                 dt = pendulum.parse(field_value)
                 return cls._convert_datetime_to_string(dt, declared_format=declared_format)
-            
+
             if isinstance(field_value, (str, int)) and DATE_FORMATS["year_only"](field_value):
                 field_value = f"{field_value}-01-01T00:00:00+00:00"
                 dt = pendulum.parse(field_value)
@@ -651,14 +648,12 @@ class Stream(HttpStream, ABC):
             if isinstance(field_value, (int, str)) and DATE_FORMATS["epoch_s"](field_value):
                 dt = pendulum.from_timestamp(int(field_value))
                 return cls._convert_datetime_to_string(dt, declared_format=declared_format)
-            
+
             logger.warning(
                 f"Unexpected field_value type or format in {field_name}. Value: {field_value} (type: {type(field_value).__name__})."
             )
         except (ValueError, TypeError) as ex:
-            logger.warning(
-            f"Couldn't parse date/datetime in {field_name}. Field value: {field_value}. Exception: {ex}"
-        )
+            logger.warning(f"Couldn't parse date/datetime in {field_name}. Field value: {field_value}. Exception: {ex}")
 
         return field_value
 
