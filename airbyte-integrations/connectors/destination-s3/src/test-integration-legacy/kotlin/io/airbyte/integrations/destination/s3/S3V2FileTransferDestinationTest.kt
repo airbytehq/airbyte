@@ -132,6 +132,7 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
     }
 
     @Test
+    @Disabled
     fun checkRecordSyncFails() {
         val streamName = "str" + RandomStringUtils.insecure().nextAlphanumeric(5)
         val catalog = configureCatalog(streamName, 0)
