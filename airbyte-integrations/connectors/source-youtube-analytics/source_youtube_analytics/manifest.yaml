@@ -18,15 +18,6 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: jobs
         http_method: POST
-        # error_handler:
-        #   type: CompositeErrorHandler
-        #   error_handlers:
-        #     - type: DefaultErrorHandler
-        #       response_filters:
-        #         - type: HttpResponseFilter
-        #           action: SUCCESS
-        #           http_codes:
-        #             - 409
       polling_requester:
         type: CustomRequester
         class_name: source_youtube_analytics.components.PollingRequester
@@ -49,10 +40,10 @@ definitions:
       urls_extractor:
         type: DpathExtractor
         field_path:
-          - urls
+          - downloadUrl
       download_requester:
         $ref: "#/definitions/base_requester"
-        path: "{{stream_slice.extra_fields['url']}}"
+        path: "{{stream_slice.extra_fields['downloadUrl']}}"
         http_method: GET
       decoder:
           type: GzipJsonDecoder
@@ -491,26 +482,29 @@ definitions:
       refresh_token: '{{ config[''credentials'']["refresh_token"] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
+    error_handlers:
+      type: CustomErrorHandler
+      class_name: "source_youtube_analytics.components.YoutubeAnalyticsErrorHandler"
 
 streams:
   - $ref: "#/definitions/streams/channel_annotations_a1"
-  # - $ref: "#/definitions/streams/channel_basic_a2"
-  # - $ref: "#/definitions/streams/channel_cards_a1"
-  # - $ref: "#/definitions/streams/channel_combined_a2"
-  # - $ref: "#/definitions/streams/channel_demographics_a1"
-  # - $ref: "#/definitions/streams/channel_device_os_a2"
-  # - $ref: "#/definitions/streams/channel_end_screens_a1"
-  # - $ref: "#/definitions/streams/channel_playback_location_a2"
-  # - $ref: "#/definitions/streams/channel_province_a2"
-  # - $ref: "#/definitions/streams/channel_sharing_service_a1"
-  # - $ref: "#/definitions/streams/channel_subtitles_a2"
-  # - $ref: "#/definitions/streams/channel_traffic_source_a2"
-  # - $ref: "#/definitions/streams/playlist_basic_a1"
-  # - $ref: "#/definitions/streams/playlist_combined_a1"
-  # - $ref: "#/definitions/streams/playlist_device_os_a1"
-  # - $ref: "#/definitions/streams/playlist_playback_location_a1"
-  # - $ref: "#/definitions/streams/playlist_province_a1"
-  # - $ref: "#/definitions/streams/playlist_traffic_source_a1"
+  - $ref: "#/definitions/streams/channel_basic_a2"
+  - $ref: "#/definitions/streams/channel_cards_a1"
+  - $ref: "#/definitions/streams/channel_combined_a2"
+  - $ref: "#/definitions/streams/channel_demographics_a1"
+  - $ref: "#/definitions/streams/channel_device_os_a2"
+  - $ref: "#/definitions/streams/channel_end_screens_a1"
+  - $ref: "#/definitions/streams/channel_playback_location_a2"
+  - $ref: "#/definitions/streams/channel_province_a2"
+  - $ref: "#/definitions/streams/channel_sharing_service_a1"
+  - $ref: "#/definitions/streams/channel_subtitles_a2"
+  - $ref: "#/definitions/streams/channel_traffic_source_a2"
+  - $ref: "#/definitions/streams/playlist_basic_a1"
+  - $ref: "#/definitions/streams/playlist_combined_a1"
+  - $ref: "#/definitions/streams/playlist_device_os_a1"
+  - $ref: "#/definitions/streams/playlist_playback_location_a1"
+  - $ref: "#/definitions/streams/playlist_province_a1"
+  - $ref: "#/definitions/streams/playlist_traffic_source_a1"
 
 spec:
   type: Spec
