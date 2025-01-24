@@ -7,7 +7,7 @@ acceptance_tests:
     tests:
       - spec_path: "integration_tests/spec.json"
         backward_compatibility_tests_config:
-          # adding new breakdowns, action breakdowns and fieldsr
+          # adding new breakdowns, action breakdowns and fields
           disable_for_version: "3.3.26"
   connection:
     tests:
