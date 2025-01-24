@@ -34,7 +34,7 @@ TWILIO_VERIFY_BASE_V2 = "https://verify.twilio.com/v2/"
 class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
     primary_key = "sid"
-    page_size = 1000
+    page_size = 20
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     @property
