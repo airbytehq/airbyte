@@ -541,7 +541,7 @@ Imagine that the OAuth flow is updated so that you need to generate the `code ch
 -          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
 -          redirect_uri_value }}&state={{ state_value }}
 +          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
-+          redirect_uri_value }}&state={{ state_value }}&code_challenge={{ {{state_value}} | codeChanllengeS256 }}
++          redirect_uri_value }}&state={{ state_value }}&code_challenge={{ {{state_value}} | codeChallengeS256 }}
          access_token_url: >-
            https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
        complete_oauth_output_specification:
