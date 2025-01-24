@@ -129,23 +129,31 @@ def test_convert_datetime_to_string():
 
 
 def test_cast_datetime(common_params, caplog):
+    """
+    Test for _cast_datetime to ensure it handles pendulum.DateTime inputs correctly.
+    
+    Updates:
+    - The original test expected a warning when a pendulum.DateTime object was passed, as it was considered an 
+      unexpected type in the previous implementation. However, the updated _cast_datetime function explicitly 
+      handles pendulum.DateTime objects without logging a warning.
+    - This test now verifies that no warnings are logged and that the function correctly converts the input 
+      to an ISO 8601 string.
+    """
     field_value = pendulum.now()
     field_name = "current_time"
 
-    Companies(**common_params)._cast_datetime(field_name, field_value)
+    # Test with "date-time" format
+    result_date_time = Companies(**common_params)._cast_datetime(field_name, field_value, declared_format="date-time")
+    assert result_date_time == field_value.to_rfc3339_string()
 
-    expected_warning_message = {
-        "type": "LOG",
-        "log": {
-            "level": "WARN",
-            # if you find some diff locally try using "Ex: argument of type 'DateTime' is not iterable in the message". There could be a
-            # difference in local environment when pendulum.parsing.__init__.py importing parse_iso8601. Anyway below is working fine
-            # in container for now and I am not sure if this diff was just a problem with my setup.
-            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: expected string or bytes-like object",
-        },
-    }
-    assert expected_warning_message["log"]["message"] in caplog.text
+    # Test with "date" format
+    result_date = Companies(**common_params)._cast_datetime(field_name, field_value, declared_format="date")
+    assert result_date == field_value.to_date_string()
 
+    # Ensure no warnings are logged
+    assert "Couldn't parse date/datetime string" not in caplog.text
+    assert "Unexpected field_value type" not in caplog.text
+    
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     """Error once, check that we retry and not fail"""
