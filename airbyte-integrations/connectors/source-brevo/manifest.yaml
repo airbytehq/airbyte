@@ -1,4 +1,4 @@
-version: 4.6.2
+version: 5.7.5
 
 type: DeclarativeSource
 
@@ -57,7 +57,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 100
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -71,8 +71,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: createdSince
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -110,20 +110,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - attributes
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -447,20 +433,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - senders
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -468,8 +440,6 @@ definitions:
     companies:
       type: DeclarativeStream
       name: companies
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -508,12 +478,40 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/companies"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - last_updated_at
+              value: "{{ record['attributes']['last_updated_at'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
     companies_attributes:
       type: DeclarativeStream
       name: companies_attributes
@@ -542,20 +540,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -591,20 +575,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - stages
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -639,20 +609,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -685,20 +641,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -782,20 +724,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -858,12 +786,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: dateFrom
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: dateTo
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -930,12 +858,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: dateFrom
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: dateTo
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -975,20 +903,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - domains
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1036,8 +950,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: createdSince
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1076,20 +990,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1125,20 +1025,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - users
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1200,8 +1086,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
+          field_name: startDate
           inject_into: request_parameter
-          field_name: createdSince
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1253,18 +1143,26 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 500
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modifiedAt
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1278,7 +1176,7 @@ definitions:
     url_base: https://api.brevo.com/v3/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config["api_key"] }}'
+      api_token: '{{ config["start_date"] }}'
       inject_into:
         type: RequestOption
         field_name: api-key
@@ -1358,15 +1256,15 @@ metadata:
     smsCampaigns: true
   testedStreams:
     contacts:
-      streamHash: 504ced3fe63546217f5e46fafeddac87c61259c1
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 42dc892512f6d92b41791b00c8a8f274f4952223
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts_attributes:
       hasRecords: true
-      streamHash: 3e330f702e08c4eb2f597a9197aa03e80406ee1e
+      streamHash: e902481da7ba2f81f01e27ba292d9127e1cf4f66
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -1408,111 +1306,111 @@ metadata:
       responsesAreSuccessful: true
     senders:
       hasRecords: true
-      streamHash: 51a09fddb13d163eeb553b6af04bfac588e09fb5
+      streamHash: 4679a5b572ce4bca2838555fe6e2e3f1a2cab361
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     companies:
-      streamHash: 5a1e63b01fbfcbfa642f28f0a7313628faf24897
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 9cc51d4a3b6c34e34978dd7afda70208306aaf30
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     companies_attributes:
       hasRecords: true
-      streamHash: e17d19705a8b79272bee4ef2d6f7a1db823a126c
+      streamHash: 6a8097c5d8e7ed5ad19d69e55620ab6b9999c1bc
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     crm_pipeline_stages:
-      streamHash: 7f18aed04bc73088f17e8a6ce49d6f632b444560
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: b7242b917c570947f24aabb82e3e8b890cd49837
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     crm_pipeline_details_all:
-      streamHash: 3aae491275ecddc851bd583f80405092ccff50a8
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 644b712a546e281e3798d2dd44b8e2d69eba4dbf
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     crm_attributes_deals:
-      streamHash: b726fe9704a23e1120e795433aab443916d5565e
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 606fb33bf2b76c33b4f523cfa93fee7372053ab5
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     crm_deals:
+      hasRecords: true
       streamHash: f727f44af5a01c1753c73f6350f3383bc7f15b84
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     crm_tasktypes:
-      streamHash: de63fc6053e0b8542dc035df182f7902652979f0
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 25647bfa5703ffed8e4d8d926009fbfb085724b9
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     crm_tasks:
+      hasRecords: true
       streamHash: 63757570a1325ace13156c8fc853e8c92cb235ac
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     crm_notes:
+      hasRecords: true
       streamHash: 02149a664bc635089b46980ffdcd4de186a550af
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     domains:
-      streamHash: 7df6459836e8fdba9dc4106e246dcc009c232491
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 80c10b88e330d3f06b1720b1d9d6b71bed93b070
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     webhooks:
+      hasRecords: true
       streamHash: ab8689016a3be5de01fa3cf152c14ff6f6575dc5
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     account:
-      streamHash: 6ee6401d56b2ac59cee6a5073e2d660fe9e8aaf5
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 99bad8d15f8ad4369cfe3f5b19f18d88962c8eee
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     organization_invited_users:
-      streamHash: c877681dff4899b88b08f208fd33defaedbbeb4b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 24b547c81dc2de34c1b9f395911b1024ca4f1942
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     emailCampaigns:
-      streamHash: 887547e3bea5965ddd8f24654d39ac275928c016
+      streamHash: 5704b61fe13b8381724f6e1f6fe29b0789de8971
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     smsCampaigns:
-      streamHash: 1f829825913a7d5efb95c01fd65efccc4b22943a
+      streamHash: 19c8c3ef5b871bbd17cf9d6102ba9f207eb66cce
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1530,27 +1428,6 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          CONTACT_TIMEZONE:
-            type:
-              - string
-              - "null"
-          EXT_ID:
-            type:
-              - string
-              - "null"
-          FIRSTNAME:
-            type:
-              - string
-              - "null"
-          LASTNAME:
-            type:
-              - string
-              - "null"
-          SMS:
-            type:
-              - string
-              - "null"
       createdAt:
         type:
           - string
@@ -1703,27 +1580,6 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          CONTACT_TIMEZONE:
-            type:
-              - string
-              - "null"
-          EXT_ID:
-            type:
-              - string
-              - "null"
-          FIRSTNAME:
-            type:
-              - string
-              - "null"
-          LASTNAME:
-            type:
-              - string
-              - "null"
-          SMS:
-            type:
-              - string
-              - "null"
       createdAt:
         type:
           - string
@@ -1819,49 +1675,14 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          created_at:
-            type:
-              - string
-              - "null"
-          domain:
-            type:
-              - string
-              - "null"
-          industry:
-            type:
-              - string
-              - "null"
-          last_updated_at:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          number_of_contacts:
-            type:
-              - number
-              - "null"
-          owner:
-            type:
-              - string
-              - "null"
-          owner_assign_date:
-            type:
-              - string
-              - "null"
-          phone_number:
-            type:
-              - string
-              - "null"
       createdBy:
         type:
           - string
           - "null"
       id:
-        type: string
+        type:
+          - string
+          - "null"
       linkedContactsIds:
         type:
           - array
@@ -1874,8 +1695,10 @@ schemas:
         type:
           - array
           - "null"
-    required:
-      - id
+        items:
+          type:
+            - string
+            - "null"
   companies_attributes:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1885,6 +1708,19 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
       attributeTypeName:
         type:
           - string
@@ -1991,35 +1827,6 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          created_at:
-            type:
-              - string
-              - "null"
-          deal_name:
-            type:
-              - string
-              - "null"
-          deal_owner:
-            type:
-              - string
-              - "null"
-          deal_stage:
-            type:
-              - string
-              - "null"
-          number_of_contacts:
-            type:
-              - number
-              - "null"
-          pipeline:
-            type:
-              - string
-              - "null"
-          stage_updated_at:
-            type:
-              - string
-              - "null"
       createdBy:
         type:
           - string
@@ -2106,58 +1913,6 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          _id:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          locale:
-            type:
-              - string
-              - "null"
-          memberships:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                organization:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    mongoId:
-                      type:
-                        - string
-                        - "null"
-                    mySqlId:
-                      type:
-                        - number
-                        - "null"
-                rank:
-                  type:
-                    - string
-                    - "null"
-          name:
-            type:
-              - object
-              - "null"
-            properties:
-              fullName:
-                type:
-                  - string
-                  - "null"
-          timezone:
-            type:
-              - string
-              - "null"
       authorId:
         type:
           - string
@@ -2223,6 +1978,10 @@ schemas:
             type:
               - string
               - "null"
+      dc_status:
+        type:
+          - string
+          - "null"
       domain_name:
         type:
           - string
@@ -2361,6 +2120,14 @@ schemas:
               type:
                 - string
                 - "null"
+            endDate:
+              type:
+                - string
+                - "null"
+            startDate:
+              type:
+                - string
+                - "null"
       planVerticals:
         type:
           - array
@@ -2471,6 +2238,10 @@ schemas:
             type:
               - string
               - "null"
+      id:
+        type:
+          - string
+          - "null"
       is_owner:
         type:
           - boolean
@@ -2543,6 +2314,10 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - number
+                - "null"
       replyTo:
         type:
           - string
@@ -2572,6 +2347,10 @@ schemas:
             type:
               - string
               - "null"
+      sentDate:
+        type:
+          - string
+          - "null"
       shareLink:
         type:
           - string
@@ -2662,6 +2441,10 @@ schemas:
         type:
           - string
           - "null"
+      subject:
+        type:
+          - string
+          - "null"
       tag:
         type:
           - string
@@ -2724,6 +2507,10 @@ schemas:
           - string
           - "null"
       sender:
+        type:
+          - string
+          - "null"
+      sentDate:
         type:
           - string
           - "null"
