@@ -80,11 +80,13 @@ interface IcebergCatalogSpecifications {
                     GlueCatalogConfiguration(
                         (catalogType as GlueCatalogSpecification).glueId,
                         (catalogType as GlueCatalogSpecification).toAWSArnRoleConfiguration(),
+                        (catalogType as GlueCatalogSpecification).databaseName,
                     )
                 is NessieCatalogSpecification ->
                     NessieCatalogConfiguration(
                         (catalogType as NessieCatalogSpecification).serverUri,
-                        (catalogType as NessieCatalogSpecification).accessToken
+                        (catalogType as NessieCatalogSpecification).accessToken,
+                        (catalogType as NessieCatalogSpecification).namespace,
                     )
             }
 
@@ -163,7 +165,23 @@ class NessieCatalogSpecification(
             "order":2
         }""",
     )
-    val accessToken: String?
+    val accessToken: String?,
+
+    /**
+     * The namespace to be used when building the Table identifier
+     *
+     * This namespace will only be used if the stream namespace is null, meaning when the
+     * `Destination Namespace` setting for the connection is set to `Destination-defined` or
+     * `Source-defined`
+     */
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The Nessie namespace to be used in the Table identifier. 
+            |This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+            | `Destination-defined` or `Source-defined`"""
+    )
+    @get:JsonProperty("namespace")
+    val namespace: String?
 ) : CatalogType(catalogType)
 
 /**
@@ -193,6 +211,20 @@ class GlueCatalogSpecification(
     @JsonSchemaInject(json = """{"order":1}""")
     val glueId: String,
     override val roleArn: String? = null,
+
+    /**
+     * The name of the database to be used when building the Table identifier
+     *
+     * This database name will only be used if the stream namespace is null, meaning when the
+     * `Destination Namespace` setting for the connection is set to `Destination-defined` or
+     * `Source-defined`
+     */
+    @get:JsonSchemaTitle("Database Name")
+    @get:JsonPropertyDescription(
+        """The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`"""
+    )
+    @get:JsonProperty("database_name")
+    val databaseName: String?
 ) : CatalogType(catalogType), AWSArnRoleSpecification
 
 /**
@@ -239,6 +271,11 @@ data class GlueCatalogConfiguration(
     @JsonPropertyDescription("The AWS Account ID associated with the Glue service.")
     val glueId: String,
     override val awsArnRoleConfiguration: AWSArnRoleConfiguration,
+    @get:JsonSchemaTitle("Database Name")
+    @get:JsonPropertyDescription(
+        """The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`"""
+    )
+    val databaseName: String?
 ) : CatalogConfiguration, AWSArnRoleConfigurationProvider
 
 /**
@@ -254,7 +291,14 @@ data class NessieCatalogConfiguration(
     val serverUri: String,
     @JsonSchemaTitle("Nessie Access Token")
     @JsonPropertyDescription("An optional token for authentication with the Nessie server.")
-    val accessToken: String?
+    val accessToken: String?,
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The Nessie namespace to be used in the Table identifier. 
+                |This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+                | `Destination-defined` or `Source-defined`"""
+    )
+    val namespace: String?
 ) : CatalogConfiguration
 
 /**
