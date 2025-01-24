@@ -1,0 +1,315 @@
+version: 6.5.2
+
+type: DeclarativeSource
+
+description: Connector to access the SimpleMDM API.
+
+check:
+  type: CheckStream
+  stream_names:
+    - devices
+
+definitions:
+  streams:
+    devices:
+      type: DeclarativeStream
+      name: devices
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: devices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - attributes
+          schema_normalization: Default
+      primary_key:
+        - serial_number
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/devices"
+  base_requester:
+    type: HttpRequester
+    url_base: https://a.simplemdm.com/api/v1
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/devices"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        always_show: true
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    devices:
+      hasRecords: true
+      streamHash: d9cb09ddb4503daefdaf0aaa08a79331a1e732ca
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  yamlComponents:
+    global:
+      - authenticator
+  autoImportSchema:
+    devices: true
+
+schemas:
+  devices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - serial_number
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      firewall:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          stealth_mode:
+            type:
+              - boolean
+              - "null"
+          block_all_incoming:
+            type:
+              - boolean
+              - "null"
+      wifi_mac:
+        type:
+          - string
+          - "null"
+      os_update:
+        type:
+          - object
+          - "null"
+        properties:
+          catalog_url:
+            type:
+              - string
+              - "null"
+          default_catalog:
+            type:
+              - boolean
+              - "null"
+          previous_scan_date:
+            type:
+              - string
+              - "null"
+          previous_scan_result:
+            type:
+              - string
+              - "null"
+          background_download_enabled:
+            type:
+              - boolean
+              - "null"
+          automatic_os_installation_enabled:
+            type:
+              - boolean
+              - "null"
+          automatic_app_installation_enabled:
+            type:
+              - boolean
+              - "null"
+          automatic_security_updates_enabled:
+            type:
+              - boolean
+              - "null"
+      model_name:
+        type:
+          - string
+          - "null"
+      os_version:
+        type:
+          - string
+          - "null"
+      ddm_enabled:
+        type:
+          - boolean
+          - "null"
+      device_name:
+        type:
+          - string
+          - "null"
+      enrolled_at:
+        type:
+          - string
+          - "null"
+      dep_assigned:
+        type:
+          - boolean
+          - "null"
+      dep_enrolled:
+        type:
+          - boolean
+          - "null"
+      last_seen_at:
+        type:
+          - string
+          - "null"
+      last_seen_ip:
+        type:
+          - string
+          - "null"
+      product_name:
+        type:
+          - string
+          - "null"
+      battery_level:
+        type:
+          - string
+          - "null"
+      bluetooth_mac:
+        type:
+          - string
+          - "null"
+      build_version:
+        type:
+          - string
+          - "null"
+      ethernet_macs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      is_supervised:
+        type:
+          - boolean
+          - "null"
+      serial_number:
+        type: string
+      enrollment_url:
+        type:
+          - string
+          - "null"
+      device_capacity:
+        type:
+          - number
+          - "null"
+      user_enrollment:
+        type:
+          - boolean
+          - "null"
+      filevault_enabled:
+        type:
+          - boolean
+          - "null"
+      is_dep_enrollment:
+        type:
+          - boolean
+          - "null"
+      lost_mode_enabled:
+        type:
+          - boolean
+          - "null"
+      unique_identifier:
+        type:
+          - string
+          - "null"
+      enrollment_channels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      service_subscriptions:
+        type:
+          - array
+          - "null"
+      filevault_recovery_key:
+        type:
+          - string
+          - "null"
+      processor_architecture:
+        type:
+          - string
+          - "null"
+      recovery_lock_password:
+        type:
+          - string
+          - "null"
+      remote_desktop_enabled:
+        type:
+          - boolean
+          - "null"
+      is_cloud_backup_enabled:
+        type:
+          - boolean
+          - "null"
+      available_device_capacity:
+        type:
+          - number
+          - "null"
+      firmware_password_enabled:
+        type:
+          - boolean
+          - "null"
+      is_activation_lock_enabled:
+        type:
+          - boolean
+          - "null"
+      supplemental_build_version:
+        type:
+          - string
+          - "null"
+      is_user_approved_enrollment:
+        type:
+          - boolean
+          - "null"
+      itunes_store_account_is_active:
+        type:
+          - boolean
+          - "null"
+      recovery_lock_password_enabled:
+        type:
+          - boolean
+          - "null"
+      system_integrity_protection_enabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
