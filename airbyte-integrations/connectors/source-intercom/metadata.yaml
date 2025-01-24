@@ -6,11 +6,11 @@ data:
     hosts:
       - api.intercom.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.12.0@sha256:8e0ed504a3c481e0aff41b12215764abba9a25b4e9dae69be3263108641d9b93
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
-  dockerImageTag: 0.9.0
+  dockerImageTag: 0.10.0
   dockerRepository: airbyte/source-intercom
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   githubIssueLabel: source-intercom
@@ -28,7 +28,6 @@ data:
   registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 0.8.3
     oss:
       enabled: true
   releaseStage: generally_available
