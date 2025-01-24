@@ -18,8 +18,8 @@ interface SpillFileProvider {
 @Secondary
 class DefaultSpillFileProvider(val config: DestinationConfiguration) : SpillFileProvider {
     override fun createTempFile(): Path {
-        val directory = config.tmpFileDirectory
-        Files.createDirectories(directory)
-        return Files.createTempFile(directory, "staged-raw-records", ".jsonl")
+        //val directory = config.tmpFileDirectory
+        //Files.createDirectories(directory)
+        return Files.createTempFile("staged-raw-records", ".jsonl")
     }
 }
