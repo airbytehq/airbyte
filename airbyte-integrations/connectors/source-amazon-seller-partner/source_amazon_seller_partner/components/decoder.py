@@ -3,10 +3,11 @@
 #
 import csv
 import gzip
+import json
 import logging
 from dataclasses import InitVar, dataclass
 from io import StringIO
-from typing import Any, Generator, Mapping, MutableMapping
+from typing import Any, Generator, List, Mapping, MutableMapping
 
 import requests
 import xmltodict
@@ -63,6 +64,43 @@ class GzipXmlDecoder(Decoder):
         reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
         for report in reports:
             yield report.get("OrderReport", {})
+
+
+@dataclass
+class GzipJsonDecoder(Decoder):
+    """
+    Decoder strategy that attempts to decompress a response using GZIP first and then parses the resulting
+    document as JSON. Also as a backup, this works for uncompressed responses that are already in JSON format
+    """
+
+    parameters: InitVar[Mapping[str, Any]]
+
+    def is_stream_response(self) -> bool:
+        return False
+
+    def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
+        try:
+            document = gzip.decompress(response.content).decode("iso-8859-1")
+        except gzip.BadGzipFile:
+            document = response.content.decode("iso-8859-1")
+
+        try:
+            body_json = json.loads(document)
+            yield from self.parse_body_json(body_json)
+        except requests.exceptions.JSONDecodeError:
+            logger.warning(f"Response cannot be parsed into json: {response.status_code=}, {response.text=}")
+            yield {}
+
+    @staticmethod
+    def parse_body_json(
+        body_json: MutableMapping[str, Any] | List[MutableMapping[str, Any]],
+    ) -> Generator[MutableMapping[str, Any], None, None]:
+        if not isinstance(body_json, list):
+            body_json = [body_json]
+        if len(body_json) == 0:
+            yield {}
+        else:
+            yield from body_json
 
 
 @dataclass

@@ -232,7 +232,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             #            page_size: 100
-            cursor_value: "{{ response.payload.pagination.nextToken }}"
+            cursor_value: "{{ response.payload.get('pagination', {}).get('nextToken') }}"
 
     vendor_orders:
       type: DeclarativeStream
@@ -635,11 +635,11 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
-      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
       transformations:
         - type: AddFields
           fields:
-            - path: ["last-updated-date"]
+            - path: ["dataEndTime"]
               value: "{{ stream_slice['end_time'] }}"
 
     get_flat_file_actionable_order_data_shipping:
@@ -757,6 +757,12 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ stream_slice['end_time'] }}"
 
     get_ledger_summary_view_data:
       type: DeclarativeStream
@@ -796,6 +802,12 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ stream_slice['end_time'] }}"
 
     get_fba_reimbursements_data:
       type: DeclarativeStream
@@ -912,6 +924,12 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ stream_slice['end_time'] }}"
 
     get_afn_inventory_data:
       type: DeclarativeStream
@@ -1091,6 +1109,12 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ stream_slice['end_time'] }}"
 
     get_fba_sns_performance_data:
       type: DeclarativeStream
@@ -1592,6 +1616,46 @@ definitions:
             - path: ["dataEndTime"]
               value: "{{ stream_slice['end_time'] }}"
 
+    get_xml_all_orders_data_by_order_date_general:
+      type: DeclarativeStream
+      name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+      primary_key: ["AmazonOrderID"]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: LastUpdatedDate
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_start_date', now_utc() - duration('P2Y')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.GzipXmlDecoder
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ stream_slice['end_time'] }}"
+
     ### MerchantReports ###
     get_merchant_listings_all_data:
       type: DeclarativeStream
@@ -1781,6 +1845,46 @@ definitions:
             - path: ["dataEndTime"]
               value: "{{ stream_slice['end_time'] }}"
 
+    get_vendor_forecasting_fresh_report:
+      type: DeclarativeStream
+      name: GET_VENDOR_FORECASTING_FRESH_REPORT
+      primary_key: []
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_VENDOR_FORECASTING_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              sellingProgram: "FRESH"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["forecastByAsin"]
+
+    get_vendor_forecasting_retail_report:
+      type: DeclarativeStream
+      name: GET_VENDOR_FORECASTING_RETAIL_REPORT
+      primary_key: []
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_VENDOR_FORECASTING_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              sellingProgram: "RETAIL"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["forecastByAsin"]
+
   basic_async_retriever:
     type: AsyncRetriever
     status_mapping:
@@ -1960,10 +2064,15 @@ streams:
   - $ref: "#/definitions/streams/get_fba_fulfillment_customer_shipment_replacement_data"
   - $ref: "#/definitions/streams/get_fba_fulfillment_removal_shipment_detail_data"
   - $ref: "#/definitions/streams/get_xml_browse_tree_data"
+  - $ref: "#/definitions/streams/get_xml_all_orders_data_by_order_date_general"
   - $ref: "#/definitions/streams/get_merchant_listings_all_data"
   - $ref: "#/definitions/streams/get_merchant_listings_data"
   - $ref: "#/definitions/streams/get_merchant_listings_inactive_data"
   - $ref: "#/definitions/streams/get_v2_settlement_report_data_flat_file"
+
+  # Analytics Streams
+  - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
+  - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
 
 concurrency_level:
   type: ConcurrencyLevel

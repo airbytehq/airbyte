@@ -75,30 +75,24 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
         """
         config.update(self.get_aws_config_settings(config))
         streams = super().streams(config)
-        # return low_code_streams
         self.validate_stream_report_options(config)
-        # streams = []
-        stream_kwargs = self._get_stream_kwargs(config)
-        stream_list = [
-            VendorForecastingFreshReport,  # remove in favor of using low-code analytics streams
-            VendorForecastingRetailReport,
-        ]
 
-        for stream in stream_list:
-            if not issubclass(stream, ReportsAmazonSPStream):
-                streams.append(stream(**stream_kwargs))
-                continue
-            report_kwargs = list(self.get_stream_report_kwargs(stream.report_name, config))
-            if not report_kwargs:
-                report_kwargs.append((stream.report_name, {}))
-            for name, options in report_kwargs:
-                kwargs = {
-                    "stream_name": name,
-                    "report_options": options,
-                    "wait_to_avoid_fatal_errors": config.get("wait_to_avoid_fatal_errors", False),
-                    **stream_kwargs,
-                }
-                streams.append(stream(**kwargs))
+        # todo: Analytics streams were never enabled in Cloud and don't quite work right in OSS. We've removed them during the
+        #  migration to low-code, but eventually we may need to find time to fix and add these removed streams:
+        # if not is_cloud_environment():
+        #     brand_analytics_reports = [
+        #         BrandAnalyticsMarketBasketReports,
+        #         BrandAnalyticsSearchTermsReports,
+        #         BrandAnalyticsRepeatPurchaseReports,
+        #         SellerAnalyticsSalesAndTrafficReports,
+        #         VendorSalesReports,
+        #         VendorInventoryReports,
+        #         NetPureProductMarginReport,
+        #         RapidRetailAnalyticsInventoryReport,
+        #         VendorTrafficReport,
+        #     ]
+        #     stream_list += brand_analytics_reports
+
         return streams
 
     @staticmethod

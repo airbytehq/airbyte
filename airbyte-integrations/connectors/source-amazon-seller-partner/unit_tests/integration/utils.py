@@ -8,7 +8,6 @@ from http import HTTPStatus
 from typing import Any, List, Mapping, Optional
 
 from source_amazon_seller_partner import SourceAmazonSellerPartner
-from airbyte_cdk.test.state_builder import StateBuilder
 
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, Level, SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -16,6 +15,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import _get_unit_test_folder
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ACCESS_TOKEN, ConfigBuilder
 from .request_builder import RequestBuilder
@@ -30,8 +30,10 @@ def catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(stream_name, sync_mode).build()
 
 
-def source(catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]) -> SourceAmazonSellerPartner:
-    return SourceAmazonSellerPartner(catalog=catalog, config=config, state=StateBuilder().build())
+def source(
+    catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any], state: Optional[List[AirbyteStateMessage]] = None
+) -> SourceAmazonSellerPartner:
+    return SourceAmazonSellerPartner(catalog=catalog, config=config, state=state or StateBuilder().build())
 
 
 def read_output(
@@ -43,7 +45,7 @@ def read_output(
 ) -> EntrypointOutput:
     _catalog = catalog(stream_name, sync_mode)
     _config = config_builder.build()
-    return read(source(_catalog, _config), _config, _catalog, state, expecting_exception)
+    return read(source(_catalog, _config, state), _config, _catalog, state, expecting_exception)
 
 
 def get_stream_by_name(stream_name: str, config_: Mapping[str, Any]) -> Stream:

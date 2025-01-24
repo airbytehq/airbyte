@@ -2,7 +2,7 @@
 
 from .auth import AmazonSPOauthAuthenticator
 from .backoff_strategy import AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy
-from .decoder import GetXmlBrowseTreeDataDecoder, GzipCsvDecoder, GzipXmlDecoder, SellerFeedbackReportsGzipCsvDecoder
+from .decoder import GetXmlBrowseTreeDataDecoder, GzipCsvDecoder, GzipJsonDecoder, GzipXmlDecoder, SellerFeedbackReportsGzipCsvDecoder
 from .type_transformers import (
     FlatFileSettlementV2ReportsTypeTransformer,
     LedgerDetailedViewReportsTypeTransformer,
@@ -16,6 +16,7 @@ __all__ = [
     "AmazonSPOauthAuthenticator",
     "AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy",
     "GzipCsvDecoder",
+    "GzipJsonDecoder",
     "GzipXmlDecoder",
     "SellerFeedbackReportsGzipCsvDecoder",
     "GetXmlBrowseTreeDataDecoder",

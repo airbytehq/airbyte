@@ -14,7 +14,7 @@ import pytest
 import requests_mock
 from source_amazon_seller_partner.streams import ReportProcessingStatus
 
-from airbyte_cdk.models import AirbyteStateMessage, FailureType, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, FailureType, Level, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
@@ -334,10 +334,7 @@ class TestFullRefresh:
         http_mocker.post(_create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.FORBIDDEN))
 
         output = self._read(stream_name, config())
-        message_on_access_forbidden = (
-            "This is most likely due to insufficient permissions on the credentials in use. "
-            "Try to grant required permissions/scopes or re-authenticate."
-        )
+        message_on_access_forbidden = "Forbidden. You don't have permission to access this resource."
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
         assert message_on_access_forbidden in output.errors[0].trace.error.message
 
@@ -355,10 +352,10 @@ class TestFullRefresh:
             _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
         )
 
-        message_on_report_cancelled = f"The report for stream '{stream_name}' was cancelled or there is no data to return."
+        message_on_report_cancelled = f"Exception while syncing stream {stream_name}"
 
         output = self._read(stream_name, config())
-        assert_message_in_log_output(message_on_report_cancelled, output)
+        assert_message_in_log_output(message=message_on_report_cancelled, entrypoint_output=output, log_level=Level.ERROR)
         assert len(output.records) == 0
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
@@ -377,31 +374,19 @@ class TestFullRefresh:
             ),
         )
 
-        http_mocker.get(
-            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
-            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
-        )
-        http_mocker.get(
-            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
-            [
-                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
-                _download_document_error_response(),
-            ],
-        )
-
         output = self._read(stream_name, config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
         config_end_date = CONFIG_END_DATE
         assert (
-            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{config_end_date}. This will be read during the next sync. Report ID: 6789087632. Error: {{'errorDetails': 'Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again.'}}"
+            f"At least one job could not be completed for slice {{\\'start_time\\': \\'{CONFIG_START_DATE}\\', \\'end_time\\': \\'{config_end_date}\\'}}"
         ) in output.errors[-1].trace.error.message
 
     @pytest.mark.parametrize(
         ("stream_name", "date_field", "expected_date_value"),
         (
-            ("GET_SELLER_FEEDBACK_DATA", "date", "2020-10-20"),
-            ("GET_LEDGER_DETAIL_VIEW_DATA", "Date", "2021-11-21"),
-            ("GET_LEDGER_SUMMARY_VIEW_DATA", "Date", "2022-12-22"),
+            ("GET_SELLER_FEEDBACK_DATA", "date", "2023-10-20"),
+            ("GET_LEDGER_DETAIL_VIEW_DATA", "Date", "2023-11-21"),
+            ("GET_LEDGER_SUMMARY_VIEW_DATA", "Date", "2023-12-22"),
         ),
     )
     @HttpMocker()
@@ -439,12 +424,12 @@ class TestFullRefresh:
             response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
         )
 
-        message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
+        message_on_backoff_exception = "Giving up _send(...) after 6 tries"
 
         output = self._read(stream_name, config())
 
-        assert output.errors[0].trace.error.failure_type == FailureType.system_error
-        assert message_on_backoff_exception in output.errors[0].trace.error.message
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
@@ -468,16 +453,14 @@ class TestFullRefresh:
         )
 
         warning_message = (
-            "The endpoint https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports returned 400: "
-            "Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.."
-            " This is most likely due to account type (Vendor) on the credentials in use."
-            " Try to re-authenticate with Seller account type and sync again."
+            "'POST' request to 'https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports' failed with status code '400' and"
+            " error message: 'Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.'."
         )
 
         output = self._read(stream_name, config())
 
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
-        assert warning_message in output.errors[0].trace.error.message
+        assert_message_in_log_output(message=warning_message, entrypoint_output=output, log_level=Level.ERROR)
 
 
 @freezegun.freeze_time(NOW.isoformat())
@@ -610,6 +593,7 @@ class TestVendorSalesReportsFullRefresh:
             _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
             _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
         )
+
         http_mocker.get(
             _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
             _download_document_response(stream_name, data_format=self.data_format),
@@ -793,10 +777,7 @@ class TestVendorSalesReportsFullRefresh:
         )
 
         output = self._read(stream_name, config())
-        message_on_access_forbidden = (
-            "This is most likely due to insufficient permissions on the credentials in use. "
-            "Try to grant required permissions/scopes or re-authenticate."
-        )
+        message_on_access_forbidden = "Forbidden. You don't have permission to access this resource."
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
         assert message_on_access_forbidden in output.errors[0].trace.error.message
 
@@ -818,10 +799,10 @@ class TestVendorSalesReportsFullRefresh:
             _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
         )
 
-        message_on_report_cancelled = f"The report for stream '{stream_name}' was cancelled or there is no data to return."
+        message_on_report_cancelled = f"Exception while syncing stream {stream_name}"
 
         output = self._read(stream_name, config())
-        assert_message_in_log_output(message_on_report_cancelled, output)
+        assert_message_in_log_output(message=message_on_report_cancelled, entrypoint_output=output, log_level=Level.ERROR)
         assert len(output.records) == 0
 
     @pytest.mark.parametrize("selling_program", selling_program)
@@ -842,21 +823,9 @@ class TestVendorSalesReportsFullRefresh:
             ),
         )
 
-        http_mocker.get(
-            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
-            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
-        )
-        http_mocker.get(
-            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
-            [
-                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
-                _download_document_error_response(),
-            ],
-        )
-
         output = self._read(stream_name, config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
-        assert f"Failed to retrieve the report '{stream_name}'" in output.errors[-1].trace.error.message
+        assert "At least one job could not be completed for slice {}" in output.errors[-1].trace.error.message
 
     @pytest.mark.parametrize("selling_program", selling_program)
     @HttpMocker()
@@ -872,9 +841,9 @@ class TestVendorSalesReportsFullRefresh:
             response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
         )
 
-        message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
+        message_on_backoff_exception = "Giving up _send(...) after 6 tries"
 
         output = self._read(stream_name, config())
 
-        assert output.errors[0].trace.error.failure_type == FailureType.system_error
-        assert message_on_backoff_exception in output.errors[0].trace.error.message
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)

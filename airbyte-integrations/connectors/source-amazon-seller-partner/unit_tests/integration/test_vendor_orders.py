@@ -195,16 +195,8 @@ class TestIncremental:
         mock_auth(http_mocker)
         state_value = _START_DATE.add(days=1).strftime(TIME_FORMAT)
 
-        query_params_first_read = {
-            _REPLICATION_START_FIELD: _START_DATE.strftime(TIME_FORMAT),
-            _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT),
-        }
         query_params_incremental_read = {_REPLICATION_START_FIELD: state_value, _REPLICATION_END_FIELD: _END_DATE.strftime(TIME_FORMAT)}
-        # TODO: check why do we need first mock request
-        http_mocker.get(
-            _vendor_orders_request().with_query_params(query_params_first_read).build(),
-            _vendor_orders_response().with_record(_order_record()).with_record(_order_record()).build(),
-        )
+
         http_mocker.get(
             _vendor_orders_request().with_query_params(query_params_incremental_read).build(),
             _vendor_orders_response().with_record(_order_record()).with_record(_order_record()).build(),
