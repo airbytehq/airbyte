@@ -14,7 +14,7 @@ Airbyte must be deployed to a Kubernetes cluster. However, there is great flexib
 
 ### Make sure self-managing is for you
 
-There are many reasons you might want to self-manage Airbyte, but not everyone needs to. If you don't, sign up for an [Airbyte Cloud](https://cloud.airbyte.com/signup) trial and [start syncing data](../using-airbye/getting-started/add-a-source) now. Airbyte Cloud has lower administrative overhead and, depending on your situation, can be less expensive than the cloud infrastructure needed to support a robust open source deployment.
+There are many reasons you might want to self-manage Airbyte, but not everyone needs to. If you don't, sign up for an [Airbyte Cloud](https://cloud.airbyte.com/signup) trial and [start syncing data](../using-airbye/getting-started/add-a-source) now. Airbyte Cloud has lower administrative overhead and, depending on your situation, [can be less expensive](https://build-vs-buy.airbyte.com/) than the cloud infrastructure needed to support a robust open source deployment.
 
 If you want to use Python to move data, our Python library, [PyAirbyte](../pyairbyte/getting-started), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server.
 
