@@ -19,7 +19,9 @@ data class MSSQLConfiguration(
     val jdbcUrlParams: String?,
     val rawDataSchema: String,
     val sslMethod: EncryptionMethod,
-) : DestinationConfiguration()
+) : DestinationConfiguration() {
+    override val numProcessRecordsWorkers = 1
+}
 
 @Singleton
 class MSSQLConfigurationFactory :
