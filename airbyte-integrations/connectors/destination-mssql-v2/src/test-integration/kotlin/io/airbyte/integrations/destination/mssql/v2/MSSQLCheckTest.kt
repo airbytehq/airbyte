@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.mssql.v2
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLSpecification
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 
 internal class MSSQLCheckTest :
@@ -31,12 +30,6 @@ internal class MSSQLCheckTest :
         @BeforeAll
         fun beforeAll() {
             MSSQLContainerHelper.start()
-        }
-
-        @JvmStatic
-        @AfterAll
-        fun afterAll() {
-            MSSQLContainerHelper.stop()
         }
     }
 }

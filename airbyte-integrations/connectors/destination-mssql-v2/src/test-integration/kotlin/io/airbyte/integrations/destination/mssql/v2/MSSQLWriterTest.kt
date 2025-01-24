@@ -23,7 +23,6 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import java.nio.file.Files
 import java.time.Instant
 import java.util.UUID
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 
 abstract class MSSQLWriterTest(
@@ -152,12 +151,6 @@ internal class StandardInsert :
         @BeforeAll
         fun beforeAll() {
             MSSQLContainerHelper.start()
-        }
-
-        @JvmStatic
-        @AfterAll
-        fun afterAll() {
-            MSSQLContainerHelper.stop()
         }
     }
 }
