@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.1"
+version = "1.0.2"
 name = "source-zendesk-chat"
 description = "Source implementation for Zendesk Chat."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_zendesk_chat"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "==0.72.2"
 pendulum = "==2.1.2"
 
 [tool.poetry.scripts]

@@ -374,7 +374,22 @@ class ObjectStoragePathFactory(
 
     private fun getPathVariableToPattern(stream: DestinationStream): Map<String, String> {
         return PATH_VARIABLES.associate {
-            it.variable to (it.pattern ?: it.provider(VariableContext(stream)))
+            it.variable to
+                (
+                // Only escape the pattern if
+                //   A) it's not already provided
+                //   B) the value from context is not blank
+                // This is to ensure stream names/namespaces with special characters (foo+1) match
+                // correctly,
+                // but that blank patterns are ignored completely.
+                it.pattern
+                    ?: (it.provider(VariableContext(stream)).let { s ->
+                        if (s.isNotBlank()) {
+                            Regex.escape(s)
+                        } else {
+                            s
+                        }
+                    }))
         } +
             FILENAME_VARIABLES.associate {
                 it.variable to
