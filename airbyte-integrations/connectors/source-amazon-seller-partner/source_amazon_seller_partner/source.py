@@ -68,6 +68,7 @@ from source_amazon_seller_partner.streams import (
     VendorForecastingRetailReport,
     VendorInventoryReports,
     VendorOrders,
+    VendorOrdersStatus,
     VendorSalesReports,
     VendorTrafficReport,
     XmlAllOrdersDataByOrderDataGeneral,
@@ -199,6 +200,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             LedgerSummaryViewReport,
             FbaReimbursementsReports,
             VendorOrders,
+            VendorOrdersStatus,
             VendorForecastingFreshReport,
             VendorForecastingRetailReport,
         ]
