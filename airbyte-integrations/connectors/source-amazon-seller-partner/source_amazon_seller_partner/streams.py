@@ -174,9 +174,48 @@ class IncrementalAmazonSPStream(AmazonSPStream, CheckpointMixin, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            self.state = self._get_updated_state(self.state, record)
-            yield record
+        """
+        Read records from the API, handling errors and refetching tokens when necessary.
+        """
+        retries = 3  # Number of retries allowed
+        for attempt in range(retries):
+            try:
+                # Attempt to fetch records
+                for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+                    self.state = self._get_updated_state(self.state, record)
+                    yield record
+                break  # Break the retry loop if successful
+            except requests.exceptions.HTTPError as e:
+                response = e.response
+                
+                # Check for 400 Bad Request
+                if response.status_code == 400:
+                    try:
+                        error_details = response.json()
+                        error_message = error_details.get("message", "")
+                        
+                        # Check for the specific TTL exceeded error
+                        if "Time to live (TTL) exceeded of next token." in error_message:
+                            logger.warning("TTL of NextToken exceeded. Refetching token and retrying...")
+                            next_page_token = None  # Reset the token
+                            stream_slice = {self.next_page_token_field: next_page_token}
+                            continue  # Retry the operation
+                        else:
+                            logger.error(f"Unhandled 400 error: {error_message}")
+                    except json.JSONDecodeError:
+                        logger.error(f"400 error with non-JSON response: {response.text}")
+                else:
+                    # Log and re-raise for other HTTP errors
+                    logger.error(f"HTTP error encountered: {e}. Response: {response.text}")
+                    raise
+            except Exception as e:
+                # Log and re-raise any other exceptions
+                logger.error(f"Unexpected error: {e}")
+                raise
+        else:
+            # If retries are exhausted, raise an exception
+            raise RuntimeError(f"Failed to fetch records for stream {self.name} after {retries} attempts.")
+
 
 
 class ReportProcessingStatus(str, Enum):
