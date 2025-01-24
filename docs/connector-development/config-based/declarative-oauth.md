@@ -33,8 +33,16 @@ The feature is configured through the `advanced_auth.oauth_config_specification`
 
 ## Overview
 
-TODO: Explain high-level concepts, when to use Declarative OAuth vs custom implementation, and the core workflow of how it processes OAuth configurations.
+In an ideal world, implementing OAuth 2.0 authentication for each data provider would be straightforward. The main pattern involves: `Consent Screen` > `Permission/Scopes Validation` > `Access Granted`. At Airbyte, we've refined various techniques to provide the best OAuth 2.0 experience for community developers.
 
+Previously, each connector supporting OAuth 2.0 required a custom implementation, which was difficult to maintain, involved extensive testing, and was prone to issues when introducing breaking changes.
+
+The modern solution is the `DeclarativeOAuthFlow`, which allows customers to configure, test, and maintain OAuth 2.0 using `JSON` or `YAML` configurations instead of extensive code.
+
+Once the configuration is set, the `DeclarativeOAuthFlow` handles the following steps:
+- Formats pre-defined URLs (including variable resolution)
+- Displays the `Consent Screen` for permission/scope verification (depending on the data provider)
+- Completes the flow by granting the `access_token`/`refresh_token` for authenticated API calls
 
 ## Implementation Examples
 
@@ -172,7 +180,7 @@ Example Response:
 ```diff
 --- manifest.yml
 +++ simple_oauth_manifest.yml
-@@ -38,6 +38,14 @@ definitions:
+definitions:
    base_requester:
      type: HttpRequester
      url_base: https://pokeapi.co
@@ -183,12 +191,10 @@ Example Response:
 +      client_secret: "{{ config[\"client_secret\"] }}"
 +      access_token_value: "{{ config[\"client_access_token\"] }}"
 
- streams:
-   - $ref: "#/definitions/streams/moves"
-@@ -47,9 +55,85 @@ spec:
-   connection_specification:
-     type: object
-     $schema: http://json-schema.org/draft-07/schema#
+spec:
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
 -    required: []
 -    properties: {}
 +    required:
@@ -212,7 +218,7 @@ Example Response:
 +          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
 +          redirect_uri_value}}&state={{state}}
 +        access_token_url: >-
-+          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
++          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code {{auth_code_value}}
 +      complete_oauth_output_specification:
 +        required:
 +          - access_token
@@ -246,14 +252,6 @@ Example Response:
 +            path_in_connector_config:
 +              - client_secret
 
- schemas:
-   moves:
-@@ -86,4 +170,3 @@ schemas:
-               type:
-                 - string
-                 - "null"
--
-
 ```
 
 ### Advanced Case: client secret is a request header not a query parameter
@@ -264,14 +262,14 @@ Here is the change you would make to the spec to support this:
 ```diff
 --- simple_oauth_manifest.yml
 +++ secret_header_manifest.yml
-@@ -83,10 +85,11 @@ spec:
-           https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
-           redirect_uri_value }}&state={{ state }}
-         access_token_url: >-
--          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
-+          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&code={{auth_code_value}}
-+        access_token_headers:
-+          SECRETHEADER: "{{ client_secret_value }}"
+      spec:
+        https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
+        redirect_uri_value }}&state={{ state }}
+        access_token_url: >-
+-         https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
++         https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&code={{auth_code_value}}
++       access_token_headers:
++         SECRETHEADER: "{{ client_secret_value }}"
        complete_oauth_output_specification:
          required:
 
@@ -284,7 +282,7 @@ Here is the change you would make to the spec to support this:
 ```diff
 --- secret_header_manifest.yml
 +++ secret_header_manifest.yml
-@@ -83,10 +85,11 @@ spec:
+      spec:
            https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
            redirect_uri_value }}&state={{ state }}
          access_token_url: >-
@@ -306,7 +304,7 @@ Here is the change you would make to the spec to support this:
 ```diff
 --- simple_oauth_manifest.yml
 +++ secret_header_manifest.yml
-@@ -83,10 +85,11 @@ spec:
+      spec:
            https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
            redirect_uri_value }}&state={{ state }}
          access_token_url: >-
@@ -343,9 +341,9 @@ Now imagine that the OAuth flow is updated so that the access token returned by 
 
 #### Example Declarative OAuth Change
 ```diff
---- a/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml
-+++ b/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/different_access_token_field.yml
-@@ -86,10 +86,12 @@ spec:
+--- base_oauth.yml
++++ different_access_token_field.yml
+    spec:
            https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
        complete_oauth_output_specification:
          required:
@@ -382,9 +380,9 @@ and the response of `/oauth/token` now includes a refresh token field.
 
 #### Example Declarative OAuth Change
 ```diff
---- a/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml
-+++ b/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/refresh_token.yml
-@@ -41,9 +41,18 @@ definitions:
+--- base_oauth.yml
++++ refresh_token.yml
+  definitions:
      authenticator:
        type: OAuthAuthenticator
        refresh_request_body: {}
@@ -403,12 +401,12 @@ and the response of `/oauth/token` now includes a refresh token field.
 
  streams:
    - $ref: "#/definitions/streams/moves"
-@@ -56,7 +65,7 @@ spec:
-     required:
-       - client_id
-       - client_secret
--      - client_access_token
-+      - client_refresh_token
+ spec:
+    required:
+      - client_id
+      - client_secret
+-     - client_access_token
++     - client_refresh_token
      properties:
        client_id:
          type: string
@@ -455,8 +453,8 @@ Imagine that the OAuth flow is updated so that you need to mention the `scope` q
 
 #### Example Declarative OAuth Change
 ```diff
---- a/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml
-+++ b/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/scopes.yml
+--- base_oauth.yml
++++ scopes.yml
 @@ -80,10 +80,10 @@ spec:
      oauth_config_specification:
        oauth_connector_input_specification:
@@ -473,16 +471,41 @@ Imagine that the OAuth flow is updated so that you need to mention the `scope` q
 
 ```
 
+### Advanced Case: generate the complex `state` value and make it a part of the query parameter 
+Imagine that the OAuth flow is updated so that you need to mention the `state` query parameter being generated with the minimum `10` and maximum `27` symbols.
+
+#### Example Declarative OAuth Change
+```diff
+--- base_oauth.yml
++++ base_oauth_with_custom_state.yml
+@@ -80,10 +80,10 @@ spec:
+     oauth_config_specification:
+       oauth_connector_input_specification:
+         consent_url: >-
+           https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
+           redirect_uri_value }}&state={{ state_value }}
+         access_token_url: >-
+           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
++        state: {
++          min: 10,
++          max: 27
++        }
+       complete_oauth_output_specification:
+         required:
+           - access_token
+
+```
+
 Example URL:
-`https://yourconnectorservice.com/oauth/consent?client_id=YOUR_CLIENT_ID_123&redirect_uri=https://cloud.airbyte.com&state=some_random_state_string&scope=my_scope_A:read,my_scope_B:read`
+`https://yourconnectorservice.com/oauth/consent?client_id=YOUR_CLIENT_ID_123&redirect_uri=https://cloud.airbyte.com&state=2LtdNpN8pmkYOBDqoVR3NzYQ`
 
 #### Example using an url-encoded / url-decoded `scope` parameter
-You can make the `scope` paramter `url-encoded` by specifying the `pipe` (|) + `urlEncoder` or `urlDecoder` in the target url.
+You can make the `scope` paramter `url-encoded` by specifying the `pipe` ( | ) + `urlEncoder` or `urlDecoder` in the target url.
 It would be pre-formatted and resolved into the `url-encoded` string before being replaced for the final resolved URL. 
 
 ```diff
---- a/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/scopes.yml.yml
-+++ b/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/scopes.yml
+--- scopes.yml
++++ scopes.yml
 @@ -80,10 +80,10 @@ spec:
      oauth_config_specification:
        oauth_connector_input_specification:
@@ -511,7 +534,7 @@ Imagine that the OAuth flow is updated so that you need to generate the `code ch
 ```diff
 --- base_oauth.yml
 +++ base_oauth.yml
-@@ -80,10 +80,10 @@ spec:
+  spec:
      oauth_config_specification:
        oauth_connector_input_specification:
          consent_url: >-
@@ -540,10 +563,9 @@ and we need to make sure that updating the spec to use Declarative OAuth doesn't
 
 #### Example Declarative OAuth Change
 ```diff
---- a/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/base_oauth.yml
-+++ b/Users/baz/gl/airbyte/docs/connector-development/config-based/understanding-the-yaml-file/declarative_oauth_examples/legacy_to_decl
-arative_oauth.yml
-@@ -41,9 +41,9 @@ definitions:
+--- base_oauth.yml
++++ legacy_to_declarative_oauth.yml
+  definitions:
      authenticator:
        type: OAuthAuthenticator
        refresh_request_body: {}
@@ -556,7 +578,7 @@ arative_oauth.yml
  
  streams:
    - $ref: "#/definitions/streams/moves"
-@@ -54,68 +54,73 @@ spec:
+ spec:
      type: object
      $schema: http://json-schema.org/draft-07/schema#
      required:
@@ -663,9 +685,7 @@ code_value}}
 -              - client_secret
 +              - super_secret_credentials
 +              - pokemon_client_secret
- 
- metadata:
-   autoImportSchema:
+
 ```
 
 
