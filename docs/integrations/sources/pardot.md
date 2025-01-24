@@ -28,8 +28,6 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 
 - **Page Size Limit** (`page_size`): The default page size to return; defaults to `1000` (which is Pardot's maximum). Does not apply to the Email Clicks stream which uses the v4 API and is limited to 200 per page.
 
-- **Default Split Up Interval** (`split_up_interval`): The default split up interval is used on incremental streams to prevent hitting Pardots limit of 100 pages per result (effectively 100K records on most endpoints). The default is `P3M`, which will break incremental requests into three-month groupings. If you expect more than 100K records to be modified between syncs in a single endpoint, you can increase the granularity to `P1M`, `P14D`, `P7D`, `P3D`, or `P1D` to reduce the maximum records to be paged through per split. For small accounts unlikely to hit the limit, decreasing the granularity to `P6M` or `P1Y` may increase the speed of those syncs, especially the initial backfill.
-
 - **Is Sandbox App?** (`is_sandbox`): Whether or not the app is in a Salesforce sandbox. If you do not know what this is, assume it is false.
 
 ## Supported Sync Modes
@@ -47,7 +45,7 @@ The Pardot connector should not run into Pardot API limitations under normal usa
 
 :::tip
 
-Due to timeouts on large accounts, the Split Up Interval (the time period used to page through incrementally) is surfaced as a configuration option. While the default should work for most accounts, large accounts may need to increase the granularity from the default. Similarly, small accounts may see faster initial syncs with a longer interval. See the Optional Configuration Options section for more details.
+Pardot has daily API limits based on plan level. If one of these limits is hit, the connector will retry every two hours until quota is replenished.
 
 :::
 
@@ -95,8 +93,9 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
-| 1.0.0  | 2023-12-12 | [49424](https://github.com/airbytehq/airbyte/pull/49424) | Update streams to API V5. Fix auth flow  |
-| 0.2.0  | 2024-10-13 | [44528](https://github.com/airbytehq/airbyte/pull/44528) | Migrate to LowCode then Manifest-only  |
+| 1.0.1  | 2025-01-10 | [51040](https://github.com/airbytehq/airbyte/pull/51040) | Fix schemas, adjust error handling, remove split-up interval |
+| 1.0.0  | 2024-12-12 | [49424](https://github.com/airbytehq/airbyte/pull/49424) | Update streams to API V5. Fix auth flow |
+| 0.2.0  | 2024-10-13 | [44528](https://github.com/airbytehq/airbyte/pull/44528) | Migrate to LowCode then Manifest-only |
 | 0.1.22 | 2024-10-12 | [46778](https://github.com/airbytehq/airbyte/pull/46778) | Update dependencies |
 | 0.1.21 | 2024-10-05 | [46441](https://github.com/airbytehq/airbyte/pull/46441) | Update dependencies |
 | 0.1.20 | 2024-09-28 | [46109](https://github.com/airbytehq/airbyte/pull/46109) | Update dependencies |
