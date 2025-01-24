@@ -20,9 +20,9 @@ import picocli.CommandLine.Model.UsageMessageSpec
 // A micronaut environment, so that connectors can override micronaut properties
 // without needing to copy an entire application.yaml out of the core CDK.
 // Intended usage is for connectors to create
-// `destination-foo/src/main/resources/application-override.yaml` with the
+// `destination-foo/src/main/resources/application-connector.yaml` with the
 // specific properties to override.
-const val OVERRIDE_ENV = "override"
+const val CONNECTOR_OVERRIDE_ENV = "connector"
 
 /** Source connector entry point. */
 class AirbyteSourceRunner(
@@ -91,7 +91,7 @@ sealed class AirbyteConnectorRunner(
         // note that we put the override envs last.
         // This ensures that micronaut gives those environments precedence
         // (because the last environment's application-XYZ.yaml wins).
-        ApplicationContext.builder(R::class.java, *envs, OVERRIDE_ENV)
+        ApplicationContext.builder(R::class.java, *envs, CONNECTOR_OVERRIDE_ENV)
                 .propertySources(
                     *listOfNotNull(
                             airbytePropertySource,
