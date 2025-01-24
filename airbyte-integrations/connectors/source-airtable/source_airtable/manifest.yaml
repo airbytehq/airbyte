@@ -370,33 +370,23 @@ definitions:
               current_type: multipleLookupValues
               condition: "{{ raw_schema['options']['result']['type'] in ['checkbox'] }}"
             - type: TypesMap
-              target_type:
-                field_type: array
-                items: number
+              target_type: number
               current_type: formula
               condition: "{{ raw_schema['options']['result']['type'] in ['number', 'currency', 'percent', 'duration'] }}"
             - type: TypesMap
-              target_type:
-                field_type: array
-                items: string
+              target_type: string
               current_type: formula
               condition: "{{ not raw_schema['options']['formula'].startswith('ARRAYCOMPACT') }}"
             - type: TypesMap
-              target_type:
-                field_type: array
-                items: string
+              target_type: string
               current_type: formula
               condition: "{{ not raw_schema['options']['formula'].startswith('ARRAYFLATTEN') }}"
             - type: TypesMap
-              target_type:
-                field_type: array
-                items: string
+              target_type: string
               current_type: formula
               condition: "{{ not raw_schema['options']['formula'].startswith('ARRAYUNIQUE') }}"
             - type: TypesMap
-              target_type:
-                field_type: array
-                items: string
+              target_type: string
               current_type: formula
               condition: "{{ not raw_schema['options']['formula'].startswith('ARRAYSLICE') }}"
             - type: TypesMap
