@@ -25,7 +25,6 @@ import java.time.Instant
 import java.util.UUID
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
 
 abstract class MSSQLWriterTest(
     configPath: String,
@@ -160,20 +159,5 @@ internal class StandardInsert :
         fun afterAll() {
             MSSQLContainerHelper.stop()
         }
-    }
-
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11440")
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
-    }
-
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11440")
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11440")
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
     }
 }
