@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 6.13.0
 
 definitions:
   ## bases
@@ -16,9 +16,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
     request_headers:
-      # There is a bug in interpolation, causing the `2.10` string to be evaluated to `2.1`, cutting off the `0`.
-      # the workaround is to put the `string` inside the `string`, then it's evaluated properly to `2.10`
-      Intercom-Version: "'2.10'"
+      Intercom-Version: "2.11"
       Accept: "application/json"
     error_handler:
       type: CustomErrorHandler
@@ -780,8 +778,7 @@ definitions:
         properties:
           assigned_to:
             description:
-              The user or team member who is assigned to handle this conversation
-              part.
+              The user or team member who is assigned to handle this conversation part.
             oneOf:
               - type: object
                 properties:
@@ -797,8 +794,7 @@ definitions:
               - type: "null"
           attachments:
             description:
-              Represents the attachments associated with the conversation
-              part.
+              Represents the attachments associated with the conversation part.
             type:
               - "null"
               - array
@@ -933,6 +929,126 @@ definitions:
             type:
               - "null"
               - boolean
+          waiting_since:
+            description: The timestamp indicating how long the conversation has been waiting.
+            type:
+              - "null"
+              - integer
+          snoozed_until:
+            description: The timestamp indicating when the conversation is snoozed until.
+            type:
+              - "null"
+              - integer
+          contacts:
+            description: A list of contacts associated with the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the contacts list.
+                type:
+                  - "null"
+                  - string
+              contacts:
+                description: The individual contacts in the list.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      description: The type of contact.
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: The unique identifier of the contact.
+                      type:
+                        - "null"
+                        - string
+                    external_id:
+                      description: An external identifier associated with the contact.
+                      type:
+                        - "null"
+                        - string
+          tags:
+            description: A list of tags associated with the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the tags list.
+                type:
+                  - "null"
+                  - string
+              tags:
+                description: The individual tags in the list.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: string
+          priority:
+            description: The priority level of the conversation.
+            type:
+              - "null"
+              - string
+          linked_objects:
+            description: Objects linked to the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the linked objects list.
+                type:
+                  - "null"
+                  - string
+              data:
+                description: The individual linked objects in the list.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+              total_count:
+                description: The total number of linked objects.
+                type:
+                  - "null"
+                  - integer
+              has_more:
+                description: Indicates if more linked objects are available.
+                type:
+                  - "null"
+                  - boolean
+          ai_agent:
+            description: The AI agent associated with the conversation, if any.
+            type:
+              - "null"
+              - object
+          ai_agent_participated:
+            description: Indicates whether an AI agent participated in the conversation.
+            type:
+              - "null"
+              - boolean
+          sla_applied:
+            description: The SLA applied to the conversation.
+            type:
+              - "null"
+              - object
+          statistics:
+            description: Statistical data related to the conversation.
+            type:
+              - "null"
+              - object
+          conversation_rating:
+            description: The rating given to the conversation, if applicable.
+            type:
+              - "null"
+              - object
   company_segments:
     $ref: "#/definitions/substream_semi_incremental"
     $parameters:
@@ -1610,10 +1726,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester_incremental_search"
         request_headers:
-          # API version header
-          # There are 404 - User Not Found issue, when `2.10` is used, for certain users:
-          # https://github.com/airbytehq/oncall/issues/4514
-          Intercom-Version: "2.9"
+          Intercom-Version: "2.11"
           Accept: "application/json"
     $parameters:
       name: "conversations"
