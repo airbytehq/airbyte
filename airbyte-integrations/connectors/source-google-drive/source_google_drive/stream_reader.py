@@ -64,6 +64,9 @@ PUBLIC_PERMISSION_IDS = [
 
 PERMISSIONS_API_SCOPES = [
     "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/drive.metadata.readonly",
+    "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/admin.directory.group.readonly",
     "https://www.googleapis.com/auth/admin.directory.group.member.readonly",
     "https://www.googleapis.com/auth/admin.directory.user.readonly",
