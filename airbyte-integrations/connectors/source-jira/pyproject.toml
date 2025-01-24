@@ -17,7 +17,7 @@ include = "source_jira"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "v6.25.1dev0"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-jira = "source_jira.run:run"
