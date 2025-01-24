@@ -1,3 +1,0 @@
-airbyte:
-  destination:
-    record-batch-size-override: 1 # 1 byte for testing; 1 record => 1 upload

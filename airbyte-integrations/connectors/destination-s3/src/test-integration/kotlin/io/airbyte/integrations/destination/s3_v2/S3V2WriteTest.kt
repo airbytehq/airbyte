@@ -34,7 +34,6 @@ abstract class S3V2WriteTest(
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
     nullUnknownTypes: Boolean = false,
-    envVars: Map<String, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -55,7 +54,6 @@ abstract class S3V2WriteTest(
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
-        envVars = envVars,
         nullUnknownTypes = nullUnknownTypes,
     ) {
     @Disabled("Irrelevant for file destinations")

@@ -8,7 +8,7 @@ import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.FeatureFlag
-import io.airbyte.cdk.load.test.util.IntegrationTest
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -31,7 +31,6 @@ class NonDockerizedDestination(
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     useFileTransfer: Boolean,
-    envVars: Map<String, String>,
     additionalMicronautEnvs: List<String>,
     micronautProperties: Map<Property, String>,
     vararg featureFlags: FeatureFlag,
@@ -47,17 +46,9 @@ class NonDockerizedDestination(
     private val file = File("/tmp/test_file")
 
     init {
-        envVars.forEach { (key, value) ->
-            IntegrationTest.nonDockerMockEnvVars.set(key, value)
-            logger.info { "Env vars: $key loaded" }
-        }
-
         if (useFileTransfer) {
-            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "true")
             val fileContentStr = "123"
             file.writeText(fileContentStr)
-        } else {
-            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "false")
         }
         val destinationStdin = PipedInputStream()
         // This could probably be a channel, somehow. But given the current structure,
@@ -133,7 +124,6 @@ class NonDockerizedDestinationFactory(
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         useFileTransfer: Boolean,
-        envVars: Map<String, String>,
         micronautProperties: Map<Property, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
@@ -143,7 +133,6 @@ class NonDockerizedDestinationFactory(
             configContents,
             catalog,
             useFileTransfer,
-            envVars,
             additionalMicronautEnvs,
             micronautProperties,
             *featureFlags

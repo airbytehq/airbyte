@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.util.serializeToString
@@ -129,10 +130,6 @@ class DockerizedDestination(
                     String.format("%s:%s", localRoot, "/local"),
                     "-v",
                     "$fileTransferMountSource:/tmp",
-                    "-e",
-                    "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE=1",
-                    "-e",
-                    "USE_FILE_TRANSFER=$useFileTransfer",
                 ) +
                     additionalEnvEntries +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
@@ -289,7 +286,6 @@ class DockerizedDestinationFactory(
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         useFileTransfer: Boolean,
-        envVars: Map<String, String>,
         micronautProperties: Map<Property, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
@@ -300,7 +296,7 @@ class DockerizedDestinationFactory(
             catalog,
             testName,
             useFileTransfer,
-            envVars + micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
+            micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
             *featureFlags,
         )
     }

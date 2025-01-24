@@ -8,6 +8,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.EnvVarConstants
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.message.InputRecord
@@ -15,7 +17,6 @@ import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestination
-import io.airbyte.cdk.load.test.util.destination_process.Property
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
@@ -58,7 +59,6 @@ abstract class IntegrationTest(
     /** See [RecordDiffer.nullEqualsUnset]. */
     val nullEqualsUnset: Boolean = false,
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
-    val envVars: Map<String, String> = emptyMap(),
     val micronautProperties: Map<Property, String> = emptyMap(),
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
@@ -177,14 +177,20 @@ abstract class IntegrationTest(
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
     ): List<AirbyteMessage> {
+        val fileTransferProperty =
+            if (useFileTransfer) {
+                mapOf(EnvVarConstants.FILE_TRANSFER_ENABLED to "true")
+            } else {
+                emptyMap()
+            }
         val destination =
             destinationProcessFactory.createDestinationProcess(
                 "write",
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
-                envVars = envVars,
-                micronautProperties = micronautProperties,
+                micronautProperties =
+                    micronautProperties + fileTransferProperty + defaultMicronautProperties,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -227,8 +233,7 @@ abstract class IntegrationTest(
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
-                envVars,
-                micronautProperties = micronautProperties,
+                micronautProperties = micronautProperties + defaultMicronautProperties,
             )
         return runBlocking(Dispatchers.IO) {
             launch {
@@ -278,6 +283,8 @@ abstract class IntegrationTest(
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")
+        val defaultMicronautProperties: Map<Property, String> =
+            mapOf(EnvVarConstants.RECORD_BATCH_SIZE to "1")
 
         /**
          * Given a randomizedNamespace (such as `test20241216abcd`), return whether the namespace
@@ -299,7 +306,11 @@ abstract class IntegrationTest(
         // inside NonDockerizedDestination.
         // This field has no effect on DockerizedDestination, which explicitly
         // sets env vars when invoking `docker run`.
-        @SystemStub lateinit var nonDockerMockEnvVars: EnvironmentVariables
+        /**
+         * You probably don't want to actually interact with this. This is generally intended to
+         * support a specific legacy behavior. Prefer using micronaut properties when possible.
+         */
+        @SystemStub private lateinit var nonDockerMockEnvVars: EnvironmentVariables
 
         @JvmStatic
         @BeforeAll
