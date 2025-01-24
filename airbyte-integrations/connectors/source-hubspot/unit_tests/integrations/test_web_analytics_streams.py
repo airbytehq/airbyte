@@ -377,7 +377,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental)
         assert len(output.state_messages) == 1
 
-        cursor_value_from_state_message = output.most_recent_state.stream_state.dict().get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD)
+        cursor_value_from_state_message = output.most_recent_state.stream_state.model_dump().get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD)
         cursor_value_from_latest_record = output.records[-1].record.data.get(self.CURSOR_FIELD)
         assert cursor_value_from_state_message == cursor_value_from_latest_record
 
@@ -408,8 +408,8 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
             self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental, state=[current_state]
         )
         assert len(output.state_messages) == 1
-        assert output.most_recent_state.stream_state.dict().get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD)
-        assert output.most_recent_state.stream_state.dict().get(another_object_id, {}).get(self.CURSOR_FIELD)
+        assert output.most_recent_state.stream_state.model_dump().get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD)
+        assert output.most_recent_state.stream_state.model_dump().get(another_object_id, {}).get(self.CURSOR_FIELD)
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -437,7 +437,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
             self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental, state=[current_state]
         )
         assert len(output.state_messages) == 1
-        assert output.most_recent_state.stream_state.dict().get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD) == self.dt_str(self.updated_at())
+        assert output.most_recent_state.stream_state.model_dump().get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD) == self.dt_str(self.updated_at())
 
 
 @freezegun.freeze_time("2024-03-03T14:42:00Z")
