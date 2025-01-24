@@ -86,6 +86,8 @@ spec:
           https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{ redirect_uri_value }}&state={{ state_value }}
         access_token_url: >-
           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
+        client_id_key: pokemon_client_id
+        client_secret_key: pokemon_client_secret
       complete_oauth_output_specification:
         required:
           - pokemon_access_token

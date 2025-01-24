@@ -637,13 +637,14 @@ tate_value }}
          access_token_url: >-
            https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_
 code_value}}
++        client_id_key: pokemon_client_id
++        client_secret_key: pokemon_client_secret
        complete_oauth_output_specification:
          required:
 -          - access_token
 +          - pokemon_access_token
          properties:
--          access_token:
-+          pokemon_access_token:
+          access_token:
              type: string
              path_in_connector_config:
 -              - access_token
