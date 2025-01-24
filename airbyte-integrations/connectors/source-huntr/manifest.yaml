@@ -2,16 +2,7 @@ version: 5.7.5
 
 type: DeclarativeSource
 
-description: >-
-  Split `actions` stream into 3 streams:
-
-  - `actions` stream for all actions
-
-  - `member_deactivated_actions` stream for actions with
-  `action_type=MEMBER_DEACTIVATED`
-
-  - `candidate_profile_viewed_actions` stream for actions with
-  `action_type=CANDIDATE_PROFILE_VIEWED`
+description: A connector for the Huntr application
 
 check:
   type: CheckStream
@@ -35,12 +26,12 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -263,12 +254,12 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:

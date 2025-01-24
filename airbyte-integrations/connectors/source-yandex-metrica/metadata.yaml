@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
-  dockerImageTag: 1.0.28
+  dockerImageTag: 1.0.29
   dockerRepository: airbyte/source-yandex-metrica
   documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
   githubIssueLabel: source-yandex-metrica

@@ -50,6 +50,7 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
@@ -88,6 +89,56 @@ data class StronglyTyped(
 
 data object Untyped : AllTypesBehavior
 
+/**
+ * Destinations may choose to handle nested objects/arrays in a few different ways.
+ *
+ * Note that this is _not_ the same as
+ * [BasicFunctionalityIntegrationTest.stringifySchemalessObjects]. This enum is only used for
+ * objects with an explicit, non-empty list of properties.
+ */
+enum class SchematizedNestedValueBehavior {
+    /**
+     * Nested objects are written without modification: undeclared fields are retained; values not
+     * matching the schema are retained.
+     */
+    PASS_THROUGH,
+
+    /**
+     * Nested objects are written as structs: undeclared fields are dropped, and values not matching
+     * the schema are nulled.
+     */
+    STRONGLY_TYPE,
+
+    /**
+     * Nested objects/arrays are JSON-serialized and written as strings. Similar to [PASS_THROUGH],
+     * objects are written without modification.
+     */
+    STRINGIFY,
+}
+
+enum class UnionBehavior {
+    /**
+     * Values corresponding to union fields are passed through, regardless of whether they actually
+     * match any of the union options.
+     */
+    PASS_THROUGH,
+
+    /**
+     * Union fields are turned into objects, with a `type` field indicating the selected union
+     * option. For example, the value `42` in a union with an Integer option would be represented as
+     * `{"type": "integer", "integer": 42}`.
+     *
+     * Values which do not match any union options are nulled.
+     */
+    PROMOTE_TO_OBJECT,
+
+    /**
+     * Union fields are JSON-serialized and written as strings. Similar to the [PASS_THROUGH]
+     * option, no validation is performed.
+     */
+    STRINGIFY,
+}
+
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
     val configContents: String,
@@ -112,7 +163,9 @@ abstract class BasicFunctionalityIntegrationTest(
     val isStreamSchemaRetroactive: Boolean,
     val supportsDedup: Boolean,
     val stringifySchemalessObjects: Boolean,
-    val promoteUnionToObject: Boolean,
+    val schematizedObjectBehavior: SchematizedNestedValueBehavior,
+    val schematizedArrayBehavior: SchematizedNestedValueBehavior,
+    val unionBehavior: UnionBehavior,
     val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
     /**
@@ -467,7 +520,6 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
-    @Disabled
     open fun testFunkyCharacters() {
         assumeTrue(verifyDataWriting)
         fun makeStream(
@@ -491,6 +543,10 @@ abstract class BasicFunctionalityIntegrationTest(
                     makeStream("stream_with_underscores"),
                     makeStream("STREAM_WITH_ALL_CAPS"),
                     makeStream("CapitalCase"),
+                    makeStream("stream_with_spécial_character"),
+                    makeStream("stream_name_with_operator+1"),
+                    makeStream("stream_name_with_numbers_123"),
+                    makeStream("1stream_with_a_leading_number"),
                     makeStream(
                         "stream_with_edge_case_field_names_and_values",
                         linkedMapOf(
@@ -499,6 +555,9 @@ abstract class BasicFunctionalityIntegrationTest(
                             "field_with_underscore" to stringType,
                             "FIELD_WITH_ALL_CAPS" to stringType,
                             "field_with_spécial_character" to stringType,
+                            "field_name_with_operator+1" to stringType,
+                            "field_name_with_numbers_123" to stringType,
+                            "1field_with_a_leading_number" to stringType,
                             // "order" is a reserved word in many sql engines
                             "order" to stringType,
                             "ProperCase" to stringType,
@@ -1753,7 +1812,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 4,
-                            "struct" to mapOf("foo" to nestedFloat),
+                            "struct" to schematizedObject(linkedMapOf("foo" to nestedFloat)),
                             "number" to topLevelFloat,
                             "integer" to bigInt,
                         ),
@@ -1821,7 +1880,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 1,
-                          "schematized_object": { "id": 1, "name": "Joe" },
+                          "schematized_object": { "id": 1, "name": "Joe", "undeclared": 42 },
                           "empty_object": {},
                           "schemaless_object": { "uuid": "38F52396-736D-4B23-B5B4-F504D8894B97", "probability": 1.5 },
                           "schematized_array": [10, null],
@@ -1868,7 +1927,11 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "schematized_object" to mapOf("id" to 1, "name" to "Joe"),
+                            "schematized_object" to
+                                schematizedObject(
+                                    linkedMapOf("id" to 1, "name" to "Joe", "undeclared" to 42),
+                                    linkedMapOf("id" to 1, "name" to "Joe"),
+                                ),
                             "empty_object" to
                                 if (stringifySchemalessObjects) "{}" else emptyMap<Any, Any>(),
                             "schemaless_object" to
@@ -1880,7 +1943,12 @@ abstract class BasicFunctionalityIntegrationTest(
                                         "probability" to 1.5
                                     )
                                 },
-                            "schematized_array" to listOf(10, null),
+                            "schematized_array" to
+                                when (schematizedArrayBehavior) {
+                                    SchematizedNestedValueBehavior.PASS_THROUGH -> listOf(10, null)
+                                    SchematizedNestedValueBehavior.STRONGLY_TYPE -> listOf(10, null)
+                                    SchematizedNestedValueBehavior.STRINGIFY -> "[10,null]"
+                                },
                             "schemaless_array" to
                                 if (stringifySchemalessObjects) {
                                     """[10,"foo",null,{"bar":"qua"}]"""
@@ -1896,7 +1964,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 2,
-                            "schematized_object" to mapOf("id" to 2, "name" to "Jane"),
+                            "schematized_object" to
+                                schematizedObject(linkedMapOf("id" to 2, "name" to "Jane")),
                             "empty_object" to
                                 if (stringifySchemalessObjects) {
                                     """{"extra":"stuff"}"""
@@ -1916,7 +1985,13 @@ abstract class BasicFunctionalityIntegrationTest(
                                         "flags" to listOf(true, false, false)
                                     )
                                 },
-                            "schematized_array" to emptyList<Long>(),
+                            "schematized_array" to
+                                when (schematizedArrayBehavior) {
+                                    SchematizedNestedValueBehavior.PASS_THROUGH -> emptyList<Long>()
+                                    SchematizedNestedValueBehavior.STRONGLY_TYPE ->
+                                        emptyList<Long>()
+                                    SchematizedNestedValueBehavior.STRINGIFY -> "[]"
+                                },
                             "schemaless_array" to
                                 if (stringifySchemalessObjects) {
                                     "[]"
@@ -2195,14 +2270,20 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         )
 
-        fun maybePromote(typeName: String, value: Any?) =
-            if (promoteUnionToObject) {
-                mapOf(
-                    "type" to typeName,
-                    typeName to value,
-                )
-            } else {
-                value
+        fun unionValue(typeName: String, value: Any?, skipSerialize: Boolean = false) =
+            when (unionBehavior) {
+                UnionBehavior.PASS_THROUGH -> value
+                UnionBehavior.PROMOTE_TO_OBJECT ->
+                    mapOf(
+                        "type" to typeName,
+                        typeName to value,
+                    )
+                UnionBehavior.STRINGIFY ->
+                    if (value is String && skipSerialize) {
+                        StringValue(value)
+                    } else {
+                        StringValue(value.serializeToString())
+                    }
             }
         val expectedRecords: List<OutputRecord> =
             listOf(
@@ -2212,28 +2293,49 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "combined_type" to maybePromote("string", "string1"),
+                            "combined_type" to unionValue("string", "string1"),
                             "union_of_string_and_schemaless_type" to
-                                maybePromote(
+                                unionValue(
                                     "object",
                                     if (stringifySchemalessObjects) {
                                         """{"foo":"bar"}"""
                                     } else {
-                                        mapOf("foo" to "bar")
-                                    }
+                                        schematizedObject(linkedMapOf("foo" to "bar"))
+                                    },
+                                    // Don't double-serialize the object.
+                                    skipSerialize = stringifySchemalessObjects,
                                 ),
                             "union_of_objects_with_properties_identical" to
-                                mapOf("id" to 10, "name" to "Joe"),
+                                schematizedObject(linkedMapOf("id" to 10, "name" to "Joe")),
                             "union_of_objects_with_properties_overlapping" to
-                                mapOf("id" to 20, "name" to "Jane", "flagged" to true),
+                                schematizedObject(
+                                    linkedMapOf("id" to 20, "name" to "Jane", "flagged" to true)
+                                ),
                             "union_of_objects_with_properties_contradicting" to
-                                mapOf("id" to maybePromote("integer", 1), "name" to "Jenny"),
+                                // can't just call schematizedObject(... unionValue) - there's some
+                                // nontrivial interactions here
+                                when (schematizedObjectBehavior) {
+                                    // these two cases are simple
+                                    SchematizedNestedValueBehavior.PASS_THROUGH,
+                                    SchematizedNestedValueBehavior.STRONGLY_TYPE ->
+                                        linkedMapOf(
+                                            "id" to unionValue("integer", 1),
+                                            "name" to "Jenny"
+                                        )
+                                    // If we stringify, then the nested union value is _not_
+                                    // processed
+                                    // (note that `id` is mapped to 1 and not "1")
+                                    SchematizedNestedValueBehavior.STRINGIFY ->
+                                        """{"id":1,"name":"Jenny"}"""
+                                },
                             "union_of_objects_with_properties_nonoverlapping" to
-                                mapOf(
-                                    "id" to 30,
-                                    "name" to "Phil",
-                                    "flagged" to false,
-                                    "description" to "Very Phil",
+                                schematizedObject(
+                                    linkedMapOf(
+                                        "id" to 30,
+                                        "name" to "Phil",
+                                        "flagged" to false,
+                                        "description" to "Very Phil",
+                                    )
                                 )
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
@@ -2244,18 +2346,30 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 2,
-                            "combined_type" to maybePromote("integer", 20),
+                            "combined_type" to unionValue("integer", 20),
                             "union_of_objects_with_properties_identical" to
-                                emptyMap<String, Any?>(),
+                                schematizedObject(linkedMapOf()),
                             "union_of_objects_with_properties_nonoverlapping" to
-                                emptyMap<String, Any?>(),
+                                schematizedObject(linkedMapOf()),
                             "union_of_objects_with_properties_overlapping" to
-                                emptyMap<String, Any?>(),
+                                schematizedObject(linkedMapOf()),
                             "union_of_objects_with_properties_contradicting" to
-                                mapOf(
-                                    "id" to maybePromote("string", "seal-one-hippity"),
-                                    "name" to "James"
-                                )
+                                // similar to the previous record - need to handle this branch
+                                // manually
+                                when (schematizedObjectBehavior) {
+                                    // these two cases are simple
+                                    SchematizedNestedValueBehavior.PASS_THROUGH,
+                                    SchematizedNestedValueBehavior.STRONGLY_TYPE ->
+                                        linkedMapOf(
+                                            "id" to unionValue("string", "seal-one-hippity"),
+                                            "name" to "James"
+                                        )
+                                    // If we stringify, then the nested union value is _not_
+                                    // processed
+                                    // (note that `id` is mapped to 1 and not "1")
+                                    SchematizedNestedValueBehavior.STRINGIFY ->
+                                        """{"id":"seal-one-hippity","name":"James"}"""
+                                }
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -2329,6 +2443,23 @@ abstract class BasicFunctionalityIntegrationTest(
             primaryKey = listOf(),
             cursor = null,
         )
+    }
+
+    private fun schematizedObject(
+        fullObject: LinkedHashMap<String, Any?>,
+        coercedObject: LinkedHashMap<String, Any?> = fullObject
+    ): AirbyteValue =
+        schematizedObject(ObjectValue.from(fullObject), ObjectValue.from(coercedObject))
+
+    private fun schematizedObject(
+        fullObject: ObjectValue,
+        coercedObject: ObjectValue = fullObject
+    ): AirbyteValue {
+        return when (schematizedObjectBehavior) {
+            SchematizedNestedValueBehavior.PASS_THROUGH -> fullObject
+            SchematizedNestedValueBehavior.STRONGLY_TYPE -> coercedObject
+            SchematizedNestedValueBehavior.STRINGIFY -> StringValue(fullObject.serializeToString())
+        }
     }
 
     companion object {
