@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: f70a8ece-351e-4790-b37b-cb790bcd6d54
-  dockerImageTag: 0.1.31
+  dockerImageTag: 0.1.32
   dockerRepository: airbyte/destination-timeplus
   githubIssueLabel: destination-timeplus
   icon: timeplus.svg
