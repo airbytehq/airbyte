@@ -338,7 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.8 | 2025-01-24 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Update _cast_datetime to handle multiple formats|
+| 4.4.8 | 2025-01-24 | [52137](https://github.com/airbytehq/airbyte/pull/52137) | Update _cast_datetime to handle multiple formats|
 | 4.4.7 | 2025-01-11 | [51146](https://github.com/airbytehq/airbyte/pull/51146) | Update dependencies |
 | 4.4.6 | 2025-01-04 | [50898](https://github.com/airbytehq/airbyte/pull/50898) | Update dependencies |
 | 4.4.5 | 2024-12-28 | [50669](https://github.com/airbytehq/airbyte/pull/50669) | Update dependencies |
