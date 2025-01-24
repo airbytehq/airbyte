@@ -90,7 +90,7 @@ const val CREATE_SCHEMA_QUERY =
         DECLARE @Schema VARCHAR(MAX) = ?
         IF NOT EXISTS (SELECT name FROM sys.schemas WHERE name = @Schema)
         BEGIN
-            EXEC ('CREATE SCHEMA ' + @Schema);
+            EXEC ('CREATE SCHEMA [' + @Schema + ']');
         END
     """
 
