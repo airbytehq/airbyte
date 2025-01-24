@@ -305,6 +305,20 @@ class ConnectorConfig(BaseConfig):
         mininum=10,
         default=60,
     )
+    
+    use_account_attribution_setting: bool = Field(
+        title="Use Account Attribution Setting",
+        order=13,
+        default=False,
+        description="When this parameter is set to true, your ads results are shown using the attribution settings defined for the ad account",
+    )
+    
+    use_unified_attribution_setting: bool = Field(
+        title="Use Unified Attribution Setting",
+        order=14,
+        default=False,
+        description="When this parameter is set to true, your ads results will be shown using unified attribution settings defined at ad set level and parameter use_account_attribution_setting will be ignored. Note: Please set this to true to get the same behavior as in the Ads Manager.",
+    )
 
     action_breakdowns_allow_empty: bool = Field(
         description="Allows action_breakdowns to be an empty list",
