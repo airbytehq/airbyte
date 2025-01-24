@@ -182,6 +182,11 @@ class S3V2WriteTestAvroUncompressed :
     override fun testUnknownTypes() {
         super.testUnknownTypes()
     }
+
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
 }
 
 class S3V2WriteTestAvroBzip2 :
