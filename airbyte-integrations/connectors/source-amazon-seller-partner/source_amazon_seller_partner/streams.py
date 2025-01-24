@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import csv
 import gzip
 import json
@@ -8,7 +9,6 @@ import logging
 import os
 import time
 from abc import ABC, abstractmethod
-from datetime import timedelta
 from enum import Enum
 from functools import lru_cache
 from io import StringIO
@@ -625,48 +625,3 @@ class AnalyticsStream(ReportsAmazonSPStream):
     def parse_document(self, document):
         parsed = json.loads(document)
         return parsed.get(self.result_key, [])
-
-
-class VendorForecastingReport(AnalyticsStream, ABC):
-    """
-    Field definitions:
-    https://github.com/amzn/selling-partner-api-models/blob/main/schemas/reports/vendorForecastingReport.json
-    Docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports
-    """
-
-    result_key = "forecastByAsin"
-    report_name = None
-
-    @property
-    @abstractmethod
-    def selling_program(self) -> str:
-        pass
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return [None]
-
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        # This report supports the `sellingProgram` parameter only
-        return {
-            "reportType": "GET_VENDOR_FORECASTING_REPORT",
-            "marketplaceIds": [self.marketplace_id],
-            "reportOptions": {"sellingProgram": self.selling_program},
-        }
-
-
-class VendorForecastingFreshReport(VendorForecastingReport):
-    report_name = "GET_VENDOR_FORECASTING_FRESH_REPORT"
-    selling_program = "FRESH"
-
-
-class VendorForecastingRetailReport(VendorForecastingReport):
-    report_name = "GET_VENDOR_FORECASTING_RETAIL_REPORT"
-    selling_program = "RETAIL"
