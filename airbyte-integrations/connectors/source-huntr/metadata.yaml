@@ -23,7 +23,7 @@ data:
   icon: icon.svg
   license: MIT
   name: Huntr
-  releaseDate: 2025-01-15
+  releaseDate: 2025-01-24
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/huntr
