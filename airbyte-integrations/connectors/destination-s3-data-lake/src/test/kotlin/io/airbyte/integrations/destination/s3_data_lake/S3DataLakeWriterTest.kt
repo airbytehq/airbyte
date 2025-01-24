@@ -113,7 +113,7 @@ internal class S3DataLakeWriterTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -183,7 +183,7 @@ internal class S3DataLakeWriterTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -320,7 +320,7 @@ internal class S3DataLakeWriterTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration

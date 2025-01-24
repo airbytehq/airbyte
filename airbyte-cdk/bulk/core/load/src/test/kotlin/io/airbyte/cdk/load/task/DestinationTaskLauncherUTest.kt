@@ -84,6 +84,8 @@ class DestinationTaskLauncherUTest {
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>> =
         mockk(relaxed = true)
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage> = mockk(relaxed = true)
+    private val openStreamQueue: MessageQueue<DestinationStream> = mockk(relaxed = true)
+
     private fun getDefaultDestinationTaskLauncher(
         useFileTranfer: Boolean
     ): DefaultDestinationTaskLauncher {
@@ -112,6 +114,7 @@ class DestinationTaskLauncherUTest {
             recordQueueSupplier,
             checkpointQueue,
             fileTransferQueue,
+            openStreamQueue,
         )
     }
 
@@ -158,7 +161,7 @@ class DestinationTaskLauncherUTest {
         destinationTaskLauncher.handleTeardownComplete()
 
         coVerify { failStreamTaskFactory.make(any(), e, any()) }
-        coVerify { taskScopeProvider.launch(match { it.innerTask is FailStreamTask }) }
+        coVerify { taskScopeProvider.launch(match { it is FailStreamTask }) }
     }
 
     @Test
@@ -225,5 +228,32 @@ class DestinationTaskLauncherUTest {
                 match { it.namespace == "namespace" && it.name == "name" }
             )
         }
+    }
+
+    @Test
+    fun `test numOpenStreamWorkers open stream tasks are launched`() = runTest {
+        val numOpenStreamWorkers = 3
+        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(false)
+
+        coEvery { config.numOpenStreamWorkers } returns numOpenStreamWorkers
+
+        val job = launch { destinationTaskLauncher.run() }
+        destinationTaskLauncher.handleTeardownComplete()
+        job.join()
+
+        coVerify(exactly = numOpenStreamWorkers) { openStreamTaskFactory.make() }
+
+        coVerify(exactly = 0) { openStreamQueue.publish(any()) }
+    }
+
+    @Test
+    fun `test streams opened when setup completes`() = runTest {
+        val launcher = getDefaultDestinationTaskLauncher(false)
+
+        coEvery { openStreamQueue.publish(any()) } returns Unit
+
+        launcher.handleSetupComplete()
+
+        coVerify(exactly = catalog.streams.size) { openStreamQueue.publish(any()) }
     }
 }
