@@ -1411,7 +1411,7 @@ class VendorOrders(VendorFulfillment):
 class FinanceStream(IncrementalAmazonSPStream, ABC):
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
-    page_size = 100
+    page_size = 50 #Testing fewer records to avoid TTL error for next_token: https://developer-docs.amazon.com/sp-api/docs/fba-inventory-api-v1-use-case-guide
     default_backoff_time = 60
     primary_key = None
 
