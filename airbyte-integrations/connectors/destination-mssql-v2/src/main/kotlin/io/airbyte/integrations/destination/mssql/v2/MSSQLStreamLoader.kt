@@ -38,14 +38,13 @@ class MSSQLStreamLoader(
         endOfStream: Boolean
     ): Batch {
         dataSource.connection.use { connection ->
-            sqlBuilder.getFinalTableInsertColumnHeader()
-                .executeUpdate(connection) { statement ->
-                    records.forEach { record ->
-                        sqlBuilder.populateStatement(statement, record, sqlBuilder.finalTableSchema)
-                        statement.addBatch()
-                    }
-                    statement.executeLargeBatch()
+            sqlBuilder.getFinalTableInsertColumnHeader().executeUpdate(connection) { statement ->
+                records.forEach { record ->
+                    sqlBuilder.populateStatement(statement, record, sqlBuilder.finalTableSchema)
+                    statement.addBatch()
                 }
+                statement.executeLargeBatch()
+            }
             if (sqlBuilder.hasCdc) {
                 sqlBuilder.deleteCdc(connection)
             }

@@ -107,8 +107,7 @@ const val CREATE_TABLE_QUERY =
         END
     """
 
-const val CREATE_INDEX_QUERY =
-    """
+const val CREATE_INDEX_QUERY = """
         CREATE ? INDEX ? ON [?].[?] (?)
     """
 
@@ -131,13 +130,11 @@ const val MERGE_INTO_QUERY =
         ;
     """
 
-const val ALTER_TABLE_ADD =
-    """
+const val ALTER_TABLE_ADD = """
         ALTER TABLE [?].[?]
         ADD [?] ? NULL;
     """
-const val ALTER_TABLE_DROP =
-    """
+const val ALTER_TABLE_DROP = """
         ALTER TABLE [?].[?]
         DROP COLUMN [?];
     """
@@ -153,14 +150,12 @@ const val DELETE_WHERE_COL_IS_NOT_NULL =
         WHERE [?] is not NULL
     """
 
-const val DELETE_WHERE_COL_LESS_THAN =
-    """
+const val DELETE_WHERE_COL_LESS_THAN = """
         DELETE FROM [?].[?]
         WHERE [?] < ?
     """
 
-const val SELECT_FROM =
-    """
+const val SELECT_FROM = """
         SELECT *
         FROM [?].[?]
     """
@@ -269,13 +264,23 @@ class MSSQLQueryBuilder(
                         appendLine(ALTER_TABLE_DROP.toQuery(outputSchema, tableName, it.key))
                     }
                     toAdd.entries.forEach {
-                        appendLine(ALTER_TABLE_ADD
-                            .toQuery(outputSchema, tableName, it.key, it.value.sqlString))
+                        appendLine(
+                            ALTER_TABLE_ADD.toQuery(
+                                outputSchema,
+                                tableName,
+                                it.key,
+                                it.value.sqlString
+                            )
+                        )
                     }
                     toAlter.entries.forEach {
                         appendLine(
-                            ALTER_TABLE_MODIFY
-                                .toQuery(outputSchema, tableName, it.key, it.value.sqlString)
+                            ALTER_TABLE_MODIFY.toQuery(
+                                outputSchema,
+                                tableName,
+                                it.key,
+                                it.value.sqlString
+                            )
                         )
                     }
                 }
@@ -388,14 +393,15 @@ class MSSQLQueryBuilder(
             else ""
         val cdcIndex = if (hasCdc) createIndex(fqTableName, listOf(AIRBYTE_CDC_DELETED_AT)) else ""
 
-        return CREATE_TABLE_QUERY
-            .toQuery(mapOf(
+        return CREATE_TABLE_QUERY.toQuery(
+            mapOf(
                 SCHEMA_KEY to outputSchema,
                 TABLE_KEY to tableName,
                 COLUMNS_KEY to airbyteTypeToSqlSchema(schema),
                 INDEX_KEY to index,
                 SECONDARY_INDEX_KEY to cdcIndex,
-            ))
+            )
+        )
     }
 
     private fun createIndex(
@@ -405,36 +411,42 @@ class MSSQLQueryBuilder(
     ): String {
         val name = "${fqTableName.replace('.', '_')}_${columns.hashCode()}"
         val indexType = if (clustered) "CLUSTERED" else ""
-        return CREATE_INDEX_QUERY
-            .toQuery(indexType, name, outputSchema, tableName, columns.joinToString(", "))
+        return CREATE_INDEX_QUERY.toQuery(
+            indexType,
+            name,
+            outputSchema,
+            tableName,
+            columns.joinToString(", ")
+        )
     }
 
-    private fun getFinalTableInsertColumnHeader(
-        schema: List<NamedField>
-    ): String {
+    private fun getFinalTableInsertColumnHeader(schema: List<NamedField>): String {
         val columns = schema.joinToString(", ") { "[${it.name}]" }
         val templateColumns = schema.joinToString(", ") { "?" }
         return if (uniquenessKey.isEmpty()) {
-            INSERT_INTO_QUERY
-                .toQuery(mapOf(
+            INSERT_INTO_QUERY.toQuery(
+                mapOf(
                     SCHEMA_KEY to outputSchema,
                     TABLE_KEY to tableName,
                     COLUMNS_KEY to columns,
                     TEMPLATE_COLUMNS_KEY to templateColumns,
-                ))
+                )
+            )
         } else {
             val uniquenessConstraint =
                 uniquenessKey.joinToString(" AND ") { "Target.[$it] = Source.[$it]" }
-            val updateStatement = schema.joinToString(", ") { "Target.[${it.name}] = Source.[${it.name}]" }
-            MERGE_INTO_QUERY
-                .toQuery(mapOf(
+            val updateStatement =
+                schema.joinToString(", ") { "Target.[${it.name}] = Source.[${it.name}]" }
+            MERGE_INTO_QUERY.toQuery(
+                mapOf(
                     SCHEMA_KEY to outputSchema,
                     TABLE_KEY to tableName,
                     TEMPLATE_COLUMNS_KEY to templateColumns,
                     COLUMNS_KEY to columns,
                     UNIQUENESS_CONSTRAINT_KEY to uniquenessConstraint,
                     UPDATE_STATEMENT_KEY to updateStatement,
-                ))
+                )
+            )
         }
     }
 
