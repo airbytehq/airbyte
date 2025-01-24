@@ -56,6 +56,7 @@ abstract class IntegrationTest(
     /** See [RecordDiffer.nullEqualsUnset]. */
     val nullEqualsUnset: Boolean = false,
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
+    val envVars: Map<String, String> = emptyMap(),
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -105,6 +106,7 @@ abstract class IntegrationTest(
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
             canonicalExpectedRecords.map { recordMangler.mapRecord(it, stream.schema) }
+        val descriptor = recordMangler.mapStreamDescriptor(stream.descriptor)
 
         RecordDiffer(
                 primaryKey = primaryKey.map { nameMapper.mapFieldName(it) },
@@ -115,7 +117,7 @@ abstract class IntegrationTest(
             .diffRecords(expectedRecords, actualRecords)
             ?.let {
                 var message =
-                    "Incorrect records for ${stream.descriptor.namespace}.${stream.descriptor.name}:\n$it"
+                    "Incorrect records for ${descriptor.namespace}.${descriptor.name}:\n$it"
                 if (reason != null) {
                     message = reason + "\n" + message
                 }
@@ -130,7 +132,6 @@ abstract class IntegrationTest(
         messages: List<InputMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
-        envVars: Map<String, String> = emptyMap(),
     ): List<AirbyteMessage> =
         runSync(
             configContents,
@@ -138,7 +139,6 @@ abstract class IntegrationTest(
             messages,
             streamStatus,
             useFileTransfer,
-            envVars
         )
 
     /**
@@ -173,7 +173,6 @@ abstract class IntegrationTest(
          */
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
-        envVars: Map<String, String> = emptyMap(),
     ): List<AirbyteMessage> {
         val destination =
             destinationProcessFactory.createDestinationProcess(
@@ -217,7 +216,6 @@ abstract class IntegrationTest(
         inputStateMessage: StreamCheckpoint,
         allowGracefulShutdown: Boolean,
         useFileTransfer: Boolean = false,
-        envVars: Map<String, String> = emptyMap(),
     ): AirbyteStateMessage {
         val destination =
             destinationProcessFactory.createDestinationProcess(

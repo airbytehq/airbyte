@@ -47,14 +47,16 @@
       },
       "warehouse_location" : {
         "type" : "string",
-        "description" : "The root location of the data warehouse used by the Iceberg catalog.",
+        "description" : "The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. Must include the storage protocol (such as \"s3://\" for Amazon S3).",
         "title" : "Warehouse Location",
+        "examples" : [ "s3://your-bucket/path/to/store/files/in" ],
         "always_show" : true,
         "order" : 5
       },
       "main_branch_name" : {
         "type" : "string",
-        "description" : "The primary or default branch name in the catalog repository.",
+        "default" : "main",
+        "description" : "The primary or default branch name in the catalog. Most query engines will use \"main\" by default. See <a href=\"https://iceberg.apache.org/docs/latest/branching/\">Iceberg documentation</a> for more information.",
         "title" : "Main Branch Name",
         "always_show" : true,
         "order" : 6
@@ -84,6 +86,11 @@
               "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
               "airbyte_secret" : true,
               "order" : 2
+            },
+            "namespace" : {
+              "type" : "string",
+              "description" : "The Nessie namespace to be used in the Table identifier. \n            |This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n            | `Destination-defined` or `Source-defined`",
+              "title" : "Namespace"
             }
           },
           "required" : [ "catalog_type", "server_uri" ]
@@ -103,6 +110,16 @@
               "description" : "The AWS Account ID associated with the Glue service used by the Iceberg catalog.",
               "title" : "AWS Account ID",
               "order" : 1
+            },
+            "role_arn" : {
+              "type" : "string",
+              "description" : "The Role ARN.",
+              "title" : "Role ARN"
+            },
+            "database_name" : {
+              "type" : "string",
+              "description" : "The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`",
+              "title" : "Database Name"
             }
           },
           "required" : [ "catalog_type", "glue_id" ]

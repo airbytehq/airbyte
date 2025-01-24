@@ -45,6 +45,8 @@ In addition, to understand how to configure the dataset path and query parameter
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.7 | 2025-01-18 | [51948](https://github.com/airbytehq/airbyte/pull/51948) | Update dependencies |
+| 0.3.6 | 2025-01-11 | [51420](https://github.com/airbytehq/airbyte/pull/51420) | Update dependencies |
 | 0.3.5 | 2024-12-28 | [50809](https://github.com/airbytehq/airbyte/pull/50809) | Update dependencies |
 | 0.3.4 | 2024-12-21 | [50329](https://github.com/airbytehq/airbyte/pull/50329) | Update dependencies |
 | 0.3.3 | 2024-12-14 | [48255](https://github.com/airbytehq/airbyte/pull/48255) | Update dependencies |

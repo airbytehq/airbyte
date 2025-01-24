@@ -13,13 +13,16 @@ from urllib.parse import urlencode
 import pendulum
 import requests
 from isodate import Duration, parse_duration
+from requests.exceptions import InvalidURL
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
     RequestInput,
@@ -31,6 +34,7 @@ from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFiel
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 
@@ -291,3 +295,24 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
 
         if transformations:
             self.record_selector.transformations = transformations
+
+
+@dataclass
+class LinkedInAdsErrorHandler(DefaultErrorHandler):
+    """
+    An error handler for LinkedIn Ads that interprets responses, providing custom error resolutions
+    for specific exceptions like `InvalidURL`.
+    This is a temporary workaround untill we update this in the CDK. https://github.com/airbytehq/airbyte-internal-issues/issues/11320
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        """
+        Interprets responses and exceptions, providing custom error resolutions for specific exceptions.
+        """
+        if isinstance(response_or_exception, InvalidURL):
+            return ErrorResolution(
+                response_action=ResponseAction.RETRY,
+                failure_type=FailureType.transient_error,
+                error_message="source-linkedin-ads has faced a temporary DNS resolution issue. Retrying...",
+            )
+        return super().interpret_response(response_or_exception)

@@ -30,6 +30,8 @@ Refer `https://support.kissmetrics.io/reference/authorization` for more details.
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.10 | 2025-01-18 | [51789](https://github.com/airbytehq/airbyte/pull/51789) | Update dependencies |
+| 0.0.9 | 2025-01-11 | [51206](https://github.com/airbytehq/airbyte/pull/51206) | Update dependencies |
 | 0.0.8 | 2024-12-28 | [50597](https://github.com/airbytehq/airbyte/pull/50597) | Update dependencies |
 | 0.0.7 | 2024-12-21 | [50096](https://github.com/airbytehq/airbyte/pull/50096) | Update dependencies |
 | 0.0.6 | 2024-12-14 | [49600](https://github.com/airbytehq/airbyte/pull/49600) | Update dependencies |
