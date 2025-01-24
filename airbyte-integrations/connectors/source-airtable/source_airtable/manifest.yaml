@@ -266,8 +266,7 @@ definitions:
                 field_type: array
                 items: number
               current_type: lookup
-              items_type:
-                condition: "{{ raw_schema['options']['result']['type'] in ['rating', 'percent', 'number', 'duration', 'currency', 'count', 'autoNumber'] }}"
+              condition: "{{ raw_schema['options']['result']['type'] in ['rating', 'percent', 'number', 'duration', 'currency', 'count', 'autoNumber'] }}"
             - type: TypesMap
               target_type:
                 field_type: array
@@ -305,8 +304,7 @@ definitions:
                 field_type: array
                 items: number
               current_type: rollup
-              items_type:
-                condition: "{{ raw_schema['options']['result']['type'] in ['rating', 'percent', 'number', 'duration', 'currency', 'count', 'autoNumber'] }}"
+              condition: "{{ raw_schema['options']['result']['type'] in ['rating', 'percent', 'number', 'duration', 'currency', 'count', 'autoNumber'] }}"
             - type: TypesMap
               target_type:
                 field_type: array
@@ -344,8 +342,7 @@ definitions:
                 field_type: array
                 items: number
               current_type: multipleLookupValues
-              items_type:
-                condition: "{{ raw_schema['options']['result']['type'] in ['rating', 'percent', 'number', 'duration', 'currency', 'count', 'autoNumber'] }}"
+              condition: "{{ raw_schema['options']['result']['type'] in ['rating', 'percent', 'number', 'duration', 'currency', 'count', 'autoNumber'] }}"
             - type: TypesMap
               target_type:
                 field_type: array
