@@ -39,6 +39,7 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.flow
 
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
@@ -249,7 +250,9 @@ class S3ClientFactory(
 
                 // Fix for connection reset issue:
                 // https://github.com/awslabs/aws-sdk-kotlin/issues/1214#issuecomment-2464831817
-                httpClient(CrtHttpEngine)
+                httpClient(CrtHttpEngine) {
+                    connectionIdleTimeout = 3.seconds
+                }
             }
 
         return S3Client(
