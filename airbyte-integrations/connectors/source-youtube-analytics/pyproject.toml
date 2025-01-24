@@ -17,7 +17,7 @@ include = "source_youtube_analytics"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-airbyte-cdk = "^4.0.1"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-youtube-analytics = "source_youtube_analytics.run:run"

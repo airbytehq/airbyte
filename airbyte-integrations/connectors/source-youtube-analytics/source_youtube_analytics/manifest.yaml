@@ -6,539 +6,52 @@ check:
   type: CheckStream
   stream_names:
     - channel_annotations_a1
-    # - create_jobs
 
 definitions:
-  base_job:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: jobs
-        http_method: GET
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 401
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - jobs
-
-  base_reports:
-    type: DeclarativeStream
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: jobs/{{ stream_partition['job_id'] }}/reports
-        http_method: GET
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - reports
-
   base_stream:
     type: DeclarativeStream
     retriever:
-      type: SimpleRetriever
-      requester:
+      type: AsyncRetriever
+      creation_requester:
         $ref: "#/definitions/base_requester"
-        path: "{{ stream_partition['url'] }}"
+        path: jobs
+        http_method: POST
+      polling_requester:
+        type: CustomRequester
+        class_name: source_youtube_analytics.components.PollingRequester
+        $ref: "#/definitions/base_requester"
+        path: jobs
         http_method: GET
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - status
+      status_mapping:
+        failed:
+          - failed
+        running:
+          - pending
+        timeout:
+          - timeout
+        completed:
+          - ready
+      urls_extractor:
+        type: DpathExtractor
+        field_path:
+          - urls
+      download_requester:
+        $ref: "#/definitions/base_requester"
+        path: "{{stream_slice.extra_fields['url']}}"
+        http_method: GET
+      decoder:
+          type: GzipJsonDecoder
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: CustomRecordExtractor
-          class_name: source_youtube_analytics.components.ReportsExtractor
-
-  streams:
-    create_jobs:
-      type: DeclarativeStream
-      name: create_jobs
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: jobs
-          http_method: POST
-          request_body_json:
-            name: Airbyte reporting job
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: SUCCESS
-                    http_codes:
-                      - 409
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-        record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
-        partition_router:
-          type: ListPartitionRouter
-          values:
-            - channel_annotations_a1
-            - channel_basic_a2
-            - channel_cards_a1
-            - channel_combined_a2
-            - channel_demographics_a1
-            - channel_device_os_a2
-            - channel_end_screens_a1
-            - channel_playback_location_a2
-            - channel_province_a2
-            - channel_sharing_service_a1
-            - channel_subtitles_a2
-            - channel_traffic_source_a2
-            - playlist_basic_a1
-            - playlist_combined_a1
-            - playlist_device_os_a1
-            - playlist_playback_location_a1
-            - playlist_province_a1
-            - playlist_traffic_source_a1
-          cursor_field: name
-          request_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: reportTypeId
 
-    channel_annotations_a1_job:
-      $ref: "#/definitions/base_job"
-      name: channel_annotations_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_annotations_a1' }}"
-    channel_basic_a2_job:
-      $ref: "#/definitions/base_job"
-      name: channel_basic_a2_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_basic_a2' }}"
-    channel_cards_a1_job:
-      $ref: "#/definitions/base_job"
-      name: channel_cards_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_cards_a1' }}"
-    channel_combined_a2_job:
-      $ref: "#/definitions/base_job"
-      name: channel_combined_a2_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_combined_a2' }}"
-    channel_demographics_a1_job:
-      $ref: "#/definitions/base_job"
-      name: channel_demographics_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_demographics_a1' }}"
-    channel_device_os_a2_job:
-      $ref: "#/definitions/base_job"
-      name: channel_device_os_a2_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_device_os_a2' }}"
-    channel_end_screens_a1_job:
-      $ref: "#/definitions/base_job"
-      name: channel_end_screens_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_end_screens_a1' }}"
-    channel_playback_location_a2_job:
-      $ref: "#/definitions/base_job"
-      name: channel_playback_location_a2_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_playback_location_a2' }}"
-    channel_province_a2_job:
-      $ref: "#/definitions/base_job"
-      name: channel_province_a2_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_province_a2' }}"
-    channel_sharing_service_a1_job:
-      $ref: "#/definitions/base_job"
-      name: channel_sharing_service_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_sharing_service_a1' }}"
-    channel_subtitles_a2_job:
-      $ref: "#/definitions/base_job"
-      name: channel_subtitles_a2_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_subtitles_a2' }}"
-    channel_traffic_source_a2_job:
-      $ref: "#/definitions/base_job"
-      name: channel_traffic_source_a2_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'channel_traffic_source_a2' }}"
-    playlist_basic_a1_job:
-      $ref: "#/definitions/base_job"
-      name: playlist_basic_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'playlist_basic_a1' }}"
-    playlist_combined_a1_job:
-      $ref: "#/definitions/base_job"
-      name: playlist_combined_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'playlist_combined_a1' }}"
-    playlist_device_os_a1_job:
-      $ref: "#/definitions/base_job"
-      name: playlist_device_os_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'playlist_device_os_a1' }}"
-    playlist_playback_location_a1_job:
-      $ref: "#/definitions/base_job"
-      name: playlist_playback_location_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'playlist_playback_location_a1' }}"
-    playlist_province_a1_job:
-      $ref: "#/definitions/base_job"
-      name: playlist_province_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'playlist_province_a1' }}"
-    playlist_traffic_source_a1_job:
-      $ref: "#/definitions/base_job"
-      name: playlist_traffic_source_a1_job
-      retriever:
-        $ref: "#/definitions/base_job/retriever"
-        record_selector:
-          $ref: "#/definitions/base_job/retriever/record_selector"
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record.reportTypeId == 'playlist_traffic_source_a1' }}"
-
-    channel_annotations_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_annotations_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_annotations_a1_job"
-    channel_basic_a2_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_basic_a2_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_basic_a2_job"
-    channel_cards_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_cards_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_cards_a1_job"
-    channel_combined_a2_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_combined_a2_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_combined_a2_job"
-    channel_demographics_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_demographics_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_demographics_a1_job"
-    channel_device_os_a2_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_device_os_a2_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_device_os_a2_job"
-    channel_end_screens_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_end_screens_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_end_screens_a1_job"
-    channel_playback_location_a2_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_playback_location_a2_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_playback_location_a2_job"
-    channel_province_a2_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_province_a2_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_province_a2_job"
-    channel_sharing_service_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_sharing_service_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_sharing_service_a1_job"
-    channel_subtitles_a2_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_subtitles_a2_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_subtitles_a2_job"
-    channel_traffic_source_a2_reports:
-      $ref: "#/definitions/base_reports"
-      name: channel_traffic_source_a2_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/channel_traffic_source_a2_job"
-    playlist_basic_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: playlist_basic_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/playlist_basic_a1_job"
-    playlist_combined_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: playlist_combined_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/playlist_combined_a1_job"
-    playlist_device_os_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: playlist_device_os_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/playlist_device_os_a1_job"
-    playlist_playback_location_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: playlist_playback_location_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/playlist_playback_location_a1_job"
-    playlist_province_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: playlist_province_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/playlist_province_a1_job"
-    playlist_traffic_source_a1_reports:
-      $ref: "#/definitions/base_reports"
-      name: playlist_traffic_source_a1_reports
-      retriever:
-        $ref: "#/definitions/base_reports/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/playlist_traffic_source_a1_job"
-
+  streams:
     channel_annotations_a1:
       $ref: "#/definitions/base_stream"
       name: channel_annotations_a1
@@ -553,14 +66,11 @@ definitions:
         - annotation_id
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_annotations_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_annotations_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -577,14 +87,11 @@ definitions:
         - country_code
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_basic_a2_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_basic_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -603,14 +110,11 @@ definitions:
         - card_id
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_cards_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_cards_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -631,14 +135,11 @@ definitions:
         - operating_system
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_combined_a2_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_combined_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -657,14 +158,11 @@ definitions:
         - gender
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_demographics_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_demographics_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -683,14 +181,11 @@ definitions:
         - operating_system
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_device_os_a2_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_device_os_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -709,14 +204,11 @@ definitions:
         - end_screen_element_id
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_end_screens_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_end_screens_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -735,14 +227,11 @@ definitions:
         - playback_location_detail
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_playback_location_a2_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_playback_location_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -760,14 +249,11 @@ definitions:
         - province_code
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_province_a2_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_province_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -785,14 +271,11 @@ definitions:
         - sharing_service
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_sharing_service_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_sharing_service_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -810,14 +293,11 @@ definitions:
         - subtitle_language
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_subtitles_a2_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_subtitles_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -836,14 +316,11 @@ definitions:
         - traffic_source_detail
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/channel_traffic_source_a2_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: channel_traffic_source_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -861,14 +338,11 @@ definitions:
         - country_code
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/playlist_basic_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: playlist_basic_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -890,14 +364,11 @@ definitions:
         - operating_system
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/playlist_combined_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: playlist_combined_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -917,14 +388,11 @@ definitions:
         - operating_system
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/playlist_device_os_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: playlist_device_os_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -944,14 +412,11 @@ definitions:
         - playback_location_detail
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/playlist_playback_location_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: playlist_playback_location_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -970,14 +435,11 @@ definitions:
         - province_code
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/playlist_province_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: playlist_province_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -997,19 +459,16 @@ definitions:
         - traffic_source_detail
       retriever:
         $ref: "#/definitions/base_stream/retriever"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: downloadUrl
-              partition_field: url
-              stream:
-                $ref: "#/definitions/streams/playlist_traffic_source_a1_reports"
+        creation_requester:
+          $ref: "#/definitions/base_stream/retriever/creation_requester"
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: playlist_traffic_source_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/playlist_traffic_source_a1"
-
+     
   base_requester:
     type: HttpRequester
     url_base: https://youtubereporting.googleapis.com/v1/
@@ -1023,7 +482,6 @@ definitions:
       token_refresh_endpoint: https://oauth2.googleapis.com/token
 
 streams:
-  # - $ref: "#/definitions/streams/create_jobs"
   - $ref: "#/definitions/streams/channel_annotations_a1"
   - $ref: "#/definitions/streams/channel_basic_a2"
   - $ref: "#/definitions/streams/channel_cards_a1"
