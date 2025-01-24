@@ -1,0 +1,1589 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "billingAddress": {
+      "additionalProperties": true,
+      "properties": {
+        "additionalAddressInfo": {
+          "type": "string"
+        },
+        "additionalStreetInfo": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "streetName": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "cartState": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "createdBy": {
+      "additionalProperties": true,
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "isPlatformClient": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "custom": {
+      "additionalProperties": true,
+      "properties": {
+        "fields": {
+          "additionalProperties": true,
+          "properties": {
+            "isAgeOfMajority": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "type": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "customLineItems": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "discountedPricePerQuantity": {
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "money": {
+            "additionalProperties": true,
+            "properties": {
+              "centAmount": {
+                "type": "integer"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "fractionDigits": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "name": {
+            "additionalProperties": true,
+            "properties": {
+              "en": {
+                "type": "string"
+              },
+              "es": {
+                "type": "string"
+              },
+              "fr": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "perMethodTaxRate": {
+            "type": "array"
+          },
+          "priceMode": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "state": {
+            "items": {
+              "additionalProperties": true,
+              "properties": {
+                "quantity": {
+                  "type": "integer"
+                },
+                "state": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "typeId": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "taxCategory": {
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "typeId": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "taxRate": {
+            "additionalProperties": true,
+            "properties": {
+              "amount": {
+                "type": "number"
+              },
+              "country": {
+                "type": "string"
+              },
+              "includedInPrice": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "subRates": {
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "taxedPrice": {
+            "additionalProperties": true,
+            "properties": {
+              "taxPortions": {
+                "items": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "amount": {
+                      "additionalProperties": true,
+                      "properties": {
+                        "centAmount": {
+                          "type": "integer"
+                        },
+                        "currencyCode": {
+                          "type": "string"
+                        },
+                        "fractionDigits": {
+                          "type": "integer"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "rate": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "totalGross": {
+                "additionalProperties": true,
+                "properties": {
+                  "centAmount": {
+                    "type": "integer"
+                  },
+                  "currencyCode": {
+                    "type": "string"
+                  },
+                  "fractionDigits": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "totalNet": {
+                "additionalProperties": true,
+                "properties": {
+                  "centAmount": {
+                    "type": "integer"
+                  },
+                  "currencyCode": {
+                    "type": "string"
+                  },
+                  "fractionDigits": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "totalTax": {
+                "additionalProperties": true,
+                "properties": {
+                  "centAmount": {
+                    "type": "integer"
+                  },
+                  "currencyCode": {
+                    "type": "string"
+                  },
+                  "fractionDigits": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "taxedPricePortions": {
+            "type": "array"
+          },
+          "totalPrice": {
+            "additionalProperties": true,
+            "properties": {
+              "centAmount": {
+                "type": "integer"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "fractionDigits": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "customerEmail": {
+      "type": "string"
+    },
+    "customerGroup": {
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "typeId": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "customerId": {
+      "type": "string"
+    },
+    "deleteDaysAfterLastModification": {
+      "type": "integer"
+    },
+    "directDiscounts": {
+      "type": "array"
+    },
+    "discountCodes": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "discountCode": {
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "typeId": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "id": {
+      "type": "string"
+    },
+    "inventoryMode": {
+      "type": "string"
+    },
+    "itemShippingAddresses": {
+      "type": "array"
+    },
+    "lastMessageSequenceNumber": {
+      "type": "integer"
+    },
+    "lastModifiedAt": {
+      "type": "string"
+    },
+    "lastModifiedBy": {
+      "additionalProperties": true,
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "isPlatformClient": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "lineItems": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "addedAt": {
+            "type": "string"
+          },
+          "custom": {
+            "additionalProperties": true,
+            "properties": {
+              "fields": {
+                "additionalProperties": true,
+                "properties": {
+                  "external-id": {
+                    "type": "string"
+                  },
+                  "parent": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": {
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "typeId": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "discountedPrice": {
+            "additionalProperties": true,
+            "properties": {
+              "includedDiscounts": {
+                "items": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "discount": {
+                      "additionalProperties": true,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "typeId": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "discountedAmount": {
+                      "additionalProperties": true,
+                      "properties": {
+                        "centAmount": {
+                          "type": "integer"
+                        },
+                        "currencyCode": {
+                          "type": "string"
+                        },
+                        "fractionDigits": {
+                          "type": "integer"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "value": {
+                "additionalProperties": true,
+                "properties": {
+                  "centAmount": {
+                    "type": "integer"
+                  },
+                  "currencyCode": {
+                    "type": "string"
+                  },
+                  "fractionDigits": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "discountedPricePerQuantity": {
+            "items": {
+              "additionalProperties": true,
+              "properties": {
+                "discountedPrice": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "includedDiscounts": {
+                      "items": {
+                        "additionalProperties": true,
+                        "properties": {
+                          "discount": {
+                            "additionalProperties": true,
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "typeId": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "discountedAmount": {
+                            "additionalProperties": true,
+                            "properties": {
+                              "centAmount": {
+                                "type": "integer"
+                              },
+                              "currencyCode": {
+                                "type": "string"
+                              },
+                              "fractionDigits": {
+                                "type": "integer"
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "value": {
+                      "additionalProperties": true,
+                      "properties": {
+                        "centAmount": {
+                          "type": "integer"
+                        },
+                        "currencyCode": {
+                          "type": "string"
+                        },
+                        "fractionDigits": {
+                          "type": "integer"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "quantity": {
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastModifiedAt": {
+            "type": "string"
+          },
+          "lineItemMode": {
+            "type": "string"
+          },
+          "name": {
+            "additionalProperties": true,
+            "properties": {
+              "en-US": {
+                "type": "string"
+              },
+              "es-MX": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "perMethodTaxRate": {
+            "type": "array"
+          },
+          "price": {
+            "additionalProperties": true,
+            "properties": {
+              "customerGroup": {
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "typeId": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "id": {
+                "type": "string"
+              },
+              "validFrom": {
+                "type": "string"
+              },
+              "validUntil": {
+                "type": "string"
+              },
+              "value": {
+                "additionalProperties": true,
+                "properties": {
+                  "centAmount": {
+                    "type": "integer"
+                  },
+                  "currencyCode": {
+                    "type": "string"
+                  },
+                  "fractionDigits": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "priceMode": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "productKey": {
+            "type": "string"
+          },
+          "productSlug": {
+            "additionalProperties": true,
+            "properties": {
+              "en-US": {
+                "type": "string"
+              },
+              "es-MX": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "productType": {
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "typeId": {
+                "type": "string"
+              },
+              "version": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "state": {
+            "items": {
+              "additionalProperties": true,
+              "properties": {
+                "quantity": {
+                  "type": "integer"
+                },
+                "state": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "typeId": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "supplyChannel": {
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "typeId": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "taxRate": {
+            "additionalProperties": true,
+            "properties": {
+              "amount": {
+                "type": "number"
+              },
+              "country": {
+                "type": "string"
+              },
+              "includedInPrice": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "subRates": {
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "taxedPrice": {
+            "additionalProperties": true,
+            "properties": {
+              "taxPortions": {
+                "items": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "amount": {
+                      "additionalProperties": true,
+                      "properties": {
+                        "centAmount": {
+                          "type": "integer"
+                        },
+                        "currencyCode": {
+                          "type": "string"
+                        },
+                        "fractionDigits": {
+                          "type": "integer"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "rate": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "totalGross": {
+                "additionalProperties": true,
+                "properties": {
+                  "centAmount": {
+                    "type": "integer"
+                  },
+                  "currencyCode": {
+                    "type": "string"
+                  },
+                  "fractionDigits": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "totalNet": {
+                "additionalProperties": true,
+                "properties": {
+                  "centAmount": {
+                    "type": "integer"
+                  },
+                  "currencyCode": {
+                    "type": "string"
+                  },
+                  "fractionDigits": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "totalTax": {
+                "additionalProperties": true,
+                "properties": {
+                  "centAmount": {
+                    "type": "integer"
+                  },
+                  "currencyCode": {
+                    "type": "string"
+                  },
+                  "fractionDigits": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "taxedPricePortions": {
+            "type": "array"
+          },
+          "totalPrice": {
+            "additionalProperties": true,
+            "properties": {
+              "centAmount": {
+                "type": "integer"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "fractionDigits": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "variant": {
+            "additionalProperties": true,
+            "properties": {
+              "assets": {
+                "type": "array"
+              },
+              "attributes": {
+                "items": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": [
+                            "boolean",
+                            "number",
+                            "string"
+                          ]
+                        },
+                        {
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "additionalProperties": true,
+                                "properties": {
+                                  "en-US": {
+                                    "type": "string"
+                                  },
+                                  "es-MX": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "typeId": {
+                                    "type": "string"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              {
+                                "items": {
+                                  "additionalProperties": true,
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "value": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer"
+                                        },
+                                        {
+                                          "additionalProperties": true,
+                                          "properties": {
+                                            "id": {
+                                              "type": "string"
+                                            },
+                                            "typeId": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "type": "object"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            ]
+                          },
+                          "type": "array"
+                        },
+                        {
+                          "additionalProperties": true,
+                          "properties": {
+                            "en-US": {
+                              "type": "string"
+                            },
+                            "es-MX": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "key": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "typeId": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "availability": {
+                "additionalProperties": true,
+                "properties": {
+                  "availableQuantity": {
+                    "type": "integer"
+                  },
+                  "channels": {
+                    "additionalProperties": true,
+                    "properties": {
+                      "1fd6c4cf-ac1b-4bf2-a3f5-8a6f788719e7": {
+                        "additionalProperties": true,
+                        "properties": {
+                          "availableQuantity": {
+                            "type": "integer"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "isOnStock": {
+                            "type": "boolean"
+                          },
+                          "version": {
+                            "type": "integer"
+                          }
+                        },
+                        "type": "object"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "isOnStock": {
+                    "type": "boolean"
+                  },
+                  "version": {
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              },
+              "id": {
+                "type": "integer"
+              },
+              "images": {
+                "items": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "dimensions": {
+                      "additionalProperties": true,
+                      "properties": {
+                        "h": {
+                          "type": "integer"
+                        },
+                        "w": {
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "key": {
+                "type": "string"
+              },
+              "prices": {
+                "type": "array"
+              },
+              "sku": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "locale": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "paymentInfo": {
+      "additionalProperties": true,
+      "properties": {
+        "payments": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "typeId": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "refusedGifts": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "typeId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "shipping": {
+      "type": "array"
+    },
+    "shippingAddress": {
+      "additionalProperties": true,
+      "properties": {
+        "additionalAddressInfo": {
+          "type": "string"
+        },
+        "additionalStreetInfo": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "streetName": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "shippingInfo": {
+      "additionalProperties": true,
+      "properties": {
+        "deliveries": {
+          "type": "array"
+        },
+        "price": {
+          "additionalProperties": true,
+          "properties": {
+            "centAmount": {
+              "type": "integer"
+            },
+            "currencyCode": {
+              "type": "string"
+            },
+            "fractionDigits": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "shippingMethod": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "shippingMethodName": {
+          "type": "string"
+        },
+        "shippingMethodState": {
+          "type": "string"
+        },
+        "shippingRate": {
+          "additionalProperties": true,
+          "properties": {
+            "freeAbove": {
+              "additionalProperties": true,
+              "properties": {
+                "centAmount": {
+                  "type": "integer"
+                },
+                "currencyCode": {
+                  "type": "string"
+                },
+                "fractionDigits": {
+                  "type": "integer"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "price": {
+              "additionalProperties": true,
+              "properties": {
+                "centAmount": {
+                  "type": "integer"
+                },
+                "currencyCode": {
+                  "type": "string"
+                },
+                "fractionDigits": {
+                  "type": "integer"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "tiers": {
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "taxRate": {
+          "additionalProperties": true,
+          "properties": {
+            "amount": {
+              "type": "number"
+            },
+            "country": {
+              "type": "string"
+            },
+            "includedInPrice": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string"
+            },
+            "subRates": {
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "taxedPrice": {
+          "additionalProperties": true,
+          "properties": {
+            "taxPortions": {
+              "items": {
+                "additionalProperties": true,
+                "properties": {
+                  "amount": {
+                    "additionalProperties": true,
+                    "properties": {
+                      "centAmount": {
+                        "type": "integer"
+                      },
+                      "currencyCode": {
+                        "type": "string"
+                      },
+                      "fractionDigits": {
+                        "type": "integer"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "rate": {
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "totalGross": {
+              "additionalProperties": true,
+              "properties": {
+                "centAmount": {
+                  "type": "integer"
+                },
+                "currencyCode": {
+                  "type": "string"
+                },
+                "fractionDigits": {
+                  "type": "integer"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "totalNet": {
+              "additionalProperties": true,
+              "properties": {
+                "centAmount": {
+                  "type": "integer"
+                },
+                "currencyCode": {
+                  "type": "string"
+                },
+                "fractionDigits": {
+                  "type": "integer"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "totalTax": {
+              "additionalProperties": true,
+              "properties": {
+                "centAmount": {
+                  "type": "integer"
+                },
+                "currencyCode": {
+                  "type": "string"
+                },
+                "fractionDigits": {
+                  "type": "integer"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "shippingMode": {
+      "type": "string"
+    },
+    "store": {
+      "additionalProperties": true,
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "typeId": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "taxCalculationMode": {
+      "type": "string"
+    },
+    "taxMode": {
+      "type": "string"
+    },
+    "taxRoundingMode": {
+      "type": "string"
+    },
+    "taxedPrice": {
+      "additionalProperties": true,
+      "properties": {
+        "taxPortions": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "amount": {
+                "additionalProperties": true,
+                "properties": {
+                  "centAmount": {
+                    "type": "integer"
+                  },
+                  "currencyCode": {
+                    "type": "string"
+                  },
+                  "fractionDigits": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "name": {
+                "type": "string"
+              },
+              "rate": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "totalGross": {
+          "additionalProperties": true,
+          "properties": {
+            "centAmount": {
+              "type": "integer"
+            },
+            "currencyCode": {
+              "type": "string"
+            },
+            "fractionDigits": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "totalNet": {
+          "additionalProperties": true,
+          "properties": {
+            "centAmount": {
+              "type": "integer"
+            },
+            "currencyCode": {
+              "type": "string"
+            },
+            "fractionDigits": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "totalTax": {
+          "additionalProperties": true,
+          "properties": {
+            "centAmount": {
+              "type": "integer"
+            },
+            "currencyCode": {
+              "type": "string"
+            },
+            "fractionDigits": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "taxedShippingPrice": {
+      "additionalProperties": true,
+      "properties": {
+        "taxPortions": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "amount": {
+                "additionalProperties": true,
+                "properties": {
+                  "centAmount": {
+                    "type": "integer"
+                  },
+                  "currencyCode": {
+                    "type": "string"
+                  },
+                  "fractionDigits": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "name": {
+                "type": "string"
+              },
+              "rate": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "totalGross": {
+          "additionalProperties": true,
+          "properties": {
+            "centAmount": {
+              "type": "integer"
+            },
+            "currencyCode": {
+              "type": "string"
+            },
+            "fractionDigits": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "totalNet": {
+          "additionalProperties": true,
+          "properties": {
+            "centAmount": {
+              "type": "integer"
+            },
+            "currencyCode": {
+              "type": "string"
+            },
+            "fractionDigits": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "totalTax": {
+          "additionalProperties": true,
+          "properties": {
+            "centAmount": {
+              "type": "integer"
+            },
+            "currencyCode": {
+              "type": "string"
+            },
+            "fractionDigits": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "totalLineItemQuantity": {
+      "type": "integer"
+    },
+    "totalPrice": {
+      "additionalProperties": true,
+      "properties": {
+        "centAmount": {
+          "type": "integer"
+        },
+        "currencyCode": {
+          "type": "string"
+        },
+        "fractionDigits": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "versionModifiedAt": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
