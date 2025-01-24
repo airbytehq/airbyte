@@ -28,21 +28,32 @@ import io.airbyte.integrations.destination.mssql.v2.convert.SqlTypeToMssqlType
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.ArithmeticException
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.util.UUID
 
+private val logger = KotlinLogging.logger {}
+
 fun <T> String.executeQuery(connection: Connection, vararg args: String, f: (ResultSet) -> T): T {
+    logger.debug { "EXECUTING SQL:\n$this" }
+
     connection.prepareStatement(this.trimIndent()).use { statement ->
         args.forEachIndexed { index, arg -> statement.setString(index + 1, arg) }
         return statement.executeQuery().use(f)
     }
 }
 
+fun String.executeUpdate(connection: Connection, f: (PreparedStatement) -> Unit) {
+    logger.debug { "EXECUTING SQL:\n$this" }
+
+    connection.prepareStatement(this.trimIndent()).use(f)
+}
+
 fun String.executeUpdate(connection: Connection, vararg args: String) {
-    connection.prepareStatement(this.trimIndent()).use { statement ->
+    this.executeUpdate(connection) { statement ->
         args.forEachIndexed { index, arg -> statement.setString(index + 1, arg) }
         statement.executeUpdate()
     }
