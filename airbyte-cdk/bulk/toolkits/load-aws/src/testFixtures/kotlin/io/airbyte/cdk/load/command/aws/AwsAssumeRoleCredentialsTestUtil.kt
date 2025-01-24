@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.command.Property
 
 fun AwsAssumeRoleCredentials.asMicronautProperties(): Map<Property, String> =
     mapOf(
-        Property(ACCESS_KEY_PROPERTY, "AWS_ACCESS_KEY_ID") to accessKey,
-        Property(SECRET_KEY_PROPERTY, "AWS_SECRET_ACCESS_KEY") to secretKey,
-        Property(EXTERNAL_ID_PROPERTY, "AWS_ASSUME_ROLE_EXTERNAL_ID") to externalId,
+        AwsEnvVarConstants.ASSUME_ROLE_ACCESS_KEY to accessKey,
+        AwsEnvVarConstants.ASSUME_ROLE_SECRET_KEY to secretKey,
+        AwsEnvVarConstants.ASSUME_ROLE_EXTERNAL_ID to externalId,
     )

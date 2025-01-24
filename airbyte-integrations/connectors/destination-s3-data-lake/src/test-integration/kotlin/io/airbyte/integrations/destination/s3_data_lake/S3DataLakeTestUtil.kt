@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
+import io.airbyte.cdk.load.command.aws.AwsEnvVarConstants
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import java.nio.file.Files
@@ -26,13 +27,10 @@ object S3DataLakeTestUtil {
 
     fun getAwsAssumeRoleCredentials(): AwsAssumeRoleCredentials {
         val creds = getAwsAssumeRoleCredentialsAsMap()
-        val assumeRoleAccessKey = creds["AWS_ACCESS_KEY_ID"]!!
-        val assumeRoleSecretKey = creds["AWS_SECRET_ACCESS_KEY"]!!
-        val assumeRoleExternalId = creds["AWS_ASSUME_ROLE_EXTERNAL_ID"]!!
         return AwsAssumeRoleCredentials(
-            assumeRoleAccessKey,
-            assumeRoleSecretKey,
-            assumeRoleExternalId,
+            creds[AwsEnvVarConstants.ASSUME_ROLE_ACCESS_KEY.environmentVariable]!!,
+            creds[AwsEnvVarConstants.ASSUME_ROLE_SECRET_KEY.environmentVariable]!!,
+            creds[AwsEnvVarConstants.ASSUME_ROLE_EXTERNAL_ID.environmentVariable]!!,
         )
     }
 
