@@ -17,7 +17,7 @@ include = "source_airtable"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = { version = "6.26.0.dev0", allow-prereleases = true }
+airbyte-cdk = { version = "6.26.0.dev1", allow-prereleases = true }
 
 [tool.poetry.scripts]
 source-airtable = "source_airtable.run:run"
