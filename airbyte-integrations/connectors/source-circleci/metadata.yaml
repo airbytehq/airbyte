@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-circleci
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.7.5@sha256:4832cc13b262b4cae4ba72b07da544e6ee2f5d216b7147483480d5ebc5d0d7ca
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
   connectorSubtype: api
   connectorType: source
   definitionId: dd9a9d23-a64a-483c-b1ed-da1391d13f91
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-circleci
   githubIssueLabel: source-circleci
   icon: icon.svg
