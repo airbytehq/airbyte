@@ -94,9 +94,13 @@ You can only filter fields whose type is string and number.
 
 Before you begin mapping fields, consider the following.
 
-- Do not map a cursor or primary key field if the [sync mode](core-concepts/sync-modes) depends on it. Doing this disrupts Airbyte's ability to use them for incremental syncing and deduplication.
+- Don't map a cursor or primary key field if the [sync mode](core-concepts/sync-modes) depends on it. Doing this disrupts Airbyte's ability to use them for incremental syncing and deduplication.
 
-- If you set up mapping on an existing connection, Airbyte prompts you to refresh affected streams streams. If a given destination does not support refreshes, Airbyte prompts you to clear it, instead. You almost certainly should do this as prompted. Not doing this could result in undesirable or unexpected behavior. For example, if you set up hashing on a field that contains PII, you want all data in that column to be hashed, not just new data. However, beware that if you're dealing with an extremely large database, a complete resync might take a significant amount of time.
+- If you set up mapping on an existing connection, Airbyte prompts you to refresh affected streams. If a given destination does not support refreshes, Airbyte prompts you to clear it, instead. You almost certainly should do this. Not doing this could result in undesirable or unexpected behavior. For example, if you set up hashing on a field that contains PII, you want all data in that column to be hashed, not just new data. In a case like this, it's critical that you [clear historical data](../operator-guides/clear) before syncing again. 
+
+    :::note
+    If you're dealing with an extremely large database, a complete resync might take a significant amount of time.
+    :::
 
 ## Create a new mapping
 
