@@ -44,12 +44,12 @@ definitions:
         path: "{{stream_slice.extra_fields['url']}}"
         http_method: GET
       decoder:
-          type: GzipJsonDecoder
+        type: GzipJsonDecoder
       record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
 
   streams:
     channel_annotations_a1:
@@ -468,7 +468,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/playlist_traffic_source_a1"
-     
+
   base_requester:
     type: HttpRequester
     url_base: https://youtubereporting.googleapis.com/v1/
