@@ -36,14 +36,14 @@ class TestSourceAirtable:
             "_airtable_created_time": {"type": ["null", "string"]},
             "_airtable_id": {"type": ["null", "string"]},
             "_airtable_table_name": {"type": ["null", "string"]},
-            "assignee": {"type": ["null", "number"]},
-            "assignee_(from_table_6)": {"type": ["null", "array"]},
+            "assignee": {"type": ["null", "array"], "items": {"type": ["null", "number"]}},
+            "assignee_(from_table_6)": {"type": ["null", "array"], "items": {"type": ["null", "number"]}},
             "barcode": {"type": ["null", "string"]},
             "float": {"type": ["null", "number"]},
             "integer": {"type": ["null", "number"]},
             "name": {"type": ["null", "string"]},
             "status": {"type": ["null", "string"]},
-            "table_6": {"type": ["null", "array"]},
+            "table_6": {"type": ["null", "array"], "items": {"type": ["null", "string"]}},
         }
 
     def test_check_connection(self, tables_requests_mock, airtable_streams_requests_mock):
