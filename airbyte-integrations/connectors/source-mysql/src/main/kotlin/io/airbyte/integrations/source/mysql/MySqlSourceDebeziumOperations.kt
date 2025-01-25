@@ -17,7 +17,6 @@ import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
-import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.cdc.CdcPartitionsCreator.OffsetInvalidNeedsResyncIllegalStateException
@@ -44,6 +43,7 @@ import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.sql.Statement
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -259,37 +259,48 @@ class MySqlSourceDebeziumOperations(
     }
 
     private fun queryPositionAndGtids(): Pair<MySqlSourceCdcPosition, String?> {
-        val file = Field("File", StringFieldType)
-        val pos = Field("Position", LongFieldType)
-        val gtids = Field("Executed_Gtid_Set", StringFieldType)
-        jdbcConnectionFactory.get().use { connection: Connection ->
-            connection.createStatement().use { stmt: Statement ->
-                val sql = "SHOW MASTER STATUS"
-                stmt.executeQuery(sql).use { rs: ResultSet ->
-                    if (!rs.next()) throw ConfigErrorException("No results for query: $sql")
-                    val mySqlSourceCdcPosition =
-                        MySqlSourceCdcPosition(
-                            fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
-                                    ?: throw ConfigErrorException(
-                                        "No value for ${file.id} in: $sql",
-                                    ),
-                            position = rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
-                                    ?: throw ConfigErrorException(
-                                        "No value for ${pos.id} in: $sql",
-                                    ),
-                        )
-                    if (rs.metaData.columnCount <= 4) {
-                        // This value exists only in MySQL 5.6.5 or later.
-                        return mySqlSourceCdcPosition to null
+        val fileField = "File"
+        val posField = "Position"
+        val gtidsField = "Executed_Gtid_Set"
+        val queries = listOf("SHOW BINARY LOG STATUS", "SHOW MASTER STATUS")
+
+        return jdbcConnectionFactory.get().use { connection ->
+            connection.createStatement().use { stmt ->
+                queries.firstNotNullOfOrNull { sql ->
+                    try {
+                        val rs = stmt.executeQuery(sql)
+                        if (!rs.next()) {
+                            throw ConfigErrorException("No results for query: $sql")
+                        }
+
+                        val fileName =
+                            rs.getString(fileField)?.takeUnless { rs.wasNull() }
+                                ?: throw ConfigErrorException("No value for $fileField in: $sql")
+                        val position =
+                            rs.getLong(posField).takeUnless { rs.wasNull() || it <= 0 }
+                                ?: throw ConfigErrorException("No value for $posField in: $sql")
+
+                        val cdcPosition = MySqlSourceCdcPosition(fileName, position)
+
+                        val gtidSet =
+                            if (rs.metaData.columnCount > 4) {
+                                rs.getString(gtidsField)
+                                    ?.takeUnless { rs.wasNull() || it.isBlank() }
+                                    ?.trim()
+                                    ?.replace("\n", "")
+                                    ?.replace("\r", "")
+                                // This value exists only in MySQL 5.6.5 or later.
+                            } else null
+
+                        cdcPosition to gtidSet
+                    } catch (e: SQLException) {
+                        log.info(e) { "Failed to execute query: $sql" }
+                        null
                     }
-                    val gtidSet: String? =
-                        rs.getString(gtids.id)
-                            ?.takeUnless { rs.wasNull() || it.isBlank() }
-                            ?.trim()
-                            ?.replace("\n", "")
-                            ?.replace("\r", "")
-                    return mySqlSourceCdcPosition to gtidSet
                 }
+                    ?: throw ConfigErrorException(
+                        "Failed to retrieve CDC position: Unable to execute queries: ${queries.joinToString(", ")}."
+                    )
             }
         }
     }
