@@ -104,6 +104,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.4 | 2025-01-18 | [51760](https://github.com/airbytehq/airbyte/pull/51760) | Update dependencies |
 | 0.7.3 | 2025-01-11 | [49038](https://github.com/airbytehq/airbyte/pull/49038) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.7.2 | 2024-11-20 | [48510](https://github.com/airbytehq/airbyte/pull/48510) | Ensure no pagination issues on concurrent syncs |
 | 0.7.1 | 2024-11-04 | [48133](https://github.com/airbytehq/airbyte/pull/48133) | Fix `error message pattern` to handle `Product 1.0` related errors |
