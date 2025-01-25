@@ -1,0 +1,22 @@
+{
+  "spreadsheetId": "1mSXqVEPNX-Bx-9l6LpDmO2iSEfVAzxwKs6yB8QK0OlA",
+  "valueRanges": [
+    {
+      "range": "a_stream_name!A13:D23",
+      "majorDimension": "ROWS",
+      "values": [
+        ["12", "DERMATOLOGY CLINIC", "dermatology clinic"],
+        ["13", "Laboratory", "laboratory"],
+        ["14", "Circus of Values", "circus of values"],
+        ["15", "Moe's Tavern", "moe tavern"],
+        ["16", "Santa School", "santa school"],
+        ["17", "Santa's Workshop", "santa workshop"],
+        ["18", "WORKSHOP", "workshop"],
+        ["19", "PERSONNEL OFFICE", "personnel office"],
+        ["20", "Springfield Downs Dog Track", "springfield downs dog track"],
+        ["21", "SPRINGFIELD DOWNS", "springfield downs"],
+        ["22", "PADDOCK", "paddock"]
+      ]
+    }
+  ]
+}

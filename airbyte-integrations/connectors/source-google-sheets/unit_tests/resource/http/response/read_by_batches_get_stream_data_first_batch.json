@@ -1,0 +1,30 @@
+{
+  "spreadsheetId": "1mSXqVEPNX-Bx-9l6LpDmO2iSEfVAzxwKs6yB8QK0OlA",
+  "valueRanges": [
+    {
+      "range": "a_stream_name!A2:D12",
+      "majorDimension": "ROWS",
+      "values": [
+        ["1", "Street", "street"],
+        ["2", "Car", "car"],
+        ["3", "Springfield Elementary School", "springfield elementary school"],
+        ["4", "Auditorium", "auditorium"],
+        ["5", "Simpson Home", "simpson home"],
+        ["6", "KITCHEN", "kitchen"],
+        ["7", "SHOPPING MALL PARKING LOT", "shopping mall parking lot"],
+        ["8", "Springfield Mall", "springfield mall"],
+        [
+          "9",
+          "The Happy Sailor Tattoo Parlor",
+          "the happy sailor tattoo parlor"
+        ],
+        [
+          "10",
+          "Springfield Nuclear Power Plant",
+          "springfield nuclear power plant"
+        ],
+        ["11", "PLANT", "plant"]
+      ]
+    }
+  ]
+}
