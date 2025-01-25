@@ -15,6 +15,8 @@ interface DestinationConfigurationFactory<
     fun make(spec: I): O =
         try {
             makeWithoutExceptionHandling(spec)
+        } catch (e: ConfigErrorException) {
+            throw e
         } catch (e: Exception) {
             // Wrap NPEs (mostly) in ConfigErrorException.
             throw ConfigErrorException("Failed to build ConnectorConfiguration.", e)
