@@ -54,7 +54,7 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

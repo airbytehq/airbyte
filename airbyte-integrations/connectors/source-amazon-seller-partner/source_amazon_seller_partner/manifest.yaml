@@ -196,7 +196,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["createdBefore"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
       retriever:
         type: SimpleRetriever
         requester:
@@ -265,7 +265,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["changedBefore"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
       retriever:
         type: SimpleRetriever
         requester:
@@ -394,7 +394,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["PostedBefore"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
       retriever:
         type: SimpleRetriever
         requester:
@@ -529,7 +529,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_amazon_fulfilled_shipments_data_general:
       type: DeclarativeStream
@@ -566,7 +566,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_flat_file_open_listings_data:
       type: DeclarativeStream
@@ -603,7 +603,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_fulfillment_removal_order_detail_data:
       type: DeclarativeStream
@@ -640,7 +640,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_flat_file_actionable_order_data_shipping:
       type: DeclarativeStream
@@ -677,7 +677,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_order_report_data_shipping:
       type: DeclarativeStream
@@ -717,7 +717,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_ledger_detail_view_data:
       type: DeclarativeStream
@@ -762,7 +762,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_ledger_summary_view_data:
       type: DeclarativeStream
@@ -807,7 +807,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_reimbursements_data:
       type: DeclarativeStream
@@ -844,7 +844,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_fulfillment_customer_returns_data:
       type: DeclarativeStream
@@ -881,7 +881,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_seller_feedback_data:
       type: DeclarativeStream
@@ -929,7 +929,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_afn_inventory_data:
       type: DeclarativeStream
@@ -966,7 +966,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_afn_inventory_data_by_country:
       type: DeclarativeStream
@@ -1003,7 +1003,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_inventory_planning_data:
       type: DeclarativeStream
@@ -1040,7 +1040,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_flat_file_returns_data_by_return_date:
       type: DeclarativeStream
@@ -1077,7 +1077,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_flat_file_archived_orders_data_by_order_date:
       type: DeclarativeStream
@@ -1114,7 +1114,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_sns_performance_data:
       type: DeclarativeStream
@@ -1151,7 +1151,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_sns_forecast_data:
       type: DeclarativeStream
@@ -1188,7 +1188,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_merchants_listings_fyp_report:
       type: DeclarativeStream
@@ -1233,7 +1233,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_merchant_cancelled_listings_data:
       type: DeclarativeStream
@@ -1270,7 +1270,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_merchant_listings_data_back_compat:
       type: DeclarativeStream
@@ -1315,7 +1315,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_stranded_inventory_ui_data:
       type: DeclarativeStream
@@ -1352,7 +1352,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_myi_unsuppressed_inventory_data:
       type: DeclarativeStream
@@ -1389,7 +1389,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_fulfillment_customer_shipment_promotion_data:
       type: DeclarativeStream
@@ -1426,7 +1426,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_estimated_fba_fees_txt_data:
       type: DeclarativeStream
@@ -1463,7 +1463,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_restock_inventory_recommendations_report:
       type: DeclarativeStream
@@ -1500,7 +1500,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_fulfillment_customer_shipment_replacement_data:
       type: DeclarativeStream
@@ -1537,7 +1537,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_fba_fulfillment_removal_shipment_detail_data:
       type: DeclarativeStream
@@ -1574,7 +1574,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_xml_browse_tree_data:
       type: DeclarativeStream
@@ -1614,7 +1614,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_xml_all_orders_data_by_order_date_general:
       type: DeclarativeStream
@@ -1654,7 +1654,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     ### MerchantReports ###
     get_merchant_listings_all_data:
@@ -1700,7 +1700,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_merchant_listings_data:
       type: DeclarativeStream
@@ -1745,7 +1745,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_merchant_listings_inactive_data:
       type: DeclarativeStream
@@ -1790,7 +1790,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_v2_settlement_report_data_flat_file:
       type: DeclarativeStream
@@ -1845,7 +1845,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["dataEndTime"]
-              value: "{{ stream_slice['end_time'] }}"
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
     get_vendor_forecasting_fresh_report:
       type: DeclarativeStream
@@ -2023,7 +2023,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["dataEndTime"]
-            value: "{{ stream_slice['end_time'] }}"
+            value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
 streams:
   # REST Streams
