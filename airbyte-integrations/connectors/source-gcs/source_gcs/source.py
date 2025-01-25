@@ -17,6 +17,7 @@ from source_gcs.stream import GCSStream
 
 
 class SourceGCS(FileBasedSource):
+    # DUMMY CHANGE: Triggering CI to check baseline test status before CDK upgrade
     @classmethod
     def read_config(cls, config_path: str) -> Mapping[str, Any]:
         """
