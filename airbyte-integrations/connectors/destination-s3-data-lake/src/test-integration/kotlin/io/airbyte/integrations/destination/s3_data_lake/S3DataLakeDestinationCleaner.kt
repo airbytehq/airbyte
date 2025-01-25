@@ -37,8 +37,7 @@ class S3DataLakeDestinationCleaner(private val catalog: Catalog) : DestinationCl
                         } catch (e: Exception) {
                             // catalog.loadTable will fail if the table has no files.
                             // In this case, we can just hard drop the table, because we know it has
-                            // no
-                            // corresponding files.
+                            // no corresponding files.
                             catalog.dropTable(tableId)
                         }
                     }
