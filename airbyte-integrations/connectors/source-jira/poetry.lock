@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.25.2"
+version = "6.26.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.25.2-py3-none-any.whl", hash = "sha256:ddb9f898510ccec4d9414a07b4d1ee0b3be0801f7f154a329bc390ddafaf0d84"},
-    {file = "airbyte_cdk-6.25.2.tar.gz", hash = "sha256:0dbe615ffb51758cb3f602735d2cc106ef747670e488b6142ce6889c921bf759"},
+    {file = "airbyte_cdk-6.26.1-py3-none-any.whl", hash = "sha256:08c08c3ade393c4b49ce7d95988c4e88fb7a24078b7e6e029ccf54b083565292"},
+    {file = "airbyte_cdk-6.26.1.tar.gz", hash = "sha256:b4ae52f2872b1d012e7abdc03dd1c6d0a8e4df8ce7cb1fc63f45b94d98620b50"},
 ]
 
 [package.dependencies]
@@ -1173,13 +1173,13 @@ files = [
 
 [[package]]
 name = "pydantic"
-version = "2.10.5"
+version = "2.10.6"
 description = "Data validation using Python type hints"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pydantic-2.10.5-py3-none-any.whl", hash = "sha256:4dd4e322dbe55472cb7ca7e73f4b63574eecccf2835ffa2af9021ce113c83c53"},
-    {file = "pydantic-2.10.5.tar.gz", hash = "sha256:278b38dbbaec562011d659ee05f63346951b3a248a6f3642e1bc68894ea2b4ff"},
+    {file = "pydantic-2.10.6-py3-none-any.whl", hash = "sha256:427d664bf0b8a2b34ff5dd0f5a18df00591adcee7198fbd71981054cef37b584"},
+    {file = "pydantic-2.10.6.tar.gz", hash = "sha256:ca5daa827cce33de7a42be142548b0096bf05a7e7b365aebfa5f8eeec7128236"},
 ]
 
 [package.dependencies]
