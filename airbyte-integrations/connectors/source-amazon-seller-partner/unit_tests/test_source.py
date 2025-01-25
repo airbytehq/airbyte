@@ -6,8 +6,10 @@
 import logging
 from unittest.mock import patch
 
+import freezegun
 import pytest
 from source_amazon_seller_partner import SourceAmazonSellerPartner
+from source_amazon_seller_partner.components import AmazonSPOauthAuthenticator
 from source_amazon_seller_partner.utils import AmazonConfigException
 
 from airbyte_cdk.sources.streams import Stream
@@ -215,3 +217,19 @@ def test_replication_dates_validation(config, should_raise):
             ).validate_replication_dates(config)
             is None
         )
+
+
+@freezegun.freeze_time("2024-01-01T00:00:00")
+def test_get_stream_kwargs(connector_config_with_report_options):
+    kwargs = SourceAmazonSellerPartner(
+        config=connector_config_with_report_options,
+        catalog=None,
+        state=None,
+    )._get_stream_kwargs(config=connector_config_with_report_options)
+
+    assert kwargs["url_base"] == "https://sandbox.sellingpartnerapi-na.amazon.com"
+    assert isinstance(kwargs["authenticator"], AmazonSPOauthAuthenticator)
+    assert kwargs["replication_start_date"] == "2022-01-01T00:00:00Z"
+    assert kwargs["marketplace_id"] == "ATVPDKIKX0DER"
+    assert kwargs["period_in_days"] == 365
+    assert kwargs["replication_end_date"] is None
