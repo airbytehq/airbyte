@@ -66,23 +66,26 @@ class DockerizedDestination(
         // but cleaned up, consolidated, and simplified.
         // Those classes included a ton of logic that is only useful for
         // the actual platform, and we don't need it here.
-        val testDir = Path.of("/tmp/airbyte_tests/")
-        Files.createDirectories(testDir)
-        val workspaceRoot = Files.createTempDirectory(testDir, "test")
+//        val testDir = Path.of("/tmp/airbyte_tests/")
+//        Files.createDirectories(testDir)
+//        val workspaceRoot = Files.createTempDirectory(testDir, "test")
+//        val workspaceRoot = Files.createTempDirectory("test")
         // This directory gets mounted to the docker container,
         // presumably so that we can extract some files out of it?
         // It's unclear to me that we actually need to do this...
         // Certainly nothing in the bulk CDK's test suites is reading back
         // anything in this directory.
-        val localRoot = Files.createTempDirectory(testDir, "output")
+//        val localRoot = Files.createTempDirectory(testDir, "output")
+        val localRoot = Files.createTempDirectory("output")
 
         // This directory will contain the actual inputs to the connector (config+catalog),
         // and is also mounted as a volume.
-        val jobDir = "job"
-        val jobRoot = Files.createDirectories(workspaceRoot.resolve(jobDir))
+//        val jobDir = "job"
+//        val jobRoot = Files.createDirectories(workspaceRoot.resolve(jobDir))
 
-        val containerDataRoot = "/tmp"
-        val containerJobRoot = "$containerDataRoot/$jobDir"
+        val tmp = "/tmp"
+//        val containerDataRoot = "/tmp"
+//        val containerJobRoot = "$containerDataRoot/$jobDir"
 
         // This directory is being used for the file transfer feature.
         if (useFileTransfer) {
@@ -115,7 +118,7 @@ class DockerizedDestination(
                     "-i",
                     "-w",
                     // In real syncs, platform changes the workdir to /dest for destinations.
-                    "/dest",
+                    "/test",
                     "--log-driver",
                     "none",
                     "--name",
@@ -123,9 +126,11 @@ class DockerizedDestination(
                     "--network",
                     "host",
                     "-v",
-                    String.format("%s:%s", workspaceRoot, containerDataRoot),
+                    String.format("%s:%s", tmp, "/test"),
+//                    String.format("%s:%s", workspaceRoot, containerDataRoot),
                     "-v",
-                    String.format("%s:%s", localRoot, "/local"),
+                    String.format("%s:%s", tmp, "/local"),
+//                    String.format("%s:%s", localRoot, "/local"),
                     "-v",
                     "$fileTransferMountSource:/tmp",
                     "-e",
@@ -149,11 +154,11 @@ class DockerizedDestination(
 
         fun addInput(paramName: String, fileContents: ByteArray) {
             Files.write(
-                jobRoot.resolve("destination_$paramName.json"),
+                fileTransferMountSource.resolve("destination_$paramName.json"),
                 fileContents,
             )
             cmd.add("--$paramName")
-            cmd.add("$containerJobRoot/destination_$paramName.json")
+            cmd.add("$tmp/destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
