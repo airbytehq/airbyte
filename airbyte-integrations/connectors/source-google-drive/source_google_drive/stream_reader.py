@@ -6,10 +6,11 @@
 import io
 import json
 import logging
+import uuid
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
-from typing import Dict, Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
@@ -22,7 +23,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .spec import SourceGoogleDriveSpec
+from .spec import RemoteFileIdentity, RemoteFileMetadata, SourceGoogleDriveSpec
 
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
@@ -53,6 +54,23 @@ DOWNLOADABLE_DOCUMENTS_MIME_TYPES = {
     },
     GOOGLE_DRAWING_MIME_TYPE: {EXPORT_MEDIA_MIME_TYPE_KEY: EXPORT_MEDIA_MIME_TYPE_PDF, DOCUMENT_FILE_EXTENSION_KEY: ".pdf"},
 }
+
+PUBLIC_PERMISSION_IDS = [
+    "anyoneWithLink",
+    "anyoneCanFind",
+    "domainCanFind",
+    "domainWithLink",
+]
+
+PERMISSIONS_API_SCOPES = [
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/drive.metadata.readonly",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/admin.directory.group.readonly",
+    "https://www.googleapis.com/auth/admin.directory.group.member.readonly",
+    "https://www.googleapis.com/auth/admin.directory.user.readonly",
+]
 
 
 class GoogleDriveRemoteFile(RemoteFile):
@@ -98,7 +116,10 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 if self.config.credentials.auth_type == "Client":
                     creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
                 else:
-                    creds = service_account.Credentials.from_service_account_info(json.loads(self.config.credentials.service_account_info))
+                    scopes = PERMISSIONS_API_SCOPES if self.sync_metadata() else None
+                    creds = service_account.Credentials.from_service_account_info(
+                        json.loads(self.config.credentials.service_account_info), scopes=scopes
+                    )
                 self._drive_service = build("drive", "v3", credentials=creds)
         except Exception as e:
             raise AirbyteTracedException(
@@ -282,3 +303,64 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
         except Exception as e:
             raise ErrorDownloadingFile(f"There was an error while trying to download the file {file.uri}: {str(e)}")
+
+    def get_file_permissions(self, file_id: str, file_name: str, logger: logging.Logger) -> Tuple[List[RemoteFileIdentity], bool]:
+        """
+        Retrieves the permissions of a file in Google Drive and checks for public access.
+
+        Args:
+            file_id (str): The file to get permissions for.
+            file_name (str): The name of the file to get permissions for.
+            logger (logging.Logger): Logger for debugging and information.
+
+        Returns:
+            Tuple(List[RemoteFileIdentity], boolean): A list of RemoteFileIdentity objects containing permission details.
+        """
+        try:
+            request = self.google_drive_service.permissions().list(
+                fileId=file_id,
+                fields="permissions, permissions/role, permissions/type, permissions/id, permissions/emailAddress",
+                supportsAllDrives=True,
+            )
+            response = request.execute()
+            permissions = response.get("permissions", [])
+            is_public = False
+
+            remote_identities = []
+
+            for p in permissions:
+                identity = self._to_remote_file_identity(p)
+                if p.get("id") in PUBLIC_PERMISSION_IDS:
+                    is_public = True
+                if identity is not None:
+                    remote_identities.append(identity)
+
+            logger.info(f"File {file_name} has {len(remote_identities)} valid permissions")
+            return remote_identities, is_public
+        except Exception as e:
+            raise ErrorFetchingMetadata(f"An error occurred while retrieving file permissions: {str(e)}")
+
+    def _to_remote_file_identity(self, identity: dict[str, Any]) -> RemoteFileIdentity | None:
+        if identity.get("id") in PUBLIC_PERMISSION_IDS:
+            return None
+        if identity.get("deleted") is True:
+            return None
+
+        return RemoteFileIdentity(
+            modified_at=datetime.now(),
+            id=uuid.uuid4(),
+            remote_id=identity.get("emailAddress"),
+            name=identity.get("name"),
+            email_address=identity.get("emailAddress"),
+            type=identity.get("type"),
+            description=None,
+        )
+
+    def get_file_metadata(self, file: GoogleDriveRemoteFile, logger: logging.Logger) -> Dict[str, Any]:
+        remote_identities, is_public = self.get_file_permissions(file.id, file_name=file.uri, logger=logger)
+        return RemoteFileMetadata(
+            id=file.id,
+            file_path=file.uri,
+            allowed_identity_remote_ids=[p.remote_id for p in remote_identities],
+            publicly_accessible=is_public,
+        ).dict(exclude_none=True)
