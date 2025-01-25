@@ -150,6 +150,8 @@ class SourceFacebookMarketing(AbstractSource):
             insights_lookback_window=config.insights_lookback_window,
             insights_job_timeout=config.insights_job_timeout,
             filter_statuses=[status.value for status in [*ValidAdStatuses]],
+            use_account_attribution_setting=config.use_account_attribution_setting,
+            use_unified_attribution_setting=config.use_unified_attribution_setting,
         )
         streams = [
             AdAccount(api=api, account_ids=config.account_ids),

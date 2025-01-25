@@ -519,6 +519,20 @@
         "airbyte_secret": true,
         "airbyte_hidden": true,
         "type": "string"
+      },
+      "use_account_attribution_setting": {
+        "title": "Use Account Attribution Setting",
+        "description": "When this parameter is set to true, your ads results are shown using the attribution settings defined for the ad account",
+        "default": false,
+        "order": 13,
+        "type": "boolean"
+      },
+      "use_unified_attribution_setting": {
+        "title": "Use Unified Attribution Setting",
+        "description": "When this parameter is set to true, your ads results will be shown using unified attribution settings defined at ad set level and parameter use_account_attribution_setting will be ignored. Note: Please set this to true to get the same behavior as in the Ads Manager.",
+        "default": false,
+        "order": 14,
+        "type": "boolean"
       }
     },
     "required": ["account_ids", "credentials"]
