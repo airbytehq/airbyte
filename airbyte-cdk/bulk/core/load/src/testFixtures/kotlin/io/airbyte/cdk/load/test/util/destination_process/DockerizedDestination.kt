@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.util.serializeToString
@@ -106,6 +107,7 @@ class DockerizedDestination(
                 listOf("-e", "$key=$value")
             }
 
+        // DANGER: env vars can contain secrets, so you MUST NOT log this command.
         val cmd: MutableList<String> =
             (listOf(
                     "docker",
@@ -128,10 +130,6 @@ class DockerizedDestination(
                     String.format("%s:%s", localRoot, "/local"),
                     "-v",
                     "$fileTransferMountSource:/tmp",
-                    "-e",
-                    "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE=1",
-                    "-e",
-                    "USE_FILE_TRANSFER=$useFileTransfer",
                 ) +
                     additionalEnvEntries +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
@@ -158,7 +156,6 @@ class DockerizedDestination(
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
 
-        logger.info { "Executing command: ${cmd.joinToString(" ")}" }
         process = ProcessBuilder(cmd).start()
         // Annoyingly, the process's stdin is called "outputStream"
         destinationStdin = BufferedWriter(OutputStreamWriter(process.outputStream, Charsets.UTF_8))
@@ -289,7 +286,7 @@ class DockerizedDestinationFactory(
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         useFileTransfer: Boolean,
-        envVars: Map<String, String>,
+        micronautProperties: Map<Property, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
@@ -299,7 +296,7 @@ class DockerizedDestinationFactory(
             catalog,
             testName,
             useFileTransfer,
-            envVars,
+            micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
             *featureFlags,
         )
     }

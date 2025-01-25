@@ -9,9 +9,12 @@ import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.isNamespaceOld
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.randomizedNamespaceRegex
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableCleaner
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.SupportsNamespaces
+
+private val logger = KotlinLogging.logger {}
 
 class S3DataLakeDestinationCleaner(private val catalog: Catalog) : DestinationCleaner {
     override fun cleanup() {
@@ -22,7 +25,13 @@ class S3DataLakeDestinationCleaner(private val catalog: Catalog) : DestinationCl
             }
 
         // we're passing explicit TableIdentifier to clearTable, so just use SimpleTableIdGenerator
-        val tableCleaner = S3DataLakeTableCleaner(S3DataLakeUtil(SimpleTableIdGenerator()))
+        val tableCleaner =
+            S3DataLakeTableCleaner(
+                S3DataLakeUtil(
+                    SimpleTableIdGenerator(),
+                    S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
+                )
+            )
 
         namespaces.forEach { namespace ->
             catalog.listTables(namespace).forEach { tableId ->

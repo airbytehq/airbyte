@@ -73,7 +73,7 @@ object S3DataLakeDataDumper : DestinationDataDumper {
     ): List<OutputRecord> {
         val config = S3DataLakeTestUtil.getConfig(spec)
         val catalog =
-            S3DataLakeTestUtil.getCatalog(config, S3DataLakeTestUtil.getAWSSystemCredentials())
+            S3DataLakeTestUtil.getCatalog(config, S3DataLakeTestUtil.getAwsAssumeRoleCredentials())
         val table =
             catalog.loadTable(
                 TableIdGeneratorFactory(config).create().toTableIdentifier(stream.descriptor)

@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.s3_v2
 
 import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.s3.S3ClientFactory
@@ -19,13 +20,15 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 
 @Singleton
-class S3V2Checker<T : OutputStream>(private val timeProvider: TimeProvider) :
-    DestinationChecker<S3V2Configuration<T>> {
+class S3V2Checker<T : OutputStream>(
+    private val timeProvider: TimeProvider,
+    private val assumeRoleCredentials: AwsAssumeRoleCredentials?,
+) : DestinationChecker<S3V2Configuration<T>> {
     private val log = KotlinLogging.logger {}
 
     override fun check(config: S3V2Configuration<T>) {
         runBlocking {
-            val s3Client = S3ClientFactory.make(config)
+            val s3Client = S3ClientFactory.make(config, assumeRoleCredentials)
             val pathFactory = ObjectStoragePathFactory.from(config, timeProvider)
             val path =
                 if (pathFactory.supportsStaging) {

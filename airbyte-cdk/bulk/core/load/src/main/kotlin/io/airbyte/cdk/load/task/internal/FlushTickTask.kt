@@ -25,7 +25,7 @@ import kotlinx.coroutines.channels.ClosedSendChannelException
 @Singleton
 @Secondary
 class FlushTickTask(
-    @Value("\${airbyte.flush.rate-ms}") private val tickIntervalMs: Long,
+    @Value("\${airbyte.destination.core.flush.rate-ms}") private val tickIntervalMs: Long,
     private val clock: Clock,
     private val coroutineTimeUtils: TimeProvider,
     private val catalog: DestinationCatalog,

@@ -17,6 +17,7 @@ for more information.
 
 | Version | Date       | Pull Request                                               | Subject                                                                      |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.2.21  | 2025-01-24 | [\#51600](https://github.com/airbytehq/airbyte/pull/51600) | Internal refactor                                                            |
 | 0.2.20  | 2025-01-32 | [\#52068](https://github.com/airbytehq/airbyte/pull/52068) | Add support for default namespace (/database name)                           |
 | 0.2.19  | 2025-01-16 | [\#51595](https://github.com/airbytehq/airbyte/pull/51595) | Clarifications in connector config options                                   |
 | 0.2.18  | 2025-01-15 | [\#51042](https://github.com/airbytehq/airbyte/pull/51042) | Write structs as JSON strings instead of Iceberg structs.                    |

@@ -23,6 +23,7 @@ import aws.smithy.kotlin.runtime.net.url.Url
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
+import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
@@ -184,27 +185,28 @@ class S3Client(
     }
 }
 
+/**
+ * [assumeRoleCredentials] is required if [keyConfig] does not have an access key, _and_ [arnRole]
+ * includes a nonnull role ARN. Otherwise it is ignored.
+ */
 @Factory
 class S3ClientFactory(
     private val arnRole: AWSArnRoleConfigurationProvider,
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
     private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
+    private val assumeRoleCredentials: AwsAssumeRoleCredentials?,
 ) {
     companion object {
         const val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
 
-        fun <T> make(config: T) where
+        fun <T> make(config: T, assumeRoleCredentials: AwsAssumeRoleCredentials?) where
         T : S3BucketConfigurationProvider,
         T : AWSAccessKeyConfigurationProvider,
         T : AWSArnRoleConfigurationProvider,
         T : ObjectStorageUploadConfigurationProvider =
-            S3ClientFactory(config, config, config, config).make()
+            S3ClientFactory(config, config, config, config, assumeRoleCredentials).make()
     }
-
-    private val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
-    private val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
-    private val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
 
     @Singleton
     @Secondary
@@ -217,16 +219,15 @@ class S3ClientFactory(
                 }
             } else if (arnRole.awsArnRoleConfiguration.roleArn != null) {
                 // The Platform is expected to inject via credentials if ROLE_ARN is present.
-                val externalId = System.getenv(EXTERNAL_ID) // Consider injecting this dependency
                 val assumeRoleParams =
                     AssumeRoleParameters(
                         roleArn = arnRole.awsArnRoleConfiguration.roleArn!!,
                         roleSessionName = AIRBYTE_STS_SESSION_NAME,
-                        externalId = externalId
+                        externalId = assumeRoleCredentials!!.externalId,
                     )
                 val creds = StaticCredentialsProvider {
-                    accessKeyId = System.getenv(AWS_ACCESS_KEY_ID)
-                    secretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY)
+                    accessKeyId = assumeRoleCredentials.accessKey
+                    secretAccessKey = assumeRoleCredentials.secretKey
                 }
                 StsAssumeRoleCredentialsProvider(
                     bootstrapCredentialsProvider = creds,
