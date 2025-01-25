@@ -4,8 +4,8 @@
 import logging
 import time
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 
 LOG_LEVEL = logging.getLevelName("INFO")
