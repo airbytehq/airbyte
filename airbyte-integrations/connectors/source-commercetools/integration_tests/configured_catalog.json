@@ -1,64 +1,200 @@
 {
   "streams": [
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
       "stream": {
+        "default_cursor_field": [
+          "lastModifiedAt"
+        ],
+        "is_resumable": true,
+        "json_schema": {},
         "name": "customers",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
+        "namespace": null,
         "source_defined_cursor": true,
-        "default_cursor_field": ["lastModifiedAt"]
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
       },
-      "sync_mode": "incremental",
-      "cursor_field": ["lastModifiedAt"],
-      "destination_sync_mode": "append"
+      "sync_id": null,
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
       "stream": {
-        "name": "orders",
+        "default_cursor_field": [
+          "lastModifiedAt"
+        ],
+        "is_resumable": true,
         "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["lastModifiedAt"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["lastModifiedAt"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "discount_codes",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
+        "namespace": null,
         "source_defined_cursor": true,
-        "default_cursor_field": ["lastModifiedAt"]
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
       },
-      "sync_mode": "incremental",
-      "cursor_field": ["lastModifiedAt"],
-      "destination_sync_mode": "append"
+      "sync_id": null,
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
       "stream": {
+        "default_cursor_field": [
+          "lastModifiedAt"
+        ],
+        "is_resumable": true,
+        "json_schema": {},
+        "name": "orders",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_id": null,
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": [
+          "lastModifiedAt"
+        ],
+        "is_resumable": true,
+        "json_schema": {},
         "name": "payments",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
+        "namespace": null,
         "source_defined_cursor": true,
-        "default_cursor_field": ["lastModifiedAt"]
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
       },
-      "sync_mode": "incremental",
-      "cursor_field": ["lastModifiedAt"],
-      "destination_sync_mode": "append"
+      "sync_id": null,
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
       "stream": {
-        "name": "products",
+        "default_cursor_field": [
+          "lastModifiedAt"
+        ],
+        "is_resumable": true,
         "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
+        "name": "products",
+        "namespace": null,
         "source_defined_cursor": true,
-        "default_cursor_field": ["lastModifiedAt"]
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
       },
-      "sync_mode": "incremental",
-      "cursor_field": ["lastModifiedAt"],
-      "destination_sync_mode": "append"
+      "sync_id": null,
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": [
+          "lastModifiedAt"
+        ],
+        "is_resumable": true,
+        "json_schema": {},
+        "name": "carts",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_id": null,
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": [
+          "lastModifiedAt"
+        ],
+        "is_resumable": true,
+        "json_schema": {},
+        "name": "inventory",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_id": null,
+      "sync_mode": "full_refresh"
     }
   ]
 }

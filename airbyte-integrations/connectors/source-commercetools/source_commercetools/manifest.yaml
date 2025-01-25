@@ -114,12 +114,26 @@ definitions:
       name: "products"
       path: "products"
 
+  carts_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "carts"
+      path: "carts"
+
+  inventory_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "inventory"
+      path: "inventory"
+
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/discount_codes_stream"
   - "#/definitions/orders_stream"
   - "#/definitions/payments_stream"
   - "#/definitions/products_stream"
+  - "#/definitions/carts_stream"
+  - "#/definitions/inventory_stream"
 
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/commercetools

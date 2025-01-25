@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "availableQuantity": {
+      "type": "integer"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "createdBy": {
+      "additionalProperties": true,
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "isPlatformClient": {
+          "type": "boolean"
+        },
+        "user": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string"
+    },
+    "lastMessageSequenceNumber": {
+      "type": "integer"
+    },
+    "lastModifiedAt": {
+      "type": "string"
+    },
+    "lastModifiedBy": {
+      "additionalProperties": true,
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "isPlatformClient": {
+          "type": "boolean"
+        },
+        "user": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "quantityOnStock": {
+      "type": "integer"
+    },
+    "reservations": {
+      "type": "array"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "supplyChannel": {
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "typeId": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "versionModifiedAt": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
