@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 version = "0.8.3"
 name = "source-gcs"
-description = "Source implementation for Gcs."
+description = "Source implementation for GCS."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "ELv2"
 readme = "README.md"
