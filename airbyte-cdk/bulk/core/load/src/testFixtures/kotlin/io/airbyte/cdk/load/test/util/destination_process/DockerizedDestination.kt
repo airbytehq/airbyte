@@ -76,7 +76,7 @@ class DockerizedDestination(
         // Certainly nothing in the bulk CDK's test suites is reading back
         // anything in this directory.
 //        val localRoot = Files.createTempDirectory(testDir, "output")
-        val localRoot = Files.createTempDirectory("output")
+//        val localRoot = Files.createTempDirectory("output")
 
         // This directory will contain the actual inputs to the connector (config+catalog),
         // and is also mounted as a volume.
@@ -118,18 +118,19 @@ class DockerizedDestination(
                     "-i",
                     "-w",
                     // In real syncs, platform changes the workdir to /dest for destinations.
-                    "/test",
+//                    "/test",
+                    "/tmp",
                     "--log-driver",
                     "none",
                     "--name",
                     containerName,
                     "--network",
                     "host",
-                    "-v",
-                    String.format("%s:%s", tmp, "/test"),
-//                    String.format("%s:%s", workspaceRoot, containerDataRoot),
-                    "-v",
-                    String.format("%s:%s", tmp, "/local"),
+//                    "-v",
+//                    String.format("%s:%s", tmp, "/test"),
+////                    String.format("%s:%s", workspaceRoot, containerDataRoot),
+//                    "-v",
+//                    String.format("%s:%s", tmp, "/local"),
 //                    String.format("%s:%s", localRoot, "/local"),
                     "-v",
                     "$fileTransferMountSource:/tmp",
