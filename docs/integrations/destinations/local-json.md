@@ -78,6 +78,7 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------- |
+| 0.2.13 | 2025-01-10 | [51486](https://github.com/airbytehq/airbyte/pull/51486) | Use a non root base image |
 | 0.2.12 | 2024-12-18 | [49908](https://github.com/airbytehq/airbyte/pull/49908) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.11 | 2022-02-14 | [14641](https://github.com/airbytehq/airbyte/pull/14641) | Include lifecycle management |
 
