@@ -28,7 +28,7 @@
 </a>
 </p>
 
-We believe that only an **open-source solution to data movement** can cover the long tail of data sources while empowering data engineers to customize existing connectors. Our ultimate vision is to help you move data from any source to any destination. Airbyte already provides the largest [catalog](https://docs.airbyte.com/integrations/) of 300+ connectors for APIs, databases, data warehouses, and data lakes.
+We believe that only an **open-source solution to data movement** can cover the long tail of data sources while empowering data engineers to customize existing connectors. Our ultimate vision is to help you move data from any source to any destination. Airbyte already provides the largest [catalog](https://docs.airbyte.com/integrations/) of 300+ connectors (and growing!) for APIs, databases, data warehouses, and data lakes.
 
 ![Airbyte Connections UI](https://github.com/airbytehq/airbyte/assets/38087517/35b01d0b-00bf-407b-87e6-a5cd5cd720b5)
 _Screenshot taken from [Airbyte Cloud](https://cloud.airbyte.com/signup)_.
