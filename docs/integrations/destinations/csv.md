@@ -78,6 +78,7 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.2 | 2025-01-10 | [51488](https://github.com/airbytehq/airbyte/pull/51488) | Use a non root base image |
 | 1.0.1 | 2024-12-18 | [49864](https://github.com/airbytehq/airbyte/pull/49864) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 1.0.0 | 2022-12-20 | [17998](https://github.com/airbytehq/airbyte/pull/17998) | Breaking changes: non backwards compatible. Adds delimiter dropdown. |
 | 0.2.10 | 2022-06-20 | [13932](https://github.com/airbytehq/airbyte/pull/13932) | Merging published connector changes |
