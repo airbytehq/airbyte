@@ -177,17 +177,7 @@ class S3V2WriteTestAvroUncompressed :
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         nullUnknownTypes = true,
-    ) {
-    @Test
-    override fun testUnknownTypes() {
-        super.testUnknownTypes()
-    }
-
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-}
+    )
 
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(

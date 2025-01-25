@@ -88,6 +88,12 @@ class GlueWriteTest :
     override fun testFunkyCharacters() {
         super.testFunkyCharacters()
     }
+
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testNamespaces() {
+        super.testNamespaces()
+    }
 }
 
 class GlueAssumeRoleWriteTest :
@@ -105,6 +111,12 @@ class GlueAssumeRoleWriteTest :
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
     override fun testFunkyCharacters() {
         super.testFunkyCharacters()
+    }
+
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testNamespaces() {
+        super.testNamespaces()
     }
 }
 

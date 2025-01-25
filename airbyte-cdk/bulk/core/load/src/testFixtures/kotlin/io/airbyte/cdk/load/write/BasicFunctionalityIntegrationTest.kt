@@ -449,9 +449,9 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testNamespaces() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(namespace: String) =
+        fun makeStream(namespace: String?, name: String = "test_stream") =
             DestinationStream(
-                DestinationStream.Descriptor(namespace, "test_stream"),
+                DestinationStream.Descriptor(namespace, name),
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
@@ -460,12 +460,14 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
+        val streamWithNullNamespace = makeStream(null, randomizedNamespace + "_stream")
         runSync(
             configContents,
             DestinationCatalog(
                 listOf(
                     stream1,
                     stream2,
+                    streamWithNullNamespace,
                 )
             ),
             listOf(
@@ -479,6 +481,12 @@ abstract class BasicFunctionalityIntegrationTest(
                     namespace = stream2.descriptor.namespace,
                     name = stream2.descriptor.name,
                     data = """{"id": 5678}""",
+                    emittedAtMs = 1234,
+                ),
+                InputRecord(
+                    namespace = streamWithNullNamespace.descriptor.namespace,
+                    name = streamWithNullNamespace.descriptor.name,
+                    data = """{"id": 91011}""",
                     emittedAtMs = 1234,
                 ),
             )
@@ -515,6 +523,22 @@ abstract class BasicFunctionalityIntegrationTest(
                     listOf(listOf("id")),
                     cursor = null
                 )
+            },
+            {
+                dumpAndDiffRecords(
+                    parsedConfig,
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1234,
+                            generationId = 0,
+                            data = mapOf("id" to 91011),
+                            airbyteMeta = OutputRecord.Meta(syncId = 42)
+                        )
+                    ),
+                    streamWithNullNamespace,
+                    listOf(listOf("id")),
+                    cursor = null
+                )
             }
         )
     }
@@ -525,9 +549,10 @@ abstract class BasicFunctionalityIntegrationTest(
         fun makeStream(
             name: String,
             schema: LinkedHashMap<String, FieldType> = linkedMapOf("id" to intType),
+            namespaceSuffix: String = "",
         ) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, name),
+                DestinationStream.Descriptor(randomizedNamespace + namespaceSuffix, name),
                 Append,
                 ObjectType(schema),
                 generationId = 0,
@@ -569,6 +594,11 @@ abstract class BasicFunctionalityIntegrationTest(
                         "groups",
                         linkedMapOf("id" to intType, "authorization" to stringType)
                     ),
+                    makeStream(
+                        "streamWithSpecialCharactersInNamespace",
+                        namespaceSuffix = "_spøcial"
+                    ),
+                    makeStream("streamWithOperatorInNamespace", namespaceSuffix = "_operator-1"),
                 )
             )
         // For each stream, generate a record containing every field in the schema.
