@@ -196,7 +196,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["createdBefore"]
-              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+              value: "{{ stream_slice['end_time'] }}"
       retriever:
         type: SimpleRetriever
         requester:
@@ -265,7 +265,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["changedBefore"]
-              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+              value: "{{ stream_slice['end_time'] }}"
       retriever:
         type: SimpleRetriever
         requester:
@@ -394,7 +394,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["PostedBefore"]
-              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+              value: "{{ stream_slice['end_time'] }}"
       retriever:
         type: SimpleRetriever
         requester:
@@ -502,6 +502,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -539,6 +540,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The maximum step for this stream is 30 days or lower when the customer configures the period_in_days
@@ -576,6 +578,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -650,6 +653,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -687,6 +691,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -817,6 +822,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -854,6 +860,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -939,6 +946,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -976,6 +984,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1013,6 +1022,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1050,6 +1060,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The maximum step for this stream is 60 days or lower when the customer configures the period_in_days
@@ -1124,6 +1135,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1161,6 +1173,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1198,6 +1211,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1243,6 +1257,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1280,6 +1295,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1325,6 +1341,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1362,6 +1379,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1399,6 +1417,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1436,6 +1455,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1473,6 +1493,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1510,6 +1531,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1547,6 +1569,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1584,6 +1607,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1665,6 +1689,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1710,6 +1735,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1723,6 +1749,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: "P1D"
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
@@ -1755,6 +1782,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1800,6 +1828,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: dataEndTime
         cursor_datetime_formats:
+          - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
@@ -1969,6 +1998,7 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: dataEndTime
       cursor_datetime_formats:
+        - "%Y-%m-%d"
         - "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
