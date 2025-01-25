@@ -14,11 +14,14 @@ class RolloutConfiguration(BaseModel):
 
     enableProgressiveRollout: Optional[bool] = Field(False, description="Whether to enable progressive rollout for the connector.")
     initialPercentage: Optional[conint(ge=0, le=100)] = Field(
-        0, description="The percentage of users that should receive the new version initially."
+        0,
+        description="The percentage of users that should receive the new version initially.",
     )
     maxPercentage: Optional[conint(ge=0, le=100)] = Field(
-        50, description="The percentage of users who should receive the release candidate during the test phase before full rollout."
+        50,
+        description="The percentage of users who should receive the release candidate during the test phase before full rollout.",
     )
     advanceDelayMinutes: Optional[conint(ge=10)] = Field(
-        10, description="The number of minutes to wait before advancing the rollout percentage."
+        10,
+        description="The number of minutes to wait before advancing the rollout percentage.",
     )
