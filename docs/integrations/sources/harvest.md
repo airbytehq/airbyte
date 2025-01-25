@@ -91,6 +91,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.1 | 2025-01-24 | [52139](https://github.com/airbytehq/airbyte/pull/52139) | Fix low-code state migration                                                                                                                      |
 | 1.2.0 | 2025-01-23 | [52109](https://github.com/airbytehq/airbyte/pull/52109) | Make incremental per-partition streams concurrent                                                                                                                      |
 | 1.1.9 | 2025-01-18 | [51792](https://github.com/airbytehq/airbyte/pull/51792) | Update dependencies                                                                                                                                                    |
 | 1.1.8 | 2025-01-11 | [51155](https://github.com/airbytehq/airbyte/pull/51155) | Update dependencies                                                                                                                                                    |
