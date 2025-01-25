@@ -8,7 +8,7 @@ import io.micronaut.core.cli.CommandLine
 import java.io.File
 import java.nio.file.Path
 
-private val log = KotlinLogging.logger {}
+val log = KotlinLogging.logger {}
 
 /**
  * Custom Micronaut [MapPropertySource] that reads the command line arguments provided via the
