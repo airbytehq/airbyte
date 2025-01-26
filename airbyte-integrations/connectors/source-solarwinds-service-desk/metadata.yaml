@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-solarwinds-service-desk
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 7fc8e411-25e6-4c8a-aab0-0b662a833c8c
-  dockerImageTag: 0.0.9
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-solarwinds-service-desk
   githubIssueLabel: source-solarwinds-service-desk
   icon: icon.svg
