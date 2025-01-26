@@ -460,7 +460,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   protected int getStateEmissionFrequency() {
-    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+    return this.stateEmissionFrequency;
+  }
+
+  @VisibleForTesting
+  protected void setStateEmissionFrequencyForDebug(final int stateEmissionFrequency) {
+    this.stateEmissionFrequency = stateEmissionFrequency;
   }
 
   @Override
@@ -663,16 +668,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final var completeStatus =
         new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
     return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamItrator, completeStatus);
-  }
-
-  @Override
-  public FeatureFlags getFeatureFlags() {
-    return featureFlags;
-  }
-
-  @VisibleForTesting
-  protected void setStateEmissionFrequencyForDebug(final int stateEmissionFrequency) {
-    this.stateEmissionFrequency = stateEmissionFrequency;
   }
 
 }
