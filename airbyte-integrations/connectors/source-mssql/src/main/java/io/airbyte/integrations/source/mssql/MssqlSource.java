@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -125,7 +126,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public FeatureFlags getFeatureFlags() {
     return featureFlags;
   }
-
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
@@ -460,7 +460,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   protected int getStateEmissionFrequency() {
-    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+    return this.stateEmissionFrequency;
+  }
+
+  @VisibleForTesting
+  protected void setStateEmissionFrequencyForDebug(final int stateEmissionFrequency) {
+    this.stateEmissionFrequency = stateEmissionFrequency;
   }
 
   @Override
