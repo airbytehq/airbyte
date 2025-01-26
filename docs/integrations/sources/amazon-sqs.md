@@ -91,6 +91,7 @@ Required properties are 'Queue URL', 'AWS Region' and 'Delete Messages After Rea
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
+| 1.0.2 | 2025-01-25 | [52163](https://github.com/airbytehq/airbyte/pull/52163) | Update dependencies |
 | 1.0.1 | 2025-01-18 | [51742](https://github.com/airbytehq/airbyte/pull/51742) | Update dependencies |
 | 1.0.0 | 2024-11-07 | [41064](https://github.com/airbytehq/airbyte/pull/41064) | Migrate to low code |
 | 0.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region |
