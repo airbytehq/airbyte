@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.21.0"
+version = "6.27.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.21.0-py3-none-any.whl", hash = "sha256:562f2b414689e4041fdf416bca2fd5a368b9b52b963960704ceb96c6c4bd3a12"},
-    {file = "airbyte_cdk-6.21.0.tar.gz", hash = "sha256:2d126df04fd6fb52467cfbf0dfdb625cd59d104400670e3036e68a6ca2eac787"},
+    {file = "airbyte_cdk-6.27.0-py3-none-any.whl", hash = "sha256:ee2229bdb7e2d8b4477ff6d23051f30e87b975ade6c1ed62641da9a318ff2277"},
+    {file = "airbyte_cdk-6.27.0.tar.gz", hash = "sha256:0ae79346fb34eba956a6fadef6dae0eaac6c6ee0018408a6f3ed464368fee1e7"},
 ]
 
 [package.dependencies]
@@ -43,22 +43,22 @@ requests_cache = "*"
 serpyco-rs = ">=1.10.2,<2.0.0"
 Unidecode = ">=1.3,<2.0"
 wcmatch = "10.0"
-xmltodict = ">=0.13.0,<0.14.0"
+xmltodict = ">=0.13,<0.15"
 
 [package.extras]
-file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
+file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
 sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
 vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.8.0)"]
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
-version = "0.14.1"
+version = "0.14.2"
 description = "Declares the Airbyte Protocol using Python Dataclasses. Dataclasses in Python have less performance overhead compared to Pydantic models, making them a more efficient choice for scenarios where speed and memory usage are critical"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte_protocol_models_dataclasses-0.14.1-py3-none-any.whl", hash = "sha256:dfe10b32ee09e6ba9b4f17bd309e841b61cbd61ec8f80b1937ff104efd6209a9"},
-    {file = "airbyte_protocol_models_dataclasses-0.14.1.tar.gz", hash = "sha256:f62a46556b82ea0d55de144983141639e8049d836dd4e0a9d7234c5b2e103c08"},
+    {file = "airbyte_protocol_models_dataclasses-0.14.2-py3-none-any.whl", hash = "sha256:ae06a406df031afa42f1156bacc587958197e5c7d9bbaf11893480903d4ded8b"},
+    {file = "airbyte_protocol_models_dataclasses-0.14.2.tar.gz", hash = "sha256:9279237156b722cdd54e7b9ec8f97d264bd96e3f3008bc5fc47c215288a2212a"},
 ]
 
 [[package]]
@@ -117,13 +117,13 @@ files = [
 
 [[package]]
 name = "attrs"
-version = "24.3.0"
+version = "25.1.0"
 description = "Classes Without Boilerplate"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "attrs-24.3.0-py3-none-any.whl", hash = "sha256:ac96cd038792094f438ad1f6ff80837353805ac950cd2aa0e0625ef19850c308"},
-    {file = "attrs-24.3.0.tar.gz", hash = "sha256:8f5c07333d543103541ba7be0e2ce16eeee8130cb0b3f9238ab904ce1e85baff"},
+    {file = "attrs-25.1.0-py3-none-any.whl", hash = "sha256:c75a69e28a550a7e93789579c22aa26b0f5b83b75dc4e08fe092980051e1090a"},
+    {file = "attrs-25.1.0.tar.gz", hash = "sha256:1c97078a80c814273a76b2a298a932eb681c87415c11dee0a6921de7f1b02c3e"},
 ]
 
 [package.extras]
@@ -158,13 +158,13 @@ files = [
 
 [[package]]
 name = "cachetools"
-version = "5.5.0"
+version = "5.5.1"
 description = "Extensible memoizing collections and decorators"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "cachetools-5.5.0-py3-none-any.whl", hash = "sha256:02134e8439cdc2ffb62023ce1debca2944c3f289d66bb17ead3ab3dede74b292"},
-    {file = "cachetools-5.5.0.tar.gz", hash = "sha256:2cc24fb4cbe39633fb7badd9db9ca6295d766d9c2995f245725a46715d050f2a"},
+    {file = "cachetools-5.5.1-py3-none-any.whl", hash = "sha256:b76651fdc3b24ead3c648bbdeeb940c1b04d365b38b4af66788f9ec4a81d42bb"},
+    {file = "cachetools-5.5.1.tar.gz", hash = "sha256:70f238fbba50383ef62e55c6aff6d9673175fe59f7c6782c7a0b9e38f4a9df95"},
 ]
 
 [[package]]
@@ -1159,13 +1159,13 @@ files = [
 
 [[package]]
 name = "pydantic"
-version = "2.10.5"
+version = "2.10.6"
 description = "Data validation using Python type hints"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pydantic-2.10.5-py3-none-any.whl", hash = "sha256:4dd4e322dbe55472cb7ca7e73f4b63574eecccf2835ffa2af9021ce113c83c53"},
-    {file = "pydantic-2.10.5.tar.gz", hash = "sha256:278b38dbbaec562011d659ee05f63346951b3a248a6f3642e1bc68894ea2b4ff"},
+    {file = "pydantic-2.10.6-py3-none-any.whl", hash = "sha256:427d664bf0b8a2b34ff5dd0f5a18df00591adcee7198fbd71981054cef37b584"},
+    {file = "pydantic-2.10.6.tar.gz", hash = "sha256:ca5daa827cce33de7a42be142548b0096bf05a7e7b365aebfa5f8eeec7128236"},
 ]
 
 [package.dependencies]
@@ -1919,13 +1919,13 @@ files = [
 
 [[package]]
 name = "tzdata"
-version = "2024.2"
+version = "2025.1"
 description = "Provider of IANA time zone data"
 optional = false
 python-versions = ">=2"
 files = [
-    {file = "tzdata-2024.2-py2.py3-none-any.whl", hash = "sha256:a48093786cdcde33cad18c2555e8532f34422074448fbc874186f0abd79565cd"},
-    {file = "tzdata-2024.2.tar.gz", hash = "sha256:7d85cc416e9382e69095b7bdf4afd9e3880418a2413feec7069d533d6b4e31cc"},
+    {file = "tzdata-2025.1-py2.py3-none-any.whl", hash = "sha256:7e127113816800496f027041c570f50bcd464a020098a3b6b199517772303639"},
+    {file = "tzdata-2025.1.tar.gz", hash = "sha256:24894909e88cdb28bd1636c6887801df64cb485bd593f2fd83ef29075a81d694"},
 ]
 
 [[package]]
@@ -1986,13 +1986,13 @@ bracex = ">=2.1.1"
 
 [[package]]
 name = "xmltodict"
-version = "0.13.0"
+version = "0.14.2"
 description = "Makes working with XML feel like you are working with JSON"
 optional = false
-python-versions = ">=3.4"
+python-versions = ">=3.6"
 files = [
-    {file = "xmltodict-0.13.0-py2.py3-none-any.whl", hash = "sha256:aa89e8fd76320154a40d19a0df04a4695fb9dc5ba977cbb68ab3e4eb225e7852"},
-    {file = "xmltodict-0.13.0.tar.gz", hash = "sha256:341595a488e3e01a85a9d8911d8912fd922ede5fecc4dce437eb4b6c8d037e56"},
+    {file = "xmltodict-0.14.2-py2.py3-none-any.whl", hash = "sha256:20cc7d723ed729276e808f26fb6b3599f786cbc37e06c65e192ba77c40f20aac"},
+    {file = "xmltodict-0.14.2.tar.gz", hash = "sha256:201e7c28bb210e374999d1dde6382923ab0ed1a8a5faeece48ab525b7810a553"},
 ]
 
 [metadata]
