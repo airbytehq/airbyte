@@ -42,6 +42,8 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
@@ -102,13 +104,22 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private MssqlInitialLoadStateManager initialLoadStateManager = null;
   public static final String JDBC_DELIMITER = ";";
   private List<String> schemas;
+  private int stateEmissionFrequency;
+  private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource(final MssqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MssqlSource() {
+    this(new EnvVariableFeatureFlags());
+    // super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+  }
+
+  public MssqlSource(FeatureFlags featureFlags) {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+    this.featureFlags = featureFlags;
+    this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   @Override

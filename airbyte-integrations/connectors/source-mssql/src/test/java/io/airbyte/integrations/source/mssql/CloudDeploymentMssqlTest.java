@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -35,8 +36,8 @@ public class CloudDeploymentMssqlTest {
   }
 
   private Source source() {
-    final var source = new MssqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingDeploymentMode(new EnvVariableFeatureFlags(), "CLOUD"));
+    final var source = new MssqlSource(FeatureFlagsWrapper.overridingDeploymentMode(
+            new EnvVariableFeatureFlags(), AdaptiveSourceRunner.CLOUD_MODE));
     return MssqlSource.sshWrappedSource(source);
   }
 
