@@ -113,14 +113,19 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   public MssqlSource() {
     this(new EnvVariableFeatureFlags());
-    // super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
   }
 
-  public MssqlSource(FeatureFlags featureFlags) {
+  public MssqlSource(final FeatureFlags featureFlags) {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
     this.featureFlags = featureFlags;
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
+
+  @Override
+  public FeatureFlags getFeatureFlags() {
+    return featureFlags;
+  }
+
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
