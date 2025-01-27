@@ -17,8 +17,19 @@ from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
 )
 
 
+class EnableFeatureYes(BaseModel):
+    enable_feature: Literal[True] = Field(True, description="Enable this feature.", title="Enable Feature")
+    advanced_setting: Optional[str] = Field(None, title="Advanced Setting", description="Additional advanced setting.")
+
+
+class EnableFeatureNo(BaseModel):
+    enable_feature: Literal[False] = Field(False, description="Disable this feature.", title="Enable Feature")
+
+
 class DeliverRecords(DeliverRecordsBase):
     # Overriding to make visible with airbyte_hidden=False
+    feature_config: Union[EnableFeatureYes, EnableFeatureNo]
+
     sync_acl_permissions: bool = Field(
         title="Include ACL Permissions",
         description="Joins Document allowlists to each stream.",
