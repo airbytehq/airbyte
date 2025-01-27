@@ -48,6 +48,8 @@ If you have `free` subscription plan \(you may check it [here](https://openexcha
 
 | Version | Date       | Pull Request                                               | Subject                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.10 | 2025-01-25 | [52530](https://github.com/airbytehq/airbyte/pull/52530) | Update dependencies |
+| 0.3.9 | 2025-01-18 | [51866](https://github.com/airbytehq/airbyte/pull/51866) | Update dependencies |
 | 0.3.8 | 2025-01-11 | [51364](https://github.com/airbytehq/airbyte/pull/51364) | Update dependencies |
 | 0.3.7 | 2024-12-28 | [50673](https://github.com/airbytehq/airbyte/pull/50673) | Update dependencies |
 | 0.3.6 | 2024-12-21 | [50301](https://github.com/airbytehq/airbyte/pull/50301) | Update dependencies |
