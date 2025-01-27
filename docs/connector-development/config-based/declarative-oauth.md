@@ -749,3 +749,267 @@ You can apply the
 | `codeChallengeS256` | The variable method to encode the input string into `SHA-256` hashed-string | "id_123:secret_456" | "kdlBQTTftIOzHnzQoqp3dQ5jBsSehFTjg1meg1gL3OY" |
 | `urlEncoder` | The variable method to encode the input string as `URL-string` | "my string input" | "my%20string%20input" |
 | `urlDecoder` | The variable method to decode the input `URL-string` into decoded string | "my%20string%20input" | "my string input" |
+
+
+## More scenarious examples:
+The following section stands to describe common use-cases. Assuming that there are no overides provided over the `default` keys, the common specification parts (properties) like: `complete_oauth_server_input_specification` and `complete_oauth_server_output_specification` remain unchanged
+
+```yaml
+complete_oauth_server_input_specification:
+  required:
+    - client_id
+    - client_secret
+  properties:
+    client_id:
+      type: string
+    client_secret:
+      type: string
+complete_oauth_server_output_specification:
+  required:
+    - client_id
+    - client_secret
+  properties:
+    client_id:
+      type: string
+      path_in_connector_config:
+        - client_id
+    client_secret:
+      type: string
+      path_in_connector_config:
+        - client_secret
+```
+
+### Case A: OAuth Flow returns the `access_token` only
+When the `access_token` is the only key expected after the successfull `OAuth2.0` authentication
+
+```yaml
+# advanced_auth
+
+oauth_config_specification:
+  oauth_connector_input_specification:
+    consent_url: >-
+      https://yourconnectorservice.com/oauth/consent?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}
+    access_token_url: >-
+      https://yourconnectorservice.com/oauth/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}
+  complete_oauth_output_specification:
+    required:
+      - access_token
+    properties:
+      access_token:
+        type: string
+        path_in_connector_config:
+          - access_token
+        path_in_oauth_response:
+          - access_token
+  
+  # Other common properties are omitted, see the `More scenarious examples` description
+```
+The `path_in_oauth_response` looks like:
+```json
+{
+  "access_token": "YOUR_ACCESS_TOKEN_123"
+}
+```
+
+#### Case A-1: OAuth Flow returns the nested `access_token` only, under the `data` property
+
+```yaml
+# advanced_auth
+
+oauth_config_specification:
+  oauth_connector_input_specification:
+    consent_url: >-
+      https://yourconnectorservice.com/oauth/consent?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}
+    access_token_url: >-
+      https://yourconnectorservice.com/oauth/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}
+  complete_oauth_output_specification:
+    required:
+      - access_token
+    properties:
+      access_token:
+        type: string
+        path_in_connector_config:
+          - access_token
+        path_in_oauth_response:
+          - data
+          - access_token
+  
+  # Other common properties are omitted, see the `More scenarious examples` description
+```
+The `path_in_oauth_response` looks like:
+```json
+{
+  "data": {
+    "access_token": "YOUR_ACCESS_TOKEN_123"
+  }
+}
+```
+
+### Case B: OAuth Flow returns the `refresh_token` only
+When the `refresh_token` is the only key expected after the successfull `OAuth2.0` authentication
+
+```yaml
+# advanced_auth
+
+oauth_config_specification:
+  oauth_connector_input_specification:
+    consent_url: >-
+      https://yourconnectorservice.com/oauth/consent?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}
+    access_token_url: >-
+      https://yourconnectorservice.com/oauth/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}
+  complete_oauth_output_specification:
+    required:
+      - refresh_token
+    properties:
+      refresh_token:
+        type: string
+        path_in_connector_config:
+          - refresh_token
+        path_in_oauth_response:
+          - refresh_token
+  
+  # Other common properties are omitted, see the `More scenarious examples` description
+```
+The `path_in_oauth_response` looks like:
+```json
+{
+  "refresh_token": "YOUR_ACCESS_TOKEN_123"
+}
+```
+
+### Case C: OAuth Flow returns the `access_token` and the `refresh_token`
+When the the `access_token` and the `refresh_token` are the only keys expected after the successfull `OAuth2.0` authentication
+
+```yaml
+# advanced_auth
+
+oauth_config_specification:
+  oauth_connector_input_specification:
+    consent_url: >-
+      https://yourconnectorservice.com/oauth/consent?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}
+    access_token_url: >-
+      https://yourconnectorservice.com/oauth/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}
+  complete_oauth_output_specification:
+    required:
+      - access_token
+      - refresh_token
+    properties:
+      access_token:
+        type: string
+        path_in_connector_config:
+          - access_token
+        path_in_oauth_response:
+          - access_token
+      refresh_token:
+        type: string
+        path_in_connector_config:
+          - refresh_token
+        path_in_oauth_response:
+          - refresh_token
+  
+  # Other common properties are omitted, see the `More scenarious examples` description
+```
+The `path_in_oauth_response` looks like:
+```json
+{
+  "access_token": "YOUR_ACCESS_TOKEN_123",
+  "refresh_token": "YOUR_REFRESH_TOKEN_123"
+}
+```
+
+#### Case C-1: OAuth Flow returns the `access_token` and the `refresh_token` nested under the `data` property and each key is nested inside the dedicated placeholder
+
+```yaml
+# advanced_auth
+
+oauth_config_specification:
+  oauth_connector_input_specification:
+    consent_url: >-
+      https://yourconnectorservice.com/oauth/consent?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}
+    access_token_url: >-
+      https://yourconnectorservice.com/oauth/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}
+  complete_oauth_output_specification:
+    required:
+      - access_token
+      - refresh_token
+    properties:
+      access_token:
+        type: string
+        path_in_connector_config:
+          - access_token
+        path_in_oauth_response:
+          - data
+          - access_token_placeholder
+          - access_token
+      refresh_token:
+        type: string
+        path_in_connector_config:
+          - refresh_token
+        path_in_oauth_response:
+          - data
+          - refresh_token_placeholder
+          - refresh_token
+  
+  # Other common properties are omitted, see the `More scenarious examples` description
+```
+The `path_in_oauth_response` looks like:
+```json
+{
+  "data": {
+    "access_token_placeholder": {
+      "access_token": "YOUR_ACCESS_TOKEN_123"
+    },
+    "refresh_token_placeholder" {
+      "refresh_token": "YOUR_REFRESH_TOKEN_123"
+    }
+  }
+}
+```
+
+### Case D: OAuth Flow returns the `access_token` and the `refresh_token` is a `single-use` key 
+In this example we expect the `refresh_token` key expires alongside with the `access_token` and should be exhanged alltogher, having the new pair of keys in response. The `token_expiry_date` is the property that holds the `date-time` value of when the `access_token` should be expired.
+
+```yaml
+# advanced_auth
+
+oauth_config_specification:
+  oauth_connector_input_specification:
+    consent_url: >-
+      https://yourconnectorservice.com/oauth/consent?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}
+    access_token_url: >-
+      https://yourconnectorservice.com/oauth/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}
+  complete_oauth_output_specification:
+    required:
+      - access_token
+      - refresh_token
+      - token_expiry_date
+    properties:
+      access_token:
+        type: string
+        path_in_connector_config:
+          - access_token
+        path_in_oauth_response:
+          - access_token
+      refresh_token:
+        type: string
+        path_in_connector_config:
+          - refresh_token
+        path_in_oauth_response:
+          - refresh_token
+      token_expiry_date:
+        type: string
+        path_in_connector_config:
+          - token_expiry_date
+        path_in_oauth_response:
+          - expires_in
+  
+  # Other common properties are omitted, see the `More scenarious examples` description
+```
+The `path_in_oauth_response` looks like:
+```json
+{
+  "access_token": "YOUR_ACCESS_TOKEN_123",
+  "refresh_token": "YOUR_REFRESH_TOKEN_123",
+  "expires_in": 7200
+}
+```
