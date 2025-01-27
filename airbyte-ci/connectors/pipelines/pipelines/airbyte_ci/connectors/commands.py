@@ -145,7 +145,6 @@ def validate_environment(is_local: bool) -> None:
         "list": "pipelines.airbyte_ci.connectors.list.commands.list_connectors",
         "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
         "bump-version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
-        "migrate-to-base-image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
         "migrate-to-manifest-only": "pipelines.airbyte_ci.connectors.migrate_to_manifest_only.commands.migrate_to_manifest_only",
         "migrate-to-poetry": "pipelines.airbyte_ci.connectors.migrate_to_poetry.commands.migrate_to_poetry",
         "migrate-to-inline-schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
