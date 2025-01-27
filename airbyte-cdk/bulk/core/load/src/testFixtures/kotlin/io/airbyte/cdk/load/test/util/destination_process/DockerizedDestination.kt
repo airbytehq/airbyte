@@ -19,9 +19,11 @@ import java.io.File
 import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.attribute.PosixFilePermission
 import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
+import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +71,17 @@ class DockerizedDestination(
         // the actual platform, and we don't need it here.
         val testDir = Path.of("/tmp/airbyte_tests/")
         Files.createDirectories(testDir)
+        // Allow ourselves and our connector access to our test dir
+        testDir.setPosixFilePermissions(
+            setOf(
+                PosixFilePermission.OWNER_READ,
+                PosixFilePermission.OWNER_WRITE,
+                PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.OTHERS_READ,
+                PosixFilePermission.OTHERS_WRITE,
+                PosixFilePermission.OTHERS_EXECUTE,
+            ),
+        )
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
         // This directory gets mounted to the docker container,
         // presumably so that we can extract some files out of it?
