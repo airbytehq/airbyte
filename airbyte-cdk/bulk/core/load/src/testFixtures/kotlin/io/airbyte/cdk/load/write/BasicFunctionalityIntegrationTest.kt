@@ -2406,6 +2406,7 @@ abstract class BasicFunctionalityIntegrationTest(
      * happens sometimes.
      */
     open fun testNoColumns() {
+        assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -2450,6 +2451,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testNoData() {
+        assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
