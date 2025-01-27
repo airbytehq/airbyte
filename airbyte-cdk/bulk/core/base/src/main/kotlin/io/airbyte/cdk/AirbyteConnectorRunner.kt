@@ -4,13 +4,13 @@ package io.airbyte.cdk
 import io.airbyte.cdk.command.ConnectorCommandLinePropertySource
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.MetadataYamlPropertySource
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.configuration.picocli.MicronautFactory
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.RuntimeBeanDefinition
 import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
 import io.micronaut.core.cli.CommandLine as MicronautCommandLine
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import kotlin.system.exitProcess
 import picocli.CommandLine
