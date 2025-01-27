@@ -19,29 +19,14 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 
 ### Example for `airbyte/python-connector-base`:
 ```dockerfile
-FROM docker.io/python:3.10.14-slim-bookworm@sha256:2407c61b1a18067393fecd8a22cf6fceede893b6aaca817bf9fbfe65e33614a3
-RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
-RUN adduser --uid 1000 --system --group --no-create-home airbyte
-RUN mkdir --mode 755 /custom_cache
-RUN mkdir --mode 755 /airbyte
-RUN chown airbyte:airbyte /airbyte
-ENV PIP_CACHE_DIR=/custom_cache/pip
-RUN pip install --upgrade pip==24.0 setuptools==70.0.0
-ENV POETRY_VIRTUALENVS_CREATE=false
-ENV POETRY_VIRTUALENVS_IN_PROJECT=false
-ENV POETRY_NO_INTERACTION=1
-RUN pip install poetry==1.6.1
-RUN sh -c apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean
-RUN sh -c apt-get install -y socat=1.7.4.4-2
-RUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1
-RUN mkdir -p 755 /usr/share/nltk_data
+
 ```
 
 
 
 ### Example for `airbyte/java-connector-base`:
 ```dockerfile
-FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33
+FROM docker.io/amazoncorretto:21-al2023@sha256:c90f38f8a5c4494cb773a984dc9fa9a727b3e6c2f2ee2cba27c834a6e101af0d
 RUN sh -c set -o xtrace && yum install -y shadow-utils tar openssl findutils && yum update -y --security && yum clean all && rm -rf /var/cache/yum && groupadd --gid 1000 airbyte && useradd --uid 1000 --gid airbyte --shell /bin/bash --create-home airbyte && mkdir /secrets && mkdir /config && mkdir --mode 755 /airbyte && mkdir --mode 755 /custom_cache && chown -R airbyte:airbyte /airbyte && chown -R airbyte:airbyte /custom_cache && chown -R airbyte:airbyte /secrets && chown -R airbyte:airbyte /config && chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && chown -R airbyte:airbyte /etc/pki/ca-trust && chown -R airbyte:airbyte /tmp
 ENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec
 ENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check
@@ -60,6 +45,8 @@ ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
 
 | Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
+|  3.0.2 | ✅| docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75 |  |
+|  3.0.1-rc.1 | ✅| docker.io/airbyte/python-connector-base:3.0.1-rc.1@sha256:5b5cbe613691cc61d643a347ee4ba21d6358252f274ebb040ef820c7b9f4a5a7 |  |
 |  3.0.0 | ✅| docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844 | Create airbyte user |
 |  3.0.0-rc.1 | ✅| docker.io/airbyte/python-connector-base:3.0.0-rc.1@sha256:ee046486af9ad90b1b248afe5e92846b51375a21463dff1cd377c4f06abb55b5 | Update Python 3.10.4 image + create airbyte user |
 |  2.0.0 | ✅| docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916 | Use Python 3.10 |
@@ -77,6 +64,7 @@ ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
 
 | Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
+|  2.0.1 | ✅| docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3 | Bump Amazon Coretto image version for compatibility with Apple M4 architecture. |
 |  2.0.0 | ✅| docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454 | ~Release non root base image~ |
 |  2.0.0-rc.2 | ✅| docker.io/airbyte/java-connector-base:2.0.0-rc.2@sha256:e5543b3de4c38e9ef45dba886bad5ee319b0d7bfe921f310c788f1d4466e25eb | Fine tune permissions and reproduce platform java base implementation |
 |  2.0.0-rc.1 | ✅| docker.io/airbyte/java-connector-base:2.0.0-rc.1@sha256:484b929684b9e4f60d06cde171ee0b8238802cb434403293fcede81c1e73c537 |  Make the java base image non root |
@@ -110,7 +98,7 @@ It will:
   - Optional: Publish the new version to DockerHub.
   - Regenerate the docs and the registry json file.
 7. Commit and push your changes.
-8. Create a PR and ask for a review from the Extensibility team.
+8. Create a PR and ask for a review from the Connector Operations team.
 
 **Please note that if you don't publish your image while cutting the new version you can publish it later with `poetry run publish <repository> <version>`.**
 No connector will use the new base image version until its metadata is updated to use it.
@@ -129,13 +117,6 @@ poetry run mypy base_images --check-untyped-defs
 ```
 
 ## CHANGELOG
-
-### 1.5.1
-- Minor cleanup + docs.
-- New Java base image with bumped amazon corretto sha.
-
-### 1.5.0
-- Include a non-root Java base image (2.0)
 
 ### 1.4.0
 - Declare a base image for our java connectors.
