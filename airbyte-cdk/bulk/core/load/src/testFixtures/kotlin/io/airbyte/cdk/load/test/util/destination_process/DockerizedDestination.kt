@@ -126,8 +126,6 @@ class DockerizedDestination(
                     String.format("%s:%s", workspaceRoot, containerDataRoot),
                     "-v",
                     String.format("%s:%s", localRoot, "/local"),
-                    "-v",
-                    "$fileTransferMountSource:/tmp",
                     "-e",
                     "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE=1",
                     "-e",
