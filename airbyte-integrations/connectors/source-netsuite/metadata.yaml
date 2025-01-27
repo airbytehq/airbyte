@@ -12,6 +12,8 @@ data:
   icon: netsuite.svg
   license: MIT
   name: Netsuite
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   remoteRegistries:
     pypi:
       enabled: true
