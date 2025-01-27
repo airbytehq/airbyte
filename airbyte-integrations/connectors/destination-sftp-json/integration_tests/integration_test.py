@@ -4,14 +4,12 @@
 from __future__ import annotations
 
 import logging
-import time
-from pathlib import Path
-from socket import socket
 from typing import Any, Dict, List, Mapping
 
-import paramiko
-import paramiko.client
 import pytest
+from destination_sftp_json import DestinationSftpJson
+from destination_sftp_json.client import SftpClient
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -24,49 +22,10 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_sftp_json import DestinationSftpJson
-from destination_sftp_json.client import SftpClient
 
 
-def is_sftp_ready(ip: str, port: str) -> bool:
-    """
-    Checks if sftp is served on provided ip address and port.
-    """
-    try:
-        with paramiko.client.SSHClient() as ssh:
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy)
-            ssh.connect(
-                ip,
-                port=port,
-                username="user1",
-                password="abc123",
-            )
-        return True
-    except paramiko.SSHException:
-        return False
-
-
-# NOTE: I'm not sure if specifying the docker-compose file is required or if it would be picked up automatically,
-# but I've copied this approach from source-file.
-@pytest.fixture(scope="session")
-def docker_compose_file() -> Path:
-    return Path(__file__).parent.absolute() / "docker-compose.yml"
-
-
-@pytest.fixture(name="config", scope="module")
-def config_fixture(docker_ip, docker_services):
-    """
-    Provides the SFTP configuration using docker_services.
-    Waits for the docker container to become available before returning the config.
-    """
-    port = docker_services.port_for("sftp", 22)
-    config = {"host": docker_ip, "port": port, "username": "user1", "password": "abc123", "destination_path": "upload"}
-    docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_sftp_ready(docker_ip, port))
-    return config
-
-
-@pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
+@pytest.fixture
+def configured_catalog() -> ConfiguredAirbyteCatalog:
     stream_schema = {
         "type": "object",
         "properties": {"string_col": {"type": "str"}, "int_col": {"type": "integer"}},
@@ -87,8 +46,12 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     return ConfiguredAirbyteCatalog(streams=[append_stream, overwrite_stream])
 
 
-@pytest.fixture(name="client")
-def client_fixture(config, configured_catalog) -> SftpClient:
+@pytest.fixture
+def client(config, configured_catalog) -> SftpClient:
+    """
+    Provides an SftpClient instance with the provided configuration.
+    Client is used to read data that we're writing to the destination (SFTP Server) so we can check that, well, connector worked.
+    """
     with SftpClient(**config) as client:
         yield client
         for stream in configured_catalog.streams:
@@ -105,11 +68,18 @@ def test_check_invalid_config(config):
     assert outcome.status == Status.FAILED
 
 
+#
+# Helpers
+#
+
+
 def _state(data: Dict[str, Any]) -> AirbyteStateMessage:
+    """Wraps state data in AirbyteStateMessage"""
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
 
 
 def _record(stream: str, str_value: str, int_value: int) -> AirbyteRecordMessage:
+    """Wraps record data in AirbyteRecordMessage"""
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
@@ -121,6 +91,7 @@ def _record(stream: str, str_value: str, int_value: int) -> AirbyteRecordMessage
 
 
 def _sort(messages: List[AirbyteRecordMessage]) -> List[AirbyteRecordMessage]:
+    """Sorts messages by stream name"""
     return sorted(messages, key=lambda x: x.record.stream)
 
 

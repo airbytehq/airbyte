@@ -4,6 +4,9 @@ services:
     image: atmoz/sftp
     ports:
       - "2222:22"
-    volumes:
-      - /tmp/upload:/home/user1/upload
-    command: user1:abc123:::upload
+    command: user1:abc123:1001:1001:upload
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "22"]
+      interval: 2s
+      timeout: 1s
+      retries: 5
