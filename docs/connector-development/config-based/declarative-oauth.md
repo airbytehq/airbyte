@@ -751,7 +751,7 @@ You can apply the
 | `urlDecoder` | The variable method to decode the input `URL-string` into decoded string | "my%20string%20input" | "my string input" |
 
 
-## More scenarious examples:
+## More common use-cases examples:
 The following section stands to describe common use-cases. Assuming that there are no overides provided over the `default` keys, the common specification parts (properties) like: `complete_oauth_server_input_specification` and `complete_oauth_server_output_specification` remain unchanged
 
 ```yaml
@@ -966,7 +966,7 @@ The `path_in_oauth_response` looks like:
 }
 ```
 
-### Case D: OAuth Flow returns the `access_token` and the `refresh_token` is a `single-use` key 
+### Case D: OAuth Flow returns the `access_token` and the `refresh_token` is a `one-time-usage` key 
 In this example we expect the `refresh_token` key expires alongside with the `access_token` and should be exhanged alltogher, having the new pair of keys in response. The `token_expiry_date` is the property that holds the `date-time` value of when the `access_token` should be expired
 
 ```yaml
