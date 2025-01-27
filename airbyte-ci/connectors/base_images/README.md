@@ -110,7 +110,7 @@ It will:
   - Optional: Publish the new version to DockerHub.
   - Regenerate the docs and the registry json file.
 7. Commit and push your changes.
-8. Create a PR and ask for a review from the Connector Operations team.
+8. Create a PR and ask for a review from the Extensibility team.
 
 **Please note that if you don't publish your image while cutting the new version you can publish it later with `poetry run publish <repository> <version>`.**
 No connector will use the new base image version until its metadata is updated to use it.
