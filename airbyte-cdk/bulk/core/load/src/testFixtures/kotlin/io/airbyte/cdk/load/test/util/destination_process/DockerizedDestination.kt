@@ -81,7 +81,7 @@ class DockerizedDestination(
         val jobDir = "job"
         val jobRoot = Files.createDirectories(workspaceRoot.resolve(jobDir))
 
-        val containerDataRoot = "/tmp"
+        val containerDataRoot = "/data"
         val containerJobRoot = "$containerDataRoot/$jobDir"
 
         // This directory is being used for the file transfer feature.

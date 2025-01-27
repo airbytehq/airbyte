@@ -10,3 +10,10 @@ if [ "$ARCH" == "x86_64" ] || [ "$ARCH" = "amd64" ]; then
 fi
 
 yum clean all
+
+mkdir -p /data/job
+chown -R airbyte:airbyte /data
+
+mkdir -p /dest
+chown -R airbyte:airbyte /dest
+
