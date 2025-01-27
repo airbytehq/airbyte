@@ -106,6 +106,11 @@ class GlueAssumeRoleWriteTest :
     override fun testFunkyCharacters() {
         super.testFunkyCharacters()
     }
+
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
 }
 
 @Disabled(
