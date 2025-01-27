@@ -7,6 +7,10 @@ package io.airbyte.integrations.destination.mssql.v2
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -69,18 +73,14 @@ class MSSQLDataDumper : DestinationDataDumper {
                     val record =
                         OutputRecord(
                             rawId =
-                                rs.getString(MSSQLQueryBuilder.AIRBYTE_RAW_ID)?.let {
-                                    UUID.fromString(it)
-                                },
+                                rs.getString(COLUMN_NAME_AB_RAW_ID)?.let { UUID.fromString(it) },
                             extractedAt =
-                                Instant.ofEpochMilli(
-                                    rs.getLong(MSSQLQueryBuilder.AIRBYTE_EXTRACTED_AT)
-                                ),
+                                Instant.ofEpochMilli(rs.getLong(COLUMN_NAME_AB_EXTRACTED_AT)),
                             loadedAt = null,
-                            generationId = rs.getLong(MSSQLQueryBuilder.AIRBYTE_GENERATION_ID),
+                            generationId = rs.getLong(COLUMN_NAME_AB_GENERATION_ID),
                             data = objectValue,
                             airbyteMeta =
-                                rs.getString(MSSQLQueryBuilder.AIRBYTE_META)?.let {
+                                rs.getString(COLUMN_NAME_AB_META)?.let {
                                     val meta =
                                         Jsons.deserialize(it, AirbyteRecordMessageMeta::class.java)
                                     OutputRecord.Meta(
