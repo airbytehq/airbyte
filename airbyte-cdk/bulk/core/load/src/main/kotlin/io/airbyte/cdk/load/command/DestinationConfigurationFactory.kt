@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.ConnectorErrorException
 import io.airbyte.cdk.command.ConfigurationSpecification
 
 interface DestinationConfigurationFactory<
@@ -15,7 +16,7 @@ interface DestinationConfigurationFactory<
     fun make(spec: I): O =
         try {
             makeWithoutExceptionHandling(spec)
-        } catch (e: ConfigErrorException) {
+        } catch (e: ConnectorErrorException) {
             throw e
         } catch (e: Exception) {
             // Wrap NPEs (mostly) in ConfigErrorException.
