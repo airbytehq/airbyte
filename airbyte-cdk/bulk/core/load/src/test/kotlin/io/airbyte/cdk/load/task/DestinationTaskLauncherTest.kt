@@ -171,7 +171,7 @@ class DestinationTaskLauncherTest {
     class MockSetupTaskFactory : SetupTaskFactory {
         val hasRun: Channel<Unit> = Channel(Channel.UNLIMITED)
 
-        override fun make(): SetupTask {
+        override fun make(taskLauncher: DestinationTaskLauncher): SetupTask {
             return object : SetupTask {
                 override val terminalCondition: TerminalCondition = SelfTerminating
 
