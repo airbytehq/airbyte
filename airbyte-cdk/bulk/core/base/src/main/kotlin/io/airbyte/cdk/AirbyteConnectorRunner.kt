@@ -84,18 +84,32 @@ sealed class AirbyteConnectorRunner(
         val configIndex = args.indexOf("--config")
         val catalogIndex = args.indexOf("--catalog")
         // Show permissions of the config and catalog files.
-        log.info { "whoami: ${System.getProperty("user.name")}" }
-        if (configIndex != -1) {
-            val configPath = Path.of(args[configIndex + 1]).parent
-            val ownerView = Files.getFileAttributeView(configPath, FileOwnerAttributeView::class.java)
-            log.info { "Config path $configPath owner: ${ownerView?.owner?.name}" }
-            log.info { "Config path $configPath permissions: r${configPath.isReadable()} w${configPath.isWritable()} x${configPath.isExecutable()}" }
+        try {
+            log.info { "whoami: ${System.getProperty("user.name")}" }
+        } catch (e: Exception) {
+            log.error(e) { "Failed to get whoami" }
         }
-        if (catalogIndex != -1) {
-            val catalogPath = Path.of(args[catalogIndex + 1]).parent
-            val ownerView = Files.getFileAttributeView(catalogPath, FileOwnerAttributeView::class.java)
-            log.info { "Catalog path $catalogPath owner: ${ownerView?.owner?.name}" }
-            log.info { "Catalog path $catalogPath permissions: r${catalogPath.isReadable()} w${catalogPath.isWritable()} x${catalogPath.isExecutable()}" }
+        try {
+            if (configIndex != -1) {
+                val configPath = Path.of(args[configIndex + 1]).parent
+                val ownerView =
+                    Files.getFileAttributeView(configPath, FileOwnerAttributeView::class.java)
+                log.info { "Config path $configPath owner: ${ownerView?.owner?.name}" }
+                log.info { "Config path $configPath permissions: r${configPath.isReadable()} w${configPath.isWritable()} x${configPath.isExecutable()}" }
+            }
+        } catch (e: Exception) {
+            log.error(e) { "Failed to get config path owner and permissions" }
+        }
+        try {
+            if (catalogIndex != -1) {
+                val catalogPath = Path.of(args[catalogIndex + 1]).parent
+                val ownerView =
+                    Files.getFileAttributeView(catalogPath, FileOwnerAttributeView::class.java)
+                log.info { "Catalog path $catalogPath owner: ${ownerView?.owner?.name}" }
+                log.info { "Catalog path $catalogPath permissions: r${catalogPath.isReadable()} w${catalogPath.isWritable()} x${catalogPath.isExecutable()}" }
+            }
+        } catch (e: Exception) {
+            log.error(e) { "Failed to get catalog path owner and permissions" }
         }
         
         val picocliCommandLineFactory = PicocliCommandLineFactory(this)
