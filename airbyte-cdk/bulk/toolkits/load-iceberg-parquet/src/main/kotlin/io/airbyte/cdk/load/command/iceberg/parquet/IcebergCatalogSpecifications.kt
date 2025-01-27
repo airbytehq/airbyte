@@ -93,6 +93,11 @@ interface IcebergCatalogSpecifications {
                         (catalogType as RestCatalogSpecification).serverUri,
                         (catalogType as RestCatalogSpecification).namespace
                     )
+                is DremioCatalogSpecification ->
+                    DremioCatalogConfiguration(
+                        (catalogType as DremioCatalogSpecification).serverUri,
+                        (catalogType as DremioCatalogSpecification).namespace
+                    )
             }
 
         return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, catalogConfiguration)
@@ -114,6 +119,7 @@ interface IcebergCatalogSpecifications {
     JsonSubTypes.Type(value = NessieCatalogSpecification::class, name = "NESSIE"),
     JsonSubTypes.Type(value = GlueCatalogSpecification::class, name = "GLUE"),
     JsonSubTypes.Type(value = RestCatalogSpecification::class, name = "REST"),
+    JsonSubTypes.Type(value = DremioCatalogSpecification::class, name = "DREMIO"),
 )
 @JsonSchemaTitle("Iceberg Catalog Type")
 @JsonSchemaDescription(
@@ -125,6 +131,7 @@ sealed class CatalogType(@JsonSchemaTitle("Catalog Type") open val catalogType: 
         NESSIE("NESSIE"),
         GLUE("GLUE"),
         REST("REST"),
+        DREMIO("DREMIO"),
     }
 }
 
@@ -270,6 +277,41 @@ class RestCatalogSpecification(
 ) : CatalogType(catalogType)
 
 /**
+ * Dremio catalog specifications.
+ *
+ * Provides configuration details required to connect to the Dremio catalog service and manage Iceberg
+ * table metadata.
+ */
+@JsonSchemaTitle("Dremio Catalog")
+@JsonSchemaDescription("Configuration details for connecting to a Dremio catalog.")
+class DremioCatalogSpecification(
+    @JsonSchemaTitle("Catalog Type")
+    @JsonProperty("catalog_type")
+    @JsonSchemaInject(json = """{"order":0}""")
+    override val catalogType: Type = Type.DREMIO,
+
+    /**
+     * The URI of the Dremio server.
+     *
+     * This is required to establish a connection.
+     */
+    @get:JsonSchemaTitle("Dremio Server URI")
+    @get:JsonPropertyDescription(
+        "The base URL of the Dremio server used to connect to the catalog."
+    )
+    @get:JsonProperty("server_uri")
+    @JsonSchemaInject(json = """{"order":1}""")
+    val serverUri: String,
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The namespace to be used in the Table identifier. 
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
+    )
+    val namespace: String?
+) : CatalogType(catalogType)
+
+/**
  * Represents a unified Iceberg catalog configuration.
  *
  * This class encapsulates the warehouse location, main branch, and a generic catalog configuration
@@ -353,6 +395,26 @@ data class NessieCatalogConfiguration(
 data class RestCatalogConfiguration(
     @JsonSchemaTitle("Rest Server URI")
     @JsonPropertyDescription("The base URL of the Rest server.")
+    val serverUri: String,
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The namespace to be used in the Table identifier. 
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
+    )
+    val namespace: String?
+) : CatalogConfiguration
+
+/**
+ * Dremio catalog configuration details.
+ *
+ * Stores information required to connect to a Rest server.
+ */
+@JsonSchemaTitle("Rest Catalog Configuration")
+@JsonSchemaDescription("Rest-specific configuration details for connecting an Iceberg catalog.")
+data class DremioCatalogConfiguration(
+    @JsonSchemaTitle("Dremio Server URI")
+    @JsonPropertyDescription("The base URL of the Dremio server.")
     val serverUri: String,
     @get:JsonSchemaTitle("Namespace")
     @get:JsonPropertyDescription(
