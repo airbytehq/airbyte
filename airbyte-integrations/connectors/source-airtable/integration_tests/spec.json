@@ -1,10 +1,7 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/airtable",
   "connectionSpecification": {
-    "$schema": "https://json-schema.org/draft-07/schema#",
-    "title": "Airtable Source Spec",
     "type": "object",
-    "additionalProperties": true,
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "properties": {
       "credentials": {
         "title": "Authentication",
@@ -27,8 +24,8 @@
               },
               "client_secret": {
                 "type": "string",
-                "title": "Client secret",
-                "description": "The client secret the Airtable developer application.",
+                "title": "Client Secret",
+                "description": "The client secret of the Airtable developer application.",
                 "airbyte_secret": true
               },
               "access_token": {
@@ -50,8 +47,8 @@
             }
           },
           {
-            "title": "Personal Access Token",
             "type": "object",
+            "title": "Personal Access Token",
             "required": ["api_key"],
             "properties": {
               "auth_method": {
@@ -69,8 +66,11 @@
           }
         ]
       }
-    }
+    },
+    "additionalProperties": true
   },
+  "supportsNormalization": false,
+  "supportsDBT": false,
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
     "predicate_key": ["credentials", "auth_method"],
