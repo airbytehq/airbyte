@@ -25,6 +25,7 @@ pymilvus = "2.3.0"
 pytest = "^8.3.2"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
+setuptools = "^69.0.0"  # Required by pymilvus for pkg_resources
 
 [tool.poetry.scripts]
 destination-milvus = "destination_milvus.run:run"
