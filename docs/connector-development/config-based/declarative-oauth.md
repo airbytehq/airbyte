@@ -802,7 +802,7 @@ oauth_config_specification:
         path_in_oauth_response:
           - access_token
   
-  # Other common properties are omitted, see the `More scenarious examples` description
+  # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
 ```json
@@ -834,7 +834,7 @@ oauth_config_specification:
           - data
           - access_token
   
-  # Other common properties are omitted, see the `More scenarious examples` description
+  # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
 ```json
@@ -868,7 +868,7 @@ oauth_config_specification:
         path_in_oauth_response:
           - refresh_token
   
-  # Other common properties are omitted, see the `More scenarious examples` description
+  # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
 ```json
@@ -907,7 +907,7 @@ oauth_config_specification:
         path_in_oauth_response:
           - refresh_token
   
-  # Other common properties are omitted, see the `More scenarious examples` description
+  # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
 ```json
@@ -950,7 +950,7 @@ oauth_config_specification:
           - refresh_token_placeholder
           - refresh_token
   
-  # Other common properties are omitted, see the `More scenarious examples` description
+  # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
 ```json
@@ -970,7 +970,7 @@ The `path_in_oauth_response` looks like:
 In this example we expect the `refresh_token` key expires alongside with the `access_token` and should be exhanged alltogher, having the new pair of keys in response. The `token_expiry_date` is the property that holds the `date-time` value of when the `access_token` should be expired
 
 ```yaml
-# advanced_auth
+# advanced_auth 
 
 oauth_config_specification:
   oauth_connector_input_specification:
@@ -1003,7 +1003,7 @@ oauth_config_specification:
         path_in_oauth_response:
           - expires_in
   
-  # Other common properties are omitted, see the `More scenarious examples` description
+  # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
 ```json
