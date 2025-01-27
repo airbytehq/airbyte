@@ -19,7 +19,7 @@ include = "destination_sftp_json"
 python = "^3.10,<3.12"
 paramiko = "^3.5.0"
 smart-open = "^7.0.5"
-airbyte-cdk = "^5.13.0"
+airbyte-cdk = "^6.22"
 
 [tool.poetry.scripts]
 destination-sftp-json = "destination_sftp_json.run:run"
