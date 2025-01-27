@@ -21,7 +21,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
-  dockerImageTag: 1.0.3
+  dockerImageTag: 1.0.4
   dockerRepository: airbyte/destination-mysql
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mysql
   githubIssueLabel: destination-mysql
