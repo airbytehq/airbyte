@@ -30,5 +30,5 @@ AMAZON_CORRETTO_21_AL_2023 = PublishedImage(
     registry="docker.io",
     repository="amazoncorretto",
     tag="21-al2023",
-    sha="6436a0b9e8de5b89014722728803e4445a510e545b4b766c7b3cfd8db6dbad26",
+    sha="c90f38f8a5c4494cb773a984dc9fa9a727b3e6c2f2ee2cba27c834a6e101af0d",
 )
