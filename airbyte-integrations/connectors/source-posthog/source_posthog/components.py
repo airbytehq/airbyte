@@ -81,7 +81,7 @@ class EventsHttpRequester(HttpRequester):
                 next_page_token,
                 self.get_request_params,
                 self.get_authenticator().get_request_params,
-                extra_params
+                extra_params,
             )
 
         if isinstance(options, str):
