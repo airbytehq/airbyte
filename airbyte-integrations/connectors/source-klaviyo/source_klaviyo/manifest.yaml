@@ -250,7 +250,7 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/lists_detailed_schema"
     retriever:
-      $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/semi_incremental_retriever"
       requester:
         $ref: "#/definitions/requester"
         request_parameters:

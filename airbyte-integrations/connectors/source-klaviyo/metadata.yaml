@@ -8,7 +8,7 @@ data:
   definitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
-  dockerImageTag: 2.11.10
+  dockerImageTag: 2.11.11
   dockerRepository: airbyte/source-klaviyo
   githubIssueLabel: source-klaviyo
   icon: klaviyo.svg
