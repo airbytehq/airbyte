@@ -89,7 +89,7 @@
             },
             "namespace" : {
               "type" : "string",
-              "description" : "The Nessie namespace to be used in the Table identifier. \n            |This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n            | `Destination-defined` or `Source-defined`",
+              "description" : "The Nessie namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
               "title" : "Namespace"
             }
           },
@@ -142,7 +142,7 @@
             },
             "namespace" : {
               "type" : "string",
-              "description" : "The namespace to be used in the Table identifier. \n                |This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n                | `Destination-defined` or `Source-defined`",
+              "description" : "The namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
               "title" : "Namespace"
             }
           },
