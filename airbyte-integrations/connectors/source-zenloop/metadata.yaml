@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
-  dockerImageTag: 0.1.41
+  dockerImageTag: 0.1.42
   dockerRepository: airbyte/source-zenloop
   documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
   githubIssueLabel: source-zenloop
