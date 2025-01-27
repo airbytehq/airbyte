@@ -19,7 +19,22 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 
 ### Example for `airbyte/python-connector-base`:
 ```dockerfile
-
+FROM docker.io/python:3.10.14-slim-bookworm@sha256:2407c61b1a18067393fecd8a22cf6fceede893b6aaca817bf9fbfe65e33614a3
+RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
+RUN adduser --uid 1000 --system --group --no-create-home airbyte
+RUN mkdir --mode 755 /custom_cache
+RUN mkdir --mode 755 /airbyte
+RUN chown airbyte:airbyte /airbyte
+ENV PIP_CACHE_DIR=/custom_cache/pip
+RUN pip install --upgrade pip==24.0 setuptools==70.0.0
+ENV POETRY_VIRTUALENVS_CREATE=false
+ENV POETRY_VIRTUALENVS_IN_PROJECT=false
+ENV POETRY_NO_INTERACTION=1
+RUN pip install poetry==1.6.1
+RUN sh -c apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean
+RUN sh -c apt-get install -y socat=1.7.4.4-2
+RUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1
+RUN mkdir -p 755 /usr/share/nltk_data
 ```
 
 
@@ -88,12 +103,12 @@ ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
 3. Make changes to the `AirbytePythonConnectorBaseImage`, you're likely going to change the `get_container` method to change the base image.
 4. Implement the `container` property which must return a `dagger.Container` object.
 5. **Recommended**: Add new sanity checks to `run_sanity_check` to confirm that the new version is working as expected.
-6. Cut a new base image version by running `poetry run generate-release`. You'll need your DockerHub credentials.
+6. Cut a new base image version by running `dagger run --silent poetry run generate-release`. You'll need your DockerHub credentials.
 
 It will:
   - Prompt you to pick which base image you'd like to publish.
   - Prompt you for a major/minor/patch/pre-release version bump.
-  - Prompt you for  a changelog message.
+  - Prompt you for a changelog message.
   - Run the sanity checks on the new version.
   - Optional: Publish the new version to DockerHub.
   - Regenerate the docs and the registry json file.
