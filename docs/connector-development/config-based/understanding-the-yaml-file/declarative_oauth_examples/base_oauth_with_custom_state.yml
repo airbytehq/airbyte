@@ -84,10 +84,7 @@ spec:
           redirect_uri_value }}&state={{ state_value }}
         access_token_url: >-
           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
-        state: {
-          min: 10,
-          max: 27
-        }
+        state: { min: 10, max: 27 }
       complete_oauth_output_specification:
         required:
           - access_token
