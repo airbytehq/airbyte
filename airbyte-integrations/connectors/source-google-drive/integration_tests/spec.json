@@ -381,53 +381,19 @@
                 "description": "Joins Document allowlists to each stream.",
                 "default": false,
                 "airbyte_hidden": false,
+                "order": 0,
                 "type": "boolean"
               },
               "domain": {
                 "title": "Domain",
                 "description": "The domain of the identities.",
                 "airbyte_hidden": false,
+                "order": 1,
                 "type": "string"
-              },
-              "feature_config": {
-                "title": "Feature Config",
-                "anyOf": [
-                  {
-                    "title": "EnableFeatureYes",
-                    "type": "object",
-                    "properties": {
-                      "enable_feature": {
-                        "title": "Enable Feature",
-                        "description": "Enable this feature.",
-                        "default": true,
-                        "enum": [true],
-                        "type": "boolean"
-                      },
-                      "advanced_setting": {
-                        "title": "Advanced Setting",
-                        "description": "Additional advanced setting.",
-                        "type": "string"
-                      }
-                    }
-                  },
-                  {
-                    "title": "EnableFeatureNo",
-                    "type": "object",
-                    "properties": {
-                      "enable_feature": {
-                        "title": "Enable Feature",
-                        "description": "Disable this feature.",
-                        "default": false,
-                        "enum": [false],
-                        "type": "boolean"
-                      }
-                    }
-                  }
-                ]
               }
             },
             "description": "Recommended - Extract and load structured records into your destination of choice. This is the classic method of moving data in Airbyte. It allows for blocking and hashing individual fields or files from a structured schema. Data can be flattened, typed and deduped depending on the destination.",
-            "required": ["feature_config", "delivery_type"]
+            "required": ["delivery_type"]
           },
           {
             "title": "Copy Raw Files",
