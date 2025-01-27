@@ -147,6 +147,30 @@
             }
           },
           "required" : [ "catalog_type", "server_uri" ]
+        }, {
+          "title" : "Dremio Catalog",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for connecting to a Dremio catalog.",
+          "properties" : {
+            "catalog_type" : {
+              "type" : "string",
+              "enum" : [ "DREMIO" ],
+              "default" : "DREMIO"
+            },
+            "server_uri" : {
+              "type" : "string",
+              "description" : "The base URL of the Dremio server used to connect to the catalog.",
+              "title" : "Dremio Server URI",
+              "order" : 1
+            },
+            "namespace" : {
+              "type" : "string",
+              "description" : "The namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
+              "title" : "Namespace"
+            }
+          },
+          "required" : [ "catalog_type", "server_uri" ]
         } ],
         "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST) and its associated configuration.",
         "title" : "Catalog Type",
