@@ -2448,6 +2448,27 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    @Test
+    open fun testNoData() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        assertDoesNotThrow { runSync(configContents, stream, messages = emptyList()) }
+        dumpAndDiffRecords(
+            parsedConfig,
+            canonicalExpectedRecords = emptyList(),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
     private fun schematizedObject(
         fullObject: LinkedHashMap<String, Any?>,
         coercedObject: LinkedHashMap<String, Any?> = fullObject
