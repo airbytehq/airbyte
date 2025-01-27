@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Literal, Union, Optional
+from typing import Any, Dict, Literal, Optional, Union
 
 import dpath.util
 from pydantic.v1 import BaseModel, Field

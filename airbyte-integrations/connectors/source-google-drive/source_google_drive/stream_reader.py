@@ -6,22 +6,22 @@
 import io
 import json
 import logging
-import pytz
 import uuid
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Iterator
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple
 
+import pytz
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
 from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.sources.file_based.config.permissions import RemoteFileIdentity, RemoteFileIdentityType, RemoteFilePermissions
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.config.permissions import RemoteFilePermissions, RemoteFileIdentity, RemoteFileIdentityType
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
