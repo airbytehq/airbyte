@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.26.0.dev4101"
+version = "6.26.0.dev4105"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.26.0.dev4101-py3-none-any.whl", hash = "sha256:f960c761a688eedb661f6ca311137894d1d4eb4347684b7703908caf527bde16"},
-    {file = "airbyte_cdk-6.26.0.dev4101.tar.gz", hash = "sha256:2b843e35563943cc2ea81c9e978c15d1f7343c0ccd791cfdd0b7187a2b5d81c5"},
+    {file = "airbyte_cdk-6.26.0.dev4105-py3-none-any.whl", hash = "sha256:f4c42d52982e5978b931c9afdffbdcd853952c7c519a78bb99360d2f03c2818e"},
+    {file = "airbyte_cdk-6.26.0.dev4105.tar.gz", hash = "sha256:3b6e667d78690d8a4c93df6dfd6b09ef05b09e4b88246089a9fd22856309a77a"},
 ]
 
 [package.dependencies]
@@ -118,13 +118,13 @@ files = [
 
 [[package]]
 name = "attrs"
-version = "24.3.0"
+version = "25.1.0"
 description = "Classes Without Boilerplate"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "attrs-24.3.0-py3-none-any.whl", hash = "sha256:ac96cd038792094f438ad1f6ff80837353805ac950cd2aa0e0625ef19850c308"},
-    {file = "attrs-24.3.0.tar.gz", hash = "sha256:8f5c07333d543103541ba7be0e2ce16eeee8130cb0b3f9238ab904ce1e85baff"},
+    {file = "attrs-25.1.0-py3-none-any.whl", hash = "sha256:c75a69e28a550a7e93789579c22aa26b0f5b83b75dc4e08fe092980051e1090a"},
+    {file = "attrs-25.1.0.tar.gz", hash = "sha256:1c97078a80c814273a76b2a298a932eb681c87415c11dee0a6921de7f1b02c3e"},
 ]
 
 [package.extras]
@@ -3253,4 +3253,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "77057c8c44565e83082cb3fac58c29783822870452023a9ca401c4261bd94e3c"
+content-hash = "36a6754142811b1f2cb2f07a356e37f615114f70c514666fae7f0aba2738d663"

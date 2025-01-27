@@ -6,11 +6,12 @@
 import io
 import json
 import logging
+import pytz
 import uuid
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Iterator
 
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
@@ -20,10 +21,14 @@ from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.config.permissions import RemoteFilePermissions, RemoteFileIdentity, RemoteFileIdentityType
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .spec import RemoteFileIdentity, RemoteFileMetadata, SourceGoogleDriveSpec
+from .spec import SourceGoogleDriveSpec
+
+# remove this, just using while test credentials are prepared
+from .temp_mock import _get_looping_google_api_list_response
 
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
@@ -73,6 +78,10 @@ PERMISSIONS_API_SCOPES = [
 ]
 
 
+def datetime_now() -> datetime:
+    return datetime.now(pytz.UTC)
+
+
 class GoogleDriveRemoteFile(RemoteFile):
     id: str
     # The mime type of the file as returned by the Google Drive API
@@ -116,7 +125,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 if self.config.credentials.auth_type == "Client":
                     creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
                 else:
-                    scopes = PERMISSIONS_API_SCOPES if self.sync_metadata() else None
+                    scopes = PERMISSIONS_API_SCOPES if self.sync_acl_permissions() else None
                     creds = service_account.Credentials.from_service_account_info(
                         json.loads(self.config.credentials.service_account_info), scopes=scopes
                     )
@@ -130,6 +139,76 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             )
 
         return self._drive_service
+
+    def _get_looping_google_api_list_response(
+        self, service: Any, key: str, args: dict[str, Any], logger: logging.Logger
+    ) -> Iterator[dict[str, Any]]:
+        try:
+            looping = True
+            next_page_token: str | None = None
+            while looping:
+                rsp = service.list(pageToken=next_page_token, **args).execute()
+                next_page_token = rsp.get("nextPageToken")
+                items: list[dict[str, Any]] = rsp.get(key)
+
+                if items is None or len(items) == 0:
+                    looping = False
+                    break
+
+                if rsp.get("nextPageToken") is None:
+                    looping = False
+                else:
+                    next_page_token = rsp.get("nextPageToken")
+
+                for item in items:
+                    yield item
+        except Exception as e:
+            logger.info(f"There was an error listing {key} with {args}: {str(e)}")
+            logger.info(f"Backing off to mocked data for development purposes")
+            yield from _get_looping_google_api_list_response(service, key, args)
+
+    def load_identity_groups(self, logger: logging.Logger) -> Dict[str, Any]:
+        domain = self.config.delivery_method.domain
+        if not domain:
+            raise Exception("No domain was provided")
+        if self.google_drive_service is None or self.google_drive_service._http.credentials is None:
+            raise Exception("No auth found")
+
+        directory_service = build("admin", "directory_v1", credentials=self.google_drive_service._http.credentials)
+        users_api = directory_service.users()
+        groups_api = directory_service.groups()
+        members_api = directory_service.members()
+
+        # here is failing
+        for user in self._get_looping_google_api_list_response(users_api, "users", {"domain": domain}, logger):
+            rfp = RemoteFileIdentity(
+                id=uuid.uuid4(),
+                remote_id=user["primaryEmail"],
+                name=user["name"]["fullName"] if user["name"] is not None else None,
+                email_address=user["primaryEmail"],
+                member_email_addresses=[x["address"] for x in user["emails"]],
+                type=RemoteFileIdentityType.USER,
+                modified_at=datetime_now(),
+            )
+            yield rfp.dict()
+
+        for group in self._get_looping_google_api_list_response(groups_api, "groups", {"domain": domain}, logger):
+            rfp = RemoteFileIdentity(
+                id=uuid.uuid4(),
+                remote_id=group["email"],
+                name=group["name"],
+                email_address=group["email"],
+                type=RemoteFileIdentityType.GROUP,
+                modified_at=datetime_now(),
+            )
+
+            for member in self._get_looping_google_api_list_response(members_api, "members", {"groupKey": group["id"]}, logger):
+                rfp.member_email_addresses = rfp.member_email_addresses or []
+                rfp.member_email_addresses.append(member["email"])
+
+            yield rfp.dict()
+
+        return ""
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
@@ -356,9 +435,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             description=None,
         )
 
-    def get_file_metadata(self, file: GoogleDriveRemoteFile, logger: logging.Logger) -> Dict[str, Any]:
+    def get_file_acl_permissions(self, file: GoogleDriveRemoteFile, logger: logging.Logger) -> Dict[str, Any]:
         remote_identities, is_public = self.get_file_permissions(file.id, file_name=file.uri, logger=logger)
-        return RemoteFileMetadata(
+        return RemoteFilePermissions(
             id=file.id,
             file_path=file.uri,
             allowed_identity_remote_ids=[p.remote_id for p in remote_identities],
