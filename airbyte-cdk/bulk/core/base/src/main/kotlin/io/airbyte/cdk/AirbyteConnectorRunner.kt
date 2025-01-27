@@ -4,13 +4,13 @@ package io.airbyte.cdk
 import io.airbyte.cdk.command.ConnectorCommandLinePropertySource
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.MetadataYamlPropertySource
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.configuration.picocli.MicronautFactory
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.RuntimeBeanDefinition
 import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
 import io.micronaut.core.cli.CommandLine as MicronautCommandLine
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.FileOwnerAttributeView
@@ -95,7 +95,9 @@ sealed class AirbyteConnectorRunner(
                 val ownerView =
                     Files.getFileAttributeView(configPath, FileOwnerAttributeView::class.java)
                 log.info { "Config path $configPath owner: ${ownerView?.owner?.name}" }
-                log.info { "Config path $configPath permissions: r${configPath.isReadable()} w${configPath.isWritable()} x${configPath.isExecutable()}" }
+                log.info {
+                    "Config path $configPath permissions: r${configPath.isReadable()} w${configPath.isWritable()} x${configPath.isExecutable()}"
+                }
             }
         } catch (e: Exception) {
             log.error(e) { "Failed to get config path owner and permissions" }
@@ -106,12 +108,14 @@ sealed class AirbyteConnectorRunner(
                 val ownerView =
                     Files.getFileAttributeView(catalogPath, FileOwnerAttributeView::class.java)
                 log.info { "Catalog path $catalogPath owner: ${ownerView?.owner?.name}" }
-                log.info { "Catalog path $catalogPath permissions: r${catalogPath.isReadable()} w${catalogPath.isWritable()} x${catalogPath.isExecutable()}" }
+                log.info {
+                    "Catalog path $catalogPath permissions: r${catalogPath.isReadable()} w${catalogPath.isWritable()} x${catalogPath.isExecutable()}"
+                }
             }
         } catch (e: Exception) {
             log.error(e) { "Failed to get catalog path owner and permissions" }
         }
-        
+
         val picocliCommandLineFactory = PicocliCommandLineFactory(this)
         val micronautCommandLine: MicronautCommandLine = MicronautCommandLine.parse(*args)
         val airbytePropertySource =

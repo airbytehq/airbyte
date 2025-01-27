@@ -18,9 +18,12 @@ import java.io.File
 import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.attribute.PosixFilePermission
 import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
+import kotlin.io.path.setOwner
+import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -68,6 +71,7 @@ class DockerizedDestination(
         // the actual platform, and we don't need it here.
         val testDir = Path.of("/tmp/airbyte_tests/")
         Files.createDirectories(testDir)
+
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
         // This directory gets mounted to the docker container,
         // presumably so that we can extract some files out of it?
@@ -146,8 +150,9 @@ class DockerizedDestination(
                 .toMutableList()
 
         fun addInput(paramName: String, fileContents: ByteArray) {
+            val path = jobRoot.resolve("destination_$paramName.json")
             Files.write(
-                jobRoot.resolve("destination_$paramName.json"),
+                path,
                 fileContents,
             )
             cmd.add("--$paramName")
