@@ -39,8 +39,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * MySQL destination implementation for Airbyte. Handles writing data to MySQL databases
- * with support for SSL, SSH tunneling, and proper error handling.
+ * MySQL destination implementation for Airbyte. Handles writing data to MySQL databases with
+ * support for SSL, SSH tunneling, and proper error handling.
  *
  * This destination supports MySQL 8.0.0+ and handles:
  * - Connection validation and MySQL version compatibility checks
@@ -66,8 +66,10 @@ class MySQLDestination :
      * 3. Check MySQL version compatibility
      * 4. Validate table operation permissions
      *
-     * @param config JSON configuration containing connection details (host, port, username, password, etc.)
-     * @return AirbyteConnectionStatus indicating SUCCESS if all checks pass, or FAILED with error details
+     * @param config JSON configuration containing connection details (host, port, username,
+     * password, etc.)
+     * @return AirbyteConnectionStatus indicating SUCCESS if all checks pass, or FAILED with error
+     * details
      */
     override fun check(config: JsonNode): AirbyteConnectionStatus {
         val dataSource = getDataSource(config)
@@ -125,9 +127,9 @@ class MySQLDestination :
     }
 
     /**
-     * Returns default JDBC connection properties for MySQL.
-     * Includes settings for handling zero dates and local file loading.
-     * When SSL is enabled, additional SSL-specific parameters are included.
+     * Returns default JDBC connection properties for MySQL. Includes settings for handling zero
+     * dates and local file loading. When SSL is enabled, additional SSL-specific parameters are
+     * included.
      *
      * @param config JSON configuration that may specify SSL usage
      * @return Map of default JDBC parameters
@@ -141,10 +143,11 @@ class MySQLDestination :
     }
 
     /**
-     * Converts Airbyte configuration format to JDBC configuration format.
-     * Constructs the JDBC URL and includes credentials and optional parameters.
+     * Converts Airbyte configuration format to JDBC configuration format. Constructs the JDBC URL
+     * and includes credentials and optional parameters.
      *
-     * @param config Airbyte configuration JSON containing host, port, credentials, and optional parameters
+     * @param config Airbyte configuration JSON containing host, port, credentials, and optional
+     * parameters
      * @return JsonNode containing JDBC-formatted configuration
      */
     override fun toJdbcConfig(config: JsonNode): JsonNode {
@@ -197,8 +200,8 @@ class MySQLDestination :
     }
 
     /**
-     * Returns the list of migrations to be executed for this destination.
-     * Currently returns an empty list as no migrations are needed.
+     * Returns the list of migrations to be executed for this destination. Currently returns an
+     * empty list as no migrations are needed.
      *
      * @param database JDBC database connection
      * @param databaseName Name of the target database
@@ -295,8 +298,8 @@ class MySQLDestination :
 
         @Throws(Exception::class)
         /**
-         * Handles MySQL-specific exceptions, particularly access denied errors.
-         * Converts SQLSyntaxErrorException with "access denied" message to ConfigErrorException.
+         * Handles MySQL-specific exceptions, particularly access denied errors. Converts
+         * SQLSyntaxErrorException with "access denied" message to ConfigErrorException.
          *
          * @param e The exception to handle
          * @throws ConfigErrorException if access is denied
