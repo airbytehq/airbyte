@@ -967,7 +967,7 @@ The `path_in_oauth_response` looks like:
 ```
 
 ### Case D: OAuth Flow returns the `access_token` and the `refresh_token` is a `single-use` key 
-In this example we expect the `refresh_token` key expires alongside with the `access_token` and should be exhanged alltogher, having the new pair of keys in response. The `token_expiry_date` is the property that holds the `date-time` value of when the `access_token` should be expired.
+In this example we expect the `refresh_token` key expires alongside with the `access_token` and should be exhanged alltogher, having the new pair of keys in response. The `token_expiry_date` is the property that holds the `date-time` value of when the `access_token` should be expired
 
 ```yaml
 # advanced_auth
