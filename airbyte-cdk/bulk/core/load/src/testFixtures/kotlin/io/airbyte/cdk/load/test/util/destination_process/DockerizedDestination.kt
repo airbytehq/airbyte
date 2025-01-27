@@ -112,7 +112,8 @@ class DockerizedDestination(
         // and the destination container is just called "destination")
         val shortImageName = imageTag.substringAfterLast("/").substringBefore(":")
         val containerName = "$shortImageName-$command-$randomSuffix"
-        logger.info { "Creating docker container $containerName" }
+        logger.info { "Hello world." }
+        logger.info { "Launching docker container: $containerName" }
         logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
         val additionalEnvEntries =
             envVars.flatMap { (key, value) ->
