@@ -38,6 +38,17 @@ import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+/**
+ * MySQL destination implementation for Airbyte. Handles writing data to MySQL databases
+ * with support for SSL, SSH tunneling, and proper error handling.
+ *
+ * This destination supports MySQL 8.0.0+ and handles:
+ * - Connection validation and MySQL version compatibility checks
+ * - Data type mapping and transformation
+ * - SSL/TLS encrypted connections
+ * - SSH tunnel connections
+ * - Proper error handling for access denied and other MySQL-specific errors
+ */
 class MySQLDestination :
     AbstractJdbcDestination<MinimumDestinationState>(
         DRIVER_CLASS,
@@ -48,6 +59,16 @@ class MySQLDestination :
     override val configSchemaKey: String
         get() = JdbcUtils.DATABASE_KEY
 
+    /**
+     * Validates the provided MySQL configuration by attempting to:
+     * 1. Establish a connection to the database
+     * 2. Verify local_infile is enabled
+     * 3. Check MySQL version compatibility
+     * 4. Validate table operation permissions
+     *
+     * @param config JSON configuration containing connection details (host, port, username, password, etc.)
+     * @return AirbyteConnectionStatus indicating SUCCESS if all checks pass, or FAILED with error details
+     */
     override fun check(config: JsonNode): AirbyteConnectionStatus {
         val dataSource = getDataSource(config)
         try {
@@ -103,6 +124,14 @@ class MySQLDestination :
         }
     }
 
+    /**
+     * Returns default JDBC connection properties for MySQL.
+     * Includes settings for handling zero dates and local file loading.
+     * When SSL is enabled, additional SSL-specific parameters are included.
+     *
+     * @param config JSON configuration that may specify SSL usage
+     * @return Map of default JDBC parameters
+     */
     public override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
         return if (JdbcUtils.useSsl(config)) {
             DEFAULT_SSL_JDBC_PARAMETERS
@@ -111,6 +140,13 @@ class MySQLDestination :
         }
     }
 
+    /**
+     * Converts Airbyte configuration format to JDBC configuration format.
+     * Constructs the JDBC URL and includes credentials and optional parameters.
+     *
+     * @param config Airbyte configuration JSON containing host, port, credentials, and optional parameters
+     * @return JsonNode containing JDBC-formatted configuration
+     */
     override fun toJdbcConfig(config: JsonNode): JsonNode {
         val jdbcUrl =
             String.format(
@@ -134,10 +170,24 @@ class MySQLDestination :
         return Jsons.jsonNode(configBuilder.build())
     }
 
+    /**
+     * Creates a MySQL-specific SQL generator for handling DDL and DML operations.
+     *
+     * @param config JSON configuration (unused in this implementation)
+     * @return MySQL-specific SQL generator
+     */
     override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator {
         return MysqlSqlGenerator()
     }
 
+    /**
+     * Creates a MySQL-specific destination handler for managing tables and data operations.
+     *
+     * @param databaseName Name of the target database
+     * @param database JDBC database connection
+     * @param rawTableSchema Schema name for raw tables
+     * @return MySQL destination handler implementation
+     */
     override fun getDestinationHandler(
         databaseName: String,
         database: JdbcDatabase,
@@ -146,6 +196,16 @@ class MySQLDestination :
         return MysqlDestinationHandler(database, rawTableSchema)
     }
 
+    /**
+     * Returns the list of migrations to be executed for this destination.
+     * Currently returns an empty list as no migrations are needed.
+     *
+     * @param database JDBC database connection
+     * @param databaseName Name of the target database
+     * @param sqlGenerator SQL generator for the destination
+     * @param destinationHandler Destination handler instance
+     * @return Empty list of migrations
+     */
     override fun getMigrations(
         database: JdbcDatabase,
         databaseName: String,
@@ -155,6 +215,13 @@ class MySQLDestination :
         return emptyList()
     }
 
+    /**
+     * Creates a MySQL-specific V1 to V2 schema migrator.
+     *
+     * @param database JDBC database connection
+     * @param databaseName Name of the target database
+     * @return MySQL V1V2 migrator implementation
+     */
     override fun getV1V2Migrator(
         database: JdbcDatabase,
         databaseName: String
@@ -162,6 +229,13 @@ class MySQLDestination :
         return MysqlV1V2Migrator(database)
     }
 
+    /**
+     * Creates a data transformer that simplifies property names for MySQL compatibility.
+     *
+     * @param parsedCatalog Optional parsed catalog information
+     * @param defaultNamespace Optional default namespace
+     * @return Stream-aware data transformer for property name simplification
+     */
     override fun getDataTransformer(
         parsedCatalog: ParsedCatalog?,
         defaultNamespace: String?
@@ -206,6 +280,11 @@ class MySQLDestination :
                 DEFAULT_JDBC_PARAMETERS
             )
 
+        /**
+         * Creates an SSH-wrapped MySQL destination that supports tunneling connections.
+         *
+         * @return SSH-wrapped MySQL destination
+         */
         fun sshWrappedDestination(): Destination {
             return SshWrappedDestination(
                 MySQLDestination(),
@@ -215,6 +294,14 @@ class MySQLDestination :
         }
 
         @Throws(Exception::class)
+        /**
+         * Handles MySQL-specific exceptions, particularly access denied errors.
+         * Converts SQLSyntaxErrorException with "access denied" message to ConfigErrorException.
+         *
+         * @param e The exception to handle
+         * @throws ConfigErrorException if access is denied
+         * @throws Exception the original exception if not handled specifically
+         */
         fun handleException(e: Exception) {
             if (e is SQLSyntaxErrorException) {
                 if (e.message!!.lowercase(Locale.getDefault()).contains("access denied")) {
