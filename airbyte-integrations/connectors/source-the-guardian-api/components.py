@@ -24,6 +24,8 @@ class CustomPageIncrement(PaginationStrategy):
     start_from_page: int = 0
     inject_on_first_request: bool = False
 
+    print("Hi!")
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if isinstance(self.page_size, int) or (self.page_size is None):
             self._page_size = self.page_size
