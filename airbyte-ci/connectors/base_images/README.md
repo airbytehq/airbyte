@@ -130,6 +130,13 @@ poetry run mypy base_images --check-untyped-defs
 
 ## CHANGELOG
 
+### 1.5.1
+- Minor cleanup + docs.
+- New Java base image with bumped amazon corretto sha.
+
+### 1.5.0
+- Include a non-root Java base image (2.0)
+
 ### 1.4.0
 - Declare a base image for our java connectors.
 
