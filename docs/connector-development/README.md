@@ -69,7 +69,7 @@ Need help? Join our [Connector Development Slack channel](https://airbytehq.slac
 ### Java CDK (Limited Support)
 ⚠️ **For Existing Connectors Only**
 * Currently maintaining existing connectors only
-* New Java CDK planned for 2024
+* New Java CDK planned for 2025
 * Not accepting new Java/Kotlin connectors
 * [Maintenance Guide](./tutorials/building-a-java-destination.md)
 
