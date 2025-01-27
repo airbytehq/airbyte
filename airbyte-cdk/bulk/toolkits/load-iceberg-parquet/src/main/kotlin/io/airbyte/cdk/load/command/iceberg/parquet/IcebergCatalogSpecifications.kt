@@ -184,8 +184,8 @@ class NessieCatalogSpecification(
     @get:JsonSchemaTitle("Namespace")
     @get:JsonPropertyDescription(
         """The Nessie namespace to be used in the Table identifier. 
-            |This will ONLY be used if the `Destination Namespace` setting for the connection is set to
-            | `Destination-defined` or `Source-defined`"""
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
     )
     @get:JsonProperty("namespace")
     val namespace: String?
@@ -263,8 +263,8 @@ class RestCatalogSpecification(
     @get:JsonSchemaTitle("Namespace")
     @get:JsonPropertyDescription(
         """The namespace to be used in the Table identifier. 
-                |This will ONLY be used if the `Destination Namespace` setting for the connection is set to
-                | `Destination-defined` or `Source-defined`"""
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
     )
     val namespace: String?
 ) : CatalogType(catalogType)
@@ -337,8 +337,8 @@ data class NessieCatalogConfiguration(
     @get:JsonSchemaTitle("Namespace")
     @get:JsonPropertyDescription(
         """The Nessie namespace to be used in the Table identifier. 
-                |This will ONLY be used if the `Destination Namespace` setting for the connection is set to
-                | `Destination-defined` or `Source-defined`"""
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
     )
     val namespace: String?
 ) : CatalogConfiguration
@@ -357,8 +357,8 @@ data class RestCatalogConfiguration(
     @get:JsonSchemaTitle("Namespace")
     @get:JsonPropertyDescription(
         """The namespace to be used in the Table identifier. 
-                |This will ONLY be used if the `Destination Namespace` setting for the connection is set to
-                | `Destination-defined` or `Source-defined`"""
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
     )
     val namespace: String?
 ) : CatalogConfiguration
