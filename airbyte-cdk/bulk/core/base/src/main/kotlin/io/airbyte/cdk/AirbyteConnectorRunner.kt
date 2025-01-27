@@ -11,12 +11,7 @@ import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
 import io.micronaut.core.cli.CommandLine as MicronautCommandLine
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.attribute.FileOwnerAttributeView
-import kotlin.io.path.isExecutable
-import kotlin.io.path.isReadable
-import kotlin.io.path.isWritable
 import kotlin.system.exitProcess
 import picocli.CommandLine
 import picocli.CommandLine.Model.ArgGroupSpec
@@ -79,25 +74,6 @@ sealed class AirbyteConnectorRunner(
             listOfNotNull(Environment.TEST.takeIf { testBeanDefinitions.isNotEmpty() })
 
     inline fun <reified R : Runnable> run() {
-
-        log.info { "Running $connectorType connector with args: ${args.joinToString(" ")}" }
-        val configIndex = args.indexOf("--config")
-        val catalogIndex = args.indexOf("--catalog")
-        // Show permissions of the config and catalog files.
-        log.info { "whoami: ${System.getProperty("user.name")}" }
-        if (configIndex != -1) {
-            val configPath = Path.of(args[configIndex + 1]).parent
-            val ownerView = Files.getFileAttributeView(configPath, FileOwnerAttributeView::class.java)
-            log.info { "Config path $configPath owner: ${ownerView?.owner?.name}" }
-            log.info { "Config path $configPath permissions: r${configPath.isReadable()} w${configPath.isWritable()} x${configPath.isExecutable()}" }
-        }
-        if (catalogIndex != -1) {
-            val catalogPath = Path.of(args[catalogIndex + 1]).parent
-            val ownerView = Files.getFileAttributeView(catalogPath, FileOwnerAttributeView::class.java)
-            log.info { "Catalog path $catalogPath owner: ${ownerView?.owner?.name}" }
-            log.info { "Catalog path $catalogPath permissions: r${catalogPath.isReadable()} w${catalogPath.isWritable()} x${catalogPath.isExecutable()}" }
-        }
-        
         val picocliCommandLineFactory = PicocliCommandLineFactory(this)
         val micronautCommandLine: MicronautCommandLine = MicronautCommandLine.parse(*args)
         val airbytePropertySource =
