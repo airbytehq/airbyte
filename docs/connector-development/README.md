@@ -1,7 +1,9 @@
-Welcome to Airbyte's Connector Development guide! This documentation will help you choose the right approach for building your connector and guide you through the development process.
+# Connector Development Guide
+
+Welcome to Airbyte's Connector Development Guide! This documentation will help you choose the right approach for building your connector and guide you through the development process.
 
 :::warning Important Note About Java Development
-🔄 Airbyte is undergoing a major revamp of the Java destinations codebase, with plans to release a new CDK in 2024. Currently:
+🔄 Airbyte is undergoing a major revamp of the Java destinations codebase, with plans to release a new Java/Kotlin CDK in 2025. Currently:
 * We are not accepting new Java connector contributions
 * Existing Java connector maintenance continues
 * For new database connectors, please use the Python CDK
