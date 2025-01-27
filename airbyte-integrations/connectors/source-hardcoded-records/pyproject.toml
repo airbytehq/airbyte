@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.0.18"
+version = "0.0.25"
 name = "source-hardcoded-records"
 description = "Source implementation for hardcoded recprds."
 authors = [ "Airbyte <evan@airbyte.io>",]

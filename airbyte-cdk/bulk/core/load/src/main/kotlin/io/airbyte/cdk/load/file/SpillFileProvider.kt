@@ -20,6 +20,6 @@ class DefaultSpillFileProvider(val config: DestinationConfiguration) : SpillFile
     override fun createTempFile(): Path {
         val directory = config.tmpFileDirectory
         Files.createDirectories(directory)
-        return Files.createTempFile(directory, "staged-raw-records", "jsonl")
+        return Files.createTempFile(directory, "staged-raw-records", ".jsonl")
     }
 }

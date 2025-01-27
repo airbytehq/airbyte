@@ -19,5 +19,7 @@ import io.airbyte.cdk.load.message.SimpleBatch
  */
 fun SyncManager.markPersisted(stream: DestinationStream, range: Range<Long>) {
     this.getStreamManager(stream.descriptor)
-        .updateBatchState(BatchEnvelope(SimpleBatch(Batch.State.PERSISTED), range))
+        .updateBatchState(
+            BatchEnvelope(SimpleBatch(Batch.State.PERSISTED), range, stream.descriptor)
+        )
 }

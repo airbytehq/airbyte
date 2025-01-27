@@ -3,14 +3,15 @@
 import json
 from unittest import TestCase
 
+from config_builder import ConfigBuilder
+from source_sentry.source import SourceSentry
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
-from config_builder import ConfigBuilder
-from source_sentry.source import SourceSentry
 
 
 class TestEvents(TestCase):
@@ -29,12 +30,8 @@ class TestEvents(TestCase):
     @HttpMocker()
     def test_read(self, http_mocker: HttpMocker):
         http_mocker.get(
-            HttpRequest(
-                url="https://sentry.io/api/0/projects/test%20organization/test%20project/events/",
-                query_params={"full": "true"}
-            ),
-            HttpResponse(body=json.dumps(find_template(self.fr_read_file, __file__)), status_code=200)
-
+            HttpRequest(url="https://sentry.io/api/0/projects/test%20organization/test%20project/events/", query_params={"full": "true"}),
+            HttpResponse(body=json.dumps(find_template(self.fr_read_file, __file__)), status_code=200),
         )
         config = self.config()
         catalog = self.catalog()
@@ -47,12 +44,8 @@ class TestEvents(TestCase):
     @HttpMocker()
     def test_read_incremental(self, http_mocker: HttpMocker):
         http_mocker.get(
-            HttpRequest(
-                url="https://sentry.io/api/0/projects/test%20organization/test%20project/events/",
-                query_params={"full": "true"}
-            ),
-            HttpResponse(body=json.dumps(find_template(self.inc_read_file, __file__)), status_code=200)
-
+            HttpRequest(url="https://sentry.io/api/0/projects/test%20organization/test%20project/events/", query_params={"full": "true"}),
+            HttpResponse(body=json.dumps(find_template(self.inc_read_file, __file__)), status_code=200),
         )
         config = self.config()
         catalog = self.catalog()

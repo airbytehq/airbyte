@@ -23,6 +23,14 @@ Only datasets with [Parquet exports](https://huggingface.co/docs/dataset-viewer/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2025-01-25 | [52244](https://github.com/airbytehq/airbyte/pull/52244) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51820](https://github.com/airbytehq/airbyte/pull/51820) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51202](https://github.com/airbytehq/airbyte/pull/51202) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50621](https://github.com/airbytehq/airbyte/pull/50621) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50079](https://github.com/airbytehq/airbyte/pull/50079) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49609](https://github.com/airbytehq/airbyte/pull/49609) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [49233](https://github.com/airbytehq/airbyte/pull/49233) | Update dependencies |
+| 0.0.2 | 2024-12-11 | [48911](https://github.com/airbytehq/airbyte/pull/48911) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-11-28 | | Initial release by [@michel-tricot](https://github.com/michel-tricot) via Connector Builder |
 
 </details>

@@ -36,9 +36,9 @@ import org.junit.jupiter.api.assertAll
  */
 abstract class SpecTest :
     IntegrationTest(
-        FakeDataDumper,
-        NoopDestinationCleaner,
-        NoopExpectedRecordMapper,
+        dataDumper = FakeDataDumper,
+        destinationCleaner = NoopDestinationCleaner,
+        recordMangler = NoopExpectedRecordMapper,
     ) {
     private val testResourcesPath = Path.of("src/test-integration/resources")
 

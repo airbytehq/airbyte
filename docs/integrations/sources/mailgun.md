@@ -68,7 +68,14 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
-| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.8 | 2025-01-25 | [52284](https://github.com/airbytehq/airbyte/pull/52284) | Update dependencies |
+| 0.3.7 | 2025-01-18 | [51815](https://github.com/airbytehq/airbyte/pull/51815) | Update dependencies |
+| 0.3.6 | 2025-01-11 | [51144](https://github.com/airbytehq/airbyte/pull/51144) | Update dependencies |
+| 0.3.5 | 2024-12-28 | [50592](https://github.com/airbytehq/airbyte/pull/50592) | Update dependencies |
+| 0.3.4 | 2024-12-21 | [50128](https://github.com/airbytehq/airbyte/pull/50128) | Update dependencies |
+| 0.3.3 | 2024-12-14 | [49613](https://github.com/airbytehq/airbyte/pull/49613) | Update dependencies |
+| 0.3.2 | 2024-12-12 | [47680](https://github.com/airbytehq/airbyte/pull/47680) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44130](https://github.com/airbytehq/airbyte/pull/44130) | Refactor connector to manifest-only format |
 | 0.2.18 | 2024-08-12 | [43923](https://github.com/airbytehq/airbyte/pull/43923) | Update dependencies |
 | 0.2.17 | 2024-08-10 | [43501](https://github.com/airbytehq/airbyte/pull/43501) | Update dependencies |

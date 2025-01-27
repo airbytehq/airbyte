@@ -10,8 +10,9 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import backoff
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
 from requests_oauthlib import OAuth1
+
+from airbyte_cdk.sources.streams.http import HttpStream
 from source_netsuite.constraints import (
     CUSTOM_INCREMENTAL_CURSOR,
     INCREMENTAL_CURSOR,
@@ -176,7 +177,6 @@ class NetsuiteStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
         **kwargs,
     ) -> Iterable[Mapping]:
-
         records = response.json().get("items")
         request_kwargs = self.request_kwargs(stream_slice, next_page_token)
         if records:

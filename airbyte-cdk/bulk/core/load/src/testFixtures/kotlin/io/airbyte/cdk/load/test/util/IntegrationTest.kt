@@ -8,9 +8,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.DestinationMessage
-import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.InputMessage
+import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -54,6 +55,8 @@ abstract class IntegrationTest(
     val nameMapper: NameMapper = NoopNameMapper,
     /** See [RecordDiffer.nullEqualsUnset]. */
     val nullEqualsUnset: Boolean = false,
+    val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
+    val envVars: Map<String, String> = emptyMap(),
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -63,7 +66,7 @@ abstract class IntegrationTest(
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
         LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-            .format(DateTimeFormatter.ofPattern("YYYYMMDD"))
+            .format(randomizedNamespaceDateFormatter)
     // stream name doesn't need to be randomized, only the namespace.
     val randomizedNamespace = "test$timestampString$randomSuffix"
 
@@ -102,7 +105,8 @@ abstract class IntegrationTest(
     ) {
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
-            canonicalExpectedRecords.map { recordMangler.mapRecord(it) }
+            canonicalExpectedRecords.map { recordMangler.mapRecord(it, stream.schema) }
+        val descriptor = recordMangler.mapStreamDescriptor(stream.descriptor)
 
         RecordDiffer(
                 primaryKey = primaryKey.map { nameMapper.mapFieldName(it) },
@@ -113,7 +117,7 @@ abstract class IntegrationTest(
             .diffRecords(expectedRecords, actualRecords)
             ?.let {
                 var message =
-                    "Incorrect records for ${stream.descriptor.namespace}.${stream.descriptor.name}:\n$it"
+                    "Incorrect records for ${descriptor.namespace}.${descriptor.name}:\n$it"
                 if (reason != null) {
                     message = reason + "\n" + message
                 }
@@ -125,7 +129,7 @@ abstract class IntegrationTest(
     fun runSync(
         configContents: String,
         stream: DestinationStream,
-        messages: List<DestinationMessage>,
+        messages: List<InputMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
     ): List<AirbyteMessage> =
@@ -134,7 +138,7 @@ abstract class IntegrationTest(
             DestinationCatalog(listOf(stream)),
             messages,
             streamStatus,
-            useFileTransfer
+            useFileTransfer,
         )
 
     /**
@@ -146,7 +150,7 @@ abstract class IntegrationTest(
     fun runSync(
         configContents: String,
         catalog: DestinationCatalog,
-        messages: List<DestinationMessage>,
+        messages: List<InputMessage>,
         /**
          * If you set this to anything other than `COMPLETE`, you may run into a race condition.
          * It's recommended that you send an explicit state message in [messages], and run the sync
@@ -176,6 +180,7 @@ abstract class IntegrationTest(
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
+                envVars = envVars,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -207,7 +212,7 @@ abstract class IntegrationTest(
     fun runSyncUntilStateAck(
         configContents: String,
         stream: DestinationStream,
-        records: List<DestinationRecord>,
+        records: List<InputRecord>,
         inputStateMessage: StreamCheckpoint,
         allowGracefulShutdown: Boolean,
         useFileTransfer: Boolean = false,
@@ -218,6 +223,7 @@ abstract class IntegrationTest(
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
+                envVars
             )
         return runBlocking(Dispatchers.IO) {
             launch {
@@ -261,7 +267,26 @@ abstract class IntegrationTest(
         }
     }
 
+    fun updateConfig(config: String): String = configUpdater.update(config)
+
     companion object {
+        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")
+        val randomizedNamespaceDateFormatter: DateTimeFormatter =
+            DateTimeFormatter.ofPattern("yyyyMMdd")
+
+        /**
+         * Given a randomizedNamespace (such as `test20241216abcd`), return whether the namespace
+         * was created more than [retentionDays] days ago, and therefore should be deleted by a
+         * [DestinationCleaner].
+         */
+        fun isNamespaceOld(namespace: String, retentionDays: Long = 30): Boolean {
+            val cleanupCutoffDate = LocalDate.now().minusDays(retentionDays)
+            val matchResult = randomizedNamespaceRegex.find(namespace)
+            val namespaceCreationDate =
+                LocalDate.parse(matchResult!!.groupValues[1], randomizedNamespaceDateFormatter)
+            return namespaceCreationDate.isBefore(cleanupCutoffDate)
+        }
+
         private val hasRunCleaner = AtomicBoolean(false)
 
         // Connectors are calling System.getenv rather than using micronaut-y properties,

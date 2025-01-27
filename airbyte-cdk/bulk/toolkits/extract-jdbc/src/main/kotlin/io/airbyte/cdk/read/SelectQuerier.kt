@@ -23,27 +23,42 @@ interface SelectQuerier {
 
     data class Parameters(
         /** When set, the [ObjectNode] in the [Result] is reused; take care with this! */
-        val reuseResultObject: Boolean = false,
-        /** JDBC fetchSize value. */
-        val fetchSize: Int? = null,
-    )
+        val reuseResultObject: Boolean,
+        /** JDBC [PreparedStatement] fetchSize value. */
+        val statementFetchSize: Int?,
+        /** JDBC [ResultSet] fetchSize value. */
+        val resultSetFetchSize: Int?,
+    ) {
+        constructor(
+            reuseResultObject: Boolean = false,
+            fetchSize: Int? = null
+        ) : this(reuseResultObject, fetchSize, fetchSize)
+    }
 
-    interface Result : Iterator<ObjectNode>, AutoCloseable {
-        val changes: Map<Field, FieldValueChange>?
+    interface Result : Iterator<ResultRow>, AutoCloseable
+
+    interface ResultRow {
+        val data: ObjectNode
+        val changes: Map<Field, FieldValueChange>
     }
 }
 
 /** Default implementation of [SelectQuerier]. */
 @Singleton
-open class JdbcSelectQuerier(
-    val jdbcConnectionFactory: JdbcConnectionFactory,
+class JdbcSelectQuerier(
+    private val jdbcConnectionFactory: JdbcConnectionFactory,
 ) : SelectQuerier {
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
     ): SelectQuerier.Result = Result(jdbcConnectionFactory, q, parameters)
 
-    open class Result(
+    data class ResultRow(
+        override var data: ObjectNode = Jsons.objectNode(),
+        override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
+    ) : SelectQuerier.ResultRow
+
+    class Result(
         val jdbcConnectionFactory: JdbcConnectionFactory,
         val q: SelectQuery,
         val parameters: SelectQuerier.Parameters,
@@ -53,10 +68,7 @@ open class JdbcSelectQuerier(
         var conn: Connection? = null
         var stmt: PreparedStatement? = null
         var rs: ResultSet? = null
-        val reusable: ObjectNode? = Jsons.objectNode().takeIf { parameters.reuseResultObject }
-        val metaChanges: MutableMap<Field, FieldValueChange> = mutableMapOf()
-        override val changes: Map<Field, FieldValueChange>?
-            get() = metaChanges
+        val reusable: ResultRow? = ResultRow().takeIf { parameters.reuseResultObject }
 
         init {
             log.info { "Querying ${q.sql}" }
@@ -71,13 +83,14 @@ open class JdbcSelectQuerier(
         var isReady = false
         var hasNext = false
         var hasLoggedResultsReceived = false
+        var hasLoggedException = false
 
         /** Initializes a connection and readies the resultset. */
-        open fun initQueryExecution() {
+        fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
             stmt = conn!!.prepareStatement(q.sql)
-            parameters.fetchSize?.let { fetchSize: Int ->
-                log.info { "Setting fetchSize to $fetchSize." }
+            parameters.statementFetchSize?.let { fetchSize: Int ->
+                log.info { "Setting Statement fetchSize to $fetchSize." }
                 stmt!!.fetchSize = fetchSize
             }
             var paramIdx = 1
@@ -87,6 +100,10 @@ open class JdbcSelectQuerier(
                 paramIdx++
             }
             rs = stmt!!.executeQuery()
+            parameters.resultSetFetchSize?.let { fetchSize: Int ->
+                log.info { "Setting ResultSet fetchSize to $fetchSize." }
+                rs!!.fetchSize = fetchSize
+            }
         }
 
         override fun hasNext(): Boolean {
@@ -105,31 +122,34 @@ open class JdbcSelectQuerier(
             return hasNext
         }
 
-        override fun next(): ObjectNode {
-            metaChanges.clear()
+        override fun next(): SelectQuerier.ResultRow {
             // Ensure that the current row in the ResultSet hasn't been read yet; advance if
             // necessary.
             if (!hasNext()) throw NoSuchElementException()
             // Read the current row in the ResultSet
-            val record: ObjectNode = reusable ?: Jsons.objectNode()
+            val resultRow: ResultRow = reusable ?: ResultRow()
+            resultRow.changes.clear()
             var colIdx = 1
             for (column in q.columns) {
                 log.debug { "Getting value #$colIdx for $column." }
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
-                    record.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
+                    resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
                 } catch (e: Exception) {
-                    record.set<JsonNode>(column.id, Jsons.nullNode())
-                    log.info {
-                        "Failed to serialize column: ${column.id}, of type ${column.type}, with error ${e.message}"
+                    resultRow.data.set<JsonNode>(column.id, Jsons.nullNode())
+                    if (!hasLoggedException) {
+                        log.warn(e) { "Error deserializing value in column $column." }
+                        hasLoggedException = true
+                    } else {
+                        log.debug(e) { "Error deserializing value in column $column." }
                     }
-                    metaChanges.set(column, FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
+                    resultRow.changes.set(column, FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
                 }
                 colIdx++
             }
             // Flag that the current row has been read before returning.
             isReady = false
-            return record
+            return resultRow
         }
 
         override fun close() {

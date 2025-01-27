@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-mailosaur
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.1.0@sha256:3ac88000d74db5f9d8dcb004299b917a5dff5cbbc19ebccd49288266095547ca
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 251ed5c8-a927-4fb4-ad45-75393d564f3c
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/source-mailosaur
   githubIssueLabel: source-mailosaur
   icon: icon.svg

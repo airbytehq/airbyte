@@ -6,10 +6,12 @@ from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_instagram.streams import DatetimeTransformerMixin, InstagramStream, UserInsights
 from utils import read_full_refresh, read_incremental
+
+from airbyte_cdk.models import SyncMode
+
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -30,7 +32,6 @@ def test_state_is_not_outdated(api, config):
     assert not UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": {}})
 
 
-
 def test_user_insights_read(api, config, user_insight_data, requests_mock):
     test_id = "test_id"
 
@@ -40,7 +41,6 @@ def test_user_insights_read(api, config, user_insight_data, requests_mock):
 
     records = read_incremental(stream, {})
     assert records
-
 
 
 @pytest.mark.parametrize(

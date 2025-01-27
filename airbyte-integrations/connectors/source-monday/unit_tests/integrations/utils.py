@@ -3,12 +3,13 @@
 import operator
 from typing import Any, Dict, List, Optional
 
+from source_monday import SourceMonday
+
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_protocol.models import SyncMode
-from source_monday import SourceMonday
 
 
 def read_stream(

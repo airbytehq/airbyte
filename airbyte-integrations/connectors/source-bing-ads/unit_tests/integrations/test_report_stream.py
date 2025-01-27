@@ -4,11 +4,12 @@ from pathlib import Path
 from typing import Any, Optional
 
 import pendulum
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker
 from base_test import BaseTest
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from config_builder import ConfigBuilder
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.mock_http import HttpMocker
 
 
 class TestReportStream(BaseTest):
