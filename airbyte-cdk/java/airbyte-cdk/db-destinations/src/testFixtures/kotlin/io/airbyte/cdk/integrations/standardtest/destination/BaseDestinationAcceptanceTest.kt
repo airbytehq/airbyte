@@ -24,8 +24,10 @@ import io.airbyte.workers.process.ProcessFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.attribute.PosixFilePermission
 import java.util.*
 import java.util.function.Consumer
+import kotlin.io.path.setPosixFilePermissions
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mockito
@@ -248,6 +250,17 @@ abstract class BaseDestinationAcceptanceTest(
     open fun setUpInternal() {
         val testDir = Path.of("/tmp/airbyte_tests/")
         Files.createDirectories(testDir)
+        // Allow ourselves and our connector access to our test dir
+        testDir.setPosixFilePermissions(
+            setOf(
+                PosixFilePermission.OWNER_READ,
+                PosixFilePermission.OWNER_WRITE,
+                PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.OTHERS_READ,
+                PosixFilePermission.OTHERS_WRITE,
+                PosixFilePermission.OTHERS_EXECUTE,
+            ),
+        )
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
         jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"))
         localRoot = Files.createTempDirectory(testDir, "output")

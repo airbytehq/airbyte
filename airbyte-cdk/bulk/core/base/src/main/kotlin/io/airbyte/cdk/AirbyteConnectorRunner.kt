@@ -4,6 +4,7 @@ package io.airbyte.cdk
 import io.airbyte.cdk.command.ConnectorCommandLinePropertySource
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.MetadataYamlPropertySource
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.configuration.picocli.MicronautFactory
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.RuntimeBeanDefinition
@@ -61,6 +62,7 @@ sealed class AirbyteConnectorRunner(
     systemEnv: Map<String, String>,
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
 ) {
+    val log = KotlinLogging.logger {}
     val envs: Array<String> =
         arrayOf(Environment.CLI, connectorType) +
             // Set feature flag environments.
