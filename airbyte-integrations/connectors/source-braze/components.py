@@ -4,8 +4,8 @@
 
 import datetime
 import operator
-from dataclasses import dataclass
-from typing import Any, Mapping, Optional
+from dataclasses import dataclass, field
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import dpath
 import requests
@@ -16,7 +16,7 @@ from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.transformations import AddFields
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 
 
 @dataclass
@@ -42,46 +42,52 @@ class TransformToRecordComponent(AddFields):
 @dataclass
 class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
     """
-    Extending DatetimeBasedCursor by adding step option to existing start_time/end_time options
+    Extends DatetimeBasedCursor by adding a required length parameter for the Braze API.
     """
-
-    step_option: Optional[RequestOption] = None
-    stream_state_field_step: Optional[str] = None
+    step_option: Optional[RequestOption] = field(default=None)
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        super(DatetimeIncrementalSyncComponent, self).__post_init__(parameters=parameters)
+        super().__post_init__(parameters=parameters)
+        if self.step_option is None:
+            raise ValueError("step_option is required for DatetimeIncrementalSyncComponent")
 
-        self.stream_slice_field_step = InterpolatedString.create(self.stream_state_field_step or "step", parameters=parameters)
+    def _get_request_options(
+        self, option_type: RequestOptionType, stream_slice: Optional[StreamSlice] = None
+    ) -> Mapping[str, Any]:
+        options: dict[str, Any] = {}
+        if stream_slice is not None and self.step_option is not None:
+            base_options = super()._get_request_options(option_type, stream_slice)
+            options.update(base_options)
+            
+            if self.step_option.inject_into == option_type:
+                # Get start and end times from the stream slice
+                start_field = self._partition_field_start.eval(self.config)
+                end_field = self._partition_field_end.eval(self.config)
+                
+                start_str = stream_slice.get(start_field)
+                end_str = stream_slice.get(end_field)
+                
+                if isinstance(start_str, str) and isinstance(end_str, str):
+                    start_time = self._parser.parse(start_str, self.datetime_format)
+                    end_time = self._parser.parse(end_str, self.datetime_format)
+                    
+                    # Calculate length in days for Braze API (between 1-100)
+                    length_days = min(100, max(1, (end_time - start_time).days))
+                    
+                    field_name = (
+                        self.step_option.field_name.eval(config=self.config)
+                        if isinstance(self.step_option.field_name, InterpolatedString)
+                        else self.step_option.field_name
+                    )
+                    
+                    options[field_name] = length_days
 
-    def _get_request_options(self, option_type: RequestOptionType, stream_slice: StreamSlice):
-        options = super(DatetimeIncrementalSyncComponent, self)._get_request_options(option_type, stream_slice)
-        if self.step_option and self.step_option.inject_into == option_type:
-            options[self.step_option.field_name] = stream_slice.get(self.stream_slice_field_step.eval(self.config))
         return options
-
-    def _partition_daterange(self, start, end, step: datetime.timedelta):
-        """
-        Puts a step to each stream slice. `step` is a difference between start/end date in days.
-        """
-        get_start_time = operator.itemgetter(self._partition_field_start.eval(self.config))
-        get_end_time = operator.itemgetter(self._partition_field_end.eval(self.config))
-        date_range = [
-            dr
-            for dr in super(DatetimeIncrementalSyncComponent, self)._partition_daterange(start, end, step)
-            if get_start_time(dr) < get_end_time(dr)
-        ]
-        for i, _slice in enumerate(date_range):
-            start_time = self._parser.parse(get_start_time(_slice), self._start_datetime.datetime_format)
-            end_time = self._parser.parse(get_end_time(_slice), self._end_datetime.datetime_format)
-            _slice._stream_slice[self.stream_slice_field_step.eval(self.config)] = (
-                end_time + datetime.timedelta(days=int(bool(i))) - start_time
-            ).days
-        return date_range
 
 
 @dataclass
 class EventsRecordExtractor(DpathExtractor):
-    def extract_records(self, response: requests.Response) -> list[Record]:
+    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
         response_body = next(self.decoder.decode(response))
         events = response_body.get("events")
         if events:

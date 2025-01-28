@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
@@ -9,10 +10,10 @@ from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFiel
 
 def test_datetime_slicer(components_module):
     """
-    - `step` to be added to stream slices.
-    - `step` value one more higher than actual difference in days between end/start dates
-    - `step` value exactly equal to difference in days between end/start dates for first slice item
-    - take into account if difference in days between end/start dates less than `step` argument for last record
+    Test that the component correctly:
+    - Slices the time range into appropriate windows
+    - Calculates length as the number of days in each window
+    - Injects length parameter into request options
     """
     DatetimeIncrementalSyncComponent = components_module.DatetimeIncrementalSyncComponent
     slicer = DatetimeIncrementalSyncComponent(
@@ -24,14 +25,27 @@ def test_datetime_slicer(components_module):
         cursor_granularity="P1D",
         config={},
         parameters={},
-        step_option=RequestOption(field_name="step", inject_into=RequestOptionType.request_parameter, parameters={}),
+        step_option=RequestOption(field_name="length", inject_into=RequestOptionType.request_parameter, parameters={}),
     )
+
+    slices = slicer.stream_slices()
+    
+    # Test the time windows are correct
     expected_slices = [
-        {"start_time": "2022-12-01", "end_time": "2022-12-03", "step": 2},
-        {"start_time": "2022-12-04", "end_time": "2022-12-06", "step": 3},
-        {"start_time": "2022-12-07", "end_time": "2022-12-08", "step": 2},
+        {"start_time": "2022-12-01", "end_time": "2022-12-03"},
+        {"start_time": "2022-12-04", "end_time": "2022-12-06"},
+        {"start_time": "2022-12-07", "end_time": "2022-12-08"}
     ]
-    assert slicer.stream_slices() == expected_slices
+    assert slices == expected_slices
+
+    # Test that length is calculated correctly for each slice
+    for slice in slices:
+        options = slicer._get_request_options(RequestOptionType.request_parameter, slice)
+        # Length should be the number of days between start and end dates
+        start_date = datetime.strptime(slice["start_time"], "%Y-%m-%d")
+        end_date = datetime.strptime(slice["end_time"], "%Y-%m-%d")
+        expected_length = (end_date - start_date).days + 1  # +1 because both start and end dates are inclusive
+        assert options["length"] == expected_length
 
 
 def test_string_to_dict_transformation(components_module):
