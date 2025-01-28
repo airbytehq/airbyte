@@ -3,6 +3,7 @@
 #
 
 
+import logging
 import os
 from multiprocessing import Process
 from typing import Optional
@@ -16,6 +17,8 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_milvus.config import MilvusIndexingConfigModel
 
+logger = logging.getLogger("airbyte")
+
 
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
@@ -28,33 +31,75 @@ class MilvusIndexer(Indexer):
         self.embedder_dimensions = embedder_dimensions
 
     def _connect(self):
-        connections.connect(
-            uri=self.config.host,
-            db_name=self.config.db if self.config.db else "",
-            user=self.config.auth.username if self.config.auth.mode == "username_password" else "",
-            password=self.config.auth.password if self.config.auth.mode == "username_password" else "",
-            token=self.config.auth.token if self.config.auth.mode == "token" else "",
-        )
+        """Connect to Milvus server or Milvus Lite instance."""
+        # Clean up existing connections
+        for conn in connections.list_connections():
+            alias = conn[0] if isinstance(conn, tuple) else conn
+            try:
+                if connections.has_connection(alias):
+                    connections.disconnect(alias)
+            except Exception as e:
+                logger.warning(f"Failed to disconnect {alias}: {str(e)}")
+
+        # Determine if we're using Milvus Lite
+        use_lite = self.config.host.endswith(".db")
+        
+        try:
+            connections.connect(
+                alias="default",
+                uri=self.config.host,
+                db_name=self.config.db if self.config.db else "",
+                user=self.config.auth.username if self.config.auth.mode == "username_password" else "",
+                password=self.config.auth.password if self.config.auth.mode == "username_password" else "",
+                token=self.config.auth.token if self.config.auth.mode == "token" else "",
+                use_lite=use_lite,
+                timeout=30
+            )
+            logger.info(f"Successfully connected to {'Milvus Lite' if use_lite else 'Milvus'} at {self.config.host}")
+        except Exception as e:
+            logger.error(f"Failed to connect to Milvus: {str(e)}")
+            raise
 
     def _connect_with_timeout(self):
-        # Run connect in a separate process as it will hang if the token is invalid.
-        proc = Process(target=self._connect)
-        proc.start()
-        proc.join(5)
-        if proc.is_alive():
-            # If the process is still alive after 5 seconds, terminate it and raise an exception
-            proc.terminate()
-            proc.join()
-            raise Exception("Connection timed out, check your host and credentials")
+        """Connect to Milvus with timeout handling."""
+        # Determine if we're using Milvus Lite
+        use_lite = self.config.host.endswith(".db")
+        
+        if use_lite:
+            # Direct connection for Milvus Lite
+            try:
+                self._connect()
+            except Exception as e:
+                logger.error(f"Failed to connect to Milvus Lite: {str(e)}")
+                raise
+        else:
+            # Run connect in a separate process for remote connections
+            proc = Process(target=self._connect)
+            proc.start()
+            proc.join(5)
+            if proc.is_alive():
+                # If the process is still alive after 5 seconds, terminate it and raise an exception
+                proc.terminate()
+                proc.join()
+                raise Exception("Connection timed out, check your host and credentials")
 
     def _create_index(self, collection: Collection):
         """
         Create an index on the vector field when auto-creating the collection.
-
-        This uses an IVF_FLAT index with 1024 clusters. This is a good default for most use cases. If more control is needed, the index can be created manually (this is also stated in the documentation)
+        For Milvus Lite, only FLAT index is supported.
+        For regular Milvus, IVF_FLAT with 1024 clusters is used as default.
         """
+        use_lite = self.config.host.endswith(".db")
+        index_params = {
+            "metric_type": "L2",
+            "index_type": "FLAT" if use_lite else "IVF_FLAT",
+        }
+        if not use_lite:
+            index_params["params"] = {"nlist": 1024}
+            
         collection.create_index(
-            field_name=self.config.vector_field, index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}}
+            field_name=self.config.vector_field,
+            index_params=index_params
         )
 
     def _create_client(self):
@@ -88,6 +133,16 @@ class MilvusIndexer(Indexer):
                 return f"Vector field {self.config.vector_field} not found"
             if vector_field["type"] != DataType.FLOAT_VECTOR:
                 return f"Vector field {self.config.vector_field} is not a vector"
+            
+            # Skip server version check for Milvus Lite
+            use_lite = self.config.host.endswith(".db")
+            if not use_lite:
+                try:
+                    version = utility.get_server_version()
+                    logger.info(f"Connected to Milvus server version: {version}")
+                except Exception as e:
+                    logger.warning(f"Could not get server version (this is expected for Milvus Lite): {str(e)}")
+            
             if vector_field["params"]["dim"] != self.embedder_dimensions:
                 return f"Vector field {self.config.vector_field} is not a {self.embedder_dimensions}-dimensional vector"
         except Exception as e:
