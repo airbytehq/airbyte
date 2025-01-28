@@ -10,7 +10,7 @@ data:
     - suite: integrationTests
   connectorType: destination
   definitionId: a7bcc9d8-13b3-4e49-b80d-d020b90045e3
-  dockerImageTag: 0.7.16
+  dockerImageTag: 0.7.17
   dockerRepository: airbyte/destination-dev-null
   documentationUrl: https://docs.airbyte.com/integrations/destinations/dev-null
   githubIssueLabel: destination-dev-null

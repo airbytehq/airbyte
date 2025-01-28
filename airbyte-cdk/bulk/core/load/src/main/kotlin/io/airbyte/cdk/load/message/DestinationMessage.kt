@@ -406,7 +406,8 @@ data object Undefined : DestinationMessage {
 @Singleton
 class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
-    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.destination.core.file-transfer.enabled}")
+    private val fileTransferEnabled: Boolean,
 ) {
     fun fromAirbyteMessage(
         message: AirbyteMessage,

@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.initialization
+package io.airbyte.cdk.load.initialization
 
 import io.micronaut.context.annotation.Bean
 import io.micronaut.context.annotation.Factory
@@ -32,8 +32,8 @@ data class DefaultValueBean(
 class TestFactory {
     @Bean
     fun defaultValueBean(
-        @Value("\${airbyte.file-transfer.staging-path}") stagingFolder: String,
-        @Value("\${airbyte.file-transfer.enabled}") fileTransferEnable: Boolean,
+        @Value("\${airbyte.destination.core.file-transfer.staging-path}") stagingFolder: String,
+        @Value("\${airbyte.destination.core.file-transfer.enabled}") fileTransferEnable: Boolean,
     ): DefaultValueBean {
         return DefaultValueBean(stagingFolder, fileTransferEnable)
     }
