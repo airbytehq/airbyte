@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.task.internal
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
@@ -38,10 +39,12 @@ import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.util.use
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.function.Consumer
 
 interface InputConsumerTask : Task
 
@@ -55,8 +58,6 @@ interface InputConsumerTask : Task
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
-@Singleton
-@Secondary
 class DefaultInputConsumerTask(
     private val catalog: DestinationCatalog,
     private val inputFlow: ReservingDeserializingInputFlow,
@@ -65,7 +66,6 @@ class DefaultInputConsumerTask(
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
     private val destinationTaskLauncher: DestinationTaskLauncher,
-    @Named("fileMessageQueue")
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 ) : InputConsumerTask {
     private val log = KotlinLogging.logger {}
@@ -202,29 +202,36 @@ class DefaultInputConsumerTask(
 
 interface InputConsumerTaskFactory {
     fun make(
-        catalog: DestinationCatalog,
-        inputFlow: ReservingDeserializingInputFlow,
-        recordQueueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
         destinationTaskLauncher: DestinationTaskLauncher,
-        fileTransferQueue: MessageQueue<FileTransferQueueMessage>
     ): InputConsumerTask
 }
 
 @Singleton
 @Secondary
-class DefaultInputConsumerTaskFactory(private val syncManager: SyncManager) :
-    InputConsumerTaskFactory {
+class DefaultInputConsumerTaskFactory(
+    private val config: DestinationConfiguration,
+    private val catalog: DestinationCatalog,
+    private val inputFlow: ReservingDeserializingInputFlow,
+    private val syncManager: SyncManager,
+    private val recordQueueSupplier:
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
+    private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
+    @Named("fileMessageQueue")
+    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
+    private val outputConsumer: Consumer<AirbyteMessage>,
+) : InputConsumerTaskFactory {
     override fun make(
-        catalog: DestinationCatalog,
-        inputFlow: ReservingDeserializingInputFlow,
-        recordQueueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
         destinationTaskLauncher: DestinationTaskLauncher,
-        fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
     ): InputConsumerTask {
+        if (config.skipStreamLoading) {
+            return DevNullInputConsumerTask(
+                inputFlow,
+                outputConsumer,
+                syncManager,
+                catalog,
+            )
+        }
+
         return DefaultInputConsumerTask(
             catalog,
             inputFlow,

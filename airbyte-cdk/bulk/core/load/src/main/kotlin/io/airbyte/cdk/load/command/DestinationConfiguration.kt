@@ -61,6 +61,8 @@ import java.nio.file.Path
  * ```
  */
 abstract class DestinationConfiguration : Configuration {
+    open val skipStreamLoading: Boolean = false
+
     open val recordBatchSizeBytes: Long = DEFAULT_RECORD_BATCH_SIZE_BYTES
     open val processEmptyFiles: Boolean = false
     open val tmpFileDirectory: Path = Path.of("airbyte-cdk-load")

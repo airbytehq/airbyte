@@ -9,17 +9,11 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.CheckpointMessageWrapped
-import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.message.MessageQueueSupplier
-import io.airbyte.cdk.load.message.QueueWriter
-import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
-import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessFileTaskFactory
@@ -29,7 +23,6 @@ import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
-import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
@@ -122,14 +115,6 @@ class DefaultDestinationTaskLauncher(
 
     // File transfer
     @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
-
-    // Input Consumer requirements
-    private val inputFlow: ReservingDeserializingInputFlow,
-    private val recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-    private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-    @Named("fileMessageQueue")
-    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
@@ -172,16 +157,14 @@ class DefaultDestinationTaskLauncher(
     override suspend fun run() {
         // Start the input consumer ASAP
         log.info { "Starting input consumer task" }
-        val inputConsumerTask =
-            inputConsumerTaskFactory.make(
-                catalog = catalog,
-                inputFlow = inputFlow,
-                recordQueueSupplier = recordQueueSupplier,
-                checkpointQueue = checkpointQueue,
-                fileTransferQueue = fileTransferQueue,
-                destinationTaskLauncher = this,
-            )
+        val inputConsumerTask = inputConsumerTaskFactory.make(this)
         launch(inputConsumerTask)
+
+        if (config.skipStreamLoading) {
+            log.info { "Skipping stream loading" }
+            taskScopeProvider.close()
+            return
+        }
 
         // Launch the client interface setup task
         log.info { "Starting startup task" }

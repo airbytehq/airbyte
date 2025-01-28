@@ -28,6 +28,7 @@ data class Throttled(val millisPerRecord: Long) : DevNullType
 
 data class DevNullConfiguration(
     val type: DevNullType,
+    override val skipStreamLoading: Boolean = false
 ) : DestinationConfiguration()
 
 /**
@@ -99,7 +100,7 @@ class DevNullConfigurationFactory :
             is DevNullSpecificationCloud -> {
                 when (pojo.testDestination) {
                     is SilentDestinationCloud -> {
-                        DevNullConfiguration(type = Silent)
+                        DevNullConfiguration(type = Silent, skipStreamLoading = true)
                     }
                 }
             }
