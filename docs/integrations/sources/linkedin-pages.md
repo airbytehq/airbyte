@@ -113,6 +113,8 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 |:--------|:-----------| :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.1.11 | 2025-01-25 | [52246](https://github.com/airbytehq/airbyte/pull/52246) | Update dependencies |
+| 1.1.10 | 2025-01-18 | [51798](https://github.com/airbytehq/airbyte/pull/51798) | Update dependencies |
 | 1.1.9 | 2025-01-11 | [51149](https://github.com/airbytehq/airbyte/pull/51149) | Update dependencies |
 | 1.1.8 | 2024-12-28 | [50645](https://github.com/airbytehq/airbyte/pull/50645) | Update dependencies |
 | 1.1.7 | 2024-12-21 | [50114](https://github.com/airbytehq/airbyte/pull/50114) | Update dependencies |

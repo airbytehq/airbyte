@@ -44,6 +44,8 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.11 | 2025-01-25 | [52412](https://github.com/airbytehq/airbyte/pull/52412) | Update dependencies |
+| 0.3.10 | 2025-01-18 | [52007](https://github.com/airbytehq/airbyte/pull/52007) | Update dependencies |
 | 0.3.9 | 2025-01-11 | [51396](https://github.com/airbytehq/airbyte/pull/51396) | Update dependencies |
 | 0.3.8 | 2024-12-28 | [50820](https://github.com/airbytehq/airbyte/pull/50820) | Update dependencies |
 | 0.3.7 | 2024-12-21 | [50316](https://github.com/airbytehq/airbyte/pull/50316) | Update dependencies |

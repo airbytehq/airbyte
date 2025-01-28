@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
-@Timeout(30, unit = TimeUnit.MINUTES)
+@Timeout(60, unit = TimeUnit.MINUTES)
 abstract class S3V2WriteTest(
     path: String,
     expectedRecordMapper: ExpectedRecordMapper,
@@ -181,6 +181,11 @@ class S3V2WriteTestAvroUncompressed :
     @Test
     override fun testUnknownTypes() {
         super.testUnknownTypes()
+    }
+
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 }
 

@@ -520,7 +520,6 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
-    @Disabled
     open fun testFunkyCharacters() {
         assumeTrue(verifyDataWriting)
         fun makeStream(
@@ -544,6 +543,10 @@ abstract class BasicFunctionalityIntegrationTest(
                     makeStream("stream_with_underscores"),
                     makeStream("STREAM_WITH_ALL_CAPS"),
                     makeStream("CapitalCase"),
+                    makeStream("stream_with_spécial_character"),
+                    makeStream("stream_name_with_operator+1"),
+                    makeStream("stream_name_with_numbers_123"),
+                    makeStream("1stream_with_a_leading_number"),
                     makeStream(
                         "stream_with_edge_case_field_names_and_values",
                         linkedMapOf(
@@ -552,6 +555,9 @@ abstract class BasicFunctionalityIntegrationTest(
                             "field_with_underscore" to stringType,
                             "FIELD_WITH_ALL_CAPS" to stringType,
                             "field_with_spécial_character" to stringType,
+                            "field_name_with_operator+1" to stringType,
+                            "field_name_with_numbers_123" to stringType,
+                            "1field_with_a_leading_number" to stringType,
                             // "order" is a reserved word in many sql engines
                             "order" to stringType,
                             "ProperCase" to stringType,
@@ -2435,6 +2441,27 @@ abstract class BasicFunctionalityIntegrationTest(
             ),
             stream,
             primaryKey = listOf(),
+            cursor = null,
+        )
+    }
+
+    @Test
+    open fun testNoData() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        assertDoesNotThrow { runSync(configContents, stream, messages = emptyList()) }
+        dumpAndDiffRecords(
+            parsedConfig,
+            canonicalExpectedRecords = emptyList(),
+            stream,
+            primaryKey = listOf(listOf("id")),
             cursor = null,
         )
     }

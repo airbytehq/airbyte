@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfffecb7-9a13-43e9-acdc-b92af7997ca9
-  dockerImageTag: 0.5.30
+  dockerImageTag: 0.6.2
   dockerRepository: airbyte/source-close-com
   documentationUrl: https://docs.airbyte.com/integrations/sources/close-com
   githubIssueLabel: source-close-com
@@ -17,7 +17,7 @@ data:
   name: Close.com
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-close-com
   registryOverrides:
     cloud:
@@ -27,8 +27,8 @@ data:
   releaseStage: beta
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: acceptanceTests
@@ -39,5 +39,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
 metadataSpecVersion: "1.0"

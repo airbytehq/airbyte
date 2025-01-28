@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.QueueReader
 import io.airbyte.cdk.load.task.internal.ForceFlushEvent
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
@@ -35,7 +36,9 @@ interface FlushStrategy {
 @Secondary
 class DefaultFlushStrategy(
     private val config: DestinationConfiguration,
-    private val eventQueue: QueueReader<ForceFlushEvent>
+    private val eventQueue: QueueReader<ForceFlushEvent>,
+    @Value("\${airbyte.destination.record-batch-size-override}")
+    private val recordBatchSizeOverride: Long? = null
 ) : FlushStrategy {
     private val forceFlushIndexes = ConcurrentHashMap<DestinationStream.Descriptor, Long>()
 
@@ -44,7 +47,7 @@ class DefaultFlushStrategy(
         rangeRead: Range<Long>,
         bytesProcessed: Long
     ): Boolean {
-        if (bytesProcessed >= config.recordBatchSizeBytes) {
+        if (bytesProcessed >= (recordBatchSizeOverride ?: config.recordBatchSizeBytes)) {
             return true
         }
 
