@@ -19,11 +19,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_SYSTEM_AWS_CONFIG
-          fileName: glue_aws_assume_role.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-S3-DATA-LAKE_SYSTEM_AWS_CONFIG
           fileName: system_aws_config.json
           secretStore:
