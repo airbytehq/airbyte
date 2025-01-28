@@ -251,19 +251,7 @@ abstract class BaseDestinationAcceptanceTest(
         val testDir = Path.of("/tmp/airbyte_tests/")
         Files.createDirectories(testDir)
         // Allow ourselves and our connector access to our test dir
-        testDir.setPosixFilePermissions(
-            setOf(
-                PosixFilePermission.OWNER_READ,
-                PosixFilePermission.OWNER_WRITE,
-                PosixFilePermission.OWNER_EXECUTE,
-                PosixFilePermission.GROUP_READ,
-                PosixFilePermission.GROUP_WRITE,
-                PosixFilePermission.GROUP_EXECUTE,
-                PosixFilePermission.OTHERS_READ,
-                PosixFilePermission.OTHERS_WRITE,
-                PosixFilePermission.OTHERS_EXECUTE,
-            ),
-        )
+        grantAllPermissions(testDir)
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
         jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"))
         localRoot = Files.createTempDirectory(testDir, "output")
@@ -274,7 +262,11 @@ abstract class BaseDestinationAcceptanceTest(
         testSchemas = HashSet()
         setup(testEnv, testSchemas)
         fileTransferMountSource =
-            if (supportsFileTransfer) Files.createTempDirectory(testDir, "file_transfer") else null
+            if (supportsFileTransfer) {
+                val tempDir = Files.createTempDirectory(testDir, "file_transfer")
+                grantAllPermissions(tempDir)
+                tempDir
+            } else null
 
         processFactory =
             DockerProcessFactory(
@@ -305,5 +297,21 @@ abstract class BaseDestinationAcceptanceTest(
 
     open fun getConnectorEnv(): Map<String, String> {
         return emptyMap()
+    }
+
+    private fun grantAllPermissions(path: Path) {
+        path.setPosixFilePermissions(
+            setOf(
+                PosixFilePermission.OWNER_READ,
+                PosixFilePermission.OWNER_WRITE,
+                PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.GROUP_READ,
+                PosixFilePermission.GROUP_WRITE,
+                PosixFilePermission.GROUP_EXECUTE,
+                PosixFilePermission.OTHERS_READ,
+                PosixFilePermission.OTHERS_WRITE,
+                PosixFilePermission.OTHERS_EXECUTE,
+            ),
+        )
     }
 }
