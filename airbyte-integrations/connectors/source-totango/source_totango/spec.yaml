@@ -23,36 +23,6 @@ connectionSpecification:
           title: Client Secret
           description: The Client Secret of your Totango OAuth application.
           airbyte_secret: true
-    AccountConfig:
-      type: object
-      title: Account Config
-      properties:
-        customFields:
-          type: array
-          title: Custom Fields
-          description: The custom fields to fetch data for.
-          items:
-            type: object
-            required:
-              - attribute
-              - source_attribute
-              - type
-            properties:
-              "attribute":
-                type: string
-                title: Attribute Name
-                description: The attribute field from the Totango API. field_display_name is considered as the attribute if not provided in the API.
-              "source_attribute":
-                type: string
-                title: Source Attribute Type
-                description: The type attribute from the Totango API.
-              "type":
-                type: string
-                title: Data Type
-                description: The data type of the field.
-              "additionalProps":
-                type: object
-                title: Additional Properties
-                description: For calculated fields, the additional properties to fetch data for.
-                additionalProperties: true
-
+    streamConfig:
+      type: object 
+      title: Field Config

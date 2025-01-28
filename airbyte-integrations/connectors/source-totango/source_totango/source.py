@@ -50,6 +50,44 @@ class TotangoStream(HttpStream, ABC):
             return 4.0 * 60.0
 
 
+class TotangoSearchStream(TotangoStream):
+    def get_json_schema(self):
+        schema = super().get_json_schema()
+
+        if "streamConfig" in self._connector_config:
+            custom_fields = dpath.util.get(
+                self._connector_config["streamConfig"],
+                self.name,
+                default=[]
+            )
+
+            for field in custom_fields:
+                schema["properties"][field['attribute']] = field
+
+        return schema
+
+    def get_fields(self):
+        """
+        Returns the fields for the API request.
+        """
+        schema = self.get_json_schema()
+
+        fields = []
+
+        for field_details in list(schema["properties"].values()):
+            field = {"type": field_details["source_attribute"]}
+
+            if "additionalProps" in field_details:
+                field.update(field_details["additionalProps"])
+                field["field_display_name"] = field_details["attribute"]
+            else:
+                field["attribute"] = field_details["attribute"]
+
+            fields.append(field)
+
+        return fields
+
+
 class TotangoAuthenticator(requests.auth.AuthBase):
     _token_request_path = '/oauth/token'
     _grant_type = 'client_credentials'
@@ -95,7 +133,7 @@ class TotangoAuthenticator(requests.auth.AuthBase):
         return r
 
 
-class Account(TotangoStream):
+class Account(TotangoSearchStream):
     # Primary key of the stream
     primary_key = "account_id"
     record_count = 1000
@@ -103,6 +141,10 @@ class Account(TotangoStream):
     @property
     def use_cache(self):
         return True
+
+    @property
+    def name(self):
+        return "account"
 
     @property
     def cache_filename(self):
@@ -122,69 +164,6 @@ class Account(TotangoStream):
     def path(self, stream_state=None, stream_slice=None, next_page_token=None) -> str:
         """Returns the endpoint path for this stream."""
         return "/api/v1/search/accounts"
-
-    def get_json_schema(self):
-        schema = super().get_json_schema()
-
-        if 'AccountConfig' in self._connector_config:
-            custom_fields = dpath.util.get(
-                self._connector_config["AccountConfig"],
-                "customFields",
-                default=[]
-            )
-
-            if custom_fields:
-                for field in custom_fields:
-                    schema["properties"][field["attribute"]] = field
-
-        return schema
-
-    def get_fields(self):
-        """
-        Returns the fields for the API response.
-        """
-        schema = self.get_json_schema()
-
-        custom_fields = None
-        if 'AccountConfig' in self._connector_config:
-            custom_fields = dpath.util.get(
-                self._connector_config["AccountConfig"],
-                "customFields",
-                default=[]
-            )
-
-        fields = []
-
-        for _, field_details in schema["properties"].items():
-            field = {
-                "type": field_details["source_attribute"],
-            }
-            if "additionalProps" in field_details:
-                field.update(field_details["additionalProps"])
-                field["field_display_name"] = field_details["attribute"]
-                fields.append(field)
-                continue
-
-            field["attribute"] = field_details["attribute"]
-            fields.append(field)
-
-        if custom_fields:
-            print("adding custom fields")
-            for field in custom_fields:
-                print("custom field: ", field)
-                custom_field = {
-                    "type": field["source_attribute"],
-                }
-                if field.get("additionalProps"):
-                    custom_field.update(field["additionalProps"])
-                    custom_field["field_display_name"] = field["attribute"]
-                    fields.append(custom_field)
-                    continue
-
-                custom_field["attribute"] = field["attribute"]
-                fields.append(custom_field)
-
-        return fields
 
     def request_body_json(
         self,
@@ -241,8 +220,8 @@ class Account(TotangoStream):
             yield_dict = {}
             account_id = account.get('name')
             yield_dict["account_id"] = account_id
-
             yield_dict["account_name"] = account.get("display_name")
+
             for field, value in zip(fields, selected_fields):
                 # had to skip account_name and account_id as they are already added to the yield_dict
                 if field.get("attribute") == "account_name" or field.get("attribute") == "account_id":
@@ -270,7 +249,7 @@ class Tasks(HttpSubStream, TotangoStream):
     @property
     def cache_filename(self):
         return "tasks.yml"
-    
+
     @property
     def use_cache(self):
         return True
@@ -316,8 +295,8 @@ class Tasks(HttpSubStream, TotangoStream):
         """
         response_json = response.json()
 
-        for task in response_json:
-            yield task
+        for item in response_json:
+            yield item
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
