@@ -125,7 +125,7 @@ class DockerizedDestination(
                     "-i",
                     "-w",
                     // In real syncs, platform changes the workdir to /dest for destinations.
-                    testDir.toString(),
+                    workspaceRoot.toString(),
                     "--log-driver",
                     "none",
                     "--name",
@@ -155,13 +155,12 @@ class DockerizedDestination(
 
         fun addInput(paramName: String, fileContents: ByteArray) {
             Files.write(
-//                jobRoot.resolve("destination_$paramName.json"),
-                testDir.resolve("destination_$paramName.json"),
+                workspaceRoot.resolve("destination_$paramName.json"),
                 fileContents,
             )
             cmd.add("--$paramName")
 //            cmd.add("$containerJobRoot/destination_$paramName.json")
-            cmd.add("/tmp/airbyte_tests/destination_$paramName.json")
+            cmd.add("/data/destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
