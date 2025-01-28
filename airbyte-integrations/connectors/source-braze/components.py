@@ -82,7 +82,7 @@ class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
 @dataclass
 class EventsRecordExtractor(DpathExtractor):
     def extract_records(self, response: requests.Response) -> list[Record]:
-        response_body = self.decoder.decode(response)
+        response_body = next(self.decoder.decode(response))
         events = response_body.get("events")
         if events:
             return [{"event_name": value} for value in events]
