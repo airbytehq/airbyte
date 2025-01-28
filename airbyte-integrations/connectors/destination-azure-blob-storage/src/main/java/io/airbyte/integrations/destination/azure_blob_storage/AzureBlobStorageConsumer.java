@@ -106,7 +106,14 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
       var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
           .collect(Collectors.toList());
       blobItemList.forEach(blob -> {
-        if (!blob.isDeleted() && blob.getName().contains(configuredStream.getStream().getName() + "/")) {
+        // Two important notes:
+        // 1. There's no option to write to a specific path, so we _always_ write to the root of the
+        // container.
+        // So the blob name always starts with `<stream_name>/`.
+        // 2. We really should include the namespace in the blob name, but we currently don't...
+        // So current behavior is that if you have `public1.users` and `public2.users`,
+        // those files will probably conflict in some way which is undesired.
+        if (!blob.isDeleted() && blob.getName().startsWith(configuredStream.getStream().getName() + "/")) {
           final AppendBlobClient abc = specializedBlobClientBuilder
               .blobName(blob.getName())
               .buildAppendBlobClient();
