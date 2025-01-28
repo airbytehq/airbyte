@@ -42,7 +42,7 @@ class TransformToRecordComponent(AddFields):
 @dataclass
 class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
     """
-    Extends DatetimeBasedCursor for Braze's API requirements where instead of using explicit 
+    Extends DatetimeBasedCursor for Braze's API requirements where instead of using explicit
     start_time/end_time parameters, the API expects:
     - An end_time (ending_at)
     - A length parameter indicating how many days before end_time to fetch
