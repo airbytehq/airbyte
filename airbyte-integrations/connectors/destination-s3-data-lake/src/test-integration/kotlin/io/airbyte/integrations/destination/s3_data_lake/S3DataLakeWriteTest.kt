@@ -6,10 +6,13 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
+import io.airbyte.cdk.load.write.UnionBehavior
 import java.nio.file.Files
 import java.util.Base64
 import okhttp3.FormBody
@@ -22,7 +25,6 @@ import org.junit.jupiter.api.Test
 abstract class S3DataLakeWriteTest(
     configContents: String,
     destinationCleaner: DestinationCleaner,
-    envVars: Map<String, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
         configContents,
@@ -30,15 +32,24 @@ abstract class S3DataLakeWriteTest(
         S3DataLakeDataDumper,
         destinationCleaner,
         S3DataLakeExpectedRecordMapper,
+        additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
+        micronautProperties =
+            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
         isStreamSchemaRetroactive = true,
         supportsDedup = true,
         stringifySchemalessObjects = true,
-        promoteUnionToObject = true,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        unionBehavior = UnionBehavior.STRINGIFY,
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         supportFileTransfer = false,
-        envVars = envVars,
-        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        allTypesBehavior =
+            StronglyTyped(
+                integerCanBeLarge = false,
+                // we stringify objects, so nested floats stay exact
+                nestedFloatLosesPrecision = false
+            ),
         nullUnknownTypes = true,
         nullEqualsUnset = true,
     ) {
@@ -48,26 +59,6 @@ abstract class S3DataLakeWriteTest(
     )
     override fun testDedup() {
         super.testDedup()
-    }
-
-    @Test
-    @Disabled(
-        "This is currently hanging forever and we should look into why https://github.com/airbytehq/airbyte-internal-issues/issues/11162"
-    )
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-
-    @Test
-    @Disabled("This is currently hanging forever and we should look into why")
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
-    }
-
-    @Test
-    @Disabled("This is currently hanging forever and we should look into why")
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
     }
 
     @Test
@@ -89,10 +80,17 @@ class GlueWriteTest :
         S3DataLakeDestinationCleaner(
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAWSSystemCredentials()
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
             )
         )
-    )
+    ) {
+
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
 
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
@@ -100,11 +98,16 @@ class GlueAssumeRoleWriteTest :
         S3DataLakeDestinationCleaner(
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAWSSystemCredentials()
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
             )
         ),
-        S3DataLakeTestUtil.getAWSSystemCredentialsAsMap()
-    )
+    ) {
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"

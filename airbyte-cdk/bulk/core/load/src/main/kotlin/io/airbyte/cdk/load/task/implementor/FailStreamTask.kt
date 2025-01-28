@@ -9,12 +9,14 @@ import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.state.StreamProcessingSucceeded
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.SelfTerminating
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface FailStreamTask : ImplementorScope
+interface FailStreamTask : Task
 
 /**
  * FailStreamTask is a task that is executed when the processing of a stream fails in the
@@ -27,6 +29,8 @@ class DefaultFailStreamTask(
     private val stream: DestinationStream.Descriptor,
 ) : FailStreamTask {
     val log = KotlinLogging.logger {}
+
+    override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
         val streamManager = syncManager.getStreamManager(stream)

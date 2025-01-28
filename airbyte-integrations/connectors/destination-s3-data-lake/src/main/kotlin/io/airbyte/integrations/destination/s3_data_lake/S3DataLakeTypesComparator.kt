@@ -67,13 +67,15 @@ class S3DataLakeTypesComparator {
         val newColumns: MutableList<String> = mutableListOf(),
         val updatedDataTypes: MutableList<String> = mutableListOf(),
         val removedColumns: MutableList<String> = mutableListOf(),
-        val newlyOptionalColumns: MutableList<String> = mutableListOf()
+        val newlyOptionalColumns: MutableList<String> = mutableListOf(),
+        var identifierFieldsChanged: Boolean = false
     ) {
         fun hasChanges(): Boolean {
             return newColumns.isNotEmpty() ||
                 updatedDataTypes.isNotEmpty() ||
                 removedColumns.isNotEmpty() ||
-                newlyOptionalColumns.isNotEmpty()
+                newlyOptionalColumns.isNotEmpty() ||
+                identifierFieldsChanged
         }
     }
 
@@ -91,6 +93,10 @@ class S3DataLakeTypesComparator {
             existingType = existingSchema.asStruct(),
             diff = diff
         )
+
+        val incomingIdentifierNames = incomingSchema.identifierFieldNames().toSet()
+        val existingIdentifierNames = existingSchema.identifierFieldNames().toSet()
+        diff.identifierFieldsChanged = incomingIdentifierNames != existingIdentifierNames
         return diff
     }
 

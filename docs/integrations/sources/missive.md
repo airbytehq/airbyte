@@ -35,6 +35,9 @@ Visit `https://missiveapp.com/help/api-documentation/rest-endpoints` for API doc
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.9 | 2025-01-25 | [52289](https://github.com/airbytehq/airbyte/pull/52289) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51808](https://github.com/airbytehq/airbyte/pull/51808) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51183](https://github.com/airbytehq/airbyte/pull/51183) | Update dependencies |
 | 0.0.6 | 2024-12-28 | [50141](https://github.com/airbytehq/airbyte/pull/50141) | Update dependencies |
 | 0.0.5 | 2024-12-14 | [49631](https://github.com/airbytehq/airbyte/pull/49631) | Update dependencies |
 | 0.0.4 | 2024-12-12 | [49238](https://github.com/airbytehq/airbyte/pull/49238) | Update dependencies |

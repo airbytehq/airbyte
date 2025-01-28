@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.9
   dockerRepository: airbyte/destination-firestore
   githubIssueLabel: destination-firestore
   icon: firestore.svg

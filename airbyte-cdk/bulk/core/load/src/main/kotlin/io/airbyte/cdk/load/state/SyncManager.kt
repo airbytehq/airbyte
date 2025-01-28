@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.state
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.write.StreamLoader
@@ -141,7 +142,7 @@ class DefaultSyncManager(
                 .map { (stream, _) -> stream }
         if (incompleteStreams.isNotEmpty()) {
             val prettyStreams = incompleteStreams.map { it.toPrettyString() }
-            throw IllegalStateException(
+            throw TransientErrorException(
                 "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: $prettyStreams"
             )
         }

@@ -53,6 +53,9 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 0.3.14 | 2025-01-25 | [52205](https://github.com/airbytehq/airbyte/pull/52205) | Update dependencies |
+| 0.3.13 | 2025-01-18 | [51751](https://github.com/airbytehq/airbyte/pull/51751) | Update dependencies |
+| 0.3.12 | 2025-01-11 | [51294](https://github.com/airbytehq/airbyte/pull/51294) | Update dependencies |
 | 0.3.11 | 2024-12-28 | [50505](https://github.com/airbytehq/airbyte/pull/50505) | Update dependencies |
 | 0.3.10 | 2024-12-21 | [50189](https://github.com/airbytehq/airbyte/pull/50189) | Update dependencies |
 | 0.3.9 | 2024-12-14 | [49316](https://github.com/airbytehq/airbyte/pull/49316) | Update dependencies |

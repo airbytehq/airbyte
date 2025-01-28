@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-onfleet
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.3@sha256:9214270d83304213977c08e91fd9c55a98819543dbbf0df25a4356299af4f3ab
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: e4285e7f-ee6c-4b8b-b231-746c9640164e
-  dockerImageTag: 0.0.5
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/source-onfleet
   githubIssueLabel: source-onfleet
   icon: icon.svg
