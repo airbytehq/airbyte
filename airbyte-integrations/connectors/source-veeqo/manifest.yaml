@@ -1,0 +1,4434 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  Veeqo Airbyte connector for Veeqo enables seamless data integration between
+  Veeqo's inventory and order management platform and various data warehouses or
+  applications. It allows users to sync Veeqo data such as orders, products,
+  inventory levels, and more, making it easier to analyze and manage e-commerce
+  operations. This connector streamlines data workflows, ensuring up-to-date and
+  accurate information for better business insights.
+
+check:
+  type: CheckStream
+  stream_names:
+    - orders
+
+definitions:
+  streams:
+    tags:
+      type: DeclarativeStream
+      name: tags
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at_min
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    stores:
+      type: DeclarativeStream
+      name: stores
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /channels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stores"
+    company:
+      type: DeclarativeStream
+      name: company
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /current_company
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company"
+    returns:
+      type: DeclarativeStream
+      name: returns
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders/{{ stream_partition.sellable_id }}/returns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/orders"
+              parent_key: id
+              partition_field: sellable_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/returns"
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_at_min
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    suppliers:
+      type: DeclarativeStream
+      name: suppliers
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /suppliers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suppliers"
+    warehouses:
+      type: DeclarativeStream
+      name: warehouses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /warehouses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/warehouses"
+    purchase_orders:
+      type: DeclarativeStream
+      name: purchase_orders
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /purchase_orders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchase_orders"
+    delivery_methods:
+      type: DeclarativeStream
+      name: delivery_methods
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: delivery_methods
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/delivery_methods"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.veeqo.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: x-api-key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/returns"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/purchase_orders"
+  - $ref: "#/definitions/streams/suppliers"
+  - $ref: "#/definitions/streams/company"
+  - $ref: "#/definitions/streams/warehouses"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/stores"
+  - $ref: "#/definitions/streams/delivery_methods"
+  - $ref: "#/definitions/streams/tags"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developer.veeqo.com/docs
+  testedStreams:
+    tags:
+      hasRecords: true
+      streamHash: c7ccc2e6d9b34c7350631d8011e39e82455c209b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    orders:
+      hasRecords: true
+      streamHash: 69a7147542ee932501489b9abd45ac35fd359d44
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stores:
+      hasRecords: true
+      streamHash: b52ee62d7e6a939f320642cda3ac9167be4da962
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    company:
+      hasRecords: true
+      streamHash: 4773e69dabcdbcd2caf83414048111e4ad05f90e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    returns:
+      hasRecords: true
+      streamHash: a2c2f51416b67bca4b624aefa606b97007e3232f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: da543cb32144b55ea6f0f255a43a61425b75f112
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      hasRecords: true
+      streamHash: db9af65ec13620d54067c5acc77966fda83a5cab
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    suppliers:
+      hasRecords: true
+      streamHash: 8dbb186d6c444db8b496ac6b2253c742e9a65ba6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    warehouses:
+      hasRecords: true
+      streamHash: 1c5e9211f206423d6e838f7ce95e8a3f491d3fd4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    purchase_orders:
+      hasRecords: true
+      streamHash: ca0a3c66a1d9eb954f626020fef5b7ee408db71c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    delivery_methods:
+      hasRecords: true
+      streamHash: 641f8b8bf59ad082db9c8cf0bf640261959c7712
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    tags: true
+    orders: true
+    stores: true
+    company: false
+    returns: true
+    products: false
+    customers: false
+    suppliers: false
+    warehouses: false
+    purchase_orders: false
+    delivery_methods: true
+
+schemas:
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      colour:
+        type:
+          - string
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      taggings_count:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated_at
+    properties:
+      id:
+        type: number
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            colour:
+              type:
+                - string
+                - "null"
+      number:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          remote:
+            type:
+              - boolean
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          with_fba:
+            type:
+              - boolean
+              - "null"
+          is_master:
+            type:
+              - boolean
+              - "null"
+          post_code:
+            type:
+              - string
+              - "null"
+          type_code:
+            type:
+              - string
+              - "null"
+          warehouse:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          warehouses:
+            type:
+              - array
+              - "null"
+          created_by_id:
+            type:
+              - number
+              - "null"
+          address_line_1:
+            type:
+              - string
+              - "null"
+          address_line_2:
+            type:
+              - string
+              - "null"
+          always_set_qty:
+            type:
+              - number
+              - "null"
+          percent_of_qty:
+            type:
+              - number
+              - "null"
+          default_warehouse:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              lat:
+                type:
+                  - string
+                  - "null"
+              lng:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              region:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              post_code:
+                type:
+                  - string
+                  - "null"
+              company_id:
+                type:
+                  - number
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              trading_name:
+                type:
+                  - string
+                  - "null"
+              created_by_id:
+                type:
+                  - number
+                  - "null"
+              address_line_1:
+                type:
+                  - string
+                  - "null"
+              display_position:
+                type:
+                  - number
+                  - "null"
+              default_min_reorder:
+                type:
+                  - number
+                  - "null"
+              inventory_type_code:
+                type:
+                  - string
+                  - "null"
+              letterbox_address_id:
+                type:
+                  - string
+                  - "null"
+              letterbox_address_status:
+                type:
+                  - string
+                  - "null"
+              click_and_collect_enabled:
+                type:
+                  - boolean
+                  - "null"
+          ebay_site_code_id:
+            type:
+              - number
+              - "null"
+          import_cost_price:
+            type:
+              - boolean
+              - "null"
+          import_order_tags:
+            type:
+              - boolean
+              - "null"
+          max_qty_to_advert:
+            type:
+              - number
+              - "null"
+          min_threshold_qty:
+            type:
+              - number
+              - "null"
+          channel_warehouses:
+            type:
+              - array
+              - "null"
+          routing_order_type:
+            type:
+              - number
+              - "null"
+          import_product_tags:
+            type:
+              - boolean
+              - "null"
+          pull_pending_orders:
+            type:
+              - boolean
+              - "null"
+          pull_product_images:
+            type:
+              - boolean
+              - "null"
+          skip_title_matching:
+            type:
+              - boolean
+              - "null"
+          update_remote_order:
+            type:
+              - boolean
+              - "null"
+          veeqo_dictates_price:
+            type:
+              - boolean
+              - "null"
+          import_product_brands:
+            type:
+              - boolean
+              - "null"
+          pull_historical_orders:
+            type:
+              - boolean
+              - "null"
+          pull_product_properties:
+            type:
+              - boolean
+              - "null"
+          remote_warehouses_exist:
+            type:
+              - boolean
+              - "null"
+          pull_stock_level_required:
+            type:
+              - boolean
+              - "null"
+          update_product_attributes:
+            type:
+              - boolean
+              - "null"
+          amazon_fulfillment_enabled:
+            type:
+              - boolean
+              - "null"
+          authorized_at_remote_store:
+            type:
+              - boolean
+              - "null"
+          pull_unpaid_shopify_orders:
+            type:
+              - boolean
+              - "null"
+          veeqo_dictates_stock_level:
+            type:
+              - boolean
+              - "null"
+          create_product_if_unmatched:
+            type:
+              - boolean
+              - "null"
+          default_send_shipment_email:
+            type:
+              - boolean
+              - "null"
+          stock_level_update_requests:
+            type:
+              - array
+              - "null"
+          disabled_push_of_stock_level:
+            type:
+              - boolean
+              - "null"
+          skip_fba_orders_and_products:
+            type:
+              - boolean
+              - "null"
+          keep_inventory_tracking_value:
+            type:
+              - boolean
+              - "null"
+          create_product_on_ended_listings:
+            type:
+              - boolean
+              - "null"
+          end_ebay_listing_on_out_of_stock:
+            type:
+              - boolean
+              - "null"
+          notify_on_outbound_shipment_date:
+            type:
+              - boolean
+              - "null"
+          import_additional_payment_details:
+            type:
+              - boolean
+              - "null"
+          link_with_similar_listings_by_sku:
+            type:
+              - boolean
+              - "null"
+          automatic_product_linking_disabled:
+            type:
+              - boolean
+              - "null"
+          outbound_shipment_notification_time:
+            type:
+              - string
+              - "null"
+          send_notification_emails_to_customers:
+            type:
+              - boolean
+              - "null"
+          first_sync_finish_notice_marked_as_read:
+            type:
+              - boolean
+              - "null"
+          link_to_products_linked_to_current_channel:
+            type:
+              - boolean
+              - "null"
+      payment:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          order_id:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          payment_type:
+            type:
+              - string
+              - "null"
+          created_by_id:
+            type:
+              - number
+              - "null"
+          reference_number:
+            type:
+              - string
+              - "null"
+      returns:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            user:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+            number:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            line_items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  title:
+                    type:
+                      - string
+                      - "null"
+                  quantity:
+                    type:
+                      - number
+                      - "null"
+                  sku_code:
+                    type:
+                      - string
+                      - "null"
+                  sellable_id:
+                    type:
+                      - number
+                      - "null"
+                  refund_amount:
+                    type:
+                      - number
+                      - "null"
+                  refund_quantity:
+                    type:
+                      - number
+                      - "null"
+                  received_quantity:
+                    type:
+                      - number
+                      - "null"
+                  refund_amount_per_unit:
+                    type:
+                      - number
+                      - "null"
+            warehouse_name:
+              type:
+                - string
+                - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          mobile:
+            type:
+              - string
+              - "null"
+          full_name:
+            type:
+              - string
+              - "null"
+          contact_data:
+            type:
+              - object
+              - "null"
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+          created_by_id:
+            type:
+              - number
+              - "null"
+          customer_type:
+            type:
+              - string
+              - "null"
+          billing_address:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              zip:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              address1:
+                type:
+                  - string
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+          shipping_addresses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                zip:
+                  type:
+                    - string
+                    - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                phone:
+                  type:
+                    - string
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                address1:
+                  type:
+                    - string
+                    - "null"
+                verified:
+                  type:
+                    - boolean
+                    - "null"
+                last_name:
+                  type:
+                    - string
+                    - "null"
+                first_name:
+                  type:
+                    - string
+                    - "null"
+                location_found:
+                  type:
+                    - boolean
+                    - "null"
+          last_used_shipping_address:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              zip:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              address1:
+                type:
+                  - string
+                  - "null"
+              verified:
+                type:
+                  - boolean
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              location_found:
+                type:
+                  - boolean
+                  - "null"
+      total_tax:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          login:
+            type:
+              - string
+              - "null"
+      deliver_to:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          address1:
+            type:
+              - string
+              - "null"
+          verified:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          location_found:
+            type:
+              - boolean
+              - "null"
+      line_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sellable:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                price:
+                  type:
+                    - number
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                images:
+                  type:
+                    - array
+                    - "null"
+                margin:
+                  type:
+                    - number
+                    - "null"
+                profit:
+                  type:
+                    - number
+                    - "null"
+                weight:
+                  type:
+                    - number
+                    - "null"
+                product:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                    weight:
+                      type:
+                        - number
+                        - "null"
+                    tax_rate:
+                      type:
+                        - number
+                        - "null"
+                    main_image_src:
+                      type:
+                        - string
+                        - "null"
+                    origin_country:
+                      type:
+                        - string
+                        - "null"
+                    hs_tariff_number:
+                      type:
+                        - string
+                        - "null"
+                reorders:
+                  type:
+                    - array
+                    - "null"
+                sku_code:
+                  type:
+                    - string
+                    - "null"
+                tax_rate:
+                  type:
+                    - number
+                    - "null"
+                upc_code:
+                  type:
+                    - string
+                    - "null"
+                image_url:
+                  type:
+                    - string
+                    - "null"
+                inventory:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    infinite:
+                      type:
+                        - boolean
+                        - "null"
+                    incoming_stock_level_at_all_warehouses:
+                      type:
+                        - number
+                        - "null"
+                    physical_stock_level_at_all_warehouses:
+                      type:
+                        - number
+                        - "null"
+                    allocated_stock_level_at_all_warehouses:
+                      type:
+                        - number
+                        - "null"
+                    available_stock_level_at_all_warehouses:
+                      type:
+                        - number
+                        - "null"
+                    transit_incoming_stock_level_at_all_warehouses:
+                      type:
+                        - number
+                        - "null"
+                    transit_outgoing_stock_level_at_all_warehouses:
+                      type:
+                        - number
+                        - "null"
+                cost_price:
+                  type:
+                    - number
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                full_title:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                weight_unit:
+                  type:
+                    - string
+                    - "null"
+                model_number:
+                  type:
+                    - string
+                    - "null"
+                weight_grams:
+                  type:
+                    - number
+                    - "null"
+                created_by_id:
+                  type:
+                    - number
+                    - "null"
+                product_title:
+                  type:
+                    - string
+                    - "null"
+                stock_entries:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      infinite:
+                        type:
+                          - boolean
+                          - "null"
+                      location:
+                        type:
+                          - string
+                          - "null"
+                      warehouse:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          id:
+                            type:
+                              - number
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                          display_position:
+                            type:
+                              - number
+                              - "null"
+                      updated_at:
+                        type:
+                          - string
+                          - "null"
+                      sellable_id:
+                        type:
+                          - number
+                          - "null"
+                      warehouse_id:
+                        type:
+                          - number
+                          - "null"
+                      stock_running_low:
+                        type:
+                          - boolean
+                          - "null"
+                      incoming_stock_level:
+                        type:
+                          - number
+                          - "null"
+                      physical_stock_level:
+                        type:
+                          - number
+                          - "null"
+                      allocated_stock_level:
+                        type:
+                          - number
+                          - "null"
+                      available_stock_level:
+                        type:
+                          - number
+                          - "null"
+                      sellable_on_hand_value:
+                        type:
+                          - number
+                          - "null"
+                      transit_incoming_stock_level:
+                        type:
+                          - number
+                          - "null"
+                      transit_outgoing_stock_level:
+                        type:
+                          - number
+                          - "null"
+                sellable_title:
+                  type:
+                    - string
+                    - "null"
+                min_reorder_level:
+                  type:
+                    - number
+                    - "null"
+                main_thumbnail_url:
+                  type:
+                    - string
+                    - "null"
+                quantity_to_reorder:
+                  type:
+                    - number
+                    - "null"
+                supplementary_units:
+                  type:
+                    - number
+                    - "null"
+                measurement_attributes:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    depth:
+                      type:
+                        - number
+                        - "null"
+                    width:
+                      type:
+                        - number
+                        - "null"
+                    height:
+                      type:
+                        - number
+                        - "null"
+                    dimensions_unit:
+                      type:
+                        - string
+                        - "null"
+                variant_option_specifics:
+                  type:
+                    - array
+                    - "null"
+                variant_property_specifics:
+                  type:
+                    - array
+                    - "null"
+                stock_level_at_all_warehouses:
+                  type:
+                    - number
+                    - "null"
+                allocated_stock_level_at_all_warehouses:
+                  type:
+                    - number
+                    - "null"
+                available_stock_level_at_all_warehouses:
+                  type:
+                    - number
+                    - "null"
+            tax_rate:
+              type:
+                - number
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+            price_per_unit:
+              type:
+                - number
+                - "null"
+            taxless_discount_per_unit:
+              type:
+                - number
+                - "null"
+      shipped_at:
+        type:
+          - string
+          - "null"
+      total_fees:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+      allocations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            order_id:
+              type:
+                - number
+                - "null"
+            shipment:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                weight:
+                  type:
+                    - number
+                    - "null"
+                carrier:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    slug:
+                      type:
+                        - string
+                        - "null"
+                    created_at:
+                      type:
+                        - string
+                        - "null"
+                    updated_at:
+                      type:
+                        - string
+                        - "null"
+                    is_configured?:
+                      type:
+                        - boolean
+                        - "null"
+                    is_integrated?:
+                      type:
+                        - boolean
+                        - "null"
+                    inbound_supported:
+                      type:
+                        - boolean
+                        - "null"
+                    show_when_shipping?:
+                      type:
+                        - boolean
+                        - "null"
+                    using_dhl_parcel_rest_api:
+                      type:
+                        - boolean
+                        - "null"
+                charges:
+                  type:
+                    - object
+                    - "null"
+                order_id:
+                  type:
+                    - number
+                    - "null"
+                label_url:
+                  type:
+                    - string
+                    - "null"
+                carrier_id:
+                  type:
+                    - number
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                shipped_by:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    login:
+                      type:
+                        - string
+                        - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                carrier_fees:
+                  type:
+                    - array
+                    - "null"
+                allocation_id:
+                  type:
+                    - number
+                    - "null"
+                insured_value:
+                  type:
+                    - number
+                    - "null"
+                shipped_by_id:
+                  type:
+                    - number
+                    - "null"
+                notify_customer:
+                  type:
+                    - boolean
+                    - "null"
+                outbound_label_charges:
+                  type:
+                    - object
+                    - "null"
+                  properties: {}
+            warehouse:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                phone:
+                  type:
+                    - string
+                    - "null"
+                region:
+                  type:
+                    - string
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                post_code:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                trading_name:
+                  type:
+                    - string
+                    - "null"
+                created_by_id:
+                  type:
+                    - number
+                    - "null"
+                address_line_1:
+                  type:
+                    - string
+                    - "null"
+                display_position:
+                  type:
+                    - number
+                    - "null"
+                default_min_reorder:
+                  type:
+                    - number
+                    - "null"
+                inventory_type_code:
+                  type:
+                    - string
+                    - "null"
+                letterbox_address_status:
+                  type:
+                    - string
+                    - "null"
+                click_and_collect_enabled:
+                  type:
+                    - boolean
+                    - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            line_items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  quantity:
+                    type:
+                      - number
+                      - "null"
+                  sellable:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      price:
+                        type:
+                          - number
+                          - "null"
+                      title:
+                        type:
+                          - string
+                          - "null"
+                      images:
+                        type:
+                          - array
+                          - "null"
+                      margin:
+                        type:
+                          - number
+                          - "null"
+                      profit:
+                        type:
+                          - number
+                          - "null"
+                      weight:
+                        type:
+                          - number
+                          - "null"
+                      product:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          description:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - number
+                              - "null"
+                          title:
+                            type:
+                              - string
+                              - "null"
+                          weight:
+                            type:
+                              - number
+                              - "null"
+                          tax_rate:
+                            type:
+                              - number
+                              - "null"
+                          main_image_src:
+                            type:
+                              - string
+                              - "null"
+                          origin_country:
+                            type:
+                              - string
+                              - "null"
+                          hs_tariff_number:
+                            type:
+                              - string
+                              - "null"
+                      reorders:
+                        type:
+                          - array
+                          - "null"
+                      sku_code:
+                        type:
+                          - string
+                          - "null"
+                      tax_rate:
+                        type:
+                          - number
+                          - "null"
+                      upc_code:
+                        type:
+                          - string
+                          - "null"
+                      image_url:
+                        type:
+                          - string
+                          - "null"
+                      inventory:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          infinite:
+                            type:
+                              - boolean
+                              - "null"
+                          incoming_stock_level_at_all_warehouses:
+                            type:
+                              - number
+                              - "null"
+                          physical_stock_level_at_all_warehouses:
+                            type:
+                              - number
+                              - "null"
+                          allocated_stock_level_at_all_warehouses:
+                            type:
+                              - number
+                              - "null"
+                          available_stock_level_at_all_warehouses:
+                            type:
+                              - number
+                              - "null"
+                          transit_incoming_stock_level_at_all_warehouses:
+                            type:
+                              - number
+                              - "null"
+                          transit_outgoing_stock_level_at_all_warehouses:
+                            type:
+                              - number
+                              - "null"
+                      cost_price:
+                        type:
+                          - number
+                          - "null"
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      full_title:
+                        type:
+                          - string
+                          - "null"
+                      updated_at:
+                        type:
+                          - string
+                          - "null"
+                      weight_unit:
+                        type:
+                          - string
+                          - "null"
+                      model_number:
+                        type:
+                          - string
+                          - "null"
+                      weight_grams:
+                        type:
+                          - number
+                          - "null"
+                      created_by_id:
+                        type:
+                          - number
+                          - "null"
+                      product_title:
+                        type:
+                          - string
+                          - "null"
+                      stock_entries:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            infinite:
+                              type:
+                                - boolean
+                                - "null"
+                            location:
+                              type:
+                                - string
+                                - "null"
+                            warehouse:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                id:
+                                  type:
+                                    - number
+                                    - "null"
+                                name:
+                                  type:
+                                    - string
+                                    - "null"
+                                display_position:
+                                  type:
+                                    - number
+                                    - "null"
+                            updated_at:
+                              type:
+                                - string
+                                - "null"
+                            sellable_id:
+                              type:
+                                - number
+                                - "null"
+                            warehouse_id:
+                              type:
+                                - number
+                                - "null"
+                            stock_running_low:
+                              type:
+                                - boolean
+                                - "null"
+                            incoming_stock_level:
+                              type:
+                                - number
+                                - "null"
+                            physical_stock_level:
+                              type:
+                                - number
+                                - "null"
+                            allocated_stock_level:
+                              type:
+                                - number
+                                - "null"
+                            available_stock_level:
+                              type:
+                                - number
+                                - "null"
+                            sellable_on_hand_value:
+                              type:
+                                - number
+                                - "null"
+                            transit_incoming_stock_level:
+                              type:
+                                - number
+                                - "null"
+                            transit_outgoing_stock_level:
+                              type:
+                                - number
+                                - "null"
+                      sellable_title:
+                        type:
+                          - string
+                          - "null"
+                      min_reorder_level:
+                        type:
+                          - number
+                          - "null"
+                      main_thumbnail_url:
+                        type:
+                          - string
+                          - "null"
+                      quantity_to_reorder:
+                        type:
+                          - number
+                          - "null"
+                      supplementary_units:
+                        type:
+                          - number
+                          - "null"
+                      measurement_attributes:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          id:
+                            type:
+                              - number
+                              - "null"
+                          depth:
+                            type:
+                              - number
+                              - "null"
+                          width:
+                            type:
+                              - number
+                              - "null"
+                          height:
+                            type:
+                              - number
+                              - "null"
+                          dimensions_unit:
+                            type:
+                              - string
+                              - "null"
+                      variant_option_specifics:
+                        type:
+                          - array
+                          - "null"
+                      variant_property_specifics:
+                        type:
+                          - array
+                          - "null"
+                      stock_level_at_all_warehouses:
+                        type:
+                          - number
+                          - "null"
+                      allocated_stock_level_at_all_warehouses:
+                        type:
+                          - number
+                          - "null"
+                      available_stock_level_at_all_warehouses:
+                        type:
+                          - number
+                          - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  updated_at:
+                    type:
+                      - string
+                      - "null"
+                  picked_quantity:
+                    type:
+                      - number
+                      - "null"
+                  warehouse_sublocation:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      location:
+                        type:
+                          - string
+                          - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+            weight_unit:
+              type:
+                - string
+                - "null"
+            total_weight:
+              type:
+                - number
+                - "null"
+            allocated_by_id:
+              type:
+                - number
+                - "null"
+            packed_completely:
+              type:
+                - boolean
+                - "null"
+            allocation_package:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                depth:
+                  type:
+                    - number
+                    - "null"
+                width:
+                  type:
+                    - number
+                    - "null"
+                height:
+                  type:
+                    - number
+                    - "null"
+                weight:
+                  type:
+                    - number
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                weight_unit:
+                  type:
+                    - string
+                    - "null"
+                allocation_id:
+                  type:
+                    - number
+                    - "null"
+                similarity_key:
+                  type:
+                    - string
+                    - "null"
+                dimensions_unit:
+                  type:
+                    - string
+                    - "null"
+                package_selection_source:
+                  type:
+                    - string
+                    - "null"
+            preferred_shipment_date:
+              type:
+                - string
+                - "null"
+            from_gb_to_northern_ireland:
+              type:
+                - boolean
+                - "null"
+      total_price:
+        type:
+          - number
+          - "null"
+      with_duties:
+        type:
+          - boolean
+          - "null"
+      invoice_date:
+        type:
+          - string
+          - "null"
+      mergeable_id:
+        type:
+          - string
+          - "null"
+      merged_order:
+        type:
+          - boolean
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      customer_note:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          text:
+            type:
+              - string
+              - "null"
+          order_id:
+            type:
+              - number
+              - "null"
+      delivery_cost:
+        type:
+          - number
+          - "null"
+      international:
+        type:
+          - boolean
+          - "null"
+      picked_status:
+        type:
+          - string
+          - "null"
+      refund_amount:
+        type:
+          - number
+          - "null"
+      can_be_shipped:
+        type:
+          - boolean
+          - "null"
+      employee_notes:
+        type:
+          - array
+          - "null"
+      subtotal_price:
+        type:
+          - number
+          - "null"
+      billing_address:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          address1:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+      delivery_method:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          cost:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      is_amazon_prime:
+        type:
+          - boolean
+          - "null"
+      receipt_printed:
+        type:
+          - boolean
+          - "null"
+      total_discounts:
+        type:
+          - number
+          - "null"
+      adjustment_amount:
+        type:
+          - number
+          - "null"
+      mergable_checksum:
+        type:
+          - string
+          - "null"
+      picked_completely:
+        type:
+          - boolean
+          - "null"
+      shipping_discount:
+        type:
+          - number
+          - "null"
+      fulfilled_by_amazon:
+        type:
+          - boolean
+          - "null"
+      allocated_completely:
+        type:
+          - boolean
+          - "null"
+      restock_shipped_items:
+        type:
+          - boolean
+          - "null"
+      is_amazon_premium_order:
+        type:
+          - boolean
+          - "null"
+      send_notification_email:
+        type:
+          - boolean
+          - "null"
+      additional_order_level_taxless_discount:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  stores:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      city:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      remote:
+        type:
+          - boolean
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      with_fba:
+        type:
+          - boolean
+          - "null"
+      is_master:
+        type:
+          - boolean
+          - "null"
+      post_code:
+        type:
+          - string
+          - "null"
+      type_code:
+        type:
+          - string
+          - "null"
+      warehouse:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      warehouses:
+        type:
+          - array
+          - "null"
+      created_by_id:
+        type:
+          - number
+          - "null"
+      address_line_1:
+        type:
+          - string
+          - "null"
+      address_line_2:
+        type:
+          - string
+          - "null"
+      always_set_qty:
+        type:
+          - number
+          - "null"
+      percent_of_qty:
+        type:
+          - number
+          - "null"
+      default_warehouse:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          lat:
+            type:
+              - string
+              - "null"
+          lng:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          post_code:
+            type:
+              - string
+              - "null"
+          company_id:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          trading_name:
+            type:
+              - string
+              - "null"
+          created_by_id:
+            type:
+              - number
+              - "null"
+          address_line_1:
+            type:
+              - string
+              - "null"
+          display_position:
+            type:
+              - number
+              - "null"
+          default_min_reorder:
+            type:
+              - number
+              - "null"
+          inventory_type_code:
+            type:
+              - string
+              - "null"
+          letterbox_address_id:
+            type:
+              - string
+              - "null"
+          letterbox_address_status:
+            type:
+              - string
+              - "null"
+          click_and_collect_enabled:
+            type:
+              - boolean
+              - "null"
+      ebay_site_code_id:
+        type:
+          - number
+          - "null"
+      import_cost_price:
+        type:
+          - boolean
+          - "null"
+      import_order_tags:
+        type:
+          - boolean
+          - "null"
+      max_qty_to_advert:
+        type:
+          - number
+          - "null"
+      min_threshold_qty:
+        type:
+          - number
+          - "null"
+      channel_warehouses:
+        type:
+          - array
+          - "null"
+      routing_order_type:
+        type:
+          - number
+          - "null"
+      import_product_tags:
+        type:
+          - boolean
+          - "null"
+      pull_pending_orders:
+        type:
+          - boolean
+          - "null"
+      pull_product_images:
+        type:
+          - boolean
+          - "null"
+      skip_title_matching:
+        type:
+          - boolean
+          - "null"
+      update_remote_order:
+        type:
+          - boolean
+          - "null"
+      veeqo_dictates_price:
+        type:
+          - boolean
+          - "null"
+      import_product_brands:
+        type:
+          - boolean
+          - "null"
+      pull_historical_orders:
+        type:
+          - boolean
+          - "null"
+      pull_product_properties:
+        type:
+          - boolean
+          - "null"
+      remote_warehouses_exist:
+        type:
+          - boolean
+          - "null"
+      pull_stock_level_required:
+        type:
+          - boolean
+          - "null"
+      update_product_attributes:
+        type:
+          - boolean
+          - "null"
+      amazon_fulfillment_enabled:
+        type:
+          - boolean
+          - "null"
+      authorized_at_remote_store:
+        type:
+          - boolean
+          - "null"
+      pull_unpaid_shopify_orders:
+        type:
+          - boolean
+          - "null"
+      veeqo_dictates_stock_level:
+        type:
+          - boolean
+          - "null"
+      create_product_if_unmatched:
+        type:
+          - boolean
+          - "null"
+      default_send_shipment_email:
+        type:
+          - boolean
+          - "null"
+      stock_level_update_requests:
+        type:
+          - array
+          - "null"
+      disabled_push_of_stock_level:
+        type:
+          - boolean
+          - "null"
+      skip_fba_orders_and_products:
+        type:
+          - boolean
+          - "null"
+      keep_inventory_tracking_value:
+        type:
+          - boolean
+          - "null"
+      create_product_on_ended_listings:
+        type:
+          - boolean
+          - "null"
+      end_ebay_listing_on_out_of_stock:
+        type:
+          - boolean
+          - "null"
+      notify_on_outbound_shipment_date:
+        type:
+          - boolean
+          - "null"
+      import_additional_payment_details:
+        type:
+          - boolean
+          - "null"
+      link_with_similar_listings_by_sku:
+        type:
+          - boolean
+          - "null"
+      automatic_product_linking_disabled:
+        type:
+          - boolean
+          - "null"
+      outbound_shipment_notification_time:
+        type:
+          - string
+          - "null"
+      send_notification_emails_to_customers:
+        type:
+          - boolean
+          - "null"
+      first_sync_finish_notice_marked_as_read:
+        type:
+          - boolean
+          - "null"
+      link_to_products_linked_to_current_channel:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  company:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          login:
+            type:
+              - string
+              - "null"
+          role_id:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          company_id:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          new_orders_opted_in:
+            type:
+              - boolean
+              - "null"
+          failed_login_attempts:
+            type:
+              - number
+              - "null"
+          new_products_opted_in:
+            type:
+              - boolean
+              - "null"
+          orders_walkthrough_viewed:
+            type:
+              - boolean
+              - "null"
+          two_factor_authentication_enabled:
+            type:
+              - boolean
+              - "null"
+      paying:
+        type:
+          - boolean
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          date_format:
+            type:
+              - string
+              - "null"
+          weight_unit:
+            type:
+              - string
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          currency_code:
+            type:
+              - string
+              - "null"
+          phone_payments:
+            type:
+              - boolean
+              - "null"
+          dimensions_unit:
+            type:
+              - string
+              - "null"
+          point_of_sale_enabled:
+            type:
+              - boolean
+              - "null"
+          require_complete_packing:
+            type:
+              - boolean
+              - "null"
+          stock_change_reason_required:
+            type:
+              - boolean
+              - "null"
+          charge_taxes_on_shipping_rates:
+            type:
+              - boolean
+              - "null"
+      employees:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            login:
+              type:
+                - string
+                - "null"
+            role_id:
+              type:
+                - number
+                - "null"
+            timezone:
+              type:
+                - string
+                - "null"
+            company_id:
+              type:
+                - number
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+            new_orders_opted_in:
+              type:
+                - boolean
+                - "null"
+            failed_login_attempts:
+              type:
+                - number
+                - "null"
+            new_products_opted_in:
+              type:
+                - boolean
+                - "null"
+            orders_walkthrough_viewed:
+              type:
+                - boolean
+                - "null"
+            two_factor_authentication_enabled:
+              type:
+                - boolean
+                - "null"
+      trialing?:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      plan_features:
+        type:
+          - object
+          - "null"
+        properties:
+          api:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          roles:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          orders:
+            type:
+              - object
+              - "null"
+            properties:
+              nav_sub_items:
+                type:
+                  - boolean
+                  - "null"
+              auto_allocation:
+                type:
+                  - boolean
+                  - "null"
+              deallocate_when_packing:
+                type:
+                  - boolean
+                  - "null"
+          picking:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          reports:
+            type:
+              - object
+              - "null"
+            properties:
+              stock:
+                type:
+                  - boolean
+                  - "null"
+              returns:
+                type:
+                  - boolean
+                  - "null"
+              forecast:
+                type:
+                  - boolean
+                  - "null"
+              team_metrics:
+                type:
+                  - boolean
+                  - "null"
+              shipping_metrics:
+                type:
+                  - boolean
+                  - "null"
+              inventory_history:
+                type:
+                  - boolean
+                  - "null"
+              daily_digest_email:
+                type:
+                  - boolean
+                  - "null"
+          returns:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          channels:
+            type:
+              - object
+              - "null"
+            properties:
+              vend:
+                type:
+                  - boolean
+                  - "null"
+              noths:
+                type:
+                  - boolean
+                  - "null"
+              opencart:
+                type:
+                  - boolean
+                  - "null"
+              amazon_fba:
+                type:
+                  - boolean
+                  - "null"
+              prestashop:
+                type:
+                  - boolean
+                  - "null"
+              buy_shipping_terms:
+                type:
+                  - boolean
+                  - "null"
+              manage_stock_level:
+                type:
+                  - boolean
+                  - "null"
+              shopify_multi_location:
+                type:
+                  - boolean
+                  - "null"
+              amazon_wizard_short_flow:
+                type:
+                  - boolean
+                  - "null"
+              change_routing_order_type:
+                type:
+                  - boolean
+                  - "null"
+              amazon_wizard_shipping_only:
+                type:
+                  - boolean
+                  - "null"
+              update_remote_order_by_default:
+                type:
+                  - boolean
+                  - "null"
+              amazon_wizard_default_region_us:
+                type:
+                  - boolean
+                  - "null"
+              master_of_stock_activation_banner:
+                type:
+                  - boolean
+                  - "null"
+          listings:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          printing:
+            type:
+              - object
+              - "null"
+            properties:
+              direct_print:
+                type:
+                  - boolean
+                  - "null"
+              sku_on_label:
+                type:
+                  - boolean
+                  - "null"
+          reorders:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          shipping:
+            type:
+              - object
+              - "null"
+            properties:
+              shipping_credits:
+                type:
+                  - boolean
+                  - "null"
+              ship_on_future_date:
+                type:
+                  - boolean
+                  - "null"
+              ship_with_amazon_v2:
+                type:
+                  - boolean
+                  - "null"
+              payment_data_collection:
+                type:
+                  - boolean
+                  - "null"
+              buy_shipping_sub_carrier_amzn_us:
+                type:
+                  - boolean
+                  - "null"
+          dashboard:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          inventory:
+            type:
+              - object
+              - "null"
+            properties:
+              use_kits:
+                type:
+                  - boolean
+                  - "null"
+              merge_review:
+                type:
+                  - boolean
+                  - "null"
+              use_custom_views:
+                type:
+                  - boolean
+                  - "null"
+              show_stock_levels:
+                type:
+                  - boolean
+                  - "null"
+              change_stock_reason:
+                type:
+                  - boolean
+                  - "null"
+              power_upgrade_stock_sync:
+                type:
+                  - boolean
+                  - "null"
+              power_feature_inventory_tours:
+                type:
+                  - boolean
+                  - "null"
+          suppliers:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          wholesale:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          accounting:
+            type:
+              - object
+              - "null"
+            properties:
+              xero:
+                type:
+                  - boolean
+                  - "null"
+              settings:
+                type:
+                  - boolean
+                  - "null"
+          fulfilment:
+            type:
+              - object
+              - "null"
+            properties:
+              allocate_action:
+                type:
+                  - boolean
+                  - "null"
+              digital_picking_in_onboarding:
+                type:
+                  - boolean
+                  - "null"
+          onboarding:
+            type:
+              - object
+              - "null"
+            properties:
+              endless_trial:
+                type:
+                  - boolean
+                  - "null"
+              inventory_features:
+                type:
+                  - boolean
+                  - "null"
+              amazon_quick_connect:
+                type:
+                  - boolean
+                  - "null"
+              hide_connect_carrier_step:
+                type:
+                  - boolean
+                  - "null"
+              bulk_ship_intro_experience:
+                type:
+                  - boolean
+                  - "null"
+              signup_redirects_to_amazon_wizard:
+                type:
+                  - boolean
+                  - "null"
+              signup_redirects_to_channels_wizard:
+                type:
+                  - boolean
+                  - "null"
+          user_roles:
+            type:
+              - object
+              - "null"
+            properties:
+              admin:
+                type:
+                  - boolean
+                  - "null"
+              purchaser:
+                type:
+                  - boolean
+                  - "null"
+              accountant:
+                type:
+                  - boolean
+                  - "null"
+              picker_packer:
+                type:
+                  - boolean
+                  - "null"
+              warehouse_manager:
+                type:
+                  - boolean
+                  - "null"
+              customer_service_agent:
+                type:
+                  - boolean
+                  - "null"
+              customer_service_manager:
+                type:
+                  - boolean
+                  - "null"
+          price_lists:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          settings_page:
+            type:
+              - object
+              - "null"
+            properties:
+              customers:
+                type:
+                  - boolean
+                  - "null"
+              usps_scan_forms:
+                type:
+                  - boolean
+                  - "null"
+              listings_linking:
+                type:
+                  - boolean
+                  - "null"
+              carrier_settings_page:
+                type:
+                  - boolean
+                  - "null"
+          purchase_orders:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          stock_transfers:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          company_branding:
+            type:
+              - object
+              - "null"
+            properties:
+              any_actions:
+                type:
+                  - boolean
+                  - "null"
+          shipping_providers:
+            type:
+              - object
+              - "null"
+            properties:
+              amazon_shipping_v2:
+                type:
+                  - boolean
+                  - "null"
+      trial_end_date:
+        type:
+          - string
+          - "null"
+      active_features:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      company_address:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          post_code:
+            type:
+              - string
+              - "null"
+          address_line_1:
+            type:
+              - string
+              - "null"
+      veeqo_product_name:
+        type:
+          - string
+          - "null"
+      has_right_to_use_veeqo:
+        type:
+          - boolean
+          - "null"
+      chargify_product_handle:
+        type:
+          - string
+          - "null"
+      shopify_app_store_referral?:
+        type:
+          - boolean
+          - "null"
+      has_ever_created_remote_channel:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  returns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+      number:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      line_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sku_code:
+              type:
+                - string
+                - "null"
+            sellable_id:
+              type:
+                - number
+                - "null"
+            refund_amount:
+              type:
+                - number
+                - "null"
+            refund_quantity:
+              type:
+                - number
+                - "null"
+            received_quantity:
+              type:
+                - number
+                - "null"
+            refund_amount_per_unit:
+              type:
+                - number
+                - "null"
+      warehouse_name:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      tags:
+        type:
+          - array
+          - "null"
+      image:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      weight:
+        type:
+          - number
+          - "null"
+      tax_rate:
+        type:
+          - number
+          - "null"
+      inventory:
+        type:
+          - object
+          - "null"
+        properties:
+          infinite:
+            type:
+              - boolean
+              - "null"
+      sellables:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            images:
+              type:
+                - array
+                - "null"
+            margin:
+              type:
+                - number
+                - "null"
+            profit:
+              type:
+                - number
+                - "null"
+            weight:
+              type:
+                - number
+                - "null"
+            product:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                weight:
+                  type:
+                    - number
+                    - "null"
+                tax_rate:
+                  type:
+                    - number
+                    - "null"
+                main_image_src:
+                  type:
+                    - string
+                    - "null"
+                origin_country:
+                  type:
+                    - string
+                    - "null"
+                hs_tariff_number:
+                  type:
+                    - string
+                    - "null"
+            reorders:
+              type:
+                - array
+                - "null"
+            sku_code:
+              type:
+                - string
+                - "null"
+            tax_rate:
+              type:
+                - number
+                - "null"
+            upc_code:
+              type:
+                - string
+                - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            inventory:
+              type:
+                - object
+                - "null"
+              properties:
+                infinite:
+                  type:
+                    - boolean
+                    - "null"
+                incoming_stock_level_at_all_warehouses:
+                  type:
+                    - number
+                    - "null"
+                physical_stock_level_at_all_warehouses:
+                  type:
+                    - number
+                    - "null"
+                allocated_stock_level_at_all_warehouses:
+                  type:
+                    - number
+                    - "null"
+                available_stock_level_at_all_warehouses:
+                  type:
+                    - number
+                    - "null"
+                transit_incoming_stock_level_at_all_warehouses:
+                  type:
+                    - number
+                    - "null"
+                transit_outgoing_stock_level_at_all_warehouses:
+                  type:
+                    - number
+                    - "null"
+            cost_price:
+              type:
+                - number
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            full_title:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+            weight_unit:
+              type:
+                - string
+                - "null"
+            model_number:
+              type:
+                - string
+                - "null"
+            weight_grams:
+              type:
+                - number
+                - "null"
+            created_by_id:
+              type:
+                - number
+                - "null"
+            on_hand_value:
+              type:
+                - number
+                - "null"
+            product_title:
+              type:
+                - string
+                - "null"
+            stock_entries:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  infinite:
+                    type:
+                      - boolean
+                      - "null"
+                  location:
+                    type:
+                      - string
+                      - "null"
+                  warehouse:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      display_position:
+                        type:
+                          - number
+                          - "null"
+                  updated_at:
+                    type:
+                      - string
+                      - "null"
+                  sellable_id:
+                    type:
+                      - number
+                      - "null"
+                  warehouse_id:
+                    type:
+                      - number
+                      - "null"
+                  stock_running_low:
+                    type:
+                      - boolean
+                      - "null"
+                  incoming_stock_level:
+                    type:
+                      - number
+                      - "null"
+                  physical_stock_level:
+                    type:
+                      - number
+                      - "null"
+                  allocated_stock_level:
+                    type:
+                      - number
+                      - "null"
+                  available_stock_level:
+                    type:
+                      - number
+                      - "null"
+                  sellable_on_hand_value:
+                    type:
+                      - number
+                      - "null"
+                  transit_incoming_stock_level:
+                    type:
+                      - number
+                      - "null"
+                  transit_outgoing_stock_level:
+                    type:
+                      - number
+                      - "null"
+            sellable_title:
+              type:
+                - string
+                - "null"
+            active_channels:
+              type:
+                - array
+                - "null"
+            requires_review:
+              type:
+                - boolean
+                - "null"
+            channel_sellables:
+              type:
+                - array
+                - "null"
+            min_reorder_level:
+              type:
+                - number
+                - "null"
+            main_thumbnail_url:
+              type:
+                - string
+                - "null"
+            quantity_to_reorder:
+              type:
+                - number
+                - "null"
+            supplementary_units:
+              type:
+                - number
+                - "null"
+            total_quantity_sold:
+              type:
+                - number
+                - "null"
+            measurement_attributes:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                depth:
+                  type:
+                    - number
+                    - "null"
+                width:
+                  type:
+                    - number
+                    - "null"
+                height:
+                  type:
+                    - number
+                    - "null"
+                dimensions_unit:
+                  type:
+                    - string
+                    - "null"
+            variant_option_specifics:
+              type:
+                - array
+                - "null"
+            variant_property_specifics:
+              type:
+                - array
+                - "null"
+            stock_level_at_all_warehouses:
+              type:
+                - number
+                - "null"
+            allocated_stock_level_at_all_warehouses:
+              type:
+                - number
+                - "null"
+            available_stock_level_at_all_warehouses:
+              type:
+                - number
+                - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      web_page_url:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - number
+          - "null"
+      on_hand_value:
+        type:
+          - number
+          - "null"
+      thumbnail_url:
+        type:
+          - string
+          - "null"
+      main_image_src:
+        type:
+          - string
+          - "null"
+      origin_country:
+        type:
+          - string
+          - "null"
+      web_meta_title:
+        type:
+          - string
+          - "null"
+      web_page_title:
+        type:
+          - string
+          - "null"
+      active_channels:
+        type:
+          - array
+          - "null"
+      requires_review:
+        type:
+          - boolean
+          - "null"
+      channel_products:
+        type:
+          - array
+          - "null"
+      hs_tariff_number:
+        type:
+          - string
+          - "null"
+      total_stock_level:
+        type:
+          - number
+          - "null"
+      web_meta_keywords:
+        type:
+          - string
+          - "null"
+      total_quantity_sold:
+        type:
+          - number
+          - "null"
+      web_meta_description:
+        type:
+          - string
+          - "null"
+      total_allocated_stock_level:
+        type:
+          - number
+          - "null"
+      total_available_stock_level:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      contact_data:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+      created_by_id:
+        type:
+          - number
+          - "null"
+      customer_type:
+        type:
+          - string
+          - "null"
+      billing_address:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          address1:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+      shipping_addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            zip:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            phone:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            address1:
+              type:
+                - string
+                - "null"
+            verified:
+              type:
+                - boolean
+                - "null"
+            last_name:
+              type:
+                - string
+                - "null"
+            first_name:
+              type:
+                - string
+                - "null"
+            location_found:
+              type:
+                - boolean
+                - "null"
+      last_used_shipping_address:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          address1:
+            type:
+              - string
+              - "null"
+          verified:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          location_found:
+            type:
+              - boolean
+              - "null"
+    additionalProperties: true
+  suppliers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  warehouses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      city:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      post_code:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      trading_name:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - number
+          - "null"
+      address_line_1:
+        type:
+          - string
+          - "null"
+      display_position:
+        type:
+          - number
+          - "null"
+      default_min_reorder:
+        type:
+          - number
+          - "null"
+      inventory_type_code:
+        type:
+          - string
+          - "null"
+      letterbox_address_status:
+        type:
+          - string
+          - "null"
+      click_and_collect_enabled:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  purchase_orders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  delivery_methods:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      cost:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

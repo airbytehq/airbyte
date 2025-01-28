@@ -5,14 +5,14 @@ data:
   connectorType: source
   dockerRepository: airbyte/image-exists-1
   githubIssueLabel: source-alloydb-strict-encrypt
-  dockerImageTag: 2.1.0
+  dockerImageTag: 2.1.0-rc.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/existingsource
   connectorSubtype: database
   releaseStage: generally_available
   license: MIT
   releases:
-    isReleaseCandidate: true
     rolloutConfiguration:
+      enableProgressiveRollout: true
       initialPercentage: 5
       maxPercentage: 50
       advanceDelayMinutes: 60

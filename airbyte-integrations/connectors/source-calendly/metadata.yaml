@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b8f2cbee-b073-4dd8-9b80-97d7bae967a4
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/source-calendly
   githubIssueLabel: source-calendly
   icon: icon.svg

@@ -6,11 +6,11 @@ data:
     hosts:
       - api.delighted.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.7
   dockerRepository: airbyte/source-delighted
   documentationUrl: https://docs.airbyte.com/integrations/sources/delighted
   githubIssueLabel: source-delighted

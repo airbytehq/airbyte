@@ -7,6 +7,7 @@ from typing import Set
 
 import git
 from dagger import Connection, SessionError
+
 from pipelines.consts import CIContext
 from pipelines.dagger.containers.git import checked_out_git_container
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL
@@ -31,7 +32,8 @@ async def get_modified_files_in_branch_remote(
                 dagger_client, current_git_branch, current_git_revision, diffed_branch, repo_url=current_git_repo_url
             )
             modified_files = await container.with_exec(
-                ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"origin/{diffed_branch}...target/{current_git_branch}"]
+                ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"origin/{diffed_branch}...target/{current_git_branch}"],
+                use_entrypoint=True,
             ).stdout()
     except SessionError:
         if retries > 0:
@@ -69,7 +71,9 @@ async def get_modified_files_in_commit_remote(current_git_branch: str, current_g
     try:
         async with Connection(DAGGER_CONFIG) as dagger_client:
             container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision)
-            modified_files = await container.with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"]).stdout()
+            modified_files = await container.with_exec(
+                ["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"], use_entrypoint=True
+            ).stdout()
     except SessionError:
         if retries > 0:
             return await get_modified_files_in_commit_remote(current_git_branch, current_git_revision, retries - 1)

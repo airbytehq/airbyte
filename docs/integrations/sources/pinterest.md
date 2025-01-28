@@ -203,6 +203,17 @@ The connector is restricted by the Pinterest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.28 | 2025-01-25 | [52502](https://github.com/airbytehq/airbyte/pull/52502) | Update dependencies |
+| 2.0.27 | 2025-01-11 | [51377](https://github.com/airbytehq/airbyte/pull/51377) | Update dependencies |
+| 2.0.26 | 2025-01-04 | [50933](https://github.com/airbytehq/airbyte/pull/50933) | Update dependencies |
+| 2.0.25 | 2024-12-28 | [50710](https://github.com/airbytehq/airbyte/pull/50710) | Update dependencies |
+| 2.0.24 | 2024-12-21 | [50302](https://github.com/airbytehq/airbyte/pull/50302) | Update dependencies |
+| 2.0.23 | 2024-12-14 | [49040](https://github.com/airbytehq/airbyte/pull/49040) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.0.22 | 2024-11-04 | [48280](https://github.com/airbytehq/airbyte/pull/48280) | Update dependencies |
+| 2.0.21 | 2024-10-29 | [47074](https://github.com/airbytehq/airbyte/pull/47074) | Update dependencies |
+| 2.0.20 | 2024-10-12 | [46815](https://github.com/airbytehq/airbyte/pull/46815) | Update dependencies |
+| 2.0.19 | 2024-10-05 | [46482](https://github.com/airbytehq/airbyte/pull/46482) | Update dependencies |
+| 2.0.18 | 2024-09-28 | [46104](https://github.com/airbytehq/airbyte/pull/46104) | Update dependencies |
 | 2.0.17 | 2024-09-21 | [45838](https://github.com/airbytehq/airbyte/pull/45838) | Update dependencies |
 | 2.0.16 | 2024-09-14 | [45566](https://github.com/airbytehq/airbyte/pull/45566) | Update dependencies |
 | 2.0.15 | 2024-09-07 | [45283](https://github.com/airbytehq/airbyte/pull/45283) | Update dependencies |

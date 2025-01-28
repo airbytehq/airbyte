@@ -96,6 +96,17 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.0 | 2025-01-15 | [51570](https://github.com/airbytehq/airbyte/pull/51570) | Promoting release candidate 0.9.0-rc.2 to a main version. |
+| 0.9.0-rc.2 | 2025-01-13 | [49936](https://github.com/airbytehq/airbyte/pull/49936) | Incremental substream fixes |
+| 0.9.0-rc.1 | 2024-12-17 | [47240](https://github.com/airbytehq/airbyte/pull/47240) | Migrate to manifest-only format |
+| 0.8.3 | 2024-12-12 | [48979](https://github.com/airbytehq/airbyte/pull/48979) | Update dependencies |
+| 0.8.2 | 2024-10-29 | [47919](https://github.com/airbytehq/airbyte/pull/47919) | Update dependencies |
+| 0.8.1 | 2024-10-28 | [47537](https://github.com/airbytehq/airbyte/pull/47537) | Update dependencies |
+| 0.8.0 | 2024-10-23 | [46658](https://github.com/airbytehq/airbyte/pull/46658) | Add `lookback_window` to the source specification |
+| 0.7.5 | 2024-10-21 | [47120](https://github.com/airbytehq/airbyte/pull/47120) | Update dependencies |
+| 0.7.4 | 2024-10-12 | [46831](https://github.com/airbytehq/airbyte/pull/46831) | Update dependencies |
+| 0.7.3 | 2024-10-05 | [46447](https://github.com/airbytehq/airbyte/pull/46447) | Update dependencies |
+| 0.7.2 | 2024-09-28 | [45279](https://github.com/airbytehq/airbyte/pull/45279) | Update dependencies |
 | 0.7.1 | 2024-08-31 | [44966](https://github.com/airbytehq/airbyte/pull/44966) | Update dependencies |
 | 0.7.0 | 2024-08-29 | [44911](https://github.com/airbytehq/airbyte/pull/44911) | Migrate to CDK v4 |
 | 0.6.21 | 2024-08-24 | [44672](https://github.com/airbytehq/airbyte/pull/44672) | Update dependencies |

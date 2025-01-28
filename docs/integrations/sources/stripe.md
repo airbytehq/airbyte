@@ -110,6 +110,10 @@ The Stripe source connector supports the following streams:
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
+- [Payout Balance Transactions](https://docs.stripe.com/api/balance_transactions/list) \(Incremental\)
+  :::note
+  This stream is built with a call using payout_id from the payout stream (parent) as a parmeter to the balance transaction API to get balance transactions that comprised the actual amount of the payout. Check [the Stripe docs](https://docs.stripe.com/api/balance_transactions/list) for more details.
+  :::
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
@@ -127,7 +131,7 @@ The Stripe source connector supports the following streams:
 - [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
-- [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
+- [Usage Records](https://stripe.com/docs/api/usage_records)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -193,9 +197,11 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `External Account Bank Accounts`
 - `External Account Cards`
 - `Invoice Items`
+- `Invoice Line Items`
 - `Invoices`
 - `Payment Intents`
 - `Payouts`
+- `Payout Balance Transactions`
 - `Promotion Codes`
 - `Persons`
 - `Plans`
@@ -204,6 +210,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Reviews`
 - `Setup Intents`
 - `Subscription Schedule`
+- `Subscription Items`
 - `Subscriptions`
 - `Top Ups`
 - `Transactions`
@@ -239,39 +246,46 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.6.0   | 2024-09-10 | [44891](https://github.com/airbytehq/airbyte/pull/44891)  | Update `Payment Methods` stream                                                                                                                                                                                               |
-| 5.5.4   | 2024-09-09 | [45348](https://github.com/airbytehq/airbyte/pull/45348)  | Remove `stripe` python package                                                                                                                                                                                                |
-| 5.5.3   | 2024-09-03 | [45101](https://github.com/airbytehq/airbyte/pull/45101)  | Fix regression following pagination issue fix                                                                                                                                                                                 |
-| 5.5.2   | 2024-08-28 | [44862](https://github.com/airbytehq/airbyte/pull/44862)  | Fix RFR pagination issue                                                                                                                                                                                                      |
-| 5.5.1   | 2024-08-10 | [43105](https://github.com/airbytehq/airbyte/pull/43105)  | Update dependencies                                                                                                                                                                                                           |
-| 5.5.0   | 2024-08-08 | [43302](https://github.com/airbytehq/airbyte/pull/43302)  | Fix problem with state not updating and upgrade cdk 4                                                                                                                                                                         |
-| 5.4.12  | 2024-07-31 | [41985](https://github.com/airbytehq/airbyte/pull/41985)  | Expand Invoice discounts and tax rates                                                                                                                                                                                        |
-| 5.4.11  | 2024-07-27 | [42623](https://github.com/airbytehq/airbyte/pull/42623)  | Update dependencies                                                                                                                                                                                                           |
-| 5.4.10  | 2024-07-20 | [42305](https://github.com/airbytehq/airbyte/pull/42305)  | Update dependencies                                                                                                                                                                                                           |
-| 5.4.9   | 2024-07-13 | [41760](https://github.com/airbytehq/airbyte/pull/41760)  | Update dependencies                                                                                                                                                                                                           |
-| 5.4.8   | 2024-07-10 | [41477](https://github.com/airbytehq/airbyte/pull/41477)  | Update dependencies                                                                                                                                                                                                           |
-| 5.4.7   | 2024-07-09 | [40869](https://github.com/airbytehq/airbyte/pull/40869)  | Update dependencies                                                                                                                                                                                                           |
-| 5.4.6   | 2024-07-08 | [41044](https://github.com/airbytehq/airbyte/pull/41044)  | Use latest `CDK` version possible                                                                                                                                                                                             |
-| 5.4.5   | 2024-06-25 | [40404](https://github.com/airbytehq/airbyte/pull/40404)  | Update dependencies                                                                                                                                                                                                           |
-| 5.4.4   | 2024-06-22 | [40040](https://github.com/airbytehq/airbyte/pull/40040)  | Update dependencies                                                                                                                                                                                                           |
-| 5.4.3   | 2024-06-06 | [39284](https://github.com/airbytehq/airbyte/pull/39284)  | [autopull] Upgrade base image to v1.2.2                                                                                                                                                                                       |
-| 5.4.2   | 2024-06-11 | [39412](https://github.com/airbytehq/airbyte/pull/39412)  | Removed `invoice.upcomming` event type from (incremental sync) for `Invoices` stream                                                                                                                                          |
-| 5.4.1   | 2024-06-11 | [39393](https://github.com/airbytehq/airbyte/pull/39393)  | Added missing `event types` (incremental sync) for `Invoices` stream                                                                                                                                                          |
-| 5.4.0   | 2024-06-05 | [39138](https://github.com/airbytehq/airbyte/pull/39138)  | Fixed the `Refunds` stream missing data for the `incremental` sync                                                                                                                                                            |
-| 5.3.9   | 2024-05-22 | [38550](https://github.com/airbytehq/airbyte/pull/38550)  | Update authenticator package                                                                                                                                                                                                  |
-| 5.3.8   | 2024-05-15 | [38248](https://github.com/airbytehq/airbyte/pull/38248)  | Replace AirbyteLogger with logging.Logger                                                                                                                                                                                     |
-| 5.3.7   | 2024-04-24 | [36663](https://github.com/airbytehq/airbyte/pull/36663)  | Schema descriptions                                                                                                                                                                                                           |
-| 5.3.6   | 2024-04-18 | [37448](https://github.com/airbytehq/airbyte/pull/37448)  | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type                                                                                                                                               |
-| 5.3.5   | 2024-04-18 | [37418](https://github.com/airbytehq/airbyte/pull/37418)  | Ensure python return code != 0 in case of error                                                                                                                                                                               |
-| 5.3.4   | 2024-04-11 | [37406](https://github.com/airbytehq/airbyte/pull/37406)  | Update CDK version to have partitioned state fix                                                                                                                                                                              |
-| 5.3.3   | 2024-04-11 | [37001](https://github.com/airbytehq/airbyte/pull/37001)  | Update airbyte-cdk to flush print buffer for every message                                                                                                                                                                    |
-| 5.3.2   | 2024-04-11 | [36964](https://github.com/airbytehq/airbyte/pull/36964)  | Update CDK version to fix breaking change before another devs work on it                                                                                                                                                      |
-| 5.3.1   | 2024-04-10 | [36960](https://github.com/airbytehq/airbyte/pull/36960)  | Remove unused imports                                                                                                                                                                                                         |
-| 5.3.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978)  | Upgrade CDK to start emitting record counts with state and full refresh state                                                                                                                                                 |
-| 5.2.4   | 2024-02-12 | [35137](https://github.com/airbytehq/airbyte/pull/35137)  | Fix license in `pyproject.toml`                                                                                                                                                                                               |
-| 5.2.3   | 2024-02-09 | [35068](https://github.com/airbytehq/airbyte/pull/35068)  | Manage dependencies with Poetry.                                                                                                                                                                                              |
-| 5.2.2   | 2024-01-31 | [34619](https://github.com/airbytehq/airbyte/pull/34619)  | Events stream concurrent on incremental syncs                                                                                                                                                                                 |
-| 5.2.1   | 2024-01-18 | [34495](https://github.com/airbytehq/airbyte/pull/34495)  | Fix deadlock issue                                                                                                                                                                                                            |
+| 5.8.3 | 2025-01-11 | [46832](https://github.com/airbytehq/airbyte/pull/46832) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 5.8.2 | 2024-12-10 | [46499](https://github.com/airbytehq/airbyte/pull/46499) | Source-Stripe: Refactor Customer Balance Transactions |
+| 5.8.1 | 2024-12-08 | [46499](https://github.com/airbytehq/airbyte/pull/46499) | Source-Stripe: Add new payout_balance_transactions incremental stream |
+| 5.8.0 | 2024-10-12 | [46864](https://github.com/airbytehq/airbyte/pull/46864) | Add incremental stream support to `accounts` stream |
+| 5.7.0 | 2024-10-01 | [45860](https://github.com/airbytehq/airbyte/pull/45860) | Add incremental stream support to `invoice_line_items` and `subscription_items` streams |
+| 5.6.2 | 2024-10-05 | [43881](https://github.com/airbytehq/airbyte/pull/43881) | Update dependencies |
+| 5.6.1 | 2024-10-03 | [46327](https://github.com/airbytehq/airbyte/pull/46327) | Bump the cdk to 5.10.2 to stop using PrintBuffer optimization due to record count mismatches |
+| 5.6.0 | 2024-09-10 | [44891](https://github.com/airbytehq/airbyte/pull/44891) | Update `Payment Methods` stream |
+| 5.5.4 | 2024-09-09 | [45348](https://github.com/airbytehq/airbyte/pull/45348) | Remove `stripe` python package |
+| 5.5.3 | 2024-09-03 | [45101](https://github.com/airbytehq/airbyte/pull/45101) | Fix regression following pagination issue fix |
+| 5.5.2 | 2024-08-28 | [44862](https://github.com/airbytehq/airbyte/pull/44862) | Fix RFR pagination issue |
+| 5.5.1 | 2024-08-10 | [43105](https://github.com/airbytehq/airbyte/pull/43105) | Update dependencies |
+| 5.5.0 | 2024-08-08 | [43302](https://github.com/airbytehq/airbyte/pull/43302) | Fix problem with state not updating and upgrade cdk 4 |
+| 5.4.12 | 2024-07-31 | [41985](https://github.com/airbytehq/airbyte/pull/41985) | Expand Invoice discounts and tax rates |
+| 5.4.11 | 2024-07-27 | [42623](https://github.com/airbytehq/airbyte/pull/42623) | Update dependencies |
+| 5.4.10 | 2024-07-20 | [42305](https://github.com/airbytehq/airbyte/pull/42305) | Update dependencies |
+| 5.4.9 | 2024-07-13 | [41760](https://github.com/airbytehq/airbyte/pull/41760) | Update dependencies |
+| 5.4.8 | 2024-07-10 | [41477](https://github.com/airbytehq/airbyte/pull/41477) | Update dependencies |
+| 5.4.7 | 2024-07-09 | [40869](https://github.com/airbytehq/airbyte/pull/40869) | Update dependencies |
+| 5.4.6 | 2024-07-08 | [41044](https://github.com/airbytehq/airbyte/pull/41044) | Use latest `CDK` version possible |
+| 5.4.5 | 2024-06-25 | [40404](https://github.com/airbytehq/airbyte/pull/40404) | Update dependencies |
+| 5.4.4 | 2024-06-22 | [40040](https://github.com/airbytehq/airbyte/pull/40040) | Update dependencies |
+| 5.4.3 | 2024-06-06 | [39284](https://github.com/airbytehq/airbyte/pull/39284) | [autopull] Upgrade base image to v1.2.2 |
+| 5.4.2 | 2024-06-11 | [39412](https://github.com/airbytehq/airbyte/pull/39412) | Removed `invoice.upcomming` event type from (incremental sync) for `Invoices` stream |
+| 5.4.1 | 2024-06-11 | [39393](https://github.com/airbytehq/airbyte/pull/39393) | Added missing `event types` (incremental sync) for `Invoices` stream |
+| 5.4.0 | 2024-06-05 | [39138](https://github.com/airbytehq/airbyte/pull/39138) | Fixed the `Refunds` stream missing data for the `incremental` sync |
+| 5.3.9 | 2024-05-22 | [38550](https://github.com/airbytehq/airbyte/pull/38550) | Update authenticator package |
+| 5.3.8 | 2024-05-15 | [38248](https://github.com/airbytehq/airbyte/pull/38248) | Replace AirbyteLogger with logging.Logger |
+| 5.3.7 | 2024-04-24 | [36663](https://github.com/airbytehq/airbyte/pull/36663) | Schema descriptions |
+| 5.3.6 | 2024-04-18 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type |
+| 5.3.5 | 2024-04-18 | [37418](https://github.com/airbytehq/airbyte/pull/37418) | Ensure python return code != 0 in case of error |
+| 5.3.4 | 2024-04-11 | [37406](https://github.com/airbytehq/airbyte/pull/37406) | Update CDK version to have partitioned state fix |
+| 5.3.3 | 2024-04-11 | [37001](https://github.com/airbytehq/airbyte/pull/37001) | Update airbyte-cdk to flush print buffer for every message |
+| 5.3.2 | 2024-04-11 | [36964](https://github.com/airbytehq/airbyte/pull/36964) | Update CDK version to fix breaking change before another devs work on it |
+| 5.3.1 | 2024-04-10 | [36960](https://github.com/airbytehq/airbyte/pull/36960) | Remove unused imports |
+| 5.3.0 | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978) | Upgrade CDK to start emitting record counts with state and full refresh state |
+| 5.2.4 | 2024-02-12 | [35137](https://github.com/airbytehq/airbyte/pull/35137) | Fix license in `pyproject.toml` |
+| 5.2.3 | 2024-02-09 | [35068](https://github.com/airbytehq/airbyte/pull/35068) | Manage dependencies with Poetry. |
+| 5.2.2 | 2024-01-31 | [34619](https://github.com/airbytehq/airbyte/pull/34619) | Events stream concurrent on incremental syncs |
+| 5.2.1 | 2024-01-18 | [34495](https://github.com/airbytehq/airbyte/pull/34495) | Fix deadlock issue |
 | 5.2.0   | 2024-01-18 | [34347](https://github.com/airbytehq/airbyte/pull//34347) | Add new fields invoices and subscription streams. Upgrade the CDK for better memory usage.                                                                                                                                    |
 | 5.1.3   | 2023-12-18 | [33306](https://github.com/airbytehq/airbyte/pull/33306/) | Adding integration tests                                                                                                                                                                                                      |
 | 5.1.2   | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414)  | Prepare for airbyte-lib                                                                                                                                                                                                       |

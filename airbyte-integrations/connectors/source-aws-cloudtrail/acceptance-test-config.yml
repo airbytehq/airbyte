@@ -4,7 +4,7 @@ connector_image: airbyte/source-aws-cloudtrail:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_aws_cloudtrail/spec.yaml"
+      - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
           disable_for_version: 0.1.11 # The spec has additional filtering property
   connection:

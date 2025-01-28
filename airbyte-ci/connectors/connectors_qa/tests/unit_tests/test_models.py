@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from connector_ops.utils import ConnectorLanguage
+
 from connectors_qa import consts
 from connectors_qa.checks import ENABLED_CHECKS
 from connectors_qa.models import CheckStatus

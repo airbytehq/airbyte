@@ -17,7 +17,7 @@ on:
       - synchronize
 jobs:
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       internal_poetry_packages: ${{ steps.changes.outputs.internal_poetry_packages }}
 
@@ -42,7 +42,6 @@ jobs:
             - airbyte-ci/connectors/erd/**
             - airbyte-ci/connectors/metadata_service/lib/**
             - airbyte-ci/connectors/metadata_service/orchestrator/**
-            - airbyte-cdk/python/**
             - airbyte-integrations/bases/connector-acceptance-test/**
 
   run-tests:
@@ -60,6 +59,25 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
+      - name: Checkout Airbyte Python CDK
+        uses: actions/checkout@v4
+        with:
+          repository: airbytehq/airbyte-python-cdk
+          ref: main
+          # We can't clone into a parent directory of the repo, so we clone into
+          # a subdirectory and then move it over as a sibling directory.
+          # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
+          path: airbyte-python-cdk
+      - name: Move airbyte-python-cdk to sibling directory path
+        shell: bash
+        run: mv ./airbyte-python-cdk ../airbyte-python-cdk
+      - name: Show local paths checked out
+        shell: bash
+        run: |
+          set -x
+          echo "Current directory: $(pwd)"
+          ls -la
+          ls -la ../airbyte-python-cdk || echo "No airbyte-python-cdk directory"
 
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
@@ -69,7 +87,7 @@ jobs:
       - name: Fetch last commit id from remote branch [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
-        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+        run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
       - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
@@ -81,7 +99,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -98,7 +116,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

@@ -1,9 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 import pendulum
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker
 from freezegun import freeze_time
 from test_bulk_stream import TestBulkStream
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.mock_http import HttpMocker
 
 
 class TestAppInstallAdLabelsStream(TestBulkStream):
@@ -38,7 +39,9 @@ class TestAppInstallAdLabelsStream(TestBulkStream):
         self.auth_client(http_mocker)
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, "app_install_ad_labels_with_cursor_value")
         assert len(output.records) == 4
-        assert dict(output.most_recent_state.stream_state).get(self.account_id, {}) == {self.cursor_field: "2024-01-04T12:12:12.028+00:00"}
+        assert output.most_recent_state.stream_state.__dict__.get(self.account_id, {}) == {
+            self.cursor_field: "2024-01-04T12:12:12.028+00:00"
+        }
 
     @HttpMocker()
     @freeze_time("2024-02-26")  # mock current time as stream data available for 30 days only
@@ -46,14 +49,14 @@ class TestAppInstallAdLabelsStream(TestBulkStream):
         state = self._state("app_install_ad_labels_state", self.stream_name)
         self.auth_client(http_mocker)
         output, service_call_mock = self.read_stream(
-            self.stream_name,
-            SyncMode.incremental,
-            self._config,
-            "app_install_ad_labels_with_state",
-            state
+            self.stream_name, SyncMode.incremental, self._config, "app_install_ad_labels_with_state", state
         )
-        assert dict(output.most_recent_state.stream_state).get(self.account_id, {}) == {self.cursor_field: "2024-01-29T12:55:12.028+00:00"}
+        assert output.most_recent_state.stream_state.__dict__.get(self.account_id, {}) == {
+            self.cursor_field: "2024-01-29T12:55:12.028+00:00"
+        }
 
-        previous_state = state[0].stream.stream_state.dict()
+        previous_state = state[0].stream.stream_state.__dict__
         # gets DownloadParams object
-        assert service_call_mock.call_args.args[0].last_sync_time_in_utc == pendulum.parse(previous_state[self.account_id][self.cursor_field])
+        assert service_call_mock.call_args.args[0].last_sync_time_in_utc == pendulum.parse(
+            previous_state[self.account_id][self.cursor_field]
+        )

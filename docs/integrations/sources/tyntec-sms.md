@@ -65,7 +65,17 @@ The Tyntec SMS connector should not run into limitations under normal usage. Ple
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------ |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.11 | 2025-01-25 | [52385](https://github.com/airbytehq/airbyte/pull/52385) | Update dependencies |
+| 0.2.10 | 2025-01-18 | [51961](https://github.com/airbytehq/airbyte/pull/51961) | Update dependencies |
+| 0.2.9 | 2025-01-11 | [51439](https://github.com/airbytehq/airbyte/pull/51439) | Update dependencies |
+| 0.2.8 | 2024-12-28 | [50783](https://github.com/airbytehq/airbyte/pull/50783) | Update dependencies |
+| 0.2.7 | 2024-12-21 | [50364](https://github.com/airbytehq/airbyte/pull/50364) | Update dependencies |
+| 0.2.6 | 2024-12-14 | [49793](https://github.com/airbytehq/airbyte/pull/49793) | Update dependencies |
+| 0.2.5 | 2024-12-12 | [49431](https://github.com/airbytehq/airbyte/pull/49431) | Update dependencies |
+| 0.2.4 | 2024-12-11 | [49110](https://github.com/airbytehq/airbyte/pull/49110) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.3 | 2024-11-04 | [47910](https://github.com/airbytehq/airbyte/pull/47910) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [43782](https://github.com/airbytehq/airbyte/pull/43782) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44054](https://github.com/airbytehq/airbyte/pull/44054) | Refactor connector to manifest-only format |
 | 0.1.13 | 2024-08-10 | [43551](https://github.com/airbytehq/airbyte/pull/43551) | Update dependencies |
 | 0.1.12 | 2024-08-03 | [43221](https://github.com/airbytehq/airbyte/pull/43221) | Update dependencies |

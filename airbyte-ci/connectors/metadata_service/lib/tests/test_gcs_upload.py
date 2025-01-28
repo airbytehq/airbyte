@@ -7,6 +7,8 @@ from typing import Optional
 
 import pytest
 import yaml
+from pydash.objects import get
+
 from metadata_service import gcs_upload
 from metadata_service.constants import (
     COMPONENTS_PY_FILE_NAME,
@@ -19,7 +21,6 @@ from metadata_service.constants import (
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import ValidatorOptions
-from pydash.objects import get
 
 MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["99.99.99", "0.0.0"]
 MISSING_SHA = "MISSINGSHA"
@@ -374,7 +375,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
         expected_version_doc_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/{DOC_FILE_NAME}"
         expected_latest_doc_key = f"metadata/{metadata.data.dockerRepository}/latest/{DOC_FILE_NAME}"
 
-        is_release_candidate = getattr(metadata.data.releases, "isReleaseCandidate", False)
+        is_release_candidate = "-rc" in metadata.data.dockerImageTag
 
         # Call function under tests
 
@@ -641,7 +642,7 @@ def test_upload_metadata_to_gcs_release_candidate(mocker, get_fixture_path, tmp_
         "NamedTemporaryFile",
         mocker.Mock(return_value=mocker.Mock(__enter__=mocker.Mock(return_value=tmp_metadata_file_path.open("w")), __exit__=mocker.Mock())),
     )
-    assert metadata.data.releases.isReleaseCandidate
+    assert metadata.data.releases.rolloutConfiguration.enableProgressiveRollout
 
     prerelease_tag = "1.5.6-dev.f80318f754" if prerelease else None
 

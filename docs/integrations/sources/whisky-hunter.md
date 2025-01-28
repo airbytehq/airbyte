@@ -38,7 +38,18 @@ There is no published rate limit. However, since this data updates infrequently,
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.12 | 2025-01-25 | [52444](https://github.com/airbytehq/airbyte/pull/52444) | Update dependencies |
+| 0.2.11 | 2025-01-18 | [51987](https://github.com/airbytehq/airbyte/pull/51987) | Update dependencies |
+| 0.2.10 | 2025-01-11 | [51411](https://github.com/airbytehq/airbyte/pull/51411) | Update dependencies |
+| 0.2.9 | 2024-12-28 | [50786](https://github.com/airbytehq/airbyte/pull/50786) | Update dependencies |
+| 0.2.8 | 2024-12-21 | [50315](https://github.com/airbytehq/airbyte/pull/50315) | Update dependencies |
+| 0.2.7 | 2024-12-14 | [49780](https://github.com/airbytehq/airbyte/pull/49780) | Update dependencies |
+| 0.2.6 | 2024-12-12 | [49380](https://github.com/airbytehq/airbyte/pull/49380) | Update dependencies |
+| 0.2.5 | 2024-12-11 | [49126](https://github.com/airbytehq/airbyte/pull/49126) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.4 | 2024-11-04 | [48275](https://github.com/airbytehq/airbyte/pull/48275) | Update dependencies |
+| 0.2.3 | 2024-10-29 | [47795](https://github.com/airbytehq/airbyte/pull/47795) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47555](https://github.com/airbytehq/airbyte/pull/47555) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44045](https://github.com/airbytehq/airbyte/pull/44045) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43793](https://github.com/airbytehq/airbyte/pull/43793) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43553](https://github.com/airbytehq/airbyte/pull/43553) | Update dependencies |

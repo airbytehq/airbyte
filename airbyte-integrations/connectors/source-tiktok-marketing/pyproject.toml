@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.3.3"
+version = "4.3.7"
 name = "source-tiktok-marketing"
 description = "Source implementation for Tiktok Marketing."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,8 @@ include = "source_tiktok_marketing"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^4.5.4"
+airbyte-cdk = "^5"
+freezegun = "^1.1.0"
 
 [tool.poetry.scripts]
 source-tiktok-marketing = "source_tiktok_marketing.run:run"

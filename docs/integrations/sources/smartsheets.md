@@ -117,6 +117,18 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 1.1.32 | 2025-01-25 | [52426](https://github.com/airbytehq/airbyte/pull/52426) | Update dependencies |
+| 1.1.31 | 2025-01-18 | [52017](https://github.com/airbytehq/airbyte/pull/52017) | Update dependencies |
+| 1.1.30 | 2025-01-11 | [51402](https://github.com/airbytehq/airbyte/pull/51402) | Update dependencies |
+| 1.1.29 | 2024-12-28 | [50747](https://github.com/airbytehq/airbyte/pull/50747) | Update dependencies |
+| 1.1.28 | 2024-12-21 | [50382](https://github.com/airbytehq/airbyte/pull/50382) | Update dependencies |
+| 1.1.27 | 2024-12-14 | [49441](https://github.com/airbytehq/airbyte/pull/49441) | Update dependencies |
+| 1.1.26 | 2024-11-25 | [48646](https://github.com/airbytehq/airbyte/pull/48646) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.1.25 | 2024-11-04 | [48185](https://github.com/airbytehq/airbyte/pull/48185) | Update dependencies |
+| 1.1.24 | 2024-10-28 | [47024](https://github.com/airbytehq/airbyte/pull/47024) | Update dependencies |
+| 1.1.23 | 2024-10-12 | [46783](https://github.com/airbytehq/airbyte/pull/46783) | Update dependencies |
+| 1.1.22 | 2024-10-05 | [46427](https://github.com/airbytehq/airbyte/pull/46427) | Update dependencies |
+| 1.1.21 | 2024-09-28 | [46154](https://github.com/airbytehq/airbyte/pull/46154) | Update dependencies |
 | 1.1.20 | 2024-09-21 | [45722](https://github.com/airbytehq/airbyte/pull/45722) | Update dependencies |
 | 1.1.19 | 2024-09-14 | [45575](https://github.com/airbytehq/airbyte/pull/45575) | Update dependencies |
 | 1.1.18 | 2024-09-07 | [45214](https://github.com/airbytehq/airbyte/pull/45214) | Update dependencies |

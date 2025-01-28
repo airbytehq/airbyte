@@ -112,20 +112,31 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.4.0   | 2024-08-30 | [44855](https://github.com/airbytehq/airbyte/pull/44855) | Using incremental APIs for online data                                    |
-| 0.3.0   | 2024-08-21 | [44523](https://github.com/airbytehq/airbyte/pull/44523) | Refactor connector to manifest-only format                                |
-| 0.2.6   | 2024-08-17 | [44217](https://github.com/airbytehq/airbyte/pull/44217) | Update dependencies                                                       |
-| 0.2.5   | 2024-08-12 | [43768](https://github.com/airbytehq/airbyte/pull/43768) | Update dependencies                                                       |
-| 0.2.4   | 2024-08-05 | [42851](https://github.com/airbytehq/airbyte/pull/42851) | Updated schema of Analytics AWS opportunities table                       |
-| 0.2.3   | 2024-08-03 | [43155](https://github.com/airbytehq/airbyte/pull/43155) | Update dependencies                                                       |
-| 0.2.2   | 2024-07-27 | [42617](https://github.com/airbytehq/airbyte/pull/42617) | Update dependencies                                                       |
-| 0.2.1   | 2024-07-20 | [42315](https://github.com/airbytehq/airbyte/pull/42315) | Update dependencies                                                       |
-| 0.2.0   | 2024-07-18 | [41657](https://github.com/airbytehq/airbyte/pull/41657) | removed redundant columns from streams, added documentation for analytics |
-| 0.1.4   | 2024-07-13 | [41759](https://github.com/airbytehq/airbyte/pull/41759) | Update dependencies                                                       |
-| 0.1.3   | 2024-07-10 | [41351](https://github.com/airbytehq/airbyte/pull/41351) | Update dependencies                                                       |
-| 0.1.2   | 2024-07-09 | [41123](https://github.com/airbytehq/airbyte/pull/41123) | Update dependencies                                                       |
-| 0.1.1   | 2024-07-06 | [40922](https://github.com/airbytehq/airbyte/pull/40922) | Update dependencies                                                       |
-| 0.1.0   | 2024-07-02 | [40562](https://github.com/airbytehq/airbyte/pull/40562) | New Source: Clazar                                                        |
+| 0.4.11 | 2025-01-25 | [52191](https://github.com/airbytehq/airbyte/pull/52191) | Update dependencies |
+| 0.4.10 | 2025-01-18 | [51729](https://github.com/airbytehq/airbyte/pull/51729) | Update dependencies |
+| 0.4.9 | 2025-01-11 | [51268](https://github.com/airbytehq/airbyte/pull/51268) | Update dependencies |
+| 0.4.8 | 2024-12-28 | [50473](https://github.com/airbytehq/airbyte/pull/50473) | Update dependencies |
+| 0.4.7 | 2024-12-21 | [50214](https://github.com/airbytehq/airbyte/pull/50214) | Update dependencies |
+| 0.4.6 | 2024-12-14 | [49570](https://github.com/airbytehq/airbyte/pull/49570) | Update dependencies |
+| 0.4.5 | 2024-12-12 | [49009](https://github.com/airbytehq/airbyte/pull/49009) | Update dependencies |
+| 0.4.4 | 2024-11-04 | [48187](https://github.com/airbytehq/airbyte/pull/48187) | Update dependencies |
+| 0.4.3 | 2024-10-30 | [46949](https://github.com/airbytehq/airbyte/pull/46949) | Updated the logo |
+| 0.4.2 | 2024-10-29 | [47843](https://github.com/airbytehq/airbyte/pull/47843) | Update dependencies |
+| 0.4.1 | 2024-10-28 | [47598](https://github.com/airbytehq/airbyte/pull/47598) | Update dependencies |
+| 0.4.0 | 2024-08-30 | [44855](https://github.com/airbytehq/airbyte/pull/44855) | Using incremental APIs for online data |
+| 0.3.0 | 2024-08-21 | [44523](https://github.com/airbytehq/airbyte/pull/44523) | Refactor connector to manifest-only format |
+| 0.2.6 | 2024-08-17 | [44217](https://github.com/airbytehq/airbyte/pull/44217) | Update dependencies |
+| 0.2.5 | 2024-08-12 | [43768](https://github.com/airbytehq/airbyte/pull/43768) | Update dependencies |
+| 0.2.4 | 2024-08-05 | [42851](https://github.com/airbytehq/airbyte/pull/42851) | Updated schema of Analytics AWS opportunities table |
+| 0.2.3 | 2024-08-03 | [43155](https://github.com/airbytehq/airbyte/pull/43155) | Update dependencies |
+| 0.2.2 | 2024-07-27 | [42617](https://github.com/airbytehq/airbyte/pull/42617) | Update dependencies |
+| 0.2.1 | 2024-07-20 | [42315](https://github.com/airbytehq/airbyte/pull/42315) | Update dependencies |
+| 0.2.0 | 2024-07-18 | [41657](https://github.com/airbytehq/airbyte/pull/41657) | removed redundant columns from streams, added documentation for analytics |
+| 0.1.4 | 2024-07-13 | [41759](https://github.com/airbytehq/airbyte/pull/41759) | Update dependencies |
+| 0.1.3 | 2024-07-10 | [41351](https://github.com/airbytehq/airbyte/pull/41351) | Update dependencies |
+| 0.1.2 | 2024-07-09 | [41123](https://github.com/airbytehq/airbyte/pull/41123) | Update dependencies |
+| 0.1.1 | 2024-07-06 | [40922](https://github.com/airbytehq/airbyte/pull/40922) | Update dependencies |
+| 0.1.0 | 2024-07-02 | [40562](https://github.com/airbytehq/airbyte/pull/40562) | New Source: Clazar |
 
 </details>
 

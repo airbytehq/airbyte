@@ -1,0 +1,1288 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the setup for the Chargedesk source that ingests data from the
+  chargedesk API.
+
+
+  ChargeDesk integrates directly with many of the most popular payment gateways
+  including Stripe, WooCommerce, PayPal, Braintree Payments, Recurly,
+  Authorize.Net, Zuora & Shopify https://chargedesk.com/
+
+
+  In order to use this source, you must first create an account. Once verified
+  and logged in, head over to Setup -> API & Webhooks -> Issue New Key to
+  generate your API key.
+
+
+  You can find more about the API here https://chargedesk.com/api-docs
+
+check:
+  type: CheckStream
+  stream_names:
+    - charges
+
+definitions:
+  streams:
+    charges:
+      type: DeclarativeStream
+      name: charges
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /charges
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - charge_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/charges"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: occurred
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        start_time_option:
+          type: RequestOption
+          field_name: occurred[min]
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%s"
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - product_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - customer_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: first_seen
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        start_time_option:
+          type: RequestOption
+          field_name: first_seen[min]
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%s"
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /subscriptions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - subscription_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriptions"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: first_seen
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        start_time_option:
+          type: RequestOption
+          field_name: created[min]
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%s"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.chargedesk.com/v1/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/charges"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/subscriptions"
+  - $ref: "#/definitions/streams/products"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      username:
+        type: string
+        order: 0
+        title: Username
+      start_date:
+        type: integer
+        description: Date from when the sync should start in epoch Unix timestamp
+        order: 2
+        title: Start Date
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    charges:
+      hasRecords: true
+      streamHash: 301092c3879ea4f9a39015317b036ca53822e6b4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: 35f80857c06f02042bae04deaa41c324e23c9511
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      hasRecords: true
+      streamHash: 52863693d8a4d131535344e3f9904fbf08c2035a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    subscriptions:
+      hasRecords: true
+      streamHash: 805059fc47649d8b51102be3cc9f343e5a81d0d9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    charges: true
+    products: true
+    customers: true
+    subscriptions: true
+
+schemas:
+  charges:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - charge_id
+      - occurred
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              age:
+                type: string
+              lat:
+                type: string
+              long:
+                type: string
+              user:
+                type: string
+              usage:
+                type: string
+              rating:
+                type: string
+              account:
+                type: string
+              loyalty:
+                type: string
+              product:
+                type: string
+      logs:
+        type:
+          - array
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      is_paid:
+        type:
+          - boolean
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      occurred:
+        type: string
+      added_tax:
+        type:
+          - string
+          - "null"
+      charge_id:
+        type: string
+      sent_void:
+        type:
+          - string
+          - "null"
+      gateway_id:
+        type:
+          - string
+          - "null"
+      manage_url:
+        type:
+          - string
+          - "null"
+      name_email:
+        type:
+          - string
+          - "null"
+      product_id:
+        type:
+          - string
+          - "null"
+      accurate_at:
+        type:
+          - string
+          - "null"
+      audited_job:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      gateway_url:
+        type:
+          - string
+          - "null"
+      invoice_url:
+        type:
+          - string
+          - "null"
+      refunded_at:
+        type:
+          - string
+          - "null"
+      status_text:
+        type:
+          - string
+          - "null"
+      support_url:
+        type:
+          - string
+          - "null"
+      product_desc:
+        type:
+          - string
+          - "null"
+      sent_dunning:
+        type:
+          - string
+          - "null"
+      sent_invoice:
+        type:
+          - string
+          - "null"
+      sent_receipt:
+        type:
+          - string
+          - "null"
+      amount_symbol:
+        type:
+          - string
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      last_4_digits:
+        type:
+          - string
+          - "null"
+      support_email:
+        type:
+          - string
+          - "null"
+      customer_email:
+        type:
+          - string
+          - "null"
+      customer_phone:
+        type:
+          - string
+          - "null"
+      failure_reason:
+        type:
+          - string
+          - "null"
+      methods_active:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      payment_method:
+        type:
+          - string
+          - "null"
+      sent_authorize:
+        type:
+          - string
+          - "null"
+      transaction_id:
+        type:
+          - string
+          - "null"
+      amount_refunded:
+        type:
+          - string
+          - "null"
+      email_last_sent:
+        type:
+          - number
+          - "null"
+      name_send_email:
+        type:
+          - string
+          - "null"
+      subscription_id:
+        type:
+          - string
+          - "null"
+      amount_formatted:
+        type:
+          - string
+          - "null"
+      customer_country:
+        type:
+          - string
+          - "null"
+      customer_username:
+        type:
+          - string
+          - "null"
+      methods_supported:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      occurred_relative:
+        type:
+          - string
+          - "null"
+      amount_with_commas:
+        type:
+          - string
+          - "null"
+      occurred_formatted:
+        type:
+          - string
+          - "null"
+      payment_method_bank:
+        type:
+          - string
+          - "null"
+      sent_refund_receipt:
+        type:
+          - string
+          - "null"
+      invoice_download_url:
+        type:
+          - string
+          - "null"
+      payment_method_brand:
+        type:
+          - string
+          - "null"
+      customer_email_domain:
+        type:
+          - string
+          - "null"
+      refunded_at_formatted:
+        type:
+          - string
+          - "null"
+      sent_invoice_reminder:
+        type:
+          - string
+          - "null"
+      statement_description:
+        type:
+          - string
+          - "null"
+      payment_method_describe:
+        type:
+          - string
+          - "null"
+      amount_refunded_formatted:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - product_id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      logs:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      charges:
+        type:
+          - number
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      taxable:
+        type:
+          - number
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      interval:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - string
+          - "null"
+      chargeable:
+        type:
+          - string
+          - "null"
+      first_seen:
+        type:
+          - number
+          - "null"
+      gateway_id:
+        type:
+          - string
+          - "null"
+      product_id:
+        type: string
+      support_url:
+        type:
+          - string
+          - "null"
+      setup_amount:
+        type:
+          - string
+          - "null"
+      amount_symbol:
+        type:
+          - string
+          - "null"
+      has_agent_log:
+        type:
+          - string
+          - "null"
+      interval_count:
+        type:
+          - string
+          - "null"
+      amount_formatted:
+        type:
+          - string
+          - "null"
+      readable_interval:
+        type:
+          - string
+          - "null"
+      trial_period_days:
+        type:
+          - string
+          - "null"
+      billing_cycles_total:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - customer_id
+      - first_seen
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - array
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      logs:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      edited:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      charges:
+        type:
+          - number
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      tickets:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      has_items:
+        type:
+          - string
+          - "null"
+      delinquent:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      first_seen:
+        type: number
+      gateway_id:
+        type:
+          - string
+          - "null"
+      manage_url:
+        type:
+          - string
+          - "null"
+      tax_number:
+        type:
+          - string
+          - "null"
+      accurate_at:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type: string
+      gateway_url:
+        type:
+          - string
+          - "null"
+      card_on_file:
+        type:
+          - string
+          - "null"
+      email_domain:
+        type:
+          - string
+          - "null"
+      send_email_to:
+        type:
+          - string
+          - "null"
+      subscriptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metadata:
+              anyOf:
+                - type: array
+                - type: object
+                  properties:
+                    age:
+                      type: string
+                    lat:
+                      type: string
+                    long:
+                      type: string
+                    user:
+                      type: string
+                    usage:
+                      type: string
+                    rating:
+                      type: string
+                    account:
+                      type: string
+                    loyalty:
+                      type: string
+                    product:
+                      type: string
+            logs:
+              type:
+                - array
+                - "null"
+            items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  amount:
+                    type:
+                      - string
+                      - "null"
+                  item_id:
+                    type:
+                      - string
+                      - "null"
+                  percent:
+                    type:
+                      - string
+                      - "null"
+                  currency:
+                    type:
+                      - string
+                      - "null"
+                  quantity:
+                    type:
+                      - string
+                      - "null"
+                  amount_formatted:
+                    type:
+                      - string
+                      - "null"
+            amount:
+              type:
+                - string
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            charges:
+              type:
+                - number
+                - "null"
+            company:
+              type:
+                - string
+                - "null"
+            currency:
+              type:
+                - string
+                - "null"
+            ended_at:
+              type:
+                - string
+                - "null"
+            has_meta:
+              type:
+                - string
+                - "null"
+            interval:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - string
+                - "null"
+            has_items:
+              type:
+                - string
+                - "null"
+            trial_end:
+              type:
+                - string
+                - "null"
+            first_seen:
+              type:
+                - number
+                - "null"
+            gateway_id:
+              type:
+                - string
+                - "null"
+            last_email:
+              type:
+                - string
+                - "null"
+            manage_url:
+              type:
+                - string
+                - "null"
+            product_id:
+              type:
+                - string
+                - "null"
+            accurate_at:
+              type:
+                - string
+                - "null"
+            canceled_at:
+              type:
+                - string
+                - "null"
+            customer_id:
+              type:
+                - string
+                - "null"
+            gateway_url:
+              type:
+                - string
+                - "null"
+            status_text:
+              type:
+                - string
+                - "null"
+            trial_start:
+              type:
+                - string
+                - "null"
+            product_desc:
+              type:
+                - string
+                - "null"
+            setup_amount:
+              type:
+                - string
+                - "null"
+            amount_symbol:
+              type:
+                - string
+                - "null"
+            interval_count:
+              type:
+                - string
+                - "null"
+            methods_active:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            subscription_id:
+              type:
+                - string
+                - "null"
+            amount_formatted:
+              type:
+                - string
+                - "null"
+            methods_supported:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            readable_interval:
+              type:
+                - string
+                - "null"
+            trial_period_days:
+              type:
+                - string
+                - "null"
+            current_period_end:
+              type:
+                - string
+                - "null"
+            current_period_start:
+              type:
+                - string
+                - "null"
+      last_charge_id:
+        type:
+          - string
+          - "null"
+      methods_active:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tax_number_abr:
+        type:
+          - string
+          - "null"
+      billing_address:
+        type:
+          - string
+          - "null"
+      invoice_details:
+        type:
+          - string
+          - "null"
+      customer_company:
+        type:
+          - string
+          - "null"
+      last_paid_charge:
+        type:
+          - string
+          - "null"
+      readable_country:
+        type:
+          - string
+          - "null"
+      shipping_address:
+        type:
+          - string
+          - "null"
+      unsubscribe_void:
+        type:
+          - string
+          - "null"
+      methods_supported:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      unsubscribe_refunds:
+        type:
+          - string
+          - "null"
+      unsubscribe_receipts:
+        type:
+          - string
+          - "null"
+      unsubscribe_authorize:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - subscription_id
+      - first_seen
+    properties:
+      metadata:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              age:
+                type: string
+              lat:
+                type: string
+              long:
+                type: string
+              user:
+                type: string
+              usage:
+                type: string
+              rating:
+                type: string
+              account:
+                type: string
+              loyalty:
+                type: string
+              product:
+                type: string
+      logs:
+        type:
+          - array
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - string
+                - "null"
+            item_id:
+              type:
+                - string
+                - "null"
+            percent:
+              type:
+                - string
+                - "null"
+            currency:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - string
+                - "null"
+            amount_formatted:
+              type:
+                - string
+                - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      charges:
+        type:
+          - number
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      ended_at:
+        type:
+          - string
+          - "null"
+      has_meta:
+        type:
+          - string
+          - "null"
+      interval:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - string
+          - "null"
+      has_items:
+        type:
+          - string
+          - "null"
+      trial_end:
+        type:
+          - string
+          - "null"
+      first_seen:
+        type: number
+      gateway_id:
+        type:
+          - string
+          - "null"
+      last_email:
+        type:
+          - string
+          - "null"
+      manage_url:
+        type:
+          - string
+          - "null"
+      product_id:
+        type:
+          - string
+          - "null"
+      accurate_at:
+        type:
+          - string
+          - "null"
+      canceled_at:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      gateway_url:
+        type:
+          - string
+          - "null"
+      status_text:
+        type:
+          - string
+          - "null"
+      trial_start:
+        type:
+          - string
+          - "null"
+      product_desc:
+        type:
+          - string
+          - "null"
+      setup_amount:
+        type:
+          - string
+          - "null"
+      amount_symbol:
+        type:
+          - string
+          - "null"
+      interval_count:
+        type:
+          - string
+          - "null"
+      methods_active:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      subscription_id:
+        type: string
+      amount_formatted:
+        type:
+          - string
+          - "null"
+      methods_supported:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      readable_interval:
+        type:
+          - string
+          - "null"
+      trial_period_days:
+        type:
+          - string
+          - "null"
+      current_period_end:
+        type:
+          - string
+          - "null"
+      current_period_start:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

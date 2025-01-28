@@ -50,6 +50,9 @@ have been merged.
 
 ## Changelog
 
+### 0.1.3
+Adds `auto-merge/bypass-ci-checks` label which does not require CI checks to pass to auto-merge PR.
+
 ### 0.1.2
 Set merge method to `squash`.
 

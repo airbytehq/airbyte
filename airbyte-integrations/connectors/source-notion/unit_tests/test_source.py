@@ -3,8 +3,9 @@
 #
 
 import pytest
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_notion.source import SourceNotion
+
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 @pytest.mark.parametrize(
@@ -29,8 +30,7 @@ def test_get_authenticator(config, expected_token):
 
 def test_streams():
     source = SourceNotion()
-    config_mock = {"start_date": "2020-01-01T00:00:00.000Z",
-                   "credentials": {"auth_type": "token", "token": "abcd"}}
+    config_mock = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
     streams = source.streams(config_mock)
     expected_streams_number = 5
     assert len(streams) == expected_streams_number

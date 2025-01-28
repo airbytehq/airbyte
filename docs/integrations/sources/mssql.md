@@ -35,7 +35,7 @@ for more details.
 #### Requirements
 
 1. MSSQL Server `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`,
-   `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`,
+   `SQL Server 2022`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`,
    `PDW 2008R2 AU34`.
 2. Create a dedicated read-only Airbyte user with access to all tables needed for replication
 3. If you want to use CDC, please see [the relevant section below](mssql.md#change-data-capture-cdc)
@@ -101,7 +101,9 @@ approaches CDC.
 - The SQL Server CDC feature processes changes that occur in user-created tables only. You cannot
   enable CDC on the SQL Server master database.
 - Using variables with partition switching on databases or tables with change data capture \(CDC\)
-  is not supported for the `ALTER TABLE` ... `SWITCH TO` ... `PARTITION` ... statement
+  is not supported for the `ALTER TABLE` ... `SWITCH TO` ... `PARTITION` ... statement.
+- CDC incremental syncing is only available for tables with at least one primary key. Tables without primary keys can still be replicated by CDC but only in Full Refresh mode.
+  For more information on CDC limitations, refer to our [CDC Limitations doc](https://docs.airbyte.com/understanding-airbyte/cdc#limitations).
 - Our CDC implementation uses at least once delivery for all change records.
 - Read more on CDC limitations in the
   [Microsoft docs](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017#limitations).
@@ -421,8 +423,13 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
-|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.14  | 2024-09-17 | [45639](https://github.com/airbytehq/airbyte/pull/45639) | Adopt latest CDK to use the latest apache sshd mina to handle tcpkeepalive requests.                      |
+|:--------|:-----------| :---------------------------------------------------------------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.19  | 2025-01-16 | [51596](https://github.com/airbytehq/airbyte/pull/51596)                                                              | Bump driver versions to latest (jdbc, debezium, cdk)                                                                                            |
+| 4.1.18  | 2025-01-06 | [50943](https://github.com/airbytehq/airbyte/pull/50943)                                                              | Use airbyte/java-connector-base:2.0.0. This makes the image rootless. The connector will be incompatible with Airbyte < 0.64.                   |
+| 4.1.17  | 2024-12-17 | [49840](https://github.com/airbytehq/airbyte/pull/49840)                                                          | Use a base image: airbyte/java-connector-base:1.0.0                                                                                             |
+| 4.1.16  | 2024-11-13 | [48484](https://github.com/airbytehq/airbyte/pull/48484)                                                          | Enhanced error handling for MSSQL to improve system error detection and response.                                                               |
+| 4.1.15  | 2024-10-05 | [46515](https://github.com/airbytehq/airbyte/pull/46515)                                                          | Improving discovery of large SQL server database.                                                                                               |
+| 4.1.14  | 2024-09-17 | [45639](https://github.com/airbytehq/airbyte/pull/45639)                                                          | Adopt latest CDK to use the latest apache sshd mina to handle tcpkeepalive requests.                                                            |
 | 4.1.13  | 2024-09-05 | [45181](https://github.com/airbytehq/airbyte/pull/45181)                                                          | Fix incorrect categorizing resumable/nonresumable full refresh streams.                                                                         |
 | 4.1.12  | 2024-09-10 | [45368](https://github.com/airbytehq/airbyte/pull/45368)                                                          | Remove excessive debezium logging.                                                                                                              |
 | 4.1.11  | 2024-09-04 | [45142](https://github.com/airbytehq/airbyte/pull/45142)                                                          | Fix incorrect datetimeoffset format in cursor state.                                                                                            |
@@ -433,7 +440,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 | 4.1.6   | 2024-07-30 | [42550](https://github.com/airbytehq/airbyte/pull/42550)                                                          | Correctly report stream states.                                                                                                                 |
 | 4.1.5   | 2024-07-29 | [42852](https://github.com/airbytehq/airbyte/pull/42852)                                                          | Bump CDK version to latest to use new bug fixes on error translation.                                                                           |
 | 4.1.4   | 2024-07-23 | [42421](https://github.com/airbytehq/airbyte/pull/42421)                                                          | Remove final transient error emitter iterators.                                                                                                 |
-| 4.1.3   |            | 2024-07-22                                                                                                        | [42411](https://github.com/airbytehq/airbyte/pull/42411)                                                                                        | Hide the "initial load timeout in hours" field by default in UI |
+| 4.1.3   |            | 2024-07-22                                                                                                        | [42411](https://github.com/airbytehq/airbyte/pull/42411)                                                                                        | Hide the "initial load timeout in hours" field by default in UI 
 | 4.1.2   | 2024-07-22 | [42024](https://github.com/airbytehq/airbyte/pull/42024)                                                          | Fix a NPE bug on resuming from a failed attempt.                                                                                                |
 | 4.1.1   | 2024-07-19 | [42122](https://github.com/airbytehq/airbyte/pull/42122)                                                          | Improve wass error message + logging.                                                                                                           |
 | 4.1.0   | 2024-07-17 | [42078](https://github.com/airbytehq/airbyte/pull/42078)                                                          | WASS analytics + bug fixes.                                                                                                                     |

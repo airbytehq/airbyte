@@ -88,8 +88,8 @@ class AirbyteBulkConnectorExtension {
         }
         final String kspDependency = "io.micronaut:micronaut-inject-kotlin:$micronautVersion"
 
+        final boolean isDestination = project.name.startsWith('destination-')
         project.dependencies {
-
             ksp kspDependency
             kspTestFixtures kspDependency
             kspTest kspDependency
@@ -100,6 +100,12 @@ class AirbyteBulkConnectorExtension {
                 testFixturesImplementation testFixtures(dep)
                 testImplementation dep
                 testImplementation testFixtures(dep)
+                if (isDestination) {
+                    integrationTestImplementation dep
+                    integrationTestImplementation testFixtures(dep)
+                    integrationTestLegacyImplementation dep
+                    integrationTestLegacyImplementation testFixtures(dep)
+                }
             }
             for (dep in fromJar) {
                 implementation dep
@@ -107,6 +113,12 @@ class AirbyteBulkConnectorExtension {
                 testFixturesImplementation testFixtures(dep)
                 testImplementation dep
                 testImplementation testFixtures(dep)
+                if (isDestination) {
+                    integrationTestImplementation dep
+                    integrationTestImplementation testFixtures(dep)
+                    integrationTestLegacyImplementation dep
+                    integrationTestLegacyImplementation testFixtures(dep)
+                }
             }
         }
     }
@@ -130,27 +142,98 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             ]
         }
 
-        project.sourceSets {
-            integrationTest {
-                kotlin {
-                    srcDir 'src/test-integration/kotlin'
+        if (project.name.startsWith('destination-')) {
+            project.sourceSets {
+                // This is the source set where most of our integration tests should live.
+                integrationTest {
+                    kotlin {
+                        srcDir 'src/test-integration/kotlin'
+                    }
+                    resources {
+                        srcDir 'src/test-integration/resources'
+                    }
                 }
-                resources {
-                    srcDir 'src/test-integration/resources'
+                // This source set should only be used for tests based on the old CDK's test classes,
+                // in particular DestinationAcceptanceTest / BaseTypingDedupingTest.
+                integrationTestLegacy {
+                    kotlin {
+                        srcDir 'src/test-integration-legacy/kotlin'
+                    }
+                    resources {
+                        srcDir 'src/test-integration-legacy/resources'
+                    }
                 }
+            }
+
+            // This task exists solely so that we can run the "modern" integration tests
+            // in non-docker mode on our laptops.
+            // It's not a dependency of any other task.
+            project.tasks.register('integrationTestNonDocker', Test) {
+                description = 'Runs the integration tests in non-docker mode.'
+                group = 'verification'
+                testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
+                classpath = project.sourceSets.integrationTest.runtimeClasspath
+                useJUnitPlatform()
+
+                jvmArgs = project.test.jvmArgs
+                systemProperties = project.test.systemProperties
+                maxParallelForks = project.test.maxParallelForks
+                maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                }
+            }
+
+            // For historical reasons (i.e. airbyte-ci), this task is called integrationTestJava.
+            // airbyte-ci only wants to run a task with exactly that name.
+            // There's intentionally no equivalent to run integrationTestNonDocker + integrationTestLegacy.
+            // It's an actual Test task (rather than just depending on two sub-tasks integrationTestDocker + integrationTestLegacy)
+            // so that gradle args (e.g. `--tests`) work as expected.
+            project.tasks.register('integrationTestJava', Test) {
+                description = 'Runs the integration tests in docker mode.'
+                group = 'verification'
+                testClassesDirs = project.sourceSets.integrationTest.output.classesDirs + project.sourceSets.integrationTestLegacy.output.classesDirs
+                classpath = project.sourceSets.integrationTest.runtimeClasspath + project.sourceSets.integrationTestLegacy.runtimeClasspath
+                useJUnitPlatform()
+                // We need a docker image to run this task, so depend on assemble
+                dependsOn project.tasks.assemble
+                environment "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", "docker"
+
+                jvmArgs = project.test.jvmArgs
+                systemProperties = project.test.systemProperties + [
+                        'junit.jupiter.execution.parallel.enabled': 'true',
+                        'junit.jupiter.execution.parallel.config.strategy': 'fixed',
+                        'junit.jupiter.execution.parallel.config.fixed.parallelism': Math.max((Runtime.runtime.availableProcessors() / 2).toInteger(), 1).toString()
+                ]
+                maxParallelForks = project.test.maxParallelForks
+                maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                    // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+                    showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+                }
+            }
+
+            project.dependencies {
+                // integration tests depend on the runtime code
+                integrationTestImplementation project
+                integrationTestLegacyImplementation project
+            }
+
+            project.tasks.named('build').configure {
+                dependsOn project.tasks.integrationTestJava
             }
         }
 
-        project.kotlin {
-            sourceSets {
-                testIntegration {
-                    kotlin.srcDir 'src/test-integration/kotlin'
-                    resources.srcDir 'src/test-integration/resources'
-                }
-            }
-        }
-
-        project.tasks.named('spotbugsTest').configure {
+        project.tasks.matching {
+                it.name == 'spotbugsIntegrationTestLegacy' ||
+                it.name == 'spotbugsIntegrationTest' ||
+                it.name == 'spotbugsTest'
+            }.configureEach {
             enabled = false
         }
 
@@ -158,25 +241,9 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
         }
 
-        project.tasks.register('integrationTest', Test) {
-            description = 'Runs the integration tests.'
-            group = 'verification'
-            testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
-            classpath = project.sourceSets.integrationTest.runtimeClasspath
-            useJUnitPlatform()
-            mustRunAfter project.tasks.check
-        }
-
-        project.tasks.named('build').configure {
-            dependsOn project.tasks.integrationTest
-        }
-
         project.configurations {
             testFixturesImplementation.extendsFrom implementation
             testFixturesRuntimeOnly.extendsFrom runtimeOnly
-
-            integrationTestImplementation.extendsFrom testImplementation
-            integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
         }
 
         project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)

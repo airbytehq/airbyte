@@ -78,7 +78,7 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 ## Supported Streams
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-| :---------------------------------------- | :----------- | :----------------------------------------- |:------------|
+|:------------------------------------------|:-------------|:-------------------------------------------|:------------|
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
@@ -138,6 +138,10 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 4.3.7 | 2025-01-11 | [47118](https://github.com/airbytehq/airbyte/pull/47118) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 4.3.6 | 2024-10-12 | [46855](https://github.com/airbytehq/airbyte/pull/46855) | Update dependencies |
+| 4.3.5 | 2024-10-09 | [46676](https://github.com/airbytehq/airbyte/pull/46676) | Fix error handling for codes 40100 and 50002 |
+| 4.3.4 | 2024-10-05 | [46164](https://github.com/airbytehq/airbyte/pull/46164) | Update dependencies |
 | 4.3.3 | 2024-09-21 | [45790](https://github.com/airbytehq/airbyte/pull/45790) | Update dependencies |
 | 4.3.2 | 2024-09-14 | [45488](https://github.com/airbytehq/airbyte/pull/45488) | Update dependencies |
 | 4.3.1 | 2024-09-07 | [45270](https://github.com/airbytehq/airbyte/pull/45270) | Update dependencies |

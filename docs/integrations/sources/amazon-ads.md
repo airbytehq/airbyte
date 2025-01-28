@@ -115,7 +115,7 @@ This source is capable of syncing the following streams:
 - [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
 - [Brands Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
 - [Brand Video Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
-- [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports) (Contextual targeting only)
+- [Display Reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview)
 - [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/)
 
@@ -138,7 +138,7 @@ Information about expected report generation waiting time can be found [here](ht
 ### Data type map
 
 | Integration Type         | Airbyte Type |
-| :----------------------- | :----------- |
+|:-------------------------|:-------------|
 | `string`                 | `string`     |
 | `int`, `float`, `number` | `number`     |
 | `date`                   | `date`       |
@@ -153,6 +153,24 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 6.2.7 | 2025-01-25 | [52210](https://github.com/airbytehq/airbyte/pull/52210) | Update dependencies |
+| 6.2.6 | 2025-01-18 | [51722](https://github.com/airbytehq/airbyte/pull/51722) | Update dependencies |
+| 6.2.5 | 2025-01-11 | [51239](https://github.com/airbytehq/airbyte/pull/51239) | Update dependencies |
+| 6.2.4 | 2025-01-04 | [50902](https://github.com/airbytehq/airbyte/pull/50902) | Update dependencies |
+| 6.2.3 | 2024-12-28 | [50478](https://github.com/airbytehq/airbyte/pull/50478) | Update dependencies |
+| 6.2.2 | 2024-12-21 | [50202](https://github.com/airbytehq/airbyte/pull/50202) | Update dependencies |
+| 6.2.1 | 2024-12-14 | [48229](https://github.com/airbytehq/airbyte/pull/48229) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 6.2.0 | 2024-11-12 | [48116](https://github.com/airbytehq/airbyte/pull/48116) | Migrate REST streams to low-code |
+| 6.1.4 | 2024-11-12 | [48471](https://github.com/airbytehq/airbyte/pull/48471) | Bumped automatically in the pull request, please see PR description |
+| 6.1.3 | 2024-11-05 | [48343](https://github.com/airbytehq/airbyte/pull/48343) | Set is_resumable only for FullRefresh streams |
+| 6.1.2 | 2024-11-04 | [48138](https://github.com/airbytehq/airbyte/pull/48138) | Add error message for TooManyRequests exception |
+| 6.1.1 | 2024-11-04 | [48128](https://github.com/airbytehq/airbyte/pull/48128) | Fix date parse in report streams |
+| 6.1.0 | 2024-11-01 | [47940](https://github.com/airbytehq/airbyte/pull/47940) | Bump CDK to ^5 |
+| 6.0.0 | 2024-10-28 | [47366](https://github.com/airbytehq/airbyte/pull/47366) | Migrate stream `SponsoredDisplayReportStream` to Amazon Ads Reports v3 |
+| 5.0.20 | 2024-10-29 | [47032](https://github.com/airbytehq/airbyte/pull/47032) | Update dependencies |
+| 5.0.19 | 2024-10-12 | [46860](https://github.com/airbytehq/airbyte/pull/46860) | Update dependencies |
+| 5.0.18 | 2024-10-05 | [46451](https://github.com/airbytehq/airbyte/pull/46451) | Update dependencies |
+| 5.0.17 | 2024-09-28 | [45794](https://github.com/airbytehq/airbyte/pull/45794) | Update dependencies |
 | 5.0.16 | 2024-09-14 | [45548](https://github.com/airbytehq/airbyte/pull/45548) | Update dependencies |
 | 5.0.15 | 2024-09-07 | [45308](https://github.com/airbytehq/airbyte/pull/45308) | Update dependencies |
 | 5.0.14 | 2024-08-31 | [45051](https://github.com/airbytehq/airbyte/pull/45051) | Update dependencies |

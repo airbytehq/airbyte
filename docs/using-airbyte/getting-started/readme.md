@@ -16,19 +16,23 @@ Whether you're part of a large organization managing complex data pipelines or a
 
 <Grid columns="2">
 
+<CardWithIcon title="Self-Managed Enterprise" description="Highly available, secure data movement for your entire organization. To start with Self-Managed Enterprise, you'll need a license key. For more details, review our Enterprise setup guide. " ctaText="Learn More" ctaLink="../../enterprise-setup" icon="fa-lock" />
+
+<CardWithIcon title="Cloud Teams" description="For organizations
+looking to scale efficiently. For more details, talk to our Sales team. " ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
+
+</Grid>
+<Grid columns="2">
+
 <CardWithIcon title="Self-Managed Community (OSS)" description="Deploy locally or in your own infrastructure. Get started immediately without your data leaving your premises." ctaText="OSS Quickstart" ctaLink="oss-quickstart" icon="fa-download" />
 
 <CardWithIcon title="Cloud" description="A Cloud-native version of Airbyte that provides a fully managed experience for data replication, allowing you to focus on moving data while we take care of managing the infrastructure. Free 14-day trial, no credit card required" ctaText="Sign Up for Cloud" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
 </Grid>
 
-<Grid columns="2">
+<Grid columns="1">
 
-<CardWithIcon title="Self-Managed Enterprise" description="Highly available, secure data movement for your entire organization. To start with Self-Managed Enterprise, you'll need a license key. For more details, review our Enterprise setup guide. " ctaText="Learn More" ctaLink="../../enterprise-setup" icon="fa-lock" />
-
-<CardWithIcon title="Cloud Teams" description="For organizations
-looking to scale efficiently. For more details, talk to our Sales team. " ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
-
+<CardWithIcon title="pyAirbyte" description="Quickly sync data using Python in your local notebook." ctaText="pyAirbyte" ctaLink="../pyairbyte/getting-started" icon="fa-download" />
 
 </Grid>
 

@@ -8,6 +8,7 @@ from typing import Optional
 
 import asyncclick as click
 import dagger
+
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
@@ -199,12 +200,12 @@ class DeployOrchestrator(Step):
         self.context.logger.info(f"Deploying to deployment: {target_deployment}")
 
         container_to_run = (
-            python_with_dependencies.with_mounted_directory("/src", parent_dir)
+            python_with_dependencies.with_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
             .with_env_variable("DAGSTER_CLOUD_DEPLOYMENT", target_deployment)
             .with_workdir("/src/orchestrator")
-            .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
-            .with_exec(["/bin/sh", "-c", "cat setup.py"])
+            .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"], use_entrypoint=True)
+            .with_exec(["/bin/sh", "-c", "cat setup.py"], use_entrypoint=True)
             .with_exec(self.deploy_dagster_command)
         )
         return await self.get_step_result(container_to_run)
@@ -253,7 +254,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
         ci_context=ci_context,
     )
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
+        metadata_pipeline_context.dagger_client = dagger_client
 
         async with metadata_pipeline_context:
             steps: STEP_TREE = [

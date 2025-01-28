@@ -191,6 +191,13 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 5.1.2 | 2025-01-25 | [52253](https://github.com/airbytehq/airbyte/pull/52253) | Update dependencies |
+| 5.1.1 | 2025-01-15 | [47092](https://github.com/airbytehq/airbyte/pull/47092) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 5.1.0 | 2025-01-14 | [48863](https://github.com/airbytehq/airbyte/pull/48863) | Custom streams moved to manifest implementation & URL Error Handling |
+| 5.0.0 | 2024-11-26 | [48451](https://github.com/airbytehq/airbyte/pull/48451) | Update primary keys for streams ad_campaign_analytics, Custom Ad Analytics Reports and account_users |
+| 4.1.4 | 2024-10-12 | [46862](https://github.com/airbytehq/airbyte/pull/46862) | Update dependencies |
+| 4.1.3 | 2024-10-05 | [46433](https://github.com/airbytehq/airbyte/pull/46433) | Update dependencies |
+| 4.1.2 | 2024-09-28 | [46171](https://github.com/airbytehq/airbyte/pull/46171) | Update dependencies |
 | 4.1.1 | 2024-09-21 | [45774](https://github.com/airbytehq/airbyte/pull/45774) | Update dependencies |
 | 4.1.0 | 2024-09-20 | [44370](https://github.com/airbytehq/airbyte/pull/44370) | Migrate to low-code |
 | 4.0.6 | 2024-09-14 | [45532](https://github.com/airbytehq/airbyte/pull/45532) | Update dependencies |

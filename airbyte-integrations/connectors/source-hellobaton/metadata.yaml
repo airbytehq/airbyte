@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 492b56d1-937c-462e-8076-21ad2031e784
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.12
   dockerRepository: airbyte/source-hellobaton
   githubIssueLabel: source-hellobaton
   icon: hellobaton.svg
@@ -43,5 +43,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
 metadataSpecVersion: "1.0"

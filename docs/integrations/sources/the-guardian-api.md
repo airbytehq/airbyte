@@ -111,18 +111,29 @@ The key that you are assigned is rate-limited and as such any applications that 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                        |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
-| 0.2.0   | 2024-09-06 | [45195](https://github.com/airbytehq/airbyte/pull/45195) | Refactor connector to manifest-only format     |
-| 0.1.9   | 2024-08-31 | [44997](https://github.com/airbytehq/airbyte/pull/44997) | Update dependencies                            |
-| 0.1.8   | 2024-08-24 | [44746](https://github.com/airbytehq/airbyte/pull/44746) | Update dependencies                            |
-| 0.1.7   | 2024-08-17 | [44208](https://github.com/airbytehq/airbyte/pull/44208) | Update dependencies                            |
-| 0.1.6   | 2024-08-10 | [43540](https://github.com/airbytehq/airbyte/pull/43540) | Update dependencies                            |
-| 0.1.5   | 2024-08-03 | [42781](https://github.com/airbytehq/airbyte/pull/42781) | Update dependencies                            |
-| 0.1.4   | 2024-07-20 | [42316](https://github.com/airbytehq/airbyte/pull/42316) | Update dependencies                            |
-| 0.1.3   | 2024-07-13 | [41878](https://github.com/airbytehq/airbyte/pull/41878) | Update dependencies                            |
-| 0.1.2   | 2024-07-10 | [41505](https://github.com/airbytehq/airbyte/pull/41505) | Update dependencies                            |
-| 0.1.1   | 2024-07-10 | [41049](https://github.com/airbytehq/airbyte/pull/41049) | Migrate to poetry                              |
-| 0.1.0   | 2022-10-30 | [18654](https://github.com/airbytehq/airbyte/pull/18654) | 🎉 New Source: The Guardian API [low-code CDK] |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.11 | 2025-01-25 | [52381](https://github.com/airbytehq/airbyte/pull/52381) | Update dependencies |
+| 0.2.10 | 2025-01-18 | [51417](https://github.com/airbytehq/airbyte/pull/51417) | Update dependencies |
+| 0.2.9 | 2025-01-13 | [50855](https://github.com/airbytehq/airbyte/pull/50855) | Update to latest CDK and fix custom pagination strategy |
+| 0.2.8 | 2024-12-28 | [50818](https://github.com/airbytehq/airbyte/pull/50818) | Update dependencies |
+| 0.2.7 | 2024-12-21 | [50341](https://github.com/airbytehq/airbyte/pull/50341) | Update dependencies |
+| 0.2.6 | 2024-12-14 | [49797](https://github.com/airbytehq/airbyte/pull/49797) | Update dependencies |
+| 0.2.5 | 2024-12-12 | [49378](https://github.com/airbytehq/airbyte/pull/49378) | Update dependencies |
+| 0.2.4 | 2024-12-11 | [48790](https://github.com/airbytehq/airbyte/pull/48790) | Add unit tests for custom components |
+| 0.2.3 | 2024-12-11 | [48201](https://github.com/airbytehq/airbyte/pull/48201) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.2 | 2024-10-29 | [47779](https://github.com/airbytehq/airbyte/pull/47779) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47456](https://github.com/airbytehq/airbyte/pull/47456) | Update dependencies |
+| 0.2.0 | 2024-09-06 | [45195](https://github.com/airbytehq/airbyte/pull/45195) | Refactor connector to manifest-only format |
+| 0.1.9 | 2024-08-31 | [44997](https://github.com/airbytehq/airbyte/pull/44997) | Update dependencies |
+| 0.1.8 | 2024-08-24 | [44746](https://github.com/airbytehq/airbyte/pull/44746) | Update dependencies |
+| 0.1.7 | 2024-08-17 | [44208](https://github.com/airbytehq/airbyte/pull/44208) | Update dependencies |
+| 0.1.6 | 2024-08-10 | [43540](https://github.com/airbytehq/airbyte/pull/43540) | Update dependencies |
+| 0.1.5 | 2024-08-03 | [42781](https://github.com/airbytehq/airbyte/pull/42781) | Update dependencies |
+| 0.1.4 | 2024-07-20 | [42316](https://github.com/airbytehq/airbyte/pull/42316) | Update dependencies |
+| 0.1.3 | 2024-07-13 | [41878](https://github.com/airbytehq/airbyte/pull/41878) | Update dependencies |
+| 0.1.2 | 2024-07-10 | [41505](https://github.com/airbytehq/airbyte/pull/41505) | Update dependencies |
+| 0.1.1 | 2024-07-10 | [41049](https://github.com/airbytehq/airbyte/pull/41049) | Migrate to poetry |
+| 0.1.0 | 2022-10-30 | [18654](https://github.com/airbytehq/airbyte/pull/18654) | 🎉 New Source: The Guardian API [low-code CDK] |
 
 </details>

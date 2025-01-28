@@ -4,16 +4,16 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "4.36.0"
+version = "4.49.4"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "~3.10"
-dagger-io = "==0.9.6"
-beartype = "<0.17.2"                                                         # dagger 0.9.6 doesn't pin this but doesn't play well with it. We should probably upgrade dagger
-asyncer = "^0.0.2"
-anyio = "^3.4.1"
+dagger-io = "==0.13.3"
+beartype = ">=0.18.2"
+asyncer = "^0"
+anyio = "^4"
 more-itertools = "^8.11.0"
 docker = "^7"
 semver = "^3"
@@ -40,6 +40,7 @@ pygithub = "^2.3.0"
 pydash = "6.0.2"
 python-slugify = ">=8.0.4"
 deepdiff = "^7.0.1"
+auto-merge = { path = "../auto_merge", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"

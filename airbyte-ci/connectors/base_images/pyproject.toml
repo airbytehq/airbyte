@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "airbyte-connectors-base-images"
-version = "1.0.2"
+version = "1.5.1"
 description = "This package is used to generate and publish the base images for Airbyte Connectors."
 authors = ["Augustin Lafanechere <augustin@airbyte.io>"]
 readme = "README.md"
@@ -8,8 +8,8 @@ packages = [{ include = "base_images" }]
 include = ["generated"]
 [tool.poetry.dependencies]
 python = "^3.10"
-dagger-io = "==0.9.6"
-beartype = "<0.17.2"                                          # dagger 0.9.6 doesn't pin this but doesn't play well with it. We should probably upgrade dagger
+dagger-io = "==0.13.3"
+beartype = ">=0.18.2"
 gitpython = "^3.1.35"
 rich = "^13.5.2"
 semver = "^3.0.1"

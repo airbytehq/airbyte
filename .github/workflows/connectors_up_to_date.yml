@@ -11,26 +11,56 @@ on:
     inputs:
       connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--concurrency=10 --language=python --language=low-code --language=manifest-only"
-      auto-merge:
-        description: "Whether to auto-merge the PRs created by the action."
-        default: "false"
+        default: "--language=python --language=low-code --language=manifest-only"
 jobs:
-  connectors_up_to_date:
-    name: Connectors up-to-date
-    runs-on: connector-nightly-xlarge
-    permissions:
-      pull-requests: write
-    timeout-minutes: 1440 # 24 hours
+  generate_matrix:
+    name: Generate matrix
+    runs-on: ubuntu-24.04
+    outputs:
+      generated_matrix: ${{ steps.generate_matrix.outputs.generated_matrix }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
-      - name: Run airbyte-ci connectors up-to-date
-        id: airbyte-ci-connectors-up-to-date
+      - name: Run airbyte-ci connectors list [SCHEDULED TRIGGER]
+        if: github.event_name == 'schedule'
+        id: airbyte-ci-connectors-list-scheduled
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "master"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          subcommand: 'connectors --language=python --language=low-code --language=manifest-only  --metadata-query="\"-rc.\" not in data.dockerImageTag and \"source-declarative-manifest\" not in data.dockerRepository" list --output=selected_connectors.json'
+      - name: Run airbyte-ci connectors list [MANUAL TRIGGER]
+        if: github.event_name == 'workflow_dispatch'
+        id: airbyte-ci-connectors-list-workflow-dispatch
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "master"
+          subcommand: 'connectors ${{ github.event.inputs.connectors-options }} --metadata-query="\"-rc.\" not in data.dockerImageTag and \"source-declarative-manifest\" not in data.dockerRepository" list --output=selected_connectors.json'
+      # We generate a dynamic matrix from the list of selected connectors.
+      # A matrix is required in this situation because the number of connectors is large and running them all in a single job would exceed the maximum job time limit of 6 hours.
+      - name: Generate matrix - 100 connectors per job
+        id: generate_matrix
+        run: |
+          matrix=$(jq -c -r '{include: [.[] | "--name=" + .] | to_entries | group_by(.key / 100 | floor) | map(map(.value) | {"connector_names": join(" ")})}' selected_connectors.json)
+          echo "generated_matrix=$matrix" >> $GITHUB_OUTPUT
+
+  run_connectors_up_to_date:
+    needs: generate_matrix
+    name: Connectors up-to-date
+    runs-on: connector-up-to-date-medium
+    continue-on-error: true
+    strategy:
+      matrix: ${{fromJson(needs.generate_matrix.outputs.generated_matrix)}}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Run airbyte-ci connectors up-to-date [WORKFLOW]
+        id: airbyte-ci-connectors-up-to-date-workflow-dispatch
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "master"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -39,4 +69,4 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors  ${{ github.event.inputs.connectors-options || '--concurrency=10 --language=python --language=low-code --support-level=community --support-level=certified' }} up-to-date --ignore-connector=source-declarative-manifest --create-prs ${{ github.event.inputs.auto-merge == 'false' && '' || '--auto-merge' }}"
+          subcommand: "connectors --concurrency=10 ${{ matrix.connector_names}} up-to-date  --create-prs --auto-merge"

@@ -45,6 +45,18 @@ In addition, to understand how to configure the dataset path and query parameter
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.8 | 2025-01-25 | [52431](https://github.com/airbytehq/airbyte/pull/52431) | Update dependencies |
+| 0.3.7 | 2025-01-18 | [51948](https://github.com/airbytehq/airbyte/pull/51948) | Update dependencies |
+| 0.3.6 | 2025-01-11 | [51420](https://github.com/airbytehq/airbyte/pull/51420) | Update dependencies |
+| 0.3.5 | 2024-12-28 | [50809](https://github.com/airbytehq/airbyte/pull/50809) | Update dependencies |
+| 0.3.4 | 2024-12-21 | [50329](https://github.com/airbytehq/airbyte/pull/50329) | Update dependencies |
+| 0.3.3 | 2024-12-14 | [48255](https://github.com/airbytehq/airbyte/pull/48255) | Update dependencies |
+| 0.3.2 | 2024-10-29 | [47845](https://github.com/airbytehq/airbyte/pull/47845) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47119](https://github.com/airbytehq/airbyte/pull/47119) | Update dependencies |
+| 0.3.0 | 2024-10-22 | [47246](https://github.com/airbytehq/airbyte/pull/47246) | Migrate to manifest-only format |
+| 0.2.6 | 2024-10-12 | [46813](https://github.com/airbytehq/airbyte/pull/46813) | Update dependencies |
+| 0.2.5 | 2024-10-05 | [46442](https://github.com/airbytehq/airbyte/pull/46442) | Update dependencies |
+| 0.2.4 | 2024-09-28 | [46181](https://github.com/airbytehq/airbyte/pull/46181) | Update dependencies |
 | 0.2.3 | 2024-09-21 | [45743](https://github.com/airbytehq/airbyte/pull/45743) | Update dependencies |
 | 0.2.2 | 2024-09-14 | [44364](https://github.com/airbytehq/airbyte/pull/44364) | Update dependencies |
 | 0.2.1 | 2024-09-07 | [45331](https://github.com/airbytehq/airbyte/pull/45331) | Fix schema |

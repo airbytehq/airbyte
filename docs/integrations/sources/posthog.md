@@ -71,6 +71,18 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| 1.1.24 | 2025-01-25 | [52536](https://github.com/airbytehq/airbyte/pull/52536) | Update dependencies |
+| 1.1.23 | 2025-01-18 | [51856](https://github.com/airbytehq/airbyte/pull/51856) | Update dependencies |
+| 1.1.22 | 2025-01-11 | [51313](https://github.com/airbytehq/airbyte/pull/51313) | Update dependencies |
+| 1.1.21 | 2024-12-28 | [50685](https://github.com/airbytehq/airbyte/pull/50685) | Update dependencies |
+| 1.1.20 | 2024-12-21 | [50280](https://github.com/airbytehq/airbyte/pull/50280) | Update dependencies |
+| 1.1.19 | 2024-12-14 | [49716](https://github.com/airbytehq/airbyte/pull/49716) | Update dependencies |
+| 1.1.18 | 2024-12-12 | [49066](https://github.com/airbytehq/airbyte/pull/49066) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.1.17 | 2024-10-29 | [47724](https://github.com/airbytehq/airbyte/pull/47724) | Update dependencies |
+| 1.1.16 | 2024-10-28 | [47033](https://github.com/airbytehq/airbyte/pull/47033) | Update dependencies |
+| 1.1.15 | 2024-10-12 | [46769](https://github.com/airbytehq/airbyte/pull/46769) | Update dependencies |
+| 1.1.14 | 2024-10-05 | [46421](https://github.com/airbytehq/airbyte/pull/46421) | Update dependencies |
+| 1.1.13 | 2024-09-28 | [46108](https://github.com/airbytehq/airbyte/pull/46108) | Update dependencies |
 | 1.1.12 | 2024-09-21 | [45796](https://github.com/airbytehq/airbyte/pull/45796) | Update dependencies |
 | 1.1.11 | 2024-09-14 | [45570](https://github.com/airbytehq/airbyte/pull/45570) | Update dependencies |
 | 1.1.10 | 2024-09-07 | [45241](https://github.com/airbytehq/airbyte/pull/45241) | Update dependencies |

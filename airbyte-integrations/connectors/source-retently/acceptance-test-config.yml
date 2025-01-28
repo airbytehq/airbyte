@@ -4,7 +4,7 @@ connector_image: airbyte/source-retently:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_retently/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -22,6 +22,7 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
           - name: templates
+          - name: outbox
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   full_refresh:

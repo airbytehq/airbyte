@@ -1,53 +1,45 @@
 plugins {
     id 'application'
-    id 'airbyte-java-connector'
+    id 'airbyte-bulk-connector'
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.46.1'
-    features = ['db-destinations', 's3-destinations']
-    useLocalCdk = false
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = ['load-s3', 'load-avro', 'load-aws']
+    cdk = 'local'
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.s3.S3DestinationRunner'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    mainClass = 'io.airbyte.integrations.destination.s3_v2.S3V2Destination'
 
-    // uncomment and replace to run locally
-    //applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+    applicationDefaultJvmArgs = [
+            '-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
+//            Uncomment to run locally:
+//          '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+//            Uncomment to enable remote profiling:
+//            '-XX:NativeMemoryTracking=detail',
+//            '-Djava.rmi.server.hostname=localhost',
+//            '-Dcom.sun.management.jmxremote=true',
+//            '-Dcom.sun.management.jmxremote.port=6000',
+//            '-Dcom.sun.management.jmxremote.rmi.port=6000',
+//            '-Dcom.sun.management.jmxremote.local.only=false',
+//            '-Dcom.sun.management.jmxremote.authenticate=false',
+//            '-Dcom.sun.management.jmxremote.ssl=false'
+    ]
 }
 
-// uncomment to run locally
+// Uncomment to run locally
 //run {
 //    standardInput = System.in
 //}
 
 dependencies {
+    // temporary dependencies so that we can continue running the legacy test suite.
+    // eventually we should remove those tests + rely solely on the bulk CDK tests.
+    integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations"))
+}
 
-    // csv
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.772'
-    implementation 'com.amazonaws:aws-java-sdk-iam:1.12.772'
-    implementation 'org.apache.commons:commons-csv:1.11.0'
-    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.4'
-
-    // parquet
-    implementation ('org.apache.hadoop:hadoop-common:3.4.0') {
-        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
-        exclude group: 'org.apache.zookeeper'
-    }
-    implementation ('org.apache.hadoop:hadoop-aws:3.4.0') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.4.0') {
-        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
-        exclude group: 'org.apache.zookeeper'
-    }
-    implementation ('org.apache.parquet:parquet-avro:1.14.2') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-    implementation ('com.github.airbytehq:json-avro-converter:1.1.3') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-    implementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
-    testImplementation 'org.apache.commons:commons-lang3:3.17.0'
-    testImplementation 'org.xerial.snappy:snappy-java:1.1.10.7'
-    testImplementation "org.mockito:mockito-inline:5.2.0"
+// Exclude conflicting log4j-over-slf4j dependency
+configurations.all {
+        exclude group: "org.slf4j", module: "slf4j-reload4j"
 }

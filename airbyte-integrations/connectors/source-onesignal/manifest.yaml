@@ -1,0 +1,1079 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+description: >-
+  API Docs: https://documentation.onesignal.com/reference/quick-start-api-guide
+
+  Auth Docs:
+  https://documentation.onesignal.com/reference/quick-start-api-guide#rest-api-key
+
+  API Keys: https://dashboard.onesignal.com/profile
+
+check:
+  type: CheckStream
+  stream_names:
+    - apps
+
+definitions:
+  streams:
+    apps:
+      type: DeclarativeStream
+      name: apps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: apps
+          http_method: GET
+          request_headers:
+            Authorization: Basic {{ config["user_auth_key"] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/apps"
+    devices:
+      type: DeclarativeStream
+      name: devices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: players
+          http_method: GET
+          request_parameters:
+            app_id: "{{ config['applications'][0]['app_id'] }}"
+          request_headers:
+            Authorization: Basic {{ config['applications'][0]['app_api_key'] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - players
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+            inject_on_first_request: false
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_active
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/devices"
+    notifications:
+      type: DeclarativeStream
+      name: notifications
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: notifications
+          http_method: GET
+          request_parameters:
+            app_id: "{{ config['applications'][0]['app_id'] }}"
+          request_headers:
+            Authorization: Basic {{ config['applications'][0]['app_api_key'] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - notifications
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+            inject_on_first_request: false
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: queued_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notifications"
+    outcomes:
+      type: DeclarativeStream
+      name: outcomes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: apps/{{ config['applications'][0]['app_id'] }}/outcomes
+          http_method: GET
+          request_parameters:
+            app_id: "{{ config['applications'][0]['app_id'] }}"
+            outcome_names: "{{ config[\"outcome_names\"] }}"
+          request_headers:
+            Authorization: Basic {{ config['applications'][0]['app_api_key'] }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: SUCCESS
+                    http_codes:
+                      - 400
+                    error_message: >-
+                      Plan is not supported, please get a premium plan for
+                      accessing stream
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - outcomes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/outcomes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://onesignal.com/api/v1/
+
+streams:
+  - $ref: "#/definitions/streams/apps"
+  - $ref: "#/definitions/streams/devices"
+  - $ref: "#/definitions/streams/notifications"
+  - $ref: "#/definitions/streams/outcomes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - user_auth_key
+      - applications
+      - start_date
+      - outcome_names
+    properties:
+      user_auth_key:
+        type: string
+        description: >-
+          OneSignal User Auth Key, see the <a
+          href="https://documentation.onesignal.com/docs/accounts-and-keys#user-auth-key">docs</a>
+          for more information on how to obtain this key.
+        order: 0
+        title: User Auth Key
+        airbyte_secret: true
+      applications:
+        type: array
+        description: >-
+          Applications keys, see the <a
+          href="https://documentation.onesignal.com/docs/accounts-and-keys">docs</a>
+          for more information on how to obtain this data
+        items:
+          type: object
+          required:
+            - app_id
+            - app_api_key
+          properties:
+            app_id:
+              type: string
+              order: 1
+              title: OneSignal App ID
+              airbyte_secret: true
+            app_name:
+              type: string
+              order: 0
+              title: OneSignal App Name
+            app_api_key:
+              type: string
+              order: 2
+              title: REST API Key
+              airbyte_secret: true
+        order: 1
+        title: Applications
+      start_date:
+        type: string
+        description: >-
+          The date from which you'd like to replicate data for OneSignal API, in
+          the format YYYY-MM-DDT00:00:00Z. All data generated after this date
+          will be replicated.
+        order: 2
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2020-11-16T00:00:00Z"
+      outcome_names:
+        type: string
+        description: >-
+          Comma-separated list of names and the value (sum/count) for the
+          returned outcome data. See the <a
+          href="https://documentation.onesignal.com/reference/view-outcomes">docs</a>
+          for more details
+        order: 3
+        title: Outcome Names
+        examples:
+          - os__session_duration.count,os__click.count,CustomOutcomeName.sum
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    apps: false
+    devices: false
+    notifications: false
+    outcomes: false
+  testedStreams:
+    apps:
+      streamHash: a72fc16ba03e9478f6dc527dc13b7f9517c0c2ca
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    devices:
+      streamHash: f15433b05e88e483b5ed0d9a1163344358db6dbd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    notifications:
+      streamHash: f916aacb43ee8811baeea54d9b7950584e59b274
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    outcomes:
+      hasRecords: false
+      streamHash: e7734c12d5a9f26487ce4695deb5910d41bc81b1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: false
+  assist: {}
+
+schemas:
+  apps:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      players:
+        type:
+          - "null"
+          - integer
+      messageable_players:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      gcm_key:
+        type:
+          - "null"
+          - string
+      chrome_key:
+        type:
+          - "null"
+          - string
+      chrome_web_key:
+        type:
+          - "null"
+          - string
+      chrome_web_origin:
+        type:
+          - "null"
+          - string
+      chrome_web_gcm_sender_id:
+        type:
+          - "null"
+          - string
+      chrome_web_default_notification_icon:
+        type:
+          - "null"
+          - string
+      chrome_web_sub_domain:
+        type:
+          - "null"
+          - string
+      apns_env:
+        type:
+          - "null"
+          - string
+      apns_certificates:
+        type:
+          - "null"
+          - string
+      safari_apns_certificate:
+        type:
+          - "null"
+          - string
+      safari_site_origin:
+        type:
+          - "null"
+          - string
+      safari_push_id:
+        type:
+          - "null"
+          - string
+      safari_icon_16_16:
+        type:
+          - "null"
+          - string
+      safari_icon_32_32:
+        type:
+          - "null"
+          - string
+      safari_icon_64_64:
+        type:
+          - "null"
+          - string
+      safari_icon_128_128:
+        type:
+          - "null"
+          - string
+      safari_icon_256_256:
+        type:
+          - "null"
+          - string
+      site_name:
+        type:
+          - "null"
+          - string
+      basic_auth_key:
+        type:
+          - "null"
+          - string
+      additional_data_is_root_payload:
+        type:
+          - "null"
+          - boolean
+      apns_key_id:
+        type:
+          - "null"
+          - integer
+      fcm_v1_service_account_json:
+        type:
+          - "null"
+          - string
+      apns_p8:
+        type:
+          - "null"
+          - string
+      apns_bundle_id:
+        type:
+          - "null"
+          - integer
+      apns_team_id:
+        type:
+          - "null"
+          - integer
+  devices:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      identifier:
+        type:
+          - "null"
+          - string
+      session_count:
+        type:
+          - "null"
+          - integer
+      language:
+        type:
+          - "null"
+          - string
+      timezone:
+        type:
+          - "null"
+          - integer
+      game_version:
+        type:
+          - "null"
+          - string
+      device_os:
+        type:
+          - "null"
+          - string
+      device_type:
+        type:
+          - "null"
+          - integer
+      device_model:
+        type:
+          - "null"
+          - string
+      ad_id:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - object
+        properties: {}
+      last_active:
+        type:
+          - "null"
+          - integer
+      amount_spent:
+        type:
+          - "null"
+          - number
+      created_at:
+        type:
+          - "null"
+          - integer
+      invalid_identifier:
+        type:
+          - "null"
+          - boolean
+      badge_count:
+        type:
+          - "null"
+          - integer
+      playtime:
+        type:
+          - "null"
+          - integer
+      sdk:
+        type:
+          - "null"
+          - string
+      test_type:
+        type:
+          - "null"
+          - string
+      ip:
+        type:
+          - "null"
+          - string
+      external_user_id:
+        type:
+          - "null"
+          - string
+  notifications:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      adm_big_picture:
+        type:
+          - "null"
+          - string
+      adm_group:
+        type:
+          - "null"
+          - string
+      adm_group_message:
+        type:
+          - "null"
+          - object
+        properties:
+          en:
+            type:
+              - "null"
+              - string
+      adm_large_icon:
+        type:
+          - "null"
+          - string
+      adm_small_icon:
+        type:
+          - "null"
+          - string
+      adm_sound:
+        type:
+          - "null"
+          - string
+      spoken_text:
+        type:
+          - "null"
+          - object
+        properties: {}
+      alexa_ssml:
+        type:
+          - "null"
+          - string
+      alexa_display_title:
+        type:
+          - "null"
+          - string
+      amazon_background_data:
+        type:
+          - "null"
+          - boolean
+      android_accent_color:
+        type:
+          - "null"
+          - string
+      android_group:
+        type:
+          - "null"
+          - string
+      android_group_message:
+        type:
+          - "null"
+          - object
+        properties:
+          en:
+            type:
+              - "null"
+              - string
+      android_led_color:
+        type:
+          - "null"
+          - string
+      android_sound:
+        type:
+          - "null"
+          - string
+      android_visibility:
+        type:
+          - "null"
+          - integer
+      app_id:
+        type: string
+      big_picture:
+        type:
+          - "null"
+          - string
+      buttons:
+        type:
+          - "null"
+          - string
+      canceled:
+        type:
+          - "null"
+          - boolean
+      chrome_big_picture:
+        type:
+          - "null"
+          - string
+      chrome_icon:
+        type:
+          - "null"
+          - string
+      chrome_web_icon:
+        type:
+          - "null"
+          - string
+      chrome_web_image:
+        type:
+          - "null"
+          - string
+      chrome_web_badge:
+        type:
+          - "null"
+          - string
+      content_available:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      contents:
+        type:
+          - "null"
+          - object
+        properties:
+          en:
+            type:
+              - "null"
+              - string
+      converted:
+        type:
+          - "null"
+          - integer
+      data:
+        type:
+          - "null"
+          - object
+        properties: {}
+      delayed_option:
+        type:
+          - "null"
+          - string
+      delivery_time_of_day:
+        type:
+          - "null"
+          - string
+      errored:
+        type:
+          - "null"
+          - integer
+      excluded_segments:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      failed:
+        type:
+          - "null"
+          - integer
+      firefox_icon:
+        type:
+          - "null"
+          - string
+      global_image:
+        type:
+          - "null"
+          - string
+      headings:
+        type:
+          - "null"
+          - object
+        properties:
+          en:
+            type:
+              - "null"
+              - string
+      huawei_accent_color:
+        type:
+          - "null"
+          - string
+      huawei_big_picture:
+        type:
+          - "null"
+          - string
+      huawei_channel_id:
+        type:
+          - "null"
+          - string
+      huawei_existing_channel_id:
+        type:
+          - "null"
+          - string
+      huawei_group:
+        type:
+          - "null"
+          - string
+      huawei_group_message:
+        type:
+          - "null"
+          - string
+      huawei_large_icon:
+        type:
+          - "null"
+          - string
+      huawei_led_color:
+        type:
+          - "null"
+          - string
+      huawei_msg_type:
+        type:
+          - "null"
+          - string
+      huawei_small_icon:
+        type:
+          - "null"
+          - string
+      huawei_sound:
+        type:
+          - "null"
+          - string
+      huawei_visibility:
+        type:
+          - "null"
+          - string
+      id:
+        type: string
+      include_player_ids:
+        type:
+          - "null"
+          - string
+      include_external_user_ids:
+        type:
+          - "null"
+          - string
+      included_segments:
+        type: array
+        items:
+          type: string
+      thread_id:
+        type:
+          - "null"
+          - string
+      ios_badgeCount:
+        type:
+          - "null"
+          - integer
+      ios_badgeType:
+        type:
+          - "null"
+          - string
+      ios_category:
+        type:
+          - "null"
+          - string
+      ios_interruption_level:
+        type:
+          - "null"
+          - string
+      ios_relevance_score:
+        type:
+          - "null"
+          - number
+      ios_sound:
+        type:
+          - "null"
+          - string
+      apns_alert:
+        type:
+          - "null"
+          - object
+        properties: {}
+      target_content_identifier:
+        type:
+          - "null"
+          - string
+      isAdm:
+        type:
+          - "null"
+          - boolean
+      isAndroid:
+        type:
+          - "null"
+          - boolean
+      isChrome:
+        type:
+          - "null"
+          - boolean
+      isChromeWeb:
+        type:
+          - "null"
+          - boolean
+      isAlexa:
+        type:
+          - "null"
+          - boolean
+      isFirefox:
+        type:
+          - "null"
+          - boolean
+      isIos:
+        type:
+          - "null"
+          - boolean
+      isSafari:
+        type:
+          - "null"
+          - boolean
+      isWP:
+        type:
+          - "null"
+          - boolean
+      isWP_WNS:
+        type:
+          - "null"
+          - boolean
+      isEdge:
+        type:
+          - "null"
+          - boolean
+      isHuawei:
+        type:
+          - "null"
+          - boolean
+      isSMS:
+        type:
+          - "null"
+          - boolean
+      large_icon:
+        type:
+          - "null"
+          - string
+      priority:
+        type:
+          - "null"
+          - integer
+      queued_at:
+        type: integer
+      remaining:
+        type:
+          - "null"
+          - integer
+      send_after:
+        type:
+          - "null"
+          - integer
+      completed_at:
+        type:
+          - "null"
+          - integer
+      small_icon:
+        type:
+          - "null"
+          - string
+      successful:
+        type:
+          - "null"
+          - integer
+      received:
+        type:
+          - "null"
+          - integer
+      tags:
+        type:
+          - "null"
+          - object
+        properties: {}
+      filters:
+        type:
+          - "null"
+          - string
+      template_id:
+        type:
+          - "null"
+          - string
+      ttl:
+        type:
+          - "null"
+          - integer
+      url:
+        type:
+          - "null"
+          - string
+      web_url:
+        type:
+          - "null"
+          - string
+      app_url:
+        type:
+          - "null"
+          - string
+      web_buttons:
+        type:
+          - "null"
+          - string
+      web_push_topic:
+        type:
+          - "null"
+          - string
+      wp_sound:
+        type:
+          - "null"
+          - string
+      wp_wns_sound:
+        type:
+          - "null"
+          - string
+      platform_delivery_stats:
+        type: object
+        properties:
+          android:
+            type:
+              - "null"
+              - object
+            properties:
+              successful:
+                type: integer
+              errored:
+                type: integer
+              failed:
+                type: integer
+              converted:
+                type: integer
+              received:
+                type: integer
+          ios:
+            type:
+              - "null"
+              - object
+            properties:
+              successful:
+                type: integer
+              errored:
+                type: integer
+              failed:
+                type: integer
+              converted:
+                type: integer
+              received:
+                type: integer
+      ios_attachments:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+      throttle_rate_per_minute:
+        type:
+          - "null"
+          - integer
+      sms_from:
+        type:
+          - "null"
+          - string
+      sms_media_urls:
+        type:
+          - "null"
+          - string
+      email_click_tracking_disabled:
+        type:
+          - "null"
+          - boolean
+      fcap_group_ids:
+        type:
+          - "null"
+          - string
+      fcap_status:
+        type:
+          - "null"
+          - string
+  outcomes:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      value:
+        type: integer
+      aggregation:
+        type: string

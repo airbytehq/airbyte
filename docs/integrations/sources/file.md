@@ -28,9 +28,11 @@ This page contains the setup guide and reference information for the [File (CSV,
 
 ### Set up the File (CSV, JSON, Excel, Feather, Parquet) connector in Airbyte
 
-#### Set up the source in Airbyte:
+<!-- env:cloud -->
 
-1. Navigate to the Airbyte UI.
+#### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select File (CSV, JSON, Excel, Feather, Parquet) from the Source type dropdown.
 4. Enter a name for the File (CSV, JSON, Excel, Feather, Parquet) connector.
@@ -40,6 +42,25 @@ This page contains the setup guide and reference information for the [File (CSV,
 <FieldAnchor field="format">
 6. For **File Format**, select the _format_ of the file to replicate from the dropdown menu (Warning: some formats may be experimental. Please refer to [the table of supported formats](#file-formats)).
 </FieldAnchor>
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select File (CSV, JSON, Excel, Feather, Parquet) from the Source type dropdown.
+4. Enter a name for the File (CSV, JSON, Excel, Feather, Parquet) connector.
+<FieldAnchor field="dataset_name">
+5. For **Dataset Name**, enter the _name_ of the final table to replicate this file into (should include letters, numbers, dashes and underscores only).
+</FieldAnchor>
+<FieldAnchor field="format">
+6. For **File Format**, select the _format_ of the file to replicate from the dropdown menu (Warning: some formats may be experimental. Please refer to [the table of supported formats](#file-formats)).
+</FieldAnchor>
+
+<!-- /env:oss -->
 
 ### Step 2: Select the provider and set provider-specific configurations:
 
@@ -172,6 +193,7 @@ This connector does not support syncing unstructured data files such as raw text
 </FieldAnchor>
 
 <HideInUI>
+
 ## Supported sync modes
 
 The File (CSV, JSON, Excel, Feather, Parquet) source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -276,6 +298,12 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.5.18 | 2025-01-25 | [52317](https://github.com/airbytehq/airbyte/pull/52317) | Update dependencies |
+| 0.5.17 | 2025-01-18 | [48656](https://github.com/airbytehq/airbyte/pull/48656) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.5.16 | 2024-12-10 | [48804](https://github.com/airbytehq/airbyte/pull/48804) | Added reader options: skiprows & header for Excel files |
+| 0.5.15 | 2024-11-05 | [48317](https://github.com/airbytehq/airbyte/pull/48317) | Update dependencies |
+| 0.5.14 | 2024-10-29 | [47115](https://github.com/airbytehq/airbyte/pull/47115) | Update dependencies |
+| 0.5.13 | 2024-10-12 | [45795](https://github.com/airbytehq/airbyte/pull/45795) | Update dependencies |
 | 0.5.12 | 2024-09-14 | [45499](https://github.com/airbytehq/airbyte/pull/45499) | Update dependencies |
 | 0.5.11 | 2024-09-07 | [45261](https://github.com/airbytehq/airbyte/pull/45261) | Update dependencies |
 | 0.5.10 | 2024-08-31 | [44974](https://github.com/airbytehq/airbyte/pull/44974) | Update dependencies |

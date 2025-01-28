@@ -6,7 +6,7 @@ import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.h2.H2TestFixture
 import io.airbyte.cdk.h2source.H2SourceConfiguration
 import io.airbyte.cdk.h2source.H2SourceConfigurationFactory
-import io.airbyte.cdk.h2source.H2SourceConfigurationJsonObject
+import io.airbyte.cdk.h2source.H2SourceConfigurationSpecification
 import io.airbyte.cdk.h2source.H2SourceOperations
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -32,7 +32,7 @@ class JdbcMetadataQuerierTest {
     @Test
     fun test() {
         val configPojo =
-            H2SourceConfigurationJsonObject().apply {
+            H2SourceConfigurationSpecification().apply {
                 port = h2.port
                 database = h2.database
             }

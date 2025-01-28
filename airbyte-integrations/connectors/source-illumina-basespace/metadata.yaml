@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-illumina-basespace
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.6.2@sha256:f5fcd3d4703b7590b6166a7853c5ed1686731607cd30a159a8c24e2fe2c1ee98
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 62e9c4f2-a768-48f7-a8bf-d54bf1d96425
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-illumina-basespace
   githubIssueLabel: source-illumina-basespace
   icon: icon.svg

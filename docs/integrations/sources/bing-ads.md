@@ -260,7 +260,22 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                        |
-| :------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.8.11 | 2025-01-25 | [52198](https://github.com/airbytehq/airbyte/pull/52198) | Update dependencies |
+| 2.8.10 | 2025-01-18 | [51735](https://github.com/airbytehq/airbyte/pull/51735) | Update dependencies |
+| 2.8.9 | 2025-01-11 | [51230](https://github.com/airbytehq/airbyte/pull/51230) | Update dependencies |
+| 2.8.8 | 2025-01-04 | [50905](https://github.com/airbytehq/airbyte/pull/50905) | Update dependencies |
+| 2.8.7 | 2024-12-28 | [50443](https://github.com/airbytehq/airbyte/pull/50443) | Update dependencies |
+| 2.8.6 | 2024-12-21 | [50181](https://github.com/airbytehq/airbyte/pull/50181) | Update dependencies |
+| 2.8.5 | 2024-12-14 | [49283](https://github.com/airbytehq/airbyte/pull/49283) | Update dependencies |
+| 2.8.4 | 2024-11-25 | [48650](https://github.com/airbytehq/airbyte/pull/48650) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.8.3 | 2024-11-04 | [48169](https://github.com/airbytehq/airbyte/pull/48169) | Update dependencies |
+| 2.8.2 | 2024-10-29 | [47850](https://github.com/airbytehq/airbyte/pull/47850) | Update dependencies |
+| 2.8.1 | 2024-10-28 | [47093](https://github.com/airbytehq/airbyte/pull/47093) | Update dependencies |
+| 2.8.0 | 2024-10-21 | [46991](https://github.com/airbytehq/airbyte/pull/46991) | Update CDK to v5 |
+| 2.7.9 | 2024-10-12 | [46847](https://github.com/airbytehq/airbyte/pull/46847) | Update dependencies |
+| 2.7.8 | 2024-10-05 | [46504](https://github.com/airbytehq/airbyte/pull/46504) | Update dependencies |
+| 2.7.7 | 2024-09-28 | [46151](https://github.com/airbytehq/airbyte/pull/46151) | Update dependencies |
 | 2.7.6 | 2024-09-21 | [45512](https://github.com/airbytehq/airbyte/pull/45512) | Update dependencies |
 | 2.7.5 | 2024-09-07 | [45246](https://github.com/airbytehq/airbyte/pull/45246) | Update dependencies |
 | 2.7.4 | 2024-08-31 | [44276](https://github.com/airbytehq/airbyte/pull/44276) | Update dependencies |
