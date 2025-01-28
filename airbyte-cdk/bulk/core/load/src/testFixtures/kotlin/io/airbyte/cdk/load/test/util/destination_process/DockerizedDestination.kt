@@ -154,10 +154,13 @@ class DockerizedDestination(
                 .toMutableList()
 
         fun addInput(paramName: String, fileContents: ByteArray) {
+            val path = workspaceRoot.resolve("destination_$paramName.json")
             Files.write(
-                workspaceRoot.resolve("destination_$paramName.json"),
+                path,
                 fileContents,
             )
+            grantAllPermissions(path)
+
             cmd.add("--$paramName")
 //            cmd.add("$containerJobRoot/destination_$paramName.json")
             cmd.add("/data/destination_$paramName.json")
@@ -285,9 +288,9 @@ class DockerizedDestination(
         assertFalse(file.exists())
     }
 
-    private fun grantAllPermissions(dir: Path) {
-        logger.info { "Granting all permissions to $dir" }
-        dir.setPosixFilePermissions(
+    private fun grantAllPermissions(path: Path) {
+        logger.info { "Granting all permissions to $path" }
+        path.setPosixFilePermissions(
             setOf(
                 PosixFilePermission.OWNER_READ,
                 PosixFilePermission.OWNER_WRITE,
