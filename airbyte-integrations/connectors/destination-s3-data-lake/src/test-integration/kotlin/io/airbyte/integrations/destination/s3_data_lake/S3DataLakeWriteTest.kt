@@ -184,7 +184,7 @@ class DremioWriteTest :
         S3DataLakeDestinationCleaner(
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.DREMIO_CONFIG_PATH),
-                S3DataLakeTestUtil.getAWSSystemCredentials()
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
             )
         )
     )
