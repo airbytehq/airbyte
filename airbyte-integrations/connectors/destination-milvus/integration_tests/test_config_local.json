@@ -1,0 +1,19 @@
+{
+  "indexing": {
+    "host": "./milvus_local.db",
+    "collection": "test_collection",
+    "auth": {
+      "mode": "no_auth"
+    },
+    "vector_field": "vector",
+    "text_field": "text"
+  },
+  "processing": {
+    "text_fields": ["str_col"],
+    "metadata_fields": [],
+    "chunk_size": 1000
+  },
+  "embedding": {
+    "mode": "fake"
+  }
+}

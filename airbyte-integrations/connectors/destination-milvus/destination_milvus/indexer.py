@@ -28,21 +28,33 @@ class MilvusIndexer(Indexer):
         self.embedder_dimensions = embedder_dimensions
 
     def _connect(self):
-        connections.connect(
-            uri=self.config.host,
-            db_name=self.config.db if self.config.db else "",
-            user=self.config.auth.username if self.config.auth.mode == "username_password" else "",
-            password=self.config.auth.password if self.config.auth.mode == "username_password" else "",
-            token=self.config.auth.token if self.config.auth.mode == "token" else "",
-        )
+        # Check if using local file path (Milvus Lite) or server connection
+        if self.config.host.endswith('.db'):
+            # Milvus Lite connection using local file path
+            connections.connect(
+                alias="default",
+                uri=self.config.host,  # Local file path for Milvus Lite
+                user="",
+                password="",
+                db_name=""
+            )
+        else:
+            # Regular Milvus server connection
+            connections.connect(
+                uri=self.config.host,
+                db_name=self.config.db if self.config.db else "",
+                user=self.config.auth.username if self.config.auth.mode == "username_password" else "",
+                password=self.config.auth.password if self.config.auth.mode == "username_password" else "",
+                token=self.config.auth.token if self.config.auth.mode == "token" else "",
+            )
 
     def _connect_with_timeout(self):
         # Run connect in a separate process as it will hang if the token is invalid.
         proc = Process(target=self._connect)
         proc.start()
-        proc.join(5)
+        proc.join(30)  # Increased timeout for Milvus Lite initialization
         if proc.is_alive():
-            # If the process is still alive after 5 seconds, terminate it and raise an exception
+            # If the process is still alive after 30 seconds, terminate it and raise an exception
             proc.terminate()
             proc.join()
             raise Exception("Connection timed out, check your host and credentials")
@@ -95,6 +107,10 @@ class MilvusIndexer(Indexer):
         return None
 
     def _uses_safe_config(self) -> bool:
+        # Allow local file paths for Milvus Lite
+        if self.config.host.endswith('.db'):
+            return True
+        # For server connections, require HTTPS and authentication
         return self.config.host.startswith("https://") and not self.config.auth.mode == "no_auth"
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
