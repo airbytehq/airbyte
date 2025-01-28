@@ -176,3 +176,14 @@ class NessieMinioWriteTest :
         }
     }
 }
+
+class DremioWriteTest :
+    S3DataLakeWriteTest(
+        Files.readString(S3DataLakeTestUtil.DREMIO_CONFIG_PATH),
+        S3DataLakeDestinationCleaner(
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.DREMIO_CONFIG_PATH),
+                S3DataLakeTestUtil.getAWSSystemCredentials()
+            )
+        )
+    )

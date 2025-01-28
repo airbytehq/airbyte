@@ -11,6 +11,7 @@ dependencies {
     api "org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-parquet:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}"
+    api "org.projectnessie.nessie:nessie-client:0.99.0"
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
 }

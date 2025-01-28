@@ -160,14 +160,21 @@
             },
             "server_uri" : {
               "type" : "string",
-              "description" : "The base URL of the Dremio server used to connect to the catalog.",
+              "description" : "The base URL of the Dremio server used to connect to the catalog. Please omit any port or path in the url",
               "title" : "Dremio Server URI",
-              "order" : 1
+              "order" : 1,
+              "examples" : "https://my.dremio.server.com"
             },
             "namespace" : {
               "type" : "string",
               "description" : "The namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
               "title" : "Namespace"
+            },
+            "pat" : {
+              "type" : "string",
+              "description" : "The Personal Access Token generated through your Dremio server",
+              "title" : "PAT",
+              "airbyte_secret" : true
             }
           },
           "required" : [ "catalog_type", "server_uri" ]

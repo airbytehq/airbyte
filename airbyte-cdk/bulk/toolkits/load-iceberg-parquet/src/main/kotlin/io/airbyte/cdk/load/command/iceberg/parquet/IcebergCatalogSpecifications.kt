@@ -15,6 +15,12 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
+import java.net.URI
+import java.net.URISyntaxException
+import org.apache.iceberg.CatalogProperties
+import org.apache.iceberg.CatalogUtil
+import org.apache.iceberg.io.ResolvingFileIO
+import org.projectnessie.client.NessieConfigConstants
 
 /**
  * Interface defining the specifications for configuring an Iceberg catalog.
@@ -96,7 +102,8 @@ interface IcebergCatalogSpecifications {
                 is DremioCatalogSpecification ->
                     DremioCatalogConfiguration(
                         (catalogType as DremioCatalogSpecification).serverUri,
-                        (catalogType as DremioCatalogSpecification).namespace
+                        (catalogType as DremioCatalogSpecification).namespace,
+                        (catalogType as DremioCatalogSpecification).pat,
                     )
             }
 
@@ -297,10 +304,10 @@ class DremioCatalogSpecification(
      */
     @get:JsonSchemaTitle("Dremio Server URI")
     @get:JsonPropertyDescription(
-        "The base URL of the Dremio server used to connect to the catalog."
+        "The base URL of the Dremio server used to connect to the catalog. Please omit any port or path in the url"
     )
     @get:JsonProperty("server_uri")
-    @JsonSchemaInject(json = """{"order":1}""")
+    @JsonSchemaInject(json = """{"order":1, "examples": "https://my.dremio.server.com"}""")
     val serverUri: String,
     @get:JsonSchemaTitle("Namespace")
     @get:JsonPropertyDescription(
@@ -308,7 +315,13 @@ class DremioCatalogSpecification(
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
            `Destination-defined` or `Source-defined`"""
     )
-    val namespace: String?
+    val namespace: String?,
+    @get:JsonSchemaTitle("PAT")
+    @JsonSchemaInject(json = """{"airbyte_secret": true}""")
+    @get:JsonPropertyDescription(
+        """The Personal Access Token generated through your Dremio server"""
+    )
+    val pat: String?
 ) : CatalogType(catalogType)
 
 /**
@@ -422,8 +435,61 @@ data class DremioCatalogConfiguration(
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
            `Destination-defined` or `Source-defined`"""
     )
-    val namespace: String?
-) : CatalogConfiguration
+    val namespace: String?,
+    @get:JsonSchemaTitle("PAT")
+    @get:JsonPropertyDescription(
+        """The Personal Access Token generated through your Dremio server"""
+    )
+    val pat: String?
+) : CatalogConfiguration {
+
+    /**
+     * Parses the current serverUri, forces the scheme to "https" if the URI scheme is HTTPS,
+     * otherwise uses "http". Returns only "scheme://host".
+     *
+     * @throws URISyntaxException if [serverUri] is invalid or does not contain a host.
+     * @return A cleaned URI of the form "http(s)://host"
+     */
+    private fun cleanBaseUri(): String {
+        val uri = URI(serverUri)  // may throw URISyntaxException if invalid
+
+        val scheme = if (uri.scheme?.equals("https", ignoreCase = true) == true) "https" else "http"
+        val host = uri.host ?: throw URISyntaxException(serverUri, "No host found in URI")
+
+        return "$scheme://$host"
+    }
+
+    object CustomNessieConfigConstants {
+        const val CONF_NESSIE_OAUTH2_SUBJECT_TOKEN = "nessie.authentication.oauth2.token-exchange.subject-token"
+        const val CONF_NESSIE_OAUTH2_SUBJECT_TOKEN_TYPE = "nessie.authentication.oauth2.token-exchange.subject-token-type"
+    }
+
+    fun getCatalogProperties(icebergCatalogConfig: IcebergCatalogConfiguration): Map<String, String> {
+        val baseUri = cleanBaseUri()
+
+        val tokenEndpoint = "$baseUri:9047/oauth/token"
+        val serverUri = "$baseUri:19120/api/v2"
+
+        val catalogProperties = buildMap {
+            put(CatalogUtil.ICEBERG_CATALOG_TYPE, CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE)
+            put(CatalogProperties.URI, serverUri)
+            put(NessieConfigConstants.CONF_NESSIE_REF, icebergCatalogConfig.mainBranchName)
+            put(CatalogProperties.WAREHOUSE_LOCATION, icebergCatalogConfig.warehouseLocation)
+            put(CatalogProperties.FILE_IO_IMPL, ResolvingFileIO::class.java.name)
+
+            // OAuth2 authentication configuration
+            put(NessieConfigConstants.CONF_NESSIE_AUTH_TYPE, "OAUTH2")
+            put(NessieConfigConstants.CONF_NESSIE_OAUTH2_CLIENT_ID, "nessie-cli")
+            put(NessieConfigConstants.CONF_NESSIE_OAUTH2_GRANT_TYPE, "token_exchange")
+            put(CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN, pat!!)
+            put(CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN_TYPE, "urn:ietf:params:oauth:token-type:dremio:personal-access-token")
+            put(NessieConfigConstants.CONF_NESSIE_OAUTH2_TOKEN_ENDPOINT, tokenEndpoint)
+            put(NessieConfigConstants.CONF_NESSIE_OAUTH2_CLIENT_SCOPES, "dremio.all")
+        }
+
+        return catalogProperties
+    }
+}
 
 /**
  * Provides a way to retrieve the unified Iceberg catalog configuration.
