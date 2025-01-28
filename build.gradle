@@ -233,6 +233,18 @@ allprojects {
         enabled = !gradle.taskGraph.hasTask(':check')
     }
 
+    // Configure KSP task dependencies
+    afterEvaluate {
+        tasks.withType(com.google.devtools.ksp.gradle.KspTaskJvm).configureEach { kspTask ->
+            if (project.path.contains('toolkits') || project.path.contains('connectors')) {
+                def coreKspTask = rootProject.project(':airbyte-cdk:bulk:core:bulk-cdk-core-load').tasks.findByName('kspKotlin')
+                if (coreKspTask != null) {
+                    kspTask.dependsOn(coreKspTask)
+                }
+            }
+        }
+    }
+
     javadoc {
         options.addStringOption('Xdoclint:none', '-quiet')
     }
