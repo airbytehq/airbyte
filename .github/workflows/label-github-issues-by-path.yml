@@ -13,5 +13,5 @@ jobs:
       - name: "Label PR based on changed files"
         uses: actions/labeler@v3
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: "${{ github.token }}"
           sync-labels: true
