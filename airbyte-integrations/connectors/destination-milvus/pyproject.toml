@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-milvus"
-version = "0.0.47"
+version = "0.0.48"
 description = "Airbyte destination implementation for Milvus."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -19,7 +19,7 @@ include = "destination_milvus"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 airbyte-cdk = {version = "^6.27.0", extras = ["vector-db-based"]}
-pymilvus = "2.3.0"
+pymilvus = ">=2.5.4,<2.6.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
