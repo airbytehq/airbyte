@@ -17,10 +17,10 @@ on:
         default: "patch"
 
       changelog:
-        description: "The comment to add to the changelog."
+        description: "Optional. The comment to add to the changelog. If not provided, the PR title will be used."
         required: false
-        # TODO: We could infer the changelog string from the PR description!
-        default: "Bumped automatically in the pull request, please see PR description"
+        # If not provided, we'll use the PR title as the changelog
+        default: ""
 
       # These must be declared, but they are unused and ignored.
       # TODO: Infer 'repo' and 'gitref' from PR number on other workflows, so we can remove these.
@@ -52,6 +52,7 @@ jobs:
           PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
           echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
+          echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
       - name: Checkout Airbyte
@@ -78,6 +79,14 @@ jobs:
 
             [1]: ${{ steps.job-vars.outputs.run-url }}
 
+      - name: Log changelog source
+        run: |
+          if [ -n "${{ github.event.inputs.changelog }}" ]; then
+            echo "Using user-provided changelog: ${{ github.event.inputs.changelog }}"
+          else
+            echo "Using PR title as changelog: ${{ steps.job-vars.outputs.pr_title }}"
+          fi
+
       - name: Run airbyte-ci connectors --modified bump-version
         uses: ./.github/actions/run-airbyte-ci
         continue-on-error: true
@@ -89,7 +98,7 @@ jobs:
           subcommand: |
             connectors --modified bump-version \
               ${{ github.event.inputs.type }} \
-              "${{ github.event.inputs.changelog }}" \
+              "${{ github.event.inputs.changelog != '' && github.event.inputs.changelog || steps.job-vars.outputs.pr_title }}" \
               --pr-number ${{ github.event.inputs.pr }}
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.

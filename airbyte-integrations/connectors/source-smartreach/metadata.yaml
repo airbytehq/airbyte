@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-smartreach
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 896dc0b3-9b46-4ff4-8ba6-cfd7460a3895
-  dockerImageTag: 0.0.8
+  dockerImageTag: 0.0.9
   dockerRepository: airbyte/source-smartreach
   githubIssueLabel: source-smartreach
   icon: icon.svg
