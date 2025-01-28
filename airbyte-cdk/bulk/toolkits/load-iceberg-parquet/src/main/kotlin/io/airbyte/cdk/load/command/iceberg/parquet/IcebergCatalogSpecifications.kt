@@ -315,13 +315,13 @@ class DremioCatalogSpecification(
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
            `Destination-defined` or `Source-defined`"""
     )
-    val namespace: String?,
+    val namespace: String,
     @get:JsonSchemaTitle("PAT")
     @JsonSchemaInject(json = """{"airbyte_secret": true}""")
     @get:JsonPropertyDescription(
         """The Personal Access Token generated through your Dremio server"""
     )
-    val pat: String?
+    val pat: String
 ) : CatalogType(catalogType)
 
 /**
@@ -435,12 +435,12 @@ data class DremioCatalogConfiguration(
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
            `Destination-defined` or `Source-defined`"""
     )
-    val namespace: String?,
+    val namespace: String,
     @get:JsonSchemaTitle("PAT")
     @get:JsonPropertyDescription(
         """The Personal Access Token generated through your Dremio server"""
     )
-    val pat: String?
+    val pat: String
 ) : CatalogConfiguration {
 
     /**
@@ -481,7 +481,7 @@ data class DremioCatalogConfiguration(
             put(NessieConfigConstants.CONF_NESSIE_AUTH_TYPE, "OAUTH2")
             put(NessieConfigConstants.CONF_NESSIE_OAUTH2_CLIENT_ID, "nessie-cli")
             put(NessieConfigConstants.CONF_NESSIE_OAUTH2_GRANT_TYPE, "token_exchange")
-            put(CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN, pat!!)
+            put(CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN, pat)
             put(CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN_TYPE, "urn:ietf:params:oauth:token-type:dremio:personal-access-token")
             put(NessieConfigConstants.CONF_NESSIE_OAUTH2_TOKEN_ENDPOINT, tokenEndpoint)
             put(NessieConfigConstants.CONF_NESSIE_OAUTH2_CLIENT_SCOPES, "dremio.all")

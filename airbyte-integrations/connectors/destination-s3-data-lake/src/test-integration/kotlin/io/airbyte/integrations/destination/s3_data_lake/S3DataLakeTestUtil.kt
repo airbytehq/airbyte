@@ -37,7 +37,7 @@ object S3DataLakeTestUtil {
 
     fun getAwsAssumeRoleCredentialsAsMap(): Map<String, String> {
         val parsedAssumeRoleCreds =
-            Jsons.readTree(Files.readString(GLUE_AWS_ASSUME_ROLE_CONFIG_PATH)) as ObjectNode
+            Jsons.readTree(Files.readString(AWS_SECRET_CONFIG_PATH)) as ObjectNode
         return parsedAssumeRoleCreds.properties().associate { it.key to it.value.textValue() }
     }
 
