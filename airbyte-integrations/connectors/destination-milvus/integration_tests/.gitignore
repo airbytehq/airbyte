@@ -1,0 +1,3 @@
+volumes/
+__pycache__/
+*.pyc

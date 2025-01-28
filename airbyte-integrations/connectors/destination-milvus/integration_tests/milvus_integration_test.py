@@ -16,25 +16,45 @@ from airbyte_cdk.models import DestinationSyncMode, Status
 
 
 class MilvusIntegrationTest(BaseIntegrationTest):
-    """
-    Zilliz call to create the collection: /v1/vector/collections/create
-    {
-        "collectionName": "test2",
-        "dimension": 1536,
-        "metricType": "L2",
-        "vectorField": "vector",
-        "primaryField": "pk"
-    }
+    """Integration tests for the Milvus destination connector using a local Milvus instance.
+    
+    The test suite automatically manages a local Milvus container using the standalone_embed.sh script.
+    Tests verify the connector's ability to:
+    - Connect to a local Milvus instance
+    - Validate configurations
+    - Write records in different sync modes
+    - Handle vector operations
     """
 
     def _init_milvus(self):
-        connections.connect(alias="test_driver", uri=self.config["indexing"]["host"], token=self.config["indexing"]["auth"]["token"])
+        """Initialize connection to local Milvus instance."""
+        connections.connect(alias="test_driver", host="127.0.0.1", port=19530)
         if utility.has_collection(self.config["indexing"]["collection"], using="test_driver"):
             utility.drop_collection(self.config["indexing"]["collection"], using="test_driver")
 
     def setUp(self):
-        with open("secrets/config.json", "r") as f:
+        """Set up test resources including local Milvus instance."""
+        import subprocess
+        from pathlib import Path
+
+        # Start local Milvus using the standalone_embed.sh script
+        script_path = Path(__file__).parent / "standalone_embed.sh"
+        subprocess.run(["bash", str(script_path), "start"], check=True)
+
+        # Load config for local Milvus instance
+        config_path = Path(__file__).parent / "secrets/config.json"
+        if not config_path.exists():
+            config_path = Path("secrets/config.json")
+        
+        with open(config_path, "r") as f:
             self.config = json.loads(f.read())
+        
+        # Ensure config points to local instance
+        self.config["indexing"]["host"] = "127.0.0.1"
+        self.config["indexing"]["port"] = 19530
+        if "auth" in self.config["indexing"]:
+            del self.config["indexing"]["auth"]
+        
         self._init_milvus()
 
     def test_check_valid_config(self):
@@ -80,7 +100,18 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         )
         assert outcome.status == Status.FAILED
 
+    def tearDown(self):
+        """Clean up test resources."""
+        import subprocess
+        from pathlib import Path
+
+        # Stop and cleanup Milvus container
+        script_path = Path(__file__).parent / "standalone_embed.sh"
+        subprocess.run(["bash", str(script_path), "stop"], check=True)
+        subprocess.run(["bash", str(script_path), "delete"], check=True)
+
     def test_write(self):
+        """Test writing records in different sync modes."""
         self._init_milvus()
         catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
         first_state_message = self._state({"state": "1"})
@@ -93,7 +124,7 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         collection.flush()
         assert len(collection.query(expr="pk != 0")) == 5
 
-        # incrementalally update a doc
+        # incrementally update a doc
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
         collection.flush()
@@ -108,16 +139,15 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         assert len(result[0]) == 1
         assert result[0][0].entity.get("text") == "str_col: Cats are nice"
 
-        # test langchain integration
+        # test langchain integration with local instance
         embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
         vs = Milvus(
             embedding_function=embeddings,
             collection_name=self.config["indexing"]["collection"],
-            connection_args={"uri": self.config["indexing"]["host"], "token": self.config["indexing"]["auth"]["token"]},
+            connection_args={"host": "127.0.0.1", "port": 19530},
         )
         vs.fields.append("text")
         vs.fields.append("_ab_record_id")
-        # call  vs.fields.append() for all fields you need in the metadata
 
         result = vs.similarity_search("feline animals", 1)
         assert result[0].metadata["_ab_record_id"] == "mystream_2"

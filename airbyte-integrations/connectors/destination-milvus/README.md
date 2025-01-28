@@ -139,11 +139,29 @@ poetry run pytest -s unit_tests
 
 ### Integration Tests
 
-To run integration tests locally, make sure you have a secrets/config.json as explained above, and then run:
+The integration tests require a local Milvus instance. The test suite will automatically manage a Milvus container using the provided `standalone_embed.sh` script in the `integration_tests` directory.
 
-```
+#### Prerequisites for Integration Tests
+- Docker installed and running
+- Default ports available:
+  - 19530 (Milvus)
+  - 2379 (etcd)
+  - 9091 (WebUI)
+
+To run integration tests locally:
+1. Make sure you have a `secrets/config.json` as explained above
+2. Ensure Docker is running
+3. Run the tests:
+```bash
 poetry run pytest -s integration_tests
 ```
+
+The test suite will:
+1. Start a local Milvus instance using standalone_embed.sh
+2. Run the integration tests
+3. Clean up the Milvus container and volumes
+
+Note: The integration tests use a local configuration file that points to the local Milvus instance.
 
 ### Customizing acceptance Tests
 
