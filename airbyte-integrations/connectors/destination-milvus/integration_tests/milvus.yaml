@@ -1,0 +1,72 @@
+common:
+  etcd:
+    endpoints:
+      - localhost:2379
+  storage:
+    path: /var/lib/milvus
+  log:
+    level: debug
+
+server:
+  port: 19530
+
+etcd:
+  endpoints:
+    - localhost:2379
+  rootPath: by-dev
+  metaSubPath: meta
+  kvSubPath: kv
+
+minio:
+  address: localhost:9000
+  accessKeyID: minioadmin
+  secretAccessKey: minioadmin
+  useSSL: false
+  bucketName: a-bucket
+
+pulsar:
+  address: pulsar://localhost:6650
+  maxMessageSize: 5242880
+
+rocksmq:
+  path: /var/lib/milvus/rdb_data
+
+rootCoord:
+  address: localhost:53100
+  port: 53100
+
+proxy:
+  port: 19530
+
+queryCoord:
+  address: localhost:19531
+  port: 19531
+
+queryNode:
+  port: 21123
+
+indexCoord:
+  address: localhost:31000
+  port: 31000
+
+indexNode:
+  port: 21121
+
+dataCoord:
+  address: localhost:13333
+  port: 13333
+
+dataNode:
+  port: 21124
+
+msgChannel:
+  name: rocksmq
+
+quotaAndLimits:
+  ddl:
+    collectionRate:
+      limit: 1
+      timeWindow: 1
+    partitionRate:
+      limit: 1
+      timeWindow: 1

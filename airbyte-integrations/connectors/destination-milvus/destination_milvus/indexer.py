@@ -37,15 +37,34 @@ class MilvusIndexer(Indexer):
         )
 
     def _connect_with_timeout(self):
-        # Run connect in a separate process as it will hang if the token is invalid.
-        proc = Process(target=self._connect)
-        proc.start()
-        proc.join(5)
-        if proc.is_alive():
-            # If the process is still alive after 5 seconds, terminate it and raise an exception
-            proc.terminate()
-            proc.join()
-            raise Exception("Connection timed out, check your host and credentials")
+        """Connect to Milvus with a timeout to prevent hanging."""
+        import signal
+        from contextlib import contextmanager
+
+        @contextmanager
+        def timeout_handler(seconds):
+            def signal_handler(signum, frame):
+                raise TimeoutError("Connection attempt timed out")
+            
+            # Set up the timeout
+            signal.signal(signal.SIGALRM, signal_handler)
+            signal.alarm(seconds)
+            try:
+                yield
+            finally:
+                # Disable the alarm
+                signal.alarm(0)
+
+        try:
+            with timeout_handler(5):
+                self._connect()
+        except Exception as e:
+            # Clean up any existing connections
+            try:
+                connections.disconnect_all()
+            except Exception:
+                pass
+            raise Exception(f"Connection failed: {str(e)}")
 
     def _create_index(self, collection: Collection):
         """
@@ -58,20 +77,29 @@ class MilvusIndexer(Indexer):
         )
 
     def _create_client(self):
-        self._connect_with_timeout()
-        # If the process exited within 5 seconds, it's safe to connect on the main process to execute the command
-        self._connect()
+        """Create a client connection and initialize collection."""
+        try:
+            # First attempt connection with timeout
+            self._connect_with_timeout()
 
-        if not utility.has_collection(self.config.collection):
-            pk = FieldSchema(name="pk", dtype=DataType.INT64, is_primary=True, auto_id=True)
-            vector = FieldSchema(name=self.config.vector_field, dtype=DataType.FLOAT_VECTOR, dim=self.embedder_dimensions)
-            schema = CollectionSchema(fields=[pk, vector], enable_dynamic_field=True)
-            collection = Collection(name=self.config.collection, schema=schema)
-            self._create_index(collection)
+            # Check if collection exists
+            if not utility.has_collection(self.config.collection):
+                pk = FieldSchema(name="pk", dtype=DataType.INT64, is_primary=True, auto_id=True)
+                vector = FieldSchema(name=self.config.vector_field, dtype=DataType.FLOAT_VECTOR, dim=self.embedder_dimensions)
+                schema = CollectionSchema(fields=[pk, vector], enable_dynamic_field=True)
+                collection = Collection(name=self.config.collection, schema=schema)
+                self._create_index(collection)
 
-        self._collection = Collection(self.config.collection)
-        self._collection.load()
-        self._primary_key = self._collection.primary_field.name
+            self._collection = Collection(self.config.collection)
+            self._collection.load()
+            self._primary_key = self._collection.primary_field.name
+        except Exception as e:
+            # Clean up on any error
+            try:
+                connections.disconnect_all()
+            except Exception:
+                pass
+            raise Exception(f"Failed to create client: {str(e)}")
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")

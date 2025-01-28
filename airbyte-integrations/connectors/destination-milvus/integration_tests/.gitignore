@@ -1,3 +1,6 @@
 volumes/
 __pycache__/
 *.pyc
+.coverage
+coverage.xml
+coverage_html/
