@@ -27,7 +27,7 @@ import kotlinx.coroutines.withContext
 import org.apache.kafka.connect.source.SourceRecord
 
 /** [PartitionReader] implementation for CDC with Debezium. */
-class CdcPartitionReader<T : Comparable<T>>(
+open class CdcPartitionReader<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
     val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,

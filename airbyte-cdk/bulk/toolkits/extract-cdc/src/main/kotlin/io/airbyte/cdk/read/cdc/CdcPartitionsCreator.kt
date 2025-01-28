@@ -15,7 +15,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
 
 /** [PartitionsCreator] implementation for CDC with Debezium. */
-class CdcPartitionsCreator<T : Comparable<T>>(
+open class CdcPartitionsCreator<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
     val feedBootstrap: GlobalFeedBootstrap,
     val creatorOps: CdcPartitionsCreatorDebeziumOperations<T>,
@@ -39,6 +39,15 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     override fun releaseResources() {
         acquiredThread.getAndSet(null)?.close()
     }
+
+    open fun createCdcPartitionReader(upperBound: T, input: DebeziumInput) =
+        CdcPartitionReader(
+            concurrencyResource,
+            feedBootstrap.streamRecordConsumers(),
+            readerOps,
+            upperBound,
+            input
+        )
 
     override suspend fun run(): List<PartitionReader> {
         if (CDCNeedsRestart) {
@@ -78,14 +87,8 @@ class CdcPartitionsCreator<T : Comparable<T>>(
             }
 
         // Build and return PartitionReader instance, if applicable.
-        val partitionReader =
-            CdcPartitionReader(
-                concurrencyResource,
-                feedBootstrap.streamRecordConsumers(),
-                readerOps,
-                upperBound,
-                input
-            )
+        val partitionReader = createCdcPartitionReader(upperBound, input)
+
         val lowerBound: T = creatorOps.position(input.state.offset)
         val lowerBoundInPreviousRound: T? = lowerBoundReference.getAndSet(lowerBound)
         if (input.isSynthetic) {

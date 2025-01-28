@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 @Singleton
 @Order(10)
+open
 /** [PartitionsCreatorFactory] implementation for CDC with Debezium. */
 class CdcPartitionsCreatorFactory<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
@@ -26,13 +27,13 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
      * This value is updated by the [CdcPartitionsCreator] based on the incumbent state and is used
      * to detect stalls.
      */
-    private val lowerBoundReference = AtomicReference<T>()
+    protected val lowerBoundReference = AtomicReference<T>()
 
     /**
      * [AtomicReference] to a WAL position upper bound value shared by all [CdcPartitionsCreator]s.
      * This value is set exactly once by the first [CdcPartitionsCreator].
      */
-    private val upperBoundReference = AtomicReference<T>()
+    protected val upperBoundReference = AtomicReference<T>()
 
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
         if (feedBootstrap !is GlobalFeedBootstrap) {
