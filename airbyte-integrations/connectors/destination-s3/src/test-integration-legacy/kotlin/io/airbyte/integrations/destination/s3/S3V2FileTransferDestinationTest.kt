@@ -85,7 +85,11 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
             fileTransferMountSource!!
                 .resolve(filePath)
                 .createFile()
-                .writeText(RandomStringUtils.insecure().nextAlphanumeric(fileSize))
+
+        absoluteFilePath.grantAllPermissions()
+
+        absoluteFilePath.writeText(RandomStringUtils.insecure().nextAlphanumeric(fileSize))
+
         return Path.of(filePath)
     }
 
@@ -175,10 +179,10 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         LOGGER.info {
             "${EnvVariableFeatureFlags.DEFAULT_AIRBYTE_STAGING_DIRECTORY} is mounted from $fileTransferMountSource"
         }
+        fileTransferMountSource!!.grantAllPermissions()
         val streamName = "str" + RandomStringUtils.insecure().nextAlphanumeric(5)
         val filePath = createFakeFile()
         val fullPath = fileTransferMountSource!!.resolve(filePath)
-        fullPath.grantAllPermissions()
         val file = fullPath.toFile()
         val fileLength = file.length()
         val fileContent = file.readBytes()
