@@ -41,16 +41,23 @@ jobs:
               - 'airbyte-cdk/java/**/*'
               - 'airbyte-cdk/bulk/**/*'
 
-  run-check:
+  gradle-matrix:
     needs:
       - changes
     if: needs.changes.outputs.java == 'true'
-    # As of now, 16 cores seems to be enough.
-    # Any revision upwards should be based on a performance analysis of gradle scans.
-    # See https://github.com/airbytehq/airbyte/pull/36055 for an example of this,
-    # which explains why which we went down from 64 cores to 16.
     runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
-    name: Gradle Check
+    strategy:
+      matrix:
+        gradle-task: 
+          - name: compile
+            command: compileJava compileKotlin compileTestJava compileTestKotlin
+          - name: spotbugs
+            command: spotbugsMain spotbugsTest
+          - name: unit-tests
+            command: test -x spotbugsMain -x spotbugsTest -x compileJava -x compileKotlin -x compileTestJava -x compileTestKotlin
+          - name: integration-tests
+            command: integrationTest -x test -x spotbugsMain -x spotbugsTest -x compileJava -x compileKotlin -x compileTestJava -x compileTestKotlin
+    name: Gradle ${{ matrix.gradle-task.name }}
     timeout-minutes: 60
     steps:
       - name: Checkout Airbyte
@@ -60,30 +67,27 @@ jobs:
           distribution: "zulu"
           java-version: "21"
       - name: Docker login
-        # We login to benefit from increased rate limits for docker pulls
-        # We can't do it on forks as pull_requests events on forks do not have access to GH secrets
         if: github.event.pull_request.head.repo.fork != true
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      - name: Run Gradle Check
+      - name: Run ${{ matrix.gradle-task.name }}
         uses: burrunan/gradle-cache-action@v1
         env:
           CI: true
         with:
-          job-id: gradle-check
+          job-id: gradle-${{ matrix.gradle-task.name }}
           read-only: ${{ github.ref != 'refs/heads/master' }}
           gradle-distribution-sha-256-sum-warning: false
           concurrent: true
-          # TODO: be able to remove the skipSlowTests property
-          arguments: --scan check -DskipSlowTests=true
+          arguments: --scan ${{ matrix.gradle-task.command }} -DskipSlowTests=true
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
     runs-on: ubuntu-24.04
     needs:
-      - run-check
+      - gradle-matrix
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Call Instatus Webhook
@@ -96,7 +100,7 @@ jobs:
     name: Create Instatus Incident on Success
     runs-on: ubuntu-24.04
     needs:
-      - run-check
+      - gradle-matrix
     if: ${{ success() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Call Instatus Webhook
@@ -109,7 +113,7 @@ jobs:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-24.04
     needs:
-      - run-check
+      - gradle-matrix
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
@@ -138,7 +142,7 @@ jobs:
     name: "Notify Slack Channel on Build Fixes"
     runs-on: ubuntu-24.04
     needs:
-      - run-check
+      - gradle-matrix
     if: ${{ success() && github.event.pull_request.head.repo.fork != true }}
     steps:
       - name: Get Previous Workflow Status

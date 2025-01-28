@@ -162,9 +162,8 @@ allprojects {
         systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'concurrent'
         // Within a class, the test methods are still run serially on the same thread.
         systemProperty 'junit.jupiter.execution.parallel.mode.default', 'same_thread'
-        // Effectively disable JUnit concurrency by running tests in only one thread by default.
-        systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'fixed'
-        systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', 1
+        // Use dynamic parallelism for matrix jobs
+        systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
         // Order test classes by annotation.
         systemProperty 'junit.jupiter.testclass.order.default', 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation'
         systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
@@ -230,6 +229,8 @@ allprojects {
             xml.required = false
             html.required = true
         }
+        // Don't run spotbugs as part of check, it will be run separately in matrix
+        enabled = !gradle.taskGraph.hasTask(':check')
     }
 
     javadoc {
