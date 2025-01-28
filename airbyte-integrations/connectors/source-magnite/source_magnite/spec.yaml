@@ -1,0 +1,29 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Magnite Spec
+  type: object
+  required:
+    - access_key
+    - secret_key
+    - fromDate
+  properties:
+    access_key:
+      type: string
+      description: "Access key for Magnite API"
+      order: 0
+    secret_key:
+      type: string
+      description: "Secret key for Magnite API"
+      order: 1
+      airbyte_secret: true
+    fromDate:
+      type: string
+      format: date
+      title: "From Date (YYYY-MM-DD)"
+      description: "Start date for data extraction"
+    toDate:
+      type: string
+      format: date
+      title: "To Date (YYYY-MM-DD)"
+      description: "End date for data extraction"
