@@ -5,9 +5,25 @@
 import json
 import logging
 import os
+import shutil
+import sys
+import tempfile
+import time
 
+from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
+from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
+from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_milvus.destination import DestinationMilvus
 from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import Milvus
+from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
+
+# Configure logging
+logger = logging.getLogger("airbyte")
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(handler)
 from langchain.vectorstores import Milvus
 from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
 
@@ -29,51 +45,72 @@ class MilvusIntegrationTest(BaseIntegrationTest):
     """
 
     def _init_milvus(self):
-        """Initialize Milvus Lite connection and clean up any existing test collections."""
-        import tempfile
-        import os
+        """Initialize Milvus Lite connection."""
+        # Create the directory if it doesn't exist
+        os.makedirs(self.temp_dir, exist_ok=True)
         
-        # Create a temporary directory for Milvus Lite database
-        self.temp_dir = tempfile.mkdtemp(prefix="milvus_lite_")
-        db_path = os.path.join(self.temp_dir, "milvus.db")
+        # Clean up existing connections - handle both string and tuple aliases
+        for conn in connections.list_connections():
+            alias = conn[0] if isinstance(conn, tuple) else conn
+            try:
+                if connections.has_connection(alias):
+                    connections.disconnect(alias)
+            except Exception as e:
+                logger.warning(f"Failed to disconnect {alias}: {str(e)}")
         
-        # Connect using Milvus Lite
-        connections.connect(
-            alias="test_driver",
-            uri=f"sqlite:{db_path}",
-            use_lite=True
-        )
-        
-        # Clean up any existing test collections
-        if utility.has_collection(self.config["indexing"]["collection"], using="test_driver"):
-            utility.drop_collection(self.config["indexing"]["collection"], using="test_driver")
+        # Connect using Milvus Lite with a unique test alias
+        try:
+            connections.connect(
+                alias="default",  # Use same alias as indexer
+                uri=self.db_path,
+                use_lite=True,
+                timeout=30
+            )
+            logger.info(f"Successfully connected to Milvus Lite at {self.db_path}")
+        except Exception as e:
+            logger.error(f"Failed to connect to Milvus Lite: {str(e)}")
+            raise
 
     def setUp(self):
         """Set up test environment with Milvus Lite and test configuration."""
-        # Try to load from secrets first, fall back to template if not available
-        config_path = "secrets/config.json" if os.path.exists("secrets/config.json") else "config_template.json"
+        # Load configuration first
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        secrets_path = os.path.join(current_dir, "secrets", "config.json")
+        template_path = os.path.join(current_dir, "config_template.json")
+        
+        config_path = secrets_path if os.path.exists(secrets_path) else template_path
         with open(config_path, "r") as f:
             self.config = json.loads(f.read())
+            
+        # Create temporary directory for Milvus Lite
+        self.temp_dir = tempfile.mkdtemp(prefix="milvus_lite_")
+        self.db_path = os.path.join(self.temp_dir, "milvus.db")
         
         # Override host configuration to use Milvus Lite
-        self.config["indexing"]["host"] = f"sqlite://{self.db_path}"
+        self.config["indexing"]["host"] = self.db_path
         self.config["indexing"]["auth"] = {"mode": "no_auth"}
         
+        # Initialize Milvus Lite connection
         self._init_milvus()
-        
+
     def tearDown(self):
         """Clean up Milvus Lite resources."""
         import shutil
         
         try:
+            # Clean up any existing test collections
+            if hasattr(self, 'config') and utility.has_collection(self.config["indexing"]["collection"], using="default"):
+                utility.drop_collection(self.config["indexing"]["collection"], using="default")
+                
             # Disconnect from Milvus Lite
-            connections.disconnect("test_driver")
+            if connections.has_connection("default"):
+                connections.disconnect("default")
             
             # Remove temporary directory
             if hasattr(self, 'temp_dir'):
                 shutil.rmtree(self.temp_dir, ignore_errors=True)
         except Exception as e:
-            logging.warning(f"Error during teardown: {str(e)}")
+            logger.warning(f"Error during teardown: {str(e)}")
             # Continue with cleanup even if there are errors
 
     def test_check_valid_config(self):
@@ -85,7 +122,7 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         pk = FieldSchema(name="pk", dtype=DataType.INT64, is_primary=True, auto_id=True)
         vector = FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=vector_dimensions)
         schema = CollectionSchema(fields=[pk, vector], enable_dynamic_field=True)
-        collection = Collection(name=self.config["indexing"]["collection"], schema=schema, using="test_driver")
+        collection = Collection(name=self.config["indexing"]["collection"], schema=schema, using="default")
         # Note: Milvus Lite only supports FLAT index type
         collection.create_index(
             field_name="vector",
@@ -131,7 +168,7 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         # initial sync
         destination = DestinationMilvus()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
-        collection = Collection(self.config["indexing"]["collection"], using="test_driver")
+        collection = Collection(self.config["indexing"]["collection"], using="default")
         collection.flush()
         assert len(collection.query(expr="pk != 0")) == 5
 

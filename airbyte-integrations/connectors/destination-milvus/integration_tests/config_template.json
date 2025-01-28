@@ -9,7 +9,7 @@
     "dimensions": 1536
   },
   "indexing": {
-    "host": "sqlite://milvus_test.db",
+    "host": "milvus_test.db",
     "collection": "airbyte_test_collection",
     "vector_field": "vector",
     "text_field": "text",
