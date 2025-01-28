@@ -93,24 +93,6 @@ class S3V2WriteTestJsonRootLevelFlattening :
         allTypesBehavior = Untyped,
     )
 
-@Disabled("Un-disable once staging is re-enabled")
-class S3V2WriteTestJsonStaging :
-    S3V2WriteTest(
-        S3V2TestUtils.JSON_STAGING_CONFIG_PATH,
-        UncoercedExpectedRecordMapper,
-        stringifySchemalessObjects = false,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
-        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = true,
-        allTypesBehavior = Untyped,
-        commitDataIncrementally = false
-    ) {
-    @Test
-    @Disabled("Staging mode is not supported for file transfers")
-    override fun testBasicWriteFile() {}
-}
-
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(
         S3V2TestUtils.JSON_GZIP_CONFIG_PATH,
