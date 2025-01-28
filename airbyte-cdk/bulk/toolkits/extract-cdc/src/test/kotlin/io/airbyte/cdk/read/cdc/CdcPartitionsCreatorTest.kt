@@ -90,7 +90,13 @@ class CdcPartitionsCreatorTest {
         every { globalFeedBootstrap.currentState(stream) } returns null
         val syntheticOffset = DebeziumOffset(mapOf(Jsons.nullNode() to Jsons.nullNode()))
         every { creatorOps.position(syntheticOffset) } returns 123L
-        every { creatorOps.generateColdStartOffset() } returns syntheticOffset
+        val syntheticInput =
+            DebeziumInput(
+                properties = emptyMap(),
+                state = DebeziumState(offset = syntheticOffset, schemaHistory = null),
+                isSynthetic = true,
+            )
+        every { creatorOps.synthesize() } returns syntheticInput
         upperBoundReference.set(null)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(1, readers.size)
