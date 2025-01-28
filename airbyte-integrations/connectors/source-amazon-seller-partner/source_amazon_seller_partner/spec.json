@@ -1,6 +1,8 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-seller-partner",
   "changelogUrl": "https://docs.airbyte.com/integrations/sources/amazon-seller-partner",
+  "supportsNormalization": false,
+  "supportsDBT": false,
   "connectionSpecification": {
     "title": "Amazon Seller Partner Spec",
     "type": "object",

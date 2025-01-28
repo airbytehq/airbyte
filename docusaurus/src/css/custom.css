@@ -30,6 +30,7 @@
   --ifm-table-head-background: var(--ifm-color-primary);
   --ifm-table-head-color: var(--color-white);
   --ifm-table-border-color: var(--ifm-color-primary-lightest);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.2);
 
   --color-white: hsl(0, 0%, 100%);
   --color-grey-40: hsl(240, 25%, 98%);
@@ -58,6 +59,7 @@ html[data-theme="dark"] {
   --ifm-color-primary-lightest: #c8c7ff;
   --color-active-nav-item-background: #272729;
   --color-active-nav-item-text: var(--ifm-color-primary-lighter);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.8);
 
   --ifm-table-background: transparent;
   --ifm-table-stripe-background: transparent;
@@ -78,17 +80,6 @@ html[data-theme="dark"] {
 
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
   --icon-background: hsl(0, 0%, 100%);
-}
-
-.docusaurus-highlight-code-line {
-  background-color: rgba(0, 0, 0, 0.1);
-  display: block;
-  margin: 0 calc(-1 * var(--ifm-pre-padding));
-  padding: 0 var(--ifm-pre-padding);
-}
-
-html[data-theme="dark"] .docusaurus-highlight-code-line {
-  background-color: rgba(0, 0, 0, 0.3);
 }
 
 .admonition-icon,
@@ -270,7 +261,9 @@ table tr:last-child td:last-child {
   border-bottom-right-radius: 10px;
 }
 
-
+table th code {
+  color: var(--ifm-color-content);
+}
 
 table td code {
   background-color: var(--color-blue-30);

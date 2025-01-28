@@ -8,6 +8,7 @@ from typing import List, Set, Tuple
 
 import asyncclick as click
 from connector_ops.utils import Connector, ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
+
 from pipelines import main_logger
 from pipelines.cli.airbyte_ci import wrap_in_secret
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
@@ -147,7 +148,7 @@ def validate_environment(is_local: bool) -> None:
         "migrate-to-base-image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
         "migrate-to-manifest-only": "pipelines.airbyte_ci.connectors.migrate_to_manifest_only.commands.migrate_to_manifest_only",
         "migrate-to-poetry": "pipelines.airbyte_ci.connectors.migrate_to_poetry.commands.migrate_to_poetry",
-        "migrate-to-inline_schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
+        "migrate-to-inline-schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
         "migrate-to-logging-logger": "pipelines.airbyte_ci.connectors.migrate_to_logging_logger.commands.migrate_to_logging_logger",
         "generate-erd": "pipelines.airbyte_ci.connectors.generate_erd.commands.generate_erd",
         "upgrade-cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",

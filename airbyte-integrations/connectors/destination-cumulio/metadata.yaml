@@ -1,7 +1,7 @@
 data:
   connectorType: destination
   definitionId: e088acb6-9780-4568-880c-54c2dd7f431b
-  dockerImageTag: 0.1.25
+  dockerImageTag: 0.1.30
   dockerRepository: airbyte/destination-cumulio
   githubIssueLabel: destination-cumulio
   connectorSubtype: api

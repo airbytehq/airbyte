@@ -26,7 +26,7 @@ class AirbyteTypeToIcebergSchemaTest {
                     "name" to FieldType(StringType, true),
                 ),
             )
-        val result = converter.convert(objectType) as Types.StructType
+        val result = converter.convert(objectType, stringifyObjects = false) as Types.StructType
 
         assertEquals(2, result.fields().size)
         val idField = result.field("id")
@@ -42,9 +42,23 @@ class AirbyteTypeToIcebergSchemaTest {
     }
 
     @Test
+    fun `convert handles stringifying ObjectType`() {
+        val objectType =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, false),
+                    "name" to FieldType(StringType, true),
+                ),
+            )
+        val result = converter.convert(objectType, stringifyObjects = true)
+
+        assertEquals(Types.StringType.get(), result)
+    }
+
+    @Test
     fun `convert handles ArrayType`() {
         val arrayType = ArrayType(FieldType(IntegerType, false))
-        val result = converter.convert(arrayType) as Types.ListType
+        val result = converter.convert(arrayType, stringifyObjects = false) as Types.ListType
 
         assertEquals(Types.LongType.get(), result.elementType())
         assertFalse(result.isElementOptional)
@@ -53,7 +67,7 @@ class AirbyteTypeToIcebergSchemaTest {
     @Test
     fun `convert handles ArrayType with nullable items`() {
         val arrayType = ArrayType(FieldType(StringType, true))
-        val result = converter.convert(arrayType) as Types.ListType
+        val result = converter.convert(arrayType, stringifyObjects = false) as Types.ListType
 
         assertEquals(Types.StringType.get(), result.elementType())
         assertTrue(result.isElementOptional)
@@ -61,71 +75,95 @@ class AirbyteTypeToIcebergSchemaTest {
 
     @Test
     fun `convert throws exception for ArrayTypeWithoutSchema`() {
-        assertThrows<IllegalArgumentException> { converter.convert(ArrayTypeWithoutSchema) }
+        assertThrows<IllegalArgumentException> {
+            converter.convert(ArrayTypeWithoutSchema, stringifyObjects = false)
+        }
     }
 
     @Test
     fun `convert handles BooleanType`() {
-        assertEquals(Types.BooleanType.get(), converter.convert(BooleanType))
+        assertEquals(
+            Types.BooleanType.get(),
+            converter.convert(BooleanType, stringifyObjects = false)
+        )
     }
 
     @Test
     fun `convert handles DateType`() {
-        assertEquals(Types.DateType.get(), converter.convert(DateType))
+        assertEquals(Types.DateType.get(), converter.convert(DateType, stringifyObjects = false))
     }
 
     @Test
     fun `convert handles IntegerType`() {
-        assertEquals(Types.LongType.get(), converter.convert(IntegerType))
+        assertEquals(Types.LongType.get(), converter.convert(IntegerType, stringifyObjects = false))
     }
 
     @Test
     fun `convert handles NumberType`() {
-        assertEquals(Types.DoubleType.get(), converter.convert(NumberType))
+        assertEquals(
+            Types.DoubleType.get(),
+            converter.convert(NumberType, stringifyObjects = false)
+        )
     }
 
     @Test
     fun `convert throws exception for ObjectTypeWithEmptySchema`() {
-        assertThrows<IllegalArgumentException> { converter.convert(ObjectTypeWithEmptySchema) }
+        assertThrows<IllegalArgumentException> {
+            converter.convert(ObjectTypeWithEmptySchema, stringifyObjects = false)
+        }
     }
 
     @Test
     fun `convert throws exception for ObjectTypeWithoutSchema`() {
-        assertThrows<IllegalArgumentException> { converter.convert(ObjectTypeWithoutSchema) }
+        assertThrows<IllegalArgumentException> {
+            converter.convert(ObjectTypeWithoutSchema, stringifyObjects = false)
+        }
     }
 
     @Test
     fun `convert handles StringType`() {
-        assertEquals(Types.StringType.get(), converter.convert(StringType))
+        assertEquals(
+            Types.StringType.get(),
+            converter.convert(StringType, stringifyObjects = false)
+        )
     }
 
     @Test
     fun `convert handles TimeTypeWithTimezone`() {
-        assertEquals(Types.TimeType.get(), converter.convert(TimeTypeWithTimezone))
+        assertEquals(
+            Types.TimeType.get(),
+            converter.convert(TimeTypeWithTimezone, stringifyObjects = false)
+        )
     }
 
     @Test
     fun `convert handles TimeTypeWithoutTimezone`() {
-        assertEquals(Types.TimeType.get(), converter.convert(TimeTypeWithoutTimezone))
+        assertEquals(
+            Types.TimeType.get(),
+            converter.convert(TimeTypeWithoutTimezone, stringifyObjects = false)
+        )
     }
 
     @Test
     fun `convert handles TimestampTypeWithTimezone`() {
-        assertEquals(Types.TimestampType.withZone(), converter.convert(TimestampTypeWithTimezone))
+        assertEquals(
+            Types.TimestampType.withZone(),
+            converter.convert(TimestampTypeWithTimezone, stringifyObjects = false)
+        )
     }
 
     @Test
     fun `convert handles TimestampTypeWithoutTimezone`() {
         assertEquals(
             Types.TimestampType.withoutZone(),
-            converter.convert(TimestampTypeWithoutTimezone)
+            converter.convert(TimestampTypeWithoutTimezone, stringifyObjects = false)
         )
     }
 
     @Test
     fun `convert handles UnionType with single option`() {
         val unionType = UnionType(setOf(IntegerType))
-        val result = converter.convert(unionType) as Types.ListType
+        val result = converter.convert(unionType, stringifyObjects = false) as Types.ListType
 
         assertEquals(Types.LongType.get(), result.elementType())
         assertTrue(result.isElementOptional)
@@ -134,7 +172,7 @@ class AirbyteTypeToIcebergSchemaTest {
     @Test
     fun `convert handles UnionType with multiple options`() {
         val unionType = UnionType(setOf(StringType, IntegerType))
-        val result = converter.convert(unionType) as Types.ListType
+        val result = converter.convert(unionType, stringifyObjects = false) as Types.ListType
 
         assertEquals(Types.StringType.get(), result.elementType())
         assertTrue(result.isElementOptional)
@@ -142,7 +180,10 @@ class AirbyteTypeToIcebergSchemaTest {
 
     @Test
     fun `convert handles UnknownType`() {
-        assertEquals(Types.StringType.get(), converter.convert(UnknownType(Jsons.emptyObject())))
+        assertEquals(
+            Types.StringType.get(),
+            converter.convert(UnknownType(Jsons.emptyObject()), stringifyObjects = false)
+        )
     }
 
     @Test

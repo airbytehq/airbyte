@@ -21,7 +21,7 @@ on:
 
 jobs:
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       java: ${{ steps.changes.outputs.java }}
 
@@ -49,9 +49,9 @@ jobs:
     # Any revision upwards should be based on a performance analysis of gradle scans.
     # See https://github.com/airbytehq/airbyte/pull/36055 for an example of this,
     # which explains why which we went down from 64 cores to 16.
-    runs-on: connector-test-large
+    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
     name: Gradle Check
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -81,7 +81,7 @@ jobs:
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - run-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
@@ -94,7 +94,7 @@ jobs:
 
   set-instatus-incident-on-success:
     name: Create Instatus Incident on Success
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - run-check
     if: ${{ success() && github.ref == 'refs/heads/master' }}
@@ -107,7 +107,7 @@ jobs:
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - run-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
@@ -136,7 +136,7 @@ jobs:
 
   notify-failure-slack-channel-fixed-broken-build:
     name: "Notify Slack Channel on Build Fixes"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - run-check
     if: ${{ success() && github.event.pull_request.head.repo.fork != true }}

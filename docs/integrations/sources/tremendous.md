@@ -29,6 +29,14 @@ Tremendous connector  enables seamless integration with Tremendous API. This con
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2025-01-25 | [52446](https://github.com/airbytehq/airbyte/pull/52446) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51945](https://github.com/airbytehq/airbyte/pull/51945) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51406](https://github.com/airbytehq/airbyte/pull/51406) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50768](https://github.com/airbytehq/airbyte/pull/50768) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50363](https://github.com/airbytehq/airbyte/pull/50363) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49750](https://github.com/airbytehq/airbyte/pull/49750) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [49375](https://github.com/airbytehq/airbyte/pull/49375) | Update dependencies |
+| 0.0.2 | 2024-12-11 | [49128](https://github.com/airbytehq/airbyte/pull/49128) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-10-29 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>

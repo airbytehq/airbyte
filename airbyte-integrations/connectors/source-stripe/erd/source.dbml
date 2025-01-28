@@ -68,7 +68,6 @@ Table "customer_balance_transactions" {
     "livemode" boolean
     "metadata" object
     "type" string
-    "updated" integer
 }
 
 Table "events" {
@@ -237,6 +236,30 @@ Table "balance_transactions" {
     "created" integer
     "amount" integer
     "reporting_category" string
+}
+
+Table "payout_balance_transactions" {
+    "payout" string
+    "fee" integer
+    "currency" string
+    "source" string
+    "fee_details" array
+    "available_on" integer
+    "status" string
+    "description" string
+    "net" integer
+    "exchange_rate" number
+    "type" string
+    "id" string
+    "object" string
+    "created" integer
+    "updated" integer
+    "amount" integer
+    "reporting_category" string
+
+    indexes {
+        (payout, id) [pk]
+    }
 }
 
 Table "files" {

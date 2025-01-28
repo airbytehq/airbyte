@@ -50,6 +50,13 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.9 | 2025-01-25 | [52369](https://github.com/airbytehq/airbyte/pull/52369) | Update dependencies |
+| 0.3.8 | 2025-01-18 | [51658](https://github.com/airbytehq/airbyte/pull/51658) | Update dependencies |
+| 0.3.7 | 2025-01-11 | [51101](https://github.com/airbytehq/airbyte/pull/51101) | Update dependencies |
+| 0.3.6 | 2024-12-28 | [50543](https://github.com/airbytehq/airbyte/pull/50543) | Update dependencies |
+| 0.3.5 | 2024-12-21 | [50052](https://github.com/airbytehq/airbyte/pull/50052) | Update dependencies |
+| 0.3.4 | 2024-12-14 | [49471](https://github.com/airbytehq/airbyte/pull/49471) | Update dependencies |
+| 0.3.3 | 2024-12-12 | [47782](https://github.com/airbytehq/airbyte/pull/47782) | Update dependencies |
 | 0.3.2 | 2024-10-28 | [47519](https://github.com/airbytehq/airbyte/pull/47519) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44146](https://github.com/airbytehq/airbyte/pull/44146) | Refactor connector to manifest-only format |

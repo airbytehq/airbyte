@@ -45,6 +45,14 @@ Make sure to have the add-ons installed in your account for using the `nps-respo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.11 | 2025-01-25 | [52415](https://github.com/airbytehq/airbyte/pull/52415) | Update dependencies |
+| 0.0.10 | 2025-01-18 | [52023](https://github.com/airbytehq/airbyte/pull/52023) | Update dependencies |
+| 0.0.9 | 2025-01-11 | [51408](https://github.com/airbytehq/airbyte/pull/51408) | Update dependencies |
+| 0.0.8 | 2024-12-28 | [50821](https://github.com/airbytehq/airbyte/pull/50821) | Update dependencies |
+| 0.0.7 | 2024-12-21 | [50346](https://github.com/airbytehq/airbyte/pull/50346) | Update dependencies |
+| 0.0.6 | 2024-12-14 | [49742](https://github.com/airbytehq/airbyte/pull/49742) | Update dependencies |
+| 0.0.5 | 2024-12-12 | [49439](https://github.com/airbytehq/airbyte/pull/49439) | Update dependencies |
+| 0.0.4 | 2024-12-11 | [49122](https://github.com/airbytehq/airbyte/pull/49122) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.3 | 2024-11-04 | [47909](https://github.com/airbytehq/airbyte/pull/47909) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47540](https://github.com/airbytehq/airbyte/pull/47540) | Update dependencies |
 | 0.0.1 | 2024-10-14 | | Initial release by [@aazam-gh](https://github.com/aazam-gh) via Connector Builder |

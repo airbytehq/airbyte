@@ -12,11 +12,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.6
   dockerRepository: airbyte/source-younium
   githubIssueLabel: source-younium
   icon: younium.svg

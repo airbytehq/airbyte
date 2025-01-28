@@ -49,6 +49,12 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.7.16      | 2024-12-19 | [52076](https://github.com/airbytehq/airbyte/pull/52076) | Test improvements                                                                            |
+| 0.7.15      | 2024-12-19 | [49899](https://github.com/airbytehq/airbyte/pull/49931) | Non-functional CDK changes                                                                   |
+| 0.7.14      | 2024-12-20 | [49974](https://github.com/airbytehq/airbyte/pull/49974) | Non-functional CDK changes                                                                   |
+| 0.7.13      | 2024-12-18 | [49899](https://github.com/airbytehq/airbyte/pull/49899) | Use a base image: airbyte/java-connector-base:1.0.0                                          |
+| 0.7.12      | 2024-12-04 | [48794](https://github.com/airbytehq/airbyte/pull/48794) | Promoting release candidate 0.7.12-rc.2 to a main version.                                   |
+| 0.7.12-rc.2 | 2024-11-26 | [48693](https://github.com/airbytehq/airbyte/pull/48693) | Update for testing progressive rollout                                                       |
 | 0.7.12-rc.1 | 2024-11-25 | [48693](https://github.com/airbytehq/airbyte/pull/48693) | Update for testing progressive rollout                                                       |
 | 0.7.11      | 2024-11-18 | [48468](https://github.com/airbytehq/airbyte/pull/48468) | Implement File CDk                                                                           |
 | 0.7.10      | 2024-11-08 | [48429](https://github.com/airbytehq/airbyte/pull/48429) | Bugfix: correctly handle state ID field                                                      |
