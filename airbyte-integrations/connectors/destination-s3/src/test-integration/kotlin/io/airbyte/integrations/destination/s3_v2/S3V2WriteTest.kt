@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
+import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.data.avro.AvroExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
@@ -33,7 +34,6 @@ abstract class S3V2WriteTest(
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
     nullUnknownTypes: Boolean = false,
-    envVars: Map<String, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -41,6 +41,8 @@ abstract class S3V2WriteTest(
         S3V2DataDumper,
         NoopDestinationCleaner,
         expectedRecordMapper,
+        additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,
+        micronautProperties = S3V2TestUtils.assumeRoleCredentials.asMicronautProperties(),
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
         stringifySchemalessObjects = stringifySchemalessObjects,
@@ -52,7 +54,6 @@ abstract class S3V2WriteTest(
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
-        envVars = envVars,
         nullUnknownTypes = nullUnknownTypes,
     ) {
     @Disabled("Irrelevant for file destinations")
@@ -249,6 +250,18 @@ class S3V2AmbiguousFilepath :
     S3V2WriteTest(
         S3V2TestUtils.AMBIGUOUS_FILEPATH_CONFIG_PATH,
         // this test is writing to CSV
+        UncoercedExpectedRecordMapper,
+        stringifySchemalessObjects = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
+class S3V2CsvAssumeRole :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_ASSUME_ROLE_CONFIG_PATH,
         UncoercedExpectedRecordMapper,
         stringifySchemalessObjects = false,
         unionBehavior = UnionBehavior.PASS_THROUGH,
