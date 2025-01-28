@@ -145,7 +145,7 @@ object FailureHelper {
                 val metadata: Any? = failureReason.metadata
                 if (metadata != null) {
                     return@comparing if (
-                        failureReason.metadata.additionalProperties.containsKey(
+                        failureReason.metadata!!.additionalProperties.containsKey(
                             TRACE_MESSAGE_METADATA_KEY
                         )
                     )
@@ -155,7 +155,7 @@ object FailureHelper {
                     return@comparing 1
                 }
             }
-        val compareByTimestamp = Comparator.comparing { obj: FailureReason -> obj.timestamp }
+        val compareByTimestamp = Comparator.comparing { obj: FailureReason -> obj.timestamp!! }
         val compareByTraceAndTimestamp = compareByIsTrace.thenComparing(compareByTimestamp)
         return failures.sortedWith(compareByTraceAndTimestamp)
     }

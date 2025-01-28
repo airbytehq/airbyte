@@ -20,7 +20,7 @@ constructor(
         LineGobbler.startSection("CHECK")
 
         try {
-            val inputConfig = input.connectionConfiguration
+            val inputConfig = input.connectionConfiguration!!
             val process =
                 integrationLauncher.check(
                     jobRoot,
@@ -51,7 +51,7 @@ constructor(
                         optionalConfigMsg.get()
                     )
                 ) {
-                    when (input.actorType) {
+                    when (input.actorType!!) {
                         ActorType.SOURCE ->
                             connectorConfigUpdater.updateSource(
                                 input.actorId,

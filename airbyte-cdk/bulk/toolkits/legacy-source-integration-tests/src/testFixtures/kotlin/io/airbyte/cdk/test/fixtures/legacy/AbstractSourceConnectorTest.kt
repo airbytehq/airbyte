@@ -160,7 +160,7 @@ abstract class AbstractSourceConnectorTest {
                 mConnectorConfigUpdater
             )
             .run(StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
-            .checkConnection
+            .checkConnection!!
     }
 
     @Throws(Exception::class)
@@ -179,7 +179,7 @@ abstract class AbstractSourceConnectorTest {
                 mConnectorConfigUpdater
             )
             .run(StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
-            .checkConnection
+            .checkConnection!!
             .status
             .toString()
     }
@@ -207,7 +207,7 @@ abstract class AbstractSourceConnectorTest {
                         .withConnectionConfiguration(config),
                     jobRoot
                 )
-                .discoverCatalogId
+                .discoverCatalogId!!
         Mockito.verify(mSourceApi).writeDiscoverCatalogResult(discoverWriteRequest.capture())
         return toReturn
     }

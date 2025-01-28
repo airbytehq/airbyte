@@ -88,6 +88,7 @@ class AirbyteBulkConnectorExtension {
         }
         final String kspDependency = "io.micronaut:micronaut-inject-kotlin:$micronautVersion"
 
+        final boolean isDestination = project.name.startsWith('destination-')
         project.dependencies {
             ksp kspDependency
             kspTestFixtures kspDependency
@@ -99,10 +100,12 @@ class AirbyteBulkConnectorExtension {
                 testFixturesImplementation testFixtures(dep)
                 testImplementation dep
                 testImplementation testFixtures(dep)
-                integrationTestImplementation dep
-                integrationTestImplementation testFixtures(dep)
-                integrationTestLegacyImplementation dep
-                integrationTestLegacyImplementation testFixtures(dep)
+                if (isDestination) {
+                    integrationTestImplementation dep
+                    integrationTestImplementation testFixtures(dep)
+                    integrationTestLegacyImplementation dep
+                    integrationTestLegacyImplementation testFixtures(dep)
+                }
             }
             for (dep in fromJar) {
                 implementation dep
@@ -110,10 +113,12 @@ class AirbyteBulkConnectorExtension {
                 testFixturesImplementation testFixtures(dep)
                 testImplementation dep
                 testImplementation testFixtures(dep)
-                integrationTestImplementation dep
-                integrationTestImplementation testFixtures(dep)
-                integrationTestLegacyImplementation dep
-                integrationTestLegacyImplementation testFixtures(dep)
+                if (isDestination) {
+                    integrationTestImplementation dep
+                    integrationTestImplementation testFixtures(dep)
+                    integrationTestLegacyImplementation dep
+                    integrationTestLegacyImplementation testFixtures(dep)
+                }
             }
         }
     }
@@ -137,14 +142,26 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             ]
         }
 
-        project.sourceSets {
-            // This is the source set where most of our integration tests should live.
-            integrationTest {
-                kotlin {
-                    srcDir 'src/test-integration/kotlin'
+        if (project.name.startsWith('destination-')) {
+            project.sourceSets {
+                // This is the source set where most of our integration tests should live.
+                integrationTest {
+                    kotlin {
+                        srcDir 'src/test-integration/kotlin'
+                    }
+                    resources {
+                        srcDir 'src/test-integration/resources'
+                    }
                 }
-                resources {
-                    srcDir 'src/test-integration/resources'
+                // This source set should only be used for tests based on the old CDK's test classes,
+                // in particular DestinationAcceptanceTest / BaseTypingDedupingTest.
+                integrationTestLegacy {
+                    kotlin {
+                        srcDir 'src/test-integration-legacy/kotlin'
+                    }
+                    resources {
+                        srcDir 'src/test-integration-legacy/resources'
+                    }
                 }
             }
 
@@ -201,42 +218,22 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 }
             }
 
-        // For historical reasons (i.e. airbyte-ci), this task is called integrationTestJava.
-        // airbyte-ci only wants to run a task with exactly that name.
-        // There's intentionally no equivalent to run integrationTestNonDocker + integrationTestLegacy.
-        // It's an actual Test task (rather than just depending on two sub-tasks integrationTestDocker + integrationTestLegacy)
-        // so that gradle args (e.g. `--tests`) work as expected.
-        project.tasks.register('integrationTestJava', Test) {
-            description = 'Runs the integration tests in docker mode.'
-            group = 'verification'
-            testClassesDirs = project.sourceSets.integrationTest.output.classesDirs + project.sourceSets.integrationTestLegacy.output.classesDirs
-            classpath = project.sourceSets.integrationTest.runtimeClasspath + project.sourceSets.integrationTestLegacy.runtimeClasspath
-            useJUnitPlatform()
-            // We need a docker image to run this task, so depend on assemble
-            dependsOn project.tasks.assemble
-            environment "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", "docker"
+            project.dependencies {
+                // integration tests depend on the runtime code
+                integrationTestImplementation project
+                integrationTestLegacyImplementation project
+            }
 
-            jvmArgs = project.test.jvmArgs
-            systemProperties = project.test.systemProperties
-            maxParallelForks = project.test.maxParallelForks
-            maxHeapSize = project.test.maxHeapSize
-        }
-
-        project.dependencies {
-            // integration tests depend on the runtime code
-            integrationTestImplementation project
-            integrationTestLegacyImplementation project
-        }
-
-        project.tasks.named('build').configure {
-            dependsOn project.tasks.integrationTestJava
+            project.tasks.named('build').configure {
+                dependsOn project.tasks.integrationTestJava
+            }
         }
 
         project.tasks.matching {
-                it.name == 'spotbugsIntegrationTestLegacy' ||
-                it.name == 'spotbugsIntegrationTest' ||
-                it.name == 'spotbugsTest'
-            }.configureEach {
+            it.name == 'spotbugsIntegrationTestLegacy' ||
+                    it.name == 'spotbugsIntegrationTest' ||
+                    it.name == 'spotbugsTest'
+        }.configureEach {
             enabled = false
         }
 

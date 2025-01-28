@@ -176,7 +176,7 @@ object TestHarnessUtils {
     fun mapStreamNamesToSchemas(
         syncInput: StandardSyncInput
     ): Map<AirbyteStreamNameNamespacePair, JsonNode> {
-        return syncInput.catalog.streams.associate {
+        return syncInput.catalog!!.streams.associate {
             AirbyteStreamNameNamespacePair.fromAirbyteStream(it.stream) to it.stream.jsonSchema
         }
     }

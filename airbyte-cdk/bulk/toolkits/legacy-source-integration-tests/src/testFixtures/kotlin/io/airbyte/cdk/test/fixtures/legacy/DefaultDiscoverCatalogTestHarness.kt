@@ -27,7 +27,7 @@ constructor(
         jobRoot: Path
     ): ConnectorJobOutput {
         try {
-            val inputConfig = discoverSchemaInput.connectionConfiguration
+            val inputConfig = discoverSchemaInput.connectionConfiguration!!
             process =
                 integrationLauncher.discover(
                     jobRoot,

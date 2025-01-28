@@ -4,44 +4,61 @@
 package io.airbyte.integrations.source.mssql
 
 import com.google.common.collect.Sets
-import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.test.fixtures.legacy.ContainerFactory
+import io.airbyte.cdk.test.fixtures.legacy.DatabaseDriver
+import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.JDBC_URL_PARAMS_KEY
+import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.SCHEMAS_KEY
 import io.airbyte.cdk.test.fixtures.legacy.TestDatabase
-import io.airbyte.integrations.source.mssql.config_spec.MsSqlServerCursorBasedReplicationConfigurationSpecification
-import io.airbyte.integrations.source.mssql.config_spec.MsSqlServerSourceConfigurationSpecification
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.MsSQLConfigBuilder
 import io.debezium.connector.sqlserver.Lsn
-import org.apache.commons.lang3.RandomStringUtils
+import org.jooq.DSLContext
+import org.jooq.SQLDialect
+import org.jooq.exception.DataAccessException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.MSSQLServerContainer
 import java.io.IOException
 import java.io.UncheckedIOException
 import java.sql.SQLException
-import java.sql.Statement
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
+import java.util.stream.Collectors
+import java.util.stream.Stream
 import kotlin.collections.MutableMap
 import kotlin.collections.MutableSet
 
-open class MsSQLTestDatabase(container: MsSqlServercontainer) :
-    TestDatabase<MsSqlServerSourceConfigurationSpecification, MsSqlServerSourceConfiguration>(container.realContainer) {
+open class MsSQLTestDatabase(container: MSSQLServerContainer<*>) :
+    TestDatabase<MSSQLServerContainer<*>, MsSQLTestDatabase, MsSQLConfigBuilder>(container) {
     enum class BaseImage(@JvmField val reference: String) {
         MSSQL_2022("mcr.microsoft.com/mssql/server:2022-latest"),
     }
 
+    enum class ContainerModifier(override val modifier: Consumer<MSSQLServerContainer<*>>) :
+        ContainerFactory.NamedContainerModifier<MSSQLServerContainer<*>> {
+        AGENT(Consumer<MSSQLServerContainer<*>> { container: MSSQLServerContainer<*> -> MsSQLContainerFactory.withAgent(container) }),
+        WITH_SSL_CERTIFICATES(Consumer<MSSQLServerContainer<*>> { container: MSSQLServerContainer<*> ->
+            MsSQLContainerFactory.withSslCertificates(
+                container
+            )
+        }),
+        ;
+    }
+
     fun withCdc(): MsSQLTestDatabase {
         LOGGER.info("enabling CDC on database {} with id {}", databaseName, databaseId)
-        executeSqls("EXEC sys.sp_cdc_enable_db;")
+        with("EXEC sys.sp_cdc_enable_db;")
         LOGGER.info("CDC enabled on database {} with id {}", databaseName, databaseId)
         return this
     }
 
     private val CDC_INSTANCE_NAMES: MutableSet<String> = Sets.newConcurrentHashSet()
 
-    fun withCdcForTable(schemaName: String, tableName: String, roleName: String) {
-        withCdcForTable(schemaName, tableName, roleName, "${schemaName}_${tableName}")
+    fun withCdcForTable(schemaName: String?, tableName: String?, roleName: String?): MsSQLTestDatabase {
+        return withCdcForTable(schemaName, tableName, roleName, "${schemaName}_$tableName")
     }
 
-    open fun withCdcForTable(schemaName: String, tableName: String, roleName: String?, instanceName: String) {
+    open fun withCdcForTable(schemaName: String?, tableName: String?, roleName: String?, instanceName: String): MsSQLTestDatabase {
         LOGGER.info(formatLogLine("enabling CDC for table {}.{} and role {}, instance {}"), schemaName, tableName, roleName, instanceName)
         val sqlRoleName = if (roleName == null) "NULL" else "N'$roleName'"
         var tryCount = 0
@@ -53,11 +70,11 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
                         formatLogLine("Trying to enable CDC for table {}.{} and role {}, instance {}, try {}/{}"), schemaName, tableName, roleName,
                         instanceName, tryCount, MAX_RETRIES
                     )
-                    executeSqls(getEnableCdcSql(schemaName, tableName, sqlRoleName, instanceName))
+                    with(getEnableCdcSql(schemaName, tableName, sqlRoleName, instanceName))
                 }
                 CDC_INSTANCE_NAMES.add(instanceName)
-                withShortenedCapturePollingInterval()
-            } catch (e: Exception) {
+                return withShortenedCapturePollingInterval()
+            } catch (e: DataAccessException) {
                 if (!e.message!!.contains(RETRYABLE_CDC_TABLE_ENABLEMENT_ERROR_CONTENT)) {
                     throw e
                 }
@@ -70,44 +87,46 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
         throw RuntimeException(formatLogLine("failed to enable CDC for table $schemaName.$tableName within $MAX_RETRIES seconds"))
     }
 
-    open fun withCdcDisabledForTable(schemaName: String, tableName: String, instanceName: String) {
+    open fun withCdcDisabledForTable(schemaName: String?, tableName: String?, instanceName: String): MsSQLTestDatabase? {
         LOGGER.info(formatLogLine("disabling CDC for table {}.{}, instance {}"), schemaName, tableName, instanceName)
         if (!CDC_INSTANCE_NAMES.remove(instanceName)) {
             throw RuntimeException(formatLogLine("CDC was disabled for instance ") + instanceName)
         }
         synchronized(container) {
-            executeSqls(getDisableCdcSql(schemaName, tableName, instanceName))
+            return with(getEnableCdcSql(schemaName, tableName, instanceName))
         }
     }
 
-    fun withoutCdc(){
+    fun withoutCdc(): MsSQLTestDatabase? {
         CDC_INSTANCE_NAMES.clear()
         synchronized(container) {
-            executeSqls(DISABLE_CDC_SQL)
+            return with(DISABLE_CDC_SQL)
         }
     }
 
-    fun withAgentStarted() {
-        return executeSqls("EXEC master.dbo.xp_servicecontrol N'START', N'SQLServerAGENT';")
+    fun withAgentStarted(): MsSQLTestDatabase? {
+        return with("EXEC master.dbo.xp_servicecontrol N'START', N'SQLServerAGENT';")
     }
 
-    fun withAgentStopped() {
-        return executeSqls("EXEC master.dbo.xp_servicecontrol N'STOP', N'SQLServerAGENT';")
+    fun withAgentStopped(): MsSQLTestDatabase? {
+        return with("EXEC master.dbo.xp_servicecontrol N'STOP', N'SQLServerAGENT';")
     }
 
-    fun withWaitUntilAgentRunning() {
+    fun withWaitUntilAgentRunning(): MsSQLTestDatabase {
         waitForAgentState(true)
+        return self()
     }
 
-    fun withWaitUntilAgentStopped() {
+    fun withWaitUntilAgentStopped(): MsSQLTestDatabase? {
         waitForAgentState(false)
+        return self()
     }
 
-    fun waitForCdcRecords(schemaName: String?, tableName: String?, recordCount: Int) {
-        waitForCdcRecords(schemaName, tableName, "${schemaName}_$tableName", recordCount)
+    fun waitForCdcRecords(schemaName: String?, tableName: String?, recordCount: Int): MsSQLTestDatabase? {
+        return waitForCdcRecords(schemaName, tableName, "${schemaName}_$tableName", recordCount)
     }
 
-    fun waitForCdcRecords(schemaName: String?, tableName: String?, cdcInstanceName: String, recordCount: Int) {
+    fun waitForCdcRecords(schemaName: String?, tableName: String?, cdcInstanceName: String, recordCount: Int): MsSQLTestDatabase? {
         if (!CDC_INSTANCE_NAMES.contains(cdcInstanceName)) {
             throw RuntimeException("CDC is not enabled on instance $cdcInstanceName")
         }
@@ -117,10 +136,10 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
             LOGGER.info(formatLogLine("fetching the number of CDC records for {}.{}, instance {}"), schemaName, tableName, cdcInstanceName)
             try {
                 Thread.sleep(1000)
-                actualRecordCount = executeQuery(sql, Int::class.java)[0][0] as Int
+                actualRecordCount = query { ctx: DSLContext -> ctx.fetch(sql) }!![0].get(0, Int::class.java)
             } catch (e: SQLException) {
                 actualRecordCount = 0
-            } catch (e: Exception) {
+            } catch (e: DataAccessException) {
                 actualRecordCount = 0
             } catch (e: InterruptedException) {
                 throw RuntimeException(e)
@@ -132,6 +151,7 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
             )
             if (actualRecordCount >= recordCount) {
                 LOGGER.info(formatLogLine("found {} records after {} tries!"), actualRecordCount, tryCount)
+                return self()
             }
         }
         throw RuntimeException(
@@ -143,13 +163,14 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
 
     private var shortenedPollingIntervalEnabled = false
 
-    fun withShortenedCapturePollingInterval() {
+    fun withShortenedCapturePollingInterval(): MsSQLTestDatabase {
         if (!shortenedPollingIntervalEnabled) {
             synchronized(container) {
                 shortenedPollingIntervalEnabled = true
-                executeSqls("EXEC sys.sp_cdc_change_job @job_type = 'capture', @pollinginterval = 1;")
+                with("EXEC sys.sp_cdc_change_job @job_type = 'capture', @pollinginterval = 1;")
             }
         }
+        return this
     }
 
     private fun waitForAgentState(running: Boolean) {
@@ -158,8 +179,8 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
         for (i in 0 until MAX_RETRIES) {
             try {
                 Thread.sleep(1000)
-                val r = executeQuery("EXEC master.dbo.xp_servicecontrol 'QueryState', N'SQLServerAGENT';", String::class.java)[0]
-                if (expectedValue.equals(r[0] as String, ignoreCase = true)) {
+                val r = query { ctx: DSLContext -> ctx.fetch("EXEC master.dbo.xp_servicecontrol 'QueryState', N'SQLServerAGENT';")[0] }
+                if (expectedValue.equals(r!!.getValue(0).toString(), ignoreCase = true)) {
                     LOGGER.info(formatLogLine("SQLServerAgent state is '{}', as expected."), expectedValue)
                     return
                 }
@@ -173,14 +194,15 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
         throw RuntimeException(formatLogLine("Exhausted retry attempts while polling for agent state"))
     }
 
-    fun withWaitUntilMaxLsnAvailable() {
+    fun withWaitUntilMaxLsnAvailable(): MsSQLTestDatabase? {
         LOGGER.info(formatLogLine("Waiting for max LSN to become available for database {}."), databaseName)
         for (i in 0 until MAX_RETRIES) {
             try {
                 Thread.sleep(1000)
-                val maxLSN = executeQuery(MAX_LSN_QUERY, ByteArray::class.java)[0][0] as ByteArray?
+                val maxLSN = query { ctx: DSLContext -> ctx.fetch(MAX_LSN_QUERY)[0].get(0, ByteArray::class.java) }
                 if (maxLSN != null) {
                     LOGGER.info(formatLogLine("Max LSN available for database {}: {}"), databaseName, Lsn.valueOf(maxLSN))
+                    return self()
                 }
                 LOGGER.info(formatLogLine("Retrying, max LSN still not available for database {}."), databaseName)
             } catch (e: SQLException) {
@@ -192,17 +214,17 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
         throw RuntimeException("Exhausted retry attempts while polling for max LSN availability")
     }
 
-    val password: String
+    override val password: String
         get() = "S00p3rS33kr3tP4ssw0rd!"
 
-    val jdbcUrl: String
+    override val jdbcUrl: String
         get() = String.format("jdbc:sqlserver://%s:%d", container.host, container.firstMappedPort)
 
-    override fun inContainerBootstrapCmd(): List<List<String>> {
-        return listOf(
-            mssqlCmd(listOf(String.format("CREATE DATABASE %s", databaseName))),
+    override fun inContainerBootstrapCmd(): Stream<Stream<String>> {
+        return Stream.of(
+            mssqlCmd(Stream.of(String.format("CREATE DATABASE %s", databaseName))),
             mssqlCmd(
-                listOf(
+                Stream.of(
                     String.format("USE %s", databaseName),
                     String.format("CREATE LOGIN %s WITH PASSWORD = '%s', DEFAULT_DATABASE = %s", userName, password, databaseName),
                     String.format("ALTER SERVER ROLE [sysadmin] ADD MEMBER %s", userName),
@@ -218,31 +240,37 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
      * [.dropDatabaseAndUser] explicitly. Implicit cleanups may result in deadlocks and so
      * aren't really worth it.
      */
-    override fun inContainerUndoBootstrapCmd(): List<String> {
-        return emptyList<String>()
+    override fun inContainerUndoBootstrapCmd(): Stream<String> {
+        return Stream.empty()
     }
 
     fun dropDatabaseAndUser() {
         execInContainer(
-            *mssqlCmd(
-                listOf(
+            mssqlCmd(
+                Stream.of(
                     String.format("USE master"),
                     String.format("ALTER DATABASE %s SET single_user WITH ROLLBACK IMMEDIATE", databaseName),
                     String.format("DROP DATABASE %s", databaseName)
                 )
-            ).toTypedArray()
+            )
         )
     }
 
-    fun mssqlCmd(sql: List<String>): List<String> {
-        return listOf(
+    fun mssqlCmd(sql: Stream<String>): Stream<String> {
+        return Stream.of(
             "/opt/mssql-tools18/bin/sqlcmd",
             "-U", container.username,
             "-P", container.password,
-            "-Q", sql.joinToString("; "),
+            "-Q", sql.collect(Collectors.joining("; ")),
             "-b", "-e", "-C"
         )
     }
+
+    override val databaseDriver: DatabaseDriver
+        get() = DatabaseDriver.MSSQLSERVER
+
+    override val sqlDialect: SQLDialect
+        get() = SQLDialect.DEFAULT
 
     enum class CertificateKey(@JvmField val isValid: Boolean) {
         CA(true),
@@ -276,63 +304,65 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
         return cachedCerts[certificateKey]
     }
 
-    val schemaName = "schema_" + RandomStringUtils.insecure().nextAlphabetic(16)
-    private var initialized = false
-
-    override val config: MsSqlServerSourceConfigurationSpecification by lazy {
-        config()
+    override fun configBuilder(): MsSQLConfigBuilder {
+        return MsSQLConfigBuilder(this)
     }
-    override val sourceConfigurationFactory = MsSqlServerSourceConfigurationFactory()
 
-
-    protected fun config(): MsSqlServerSourceConfigurationSpecification {
-        if (initialized) {
-            throw RuntimeException("Already initialized!")
+    class MsSQLConfigBuilder(testDatabase: MsSQLTestDatabase) : ConfigBuilder<MsSQLTestDatabase, MsSQLConfigBuilder>(testDatabase) {
+        init {
+            with(JDBC_URL_PARAMS_KEY, "loginTimeout=2")
         }
-        initialized = true
-        val config =
-            MsSqlServerSourceConfigurationSpecification().apply {
-                host = container.host
-                port =
-                    container.getMappedPort(
-                        MSSQLServerContainer.MS_SQL_SERVER_PORT
+
+        fun withCdcReplication(): MsSQLConfigBuilder {
+            return with("is_test", true)
+                .with(
+                    "replication_method", mapOf(
+                        "method" to "CDC",
+                        "initial_waiting_seconds" to DEFAULT_CDC_REPLICATION_INITIAL_WAIT.seconds,
+                        MsSqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY to MsSqlSpecConstants.RESYNC_DATA_OPTION
                     )
-                username = container.username
-                password = container.password
-                jdbcUrlParams = ""
-                database = databaseName
-                schemas = arrayOf(schemaName)
-                replicationMethodJson =
-                    MsSqlServerCursorBasedReplicationConfigurationSpecification()
-            }
-        JdbcConnectionFactory(MsSqlServerSourceConfigurationFactory().make(config.apply { database="master" })).get().use { connection ->
-            connection.isReadOnly = false
-            connection.createStatement().use { stmt: Statement ->
-                stmt.execute("CREATE DATABASE $databaseName")
+                )
+        }
+
+        fun withSchemas(vararg schemas: String?): MsSQLConfigBuilder {
+            return with(SCHEMAS_KEY, listOf<String?>(*schemas))
+        }
+
+        override fun withoutSsl(): MsSQLConfigBuilder {
+            return withSsl(mutableMapOf("ssl_method" to "unencrypted"))
+        }
+
+        override fun withSsl(sslMode: MutableMap<Any?, Any?>): MsSQLConfigBuilder {
+            return with("ssl_method", sslMode)
+        }
+
+        fun withEncrytedTrustServerCertificate(): MsSQLConfigBuilder {
+            return withSsl(mutableMapOf("ssl_method" to "encrypted_trust_server_certificate"))
+        }
+
+        fun withEncrytedVerifyServerCertificate(certificate: String?, hostnameInCertificate: String?): MsSQLConfigBuilder? {
+            return if (hostnameInCertificate != null) {
+                withSsl(
+                    mutableMapOf(
+                        "ssl_method" to "encrypted_verify_certificate",
+                        "certificate" to certificate,
+                        "hostNameInCertificate" to hostnameInCertificate
+                    )
+                )
+            } else {
+                withSsl(
+                    mutableMapOf(
+                        "ssl_method" to "encrypted_verify_certificate",
+                        "certificate" to certificate
+                    )
+                )
             }
         }
-        JdbcConnectionFactory(MsSqlServerSourceConfigurationFactory().make(config.apply { database=databaseName })).get().use { connection ->
-            connection.createStatement().use { stmt: Statement ->
-                stmt.execute("CREATE SCHEMA $schemaName")
-            }
-            connection.createStatement().use { stmt: Statement ->
-                stmt.execute(
-                    "CREATE TABLE $schemaName.name_and_born(name VARCHAR(200), born DATETIMEOFFSET(7));"
-                )
-                stmt.execute(
-                    "CREATE TABLE $schemaName.id_name_and_born(id INTEGER PRIMARY KEY, name VARCHAR(200), born DATETIMEOFFSET(7));"
-                )
-            }
-            connection.createStatement().use { stmt: Statement ->
-                stmt.execute(
-                    "INSERT INTO $schemaName.name_and_born (name, born) VALUES ('foo', '2022-03-21 15:43:15.45'), ('bar', '2022-10-22 01:02:03.04')"
-                )
-                stmt.execute(
-                    "INSERT INTO $schemaName.id_name_and_born (id, name, born) VALUES (1, 'foo', '2022-03-21 15:43:15.45'), (2, 'bar', '2022-10-22 01:02:03.04')"
-                )
-            }
-        }
-        return config
+    }
+
+    override fun close() {
+        //MssqlDebeziumStateUtil.disposeInitialState()
+        super.close()
     }
 
     companion object {
@@ -347,28 +377,28 @@ open class MsSQLTestDatabase(container: MsSqlServercontainer) :
         const val MAX_RETRIES: Int = 240
 
         @JvmStatic
-        fun `in`(image: MsSqlServerImage, vararg modifiers: MsSqlServerContainerFactory.MsSqlServerContainerModifier): MsSQLTestDatabase {
-            val container: MsSqlServercontainer = MsSqlServerContainerFactory.shared(image, *modifiers)
-            val testdb = MsSQLTestDatabase(container)
-            return testdb.apply {
-                addConnectionProperty("encrypt", "false")
-                addConnectionProperty("trustServerCertificate", "true")
-                addConnectionProperty("databaseName", testdb.databaseName)
-                initialize()
-            }
+        fun `in`(imageName: BaseImage, vararg modifiers: ContainerModifier): MsSQLTestDatabase {
+            val container: MSSQLServerContainer<out MSSQLServerContainer<*>> = MsSQLContainerFactory().shared(imageName.reference, *modifiers)
+            val testdb =
+                MsSQLTestDatabase(container)
+            return testdb
+                .withConnectionProperty("encrypt", "false")
+                .withConnectionProperty("trustServerCertificate", "true")
+                .withConnectionProperty("databaseName", testdb.databaseName)
+                .initialized()
         }
 
         private const val RETRYABLE_CDC_TABLE_ENABLEMENT_ERROR_CONTENT =
             "The error returned was 14258: 'Cannot perform this operation while SQLServerAgent is starting. Try again later.'"
-        private fun getEnableCdcSql(schemaName: String, tableName: String, roleName: String, instanceName: String): String = """
+        private fun getEnableCdcSql(schemaName: String?, tableName: String?, sqlRoleName: String, instanceName: String): String = """
                                                    EXEC sys.sp_cdc_enable_table
                                                    ${'\t'}@source_schema = N'$schemaName',
                                                    ${'\t'}@source_name   = N'$tableName',
-                                                   ${'\t'}@role_name     = $roleName,
+                                                   ${'\t'}@role_name     = $sqlRoleName,
                                                    ${'\t'}@supports_net_changes = 0,
                                                    ${'\t'}@capture_instance = N'$instanceName'
                                                    """.trimIndent()
-        private fun getDisableCdcSql(schemaName: String, tableName: String, instanceName: String): String = """
+        private fun getEnableCdcSql(schemaName: String?, tableName: String?, instanceName: String): String = """
                                                     EXEC sys.sp_cdc_disable_table
                                                     ${'\t'}@source_schema = N'$schemaName',
                                                     ${'\t'}@source_name   = N'$tableName',

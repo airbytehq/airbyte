@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.SQLDialect;
 import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
@@ -67,11 +68,12 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       this.modifier = modifier;
     }
 
-    @Override
-    public Consumer<MSSQLServerContainer<?>> modifier() {
-      return modifier;
-    }
 
+    @NotNull
+    @Override
+    public Consumer<MSSQLServerContainer<?>> getModifier() {
+      return this.modifier;
+    }
   }
 
   static public MsSQLTestDatabase in(final BaseImage imageName, final ContainerModifier... modifiers) {
@@ -426,4 +428,3 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
 }
-

@@ -81,13 +81,13 @@ internal constructor(
                 WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
                 Jsons.serialize(sourceConfig.sourceConnectionConfiguration),
                 WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-                protocolSerializer.serialize(sourceConfig.catalog),
+                protocolSerializer.serialize(sourceConfig.catalog!!),
                 if (sourceConfig.state == null) null
                 else
                     WorkerConstants
                         .INPUT_STATE_JSON_FILENAME, // TODO We should be passing a typed state here
                 // and use the protocolSerializer
-                if (sourceConfig.state == null) null else Jsons.serialize(sourceConfig.state.state)
+                if (sourceConfig.state == null) null else Jsons.serialize(sourceConfig.state!!.state)
             )
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
@@ -178,7 +178,7 @@ internal constructor(
             return
         }
 
-        LOGGER.info("source starting state | " + Jsons.serialize(sourceConfig.state.state))
+        LOGGER.info("source starting state | " + Jsons.serialize(sourceConfig.state!!.state))
     }
 
     companion object {
