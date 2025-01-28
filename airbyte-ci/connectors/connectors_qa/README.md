@@ -67,6 +67,8 @@ connectors-qa generate-documentation qa_checks.md
 poetry install --with dev
 ```
 
+Note: By default in Poetry 2.0, `poetry lock` only refreshes the lockfile without pulling new versions. This is the same behavior as the previous `poetry lock --no-update` command.
+
 ### Dependencies
 
 This package uses two local dependencies:

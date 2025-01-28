@@ -9,10 +9,12 @@ The project generates the following artifacts:
 - `sbom.json`: Contains the Software Bill Of Material. Produced by [Syft](https://github.com/anchore/syft).
 
 ## Installation
-To install the project and its dependencies, ensure you have Poetry installed, then run:
+To install the project and its dependencies, ensure you have Poetry installed (version 2.0 or higher), then run:
 ```sh
 poetry install
 ```
+
+Note: By default in Poetry 2.0, `poetry lock` only refreshes the lockfile without pulling new versions. This is the same behavior as the previous `poetry lock --no-update` command.
 
 ## Usage
 The Connectors Insights project provides a command-line interface (CLI) to generate the artifacts. Below is the command to run the CLI:

@@ -58,7 +58,7 @@ async def check_poetry_version(container: dagger.Container, expected_poetry_vers
         poetry_version_output: str = await container.with_exec(["poetry", "--version"]).stdout()
     except dagger.ExecError as e:
         raise errors.SanityCheckError(e)
-    if not poetry_version_output.startswith(f"Poetry (version {expected_poetry_version}"):
+    if not poetry_version_output.startswith(f"Poetry (version {expected_poetry_version})"):
         raise errors.SanityCheckError(f"unexpected poetry version: {poetry_version_output}")
 
 

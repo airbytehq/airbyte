@@ -8,7 +8,9 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ### Prerequisites
 * Python (~=3.9)
-* Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
+* Poetry (~=2.0) - installation instructions [here](https://python-poetry.org/docs/#installation)
+
+Note: By default in Poetry 2.0, `poetry lock` only refreshes the lockfile without pulling new versions. This is the same behavior as the previous `poetry lock --no-update` command.
 
 
 ### Installing the connector

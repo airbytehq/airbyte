@@ -54,7 +54,9 @@ There are multiple way to have dev install of the tool. Feel free to grab the on
 ### System requirements
 
 - `Python` > 3.10
-- [`Poetry`](https://python-poetry.org/) or [`pipx`](https://github.com/pypa/pipx)
+- [`Poetry`](https://python-poetry.org/) (version 2.0 or higher) or [`pipx`](https://github.com/pypa/pipx)
+
+Note: By default in Poetry 2.0, `poetry lock` only refreshes the lockfile without pulling new versions. This is the same behavior as the previous `poetry lock --no-update` command.
 
 ### Installation options
 
