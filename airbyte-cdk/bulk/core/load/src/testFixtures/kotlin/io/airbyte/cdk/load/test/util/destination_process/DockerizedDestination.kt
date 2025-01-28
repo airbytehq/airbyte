@@ -90,7 +90,7 @@ class DockerizedDestination(
         grantAllPermissions(jobRoot)
 
         val containerDataRoot = "/data"
-//        val containerJobRoot = "$containerDataRoot/$jobDir"
+        val containerJobRoot = "$containerDataRoot/$jobDir"
 
         // This directory is being used for the file transfer feature.
         if (useFileTransfer) {
@@ -125,7 +125,7 @@ class DockerizedDestination(
                     "-i",
                     "-w",
                     // In real syncs, platform changes the workdir to /dest for destinations.
-                    workspaceRoot.toString(),
+                    testDir.toString(),
                     "--log-driver",
                     "none",
                     "--name",
@@ -154,7 +154,7 @@ class DockerizedDestination(
                 .toMutableList()
 
         fun addInput(paramName: String, fileContents: ByteArray) {
-            val path = workspaceRoot.resolve("destination_$paramName.json")
+            val path = jobRoot.resolve("destination_$paramName.json")
             Files.write(
                 path,
                 fileContents,
@@ -162,8 +162,8 @@ class DockerizedDestination(
             grantAllPermissions(path)
 
             cmd.add("--$paramName")
-//            cmd.add("$containerJobRoot/destination_$paramName.json")
-            cmd.add("/data/destination_$paramName.json")
+            cmd.add("$containerJobRoot/destination_$paramName.json")
+//            cmd.add("/tmp/airbyte_tests/destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
