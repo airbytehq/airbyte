@@ -23,9 +23,33 @@ pymilvus = ">=2.5.4,<2.6.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
+pytest-cov = "^4.1.0"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
 setuptools = "^69.0.0"  # Required by pymilvus for pkg_resources
+
+[tool.pytest.ini_options]
+addopts = "--cov=destination_milvus --cov-report=term-missing --cov-report=xml:coverage.xml --cov-report=html:coverage_html"
+testpaths = ["integration_tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["destination_milvus"]
+parallel = true
+concurrency = ["thread", "multiprocessing"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "pass",
+    "\\.\\.\\."
+]
+fail_under = 60
+show_missing = true
 
 [tool.poetry.scripts]
 destination-milvus = "destination_milvus.run:run"
