@@ -12,6 +12,7 @@ airbyte:
         throughput-bytes-per-second: 10000000
         min-fetch-size: 10
         default-fetch-size: 1000
+        namespace-kind: CATALOG
 
     check:
       jdbc:
@@ -23,9 +24,7 @@ airbyte:
         #
         queries:
           - >-
-            SELECT 'version "' || banner || '" < 19 is not supported' AS version_check
-            FROM (SELECT banner, REGEXP_SUBSTR(banner, '\d+') AS major_version FROM v$version)
-            WHERE major_version < 19
+            SELECT NULL AS empty_column WHERE 1 = 0;
 
     exception-classifiers:
       regex:

@@ -114,7 +114,7 @@ class NetsuiteSourceConfigurationFactory :
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             // todo: Fix me;
-            namespaces = setOf(""),
+            namespaces = setOf("Airbyte, Inc_"),
             incremental = incrementalConfiguration,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
