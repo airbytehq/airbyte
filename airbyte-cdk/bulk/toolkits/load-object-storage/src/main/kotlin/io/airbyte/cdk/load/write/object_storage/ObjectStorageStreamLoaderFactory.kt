@@ -42,7 +42,7 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
         null,
     private val uploadConfigurationProvider: ObjectStorageUploadConfigurationProvider,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
-    @Value("\${airbyte.destination.record-batch-size-override}")
+    @Value("\${airbyte.destination.core.record-batch-size-override}")
     private val recordBatchSizeOverride: Long? = null
 ) {
     fun create(stream: DestinationStream): StreamLoader {
