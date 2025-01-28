@@ -64,6 +64,7 @@ class DockerizedDestination(
     private val fileTransferMountSource = Files.createTempDirectory("tmp")
 
     init {
+        grantAllPermissions(fileTransferMountSource)
         // This is largely copied from the old cdk's DockerProcessFactory /
         // AirbyteIntegrationLauncher / DestinationAcceptanceTest,
         // but cleaned up, consolidated, and simplified.
