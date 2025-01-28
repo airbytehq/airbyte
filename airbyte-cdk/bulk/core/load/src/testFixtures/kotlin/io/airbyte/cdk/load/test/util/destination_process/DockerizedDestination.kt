@@ -134,7 +134,7 @@ class DockerizedDestination(
                     "-i",
                     "-w",
                     // In real syncs, platform changes the workdir to /dest for destinations.
-                    "/dest",
+                    testDir.toString(),
                     "--log-driver",
                     "none",
                     "--name",
