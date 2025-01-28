@@ -42,18 +42,22 @@ class TransformToRecordComponent(AddFields):
 @dataclass
 class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
     """
-     Custom incremental component using the 'length' parameter as a custom slicer start_time.
+    Extends DatetimeBasedCursor for Braze's API requirements where instead of using explicit 
+    start_time/end_time parameters, the API expects:
+    - An end_time (ending_at)
+    - A length parameter indicating how many days before end_time to fetch
 
     The length parameter represents the number of days in the time window, counting both
     start and end dates inclusively. For example, a window from 2023-01-01 to 2023-01-03
-    has a length of 3 days (counting Jan 1, 2, and 3).
+    has a length of 3 days (counting Jan 1, 2, and 3). Length must be between 1-100 days
+    as per Braze's API requirements.
+
+    Example API request:
+        GET /campaigns/data_series?campaign_id=xxx&ending_at=2023-01-03&length=3
+        This would fetch data from 2023-01-01 to 2023-01-03 inclusive.
 
     Args:
-        option_type: Type of request option (parameter, header, etc)
-        stream_slice: Current slice containing start and end dates
-
-    Returns:
-        Dictionary of request options including length parameter
+        step_option: Configuration for injecting the length parameter into requests
     """
 
     step_option: Optional[RequestOption] = field(default=None)
