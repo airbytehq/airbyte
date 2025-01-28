@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b9e4a306-4e3b-4387-a01d-c00d03d8c28c
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-pennylane
   githubIssueLabel: source-pennylane
   icon: icon.svg
