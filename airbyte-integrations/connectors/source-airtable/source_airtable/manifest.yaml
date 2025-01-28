@@ -278,7 +278,7 @@ definitions:
             - type: TypesMap
               target_type:
                 field_type: array
-                items: datetime
+                items: timestamp_with_timezone
               current_type: lookup
               condition: "{{ raw_schema['options']['result']['type'] in ['lastModifiedTime', 'dateTime', 'createdTime'] }}"
             - type: TypesMap
@@ -316,7 +316,7 @@ definitions:
             - type: TypesMap
               target_type:
                 field_type: array
-                items: datetime
+                items: timestamp_with_timezone
               current_type: rollup
               condition: "{{ raw_schema['options']['result']['type'] in ['lastModifiedTime', 'dateTime', 'createdTime'] }}"
             - type: TypesMap
@@ -354,7 +354,7 @@ definitions:
             - type: TypesMap
               target_type:
                 field_type: array
-                items: datetime
+                items: timestamp_with_timezone
               current_type: multipleLookupValues
               condition: "{{ raw_schema['options']['result']['type'] in ['lastModifiedTime', 'dateTime', 'createdTime'] }}"
             - type: TypesMap
