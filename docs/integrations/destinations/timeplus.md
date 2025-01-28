@@ -39,6 +39,7 @@ You'll need the following information to configure the Timeplus destination:
 
 | Version | Date       | Pull Request                                              | Subject              |
 |:--------| :--------- | :-------------------------------------------------------- | :------------------- |
+| 0.1.33 | 2025-01-25 | [52195](https://github.com/airbytehq/airbyte/pull/52195) | Update dependencies |
 | 0.1.32 | 2025-01-18 | [51717](https://github.com/airbytehq/airbyte/pull/51717) | Update dependencies |
 | 0.1.31 | 2025-01-11 | [51271](https://github.com/airbytehq/airbyte/pull/51271) | Update dependencies |
 | 0.1.30 | 2025-01-04 | [50907](https://github.com/airbytehq/airbyte/pull/50907) | Update dependencies |
