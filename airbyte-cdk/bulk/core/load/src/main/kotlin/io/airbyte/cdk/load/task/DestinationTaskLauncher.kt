@@ -121,7 +121,8 @@ class DefaultDestinationTaskLauncher(
     private val failSyncTaskFactory: FailSyncTaskFactory,
 
     // File transfer
-    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.destination.core.file-transfer.enabled}")
+    private val fileTransferEnabled: Boolean,
 
     // Input Consumer requirements
     private val inputFlow: ReservingDeserializingInputFlow,
