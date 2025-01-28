@@ -35,6 +35,7 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
     UpdatedCursorIncrementalStripeSubStream,
+    CustomerBalanceTransactions,
 )
 
 
@@ -503,13 +504,6 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
                 **args,
             ),
-            ParentIncrementalStripeSubStream(
-                name="customer_balance_transactions",
-                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
-                parent=self.customers(**args),
-                cursor_field="created",
-                **args,
-            ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="application_fees_refunds",
                 path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice['parent']['id']}/refunds",
@@ -568,6 +562,13 @@ class SourceStripe(ConcurrentSourceAdapter):
                 name="transfer_reversals",
                 path=lambda self, stream_slice, *args, **kwargs: f"transfers/{stream_slice['parent']['id']}/reversals",
                 parent=transfers,
+                cursor_field="created",
+                **args,
+            ),
+            CustomerBalanceTransactions(
+                name="customer_balance_transactions",
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
+                parents=[invoices, self.customers(**args)],
                 cursor_field="created",
                 **args,
             ),
