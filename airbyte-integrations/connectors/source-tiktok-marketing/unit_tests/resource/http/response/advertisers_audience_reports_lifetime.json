@@ -1,0 +1,38 @@
+{
+  "code" : 0,
+  "message" : "ok",
+  "data" : {
+    "list" : [
+      {
+        "metrics" : {
+          "cpm" : "4.58",
+          "cpc" : "0.36",
+          "spend" : "31.56",
+          "ctr" : "1.26",
+          "clicks" : "87",
+          "impressions" : "6897"
+        },
+        "dimensions" : {
+          "age" : "AGE_35_44",
+          "advertiser_id" : 872746382648,
+          "gender" : "MALE"
+        }
+      },
+      {
+        "metrics" : {
+          "cpm" : "0.00",
+          "cpc" : "0.00",
+          "spend" : "0.00",
+          "ctr" : "0.00",
+          "clicks" : "0",
+          "impressions" : "17"
+        },
+        "dimensions" : {
+          "age" : "AGE_55_100",
+          "advertiser_id" : 872746382648,
+          "gender" : "FEMALE"
+        }
+      }
+    ]
+  }
+}
