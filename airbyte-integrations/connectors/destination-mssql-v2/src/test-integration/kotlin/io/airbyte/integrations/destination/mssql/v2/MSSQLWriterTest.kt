@@ -112,7 +112,7 @@ class MSSQLDataDumper : DestinationDataDumper {
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<String> {
-        return emptyList()
+        throw UnsupportedOperationException("destination-mssql doesn't support file transfer")
     }
 
     private fun getConfiguration(
