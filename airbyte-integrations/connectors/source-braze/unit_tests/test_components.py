@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import datetime
+from datetime import datetime
+
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
@@ -29,12 +30,12 @@ def test_datetime_slicer(components_module):
     )
 
     slices = slicer.stream_slices()
-    
+
     # Test the time windows are correct
     expected_slices = [
         {"start_time": "2022-12-01", "end_time": "2022-12-03"},
         {"start_time": "2022-12-04", "end_time": "2022-12-06"},
-        {"start_time": "2022-12-07", "end_time": "2022-12-08"}
+        {"start_time": "2022-12-07", "end_time": "2022-12-08"},
     ]
     assert slices == expected_slices
 

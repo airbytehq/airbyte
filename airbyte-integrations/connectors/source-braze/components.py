@@ -42,8 +42,20 @@ class TransformToRecordComponent(AddFields):
 @dataclass
 class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
     """
-    Extends DatetimeBasedCursor by adding a required length parameter for the Braze API.
+     Custom incremental component using the 'length' parameter as a custom slicer start_time.
+
+    The length parameter represents the number of days in the time window, counting both
+    start and end dates inclusively. For example, a window from 2023-01-01 to 2023-01-03
+    has a length of 3 days (counting Jan 1, 2, and 3).
+
+    Args:
+        option_type: Type of request option (parameter, header, etc)
+        stream_slice: Current slice containing start and end dates
+
+    Returns:
+        Dictionary of request options including length parameter
     """
+
     step_option: Optional[RequestOption] = field(default=None)
 
     def __post_init__(self, parameters: Mapping[str, Any]):
@@ -51,35 +63,34 @@ class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
         if self.step_option is None:
             raise ValueError("step_option is required for DatetimeIncrementalSyncComponent")
 
-    def _get_request_options(
-        self, option_type: RequestOptionType, stream_slice: Optional[StreamSlice] = None
-    ) -> Mapping[str, Any]:
+    def _get_request_options(self, option_type: RequestOptionType, stream_slice: Optional[StreamSlice] = None) -> Mapping[str, Any]:
         options: dict[str, Any] = {}
         if stream_slice is not None and self.step_option is not None:
             base_options = super()._get_request_options(option_type, stream_slice)
             options.update(base_options)
-            
+
             if self.step_option.inject_into == option_type:
                 # Get start and end times from the stream slice
                 start_field = self._partition_field_start.eval(self.config)
                 end_field = self._partition_field_end.eval(self.config)
-                
+
                 start_str = stream_slice.get(start_field)
                 end_str = stream_slice.get(end_field)
-                
+
                 if isinstance(start_str, str) and isinstance(end_str, str):
                     start_time = self._parser.parse(start_str, self.datetime_format)
                     end_time = self._parser.parse(end_str, self.datetime_format)
-                    
-                    # Calculate length in days for Braze API (between 1-100)
-                    length_days = min(100, max(1, (end_time - start_time).days))
-                    
+
+                    # Add 1 to include both start and end dates in the count
+                    # e.g., 2023-01-01 to 2023-01-03 = 3 days (Jan 1, 2, and 3)
+                    length_days = min(100, max(1, (end_time - start_time).days + 1))
+
                     field_name = (
                         self.step_option.field_name.eval(config=self.config)
                         if isinstance(self.step_option.field_name, InterpolatedString)
                         else self.step_option.field_name
                     )
-                    
+
                     options[field_name] = length_days
 
         return options
