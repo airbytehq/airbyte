@@ -48,7 +48,7 @@ jobs:
     runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
     strategy:
       matrix:
-        gradle-task: 
+        gradle-task:
           - name: compile
             command: compileJava compileKotlin compileTestJava compileTestKotlin
           - name: spotbugs
