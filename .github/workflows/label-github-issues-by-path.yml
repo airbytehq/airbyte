@@ -5,6 +5,10 @@ name: "Label PR based on filepath"
 on:
   - pull_request_target
 
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
   add-label-based-on-file-changes:
     name: "Label PRs based on files changes"
