@@ -4,12 +4,12 @@
 
 import json
 import logging
-import numpy as np
 from typing import List
 
+import numpy as np
 from destination_milvus.destination import DestinationMilvus
-from langchain_core.embeddings import Embeddings
 from langchain.vectorstores import Milvus
+from langchain_core.embeddings import Embeddings
 from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
 
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
@@ -41,14 +41,14 @@ class MilvusIntegrationTest(BaseIntegrationTest):
     def _init_milvus(self):
         try:
             # Handle both server and local (Milvus Lite) connections
-            if self.config["indexing"]["host"].endswith('.db'):
+            if self.config["indexing"]["host"].endswith(".db"):
                 # Milvus Lite connection
                 connections.connect(
                     alias="test_driver",
                     uri=self.config["indexing"]["host"],  # Local file path for Milvus Lite
                     user="",
                     password="",
-                    db_name=""
+                    db_name="",
                 )
             else:
                 # Server connection
@@ -144,7 +144,7 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         assert result[0][0].entity.get("text") == "str_col: Cats are nice"
 
         # Skip LangChain integration test for Milvus Lite
-        if not self.config["indexing"]["host"].endswith('.db'):
+        if not self.config["indexing"]["host"].endswith(".db"):
             # test langchain integration with fake embeddings (only for server mode)
             embeddings = FakeEmbeddings()
             connection_args = {

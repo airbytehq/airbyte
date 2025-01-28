@@ -108,7 +108,7 @@ class MilvusIndexer(Indexer):
 
     def _uses_safe_config(self) -> bool:
         # Allow local file paths for Milvus Lite
-        if self.config.host.endswith('.db'):
+        if self.config.host.endswith(".db"):
             return True
         # For server connections, require HTTPS and authentication
         return self.config.host.startswith("https://") and not self.config.auth.mode == "no_auth"
