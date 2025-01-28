@@ -29,14 +29,14 @@ class MilvusIndexer(Indexer):
 
     def _connect(self):
         # Check if using local file path (Milvus Lite) or server connection
-        if self.config.host.endswith('.db'):
+        if self.config.host.endswith(".db"):
             # Milvus Lite connection using local file path
             connections.connect(
                 alias="default",
                 uri=self.config.host,  # Local file path for Milvus Lite
                 user="",
                 password="",
-                db_name=""
+                db_name="",
             )
         else:
             # Regular Milvus server connection

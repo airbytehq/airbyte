@@ -19,6 +19,7 @@ from airbyte_cdk.models import DestinationSyncMode, Status
 
 class FakeEmbeddings(Embeddings):
     """Fake embeddings class that generates random vectors for testing."""
+
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         return [np.random.rand(OPEN_AI_VECTOR_SIZE).tolist() for _ in texts]
 
@@ -53,11 +54,9 @@ class MilvusIntegrationTest(BaseIntegrationTest):
             else:
                 # Server connection
                 connections.connect(
-                    alias="test_driver",
-                    uri=self.config["indexing"]["host"],
-                    token=self.config["indexing"]["auth"].get("token", "")
+                    alias="test_driver", uri=self.config["indexing"]["host"], token=self.config["indexing"]["auth"].get("token", "")
                 )
-            
+
             if utility.has_collection(self.config["indexing"]["collection"], using="test_driver"):
                 utility.drop_collection(self.config["indexing"]["collection"], using="test_driver")
         except Exception as e:
@@ -147,10 +146,7 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         if not self.config["indexing"]["host"].endswith(".db"):
             # test langchain integration with fake embeddings (only for server mode)
             embeddings = FakeEmbeddings()
-            connection_args = {
-                "uri": self.config["indexing"]["host"],
-                "token": self.config["indexing"]["auth"].get("token", "")
-            }
+            connection_args = {"uri": self.config["indexing"]["host"], "token": self.config["indexing"]["auth"].get("token", "")}
             vs = Milvus(
                 embedding_function=embeddings,
                 collection_name=self.config["indexing"]["collection"],
