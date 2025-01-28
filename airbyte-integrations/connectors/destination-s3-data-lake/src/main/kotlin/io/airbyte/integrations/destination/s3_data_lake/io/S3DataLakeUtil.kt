@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.s3_data_lake.io
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
-import io.airbyte.cdk.load.command.iceberg.parquet.DremioCatalogConfiguration
 import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
+import io.airbyte.cdk.load.command.iceberg.parquet.DremioCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
@@ -218,7 +218,8 @@ class S3DataLakeUtil(
             is GlueCatalogConfiguration ->
                 buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region)
             is RestCatalogConfiguration -> buildRestProperties(config, catalogConfig, s3Properties)
-            is DremioCatalogConfiguration -> catalogConfig.getCatalogProperties(icebergCatalogConfig)
+            is DremioCatalogConfiguration ->
+                catalogConfig.getCatalogProperties(icebergCatalogConfig)
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"

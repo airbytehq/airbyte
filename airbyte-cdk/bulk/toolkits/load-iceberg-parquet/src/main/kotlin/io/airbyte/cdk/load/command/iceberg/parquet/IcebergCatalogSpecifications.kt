@@ -286,8 +286,8 @@ class RestCatalogSpecification(
 /**
  * Dremio catalog specifications.
  *
- * Provides configuration details required to connect to the Dremio catalog service and manage Iceberg
- * table metadata.
+ * Provides configuration details required to connect to the Dremio catalog service and manage
+ * Iceberg table metadata.
  */
 @JsonSchemaTitle("Dremio Catalog")
 @JsonSchemaDescription("Configuration details for connecting to a Dremio catalog.")
@@ -451,7 +451,7 @@ data class DremioCatalogConfiguration(
      * @return A cleaned URI of the form "http(s)://host"
      */
     private fun cleanBaseUri(): String {
-        val uri = URI(serverUri)  // may throw URISyntaxException if invalid
+        val uri = URI(serverUri) // may throw URISyntaxException if invalid
 
         val scheme = if (uri.scheme?.equals("https", ignoreCase = true) == true) "https" else "http"
         val host = uri.host ?: throw URISyntaxException(serverUri, "No host found in URI")
@@ -460,11 +460,15 @@ data class DremioCatalogConfiguration(
     }
 
     object CustomNessieConfigConstants {
-        const val CONF_NESSIE_OAUTH2_SUBJECT_TOKEN = "nessie.authentication.oauth2.token-exchange.subject-token"
-        const val CONF_NESSIE_OAUTH2_SUBJECT_TOKEN_TYPE = "nessie.authentication.oauth2.token-exchange.subject-token-type"
+        const val CONF_NESSIE_OAUTH2_SUBJECT_TOKEN =
+            "nessie.authentication.oauth2.token-exchange.subject-token"
+        const val CONF_NESSIE_OAUTH2_SUBJECT_TOKEN_TYPE =
+            "nessie.authentication.oauth2.token-exchange.subject-token-type"
     }
 
-    fun getCatalogProperties(icebergCatalogConfig: IcebergCatalogConfiguration): Map<String, String> {
+    fun getCatalogProperties(
+        icebergCatalogConfig: IcebergCatalogConfiguration
+    ): Map<String, String> {
         val baseUri = cleanBaseUri()
 
         val tokenEndpoint = "$baseUri:9047/oauth/token"
@@ -482,7 +486,10 @@ data class DremioCatalogConfiguration(
             put(NessieConfigConstants.CONF_NESSIE_OAUTH2_CLIENT_ID, "nessie-cli")
             put(NessieConfigConstants.CONF_NESSIE_OAUTH2_GRANT_TYPE, "token_exchange")
             put(CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN, pat)
-            put(CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN_TYPE, "urn:ietf:params:oauth:token-type:dremio:personal-access-token")
+            put(
+                CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN_TYPE,
+                "urn:ietf:params:oauth:token-type:dremio:personal-access-token"
+            )
             put(NessieConfigConstants.CONF_NESSIE_OAUTH2_TOKEN_ENDPOINT, tokenEndpoint)
             put(NessieConfigConstants.CONF_NESSIE_OAUTH2_CLIENT_SCOPES, "dremio.all")
         }

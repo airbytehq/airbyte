@@ -65,7 +65,7 @@ class TableIdGeneratorFactory(private val s3DataLakeConfiguration: S3DataLakeCon
             is DremioCatalogConfiguration ->
                 SimpleTableIdGenerator(
                     (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
-                        as DremioCatalogConfiguration)
+                            as DremioCatalogConfiguration)
                         .namespace
                 )
         }
