@@ -50,6 +50,8 @@ acceptance_tests:
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
           - name: creative_assets_music
             bypass_reason: "System music provided by TikTok - very volatile data."
+          - name: advertisers_audience_reports_lifetime
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
