@@ -2,13 +2,7 @@ version: 6.13.0
 
 type: DeclarativeSource
 
-description: >-
-  Remove support for incremental sync to category groups because does not return
-  an updated_at field in the response and does not support it in the query
-  params.
-
-
-  Also fix the primary key for plan_items.
+description: ""
 
 check:
   type: CheckStream
