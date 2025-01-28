@@ -30,8 +30,8 @@ Auth Overview: https://developer.helpscout.com/mailbox-api/overview/authenticati
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2025-01-28 | | Initial release by [@pabloescoder](https://github.com/pabloescoder) via Connector Builder |
+| Version          | Date              | Pull Request                                         | Subject        |
+|------------------|-------------------|------------------------------------------------------|----------------|
+| 0.0.1 | 2025-01-28 | [52614](https://github.com/airbytehq/airbyte/pull/52614) | Initial release by [@pabloescoder](https://github.com/pabloescoder) via Connector Builder |
 
 </details>
