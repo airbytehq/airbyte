@@ -43,7 +43,7 @@ private val logger = KotlinLogging.logger {}
  * deliberately not injected here to make testing easier.
  */
 @Singleton
-class StateManagerFactory(
+open class StateManagerFactory(
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
     val metaFieldDecorator: MetaFieldDecorator,
     val outputConsumer: OutputConsumer,
@@ -113,6 +113,14 @@ class StateManagerFactory(
                 streams.associateWith { stream: Stream -> inputState?.streams?.get(stream.id) },
         )
 
+    protected open fun checkColumnTypes(streamId: StreamIdentifier, fieldName: String, expectedAirbyteSchemaType: AirbyteSchemaType, actualColumn: Field): Field? {
+        val actualAirbyteSchemaType: AirbyteSchemaType = actualColumn.type.airbyteSchemaType
+        if (expectedAirbyteSchemaType != actualAirbyteSchemaType) {
+            handler.accept(FieldTypeMismatch(streamId, fieldName, expectedAirbyteSchemaType, actualAirbyteSchemaType))
+        }
+        return null
+    }
+
     private fun toStream(
         metadataQuerier: MetadataQuerier,
         configuredStream: ConfiguredAirbyteStream,
@@ -166,19 +174,12 @@ class StateManagerFactory(
                 return null
             }
             val expectedAirbyteSchemaType: AirbyteSchemaType = expectedSchema[id] ?: return null
-            val actualAirbyteSchemaType: AirbyteSchemaType = actualColumn.type.airbyteSchemaType
-            if (expectedAirbyteSchemaType != actualAirbyteSchemaType) {
-                handler.accept(
-                    FieldTypeMismatch(
-                        streamID,
-                        id,
-                        expectedAirbyteSchemaType,
-                        actualAirbyteSchemaType,
-                    ),
-                )
-                return null
-            }
-            return actualColumn
+            return checkColumnTypes(
+                streamID,
+                id,
+                expectedAirbyteSchemaType,
+                actualColumn,
+            )
         }
         val streamFields: List<Field> =
             expectedSchema.keys.toList().filterNot(MetaField::isMetaFieldID).map {
