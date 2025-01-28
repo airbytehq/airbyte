@@ -58,9 +58,9 @@ class MsSqlServerCdcPartitionReaderTest :
         }
 
         override fun MsSqlServercontainerWithCdc.update135() {
-            for (i in listOf(1, 3, 5)) {
-                withStatement { it.execute("UPDATE test.tbl SET v = ${i + 1} WHERE id = $i") }
-            }
+            withStatement { it.execute("UPDATE test.tbl SET v = 6 WHERE id = 1") }
+            withStatement { it.execute("UPDATE test.tbl SET v = 7 WHERE id = 3") }
+            withStatement { it.execute("UPDATE test.tbl SET v = 8 WHERE id = 5") }
             waitForCdcNewRecords(3)
         }
 
@@ -108,7 +108,7 @@ class MsSqlServerCdcPartitionReaderTest :
 
     override fun createDebeziumOperations(): DebeziumOperations<TxLogPosition> {
             val config = MsSqlServerSourceConfigurationFactory().make(container.config)
-            return MsSqlServerDebeziumOperations(JdbcConnectionFactory(config), config)
+            return CdcPartitionReaderDebeziumOperationsFromProdForTest(MsSqlServerDebeziumOperations(JdbcConnectionFactory(config), config))
         }
     }
 
