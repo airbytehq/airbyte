@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test
 class DefaultFlushStrategyTest {
     val stream1 = MockDestinationCatalogFactory.stream1
 
-    @Value("\${airbyte.destination.record-batch-size-override}")
+    @Value("\${airbyte.destination.core.record-batch-size-override}")
     private var recordBatchSizeOverride: Long? = null
 
     @Singleton
