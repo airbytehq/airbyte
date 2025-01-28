@@ -90,7 +90,7 @@ class DockerizedDestination(
         grantAllPermissions(jobRoot)
 
         val containerDataRoot = "/data"
-        val containerJobRoot = "$containerDataRoot/$jobDir"
+//        val containerJobRoot = "$containerDataRoot/$jobDir"
 
         // This directory is being used for the file transfer feature.
         if (useFileTransfer) {
@@ -155,11 +155,13 @@ class DockerizedDestination(
 
         fun addInput(paramName: String, fileContents: ByteArray) {
             Files.write(
-                jobRoot.resolve("destination_$paramName.json"),
+//                jobRoot.resolve("destination_$paramName.json"),
+                testDir.resolve("destination_$paramName.json"),
                 fileContents,
             )
             cmd.add("--$paramName")
-            cmd.add("$containerJobRoot/destination_$paramName.json")
+//            cmd.add("$containerJobRoot/destination_$paramName.json")
+            cmd.add("/tmp/airbyte_tests/destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
