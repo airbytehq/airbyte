@@ -72,31 +72,22 @@ class DockerizedDestination(
         val testDir = Path.of("/tmp/airbyte_tests/")
         Files.createDirectories(testDir)
         // Allow ourselves and our connector access to our test dir
-        testDir.setPosixFilePermissions(
-            setOf(
-                PosixFilePermission.OWNER_READ,
-                PosixFilePermission.OWNER_WRITE,
-                PosixFilePermission.OWNER_EXECUTE,
-                PosixFilePermission.GROUP_READ,
-                PosixFilePermission.GROUP_WRITE,
-                PosixFilePermission.GROUP_EXECUTE,
-                PosixFilePermission.OTHERS_READ,
-                PosixFilePermission.OTHERS_WRITE,
-                PosixFilePermission.OTHERS_EXECUTE,
-            ),
-        )
+        grantAllPermissions(testDir)
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
+        grantAllPermissions(workspaceRoot)
         // This directory gets mounted to the docker container,
         // presumably so that we can extract some files out of it?
         // It's unclear to me that we actually need to do this...
         // Certainly nothing in the bulk CDK's test suites is reading back
         // anything in this directory.
         val localRoot = Files.createTempDirectory(testDir, "output")
+        grantAllPermissions(localRoot)
 
         // This directory will contain the actual inputs to the connector (config+catalog),
         // and is also mounted as a volume.
         val jobDir = "job"
         val jobRoot = Files.createDirectories(workspaceRoot.resolve(jobDir))
+        grantAllPermissions(jobRoot)
 
         val containerDataRoot = "/data"
         val containerJobRoot = "$containerDataRoot/$jobDir"
@@ -291,6 +282,23 @@ class DockerizedDestination(
     override fun verifyFileDeleted() {
         val file = File(fileTransferMountSource.resolve("test_file").toUri())
         assertFalse(file.exists())
+    }
+
+    private fun grantAllPermissions(dir: Path) {
+        logger.info { "Granting all permissions to $dir" }
+        dir.setPosixFilePermissions(
+            setOf(
+                PosixFilePermission.OWNER_READ,
+                PosixFilePermission.OWNER_WRITE,
+                PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.GROUP_READ,
+                PosixFilePermission.GROUP_WRITE,
+                PosixFilePermission.GROUP_EXECUTE,
+                PosixFilePermission.OTHERS_READ,
+                PosixFilePermission.OTHERS_WRITE,
+                PosixFilePermission.OTHERS_EXECUTE,
+            ),
+        )
     }
 }
 
