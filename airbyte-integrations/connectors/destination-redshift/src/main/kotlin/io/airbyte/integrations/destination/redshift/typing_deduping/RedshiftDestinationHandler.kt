@@ -23,7 +23,7 @@ import org.jooq.SQLDialect
 private val log = KotlinLogging.logger {}
 
 class RedshiftDestinationHandler(
-    databaseName: String?,
+    databaseName: String,
     jdbcDatabase: JdbcDatabase,
     rawNamespace: String
 ) :
@@ -31,7 +31,8 @@ class RedshiftDestinationHandler(
         databaseName,
         jdbcDatabase,
         rawNamespace,
-        SQLDialect.DEFAULT
+        SQLDialect.DEFAULT,
+        generationHandler = RedshiftGenerationHandler(databaseName)
     ) {
     override fun createNamespaces(schemas: Set<String>) {
         // SHOW SCHEMAS will fail with a "schema ... does not exist" error

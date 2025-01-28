@@ -51,6 +51,14 @@ def github_connectors_directory(resource_context: InitResourceContext) -> List[C
     return github_connector_repo.get_contents(connectors_path)
 
 
+def get_latest_commit_for_file(github_connector_repo: Repository, path: str) -> str:
+    """
+    Return the latest commit sha for a file in the github repo.
+    """
+    commits = github_connector_repo.get_commits(path=path)
+    return commits[0]
+
+
 @resource(
     required_resource_keys={"github_connector_repo"},
     config_schema={"connectors_path": StringSource},
@@ -61,7 +69,11 @@ def github_connectors_metadata_files(resource_context: InitResourceContext) -> L
     github_connector_repo = resource_context.resources.github_connector_repo
     repo_file_tree = github_connector_repo.get_git_tree("master", recursive=True).tree
     metadata_file_paths = [
-        {"path": github_file.path, "sha": github_file.sha, "last_modified": github_file.last_modified}
+        {
+            "path": github_file.path,
+            "sha": github_file.sha,
+            "last_modified": get_latest_commit_for_file(github_connector_repo, github_file.path).last_modified,
+        }
         for github_file in repo_file_tree
         if _valid_metadata_file_path(github_file.path)
     ]

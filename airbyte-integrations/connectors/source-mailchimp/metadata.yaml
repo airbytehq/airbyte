@@ -7,11 +7,11 @@ data:
       - "*.api.mailchimp.com"
       - "login.mailchimp.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
-  dockerImageTag: 2.0.13
+  dockerImageTag: 2.0.26
   dockerRepository: airbyte/source-mailchimp
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   githubIssueLabel: source-mailchimp
@@ -23,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-mailchimp
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -51,6 +51,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: mailchimp_config_oauth_dev_null
+          id: 46a5be1e-a798-407b-a7ae-00184e04b690
+        - name: mailchimp_config_dev_null
+          id: 7da811da-0320-407a-8d6e-7120eeead385
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

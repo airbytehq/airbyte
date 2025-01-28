@@ -4,18 +4,33 @@
 
 import os
 from http import HTTPStatus
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-from airbyte_cdk.models.airbyte_protocol import SyncMode
-from airbyte_cdk.sources.declarative.types import StreamSlice
-from source_pinterest.streams import PinterestAnalyticsStream, PinterestStream, PinterestSubStream, RateLimitExceeded
+from source_pinterest.streams import (
+    AnalyticsApiBackoffStrategyDecorator,
+    NonJSONResponse,
+    PinterestAnalyticsStream,
+    PinterestErrorHandler,
+    PinterestStream,
+    PinterestSubStream,
+)
 from source_pinterest.utils import get_analytics_columns
 
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+
 from .conftest import get_stream_by_name
+from .utils import create_requests_response
+
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
+_ANY_STREAM_NAME = "any_stream_name"
+_RETRY_AFTER_HEADER = "XRetry-After"
+_A_MAX_TIME = 10
 
 
 @pytest.fixture
@@ -67,7 +82,8 @@ def test_parse_response_with_sensitive_data(requests_mock, test_config):
         json={"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}]},
     )
     actual_response = [
-        dict(record) for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        dict(record)
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
     ]
     assert actual_response == [{"id": "CatalogsFeeds1"}]
@@ -87,100 +103,58 @@ def test_http_method(patch_base_class):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
+    ("http_status", "expected_response_action"),
     (
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, False),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (HTTPStatus.OK, ResponseAction.SUCCESS),
+        (HTTPStatus.BAD_REQUEST, ResponseAction.FAIL),
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RETRY),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY),
     ),
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status
+def test_response_action(requests_mock, patch_base_class, http_status, expected_response_action):
+    response_mock = create_requests_response(requests_mock, http_status, {})
     stream = PinterestStream(config=MagicMock())
-    assert stream.should_retry(response_mock) == should_retry
-
-
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
-    stream = PinterestStream(config=MagicMock())
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    assert stream._http_client._error_handler.interpret_response(response_mock).response_action == expected_response_action
 
 
 @pytest.mark.parametrize(
-    ("test_response", "status_code", "expected"),
+    ("test_response", "status_code", "expected_response_action"),
     (
-        ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, False),
-        ({"code": 7, "message": "Some other error message"}, 429, False),
+        ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, ResponseAction.RETRY),
+        ({"message": "You got data!"}, 200, ResponseAction.SUCCESS),
     ),
 )
-def test_should_retry_on_max_rate_limit_error(requests_mock, test_config, test_response, status_code, expected):
-    stream = get_stream_by_name("boards", test_config)
-    url = "https://api.pinterest.com/v5/boards"
-    requests_mock.get("https://api.pinterest.com/v5/boards", json=test_response, status_code=status_code)
-    response = requests.get(url)
-    result = stream.retriever.requester._should_retry(response)
-    assert result is expected
+@patch("time.sleep", return_value=None)
+def test_declarative_stream_response_action_on_max_rate_limit_error(
+    mock_sleep, requests_mock, test_response, status_code, expected_response_action
+):
+    response_mock = create_requests_response(requests_mock, status_code, {})
+    error_handler = PinterestErrorHandler(logger=MagicMock(), stream_name="any_stream_name")
+    assert error_handler.interpret_response(response_mock).response_action == expected_response_action
 
 
 def test_non_json_response(requests_mock, patch_base_class):
-    stream = PinterestStream(config=MagicMock())
     url = "https://api.pinterest.com/v5/boards"
-    requests_mock.get("https://api.pinterest.com/v5/boards", text="some response", status_code=200)
-    response = requests.get(url)
-    try:
-        stream.should_retry(response)
-        assert False
-    except Exception as e:
-        assert "Received unexpected response in non json format" in str(e)
+    requests_mock.get(url, text="some response", status_code=200)
+    response_mock = requests.get(url)
+    error_handler = PinterestErrorHandler(logger=MagicMock(), stream_name="any_stream_name")
+
+    with pytest.raises(NonJSONResponse) as exception:
+        error_handler.interpret_response(response_mock).response_action == ResponseAction.RETRY
+    assert "Received unexpected response in non json format" in str(exception)
 
 
-@pytest.mark.parametrize(
-    ("test_response", "test_headers", "status_code", "expected"),
-    (
-        ({"code": 7, "message": "Some other error message"}, {"X-RateLimit-Reset": "2"}, 429, 2.0),
-        (
-            {"code": 7, "message": "Some other error message"},
-            {"X-RateLimit-Reset": "2000"},
-            429,
-            (
-                RateLimitExceeded,
-                "Rate limit exceeded for stream pinterest_stream. Waiting time is longer than 10 minutes: 2000.0s.",
-            ),
-        ),
-    ),
-)
-def test_backoff_on_rate_limit_error(
-    requests_mock, test_config, patch_base_class, test_response, status_code, test_headers, expected
-):
-    stream = PinterestStream(config=MagicMock())
+@pytest.mark.parametrize(("response", "expected_backoff_time"), (({"code": 1}, 1),))
+def test_analytics_stream_backoff_time(requests_mock, response, expected_backoff_time):
     url = "https://api.pinterest.com/v5/boards"
     requests_mock.get(
-        "https://api.pinterest.com/v5/boards",
-        json=test_response,
-        headers=test_headers,
-        status_code=status_code,
+        url,
+        json={"code": 1},
+        status_code=400,
     )
-
     response = requests.get(url)
 
-    if isinstance(expected, tuple):
-        with pytest.raises(expected[0], match=expected[1]):
-            stream.backoff_time(response)
-    else:
-        result = stream.backoff_time(response)
-        assert result == expected
-
-
-@pytest.mark.parametrize(("response", "expected_backoff_time"), (({"code": 1}, 1), ({}, None)))
-def test_analytics_stream_backoff_time(patch_base_class, response, expected_backoff_time):
-    stream = PinterestAnalyticsStream(parent=None, config=MagicMock())
-    response_mock = MagicMock()
-    response_mock.status_code = 400
-    response_mock.json.return_value = response
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    assert AnalyticsApiBackoffStrategyDecorator().backoff_time(response) == 1
 
 
 def test_analytics_stream_request_params(patch_base_class):

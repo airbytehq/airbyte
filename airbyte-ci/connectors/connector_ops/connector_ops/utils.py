@@ -3,6 +3,7 @@
 #
 
 import functools
+import json
 import logging
 import os
 import re
@@ -20,6 +21,7 @@ from pydash.collections import find
 from pydash.objects import get
 from rich.console import Console
 from simpleeval import simple_eval
+
 
 console = Console()
 
@@ -59,6 +61,7 @@ def download_catalog(catalog_url):
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 MANIFEST_FILE_NAME = "manifest.yaml"
+COMPONENTS_FILE_NAME = "components.py"
 DOCKERFILE_FILE_NAME = "Dockerfile"
 PYPROJECT_FILE_NAME = "pyproject.toml"
 ICON_FILE_NAME = "icon.svg"
@@ -126,7 +129,7 @@ def has_local_cdk_ref(build_file: Path) -> bool:
     """Return true if the build file uses the local CDK.
 
     Args:
-        build_file (Path): Path to the build.gradle file of the project.
+        build_file (Path): Path to the build.gradle/build.gradle.kts file of the project.
 
     Returns:
         bool: True if using local CDK.
@@ -146,7 +149,7 @@ def get_gradle_dependencies_block(build_file: Path) -> str:
     """Get the dependencies block of a Gradle file.
 
     Args:
-        build_file (Path): Path to the build.gradle file of the project.
+        build_file (Path): Path to the build.gradle/build.gradle.kts file of the project.
 
     Returns:
         str: The dependencies block of the Gradle file.
@@ -213,7 +216,7 @@ def get_all_gradle_dependencies(
     """Recursively retrieve all transitive dependencies of a Gradle project.
 
     Args:
-        build_file (Path): Path to the build.gradle file of the project.
+        build_file (Path): Path to the build.gradle/build.gradle.kts file of the project.
         found_dependencies (List[Path]): List of dependencies that have already been found. Defaults to None.
 
     Returns:
@@ -223,10 +226,12 @@ def get_all_gradle_dependencies(
         found_dependencies = []
     project_dependencies, test_dependencies = parse_gradle_dependencies(build_file)
     all_dependencies = project_dependencies + test_dependencies if with_test_dependencies else project_dependencies
+    valid_build_files = ["build.gradle", "build.gradle.kts"]
     for dependency_path in all_dependencies:
-        if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
-            found_dependencies.append(dependency_path)
-            get_all_gradle_dependencies(dependency_path / "build.gradle", with_test_dependencies, found_dependencies)
+        for build_file in valid_build_files:
+            if dependency_path not in found_dependencies and Path(dependency_path / build_file).exists():
+                found_dependencies.append(dependency_path)
+                get_all_gradle_dependencies(dependency_path / build_file, with_test_dependencies, found_dependencies)
 
     return found_dependencies
 
@@ -300,6 +305,10 @@ class Connector:
         return f"./docs/{relative_documentation_path}"
 
     @property
+    def documentation_file_name(self) -> str:
+        return self.metadata.get("documentationUrl").split("/")[-1] + ".md"
+
+    @property
     def documentation_file_path(self) -> Optional[Path]:
         return Path(f"{self.relative_documentation_path_str}.md") if self.has_airbyte_docs else None
 
@@ -347,6 +356,11 @@ class Connector:
         return self._manifest_low_code_path
 
     @property
+    def manifest_only_components_path(self) -> Path:
+        """Return the path to the components.py file of a manifest-only connector."""
+        return self.code_directory / COMPONENTS_FILE_NAME
+
+    @property
     def has_dockerfile(self) -> bool:
         return self.dockerfile_file_path.is_file()
 
@@ -368,6 +382,26 @@ class Connector:
         if not file_path.is_file():
             return None
         return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
+
+    @property
+    def connector_spec_file_content(self) -> Optional[dict]:
+        """
+        The spec source of truth is the actual output of the spec command, as connector can mutate their spec.
+        But this is the best effort approach at statically fetching a spec without running the command on the connector.
+        Which is "good enough" in some cases.
+        """
+        yaml_spec = Path(self.python_source_dir_path / "spec.yaml")
+        json_spec = Path(self.python_source_dir_path / "spec.json")
+
+        if yaml_spec.exists():
+            return yaml.safe_load(yaml_spec.read_text())
+        elif json_spec.exists():
+            with open(json_spec) as f:
+                return json.load(f)
+        elif self.manifest_path.exists():
+            return yaml.safe_load(self.manifest_path.read_text())["spec"]
+
+        return None
 
     @property
     def language(self) -> ConnectorLanguage:
@@ -577,7 +611,7 @@ class Connector:
         Returns:
             bool: True if the connector is enabled, False otherwise.
         """
-        registries = self.metadata.get("registries")
+        registries = self.metadata.get("registryOverrides")
         if not registries:
             return False
 
@@ -625,6 +659,23 @@ class Connector:
         return get(connector_entry, "generated.metrics.cloud.usage")
 
     @property
+    def sbom_url(self) -> Optional[str]:
+        """
+        Fetches SBOM URL from the connector definition in the OSS registry, if it exists, None otherwise.
+        """
+        metadata = self.metadata
+        definition_id = metadata.get("definitionId")
+        # We use the OSS registry as the source of truth for released connectors as the cloud registry can be a subset of the OSS registry.
+        oss_registry = download_catalog(OSS_CATALOG_URL)
+
+        all_connectors_of_type = oss_registry[f"{self.connector_type}s"]
+        connector_entry = find(all_connectors_of_type, {self.registry_primary_key_field: definition_id})
+        if not connector_entry:
+            return None
+
+        return get(connector_entry, "generated.sbomUrl")
+
+    @property
     def image_address(self) -> str:
         return f'{self.metadata["dockerRepository"]}:{self.metadata["dockerImageTag"]}'
 
@@ -658,10 +709,14 @@ class Connector:
     @functools.lru_cache(maxsize=2)
     def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
         dependencies_paths = []
+        build_script = "build.gradle"
+        if Path(self.code_directory / "build.gradle.kts").exists():
+            build_script = "build.gradle.kts"
+
         if self.language == ConnectorLanguage.JAVA:
-            dependencies_paths += [Path("./airbyte-cdk/java/airbyte-cdk")]
+            dependencies_paths += [Path("./airbyte-cdk/java/airbyte-cdk"), Path("./airbyte-cdk/bulk")]
             dependencies_paths += get_all_gradle_dependencies(
-                self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
+                self.code_directory / build_script, with_test_dependencies=with_test_dependencies
             )
         return sorted(list(set(dependencies_paths)))
 

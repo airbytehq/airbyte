@@ -1,34 +1,47 @@
 data:
   ab_internal:
     ql: 200
-    sl: 100
+    sl: 300
+  allowedHosts:
+    hosts:
+      - storage.googleapis.com
+      - accounts.google.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
-  dockerImageTag: 0.4.12
+  dockerImageTag: 0.8.3
   dockerRepository: airbyte/source-gcs
   documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
   githubIssueLabel: source-gcs
   icon: gcs.svg
   license: ELv2
-  name: GCS
+  maxSecondsBetweenMessages: 5400
+  name: Google Cloud Storage (GCS)
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-gcs
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: certified
   tags:
     - language:python
     - cdk:python-file-based
   connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+    - suite: liveTests
+      testConnections:
+        - name: gcs_old_config_dev_null
+          id: 15721043-acf6-4ddf-907b-0930e38d4a00
+        - name: gcs_config_dev_null
+          id: 355ebb52-1126-4275-a77e-a09017c9e5c0
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-GCS_OLD__CREDS
@@ -38,6 +51,21 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-GCS__CREDS
           fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GCS_JSONL__CREDS
+          fileName: config_jsonl.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GCS_GLOB__CREDS
+          fileName: config_glob.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GCS_OAUTH
+          fileName: config_oauth.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

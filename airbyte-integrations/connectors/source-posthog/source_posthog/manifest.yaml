@@ -152,13 +152,12 @@ definitions:
           inject_into: "request_parameter"
           field_name: "limit"
         pagination_strategy:
-          type: "CursorPagination"
-          cursor_value: "{{ response['next'] }}"
+          type: "OffsetIncrement"
           page_size: 10000
         page_token_option:
-          type: RequestPath
-        $parameters:
-          url_base: "#/definitions/requester/url_base"
+          type: RequestOption
+          field_name: "offset"
+          inject_into: "request_parameter"
 
 streams:
   - "#/definitions/projects_stream"

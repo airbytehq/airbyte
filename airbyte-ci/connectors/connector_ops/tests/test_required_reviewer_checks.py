@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import fileinput
 import shutil
+from pathlib import Path
 from typing import List
 
 import git
@@ -21,7 +23,12 @@ def mock_diffed_branched(mocker):
 
 @pytest.fixture
 def pokeapi_metadata_path():
-    return "airbyte-integrations/connectors/source-pokeapi/metadata.yaml"
+    return "airbyte-integrations/connectors/source-zoho-crm/metadata.yaml"
+
+
+@pytest.fixture
+def manifest_only_community_connector_path():
+    return "airbyte-integrations/connectors/source-xkcd/metadata.yaml"
 
 
 @pytest.fixture
@@ -30,7 +37,7 @@ def not_tracked_change_expected_team(tmp_path, pokeapi_metadata_path):
     backup_path = tmp_path / "non_strategic_acceptance_test_config.backup"
     shutil.copyfile(pokeapi_metadata_path, backup_path)
     with open(pokeapi_metadata_path, "a") as metadata_file:
-        metadata_file.write("not_tracked")
+        metadata_file.write("\nnot_tracked: true\n")
     yield expected_teams
     shutil.copyfile(backup_path, pokeapi_metadata_path)
 
@@ -40,12 +47,25 @@ def test_breaking_change_release_expected_team(tmp_path, pokeapi_metadata_path) 
     expected_teams = list(required_reviewer_checks.BREAKING_CHANGE_REVIEWERS)
     backup_path = tmp_path / "backup_poke_metadata"
     shutil.copyfile(pokeapi_metadata_path, backup_path)
-    with open(pokeapi_metadata_path, "a") as acceptance_test_config_file:
-        acceptance_test_config_file.write(
-            "releases:\n  breakingChanges:\n    23.0.0:\n      message: hi\n      upgradeDeadline: 2025-01-01"
-        )
+    with open(pokeapi_metadata_path, "a") as metadata_file:
+        metadata_file.write("releases:\n  breakingChanges:\n    23.0.0:\n      message: hi\n      upgradeDeadline: 2025-01-01")
     yield expected_teams
     shutil.copyfile(backup_path, pokeapi_metadata_path)
+
+
+@pytest.fixture
+def test_certified_manifest_only_connector_expected_team(tmp_path, manifest_only_community_connector_path) -> List:
+    expected_teams = list(required_reviewer_checks.CERTIFIED_MANIFEST_ONLY_CONNECTOR_REVIEWERS)
+    backup_path = tmp_path / "backup_xkcd_metadata"
+    shutil.copyfile(manifest_only_community_connector_path, backup_path)
+    # TODO: replace this test case with an arbitrary change to a certified manifest-only
+    # connector when we have one, instead of replacing the support level as a change
+    with fileinput.FileInput(manifest_only_community_connector_path, inplace=True) as file:
+        for line in file:
+            print(line.replace("community", "certified"), end="")
+
+    yield expected_teams
+    shutil.copyfile(backup_path, manifest_only_community_connector_path)
 
 
 def verify_no_requirements_file_was_generated(captured: str):
@@ -80,3 +100,7 @@ def test_find_mandatory_reviewers_breaking_change_release(capsys, test_breaking_
 
 def test_find_mandatory_reviewers_no_tracked_changed(capsys, not_tracked_change_expected_team):
     check_review_requirements_file(capsys, not_tracked_change_expected_team)
+
+
+def test_find_reviewers_manifest_only_certified_connector(capsys, test_certified_manifest_only_connector_expected_team):
+    check_review_requirements_file(capsys, test_certified_manifest_only_connector_expected_team)

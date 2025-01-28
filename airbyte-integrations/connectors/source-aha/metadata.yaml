@@ -2,24 +2,24 @@ data:
   ab_internal:
     ql: 200
     sl: 100
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
       enabled: true
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-aha
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 81ca39dc-4534-4dd2-b848-b0cfd2c11fce
-  dockerImageTag: 0.3.11
+  dockerImageTag: 0.4.11
   dockerRepository: airbyte/source-aha
   documentationUrl: https://docs.airbyte.com/integrations/sources/aha
   githubIssueLabel: source-aha
@@ -29,9 +29,13 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: aha_config_dev_null
+          id: 38f3c440-135f-4ca6-9d97-c68104b28cfa
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-AHA__CREDS

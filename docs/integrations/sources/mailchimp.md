@@ -126,6 +126,19 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 2.0.26 | 2025-01-25 | [52236](https://github.com/airbytehq/airbyte/pull/52236) | Update dependencies |
+| 2.0.25 | 2025-01-11 | [51215](https://github.com/airbytehq/airbyte/pull/51215) | Update dependencies |
+| 2.0.24 | 2025-01-04 | [50894](https://github.com/airbytehq/airbyte/pull/50894) | Update dependencies |
+| 2.0.23 | 2024-12-28 | [50633](https://github.com/airbytehq/airbyte/pull/50633) | Update dependencies |
+| 2.0.22 | 2024-12-21 | [50139](https://github.com/airbytehq/airbyte/pull/50139) | Update dependencies |
+| 2.0.21 | 2024-12-14 | [49148](https://github.com/airbytehq/airbyte/pull/49148) | Update dependencies |
+| 2.0.20 | 2024-11-22 | [45282](https://github.com/airbytehq/airbyte/pull/45282) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.0.19 | 2024-08-31 | [45031](https://github.com/airbytehq/airbyte/pull/45031) | Update dependencies |
+| 2.0.18 | 2024-08-24 | [44708](https://github.com/airbytehq/airbyte/pull/44708) | Update dependencies |
+| 2.0.17 | 2024-08-17 | [44323](https://github.com/airbytehq/airbyte/pull/44323) | Update dependencies |
+| 2.0.16 | 2024-08-12 | [43752](https://github.com/airbytehq/airbyte/pull/43752) | Update dependencies |
+| 2.0.15 | 2024-08-10 | [43554](https://github.com/airbytehq/airbyte/pull/43554) | Update dependencies |
+| 2.0.14 | 2024-08-03 | [43228](https://github.com/airbytehq/airbyte/pull/43228) | Update dependencies |
 | 2.0.13 | 2024-07-27 | [42683](https://github.com/airbytehq/airbyte/pull/42683) | Update dependencies |
 | 2.0.12 | 2024-07-20 | [42381](https://github.com/airbytehq/airbyte/pull/42381) | Update dependencies |
 | 2.0.11 | 2024-07-13 | [41683](https://github.com/airbytehq/airbyte/pull/41683) | Update dependencies |

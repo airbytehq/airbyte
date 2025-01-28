@@ -36,6 +36,21 @@ The connector has a rate limit of no more than 120 requests over a rolling 60 se
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.2.11 | 2025-01-25 | [52332](https://github.com/airbytehq/airbyte/pull/52332) | Update dependencies |
+| 0.2.10 | 2025-01-18 | [51673](https://github.com/airbytehq/airbyte/pull/51673) | Update dependencies |
+| 0.2.9 | 2025-01-11 | [51107](https://github.com/airbytehq/airbyte/pull/51107) | Update dependencies |
+| 0.2.8 | 2024-12-28 | [50522](https://github.com/airbytehq/airbyte/pull/50522) | Update dependencies |
+| 0.2.7 | 2024-12-21 | [50066](https://github.com/airbytehq/airbyte/pull/50066) | Update dependencies |
+| 0.2.6 | 2024-12-14 | [49510](https://github.com/airbytehq/airbyte/pull/49510) | Update dependencies |
+| 0.2.5 | 2024-12-12 | [48958](https://github.com/airbytehq/airbyte/pull/48958) | Update dependencies |
+| 0.2.4 | 2024-11-04 | [48217](https://github.com/airbytehq/airbyte/pull/48217) | Update dependencies |
+| 0.2.3 | 2024-10-29 | [47764](https://github.com/airbytehq/airbyte/pull/47764) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47619](https://github.com/airbytehq/airbyte/pull/47619) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.2.0 | 2024-08-15 | [44161](https://github.com/airbytehq/airbyte/pull/44161) | Refactor connector to manifest-only format |
+| 0.1.14 | 2024-08-12 | [43803](https://github.com/airbytehq/airbyte/pull/43803) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43503](https://github.com/airbytehq/airbyte/pull/43503) | Update dependencies |
+| 0.1.12 | 2024-08-03 | [43237](https://github.com/airbytehq/airbyte/pull/43237) | Update dependencies |
 | 0.1.11 | 2024-07-27 | [42643](https://github.com/airbytehq/airbyte/pull/42643) | Update dependencies |
 | 0.1.10 | 2024-07-20 | [42363](https://github.com/airbytehq/airbyte/pull/42363) | Update dependencies |
 | 0.1.9 | 2024-07-13 | [41742](https://github.com/airbytehq/airbyte/pull/41742) | Update dependencies |

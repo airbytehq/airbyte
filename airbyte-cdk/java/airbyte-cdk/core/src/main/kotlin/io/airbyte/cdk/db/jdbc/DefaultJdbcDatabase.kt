@@ -116,19 +116,28 @@ constructor(
         recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
         val connection = dataSource.connection
-        return JdbcDatabase.Companion.toUnsafeStream<T>(
-                statementCreator.apply(connection).executeQuery(),
-                recordTransform
-            )
-            .onClose(
-                Runnable {
-                    try {
-                        LOGGER.info { "closing connection" }
-                        connection.close()
-                    } catch (e: SQLException) {
-                        throw RuntimeException(e)
+        try {
+            return JdbcDatabase.Companion.toUnsafeStream<T>(
+                    statementCreator.apply(connection).executeQuery(),
+                    recordTransform
+                )
+                .onClose(
+                    Runnable {
+                        try {
+                            LOGGER.info { "closing connection" }
+                            connection.close()
+                        } catch (e: SQLException) {
+                            throw RuntimeException(e)
+                        }
                     }
-                }
-            )
+                )
+        } catch (e: Throwable) {
+            // this is ugly because we usually don't close the connection here.
+            // We expect the calleer to close the returned stream, which will call the onClose
+            // but if the executeQuery threw an exception, we still need to close the connection
+            LOGGER.warn(e) { "closing connection because of an Exception" }
+            connection.close()
+            throw e
+        }
     }
 }

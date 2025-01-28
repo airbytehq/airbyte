@@ -4,18 +4,9 @@ This page guides you through the process of setting up the Redshift destination 
 
 ## Prerequisites
 
-The Airbyte Redshift destination allows you to sync data to Redshift.
+The Airbyte Redshift destination allows you to sync data to Redshift. Airbyte replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html). Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest file.
 
-This Redshift destination connector has two replication strategies:
-
-1. INSERT: Replicates data via SQL INSERT queries. This is built on top of the destination-jdbc code
-   base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Maven Central
-   [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in
-   Redshift documentation
-   [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html). **Not recommended
-   for production workloads as this does not scale well**.
-
-### For INSERT strategy:
+### Configuration Options
 
 - **Host**
 - **Port**
@@ -24,19 +15,6 @@ This Redshift destination connector has two replication strategies:
 - **Schema**
 - **Database**
   - This database needs to exist within the cluster provided.
-- **JDBC URL Params** (optional)
-
-2. COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is
-   the recommended loading approach described by Redshift
-   [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html).
-   Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest
-   file.
-
-Airbyte automatically picks an approach depending on the given configuration - if S3 configuration
-is present, Airbyte will use the COPY strategy and vice versa.
-
-### For COPY strategy:
-
 - **S3 Bucket Name**
   - See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to
     create an S3 bucket.
@@ -59,7 +37,7 @@ Optional parameters:
     `yourFavoriteSubdirectory`, we will place the staging data inside
     `s3://yourBucket/yourFavoriteSubdirectory`. If not provided, defaults to the root directory.
 - **S3 Filename pattern**
-   - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
+  - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
     `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`.
     The pattern you supply will apply to anything under the Bucket Path. If this field is left blank, everything syncs under the Bucket Path. Please, don't use empty space and not supportable placeholders, as they won't recognized.
 - **Purge Staging Data**
@@ -243,7 +221,14 @@ Each stream will be output into its own raw table in Redshift. Each table will c
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
-|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.5.2 | 2025-01-10 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
+| 3.5.1 | 2024-12-18 | [49903](https://github.com/airbytehq/airbyte/pull/49903) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 3.5.0 | 2024-09-18 | [45435](https://github.com/airbytehq/airbyte/pull/45435) | upgrade all dependencies |
+| 3.4.4 | 2024-08-20 | [44476](https://github.com/airbytehq/airbyte/pull/44476) | Increase message parsing limit to 100mb |
+| 3.4.3 | 2024-08-22 | [44526](https://github.com/airbytehq/airbyte/pull/44526) | Revert protocol compliance fix |
+| 3.4.2 | 2024-08-15 | [42506](https://github.com/airbytehq/airbyte/pull/42506) | Fix bug in refreshes logic (already mitigated in platform, just fixing protocol compliance) |
+| 3.4.1   | 2024-08-13 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)       | Simplify Redshift Options                                                                                                                                                                                        |
 | 3.4.0   | 2024-07-23 | [42445](https://github.com/airbytehq/airbyte/pull/42445)   | Respect the `drop cascade` option on raw tables                                                                                                                                                                  |
 | 3.3.1   | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968)   | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                                                                       |
 | 3.3.0   | 2024-07-02 | [40567](https://github.com/airbytehq/airbyte/pull/40567)   | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                 |
@@ -321,7 +306,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.55  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                                                                                         |
 | 0.3.54  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                                                                                                                  |
 | 0.3.53  | 2023-01-03 | [\#17273](https://github.com/airbytehq/airbyte/pull/17273) | Flatten JSON arrays to fix maximum size check for SUPER field                                                                                                                                                    |
-| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                       |
+| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                      |
 | 0.3.51  | 2022-10-26 | [\#18434](https://github.com/airbytehq/airbyte/pull/18434) | Fix empty S3 bucket path handling                                                                                                                                                                                |
 | 0.3.50  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                                                                                   |
 | 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields)                                                                                         |

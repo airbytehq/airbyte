@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.s3.amazonaws.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: file
   connectorType: source
   definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
-  dockerImageTag: 4.7.2
+  dockerImageTag: 4.12.1
   dockerRepository: airbyte/source-s3
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   githubIssueLabel: source-s3
@@ -22,13 +22,15 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-s3
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message: UX improvement, multi-stream support and deprecation of some parsing features
@@ -37,10 +39,78 @@ data:
         message: Following 4.0.0 config change, we are eliminating the `streams.*.file_type` field which was redundant with `streams.*.format`
         upgradeDeadline: "2023-10-18"
   supportLevel: certified
+  supportsFileTransfer: true
   tags:
     - language:python
     - cdk:python-file-based
   connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: liveTests
+      testConnections:
+        - name: s3_100_mb_dev_null
+          id: 3dbae341-863a-43c0-bf00-d6a7473c7364
+        - name: s3_v4_jsonl_config_dev_null
+          id: 01f508b1-5690-47af-940c-a777d471762f
+        - name: s3_v4_csv_skip_rows_no_header_config_dev_null
+          id: 0bc29171-b589-45be-b59c-0bc3138eaf41
+        - name: s3_v4_parquet_duration_list_struct_config_dev_null
+          id: 0e53811c-f26c-487c-a493-b068ae663f81
+        - name: s3_parquet_dataset_config_dev_null
+          id: 0f06e5a2-da09-4615-a7bc-83a71043866b
+        - name: s3_v4_parquet_decimal_config_dev_null
+          id: 13d94db7-2e54-44ab-aae8-1b4c96a2f605
+        - name: s3_jsonl_config_dev_null
+          id: 18e4fed1-f4ca-441f-b5bd-fd80aed40831
+        - name: s3_v4_avro_duration_config_dev_null
+          id: 1a0868c0-1491-43bf-8aa0-9d5ebd36e128
+        - name: s3_v4_csv_user_schema_cast_complex_config_dev_null
+          id: 2124602b-0617-4646-bf5f-39482f8fdcee
+        - name: s3_v4_csv_user_schema_config_dev_null
+          id: 231c0fcb-41e4-414c-980b-4d86f5b8c377
+        - name: s3_v4_avro_decimal_as_float_config_dev_null
+          id: 277832c6-2554-4cd8-8b5e-85bc19fcfe8a
+        - name: s3_v4_csv_custom_encoding_config_dev_null
+          id: 28680b58-f086-4187-9bbe-acef00f11e67
+        - name: s3_v4_avro_config_dev_null
+          id: 2d04cf3c-d641-424c-bb88-101a70d8bba8
+        - name: s3_v4_parquet_config_dev_null
+          id: 32976729-6872-4fc5-ad65-1b7024b234b9
+        - name: s3_jsonl_newlines_config_dev_null
+          id: 3497d077-2714-42ac-b379-3e02b54ff481
+        - name: s3_v4_csv_no_header_config_dev_null
+          id: 38cb2686-3480-4411-84d3-ff9464342ef3
+        - name: s3_config_dev_null
+          id: 40ed8b50-0322-43ef-99d5-1dc4e4995f8a
+        - name: s3_unstructured_config_dev_null
+          id: 44884944-3708-489f-b8e2-df7922c9a167
+        - name: s3_v4_csv_with_null_bools_config_dev_null
+          id: 47a8291a-56b6-4865-b66f-0f0cba8abdb8
+        - name: s3_zip_config_avro_dev_null
+          id: 4dc5f34b-f335-4a93-8816-2064f838d0a0
+        - name: s3_v4_parquet_dataset_config_dev_null
+          id: 4f4eb9d4-8b04-4af7-8de0-0e311185fa60
+        - name: s3_avro_config_dev_null
+          id: 5abf0b35-a5b5-40c2-a9c6-f525027aef9e
+        - name: s3_v4_parquet_decimal_as_float_config_dev_null
+          id: 5b4f179e-a27c-4fbf-bcfe-19b792e8b001
+        - name: s3_v4_jsonl_newlines_config_dev_null
+          id: 5e0ea12a-0629-4de7-9597-348be8599f32
+        - name: s3_v4_csv_custom_format_config_dev_null
+          id: 6e6e9c11-c068-4eae-9faa-f02c643dc52b
+        - name: s3_zip_config_csv_custom_encoding_dev_null
+          id: 70e97267-8a4c-48a1-bdef-30609e5d27f9
+        - name: s3_v4_csv_with_nulls_config_dev_null
+          id: 8ddea3b4-fb78-44fe-81db-7cdb4e68cae5
+        - name: s3_v4_avro_decimal_config_dev_null
+          id: 8eb9a0f5-1fcc-418a-85f3-8f81c13e0a73
+        - name: s3_zip_config_csv_dev_null
+          id: 9e73e8ca-4486-4f14-982c-d26f27792aae
+        - name: s3_zip_config_jsonl_dev_null
+          id: ad846359-1348-4c75-9c7e-1717f42a249e
+        - name: s3_zip_config_parquet_dev_null
+          id: b796ca5b-d5c0-4472-9f63-c277b79f534b
+        - name: s3_v4_csv_skip_rows_config_dev_null
+          id: ba0c3a18-d120-4e29-8fca-467634e00300
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-S3_AVRO__CREDS

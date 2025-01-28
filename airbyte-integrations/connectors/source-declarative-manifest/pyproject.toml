@@ -1,12 +1,12 @@
 [build-system]
-requires = [ "poetry-core>=1.0.0",]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.10.8"
+version = "6.5.2"
 name = "source-declarative-manifest"
 description = "Base source implementation for low-code sources."
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/low-code"
@@ -16,13 +16,13 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_declarative_manifest"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "3.9.6"
+python = "^3.10,<3.12"
+airbyte-cdk = "6.5.2"
 
 [tool.poetry.scripts]
 source-declarative-manifest = "source_declarative_manifest.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.6.1"
-pytest = "^6.2"
-requests-mock = "^1.9.3"
+pytest-mock = "^3.14"
+pytest = "^8.3"
+requests-mock = "^1.12"

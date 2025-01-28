@@ -4,11 +4,11 @@ data:
       - accounts.snapchat.com
       - adsapi.snapchat.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
-  dockerImageTag: 1.1.2
+  dockerImageTag: 1.4.1
   dockerRepository: airbyte/source-snapchat-marketing
   githubIssueLabel: source-snapchat-marketing
   icon: snapchat.svg
@@ -17,9 +17,9 @@ data:
   name: Snapchat Marketing
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-snapchat-marketing
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -59,13 +59,17 @@ data:
               - "campaigns_stats_lifetime"
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   ab_internal:
     sl: 200
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: snapchat-marketing_config_dev_null
+          id: 1aea074b-0b53-49ec-85d3-b1d10ed3c83d
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

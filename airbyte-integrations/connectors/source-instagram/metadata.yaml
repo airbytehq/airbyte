@@ -3,11 +3,11 @@ data:
     hosts:
       - graph.facebook.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
-  dockerImageTag: 3.1.0
+  dockerImageTag: 3.1.2
   dockerRepository: airbyte/source-instagram
   githubIssueLabel: source-instagram
   icon: instagram.svg
@@ -18,7 +18,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-instagram
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -46,14 +46,19 @@ data:
       - users
       - user_lifetime_insights
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
+  erdUrl: https://dbdocs.io/airbyteio/source-instagram?view=relationships
   tags:
     - language:python
     - cdk:low-code
   ab_internal:
-    sl: 200
+    sl: 300
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: instagram_config_dev_null
+          id: 39208d11-8b6f-4b0c-bee1-cddcb857e5fd
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

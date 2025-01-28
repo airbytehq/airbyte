@@ -11,13 +11,20 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 
 import pendulum
 import requests
+
+from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
+from airbyte_cdk.sources.streams.checkpoint import Cursor
+from airbyte_cdk.sources.streams.checkpoint.resumable_full_refresh_cursor import ResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_stripe.availability_strategy import StripeAvailabilityStrategy, StripeSubStreamAvailabilityStrategy
+from source_stripe.error_handlers import ParentIncrementalStripeSubStreamErrorHandler, StripeErrorHandler
+from source_stripe.error_mappings import PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING
+
 
 STRIPE_API_VERSION = "2022-11-15"
 CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
@@ -79,7 +86,6 @@ class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
             if self.cursor_field in record:
                 yield record
                 continue  # Skip the rest of the loop iteration
-
             # fetch legacy_cursor_field from record; default to current timestamp for initial syncs without an any cursor.
             current_cursor_value = record.get(self.legacy_cursor_field, pendulum.now().int_timestamp)
 
@@ -88,13 +94,13 @@ class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
 
 
 class StripeStream(HttpStream, ABC):
+    is_resumable = False
     url_base = "https://api.stripe.com/v1/"
     DEFAULT_SLICE_RANGE = 365
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeAvailabilityStrategy()
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return StripeErrorHandler(logger=self.logger)
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -123,6 +129,9 @@ class StripeStream(HttpStream, ABC):
         if callable(self._extra_request_params):
             return self._extra_request_params(self, *args, **kwargs)
         return self._extra_request_params or {}
+
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return ExponentialBackoffStrategy(config={}, parameters={}, factor=1)
 
     @property
     def record_extractor(self) -> IRecordExtractor:
@@ -204,6 +213,21 @@ class StripeStream(HttpStream, ABC):
         """
         return 0 if IS_TESTING else super(StripeStream, self).retry_factor
 
+    def get_cursor(self) -> Optional[Cursor]:
+        """
+        RFR is breaking the pagination in Stripe today. The stream is instantiated using the stream facade here. During the read, this goes
+        through the concurrent code here so that we can read full refresh streams concurrently.
+
+        However, as there are no cursors and the read records is the one from the HttpStream, we end up assigning the
+        ResumableFullRefresCursor and hence only read a single page.
+
+        In order to avoid that, we will assume there are no cursor if the cursor if RFR.
+        """
+        parent_cursor = super().get_cursor()
+        if isinstance(parent_cursor, (ResumableFullRefreshCursor, SubstreamResumableFullRefreshCursor)):
+            return None
+        return parent_cursor
+
 
 class IStreamSelector(ABC):
     @abstractmethod
@@ -212,6 +236,7 @@ class IStreamSelector(ABC):
 
 
 class CreatedCursorIncrementalStripeStream(StripeStream):
+    is_resumable = True
     # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
     state_checkpoint_interval = math.inf
 
@@ -227,10 +252,10 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
         cursor_field: str = "created",
         **kwargs,
     ):
+        self._cursor_field = cursor_field
         super().__init__(*args, **kwargs)
         self.lookback_window_days = lookback_window_days
         self.start_date_max_days_from_now = start_date_max_days_from_now
-        self._cursor_field = cursor_field
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -307,7 +332,10 @@ class Events(CreatedCursorIncrementalStripeStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         if self.event_types:
-            params["types[]"] = self.event_types
+            if len(self.event_types) > 1:
+                params["types[]"] = self.event_types
+            else:
+                params["type"] = self.event_types
         return params
 
     def path(self, **kwargs):
@@ -315,6 +343,7 @@ class Events(CreatedCursorIncrementalStripeStream):
 
 
 class UpdatedCursorIncrementalStripeStream(StripeStream):
+    is_resumable = True
     """
     `CreatedCursorIncrementalStripeStream` does not provide a way to read updated data since given date because the API does not allow to do this.
     It only returns newly created entities since given date. So to have all the updated data as well we need to make use of the Events API,
@@ -430,6 +459,7 @@ class IncrementalStripeStreamSelector(IStreamSelector):
 
 
 class IncrementalStripeStream(StripeStream):
+    is_resumable = True
     """
     This class combines both normal incremental sync and event based sync. It uses common endpoints for sliced data syncs in
     the full refresh sync mode and initial incremental sync. For incremental syncs with a state, event based sync comes into action.
@@ -443,8 +473,8 @@ class IncrementalStripeStream(StripeStream):
         event_types: Optional[List[str]] = None,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
         self._cursor_field = cursor_field
+        super().__init__(*args, **kwargs)
         created_cursor_stream = CreatedCursorIncrementalStripeStream(
             *args,
             cursor_field=cursor_field,
@@ -494,44 +524,6 @@ class IncrementalStripeStream(StripeStream):
         yield from self.parent_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
 
-class CustomerBalanceTransactions(StripeStream):
-    """
-    API docs: https://stripe.com/docs/api/customer_balance_transactions/list
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.parent = IncrementalStripeStream(
-            name="customers",
-            path="customers",
-            use_cache=USE_CACHE,
-            event_types=["customer.created", "customer.updated", "customer.deleted"],
-            authenticator=kwargs.get("authenticator"),
-            account_id=self.account_id,
-            start_date=self.start_date,
-        )
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"customers/{stream_slice['id']}/balance_transactions"
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeSubStreamAvailabilityStrategy()
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        slices = self.parent.stream_slices(sync_mode=SyncMode.full_refresh)
-        for _slice in slices:
-            for customer in self.parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
-                # we use `get` here because some attributes may not be returned by some API versions
-                if customer.get("next_invoice_sequence") == 1 and customer.get("balance") == 0:
-                    # We're making this check in order to speed up a sync. if a customer's balance is 0 and there are no
-                    # associated invoices, he shouldn't have any balance transactions. So we're saving time of one API call per customer.
-                    continue
-                yield customer
-
-
 class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
     """
     Docs: https://stripe.com/docs/api/setup_attempts/list
@@ -557,12 +549,6 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
 
     def path(self, **kwargs) -> str:
         return "setup_attempts"
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        # we use the default http availability strategy here because parent stream may lack data in the incremental stream mode
-        # and this stream would be marked inaccessible which is not actually true
-        return HttpAvailabilityStrategy()
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -592,35 +578,8 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
         return params
 
 
-class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
-    """
-    API docs: https://stripe.com/docs/api/persons/list
-    """
-
-    event_types = ["person.created", "person.updated", "person.deleted"]
-
-    def __init__(self, *args, **kwargs):
-        parent = StripeStream(*args, name="accounts", path="accounts", use_cache=USE_CACHE, **kwargs)
-        super().__init__(*args, parent=parent, **kwargs)
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeSubStreamAvailabilityStrategy()
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"accounts/{stream_slice['parent']['id']}/persons"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent = HttpSubStream if not stream_state else UpdatedCursorIncrementalStripeStream
-        yield from parent.stream_slices(self, sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-
-
 class StripeSubStream(StripeStream, HttpSubStream):
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeSubStreamAvailabilityStrategy()
+    pass
 
 
 class StripeLazySubStream(StripeStream, HttpSubStream):
@@ -682,10 +641,6 @@ class StripeLazySubStream(StripeStream, HttpSubStream):
         super().__init__(*args, **kwargs)
         self._sub_items_attr = sub_items_attr
 
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeSubStreamAvailabilityStrategy()
-
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
 
@@ -718,6 +673,7 @@ class IncrementalStripeLazySubStreamSelector(IStreamSelector):
 
 
 class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
+    is_resumable = True
     """
     This stream uses StripeLazySubStream under the hood to run full refresh or initial incremental syncs.
     In case of subsequent incremental syncs, it uses the UpdatedCursorIncrementalStripeStream class.
@@ -734,8 +690,8 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         response_filter: Optional[Callable] = None,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
         self._cursor_field = cursor_field
+        super().__init__(*args, **kwargs)
         self.updated_cursor_incremental_stream = UpdatedCursorIncrementalStripeStream(
             *args,
             cursor_field=cursor_field,
@@ -749,7 +705,10 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             parent=parent,
             sub_items_attr=sub_items_attr,
             record_extractor=UpdatedCursorIncrementalRecordExtractor(
-                cursor_field=cursor_field, legacy_cursor_field=legacy_cursor_field, response_filter=response_filter
+                cursor_field=cursor_field,
+                legacy_cursor_field=legacy_cursor_field,
+                response_filter=response_filter,
+                slice_data_retriever=kwargs.get("slice_data_retriever"),
             ),
             **kwargs,
         )
@@ -790,7 +749,8 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         )
 
 
-class ParentIncrementalStipeSubStream(StripeSubStream):
+class ParentIncrementalStripeSubStream(StripeSubStream):
+    is_resumable = True
     """
     This stream differs from others in that it runs parent stream in exactly same sync mode it is run itself to generate stream slices.
     It also uses regular /v1 API endpoints to sync data no matter what the sync mode is. This means that the event-based API can only
@@ -823,27 +783,21 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(current_stream_state.get(self.cursor_field, 0), latest_record[self.cursor_field])}
 
-    @property
-    def raise_on_http_errors(self) -> bool:
-        return False
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return ParentIncrementalStripeSubStreamErrorHandler(
+            logger=self.logger, error_mapping=PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING
+        )
 
-    def parse_response(self, response: requests.Response, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        if response.status_code == 200:
-            return super().parse_response(response, *args, **kwargs)
-        if response.status_code == 404:
-            # When running incremental sync with state, the returned parent object very likely will not contain sub-items
-            # as the events API does not support expandable items. Parent class will try getting sub-items from this object,
-            # then from its own API. In case there are no sub-items at all for this entity, API will raise 404 error.
-            self.logger.warning(
-                f"Data was not found for URL: {response.request.url}. "
-                "If this is a path for getting child attributes like /v1/checkout/sessions/<session_id>/line_items when running "
-                "the incremental sync, you may safely ignore this warning."
-            )
-            return []
-        response.raise_for_status()
 
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        # we use the default http availability strategy here because parent stream may lack data in the incremental stream mode
-        # and this stream would be marked inaccessible which is not actually true
-        return HttpAvailabilityStrategy()
+class UpdatedCursorIncrementalStripeSubStream(UpdatedCursorIncrementalStripeStream, HttpSubStream):
+    """
+    This class behaves exactly the same as its parent, UpdatedCursorIncrementalStripeStream, but the initial/full refresh sync is performed using the parent stream.
+    """
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        if not stream_state:
+            yield from HttpSubStream.stream_slices(self, sync_mode, cursor_field, stream_state)
+        else:
+            yield from UpdatedCursorIncrementalStripeStream.stream_slices(self, sync_mode, cursor_field, stream_state)

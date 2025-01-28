@@ -3,32 +3,36 @@ data:
     hosts:
       - api.openweathermap.org
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 561d7787-b45e-4f3b-af58-0163c3ba9d5a
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.3.10
   dockerRepository: airbyte/source-openweather
   documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
   githubIssueLabel: source-openweather
   icon: openweather.svg
   license: MIT
   name: Openweather
-  registries:
+  registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-openweather
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: openweather_config_dev_null
+          id: 6e4f9fb3-3b83-4967-adcd-860a57242a9d
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-OPENWEATHER_CREDS

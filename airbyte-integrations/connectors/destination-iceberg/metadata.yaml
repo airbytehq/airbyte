@@ -2,14 +2,15 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: df65a8f3-9908-451b-aa9b-445462803560
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/destination-iceberg
   githubIssueLabel: destination-iceberg
+  icon: iceberg.svg
   license: MIT
   name: Apache Iceberg
-  registries:
+  registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
@@ -20,7 +21,15 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-ICEBERG_S3_GLUE_CONFIG
+          fileName: s3_glue_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

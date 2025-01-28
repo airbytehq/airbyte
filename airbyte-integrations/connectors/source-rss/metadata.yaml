@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - "*"
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
@@ -20,11 +20,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 0efee448-6948-49e2-b786-17db50647908
-  dockerImageTag: 1.0.10
+  dockerImageTag: 1.0.30
   dockerRepository: airbyte/source-rss
   githubIssueLabel: source-rss
   icon: rss.svg
@@ -41,6 +41,10 @@ data:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: rss_config_dev_null
+          id: 09453f70-3d9d-4075-bf9d-6d29f34e2aba
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-RSS__CREDS

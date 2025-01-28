@@ -60,13 +60,9 @@ You can secure access to Airbyte using the following methods:
     }
   }
   ```
-- _Only for docker compose deployments:_ Change the default username and password in your environment's `.env` file:
-  ```
-  	# Proxy Configuration
-  	# Set to empty values, e.g. "" to disable basic auth
-  	BASIC_AUTH_USERNAME=your_new_username_here
-  	BASIC_AUTH_PASSWORD=your_new_password_here
-  ```
+- By default, Airbyte generates a secure password during a deploy (either via Helm or `abctl`). To change the default 
+password follow the instructions found [here](../deploying-airbyte/integrations/authentication)
+
 - If you deployed Airbyte on a cloud provider:
   - GCP: use the [Identity-Aware proxy](https://cloud.google.com/iap) service
   - AWS: use the [AWS Systems Manager Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html) service
@@ -87,6 +83,11 @@ Note that this process is not reversible. Once you have converted to a secret st
 ### Encryption
 
 Most Airbyte Open Source connectors support encryption-in-transit (SSL or HTTPS). We recommend configuring your connectors to use the encryption option whenever available.
+
+### Sensitive Data
+
+To facilitate troubleshooting, the Server component may output initial user configurations to the log stream when server loglevel is set to `DEBUG`.
+To keep this information private, it is recommended to keep loglevel set to `INFO`  outside of troubleshooting.
 
 ## Securing Airbyte Cloud
 

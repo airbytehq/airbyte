@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.11"
+version = "0.1.30"
 name = "destination-cumulio"
 description = "Airbyte destination connector implementation for Cumul.io."
 authors = [ "Cumul.io <support@cumul.io>",]
@@ -24,4 +24,4 @@ cumulio = "==0.2.5"
 destination-cumulio = "destination_cumulio.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.2"
+pytest = "^8.3.2"

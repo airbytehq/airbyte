@@ -4,7 +4,7 @@ connector_image: airbyte/source-insightly:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: source_insightly/spec.json
+      - spec_path: manifest.yaml
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -32,17 +32,29 @@ acceptance_tests:
           - name: project_categories
             bypass_reason: "no data for this stream in our sandbox account"
           - name: knowledge_article_categories
-            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+            bypass_reason:
+              "current sandbox account does not have permissions to access
+              this stream (403 error)"
           - name: knowledge_article_folders
-            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+            bypass_reason:
+              "current sandbox account does not have permissions to access
+              this stream (403 error)"
           - name: knowledge_articles
-            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+            bypass_reason:
+              "current sandbox account does not have permissions to access
+              this stream (403 error)"
           - name: lead_sources
-            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+            bypass_reason:
+              "current sandbox account does not have permissions to access
+              this stream (403 error)"
           - name: lead_statuses
-            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+            bypass_reason:
+              "current sandbox account does not have permissions to access
+              this stream (403 error)"
           - name: prospects
-            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+            bypass_reason:
+              "current sandbox account does not have permissions to access
+              this stream (403 error)"
 
   full_refresh:
     tests:
@@ -51,10 +63,14 @@ acceptance_tests:
         ignored_fields:
           contacts:
             - name: "IMAGE_URL"
-              bypass_reason: "image url is a dynamic s3 url with a changing expiration date in the query parameter"
+              bypass_reason:
+                "image url is a dynamic s3 url with a changing expiration
+                date in the query parameter"
           organisations:
             - name: "IMAGE_URL"
-              bypass_reason: "image url is a dynamic s3 url with a changing expiration date in the query parameter"
+              bypass_reason:
+                "image url is a dynamic s3 url with a changing expiration
+                date in the query parameter"
           users:
             - name: "USER_CURRENCY"
               bypass_reason: "this can change between sequential reads"

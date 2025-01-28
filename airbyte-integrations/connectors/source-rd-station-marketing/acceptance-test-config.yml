@@ -4,7 +4,7 @@ connector_image: airbyte/source-rd-station-marketing:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_rd_station_marketing/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -20,13 +20,21 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
           - name: analytics_conversions
-            bypass_reason: "Trial account doesn't have access to this stream (Gives a 401 FORBIDDEN Error)"
+            bypass_reason:
+              "Trial account doesn't have access to this stream (Gives a
+              401 FORBIDDEN Error)"
           - name: analytic_emails
-            bypass_reason: "Trial account doesn't have access to this stream (Gives a 401 FORBIDDEN Error)"
+            bypass_reason:
+              "Trial account doesn't have access to this stream (Gives a
+              401 FORBIDDEN Error)"
           - name: analytics_funnel
-            bypass_reason: "Trial account doesn't have access to this stream (Gives a 401 FORBIDDEN Error)"
+            bypass_reason:
+              "Trial account doesn't have access to this stream (Gives a
+              401 FORBIDDEN Error)"
           - name: analytics_workflow_emails_statistics
-            bypass_reason: "Trial account doesn't have access to this stream (Gives a 401 FORBIDDEN Error)"
+            bypass_reason:
+              "Trial account doesn't have access to this stream (Gives a
+              401 FORBIDDEN Error)"
           - name: embeddables
             bypass_reason: "No data in trial account for this stream"
           - name: popups

@@ -6,11 +6,11 @@ data:
     hosts:
       - ${api_url}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
-  dockerImageTag: 4.2.2
+  dockerImageTag: 4.3.4
   dockerRepository: airbyte/source-gitlab
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   githubIssueLabel: source-gitlab
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-gitlab
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -67,6 +67,14 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: gitlab_config_with_ids_dev_null
+          id: 0a232b74-3f4e-492e-b522-cdd87d7e78c1
+        - name: gitlab_config_oauth_dev_null
+          id: 4b892767-e35e-4126-b1ab-b4fd02d08c15
+        - name: gitlab_config_dev_null
+          id: 8e190e6d-1f8f-411f-8468-9ce77fec5b4c
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

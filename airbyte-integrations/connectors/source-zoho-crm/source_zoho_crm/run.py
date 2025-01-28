@@ -5,9 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
-
 from .source import SourceZohoCrm
+
+from airbyte_cdk.entrypoint import launch
 
 
 def run():

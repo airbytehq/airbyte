@@ -12,13 +12,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, List
 
 from connector_ops.utils import ConnectorLanguage  # type: ignore
+
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.connectors.command import run_connector_steps
-from pipelines.helpers.connectors.format import format_prettier
 from pipelines.helpers.connectors.yaml import read_yaml, write_yaml
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
@@ -49,7 +49,11 @@ class CheckIsInlineCandidate(Step):
         connector = self.context.connector
         manifest_path = connector.manifest_path
         python_path = connector.python_source_dir_path
-        if connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE, ConnectorLanguage.MANIFEST_ONLY]:
+        if connector.language not in [
+            ConnectorLanguage.PYTHON,
+            ConnectorLanguage.LOW_CODE,
+            ConnectorLanguage.MANIFEST_ONLY,
+        ]:
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
@@ -85,12 +89,6 @@ class CheckIsInlineCandidate(Step):
             step=self,
             status=StepStatus.SUCCESS,
         )
-
-
-def copy_directory(src: Path, dest: Path) -> None:
-    if dest.exists():
-        shutil.rmtree(dest)
-    shutil.copytree(src, dest)
 
 
 class RestoreInlineState(Step):
@@ -153,7 +151,11 @@ class InlineSchemas(Step):
 
         data = read_yaml(manifest_path)
         if "streams" not in data:
-            return StepResult(step=self, status=StepStatus.SKIPPED, stderr="No manifest streams found.")
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stderr="No manifest streams found.",
+            )
 
         # find the explit ones and remove or udpate
         json_loaders = _find_json_loaders(data, [])
@@ -196,10 +198,37 @@ class InlineSchemas(Step):
             _update_inline_schema(schema_loader, json_streams, stream_name)
 
         write_yaml(data, manifest_path)
-        await format_prettier([manifest_path])
+        # await format_prettier([manifest_path], logger=logger)
 
         for json_stream in json_streams.values():
             logger.info(f"     !! JSON schema not found: {json_stream.name}")
+
+        return StepResult(step=self, status=StepStatus.SUCCESS)
+
+
+class RemoveUnusedJsonSchamas(Step):
+    context: ConnectorContext
+
+    title = "Cleanup json schemas that are dangling but unused."
+
+    async def _run(self) -> StepResult:
+        connector = self.context.connector
+        python_path = connector.python_source_dir_path
+        schemas_path = python_path / SCHEMAS_DIR_NAME
+        logger = self.logger
+
+        manifest = connector.manifest_path.read_text()
+
+        if manifest.find("JsonFileSchemaLoader") != -1:
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stderr="Skipping: the manifest is still using JSON Schema loader.",
+            )
+
+        if schemas_path.exists():
+            logger.info(f"    Removing schemnas dir: {schemas_path}")
+            shutil.rmtree(schemas_path)
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
@@ -215,6 +244,12 @@ class JsonStream:
 class JsonLoaderNode:
     ref: str
     file_path: str
+
+
+def copy_directory(src: Path, dest: Path) -> None:
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(src, dest)
 
 
 def _has_subdirectory(directory: Path) -> bool:
@@ -370,7 +405,14 @@ async def run_connector_migrate_to_inline_schemas_pipeline(context: ConnectorCon
 
     steps_to_run: STEP_TREE = []
 
-    steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.INLINE_CANDIDATE, step=CheckIsInlineCandidate(context))])
+    steps_to_run.append(
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.INLINE_CANDIDATE,
+                step=CheckIsInlineCandidate(context),
+            )
+        ]
+    )
 
     steps_to_run.append(
         [
@@ -378,6 +420,16 @@ async def run_connector_migrate_to_inline_schemas_pipeline(context: ConnectorCon
                 id=CONNECTOR_TEST_STEP_ID.INLINE_MIGRATION,
                 step=InlineSchemas(context),
                 depends_on=[CONNECTOR_TEST_STEP_ID.INLINE_CANDIDATE],
+            )
+        ]
+    )
+
+    steps_to_run.append(
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.INLINE_CLEANUP,
+                step=RemoveUnusedJsonSchamas(context),
+                depends_on=[CONNECTOR_TEST_STEP_ID.INLINE_MIGRATION],
             )
         ]
     )

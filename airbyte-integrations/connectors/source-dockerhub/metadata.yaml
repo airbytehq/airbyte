@@ -7,18 +7,18 @@ data:
       - hub.docker.com
       - auth.docker.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 72d405a3-56d8-499f-a571-667c03406e43
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.3.11
   dockerRepository: airbyte/source-dockerhub
   documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
   githubIssueLabel: source-dockerhub
   icon: dockerhub.svg
   license: MIT
   name: Dockerhub
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -27,13 +27,17 @@ data:
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-dockerhub
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: dockerhub_config_dev_null
+          id: 1627b271-52c6-410c-ae54-b83b8f98d846
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-DOCKERHUB__CREDS

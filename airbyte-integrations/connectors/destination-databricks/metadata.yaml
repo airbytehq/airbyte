@@ -2,19 +2,19 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 072d5540-f236-4294-ba7c-ade8fd918496
-  dockerImageTag: 3.0.0
+  dockerImageTag: 3.3.3
   dockerRepository: airbyte/destination-databricks
   githubIssueLabel: destination-databricks
   icon: databricks.svg
   license: ELv2
   name: Databricks Lakehouse
-  registries:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
+  registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 1.1.0 # pinning due to CDK incompatibility, see https://github.com/airbytehq/alpha-beta-issues/issues/2596
     oss:
       enabled: true
-      dockerImageTag: 1.1.0 # pinning due to CDK incompatibility, see https://github.com/airbytehq/alpha-beta-issues/issues/2596
   releaseStage: alpha
   releases:
     breakingChanges:
@@ -32,12 +32,19 @@ data:
           raw and final tables and then clear (reset) your connection; this release will not automatically upgrade your tables.
         upgradeDeadline: "2025-01-31"
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 600Mi
+          memory_request: 600Mi
   tags:
     - language:java
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: certified
+  supportsRefreshes: true
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
@@ -59,6 +66,11 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION_DATABRICKS_OAUTH_CONFIG
           fileName: oauth_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION_DATABRICKS_PERSONAL_ACCESS_TOKEN_CONFIG
+          fileName: pat_config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

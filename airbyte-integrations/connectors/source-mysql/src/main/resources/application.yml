@@ -1,0 +1,123 @@
+---
+airbyte:
+  connector:
+    extract:
+      jdbc:
+        mode: sequential
+        with-sampling: true
+        table-sample-size: 1024
+        throughput-bytes-per-second: 10000000
+        min-fetch-size: 10
+        default-fetch-size: 1024
+        max-fetch-size: 1000000000
+        memory-capacity-ratio: 0.6
+        estimated-record-overhead-bytes: 16
+        estimated-field-overhead-bytes: 16
+        namespace-kind: CATALOG_AND_SCHEMA
+    check:
+      jdbc:
+        queries:
+          - >-
+            SELECT 1 FROM dual WHERE 1 = 0;
+
+    exception-classifiers:
+      regex:
+        # The following rules are for the RegexExceptionClassifier [0] which are applied
+        # sequentially on a Throwable's message [1] and its nested messages by cause [2].
+        #
+        # This classifier's rules are applied ahead of the JdbcExceptionClassifier's further down.
+        #
+        # [0] https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/output/ExceptionClassifier.kt
+        # [1] https://docs.oracle.com/javase/8/docs/api/java/lang/Throwable.html#getMessage--
+        # [2] https://docs.oracle.com/javase/8/docs/api/java/lang/Throwable.html#getCause--
+
+        rules:
+          ## REGEX RULE TEMPLATE:
+          # pattern: Required; regex pattern, c.f. https://www.freeformatter.com/java-regex-tester.html.
+          #          Note that regex patterns are not case-sensitive and are multiline.
+          # input-example: Required, string matching regex pattern.
+          # error: Required, one of (transient|config|system).
+          # group: Optional, string prefixing user-facing error message.
+          # output: Optional, user-facing error message; when not set, the exception message is used instead.
+          # reference-links: Optional, list of URLs appended to user-facing message after a newline.
+
+          - pattern: (?i).*can not read response from server\. expected to read ([1-9]\d*) bytes.*
+            input-example: >-
+              java.io.EOFException: Can not read response from server. 
+              Expected to read 10 bytes, read 5 bytes before connection was unexpectedly lost.
+            error: transient
+            group: MySQL EOF Exception
+            output: Can not read data from MySQL server, will retry.
+            reference-links: -https://docs.oracle.com/javase/8/docs/api/index.html?java/io/EOFException.html
+
+          - pattern: (?i).*connection is not available, request timed out after.*
+            input-example: >-
+              java.sql.SQLTransientConnectionException: HikariPool-x - 
+              Connection is not available, request timed out after 10 ms
+            error: transient
+            group: MySQL Hikari Connection Error
+            output: Database read failed due to connection timeout, will retry.
+            reference-links: -https://docs.oracle.com/javase/9/docs/api/java/sql/SQLTransientConnectionException.html
+
+          - pattern: (?i).*is unrecognized or represents more than one time zone.*
+            input-example: >-
+              java.sql.SQLException: The server time zone value 'PDT' is unrecognized or represents more than one time zone. 
+              You must configure either the server or JDBC driver (via the serverTimezone configuration property) to use a more specifc time zone value 
+              if you want to utilize time zone support.
+            error: config
+            group: MySQL Timezone Error
+            output: >-
+              Please configure your database with the correct timezone found in the detailed error message. 
+              Please refer to the following documentation: https://dev.mysql.com/doc/refman/8.4/en/time-zone-support.html
+            reference-links: -https://docs.oracle.com/javase/8/docs/api/index.html?java/io/SQLException.html
+
+          - pattern: (?i).*exception occurred in the change event produce.*
+            input-example: >-
+              java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: 
+              An exception occurred in the change event producer. This connector will be stopped.
+            error: config
+            group: MySQL Schema Change Error
+            output: >-
+              Your connection could not be completed because changes were detected on an unknown table (see detailed error for the table name),
+              please refresh your schema or reset the connection.
+            reference-links: -https://kafka.apache.org/11/javadoc/org/apache/kafka/connect/errors/ConnectException.html
+
+          - pattern: |
+              (?i).*vttablet: rpc error: code = Unavailable desc = error reading from server: EOF.*
+            input-example: >-
+              java.lang.RuntimeException: java.lang.RuntimeException: java.sql.SQLException: target: ai-solutions.-.primary: 
+              vttablet: rpc error: code = Unavailable desc = error reading from server: EOF
+            error: transient
+            group: MySQL Vitess Connection Error
+            output: Database read failed due to connection timeout, will retry.
+            reference-links: -https://docs.oracle.com/javase/8/docs/api/index.html?java/sql/SQLException.html
+
+      jdbc:
+        # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
+        # MySQL's error code [1]. The vendor error code is printed in the exception
+        # message, and is not to be confused with the SQLState [2] which is also in the message.
+        #
+        # [0] https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/toolkits/extract-jdbc/src/main/kotlin/io/airbyte/cdk/output/JdbcExceptionClassifier.kt
+        # [1] https://dev.mysql.com/doc/mysql-errors/5.7/en/server-error-reference.html
+        # [2] https://en.wikipedia.org/wiki/SQLSTATE
+        #
+        rules:
+          ## JDBC RULE TEMPLATE
+          # code: Required, MySQL vendor error code.
+          # error: Required, one of (transient|config|system).
+          # output: Optional, user-facing error message; the exception message is used instead when this is not defined.
+          # reference-links: Optional, list of URLs appended to user-facing message after newline.
+
+          - code: 1054
+            error: config
+            output: >-
+              A required column for the MySQL source connector is missing in the database. 
+              Please review your SQL statement to ensure it referencing existing columns.
+            group: MySQL Syntax Exception
+            reference-links: https://dev.mysql.com/doc/mysql-errors/9.1/en/server-error-reference.html#error_er_bad_field_error
+
+          - code: 3024
+            error: transient
+            output: The query took too long to return results, the database read was aborted. Will retry.
+            group: MySQL Limit Reached
+            reference-links: https://dev.mysql.com/doc/mysql-errors/5.7/en/server-error-reference.html#error_er_query_timeout

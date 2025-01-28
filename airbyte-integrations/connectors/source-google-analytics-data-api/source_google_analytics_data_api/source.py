@@ -2,33 +2,40 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import datetime
 import json
 import logging
 import pkgutil
+import re
 import uuid
 from abc import ABC
+from datetime import timedelta
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Type, Union
 
 import dpath
 import jsonschema
 import pendulum
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
+from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.utils import AirbyteTracedException
-from requests import HTTPError
 from source_google_analytics_data_api import utils
-from source_google_analytics_data_api.utils import (
-    DATE_FORMAT,
-    WRONG_CUSTOM_REPORT_CONFIG,
-    WRONG_DIMENSIONS,
-    WRONG_JSON_SYNTAX,
-    WRONG_METRICS,
+from source_google_analytics_data_api.google_analytics_data_api_base_error_mapping import get_google_analytics_data_api_base_error_mapping
+from source_google_analytics_data_api.google_analytics_data_api_metadata_error_mapping import (
+    get_google_analytics_data_api_metadata_error_mapping,
 )
+from source_google_analytics_data_api.utils import DATE_FORMAT, WRONG_DIMENSIONS, WRONG_JSON_SYNTAX, WRONG_METRICS
 
 from .api_quota import GoogleAnalyticsApiQuota
 from .utils import (
@@ -42,6 +49,7 @@ from .utils import (
     serialize_to_date_string,
     transform_json,
 )
+
 
 # set the quota handler globally since limitations are the same for all streams
 # the initial values should be saved once and tracked for each stream, inclusively.
@@ -85,18 +93,54 @@ class MetadataDescriptor:
         return self._metadata
 
 
+class GoogleAnalyticsDataApiBackoffStrategy(BackoffStrategy):
+    def backoff_time(
+        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
+    ) -> Optional[float]:
+        if isinstance(response_or_exception, requests.Response):
+            # handle the error with prepared GoogleAnalyticsQuotaHandler backoff value
+            if response_or_exception.status_code == requests.codes.too_many_requests:
+                return GoogleAnalyticsQuotaHandler.backoff_time
+        return None
+
+
+class GoogleAnalyticsDatApiErrorHandler(HttpStatusErrorHandler):
+    QUOTA_RECOVERY_TIME = 3600
+
+    def __init__(
+        self,
+        logger: logging.Logger,
+        error_mapping: Optional[Mapping[Union[int, str, type[Exception]], ErrorResolution]] = None,
+    ) -> None:
+        super().__init__(
+            logger=logger,
+            error_mapping=error_mapping,
+            max_retries=5,
+            max_time=timedelta(seconds=GoogleAnalyticsDatApiErrorHandler.QUOTA_RECOVERY_TIME),
+        )
+
+    @GoogleAnalyticsQuotaHandler.handle_quota()
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if not isinstance(response_or_exception, Exception) and response_or_exception.status_code == requests.codes.too_many_requests:
+            return ErrorResolution(
+                response_action=GoogleAnalyticsQuotaHandler.response_action,
+                failure_type=FailureType.transient_error,
+                error_message=GoogleAnalyticsQuotaHandler.error_message,
+            )
+        return super().interpret_response(response_or_exception)
+
+
 class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     url_base = "https://analyticsdata.googleapis.com/v1beta/"
     http_method = "POST"
-    raise_on_http_errors = True
 
     def __init__(self, *, config: Mapping[str, Any], page_size: int = 100_000, **kwargs):
-        super().__init__(**kwargs)
         self._config = config
         self._source_defined_primary_key = get_source_defined_primary_key(self.name)
         # default value is 100 000 due to determination of maximum limit value in official documentation
         # https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
         self._page_size = page_size
+        super().__init__(**kwargs)
 
     @property
     def config(self):
@@ -112,20 +156,14 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
 
     # handle the quota errors with prepared values for:
     # `should_retry`, `backoff_time`, `raise_on_http_errors`, `stop_iter` based on quota scenario.
-    @GoogleAnalyticsQuotaHandler.handle_quota()
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == requests.codes.too_many_requests:
-            setattr(self, "raise_on_http_errors", GoogleAnalyticsQuotaHandler.raise_on_http_errors)
-            return GoogleAnalyticsQuotaHandler.should_retry
-        # for all other cases not covered by GoogleAnalyticsQuotaHandler
-        return super().should_retry(response)
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return GoogleAnalyticsDataApiBackoffStrategy()
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        # handle the error with prepared GoogleAnalyticsQuotaHandler backoff value
-        if response.status_code == requests.codes.too_many_requests:
-            return GoogleAnalyticsQuotaHandler.backoff_time
-        # for all other cases not covered by GoogleAnalyticsQuotaHandler
-        return super().backoff_time(response)
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return GoogleAnalyticsDatApiErrorHandler(logger=self.logger, error_mapping=self.get_error_mapping())
+
+    def get_error_mapping(self) -> Mapping[Union[int, str, Type[Exception]], ErrorResolution]:
+        return DEFAULT_ERROR_MAPPING
 
 
 class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
@@ -137,6 +175,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     offset = 0
 
     metadata = MetadataDescriptor()
+
+    def get_error_mapping(self) -> Mapping[Union[int, str, Type[Exception]], ErrorResolution]:
+        return get_google_analytics_data_api_base_error_mapping(self.name)
 
     @property
     def cursor_field(self) -> Optional[str]:
@@ -316,10 +357,14 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
+        if stream_slice and "startDate" in stream_slice and "endDate" in stream_slice:
+            date_range = {"startDate": stream_slice["startDate"], "endDate": stream_slice["endDate"]}
+        else:
+            date_range = stream_slice
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
-            "dateRanges": [stream_slice],
+            "dateRanges": [date_range],
             "returnPropertyQuota": True,
             "offset": str(0),
             "limit": str(self.page_size),
@@ -342,8 +387,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         today: datetime.date = datetime.date.today()
-
-        start_date = stream_state and stream_state.get(self.cursor_field)
+        start_date = None
+        if self.cursor_field:
+            start_date = stream_state and stream_state.get(self.cursor_field)
         if start_date:
             start_date = (
                 serialize_to_date_string(start_date, DATE_FORMAT, self.cursor_field) if not self.cursor_field == "date" else start_date
@@ -375,7 +421,6 @@ class PivotReport(GoogleAnalyticsDataApiBaseStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         payload = super().request_body_json(stream_state, stream_slice, next_page_token)
-
         # remove offset and limit fields according to their absence in
         # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport
         payload.pop("offset", None)
@@ -395,7 +440,7 @@ class CohortReportMixin:
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from [None]
+        yield from [{}]
 
     def request_body_json(
         self,
@@ -430,6 +475,9 @@ class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
+
+    def get_error_mapping(self):
+        return get_google_analytics_data_api_metadata_error_mapping(self.config.get("property_id"))
 
 
 class SourceGoogleAnalyticsDataApi(AbstractSource):
@@ -479,7 +527,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             if message := check_no_property_error(e):
                 raise ConfigurationError(message)
             if message := check_invalid_property_error(e):
-                report_name = dpath.util.get(config["custom_reports_array"], str(e.absolute_path[0])).get("name")
+                report_name = dpath.get(config["custom_reports_array"], str(e.absolute_path[0])).get("name")
                 raise ConfigurationError(message.format(fields=e.message, report_name=report_name))
 
         existing_names = {r["name"] for r in config["custom_reports_array"]} & report_names
@@ -523,19 +571,11 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                 # explicitly setting small page size for the check operation not to cause OOM issues
                 stream = GoogleAnalyticsDataApiMetadataStream(config=_config, authenticator=_config["authenticator"])
                 metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
-            except HTTPError as e:
-                error_list = [HTTPStatus.BAD_REQUEST, HTTPStatus.FORBIDDEN]
-                if e.response.status_code in error_list:
-                    internal_message = f"Incorrect Property ID: {property_id}"
-                    property_id_docs_url = (
-                        "https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id"
-                    )
-                    message = f"Access was denied to the property ID entered. Check your access to the Property ID or use Google Analytics {property_id_docs_url} to find your Property ID."
-
-                    wrong_property_id_error = AirbyteTracedException(
-                        message=message, internal_message=internal_message, failure_type=FailureType.config_error
-                    )
-                    raise wrong_property_id_error
+            except (MessageRepresentationAirbyteTracedErrors, BaseBackoffException) as ex:
+                if hasattr(ex, "failure_type") and ex.failure_type == FailureType.config_error:
+                    # bad request and forbidden are set in mapper as config errors
+                    raise ex
+                logger.error(f"Check failed", exc_info=ex)
 
             if not metadata:
                 return False, "Failed to get metadata, over quota, try later"
@@ -561,11 +601,8 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                 try:
                     stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
                     next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
-                except HTTPError as e:
-                    error_response = ""
-                    if e.response.status_code == HTTPStatus.BAD_REQUEST:
-                        error_response = e.response.json().get("error", {}).get("message", "")
-                    return False, WRONG_CUSTOM_REPORT_CONFIG.format(report=report["name"], error_response=error_response)
+                except MessageRepresentationAirbyteTracedErrors as e:
+                    return False, f"{e.message} {self._extract_internal_message_error_response(e.internal_message)}"
 
             return True, None
 
@@ -612,3 +649,12 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if add_name_suffix:
             name = f"{name}Property{config['property_id']}"
         return type(name, report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"], **extra_kwargs)
+
+    @staticmethod
+    def _extract_internal_message_error_response(message):
+        pattern = r"error message '(.*?)'"
+        match = re.search(pattern, message)
+        if match:
+            error_message = match.group(1)
+            return error_message
+        return ""

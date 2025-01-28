@@ -10,6 +10,7 @@ from dagger import Platform
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 MANIFEST_FILE_PATH = "manifest.yaml"
+COMPONENTS_FILE_PATH = "components.py"
 LICENSE_SHORT_FILE_PATH = "LICENSE_SHORT"
 CONNECTOR_TESTING_REQUIREMENTS = [
     "pip==21.3.1",
@@ -41,7 +42,7 @@ DOCKER_DIND_IMAGE = f"docker:{DOCKER_VERSION}-dind"
 DOCKER_CLI_IMAGE = f"docker:{DOCKER_VERSION}-cli"
 DOCKER_REGISTRY_MIRROR_URL = os.getenv("DOCKER_REGISTRY_MIRROR_URL")
 DOCKER_REGISTRY_ADDRESS = "docker.io"
-DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
+DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache-2"
 GIT_IMAGE = "alpine/git:latest"
 GIT_DIRECTORY_ROOT_PATH = ".git"
 GRADLE_CACHE_PATH = "/root/.gradle/caches"
@@ -54,7 +55,6 @@ GCS_PUBLIC_DOMAIN = "https://storage.cloud.google.com"
 DOCKER_HOST_NAME = "global-docker-host"
 DOCKER_HOST_PORT = 2375
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
-DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
 STATIC_REPORT_PREFIX = "airbyte-ci"
 PIP_CACHE_VOLUME_NAME = "pip_cache"
 PIP_CACHE_PATH = "/root/.cache/pip"
@@ -67,6 +67,11 @@ DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL = "https://pypi.org/pypi"
 MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS = "airbyte-connector-testing-secret-store"
 AIRBYTE_SUBMODULE_DIR_NAME = "airbyte-submodule"
 MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES = ["Regression Tests"]
+
+PUBLISH_UPDATES_SLACK_CHANNEL = "#connector-publish-updates"
+PUBLISH_FAILURE_SLACK_CHANNEL = "#connector-publish-failures"
+# TODO this should be passed via an env var or a CLI input
+PATH_TO_LOCAL_CDK = "../airbyte-python-cdk"
 
 
 class CIContext(str, Enum):

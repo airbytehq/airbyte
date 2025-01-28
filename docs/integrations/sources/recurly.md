@@ -66,7 +66,30 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
-| 1.1.0   | 2024-07-24 | [40729](https://github.com/airbytehq/airbyte/pull/40729) | Migrate connector to low code |                                         
+| 1.3.8 | 2025-01-25 | [52493](https://github.com/airbytehq/airbyte/pull/52493) | Update dependencies |
+| 1.3.7 | 2025-01-18 | [51864](https://github.com/airbytehq/airbyte/pull/51864) | Update dependencies |
+| 1.3.6 | 2025-01-11 | [51351](https://github.com/airbytehq/airbyte/pull/51351) | Update dependencies |
+| 1.3.5 | 2024-12-28 | [50684](https://github.com/airbytehq/airbyte/pull/50684) | Update dependencies |
+| 1.3.4 | 2024-12-21 | [50289](https://github.com/airbytehq/airbyte/pull/50289) | Update dependencies |
+| 1.3.3 | 2024-12-14 | [49718](https://github.com/airbytehq/airbyte/pull/49718) | Update dependencies |
+| 1.3.2 | 2024-12-12 | [49333](https://github.com/airbytehq/airbyte/pull/49333) | Update dependencies |
+| 1.3.1 | 2024-12-11 | [49091](https://github.com/airbytehq/airbyte/pull/49091) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.3.0 | 2024-11-13 | [48474](https://github.com/airbytehq/airbyte/pull/48474) | Remove definition and schema redundancy, update to latest CDK and make compatibility with builder |
+| 1.2.0 | 2024-11-04 | [47290](https://github.com/airbytehq/airbyte/pull/47290) | Migrate to manifest only format |
+| 1.1.13 | 2024-11-04 | [48248](https://github.com/airbytehq/airbyte/pull/48248) | Update dependencies |
+| 1.1.12 | 2024-10-28 | [47067](https://github.com/airbytehq/airbyte/pull/47067) | Update dependencies |
+| 1.1.11 | 2024-10-12 | [46829](https://github.com/airbytehq/airbyte/pull/46829) | Update dependencies |
+| 1.1.10 | 2024-10-05 | [46456](https://github.com/airbytehq/airbyte/pull/46456) | Update dependencies |
+| 1.1.9 | 2024-09-28 | [46140](https://github.com/airbytehq/airbyte/pull/46140) | Update dependencies |
+| 1.1.8 | 2024-09-21 | [45764](https://github.com/airbytehq/airbyte/pull/45764) | Update dependencies |
+| 1.1.7 | 2024-09-14 | [45471](https://github.com/airbytehq/airbyte/pull/45471) | Update dependencies |
+| 1.1.6 | 2024-09-07 | [45274](https://github.com/airbytehq/airbyte/pull/45274) | Update dependencies |
+| 1.1.5 | 2024-08-31 | [45050](https://github.com/airbytehq/airbyte/pull/45050) | Update dependencies |
+| 1.1.4 | 2024-08-24 | [44742](https://github.com/airbytehq/airbyte/pull/44742) | Update dependencies |
+| 1.1.3 | 2024-08-17 | [44210](https://github.com/airbytehq/airbyte/pull/44210) | Update dependencies |
+| 1.1.2 | 2024-08-10 | [43472](https://github.com/airbytehq/airbyte/pull/43472) | Update dependencies |
+| 1.1.1 | 2024-08-03 | [43144](https://github.com/airbytehq/airbyte/pull/43144) | Update dependencies |
+| 1.1.0 | 2024-07-24 | [40729](https://github.com/airbytehq/airbyte/pull/40729) | Migrate connector to low code |
 | 1.0.12 | 2024-07-20 | [42206](https://github.com/airbytehq/airbyte/pull/42206) | Update dependencies |
 | 1.0.11 | 2024-07-13 | [41836](https://github.com/airbytehq/airbyte/pull/41836) | Update dependencies |
 | 1.0.10 | 2024-07-10 | [41500](https://github.com/airbytehq/airbyte/pull/41500) | Update dependencies |

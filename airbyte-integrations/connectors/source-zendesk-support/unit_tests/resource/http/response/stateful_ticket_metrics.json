@@ -1,0 +1,46 @@
+{
+  "ticket_metric": {
+    "url": "https://d3v-airbyte.zendesk.com/api/v2/ticket_metrics/5527084754447.json",
+    "id": 5527084754447,
+    "ticket_id": 145,
+    "created_at": "2022-09-19T14:53:49Z",
+    "updated_at": "2022-09-19T14:53:49Z",
+    "group_stations": 0,
+    "assignee_stations": 0,
+    "reopens": 0,
+    "replies": 0,
+    "assignee_updated_at": null,
+    "requester_updated_at": "2022-09-19T14:53:49Z",
+    "status_updated_at": "2022-09-19T14:53:49Z",
+    "initially_assigned_at": null,
+    "assigned_at": null,
+    "solved_at": null,
+    "latest_comment_added_at": "2022-09-19T14:53:49Z",
+    "reply_time_in_minutes": {
+      "calendar": null,
+      "business": null
+    },
+    "first_resolution_time_in_minutes": {
+      "calendar": null,
+      "business": null
+    },
+    "full_resolution_time_in_minutes": {
+      "calendar": null,
+      "business": null
+    },
+    "agent_wait_time_in_minutes": {
+      "calendar": null,
+      "business": null
+    },
+    "requester_wait_time_in_minutes": {
+      "calendar": null,
+      "business": null
+    },
+    "on_hold_time_in_minutes": {
+      "calendar": 0,
+      "business": 0
+    },
+    "custom_status_updated_at": "2022-09-19T14:53:49Z",
+    "generated_timestamp": 1681308296
+  }
+}

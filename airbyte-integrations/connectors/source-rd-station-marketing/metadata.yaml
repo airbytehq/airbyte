@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fb141f29-be2a-450b-a4f2-2cd203a00f84
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.3.11
   dockerRepository: airbyte/source-rd-station-marketing
   githubIssueLabel: source-rd-station-marketing
   icon: rdstation.svg
@@ -10,18 +10,18 @@ data:
   name: RD Station Marketing
   remoteRegistries:
     pypi:
-      enabled: true
-      packageName: airbyte-source-rd-station-marketing
-  registries:
-    cloud:
       enabled: false
+      packageName: airbyte-source-rd-station-marketing
+  registryOverrides:
+    cloud:
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/rd-station-marketing
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   ab_internal:
     sl: 100
     ql: 100
@@ -36,5 +36,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
 metadataSpecVersion: "1.0"

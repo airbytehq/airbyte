@@ -6,11 +6,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
   connectorSubtype: api
   connectorType: source
   definitionId: dc3b9003-2432-4e93-a7f4-4620b0f14674
-  dockerImageTag: 1.0.10
+  dockerImageTag: 1.1.1
   dockerRepository: airbyte/source-mailerlite
   githubIssueLabel: source-mailerlite
   icon: mailerlite.svg
@@ -21,27 +21,28 @@ data:
       1.0.0:
         upgradeDeadline: "2024-06-30"
         message:
-          "The version migrates the MailerLite connector to the be compatible with the connector builder.
-          Important:
-          The forms_popup stream schema from API has a breaking change to schema['properties']['settings']['properties']['schedule'],
-          field to contain booleans instead of strings,
-          The forms_promotion stream schema from API has a breaking change to schema['properties']['double_optin'], schema['properties']['settings']['properties']['schedule']
-          fields to contain booleans instead of strings"
+          "The version migrates the MailerLite connector to the be compatible
+          with the connector builder. Important: The forms_popup stream schema from
+          API has a breaking change to schema['properties']['settings']['properties']['schedule'],
+          field to contain booleans instead of strings, The forms_promotion stream
+          schema from API has a breaking change to schema['properties']['double_optin'],
+          schema['properties']['settings']['properties']['schedule'] fields to contain
+          booleans instead of strings"
   remoteRegistries:
     pypi:
-      enabled: true
-      packageName: airbyte-source-mailerlite
-  registries:
-    cloud:
       enabled: false
+      packageName: airbyte-source-mailerlite
+  registryOverrides:
+    cloud:
+      enabled: true
     oss:
       enabled: true
   releaseDate: 2022-10-25
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailerlite
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   ab_internal:
     sl: 100
     ql: 100

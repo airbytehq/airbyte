@@ -1,12 +1,19 @@
 # LinkedIn Ads
 
-This page contains the setup guide and reference information for the LinkedIn Ads source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [LinkedIn Ads](https://learn.microsoft.com/en-us/linkedin/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
 - A LinkedIn Ads account with permission to access data from accounts you want to sync.
+- Start Date - a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
 
 ## Setup guide
+
+### Step 1: Set up LinkedIn Ads
 
 <!-- env:cloud -->
 
@@ -71,25 +78,31 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 <!-- /env:oss -->
 
-### Set up the LinkedIn Ads connector in Airbyte
+### Step 2: Set up the LinkedIn Ads connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **LinkedIn Ads** from the list of available sources.
-4. For **Source name**, enter a name for the LinkedIn Ads connector.
-5. To authenticate:
 
 <!-- env:cloud -->
 
-#### For Airbyte Cloud
+#### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select LinkedIn Ads from the Source type dropdown.
+4. Enter a name for the LinkedIn Ads connector.
+5. To authenticate:
 
 - Select **OAuth2.0** from the Authentication dropdown, then click **Authenticate your LinkedIn Ads account**. Sign in to your account and click **Allow**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-#### For Airbyte Open Source
+#### For Airbyte Open Source:
 
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select LinkedIn Ads from the Source type dropdown.
+4. Enter a name for the LinkedIn Ads connector.
+5. To authenticate:
 - Select an option from the Authentication dropdown:
   1. **OAuth2.0:** Enter your **Client ID**, **Client Secret** and **Refresh Token**. Please note that the refresh token expires after 12 months.
   2. **Access Token:** Enter your **Access Token**. Please note that the access token expires after 60 days.
@@ -111,14 +124,14 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 ## Supported sync modes
 
-The LinkedIn Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The LinkedIn Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported streams
+## Supported Streams
 
 - [Accounts](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-2023-05#search-for-accounts)
 - [Account Users](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-2023-05#find-ad-account-users-by-accounts)
@@ -162,7 +175,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes                       |
-| :--------------- | :----------- | :-------------------------- |
+|:-----------------|:-------------|:----------------------------|
 | `number`         | `number`     | float number                |
 | `integer`        | `integer`    | whole number                |
 | `date`           | `string`     | FORMAT YYYY-MM-DD           |
@@ -177,7 +190,25 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 5.1.2 | 2025-01-25 | [52253](https://github.com/airbytehq/airbyte/pull/52253) | Update dependencies |
+| 5.1.1 | 2025-01-15 | [47092](https://github.com/airbytehq/airbyte/pull/47092) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 5.1.0 | 2025-01-14 | [48863](https://github.com/airbytehq/airbyte/pull/48863) | Custom streams moved to manifest implementation & URL Error Handling |
+| 5.0.0 | 2024-11-26 | [48451](https://github.com/airbytehq/airbyte/pull/48451) | Update primary keys for streams ad_campaign_analytics, Custom Ad Analytics Reports and account_users |
+| 4.1.4 | 2024-10-12 | [46862](https://github.com/airbytehq/airbyte/pull/46862) | Update dependencies |
+| 4.1.3 | 2024-10-05 | [46433](https://github.com/airbytehq/airbyte/pull/46433) | Update dependencies |
+| 4.1.2 | 2024-09-28 | [46171](https://github.com/airbytehq/airbyte/pull/46171) | Update dependencies |
+| 4.1.1 | 2024-09-21 | [45774](https://github.com/airbytehq/airbyte/pull/45774) | Update dependencies |
+| 4.1.0 | 2024-09-20 | [44370](https://github.com/airbytehq/airbyte/pull/44370) | Migrate to low-code |
+| 4.0.6 | 2024-09-14 | [45532](https://github.com/airbytehq/airbyte/pull/45532) | Update dependencies |
+| 4.0.5 | 2024-09-07 | [45209](https://github.com/airbytehq/airbyte/pull/45209) | Update dependencies |
+| 4.0.4 | 2024-08-31 | [44950](https://github.com/airbytehq/airbyte/pull/44950) | Update dependencies |
+| 4.0.3 | 2024-08-24 | [44682](https://github.com/airbytehq/airbyte/pull/44682) | Update dependencies |
+| 4.0.2 | 2024-08-17 | [44220](https://github.com/airbytehq/airbyte/pull/44220) | Update dependencies |
+| 4.0.1 | 2024-08-10 | [43629](https://github.com/airbytehq/airbyte/pull/43629) | Update dependencies |
+| 4.0.0 | 2024-08-07 | [43359](https://github.com/airbytehq/airbyte/pull/43359) | Revert low code migration |
+| 3.0.1 | 2024-08-03 | [43087](https://github.com/airbytehq/airbyte/pull/43087) | Update dependencies |
+| 3.0.0 | 2024-06-18 | [38314](https://github.com/airbytehq/airbyte/pull/38314) | Migrate to low-code |
 | 2.1.12 | 2024-07-27 | [42728](https://github.com/airbytehq/airbyte/pull/42728) | Update dependencies |
 | 2.1.11 | 2024-07-20 | [42291](https://github.com/airbytehq/airbyte/pull/42291) | Update dependencies |
 | 2.1.10 | 2024-07-13 | [41710](https://github.com/airbytehq/airbyte/pull/41710) | Update dependencies |
@@ -186,7 +217,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | 2.1.7 | 2024-07-06 | [40868](https://github.com/airbytehq/airbyte/pull/40868) | Update dependencies |
 | 2.1.6 | 2024-06-25 | [40331](https://github.com/airbytehq/airbyte/pull/40331) | Update dependencies |
 | 2.1.5 | 2024-06-22 | [39998](https://github.com/airbytehq/airbyte/pull/39998) | Update dependencies |
-| 2.1.4 | 2024-06-16 | [0](https://github.com/airbytehq/airbyte/pull/0) | Fix README commands, change spec from json to yaml, fix schema states to object |
+| 2.1.4 | 2024-06-16 | [39442](https://github.com/airbytehq/airbyte/pull/39442) | Fix README commands, change spec from json to yaml, fix schema states to object |
 | 2.1.3 | 2024-06-06 | [39240](https://github.com/airbytehq/airbyte/pull/39240) | [autopull] Upgrade base image to v1.2.2 |
 | 2.1.2 | 2024-05-07 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | Schema descriptions |
 | 2.1.1 | 2024-05-07 | [38013](https://github.com/airbytehq/airbyte/pull/38013) | Fix an issue where the `Accounts` stream did not correctly handle provided account IDs |

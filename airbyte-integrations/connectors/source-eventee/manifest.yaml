@@ -1,0 +1,1035 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for Eventee enables seamless integration and automated
+  data synchronization between Eventee, a leading event management platform, and
+  your data destinations. It extracts and transfers event-related information
+  such as attendee details, lectures, tracks, and more. This connector ensures
+  real-time or scheduled data flow, helping you centralize and analyze Eventee's
+  data effortlessly for improved event insights and reporting.
+
+check:
+  type: CheckStream
+  stream_names:
+    - halls
+
+definitions:
+  streams:
+    halls:
+      type: DeclarativeStream
+      name: halls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /content
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - halls
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/halls"
+    days:
+      type: DeclarativeStream
+      name: days
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /content
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - days
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/days"
+    lectures:
+      type: DeclarativeStream
+      name: lectures
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /content
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - lectures
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lectures"
+    speakers:
+      type: DeclarativeStream
+      name: speakers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /content
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - speakers
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/speakers"
+    workshops:
+      type: DeclarativeStream
+      name: workshops
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /content
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - workshops
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workshops"
+    pauses:
+      type: DeclarativeStream
+      name: pauses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /content
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - pauses
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pauses"
+    tracks:
+      type: DeclarativeStream
+      name: tracks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /content
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tracks
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tracks"
+    partners:
+      type: DeclarativeStream
+      name: partners
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /partners
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/partners"
+    participants:
+      type: DeclarativeStream
+      name: participants
+      primary_key:
+        - email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /participants
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/participants"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.eventee.co/public/v1
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/halls"
+  - $ref: "#/definitions/streams/days"
+  - $ref: "#/definitions/streams/lectures"
+  - $ref: "#/definitions/streams/speakers"
+  - $ref: "#/definitions/streams/workshops"
+  - $ref: "#/definitions/streams/pauses"
+  - $ref: "#/definitions/streams/tracks"
+  - $ref: "#/definitions/streams/partners"
+  - $ref: "#/definitions/streams/participants"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        description: >-
+          API token to use. Generate it at https://admin.eventee.co/ in
+          'Settings -> Features'.
+        name: api_token
+        order: 0
+        title: API Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    halls: true
+    days: true
+    lectures: true
+    speakers: true
+    workshops: true
+    pauses: true
+    tracks: true
+    partners: false
+    participants: false
+  testedStreams:
+    halls:
+      hasRecords: true
+      streamHash: e14467f04497713244238dd3d1dcf4698c47349a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    days:
+      streamHash: 2cdccce2f95e890913399fd07ad7bdea48460b1e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lectures:
+      hasRecords: true
+      streamHash: e5b518d8ab07258cb9b8703e8ccccfcc722e99b0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    speakers:
+      streamHash: 6f03a172b1fa1bc70e5a2b6237a9dc0e70139246
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workshops:
+      streamHash: f512a236b799a2ae88bb52c7613086e305c289d7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pauses:
+      streamHash: e9f7eb51fab59c7bd0e79c9317a7d2d2f2b966ac
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tracks:
+      streamHash: 0750e28cba1c73599df78ecfb7edf0aaebb90693
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    partners:
+      streamHash: 2af8d537faba2c32e9e34223881948350b08a063
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    participants:
+      streamHash: 4fe776b5dfcacd254ebfdb2363705671a2be6f5d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://publiceventeeapi.docs.apiary.io/
+
+schemas:
+  halls:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - number
+          - "null"
+      stream:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          available:
+            type:
+              - boolean
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          is_live:
+            type:
+              - boolean
+              - "null"
+          streamable_id:
+            type:
+              - number
+              - "null"
+          streamable_type:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  days:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      content_url:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+    required:
+      - id
+  lectures:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      available:
+        type:
+          - number
+          - "null"
+      booked:
+        type:
+          - boolean
+          - "null"
+      booking_info:
+        type:
+          - array
+          - "null"
+      capacity:
+        type:
+          - number
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      discussion:
+        type:
+          - number
+          - "null"
+      end:
+        type:
+          - string
+          - "null"
+      event_day_id:
+        type:
+          - number
+          - "null"
+      event_id:
+        type:
+          - number
+          - "null"
+      files:
+        type:
+          - array
+          - "null"
+      hall_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      laravel_through_key:
+        type:
+          - number
+          - "null"
+      mentoring:
+        type:
+          - boolean
+          - "null"
+      moderating:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      overlapping:
+        type:
+          - boolean
+          - "null"
+      panel_discussion:
+        type:
+          - number
+          - "null"
+      polling:
+        type:
+          - boolean
+          - "null"
+      qr_code_url:
+        type:
+          - string
+          - "null"
+      speakers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      start:
+        type:
+          - string
+          - "null"
+      tracks:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  speakers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bio:
+        type:
+          - string
+          - "null"
+      bio_html:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - number
+          - "null"
+      facebook:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      instagram:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      linkedIn:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - number
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - string
+          - "null"
+      twitter:
+        type:
+          - string
+          - "null"
+      web:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  workshops:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      available:
+        type:
+          - number
+          - "null"
+      booked:
+        type:
+          - boolean
+          - "null"
+      booking_info:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            available:
+              type:
+                - number
+                - "null"
+            booked:
+              type:
+                - boolean
+                - "null"
+            booked_attendees:
+              type:
+                - array
+                - "null"
+            capacity:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            lecture_id:
+              type:
+                - number
+                - "null"
+      capacity:
+        type:
+          - number
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      discussion:
+        type:
+          - number
+          - "null"
+      end:
+        type:
+          - string
+          - "null"
+      event_day_id:
+        type:
+          - number
+          - "null"
+      event_id:
+        type:
+          - number
+          - "null"
+      files:
+        type:
+          - array
+          - "null"
+      hall_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      laravel_through_key:
+        type:
+          - number
+          - "null"
+      mentoring:
+        type:
+          - boolean
+          - "null"
+      moderating:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      overlapping:
+        type:
+          - boolean
+          - "null"
+      panel_discussion:
+        type:
+          - number
+          - "null"
+      polling:
+        type:
+          - boolean
+          - "null"
+      qr_code_url:
+        type:
+          - string
+          - "null"
+      speakers:
+        type:
+          - array
+          - "null"
+      start:
+        type:
+          - string
+          - "null"
+      tracks:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  pauses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      end:
+        type:
+          - string
+          - "null"
+      event_day_id:
+        type:
+          - number
+          - "null"
+      event_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      laravel_through_key:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      start:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  tracks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  partners:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      exhibitor:
+        type:
+          - boolean
+          - "null"
+      exhibitor_info:
+        type:
+          - object
+          - "null"
+        properties:
+          booth_number:
+            type:
+              - string
+              - "null"
+          order:
+            type:
+              - number
+              - "null"
+          photo:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              height:
+                type:
+                  - number
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              thumbnail:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+      id:
+        type: number
+      logo:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          height:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          thumbnail:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      photo:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          height:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          thumbnail:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          width:
+            type:
+              - number
+              - "null"
+      qr_code_url:
+        type:
+          - string
+          - "null"
+      sections:
+        type:
+          - array
+          - "null"
+      sponsor:
+        type:
+          - boolean
+          - "null"
+      sponsor_info:
+        type:
+          - object
+          - "null"
+        properties:
+          order:
+            type:
+              - number
+              - "null"
+          photo:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              height:
+                type:
+                  - number
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              thumbnail:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      web:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  participants:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      email:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+    required:
+      - email
+    additionalProperties: true

@@ -3,24 +3,26 @@ data:
     hosts:
       - ${host}
       - ${tunnel_method.tunnel_host}
-  registries:
-    cloud:
-      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
-    oss:
-      enabled: false # strict encrypt connectors are not used on OSS.
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: integrationTests
   connectorType: source
   definitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/source-clickhouse-strict-encrypt
+  documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   githubIssueLabel: source-clickhouse
   icon: clickhouse.svg
   license: MIT
   name: ClickHouse
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   tags:
     - language:java
-  connectorTestSuitesOptions:
-    - suite: integrationTests
 metadataSpecVersion: "1.0"

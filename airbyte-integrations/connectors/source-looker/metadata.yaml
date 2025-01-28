@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
-  dockerImageTag: 0.2.12
+  dockerImageTag: 1.0.21
   dockerRepository: airbyte/source-looker
   githubIssueLabel: source-looker
   icon: looker.svg
@@ -12,33 +12,34 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-looker
-  registries:
+  registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: Version 1.0.0 introduces changes to the connection configuration which has been upgraded to the API v4.0 from v3.1. Due to this upgrade, certain streams were affected and schemas changed generally.
+        upgradeDeadline: "2024-08-15"
   documentationUrl: https://docs.airbyte.com/integrations/sources/looker
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
-  # Disable the acceptanceTests suite for now
-  # They are not passing
-  # No Airbyte cloud usage
-  #
-  # connectorTestSuitesOptions:
-  #   - suite: unitTests
-  #   - suite: acceptanceTests
-  #     testSecrets:
-  #       - name: SECRET_SOURCE-LOOKER__CREDS
-  #         fileName: config.json
-  #         secretStore:
-  #           type: GSM
-  #           alias: airbyte-connector-testing-secret-store
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-LOOKER__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
 metadataSpecVersion: "1.0"

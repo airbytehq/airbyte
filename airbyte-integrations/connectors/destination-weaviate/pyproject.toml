@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-weaviate"
-version = "0.2.28"
+version = "0.2.51"
 description = "Airbyte destination implementation for Weaviate."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -22,8 +22,8 @@ airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
 weaviate-client = "3.25.2"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2"
-pytest-docker = "2.0.1"
+pytest = "^8.3.2"
+pytest-docker = "3.0.0"
 docker = "*"
 ruff = "^0.3.2"
 mypy = "^1.9.0"

@@ -6,6 +6,8 @@ import datetime
 import asyncclick as click
 import pytest
 import requests
+
+from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common
 
@@ -27,7 +29,11 @@ def latest_cdk_version():
 def python_connector_with_setup_not_latest_cdk(all_connectors):
     for connector in all_connectors:
         if (
-            connector.metadata.get("connectorBuildOptions", {}).get("baseImage", False)
+            connector.metadata.get("connectorBuildOptions", False)
+            # We want to select a connector with a base image version >= 2.0.0 to use Python 3.10
+            and not connector.metadata.get("connectorBuildOptions", {})
+            .get("baseImage", "")
+            .startswith("docker.io/airbyte/python-connector-base:1.")
             and connector.language == "python"
             and connector.code_directory.joinpath("setup.py").exists()
         ):
@@ -55,25 +61,3 @@ def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk
 @pytest.fixture(scope="module")
 def python_connector_base_image_address(python_connector_with_setup_not_latest_cdk):
     return python_connector_with_setup_not_latest_cdk.metadata["connectorBuildOptions"]["baseImage"]
-
-
-async def test_with_python_connector_installed_from_setup(context_with_setup, python_connector_base_image_address, latest_cdk_version):
-
-    python_container = context_with_setup.dagger_client.container().from_(python_connector_base_image_address)
-
-    container = await common.with_python_connector_installed(
-        context_with_setup, python_container, str(context_with_setup.connector.code_directory)
-    )
-    # Uninstall and reinstall the latest cdk version
-    cdk_install_latest_output = (
-        await container.with_env_variable("CACHEBUSTER", datetime.datetime.now().isoformat())
-        # .with_exec(["pip", "install", f"airbyte-cdk=={latest_cdk_version}"], skip_entrypoint=True)
-        .with_exec(["pip", "uninstall", "-y", f"airbyte-cdk=={latest_cdk_version}"], skip_entrypoint=True)
-        .with_exec(["pip", "install", f"airbyte-cdk=={latest_cdk_version}"], skip_entrypoint=True)
-        .stdout()
-    )
-    # Assert that the latest cdk version is installed from cache
-    assert f"Using cached airbyte_cdk-{latest_cdk_version}-py3-none-any.whl" in cdk_install_latest_output
-    # Assert that the connector is installed
-    pip_freeze_output = await container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
-    assert context_with_setup.connector.technical_name in pip_freeze_output

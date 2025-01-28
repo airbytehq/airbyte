@@ -121,6 +121,12 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 1.4.13 | 2025-01-25 | [52278](https://github.com/airbytehq/airbyte/pull/52278) | Update dependencies |
+| 1.4.12 | 2025-01-11 | [51165](https://github.com/airbytehq/airbyte/pull/51165) | Update dependencies |
+| 1.4.11 | 2025-01-04 | [50890](https://github.com/airbytehq/airbyte/pull/50890) | Update dependencies |
+| 1.4.10 | 2024-12-28 | [50655](https://github.com/airbytehq/airbyte/pull/50655) | Update dependencies |
+| 1.4.9 | 2024-12-21 | [43736](https://github.com/airbytehq/airbyte/pull/43736) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.4.8 | 2024-12-20 | [49972](https://github.com/airbytehq/airbyte/pull/49972) | Pin CDK due to breaking changes in newer versions. |
 | 1.4.7 | 2024-07-06 | [40629](https://github.com/airbytehq/airbyte/pull/40629) | Update dependencies |
 | 1.4.6 | 2024-06-26 | [40530](https://github.com/airbytehq/airbyte/pull/40530) | Update dependencies |
 | 1.4.5 | 2024-06-25 | [40318](https://github.com/airbytehq/airbyte/pull/40318) | Update dependencies |

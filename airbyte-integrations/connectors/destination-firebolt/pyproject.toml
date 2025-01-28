@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.10"
+version = "0.2.27"
 name = "destination-firebolt"
 description = "Destination implementation for Firebolt."
 authors = [ "Airbyte <evan@airbyte.io>",]
@@ -27,4 +27,4 @@ destination-firebolt = "destination_firebolt.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
-pytest = "^6.2"
+pytest = "^8.3.2"

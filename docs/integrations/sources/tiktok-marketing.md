@@ -1,6 +1,10 @@
 # TikTok Marketing
 
-This page guides you through the process of setting up the TikTok Marketing source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [TikTok Marketing](https://business-api.tiktok.com/portal/docs) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -29,7 +33,7 @@ To access the Sandbox environment:
 
 ## Setup guide
 
-### Step 1: Set up TikTok
+### Step 1: Set up TikTok Marketing
 
 1. Create a TikTok For Business account: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250) <!-- env:oss -->
 2. Create developer application: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450)
@@ -40,22 +44,23 @@ To access the Sandbox environment:
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Tiktok Marketing** from the Source type dropdown and enter a name for this connector.
-4. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
-5. Log in and Authorize to the Tiktok account
-6. Choose required Start date
-7. click `Set up source`.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select TikTok Marketing from the Source type dropdown.
+4. Enter a name for the TikTok Marketing connector.
+5. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
+6. Log in and Authorize to the Tiktok account
+7. Choose required Start date
+8. click `Set up source`.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+#### For Airbyte Open Source:
 
-1. Go to local Airbyte page.
+1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
 4. Select `Production Access Token` or `Sandbox Access Token` Authorization method, then copy and paste info from step 1.
@@ -63,10 +68,17 @@ To access the Sandbox environment:
 6. Click `Set up source`.
 <!-- /env:oss -->
 
-## Supported streams and sync modes
+## Supported sync modes
+
+The TikTok Marketing source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- Full Refresh
+- Incremental
+
+## Supported Streams
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-| :---------------------------------------- | :----------- | :----------------------------------------- |:------------|
+|:------------------------------------------|:-------------|:-------------------------------------------|:------------|
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
@@ -126,6 +138,18 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 4.3.7 | 2025-01-11 | [47118](https://github.com/airbytehq/airbyte/pull/47118) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 4.3.6 | 2024-10-12 | [46855](https://github.com/airbytehq/airbyte/pull/46855) | Update dependencies |
+| 4.3.5 | 2024-10-09 | [46676](https://github.com/airbytehq/airbyte/pull/46676) | Fix error handling for codes 40100 and 50002 |
+| 4.3.4 | 2024-10-05 | [46164](https://github.com/airbytehq/airbyte/pull/46164) | Update dependencies |
+| 4.3.3 | 2024-09-21 | [45790](https://github.com/airbytehq/airbyte/pull/45790) | Update dependencies |
+| 4.3.2 | 2024-09-14 | [45488](https://github.com/airbytehq/airbyte/pull/45488) | Update dependencies |
+| 4.3.1 | 2024-09-07 | [45270](https://github.com/airbytehq/airbyte/pull/45270) | Update dependencies |
+| 4.3.0 | 2024-09-03 | [44910](https://github.com/airbytehq/airbyte/pull/44910) | Migrate to CDK v4 |
+| 4.2.5 | 2024-08-31 | [44954](https://github.com/airbytehq/airbyte/pull/44954) | Update dependencies |
+| 4.2.4 | 2024-08-24 | [43783](https://github.com/airbytehq/airbyte/pull/43783) | Update dependencies |
+| 4.2.3 | 2024-08-19 | [44048](https://github.com/airbytehq/airbyte/pull/44048) | Fix include_deleted toggle |
+| 4.2.2 | 2024-08-03 | [42822](https://github.com/airbytehq/airbyte/pull/42822) | Update dependencies |
 | 4.2.1 | 2024-07-20 | [42375](https://github.com/airbytehq/airbyte/pull/42375) | Update dependencies |
 | 4.2.0 | 2024-07-17 | [42005](https://github.com/airbytehq/airbyte/pull/42005) | Migrate to CDK v3.5.3 |
 | 4.1.0 | 2024-07-17 | [42004](https://github.com/airbytehq/airbyte/pull/42004) | Migrate to CDK v2.4.0 |

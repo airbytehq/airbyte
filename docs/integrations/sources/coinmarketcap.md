@@ -39,6 +39,14 @@ Coinmarketcap APIs are under rate limits for the number of API calls allowed per
 
 | Version | Date       | Pull Request                                              | Subject                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.4 | 2025-01-25 | [52338](https://github.com/airbytehq/airbyte/pull/52338) | Update dependencies |
+| 0.2.3 | 2025-01-18 | [51643](https://github.com/airbytehq/airbyte/pull/51643) | Update dependencies |
+| 0.2.2 | 2025-01-11 | [47781](https://github.com/airbytehq/airbyte/pull/47781) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.2.0 | 2024-08-15 | [44163](https://github.com/airbytehq/airbyte/pull/44163) | Refactor connector to manifest-only format |
+| 0.1.14 | 2024-08-12 | [43905](https://github.com/airbytehq/airbyte/pull/43905) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43684](https://github.com/airbytehq/airbyte/pull/43684) | Update dependencies |
+| 0.1.12 | 2024-08-03 | [43227](https://github.com/airbytehq/airbyte/pull/43227) | Update dependencies |
 | 0.1.11 | 2024-07-27 | [42766](https://github.com/airbytehq/airbyte/pull/42766) | Update dependencies |
 | 0.1.10 | 2024-07-20 | [42332](https://github.com/airbytehq/airbyte/pull/42332) | Update dependencies |
 | 0.1.9 | 2024-07-13 | [41856](https://github.com/airbytehq/airbyte/pull/41856) | Update dependencies |

@@ -7,12 +7,17 @@ import enum
 import logging
 from functools import wraps
 from time import sleep
-from typing import Any, Callable, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, Final, List, Mapping, Optional
 
 import requests
+
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+
+
+# default logger instance
+LOGGER: Final[logging.Logger] = logging.getLogger("airbyte")
 
 
 class ShopifyNonRetryableErrors:
@@ -44,7 +49,7 @@ class ShopifyNonRetryableErrors:
                 response_action=ResponseAction.IGNORE,
                 failure_type=FailureType.config_error,
                 error_message=f"Stream `{stream}`. Entity might not be available or missing.",
-            )
+            ),
             # extend the mapping with more handable errors, if needed.
         }
 
@@ -112,8 +117,6 @@ class ShopifyRateLimiter:
     on_mid_load: float = 1.5
     on_high_load: float = 5.0
 
-    logger = logging.getLogger("airbyte")
-
     log_message_count = 0
     log_message_frequency = 3
 
@@ -124,7 +127,7 @@ class ShopifyRateLimiter:
         if ShopifyRateLimiter.log_message_count < ShopifyRateLimiter.log_message_frequency:
             ShopifyRateLimiter.log_message_count += 1
         else:
-            ShopifyRateLimiter.logger.info(message)
+            LOGGER.info(message)
             ShopifyRateLimiter.log_message_count = 0
 
     def get_response_from_args(*args) -> Optional[requests.Response]:
@@ -138,8 +141,8 @@ class ShopifyRateLimiter:
         Define wait_time based on load conditions.
 
         :: load - represents how close we are to being throttled
-                - 0.5 is half way through our allowance
-                - 1 indicates that all of the allowance is used and the api will start rejecting calls
+            - 0.5 is half way through our allowance
+            - 1 indicates that all of the allowance is used and the api will start rejecting calls
         :: threshold - is the % cutoff for the rate_limits/load
         :: wait_time - time to wait between each request in seconds
 

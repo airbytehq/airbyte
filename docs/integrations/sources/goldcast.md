@@ -96,6 +96,20 @@ This is a child stream of the events stream indicating webinars that belong to t
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.10 | 2025-01-25 | [52325](https://github.com/airbytehq/airbyte/pull/52325) | Update dependencies |
+| 0.2.9 | 2025-01-18 | [51636](https://github.com/airbytehq/airbyte/pull/51636) | Update dependencies |
+| 0.2.8 | 2025-01-11 | [51103](https://github.com/airbytehq/airbyte/pull/51103) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50571](https://github.com/airbytehq/airbyte/pull/50571) | Update dependencies |
+| 0.2.6 | 2024-12-21 | [49998](https://github.com/airbytehq/airbyte/pull/49998) | Update dependencies |
+| 0.2.5 | 2024-12-14 | [49480](https://github.com/airbytehq/airbyte/pull/49480) | Update dependencies |
+| 0.2.4 | 2024-12-12 | [49158](https://github.com/airbytehq/airbyte/pull/49158) | Update dependencies |
+| 0.2.3 | 2024-11-04 | [48148](https://github.com/airbytehq/airbyte/pull/48148) | Update dependencies |
+| 0.2.2 | 2024-10-29 | [47875](https://github.com/airbytehq/airbyte/pull/47875) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47533](https://github.com/airbytehq/airbyte/pull/47533) | Update dependencies |
+| 0.2.0 | 2024-08-22 | [44568](https://github.com/airbytehq/airbyte/pull/44568) | Refactor connector to manifest-only format |
+| 0.1.8 | 2024-08-12 | [43804](https://github.com/airbytehq/airbyte/pull/43804) | Update dependencies |
+| 0.1.7 | 2024-08-10 | [43522](https://github.com/airbytehq/airbyte/pull/43522) | Update dependencies |
+| 0.1.6 | 2024-08-03 | [43284](https://github.com/airbytehq/airbyte/pull/43284) | Update dependencies |
 | 0.1.5 | 2024-07-27 | [42616](https://github.com/airbytehq/airbyte/pull/42616) | Update dependencies |
 | 0.1.4 | 2024-07-20 | [42237](https://github.com/airbytehq/airbyte/pull/42237) | Update dependencies |
 | 0.1.3 | 2024-07-13 | [41806](https://github.com/airbytehq/airbyte/pull/41806) | Update dependencies |

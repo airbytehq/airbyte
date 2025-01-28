@@ -22,7 +22,7 @@ An Airbyte component which pulls data from a source or pushes data to a destinat
 
 ## Connection
 
-A connection is an automated data pipeline that replicates data from a source to a destination. It links a configured source (based on a source connector) to a configured destination (based on a destination connector) to perform syncs. It defines things like the replication frequency (e.g. hourly, daily, manually) and which streams to replicate.Setting up a connection enables configuration of the following parameters:
+A connection is an automated data pipeline that replicates data from a source to a destination. It links a configured source (based on a source connector) to a configured destination (based on a destination connector) to perform syncs. It defines things like the replication frequency (e.g. hourly, daily, manually) and which streams to replicate. Setting up a connection enables configuration of the following parameters:
 
 | Concept                                                                                                                  | Description                                                        |
 | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
@@ -81,7 +81,7 @@ For more details, see our [Namespace documentation](namespaces.md).
 
 ## Sync Mode
 
-A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides several sync modes depending what you want to accomplish. The sync modes define how your data will sync and whether duplicates will exist in the dstination.
+A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides several sync modes depending what you want to accomplish. The sync modes define how your data will sync and whether duplicates will exist in the destination.
 
 Read more about each [sync mode](/using-airbyte/core-concepts/sync-modes/README.md) and how they differ.
 

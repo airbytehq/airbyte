@@ -1,0 +1,1422 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+description: Solves https://github.com/airbytehq/airbyte/issues/45995
+
+check:
+  type: CheckStream
+  stream_names:
+    - colors
+
+definitions:
+  streams:
+    colors:
+      type: DeclarativeStream
+      name: colors
+      primary_key:
+        - calendar
+        - event
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: colors
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/colors"
+    settings:
+      type: DeclarativeStream
+      name: settings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/me/settings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/settings"
+    calendarlist:
+      type: DeclarativeStream
+      name: calendarlist
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/me/calendarList
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calendarlist"
+    calendars:
+      type: DeclarativeStream
+      name: calendars
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/me/calendarList
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calendars"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: calendars/{{ config['calendarid'] }}/events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ response.get('nextPageToken') is not defined }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.googleapis.com/calendar/v3/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token_2\"] }}"
+      refresh_request_body: {}
+      token_refresh_endpoint: https://oauth2.googleapis.com/token
+
+streams:
+  - $ref: "#/definitions/streams/colors"
+  - $ref: "#/definitions/streams/settings"
+  - $ref: "#/definitions/streams/calendarlist"
+  - $ref: "#/definitions/streams/calendars"
+  - $ref: "#/definitions/streams/events"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token_2
+      - calendarid
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token_2:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+      calendarid:
+        type: string
+        order: 3
+        title: Calendar Id
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    colors: true
+    settings: true
+    calendarlist: true
+    calendars: true
+    events: true
+  testedStreams:
+    colors:
+      streamHash: 861414b167a55e3fbe46e2f2cee347da33929c29
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    settings:
+      streamHash: 9e301eaba02ae69af80f85e3c417a8fd7f9ab9ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    calendarlist:
+      streamHash: 20ff8ac9291587fb2bf1f7b427f9134d0ed613ee
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    calendars:
+      streamHash: 9b3b805b81a4eefc192703ef94d4de0026a419be
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: b4e1338b1dad31efc8d7d131ca7ada091f3ca225
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.google.com/calendar/api/v3/reference
+
+schemas:
+  colors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      calendar:
+        type: object
+        properties:
+          "1":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "2":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "3":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "4":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "5":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "6":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "7":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "8":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "9":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "10":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "11":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "12":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "13":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "14":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "15":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "16":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "17":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "18":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "19":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "20":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "21":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "22":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "23":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "24":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+      event:
+        type: object
+        properties:
+          "1":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "2":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "3":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "4":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "5":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "6":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "7":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "8":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "9":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "10":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+          "11":
+            type:
+              - object
+              - "null"
+            properties:
+              background:
+                type:
+                  - string
+                  - "null"
+              foreground:
+                type:
+                  - string
+                  - "null"
+      kind:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+    required:
+      - calendar
+      - event
+  settings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  calendarlist:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      accessRole:
+        type:
+          - string
+          - "null"
+      backgroundColor:
+        type:
+          - string
+          - "null"
+      colorId:
+        type:
+          - string
+          - "null"
+      conferenceProperties:
+        type:
+          - object
+          - "null"
+        properties:
+          allowedConferenceSolutionTypes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      defaultReminders:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            method:
+              type:
+                - string
+                - "null"
+            minutes:
+              type:
+                - number
+                - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      foregroundColor:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      notificationSettings:
+        type:
+          - object
+          - "null"
+        properties:
+          notifications:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                method:
+                  type:
+                    - string
+                    - "null"
+      primary:
+        type:
+          - boolean
+          - "null"
+      selected:
+        type:
+          - boolean
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  calendars:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      accessRole:
+        type:
+          - string
+          - "null"
+      backgroundColor:
+        type:
+          - string
+          - "null"
+      colorId:
+        type:
+          - string
+          - "null"
+      conferenceProperties:
+        type:
+          - object
+          - "null"
+        properties:
+          allowedConferenceSolutionTypes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      defaultReminders:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            method:
+              type:
+                - string
+                - "null"
+            minutes:
+              type:
+                - number
+                - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      foregroundColor:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      notificationSettings:
+        type:
+          - object
+          - "null"
+        properties:
+          notifications:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                method:
+                  type:
+                    - string
+                    - "null"
+      primary:
+        type:
+          - boolean
+          - "null"
+      selected:
+        type:
+          - boolean
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      anyoneCanAddSelf:
+        type:
+          - boolean
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            fileId:
+              type:
+                - string
+                - "null"
+            fileUrl:
+              type:
+                - string
+                - "null"
+            iconLink:
+              type:
+                - string
+                - "null"
+            mimeType:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+      attendees:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            comment:
+              type:
+                - string
+                - "null"
+            displayName:
+              type:
+                - string
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            optional:
+              type:
+                - boolean
+                - "null"
+            organizer:
+              type:
+                - boolean
+                - "null"
+            resource:
+              type:
+                - boolean
+                - "null"
+            responseStatus:
+              type:
+                - string
+                - "null"
+            self:
+              type:
+                - boolean
+                - "null"
+      conferenceData:
+        type:
+          - object
+          - "null"
+        properties:
+          conferenceId:
+            type:
+              - string
+              - "null"
+          conferenceSolution:
+            type:
+              - object
+              - "null"
+            properties:
+              iconUri:
+                type:
+                  - string
+                  - "null"
+              key:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          createRequest:
+            type:
+              - object
+              - "null"
+            properties:
+              conferenceSolutionKey:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+              requestId:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  statusCode:
+                    type:
+                      - string
+                      - "null"
+          entryPoints:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                accessCode:
+                  type:
+                    - string
+                    - "null"
+                entryPointFeatures:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                entryPointType:
+                  type:
+                    - string
+                    - "null"
+                label:
+                  type:
+                    - string
+                    - "null"
+                meetingCode:
+                  type:
+                    - string
+                    - "null"
+                passcode:
+                  type:
+                    - string
+                    - "null"
+                password:
+                  type:
+                    - string
+                    - "null"
+                pin:
+                  type:
+                    - string
+                    - "null"
+                regionCode:
+                  type:
+                    - string
+                    - "null"
+                uri:
+                  type:
+                    - string
+                    - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          parameters:
+            type:
+              - object
+              - "null"
+            properties:
+              addOnParameters:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  parameters:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      creatorUserId:
+                        type:
+                          - string
+                          - "null"
+                      meetingCreatedBy:
+                        type:
+                          - string
+                          - "null"
+                      meetingType:
+                        type:
+                          - string
+                          - "null"
+                      meetingUuid:
+                        type:
+                          - string
+                          - "null"
+                      originalEventId:
+                        type:
+                          - string
+                          - "null"
+                      realMeetingId:
+                        type:
+                          - string
+                          - "null"
+                      scriptId:
+                        type:
+                          - string
+                          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      creator:
+        type:
+          - object
+          - "null"
+        properties:
+          displayName:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - boolean
+              - "null"
+      end:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          dateTime:
+            type:
+              - string
+              - "null"
+          timeZone:
+            type:
+              - string
+              - "null"
+      endTimeUnspecified:
+        type:
+          - boolean
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      eventType:
+        type:
+          - string
+          - "null"
+      extendedProperties:
+        type:
+          - object
+          - "null"
+        properties:
+          shared:
+            type:
+              - object
+              - "null"
+            properties:
+              meetingId:
+                type:
+                  - string
+                  - "null"
+              meetingParams:
+                type:
+                  - string
+                  - "null"
+              zmMeetingNum:
+                type:
+                  - string
+                  - "null"
+      guestsCanInviteOthers:
+        type:
+          - boolean
+          - "null"
+      guestsCanModify:
+        type:
+          - boolean
+          - "null"
+      guestsCanSeeOtherGuests:
+        type:
+          - boolean
+          - "null"
+      hangoutLink:
+        type:
+          - string
+          - "null"
+      htmlLink:
+        type:
+          - string
+          - "null"
+      iCalUID:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      organizer:
+        type:
+          - object
+          - "null"
+        properties:
+          displayName:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - boolean
+              - "null"
+      originalStartTime:
+        type:
+          - object
+          - "null"
+        properties:
+          dateTime:
+            type:
+              - string
+              - "null"
+          timeZone:
+            type:
+              - string
+              - "null"
+      privateCopy:
+        type:
+          - boolean
+          - "null"
+      recurrence:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      recurringEventId:
+        type:
+          - string
+          - "null"
+      reminders:
+        type:
+          - object
+          - "null"
+        properties:
+          useDefault:
+            type:
+              - boolean
+              - "null"
+      sequence:
+        type:
+          - number
+          - "null"
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      start:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          dateTime:
+            type:
+              - string
+              - "null"
+          timeZone:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      transparency:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+    required:
+      - id

@@ -9,8 +9,9 @@ This page contains the setup guide and reference information for the [Stripe](ht
 ## Prerequisites
 
 - Access to the Stripe account containing the data you wish to replicate
+- Stripe Account ID
 
-## Setup Guide
+## Setup guide
 
 :::note
 To authenticate the Stripe connector, you need to use a Stripe API key. Although you may use an existing key, we recommend that you create a new restricted key specifically for Airbyte and grant it **Read** privileges only. We also recommend granting **Read** privileges to all available permissions, and configuring the specific data you would like to replicate within Airbyte.
@@ -27,12 +28,24 @@ To authenticate the Stripe connector, you need to use a Stripe API key. Although
 
 For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.com/docs/keys).
 
-### Step 2: Set up the Stripe source connector in Airbyte
+### Step 2: Set up the Stripe connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Stripe** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
+<!-- env:cloud -->
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Stripe from the Source type dropdown.
+4. Enter a name for the Stripe connector.
+<!-- /env:cloud -->
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Stripe from the Source type dropdown.
+4. Enter a name for the Stripe connector.
+<!-- /env:oss -->
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter the restricted key you created for the connection.
 7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
@@ -57,12 +70,12 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 ## Supported sync modes
 
-The Stripe source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Stripe source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
-## Supported streams
+## Supported Streams
 
 The Stripe source connector supports the following streams:
 
@@ -95,8 +108,12 @@ The Stripe source connector supports the following streams:
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
-- [Payment Methods](https://stripe.com/docs/api/payment_methods/list)
+- [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
+- [Payout Balance Transactions](https://docs.stripe.com/api/balance_transactions/list) \(Incremental\)
+  :::note
+  This stream is built with a call using payout_id from the payout stream (parent) as a parmeter to the balance transaction API to get balance transactions that comprised the actual amount of the payout. Check [the Stripe docs](https://docs.stripe.com/api/balance_transactions/list) for more details.
+  :::
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
@@ -114,11 +131,14 @@ The Stripe source connector supports the following streams:
 - [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
-- [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
+- [Usage Records](https://stripe.com/docs/api/usage_records)
 
-### Data type mapping
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
-The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
+### Data type map
+
+The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
 
 ## Limitations & Troubleshooting
 
@@ -177,9 +197,11 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `External Account Bank Accounts`
 - `External Account Cards`
 - `Invoice Items`
+- `Invoice Line Items`
 - `Invoices`
 - `Payment Intents`
 - `Payouts`
+- `Payout Balance Transactions`
 - `Promotion Codes`
 - `Persons`
 - `Plans`
@@ -188,6 +210,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Reviews`
 - `Setup Intents`
 - `Subscription Schedule`
+- `Subscription Items`
 - `Subscriptions`
 - `Top Ups`
 - `Transactions`
@@ -214,8 +237,6 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 - Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
-### Data type mapping
-
 </details>
 
 ## Changelog
@@ -224,7 +245,21 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
-| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.3 | 2025-01-11 | [46832](https://github.com/airbytehq/airbyte/pull/46832) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 5.8.2 | 2024-12-10 | [46499](https://github.com/airbytehq/airbyte/pull/46499) | Source-Stripe: Refactor Customer Balance Transactions |
+| 5.8.1 | 2024-12-08 | [46499](https://github.com/airbytehq/airbyte/pull/46499) | Source-Stripe: Add new payout_balance_transactions incremental stream |
+| 5.8.0 | 2024-10-12 | [46864](https://github.com/airbytehq/airbyte/pull/46864) | Add incremental stream support to `accounts` stream |
+| 5.7.0 | 2024-10-01 | [45860](https://github.com/airbytehq/airbyte/pull/45860) | Add incremental stream support to `invoice_line_items` and `subscription_items` streams |
+| 5.6.2 | 2024-10-05 | [43881](https://github.com/airbytehq/airbyte/pull/43881) | Update dependencies |
+| 5.6.1 | 2024-10-03 | [46327](https://github.com/airbytehq/airbyte/pull/46327) | Bump the cdk to 5.10.2 to stop using PrintBuffer optimization due to record count mismatches |
+| 5.6.0 | 2024-09-10 | [44891](https://github.com/airbytehq/airbyte/pull/44891) | Update `Payment Methods` stream |
+| 5.5.4 | 2024-09-09 | [45348](https://github.com/airbytehq/airbyte/pull/45348) | Remove `stripe` python package |
+| 5.5.3 | 2024-09-03 | [45101](https://github.com/airbytehq/airbyte/pull/45101) | Fix regression following pagination issue fix |
+| 5.5.2 | 2024-08-28 | [44862](https://github.com/airbytehq/airbyte/pull/44862) | Fix RFR pagination issue |
+| 5.5.1 | 2024-08-10 | [43105](https://github.com/airbytehq/airbyte/pull/43105) | Update dependencies |
+| 5.5.0 | 2024-08-08 | [43302](https://github.com/airbytehq/airbyte/pull/43302) | Fix problem with state not updating and upgrade cdk 4 |
+| 5.4.12 | 2024-07-31 | [41985](https://github.com/airbytehq/airbyte/pull/41985) | Expand Invoice discounts and tax rates |
 | 5.4.11 | 2024-07-27 | [42623](https://github.com/airbytehq/airbyte/pull/42623) | Update dependencies |
 | 5.4.10 | 2024-07-20 | [42305](https://github.com/airbytehq/airbyte/pull/42305) | Update dependencies |
 | 5.4.9 | 2024-07-13 | [41760](https://github.com/airbytehq/airbyte/pull/41760) | Update dependencies |

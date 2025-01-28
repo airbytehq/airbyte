@@ -6,11 +6,11 @@ data:
     hosts:
       - harvest.greenhouse.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
-  dockerImageTag: 0.5.12
+  dockerImageTag: 0.5.31
   dockerRepository: airbyte/source-greenhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
   githubIssueLabel: source-greenhouse
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-greenhouse
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -33,6 +33,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: greenhouse_config_users_only_dev_null
+          id: 2234aee5-c67b-48f7-8c6d-45a1e0303ea1
+        - name: greenhouse_config_dev_null
+          id: 2bcce6b2-2c89-46a4-9980-82a299266774
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

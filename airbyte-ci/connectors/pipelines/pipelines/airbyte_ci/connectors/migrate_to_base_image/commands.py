@@ -4,6 +4,7 @@
 
 
 import asyncclick as click
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_base_image.pipeline import run_connector_migration_to_base_image_pipeline
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines

@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import List, Set, Tuple
 
 import asyncclick as click
-from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
+from connector_ops.utils import Connector, ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo  # type: ignore
+
 from pipelines import main_logger
 from pipelines.cli.airbyte_ci import wrap_in_secret
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
@@ -17,6 +18,11 @@ from pipelines.helpers.git import get_modified_files
 from pipelines.helpers.utils import transform_strs_to_paths
 
 ALL_CONNECTORS = get_all_connectors_in_repo()
+CONNECTORS_WITH_STRICT_ENCRYPT_VARIANTS = {
+    Connector(c.relative_connector_path.replace("-strict-encrypt", ""))
+    for c in ALL_CONNECTORS
+    if c.technical_name.endswith("-strict-encrypt")
+}
 
 
 def log_selected_connectors(selected_connectors_with_modified_files: List[ConnectorWithModifiedFiles]) -> None:
@@ -25,6 +31,23 @@ def log_selected_connectors(selected_connectors_with_modified_files: List[Connec
         main_logger.info(f"Will run on the following {len(selected_connectors_names)} connectors: {', '.join(selected_connectors_names)}.")
     else:
         main_logger.info("No connectors to run.")
+
+
+def get_base_connector_and_variants(connector: Connector) -> Set[Connector]:
+    base_connector_path = connector.relative_connector_path.replace("-strict-encrypt", "")
+    base_connector = Connector(base_connector_path)
+    strict_encrypt_connector_path = f"{base_connector.relative_connector_path}-strict-encrypt"
+    if base_connector in CONNECTORS_WITH_STRICT_ENCRYPT_VARIANTS:
+        return {base_connector, Connector(strict_encrypt_connector_path)}
+    else:
+        return {base_connector}
+
+
+def update_selected_connectors_with_variants(selected_connectors: Set[Connector]) -> Set[Connector]:
+    updated_selected_connectors = set()
+    for selected_connector in selected_connectors:
+        updated_selected_connectors.update(get_base_connector_and_variants(selected_connector))
+    return updated_selected_connectors
 
 
 def get_selected_connectors_with_modified_files(
@@ -79,6 +102,9 @@ def get_selected_connectors_with_modified_files(
     # The selected connectors are the intersection of the selected connectors by name, support_level, language, simpleeval query and modified.
     selected_connectors = set.intersection(*non_empty_connector_sets) if non_empty_connector_sets else set()
 
+    # We always want to pair selection of a base connector with its variant, e vice versa
+    selected_connectors = update_selected_connectors_with_variants(selected_connectors)
+
     selected_connectors_with_modified_files = []
     for connector in selected_connectors:
         connector_with_modified_files = ConnectorWithModifiedFiles(
@@ -90,6 +116,7 @@ def get_selected_connectors_with_modified_files(
         else:
             if connector_with_modified_files.has_metadata_change:
                 selected_connectors_with_modified_files.append(connector_with_modified_files)
+
     return selected_connectors_with_modified_files
 
 
@@ -119,9 +146,11 @@ def validate_environment(is_local: bool) -> None:
         "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
         "bump-version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
         "migrate-to-base-image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
+        "migrate-to-manifest-only": "pipelines.airbyte_ci.connectors.migrate_to_manifest_only.commands.migrate_to_manifest_only",
         "migrate-to-poetry": "pipelines.airbyte_ci.connectors.migrate_to_poetry.commands.migrate_to_poetry",
-        "migrate-to-inline_schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
+        "migrate-to-inline-schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
         "migrate-to-logging-logger": "pipelines.airbyte_ci.connectors.migrate_to_logging_logger.commands.migrate_to_logging_logger",
+        "generate-erd": "pipelines.airbyte_ci.connectors.generate_erd.commands.generate_erd",
         "upgrade-cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
         "up-to-date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",
         "pull-request": "pipelines.airbyte_ci.connectors.pull_request.commands.pull_request",
@@ -142,7 +171,12 @@ def validate_environment(is_local: bool) -> None:
     help="Filter connectors to test by support_level.",
     type=click.Choice(SupportLevelEnum),
 )
-@click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
+@click.option(
+    "--modified/--not-modified",
+    help="Only test modified connectors in the current branch. Archived connectors are ignored",
+    default=False,
+    type=bool,
+)
 @click.option(
     "--metadata-changes-only/--not-metadata-changes-only",
     help="Only test connectors with modified metadata files in the current branch.",
@@ -173,6 +207,15 @@ def validate_environment(is_local: bool) -> None:
     help=("Build with the airbyte-cdk from the local repository. " "This is useful for testing changes to the CDK."),
     default=False,
     type=bool,
+)
+@click.option(
+    "--use-cdk-ref",
+    help=(
+        "Build with the airbyte-cdk from the specified git ref. "
+        "This is useful for testing against dev versions or previous versions of the CDK. "
+        "Ignored for java connectors and if `--use-local-cdk` is set."
+    ),
+    type=str,
 )
 @click.option(
     "--enable-report-auto-open/--disable-report-auto-open",

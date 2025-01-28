@@ -78,7 +78,12 @@ class SnowflakeStagingClientIntegrationTest {
                     throw NotImplementedError("This method should not be called in this test")
                 }
 
-                override fun getDataRow(id: UUID, recordMessage: AirbyteRecordMessage): List<Any> {
+                override fun getDataRow(
+                    id: UUID,
+                    recordMessage: AirbyteRecordMessage,
+                    generationId: Long,
+                    syncId: Long,
+                ): List<Any> {
                     throw NotImplementedError("This method should not be called in this test")
                 }
 
@@ -129,7 +134,12 @@ class SnowflakeStagingClientIntegrationTest {
                     throw NotImplementedError("This method should not be called in this test")
                 }
 
-                override fun getDataRow(id: UUID, recordMessage: AirbyteRecordMessage): List<Any> {
+                override fun getDataRow(
+                    id: UUID,
+                    recordMessage: AirbyteRecordMessage,
+                    generationId: Long,
+                    syncId: Long,
+                ): List<Any> {
                     throw NotImplementedError("This method should not be called in this test")
                 }
 

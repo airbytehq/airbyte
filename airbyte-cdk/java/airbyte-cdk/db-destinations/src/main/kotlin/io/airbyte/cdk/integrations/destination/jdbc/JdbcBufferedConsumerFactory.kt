@@ -55,6 +55,7 @@ object JdbcBufferedConsumerFactory {
         outputRecordCollector: Consumer<AirbyteMessage>,
         database: JdbcDatabase,
         sqlOperations: SqlOperations,
+        generationIdHandler: JdbcGenerationHandler,
         namingResolver: NamingConventionTransformer,
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
@@ -77,12 +78,19 @@ object JdbcBufferedConsumerFactory {
             onStartFunction(
                 database,
                 sqlOperations,
+                generationIdHandler,
                 writeConfigs,
                 typerDeduper,
                 namingResolver,
                 parsedCatalog
             ),
-            onCloseFunction(database, sqlOperations, parsedCatalog, typerDeduper),
+            onCloseFunction(
+                database,
+                sqlOperations,
+                generationIdHandler,
+                parsedCatalog,
+                typerDeduper
+            ),
             JdbcInsertFlushFunction(
                 defaultNamespace,
                 recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
@@ -98,24 +106,23 @@ object JdbcBufferedConsumerFactory {
 
     private fun createWriteConfigs(
         database: JdbcDatabase,
-        sqlOperations: SqlOperations,
+        generationIdHandler: JdbcGenerationHandler,
         namingResolver: NamingConventionTransformer,
         parsedCatalog: ParsedCatalog,
     ): List<WriteConfig> {
         return parsedCatalog.streams.map {
             val rawSuffix: String =
                 if (
-                    it.minimumGenerationId == it.generationId &&
-                        sqlOperations.isOtherGenerationIdInTable(
+                    it.minimumGenerationId == 0L ||
+                        generationIdHandler.getGenerationIdInTable(
                             database,
-                            it.generationId,
                             it.id.rawNamespace,
                             it.id.rawName
-                        )
+                        ) == it.generationId
                 ) {
-                    AbstractStreamOperation.TMP_TABLE_SUFFIX
-                } else {
                     AbstractStreamOperation.NO_SUFFIX
+                } else {
+                    AbstractStreamOperation.TMP_TABLE_SUFFIX
                 }
             parsedStreamToWriteConfig(namingResolver, rawSuffix).apply(it)
         }
@@ -163,6 +170,7 @@ object JdbcBufferedConsumerFactory {
     private fun onStartFunction(
         database: JdbcDatabase,
         sqlOperations: SqlOperations,
+        generationIdHandler: JdbcGenerationHandler,
         writeConfigs: MutableList<WriteConfig>,
         typerDeduper: TyperDeduper,
         namingResolver: NamingConventionTransformer,
@@ -171,7 +179,7 @@ object JdbcBufferedConsumerFactory {
         return OnStartFunction {
             typerDeduper.prepareSchemasAndRunMigrations()
             writeConfigs.addAll(
-                createWriteConfigs(database, sqlOperations, namingResolver, parsedCatalog)
+                createWriteConfigs(database, generationIdHandler, namingResolver, parsedCatalog)
             )
             LOGGER.info {
                 "Preparing raw tables in destination started for ${writeConfigs.size} streams"
@@ -192,14 +200,14 @@ object JdbcBufferedConsumerFactory {
                     dstTableName + writeConfig.rawTableSuffix
                 )
                 when (writeConfig.minimumGenerationId) {
+                    0L -> {}
                     writeConfig.generationId ->
                         if (
-                            sqlOperations.isOtherGenerationIdInTable(
+                            generationIdHandler.getGenerationIdInTable(
                                 database,
-                                writeConfig.generationId,
                                 schemaName,
                                 dstTableName + writeConfig.rawTableSuffix
-                            )
+                            ) != writeConfig.generationId
                         ) {
                             queryList.add(
                                 sqlOperations.truncateTableQuery(
@@ -209,7 +217,6 @@ object JdbcBufferedConsumerFactory {
                                 )
                             )
                         }
-                    0L -> {}
                     else ->
                         throw IllegalStateException(
                             "Invalid minimumGenerationId ${writeConfig.minimumGenerationId} for stream ${writeConfig.streamName}. generationId=${writeConfig.generationId}"
@@ -270,6 +277,7 @@ object JdbcBufferedConsumerFactory {
     private fun onCloseFunction(
         database: JdbcDatabase,
         sqlOperations: SqlOperations,
+        generationIdHandler: JdbcGenerationHandler,
         catalog: ParsedCatalog,
         typerDeduper: TyperDeduper
     ): OnCloseFunction {
@@ -279,13 +287,12 @@ object JdbcBufferedConsumerFactory {
             try {
                 catalog.streams.forEach {
                     if (
-                        it.minimumGenerationId == it.generationId &&
-                            sqlOperations.isOtherGenerationIdInTable(
+                        it.minimumGenerationId != 0L &&
+                            generationIdHandler.getGenerationIdInTable(
                                 database,
-                                it.generationId,
                                 it.id.rawNamespace,
                                 it.id.rawName
-                            ) &&
+                            ) != it.generationId &&
                             streamSyncSummaries
                                 .getValue(it.id.asStreamDescriptor())
                                 .terminalStatus ==
@@ -295,7 +302,7 @@ object JdbcBufferedConsumerFactory {
                     }
                 }
                 typerDeduper.typeAndDedupe(streamSyncSummaries)
-                typerDeduper.commitFinalTables()
+                typerDeduper.commitFinalTables(streamSyncSummaries)
                 typerDeduper.cleanup()
             } catch (e: Exception) {
                 throw RuntimeException(e)

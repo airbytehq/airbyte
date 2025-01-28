@@ -5,14 +5,16 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  dockerImageTag: 2.8.5
+  dockerImageTag: 2.9.2
   dockerRepository: airbyte/destination-bigquery
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   githubIssueLabel: destination-bigquery
   icon: bigquery.svg
   license: ELv2
   name: BigQuery
-  registries:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -95,6 +97,11 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-BIGQUERY_STANDARD_NON_BILLABLE_PROJECT__CREDS
           fileName: credentials-standard-non-billable-project.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_GCS_BAD_COPY
+          fileName: credentials-1s1t-gcs-bad-copy-permission.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

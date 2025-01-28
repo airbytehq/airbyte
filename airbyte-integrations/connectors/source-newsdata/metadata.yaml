@@ -3,17 +3,17 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 60bd11d8-2632-4daa-a688-b47336d32093
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-newsdata
   documentationUrl: https://docs.airbyte.com/integrations/sources/newsdata
   githubIssueLabel: source-newsdata
   license: MIT
   name: Newsdata
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -21,12 +21,12 @@ data:
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-newsdata
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: acceptanceTests
       testSecrets:

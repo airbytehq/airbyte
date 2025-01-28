@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-pagerduty
-  registries:
+  registryOverrides:
     oss:
       enabled: false
     cloud:
@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2544ac39-02be-4bf5-82ad-f52bbb833bf5
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.12
   dockerRepository: airbyte/source-pagerduty
   githubIssueLabel: source-pagerduty
   icon: pagerduty.svg

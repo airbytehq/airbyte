@@ -6,13 +6,14 @@ data:
     hosts:
       - api.stripe.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.4.11
+  dockerImageTag: 5.8.3
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
+  erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
   githubIssueLabel: source-stripe
   icon: stripe.svg
   license: ELv2
@@ -22,10 +23,9 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-stripe
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 5.4.5
     oss:
       enabled: true
   releaseStage: generally_available
@@ -55,6 +55,14 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: stripe_config_dev_null
+          id: 0f3c8a84-53e2-4a33-89a9-26bf36a2367c
+        - name: stripe_performance-config_dev_null
+          id: 4f738e2c-a1d2-48b4-9b93-f56e2258068d
+        - name: stripe_connected_account_config_dev_null
+          id: 97d55640-b443-49c5-a9d9-aed28396841d
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

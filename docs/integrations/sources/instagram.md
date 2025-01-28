@@ -2,8 +2,7 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for
-the [Instagram](https://www.instagram.com/) source connector.
+This page contains the setup guide and reference information for the [Instagram](https://www.instagram.com/) source connector.
 
 </HideInUI>
 
@@ -22,18 +21,18 @@ the [Instagram](https://www.instagram.com/) source connector.
 
 <!-- /env:oss -->
 
-## Setup Guide
+## Setup guide
 
-### Set up the Instagram connector in Airbyte
+### Set up Instagram
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
-4. Enter a name for your source.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Instagram from the Source type dropdown.
+4. Enter a name for the Instagram connector.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
 7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
@@ -45,15 +44,15 @@ the [Instagram](https://www.instagram.com/) source connector.
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+#### For Airbyte Open Source:
 
-1. Log in to your Airbyte Open Source account.
+1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
 5. Enter **Access Token** generated
    using [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
-   or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-api/getting-started)
+   or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-basic-display-api/getting-started/)
    with the required permissions: instagram_basic, instagram_manage_insights, pages_show_list,
    pages_read_engagement.
 6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
@@ -67,8 +66,7 @@ the [Instagram](https://www.instagram.com/) source connector.
 
 ## Supported sync modes
 
-The Instagram source connector supports the
-following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Instagram source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -101,6 +99,9 @@ The Instagram connector syncs data related to Users, Media, and Stories and thei
 the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data
 related to Instagram Ads, use the Facebook Marketing source.
 :::
+
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Data type map
 
@@ -144,9 +145,10 @@ for more information.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
-
-| :------ |:-----------|:---------------------------------------------------------| :------------------------------------------------------------------------------------------------------------------------ |
-| 3.1.0   | 2024-07-13 | [41937](https://github.com/airbytehq/airbyte/pull/41937) | New metrics added for `StoryInsights` and `MediaInsights` streams.                                                        |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 3.1.2 | 2025-01-11 | [44223](https://github.com/airbytehq/airbyte/pull/44223) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 3.1.1 | 2025-01-09 | [51018](https://github.com/airbytehq/airbyte/pull/51018) | Remove deprecated metrics from `StoryInsights` and `MediaInsights` streams. |
+| 3.1.0 | 2024-07-13 | [41937](https://github.com/airbytehq/airbyte/pull/41937) | New metrics added for `StoryInsights` and `MediaInsights` streams. |
 | 3.0.22 | 2024-07-27 | [42721](https://github.com/airbytehq/airbyte/pull/42721) | Update dependencies |
 | 3.0.21 | 2024-07-20 | [42346](https://github.com/airbytehq/airbyte/pull/42346) | Update dependencies |
 | 3.0.20 | 2024-07-13 | [41784](https://github.com/airbytehq/airbyte/pull/41784) | Update dependencies |

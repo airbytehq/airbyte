@@ -34,6 +34,10 @@ inputs:
     description: "GCP credentials for GCP Secret Manager"
     required: false
     default: ""
+  gcp_integration_tester_credentials:
+    description: "GCP credentials for integration tests"
+    required: false
+    default: ""
   git_repo_url:
     description: "Git repository URL"
     default: https://github.com/airbytehq/airbyte.git
@@ -87,6 +91,15 @@ inputs:
     description: "Whether the PR is from a fork"
     required: false
     default: "false"
+  max_attempts:
+    description: "Number of attempts at running the airbyte-ci command"
+    required: false
+    default: 1
+  retry_wait_seconds:
+    description: "Number of seconds to wait between retry attempts"
+    required: false
+    default: 60
+
 runs:
   using: "composite"
   steps:
@@ -94,6 +107,17 @@ runs:
       id: get-start-timestamp
       shell: bash
       run: echo "start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+    - name: Debug-print local paths checked out
+      shell: bash
+      run: |
+        set -x
+        echo "Working directory: $(pwd)"
+        ls -la
+        ls -la airbyte-python-cdk || echo "No airbyte-python-cdk directory"
+        ls -laL ../airbyte-python-cdk || echo "No airbyte-python-cdk symlink"
+    - name: Install Java Environment
+      id: install-java-environment
+      uses: ./.github/actions/install-java-environment
     - name: Docker login
       id: docker-login
       uses: docker/login-action@v3
@@ -109,7 +133,7 @@ runs:
         is_fork: ${{ inputs.is_fork }}
     - name: Run airbyte-ci
       id: run-airbyte-ci
-      shell: bash
+      uses: nick-fields/retry@v3
       env:
         CI: "True"
         CI_GIT_USER: ${{ github.repository_owner }}
@@ -140,8 +164,14 @@ runs:
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
-      run: |
-        airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+      with:
+        shell: bash
+        max_attempts: ${{ inputs.max_attempts }}
+        retry_wait_seconds: ${{ inputs.retry_wait_seconds }}
+        # 360mn > 6 hours: it's the GitHub runner max job duration
+        timeout_minutes: 360
+        command: |
+          airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
     - name: Stop Engine
       id: stop-engine
       if: always()
@@ -167,11 +197,17 @@ runs:
       shell: bash
       run: tar cvzf ./dagger_engine_logs.tgz ./dagger_engine_logs
 
+    - name: Hash subcommand
+      id: hash-subcommand
+      shell: bash
+      if: always()
+      run: echo "subcommand_hash=$(echo ${{ inputs.subcommand }} | sha256sum | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+
     - name: Upload logs to GitHub
       id: upload-dagger-engine-logs
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.job }}_dagger_engine_logs.tgz
+        name: ${{ github.job }}_${{ steps.hash-subcommand.outputs.subcommand_hash }}_dagger_engine_logs.tgz
         path: ./dagger_engine_logs.tgz
         retention-days: 7

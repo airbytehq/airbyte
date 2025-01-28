@@ -5,9 +5,9 @@ data:
   connectorSubtype: api
   connectorType: source
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   definitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
-  dockerImageTag: 2.3.2
+  dockerImageTag: 2.6.3
   dockerRepository: airbyte/source-recharge
   githubIssueLabel: source-recharge
   icon: recharge.svg
@@ -18,7 +18,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-recharge
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -41,6 +41,12 @@ data:
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: recharge_config_dev_null
+          id: 2ef8f5fb-332d-49fc-8576-ea889d1c262d
+        - name: recharge_config_order_modern_api_dev_null
+          id: 414cb0e3-dbfd-4efb-b2af-0b961e689454
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

@@ -1,54 +1,21 @@
-import org.jsonschema2pojo.SourceType
-
 plugins {
-    id 'airbyte-java-connector'
-    id 'org.jsonschema2pojo' version '1.2.1'
-}
-
-airbyteJavaConnector {
-    cdkVersionRequired = '0.43.4'
-    features = ['db-sources']
-    useLocalCdk = false
-}
-
-java {
-    compileJava {
-        options.compilerArgs += "-Xlint:-try,-rawtypes"
-    }
+    id 'airbyte-bulk-connector'
 }
 
 application {
     mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc', 'extract-cdc']
+    cdk = '0.277'
 }
 
 dependencies {
-    implementation 'mysql:mysql-connector-java:8.0.30'
-    implementation 'io.debezium:debezium-embedded:2.5.4.Final'
-    implementation 'io.debezium:debezium-connector-mysql:2.5.4.Final'
+    implementation 'com.mysql:mysql-connector-j:9.1.0'
+    implementation 'io.debezium:debezium-connector-mysql'
 
-    testFixturesImplementation 'org.testcontainers:mysql:1.19.0'
-
-    testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation 'org.testcontainers:mysql:1.19.0'
-}
-
-jsonSchema2Pojo {
-    sourceType = SourceType.YAMLSCHEMA
-    source = files("${sourceSets.main.output.resourcesDir}/internal_models")
-    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
-    removeOldOutput = true
-
-    targetPackage = 'io.airbyte.integrations.source.mysql.internal.models'
-
-    useLongIntegers = true
-    generateBuilders = true
-    includeConstructors = false
-    includeSetters = true
-}
-
-compileKotlin {
-    dependsOn {
-        generateJsonSchema2Pojo
-    }
+    testImplementation 'org.testcontainers:mysql'
+    testImplementation 'io.mockk:mockk:1.12.0'
 }

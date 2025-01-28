@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.googleapis.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: file
   connectorType: source
   definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
-  dockerImageTag: 0.6.3
+  dockerImageTag: 0.8.5
   dockerRepository: airbyte/source-google-sheets
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   githubIssueLabel: source-google-sheets
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-google-sheets
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: temp-google-sheets_service_config_dev_null
+          id: 035f390f-591f-4bb5-b6d5-52145627befb
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

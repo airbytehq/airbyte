@@ -1,0 +1,188 @@
+[
+  {
+    "integer_type": 1,
+    "integer_type_alt": 2,
+    "number_type": 3.14,
+    "timestamp_without_timezone": "2024-07-29T10:00:00",
+    "timestamp_with_timezone": "2024-07-29T10:00:00Z",
+    "timestamp_unspecified": "2024-07-29T10:00:00+01:00",
+    "time_without_timezone": "10:00:00",
+    "time_with_timezone": "10:00:00Z",
+    "time_unspecified": "10:00:00+01:00",
+    "binary_type": "SGVsbG8gV29ybGQ=",
+    "string_type": "First record",
+    "array_type": [1, 2, 3],
+    "object_type": {
+      "nested_integer_type": 10,
+      "nested_string_type": "Nested in first"
+    },
+    "combined_type": 42,
+    "combined_type_alt": "stringy",
+    "combined_type_singleton": "always_string",
+    "extremely_nested_type": {
+      "nested_object_type": {
+        "nested_nested_integer_type": 100,
+        "nested_nested_string_type": "Deeply nested in first",
+        "nested_union_of_arrays_of_objects_with_unions": [
+          {
+            "nested_nested_nested_integer_type": 1000,
+            "nested_nested_nested_string_type": "Array option in first"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "integer_type": 3,
+    "integer_type_alt": 4,
+    "number_type": 2.71828,
+    "timestamp_without_timezone": "2024-07-29T11:00:00",
+    "timestamp_with_timezone": "2024-07-29T11:00:00Z",
+    "timestamp_unspecified": "2024-07-29T11:00:00+02:00",
+    "time_without_timezone": "11:00:00",
+    "time_with_timezone": "11:00:00Z",
+    "time_unspecified": "11:00:00+02:00",
+    "binary_type": "SGVsbG8gV29ybGQ=",
+    "string_type": "Second record",
+    "array_type": [4, 5, 6],
+    "object_type": {
+      "nested_integer_type": 20,
+      "nested_string_type": "Nested in second"
+    },
+    "combined_type": "String option for combined type",
+    "combined_type_alt": 100,
+    "combined_type_singleton": "always_string_still",
+    "extremely_nested_type": {
+      "nested_object_type": {
+        "nested_nested_integer_type": 200,
+        "nested_nested_string_type": "Deeply nested in second",
+        "nested_union_of_arrays_of_objects_with_unions": {
+          "nested_nested_nested_integer_type": 2000,
+          "nested_nested_nested_string_type": "Object option in second",
+          "another_union_of_array_and_string_and_obect": [
+            "Array of strings option"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "integer_type": 5,
+    "integer_type_alt": 6,
+    "number_type": 1.41421,
+    "timestamp_without_timezone": "2024-07-29T12:00:00",
+    "timestamp_with_timezone": "2024-07-29T12:00:00Z",
+    "timestamp_unspecified": "2024-07-29T12:00:00+03:00",
+    "time_without_timezone": "12:00:00",
+    "time_with_timezone": "12:00:00Z",
+    "time_unspecified": "12:00:00+03:00",
+    "binary_type": "SGVsbG8gV29ybGQ=",
+    "string_type": "Third record",
+    "array_type": [7, 8, 9],
+    "object_type": {
+      "nested_integer_type": 30,
+      "nested_string_type": "Nested in third"
+    },
+    "combined_type": 100,
+    "combined_type_alt": 200,
+    "combined_type_singleton": "always_string_still!",
+    "extremely_nested_type": {
+      "nested_object_type": {
+        "nested_nested_integer_type": 300,
+        "nested_nested_string_type": "Deeply nested in third",
+        "nested_union_of_arrays_of_objects_with_unions": {
+          "nested_nested_nested_integer_type": 3000,
+          "nested_nested_nested_string_type": "Object option in third",
+          "another_union_of_array_and_string_and_obect": "Just a string option"
+        }
+      }
+    }
+  },
+  {
+    "integer_type": 7,
+    "integer_type_alt": 8,
+    "number_type": 1.73205,
+    "timestamp_without_timezone": "2024-07-29T13:00:00",
+    "timestamp_with_timezone": "2024-07-29T13:00:00Z",
+    "timestamp_unspecified": "2024-07-29T13:00:00+04:00",
+    "time_without_timezone": "13:00:00",
+    "time_with_timezone": "13:00:00Z",
+    "time_unspecified": "13:00:00+04:00",
+    "binary_type": "SGVsbG8gV29ybGQ=",
+    "string_type": "Fourth record",
+    "array_type": [10, 11, 12],
+    "object_type": {
+      "nested_integer_type": 40,
+      "nested_string_type": "Nested in fourth"
+    },
+    "combined_type": "Another string for combined type",
+    "combined_type_alt": "string_again",
+    "combined_type_singleton": "always_string_even_still!",
+    "extremely_nested_type": {
+      "nested_object_type": {
+        "nested_nested_integer_type": 400,
+        "nested_nested_string_type": "Deeply nested in fourth",
+        "nested_union_of_arrays_of_objects_with_unions": {
+          "nested_nested_nested_integer_type": 4000,
+          "nested_nested_nested_string_type": "Object option in fourth",
+          "another_union_of_array_and_string_and_obect": {
+            "nested_nested_nested_nested_integer_type": 5000,
+            "nested_nested_nested_nested_anon_array_type": [
+              true,
+              "mixed",
+              3.14,
+              null
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "integer_type": null,
+    "integer_type_alt": null,
+    "number_type": null,
+    "timestamp_without_timezone": null,
+    "timestamp_with_timezone": null,
+    "timestamp_unspecified": null,
+    "time_without_timezone": null,
+    "time_with_timezone": null,
+    "time_unspecified": null,
+    "binary_type": null,
+    "string_type": null,
+    "array_type": null,
+    "object_type": null,
+    "combined_type": null,
+    "combined_type_alt": null,
+    "combined_type_singleton": null,
+    "extremely_nested_type": null
+  },
+  {
+    "integer_type": null,
+    "integer_type_alt": null,
+    "number_type": null,
+    "timestamp_without_timezone": null,
+    "timestamp_with_timezone": null,
+    "timestamp_unspecified": null,
+    "time_without_timezone": null,
+    "time_with_timezone": null,
+    "time_unspecified": null,
+    "binary_type": null,
+    "string_type": null,
+    "array_type": null,
+    "object_type": {
+      "nested_integer_type": null,
+      "nested_string_type": null
+    },
+    "combined_type": null,
+    "combined_type_alt": null,
+    "combined_type_singleton": null,
+    "extremely_nested_type": {
+      "nested_object_type": {
+        "nested_nested_integer_type": null,
+        "nested_nested_string_type": null,
+        "nested_union_of_arrays_of_objects_with_unions": null
+      }
+    }
+  }
+]

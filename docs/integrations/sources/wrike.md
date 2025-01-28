@@ -50,6 +50,19 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------|
+| 0.3.11 | 2025-01-25 | [52430](https://github.com/airbytehq/airbyte/pull/52430) | Update dependencies |
+| 0.3.10 | 2025-01-18 | [52020](https://github.com/airbytehq/airbyte/pull/52020) | Update dependencies |
+| 0.3.9 | 2025-01-11 | [51400](https://github.com/airbytehq/airbyte/pull/51400) | Update dependencies |
+| 0.3.8 | 2024-12-28 | [50752](https://github.com/airbytehq/airbyte/pull/50752) | Update dependencies |
+| 0.3.7 | 2024-12-21 | [50321](https://github.com/airbytehq/airbyte/pull/50321) | Update dependencies |
+| 0.3.6 | 2024-12-14 | [49794](https://github.com/airbytehq/airbyte/pull/49794) | Update dependencies |
+| 0.3.5 | 2024-12-12 | [48237](https://github.com/airbytehq/airbyte/pull/48237) | Update dependencies |
+| 0.3.4 | 2024-10-29 | [47801](https://github.com/airbytehq/airbyte/pull/47801) | Update dependencies |
+| 0.3.3 | 2024-10-28 | [47668](https://github.com/airbytehq/airbyte/pull/47668) | Update dependencies |
+| 0.3.2 | 2024-10-22 | [47234](https://github.com/airbytehq/airbyte/pull/47234) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-09 | [43449](https://github.com/airbytehq/airbyte/pull/43449) | Refactor connector to manifest-only format |
+| 0.2.12 | 2024-08-03 | [43260](https://github.com/airbytehq/airbyte/pull/43260) | Update dependencies |
 | 0.2.11 | 2024-07-27 | [42804](https://github.com/airbytehq/airbyte/pull/42804) | Update dependencies |
 | 0.2.10 | 2024-07-20 | [42292](https://github.com/airbytehq/airbyte/pull/42292) | Update dependencies |
 | 0.2.9 | 2024-07-13 | [41796](https://github.com/airbytehq/airbyte/pull/41796) | Update dependencies |

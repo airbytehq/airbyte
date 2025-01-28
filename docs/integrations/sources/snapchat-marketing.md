@@ -143,6 +143,30 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.4.1 | 2025-01-25 | [52403](https://github.com/airbytehq/airbyte/pull/52403) | Update dependencies |
+| 1.4.0 | 2025-01-23 | [52110](https://github.com/airbytehq/airbyte/pull/52110) | Make incremental per-partition streams concurrent |
+| 1.3.7 | 2025-01-18 | [51999](https://github.com/airbytehq/airbyte/pull/51999) | Update dependencies |
+| 1.3.6 | 2025-01-11 | [51431](https://github.com/airbytehq/airbyte/pull/51431) | Update dependencies |
+| 1.3.5 | 2024-12-28 | [50796](https://github.com/airbytehq/airbyte/pull/50796) | Update dependencies |
+| 1.3.4 | 2024-12-21 | [50308](https://github.com/airbytehq/airbyte/pull/50308) | Update dependencies |
+| 1.3.3 | 2024-12-14 | [49414](https://github.com/airbytehq/airbyte/pull/49414) | Update dependencies |
+| 1.3.2 | 2024-11-05 | [48375](https://github.com/airbytehq/airbyte/pull/48375) | Re-implement advanced_auth in connector spec |
+| 1.3.1 | 2024-10-29 | [47837](https://github.com/airbytehq/airbyte/pull/47837) | Update dependencies |
+| 1.3.0 | 2024-10-15 | [46927](https://github.com/airbytehq/airbyte/pull/46927) | Promoting release candidate 1.3.0-rc.1 to a main version. |
+| 1.3.0-rc.1  | 2024-10-08 | [46570](https://github.com/airbytehq/airbyte/pull/46570) | Migrate to Manifest-only |
+| 1.2.12 | 2024-10-12 | [46800](https://github.com/airbytehq/airbyte/pull/46800) | Update dependencies |
+| 1.2.11 | 2024-10-05 | [46419](https://github.com/airbytehq/airbyte/pull/46419) | Update dependencies |
+| 1.2.10 | 2024-09-28 | [46106](https://github.com/airbytehq/airbyte/pull/46106) | Update dependencies |
+| 1.2.9 | 2024-09-21 | [45780](https://github.com/airbytehq/airbyte/pull/45780) | Update dependencies |
+| 1.2.8 | 2024-09-14 | [45477](https://github.com/airbytehq/airbyte/pull/45477) | Update dependencies |
+| 1.2.7 | 2024-09-07 | [45278](https://github.com/airbytehq/airbyte/pull/45278) | Update dependencies |
+| 1.2.6 | 2024-08-31 | [44998](https://github.com/airbytehq/airbyte/pull/44998) | Update dependencies |
+| 1.2.5 | 2024-08-24 | [44735](https://github.com/airbytehq/airbyte/pull/44735) | Update dependencies |
+| 1.2.4 | 2024-08-17 | [43859](https://github.com/airbytehq/airbyte/pull/43859) | Update dependencies |
+| 1.2.3 | 2024-08-12 | [43826](https://github.com/airbytehq/airbyte/pull/43826) | Fixed the bug with the missing `spend` field to supported `*_stats_*` streams |
+| 1.2.2 | 2024-08-10 | [43539](https://github.com/airbytehq/airbyte/pull/43539) | Update dependencies |
+| 1.2.1 | 2024-08-03 | [43174](https://github.com/airbytehq/airbyte/pull/43174) | Update dependencies |
+| 1.2.0 | 2024-07-31 | [42010](https://github.com/airbytehq/airbyte/pull/42010) | Migrate to CDK v4.1.0 |
 | 1.1.2 | 2024-07-27 | [42680](https://github.com/airbytehq/airbyte/pull/42680) | Update dependencies |
 | 1.1.1 | 2024-07-20 | [42366](https://github.com/airbytehq/airbyte/pull/42366) | Update dependencies |
 | 1.1.0 | 2024-07-16 | [42009](https://github.com/airbytehq/airbyte/pull/42009) | Migrate to CDK v2.4.0 |

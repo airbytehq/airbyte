@@ -1,6 +1,10 @@
 # Amazon Ads
 
-This page contains the setup guide and reference information for the Amazon Ads source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Amazon Ads](https://advertising.amazon.com) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -29,13 +33,30 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Amazon Ads** from the Source type dropdown and enter a name for this connector.
-4. Click **Authenticate your Amazon Ads account**.
-5. Log in and Authorize to the Amazon account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Amazon Ads from the Source type dropdown.
+4. Enter a name for the Amazon Ads connector.
+5. Click **Authenticate your Amazon Ads account**.
+6. Log in and Authorize to the Amazon account.
+7. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
+8. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+9. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+10. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
+11. Click **Set up source**.
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+#### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Set the name for your source. 
+3. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
+4. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
+5. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
 7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
@@ -63,7 +84,7 @@ If you have only agency profile, please use accounts associated with the profile
 
 ## Supported sync modes
 
-The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -94,7 +115,7 @@ This source is capable of syncing the following streams:
 - [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
 - [Brands Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
 - [Brand Video Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
-- [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports) (Contextual targeting only)
+- [Display Reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview)
 - [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/)
 
@@ -114,10 +135,10 @@ Report data synchronization only covers the last 60 days - [details](https://adv
 
 Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
 
-### Data type mapping
+### Data type map
 
 | Integration Type         | Airbyte Type |
-| :----------------------- | :----------- |
+|:-------------------------|:-------------|
 | `string`                 | `string`     |
 | `int`, `float`, `number` | `number`     |
 | `date`                   | `date`       |
@@ -131,7 +152,32 @@ Information about expected report generation waiting time can be found [here](ht
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 6.2.7 | 2025-01-25 | [52210](https://github.com/airbytehq/airbyte/pull/52210) | Update dependencies |
+| 6.2.6 | 2025-01-18 | [51722](https://github.com/airbytehq/airbyte/pull/51722) | Update dependencies |
+| 6.2.5 | 2025-01-11 | [51239](https://github.com/airbytehq/airbyte/pull/51239) | Update dependencies |
+| 6.2.4 | 2025-01-04 | [50902](https://github.com/airbytehq/airbyte/pull/50902) | Update dependencies |
+| 6.2.3 | 2024-12-28 | [50478](https://github.com/airbytehq/airbyte/pull/50478) | Update dependencies |
+| 6.2.2 | 2024-12-21 | [50202](https://github.com/airbytehq/airbyte/pull/50202) | Update dependencies |
+| 6.2.1 | 2024-12-14 | [48229](https://github.com/airbytehq/airbyte/pull/48229) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 6.2.0 | 2024-11-12 | [48116](https://github.com/airbytehq/airbyte/pull/48116) | Migrate REST streams to low-code |
+| 6.1.4 | 2024-11-12 | [48471](https://github.com/airbytehq/airbyte/pull/48471) | Bumped automatically in the pull request, please see PR description |
+| 6.1.3 | 2024-11-05 | [48343](https://github.com/airbytehq/airbyte/pull/48343) | Set is_resumable only for FullRefresh streams |
+| 6.1.2 | 2024-11-04 | [48138](https://github.com/airbytehq/airbyte/pull/48138) | Add error message for TooManyRequests exception |
+| 6.1.1 | 2024-11-04 | [48128](https://github.com/airbytehq/airbyte/pull/48128) | Fix date parse in report streams |
+| 6.1.0 | 2024-11-01 | [47940](https://github.com/airbytehq/airbyte/pull/47940) | Bump CDK to ^5 |
+| 6.0.0 | 2024-10-28 | [47366](https://github.com/airbytehq/airbyte/pull/47366) | Migrate stream `SponsoredDisplayReportStream` to Amazon Ads Reports v3 |
+| 5.0.20 | 2024-10-29 | [47032](https://github.com/airbytehq/airbyte/pull/47032) | Update dependencies |
+| 5.0.19 | 2024-10-12 | [46860](https://github.com/airbytehq/airbyte/pull/46860) | Update dependencies |
+| 5.0.18 | 2024-10-05 | [46451](https://github.com/airbytehq/airbyte/pull/46451) | Update dependencies |
+| 5.0.17 | 2024-09-28 | [45794](https://github.com/airbytehq/airbyte/pull/45794) | Update dependencies |
+| 5.0.16 | 2024-09-14 | [45548](https://github.com/airbytehq/airbyte/pull/45548) | Update dependencies |
+| 5.0.15 | 2024-09-07 | [45308](https://github.com/airbytehq/airbyte/pull/45308) | Update dependencies |
+| 5.0.14 | 2024-08-31 | [45051](https://github.com/airbytehq/airbyte/pull/45051) | Update dependencies |
+| 5.0.13 | 2024-08-24 | [44648](https://github.com/airbytehq/airbyte/pull/44648) | Update dependencies |
+| 5.0.12 | 2024-08-17 | [43845](https://github.com/airbytehq/airbyte/pull/43845) | Update dependencies |
+| 5.0.11 | 2024-08-12 | [43354](https://github.com/airbytehq/airbyte/pull/43354) | Fix download request for `sponsored_products_report_stream` |
+| 5.0.10 | 2024-08-10 | [42162](https://github.com/airbytehq/airbyte/pull/42162) | Update dependencies |
 | 5.0.9 | 2024-07-13 | [41876](https://github.com/airbytehq/airbyte/pull/41876) | Update dependencies |
 | 5.0.8 | 2024-07-10 | [41487](https://github.com/airbytehq/airbyte/pull/41487) | Update dependencies |
 | 5.0.7 | 2024-07-09 | [41143](https://github.com/airbytehq/airbyte/pull/41143) | Update dependencies |
@@ -155,7 +201,7 @@ Information about expected report generation waiting time can be found [here](ht
 | 3.2.0   | 2023-09-18 | [30517](https://github.com/airbytehq/airbyte/pull/30517) | Add suggested streams; fix unexpected column issue                                                              |
 | 3.1.2   | 2023-08-16 | [29233](https://github.com/airbytehq/airbyte/pull/29233) | Add filter for Marketplace IDs                                                                                  |
 | 3.1.1   | 2023-08-28 | [29900](https://github.com/airbytehq/airbyte/pull/29900) | Add 404 handling for no associated with bid ad groups                                                           |
-| 3.1.0   | 2023-08-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `T00030` tactic support for `sponsored_display_report_stream`                                               |
+| 3.1.0   | 2023-08-08 | [29212](https://github.com/airbytehq/airbyte/pull/29212) | Add `T00030` tactic support for `sponsored_display_report_stream`                                               |
 | 3.0.0   | 2023-07-24 | [27868](https://github.com/airbytehq/airbyte/pull/27868) | Fix attribution report stream schemas                                                                           |
 | 2.3.1   | 2023-07-11 | [28155](https://github.com/airbytehq/airbyte/pull/28155) | Bugfix: validation error when record values are missing                                                         |
 | 2.3.0   | 2023-07-06 | [28002](https://github.com/airbytehq/airbyte/pull/28002) | Add sponsored_product_ad_group_suggested_keywords, sponsored_product_ad_group_bid_recommendations streams       |

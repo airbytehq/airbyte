@@ -8,11 +8,11 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.io.IOException
 import java.time.Instant
 import java.util.Arrays
@@ -73,7 +73,7 @@ class RedshiftSqlGeneratorTest {
         incrementalDedupStream =
             StreamConfig(
                 streamId!!,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.of(cursor),
                 columns,
@@ -84,7 +84,7 @@ class RedshiftSqlGeneratorTest {
         incrementalAppendStream =
             StreamConfig(
                 streamId!!,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 primaryKey,
                 Optional.of(cursor),
                 columns,
@@ -164,7 +164,7 @@ class RedshiftSqlGeneratorTest {
             redshiftSqlGenerator.updateTable(
                 StreamConfig(
                     streamId!!,
-                    DestinationSyncMode.APPEND_DEDUP,
+                    ImportType.DEDUPE,
                     primaryKey,
                     Optional.of(cursor),
                     columns,

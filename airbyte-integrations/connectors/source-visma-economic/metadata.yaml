@@ -3,32 +3,32 @@ data:
     hosts:
       - restapi.e-conomic.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 42495935-95de-4f5c-ae08-8fac00f6b308
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.3.10
   dockerRepository: airbyte/source-visma-economic
   documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
   githubIssueLabel: source-visma-economic
   icon: visma-economic.svg
   license: MIT
   name: Visma Economic
-  registries:
+  registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseDate: "2022-11-08"
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-visma-economic
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: acceptanceTests
       testSecrets:

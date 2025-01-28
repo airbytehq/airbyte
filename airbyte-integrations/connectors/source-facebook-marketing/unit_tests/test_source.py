@@ -7,6 +7,11 @@ from copy import deepcopy
 from unittest.mock import call
 
 import pytest
+from facebook_business import FacebookAdsApi, FacebookSession
+from source_facebook_marketing import SourceFacebookMarketing
+from source_facebook_marketing.spec import ConnectorConfig
+
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteStream,
@@ -17,9 +22,6 @@ from airbyte_cdk.models import (
     Status,
     SyncMode,
 )
-from facebook_business import FacebookAdsApi, FacebookSession
-from source_facebook_marketing import SourceFacebookMarketing
-from source_facebook_marketing.spec import ConnectorConfig
 
 from .utils import command_check
 
@@ -206,10 +208,8 @@ class TestSourceFacebookMarketing:
             ]
         )
 
-        try:
+        with pytest.raises(AirbyteTracedException):
             list(fb_marketing.read(logger_mock, config=config, catalog=catalog))
-        except KeyError as error:
-            pytest.fail(str(error))
 
 
 def test_check_config(config_gen, requests_mock, fb_marketing):

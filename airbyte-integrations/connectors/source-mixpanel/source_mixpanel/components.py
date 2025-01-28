@@ -6,6 +6,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import dpath.util
 import requests
+
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -32,7 +33,6 @@ class MixpanelHttpRequester(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-
         return {"Accept": "application/json"}
 
     def get_request_params(
@@ -62,7 +62,6 @@ class MixpanelHttpRequester(HttpRequester):
         return super()._request_params(stream_state, stream_slice, next_page_token, extra_params)
 
     def send_request(self, **kwargs) -> Optional[requests.Response]:
-
         if self.reqs_per_hour_limit:
             if self.is_first_request:
                 self.is_first_request = False
@@ -277,7 +276,7 @@ class EngagePaginationStrategy(PageIncrement):
 
     _total = 0
 
-    def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
         """
         Determines page and subpage numbers for the `items` stream
 

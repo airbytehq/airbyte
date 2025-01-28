@@ -58,6 +58,25 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.16 | 2025-01-25 | [52261](https://github.com/airbytehq/airbyte/pull/52261) | Update dependencies |
+| 3.4.15 | 2025-01-11 | [51216](https://github.com/airbytehq/airbyte/pull/51216) | Update dependencies |
+| 3.4.14 | 2025-01-04 | [50891](https://github.com/airbytehq/airbyte/pull/50891) | Update dependencies |
+| 3.4.13 | 2024-12-28 | [50596](https://github.com/airbytehq/airbyte/pull/50596) | Update dependencies |
+| 3.4.12 | 2024-12-21 | [50095](https://github.com/airbytehq/airbyte/pull/50095) | Update dependencies |
+| 3.4.11 | 2024-12-14 | [49249](https://github.com/airbytehq/airbyte/pull/49249) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 3.4.10 | 2024-12-12 | [48948](https://github.com/airbytehq/airbyte/pull/48948) | Update dependencies |
+| 3.4.9 | 2024-11-04 | [47098](https://github.com/airbytehq/airbyte/pull/47098) | Update dependencies |
+| 3.4.8 | 2024-10-12 | [46792](https://github.com/airbytehq/airbyte/pull/46792) | Update dependencies |
+| 3.4.7 | 2024-10-05 | [46428](https://github.com/airbytehq/airbyte/pull/46428) | Update dependencies |
+| 3.4.6 | 2024-09-28 | [45747](https://github.com/airbytehq/airbyte/pull/45747) | Update dependencies |
+| 3.4.5 | 2024-09-14 | [45473](https://github.com/airbytehq/airbyte/pull/45473) | Update dependencies |
+| 3.4.4 | 2024-09-07 | [45264](https://github.com/airbytehq/airbyte/pull/45264) | Update dependencies |
+| 3.4.3 | 2024-08-31 | [45059](https://github.com/airbytehq/airbyte/pull/45059) | Update dependencies |
+| 3.4.2 | 2024-08-24 | [44643](https://github.com/airbytehq/airbyte/pull/44643) | Update dependencies |
+| 3.4.1 | 2024-08-17 | [44274](https://github.com/airbytehq/airbyte/pull/44274) | Update dependencies |
+| 3.4.0 | 2024-07-16 | [41969](https://github.com/airbytehq/airbyte/pull/41969) | Update to v4 CDK |
+| 3.3.3 | 2024-08-10 | [43575](https://github.com/airbytehq/airbyte/pull/43575) | Update dependencies |
+| 3.3.2 | 2024-08-03 | [43182](https://github.com/airbytehq/airbyte/pull/43182) | Update dependencies |
 | 3.3.1 | 2024-07-27 | [42391](https://github.com/airbytehq/airbyte/pull/42391) | Update dependencies |
 | 3.3.0 | 2024-07-15 | [41754](https://github.com/airbytehq/airbyte/pull/41754) | Add engage page size to configuration |
 | 3.2.4 | 2024-07-13 | [41754](https://github.com/airbytehq/airbyte/pull/41754) | Update dependencies |

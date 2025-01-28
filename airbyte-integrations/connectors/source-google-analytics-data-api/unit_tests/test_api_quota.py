@@ -6,6 +6,9 @@ import pytest
 import requests
 from source_google_analytics_data_api.api_quota import GoogleAnalyticsApiQuota
 
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+
+
 TEST_QUOTA_INSTANCE: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
 
@@ -23,7 +26,7 @@ def test_check_initial_quota_is_empty():
 
 
 @pytest.mark.parametrize(
-    ("response_quota", "partial_quota", "should_retry_exp", "backoff_time_exp", "raise_on_http_errors_exp", "stop_iter_exp"),
+    ("response_quota", "partial_quota", "response_action_exp", "backoff_time_exp", "stop_iter_exp"),
     [
         # Full Quota
         (
@@ -34,11 +37,10 @@ def test_check_initial_quota_is_empty():
                     "potentiallyThresholdedRequestsPerHour": {"consumed": 1, "remaining": 26},
                 }
             },
-            False,
-            True,
-            None,
-            True,
-            False,
+            False,  # partial_quota
+            ResponseAction.RETRY,
+            None,  # backoff_time_exp
+            False,  # stop_iter_exp
         ),
         # Partial Quota
         (
@@ -49,11 +51,10 @@ def test_check_initial_quota_is_empty():
                     "potentiallyThresholdedRequestsPerHour": {"consumed": 3, "remaining": 26},
                 }
             },
-            True,
-            True,
-            None,
-            True,
-            False,
+            True,  # partial_quota
+            ResponseAction.RETRY,
+            None,  # backoff_time_exp
+            False,  # stop_iter_exp
         ),
         # Running out `tokensPerProjectPerHour`
         (
@@ -68,11 +69,10 @@ def test_check_initial_quota_is_empty():
                     "potentiallyThresholdedRequestsPerHour": {"consumed": 3, "remaining": 26},
                 }
             },
-            True,
-            True,
-            1800,
-            False,
-            False,
+            True,  # partial_quota
+            ResponseAction.RETRY,
+            1800,  # backoff_time_exp
+            False,  # stop_iter_exp
         ),
         # Running out `concurrentRequests`
         (
@@ -87,11 +87,10 @@ def test_check_initial_quota_is_empty():
                     "potentiallyThresholdedRequestsPerHour": {"consumed": 1, "remaining": 26},
                 }
             },
-            True,
-            True,
-            30,
-            False,
-            False,
+            True,  # partial_quota
+            ResponseAction.RETRY,
+            30,  # backoff_time_exp
+            False,  # stop_iter_exp
         ),
         # Running out `potentiallyThresholdedRequestsPerHour`
         (
@@ -106,11 +105,10 @@ def test_check_initial_quota_is_empty():
                     },
                 }
             },
-            True,
-            True,
-            1800,
-            False,
-            False,
+            True,  # partial_quota
+            ResponseAction.RETRY,
+            1800,  # backoff_time_exp
+            False,  # stop_iter_exp
         ),
     ],
     ids=[
@@ -126,9 +124,8 @@ def test_check_full_quota(
     expected_quota_list,
     response_quota,
     partial_quota,
-    should_retry_exp,
+    response_action_exp,
     backoff_time_exp,
-    raise_on_http_errors_exp,
     stop_iter_exp,
 ):
     """
@@ -154,11 +151,8 @@ def test_check_full_quota(
         assert not current_quota == TEST_QUOTA_INSTANCE.initial_quota
 
     # Check the scenario is applied based on Quota Values
-    # should_retry
-    assert TEST_QUOTA_INSTANCE.should_retry is should_retry_exp
+    assert TEST_QUOTA_INSTANCE.response_action is response_action_exp
     # backoff_time
     assert TEST_QUOTA_INSTANCE.backoff_time == backoff_time_exp
-    # raise_on_http_errors
-    assert TEST_QUOTA_INSTANCE.raise_on_http_errors is raise_on_http_errors_exp
     # stop_iter
     assert TEST_QUOTA_INSTANCE.stop_iter is stop_iter_exp

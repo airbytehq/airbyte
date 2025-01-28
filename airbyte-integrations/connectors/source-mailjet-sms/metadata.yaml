@@ -3,18 +3,18 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 6ec2acea-7fd1-4378-b403-41a666e0c028
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.2.10
   dockerRepository: airbyte/source-mailjet-sms
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-sms
   githubIssueLabel: source-mailjet-sms
   icon: mailjetsms.svg
   license: MIT
   name: Mailjet SMS
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -22,13 +22,17 @@ data:
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-mailjet-sms
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: mailjet-sms_config_dev_null
+          id: 88073883-d1b9-4205-97e1-e594ef65214f
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-MAILJET-SMS__CREDS

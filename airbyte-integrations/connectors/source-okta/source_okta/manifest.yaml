@@ -4,7 +4,7 @@ type: DeclarativeSource
 definitions:
   custom_oauth_authenticator:
     type: CustomAuthenticator
-    class_name: source_okta.custom_authenticators.CustomOauth2Authenticator
+    class_name: source_okta.components.CustomOauth2Authenticator
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
@@ -12,15 +12,20 @@ definitions:
     token_refresh_endpoint: "https://{{ config['domain'] }}.okta.com/oauth2/v1/token"
     grant_type: refresh_token
 
+  custom_oauth_private_key_authenticator:
+    type: CustomAuthenticator
+    class_name: source_okta.components.CustomOauth2PrivateKeyAuthenticator
+
   custom_bearer_authenticator:
     type: CustomAuthenticator
-    class_name: source_okta.custom_authenticators.CustomBearerAuthenticator
+    class_name: source_okta.components.CustomBearerAuthenticator
 
   selective_authenticator:
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
     authenticators:
       oauth2.0: "#/definitions/custom_oauth_authenticator"
+      oauth2.0_private_key: "#/definitions/custom_oauth_private_key_authenticator"
       api_token: "#/definitions/custom_bearer_authenticator"
 
   paginator:
@@ -1850,6 +1855,42 @@ spec:
                 title: Refresh Token
                 description: Refresh Token to obtain new Access Token, when it's expired.
                 airbyte_secret: true
+          - type: object
+            title: OAuth 2.0 with private key
+            required:
+              - auth_type
+              - client_id
+              - key_id
+              - private_key
+              - scope
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0_private_key
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your OAuth application.
+                airbyte_secret: true
+                order: 1
+              key_id:
+                type: string
+                title: Key ID
+                description: The key ID (kid).
+                airbyte_secret: true
+                order: 2
+              private_key:
+                type: string
+                title: Private key
+                description: The private key in PEM format
+                airbyte_secret: true
+                order: 3
+              scope:
+                type: string
+                title: Scope
+                description: The OAuth scope.
+                order: 4
           - type: object
             title: API Token
             required:

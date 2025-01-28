@@ -16,6 +16,7 @@ from orchestrator.logging import sentry
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition, PartialMetadataDefinition
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
 
+
 GROUP_NAME = "metadata"
 
 
@@ -103,16 +104,9 @@ def compute_registry_overrides(merged_df):
     return registries
 
 
-# ASSETS
-
-
-@asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
-@sentry.instrument_asset_op
-def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntry]:
-    latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
-
+def get_metadata_entries(blob_resource) -> Output:
     metadata_entries = []
-    for blob in latest_metadata_file_blobs:
+    for blob in blob_resource:
         yaml_string = blob.download_as_string().decode("utf-8")
         metadata_dict = yaml.safe_load(yaml_string)
         metadata_def = MetadataDefinition.parse_obj(metadata_dict)
@@ -130,11 +124,19 @@ def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntr
         metadata_entry = LatestMetadataEntry(
             metadata_definition=metadata_def,
             icon_url=icon_url,
-            last_modified=blob.last_modified,
+            last_modified=blob.updated.isoformat(),
             etag=blob.etag,
             file_path=blob.name,
             bucket_name=blob.bucket.name,
         )
         metadata_entries.append(metadata_entry)
 
-    return metadata_entries
+    return Output(metadata_entries, metadata={"preview": [m.file_path for m in metadata_entries]})
+
+
+# ASSETS
+@asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
+def latest_metadata_entries(context: OpExecutionContext) -> Output[List[LatestMetadataEntry]]:
+    latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
+    return get_metadata_entries(latest_metadata_file_blobs)

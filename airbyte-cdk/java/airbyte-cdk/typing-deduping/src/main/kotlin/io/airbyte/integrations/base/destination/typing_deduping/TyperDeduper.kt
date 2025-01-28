@@ -75,7 +75,8 @@ interface TyperDeduper {
     @Throws(Exception::class)
     fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>)
 
-    @Throws(Exception::class) fun commitFinalTables()
+    @Throws(Exception::class)
+    fun commitFinalTables(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>)
 
     fun cleanup()
 }

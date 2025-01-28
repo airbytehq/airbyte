@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.bson.Document;
+import org.bson.types.Binary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -242,11 +243,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
     // shouldEmitStateMessage should guard this.
     var lastId = streamPairToLastIdMap.get(pair);
     if (lastId != null) {
-      final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
-          .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
-      final var state = new MongoDbStreamState(lastId.toString(),
-          syncMode == INCREMENTAL ? IN_PROGRESS : FULL_REFRESH,
-          idType);
+      final var state = composeStateFromlastId(lastId, syncMode == INCREMENTAL ? IN_PROGRESS : FULL_REFRESH);
       updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
     }
     return toState();
@@ -282,6 +279,20 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
     return jsonNode;
   }
 
+  private MongoDbStreamState composeStateFromlastId(final Object lastId, final InitialSnapshotStatus status) {
+    final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
+        .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+    Byte binarySubType = 0;
+    if (idType.equals(IdType.BINARY)) {
+      final var binCurrentId = (Binary) lastId;
+      binarySubType = binCurrentId.getType();
+    }
+    return new MongoDbStreamState(idToStringRepresenation(lastId, idType),
+        status,
+        idType,
+        binarySubType);
+  }
+
   /**
    * @return final state message.
    */
@@ -296,22 +307,17 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
       var lastId = streamPairToLastIdMap.get(pair);
       if (lastId != null) {
         LOGGER.debug("Emitting final state status for stream {}:{}...", stream.getStream().getNamespace(), stream.getStream().getName());
-        final var finalStateStatus = InitialSnapshotStatus.COMPLETE;
-        final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
-            .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
-        final var state = new MongoDbStreamState(idToStringRepresenation(lastId, idType), finalStateStatus, idType);
-
+        final var state = composeStateFromlastId(lastId, InitialSnapshotStatus.COMPLETE);
         updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
       }
     } else {
-      // deleteStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
       final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       var lastId = streamPairToLastIdMap.get(pair);
       if (lastId != null) {
         final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
             .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
         updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
-            new MongoDbStreamState(null, FULL_REFRESH, idType));
+            composeStateFromlastId(lastId, InitialSnapshotStatus.FULL_REFRESH));
       }
     }
     return toState();

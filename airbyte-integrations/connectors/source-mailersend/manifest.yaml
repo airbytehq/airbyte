@@ -1,0 +1,192 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - activity
+
+definitions:
+  streams:
+    activity:
+      type: DeclarativeStream
+      name: activity
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activity/{{ config['domain_id'] }}
+          http_method: GET
+          request_parameters:
+            limit: "100"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%s"
+        start_time_option:
+          type: RequestOption
+          field_name: date_from
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%s') }}"
+          datetime_format: "%s"
+        step: P1D
+        cursor_granularity: PT1S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activity"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.mailersend.com/v1
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_token"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/activity"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - domain_id
+    properties:
+      api_token:
+        type: string
+        description: >-
+          Your API Token. See <a
+          href="https://www.mailersend.com/help/managing-api-tokens">here</a>.
+        airbyte_secret: true
+        order: 0
+      domain_id:
+        type: string
+        description: The domain entity in mailersend
+        examples:
+          - airbyte.com
+          - linkana.com
+        order: 1
+      start_date:
+        type: number
+        description: Timestamp is assumed to be UTC.
+        examples:
+          - 123131321
+        title: "1668311800"
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    activity: false
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  activity:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+      created_at:
+        type:
+          - string
+        format: date-time
+      email:
+        type:
+          - object
+        properties:
+          created_at:
+            type:
+              - string
+            format: date-time
+          from:
+            type:
+              - string
+          html:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - string
+          recipient:
+            type:
+              - object
+            properties:
+              created_at:
+                type:
+                  - string
+                format: date-time
+              deleted_at:
+                type:
+                  - string
+              email:
+                type:
+                  - string
+              id:
+                type:
+                  - string
+              updated_at:
+                type:
+                  - string
+                format: date-time
+          status:
+            type:
+              - string
+          subject:
+            type:
+              - string
+          tags:
+            type:
+              - "null"
+              - string
+          text:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - string
+            format: date-time
+      id:
+        type:
+          - string
+      updated_at:
+        type:
+          - string
+        format: date-time

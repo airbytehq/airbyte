@@ -76,7 +76,28 @@ You should now have all the requirements needed to configure Chroma as a destina
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
+|:--------|:-----------| :-------------------------------------------------------- |:-------------------------------------------------------------|
+| 0.0.42 | 2025-01-25 | [52189](https://github.com/airbytehq/airbyte/pull/52189) | Update dependencies |
+| 0.0.41 | 2025-01-18 | [51744](https://github.com/airbytehq/airbyte/pull/51744) | Update dependencies |
+| 0.0.40 | 2025-01-11 | [51296](https://github.com/airbytehq/airbyte/pull/51296) | Update dependencies |
+| 0.0.39 | 2025-01-04 | [50913](https://github.com/airbytehq/airbyte/pull/50913) | Update dependencies |
+| 0.0.38 | 2024-12-28 | [50445](https://github.com/airbytehq/airbyte/pull/50445) | Update dependencies |
+| 0.0.37 | 2024-12-21 | [50221](https://github.com/airbytehq/airbyte/pull/50221) | Update dependencies |
+| 0.0.36 | 2024-12-14 | [48956](https://github.com/airbytehq/airbyte/pull/48956) | Update dependencies |
+| 0.0.35 | 2024-11-25 | [48668](https://github.com/airbytehq/airbyte/pull/48668) | Update dependencies |
+| 0.0.34 | 2024-11-04 | [48236](https://github.com/airbytehq/airbyte/pull/48236) | Update dependencies |
+| 0.0.33 | 2024-10-29 | [47053](https://github.com/airbytehq/airbyte/pull/47053) | Update dependencies |
+| 0.0.32 | 2024-10-12 | [46434](https://github.com/airbytehq/airbyte/pull/46434) | Update dependencies |
+| 0.0.31 | 2024-09-28 | [46192](https://github.com/airbytehq/airbyte/pull/46192) | Update dependencies |
+| 0.0.30 | 2024-09-21 | [45553](https://github.com/airbytehq/airbyte/pull/45553) | Update dependencies |
+| 0.0.29 | 2024-09-07 | [45322](https://github.com/airbytehq/airbyte/pull/45322) | Update dependencies |
+| 0.0.28 | 2024-08-31 | [45017](https://github.com/airbytehq/airbyte/pull/45017) | Update dependencies |
+| 0.0.27 | 2024-08-24 | [44717](https://github.com/airbytehq/airbyte/pull/44717) | Update dependencies |
+| 0.0.26 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.0.25 | 2024-08-17 | [44292](https://github.com/airbytehq/airbyte/pull/44292) | Update dependencies |
+| 0.0.24 | 2024-08-12 | [43734](https://github.com/airbytehq/airbyte/pull/43734) | Update dependencies |
+| 0.0.23 | 2024-08-10 | [43702](https://github.com/airbytehq/airbyte/pull/43702) | Update dependencies |
+| 0.0.22 | 2024-08-03 | [43133](https://github.com/airbytehq/airbyte/pull/43133) | Update dependencies |
 | 0.0.21 | 2024-07-27 | [42628](https://github.com/airbytehq/airbyte/pull/42628) | Update dependencies |
 | 0.0.20 | 2024-07-20 | [42160](https://github.com/airbytehq/airbyte/pull/42160) | Update dependencies |
 | 0.0.19 | 2024-07-13 | [41802](https://github.com/airbytehq/airbyte/pull/41802) | Update dependencies |

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import asyncclick as click
 import asyncer
+
 from pipelines.airbyte_ci.test import INTERNAL_POETRY_PACKAGES, INTERNAL_POETRY_PACKAGES_PATH, pipeline
 from pipelines.cli.click_decorators import click_ci_requirements_option, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.helpers.git import get_modified_files
@@ -113,7 +114,7 @@ async def test(pipeline_context: ClickPipelineContext) -> None:
     """
     poetry_package_paths = await get_packages_to_run(pipeline_context)
     click.echo(f"Running poe tasks of the following packages: {', '.join([str(package_path) for package_path in poetry_package_paths])}")
-    dagger_client = await pipeline_context.get_dagger_client(pipeline_name="Internal poetry packages CI")
+    dagger_client = await pipeline_context.get_dagger_client()
 
     poetry_package_poe_tasks_results: List[Tuple[Path, asyncer.SoonValue]] = []
     async with asyncer.create_task_group() as poetry_packages_task_group:

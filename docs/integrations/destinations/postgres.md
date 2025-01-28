@@ -267,6 +267,12 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.4.2 | 2025-01-10 | [51483](https://github.com/airbytehq/airbyte/pull/51483) | Use a non root base image |
+| 2.4.1 | 2024-12-18 | [49885](https://github.com/airbytehq/airbyte/pull/49885) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 2.4.0   | 2024-08-18 | [\#45434](https://github.com/airbytehq/airbyte/pull/45434) | upgrade all dependencies.                                                          |
+| 2.3.2   | 2024-08-07 | [\#43331](https://github.com/airbytehq/airbyte/pull/43331) | bump java CDK.                                                          |
+| 2.3.1   | 2024-08-07 | [\#43363](https://github.com/airbytehq/airbyte/pull/43363) | Adopt latest CDK.                                                                                                                                          |
+| 2.3.0   | 2024-07-22 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                                          |
 | 2.2.1   | 2024-07-22 | [\#42423](https://github.com/airbytehq/airbyte/pull/42423) | no-op. Bumping to a clean image                                                                                 |
 | 2.2.0   | 2024-07-22 | [\#42423](https://github.com/airbytehq/airbyte/pull/42423) | Revert refreshes support                                                                                 |
 | 2.1.1   | 2024-07-22 | [\#42415](https://github.com/airbytehq/airbyte/pull/42415) | fixing PostgresSqlOperations.isOtherGenerationIdInTable to close the streams coming from JdbcDatabase.unsafeQuery |

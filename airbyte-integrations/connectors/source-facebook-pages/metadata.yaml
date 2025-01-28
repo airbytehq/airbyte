@@ -6,18 +6,18 @@ data:
     hosts:
       - graph.facebook.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
-  dockerImageTag: 1.0.9
+  dockerImageTag: 1.0.30
   dockerRepository: airbyte/source-facebook-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   githubIssueLabel: source-facebook-pages
   icon: facebook.svg
   license: ELv2
   name: Facebook Pages
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -41,6 +41,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: facebook-pages_config_dev_null
+          id: 4446147a-669a-472b-bda8-6ee069eb3099
     - suite: unitTests
     # Disable acceptance tests for now
     # No/Low cloud usage

@@ -11,14 +11,15 @@ from typing import Iterable, List, Optional, Tuple
 
 import requests
 import smart_open
+from msal import ConfidentialClientApplication
+from office365.graph_client import GraphClient
+
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from msal import ConfidentialClientApplication
-from office365.graph_client import GraphClient
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
-from .utils import MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
+from .utils import FolderNotFoundException, MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
 
 
 class SourceMicrosoftSharePointClient:
@@ -187,7 +188,10 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                     folder = drive.root
                     folder_path_url = drive.web_url
                 else:
-                    folder = execute_query_with_retry(drive.root.get_by_path(folder_path).get())
+                    try:
+                        folder = execute_query_with_retry(drive.root.get_by_path(folder_path).get())
+                    except FolderNotFoundException:
+                        continue
                     folder_path_url = drive.web_url + "/" + folder_path
 
                 yield from self._list_directories_and_files(folder, folder_path_url)

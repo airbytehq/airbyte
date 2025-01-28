@@ -37,7 +37,7 @@ const generateCombinations = (str) => {
   }
 
   return results;
-}
+};
 
 /**
  * Merge a path tree into a flat array of paths
@@ -49,18 +49,20 @@ const generateCombinations = (str) => {
  * @returns {string[]} A flat array of paths
  */
 const mergePathTree = (pathTree) => {
-  return pathTree
-    // reduce [[a], [b,c], [d]] to [[a,b,d], [a,c,d]]
-    .reduce(
-      (a, b) =>
-        a
-          .map((x) => b.map((y) => x.concat(y)))
-          .reduce((a, b) => a.concat(b), []),
-      [[]],
-    )
-    // then flatten to ['a.b.d', 'a.c.d']
-    .map((x) => x.join("."));
-}
+  return (
+    pathTree
+      // reduce [[a], [b,c], [d]] to [[a,b,d], [a,c,d]]
+      .reduce(
+        (a, b) =>
+          a
+            .map((x) => b.map((y) => x.concat(y)))
+            .reduce((a, b) => a.concat(b), []),
+        [[]]
+      )
+      // then flatten to ['a.b.d', 'a.c.d']
+      .map((x) => x.join("."))
+  );
+};
 
 /**
  * Generate all possible paths from a given path
@@ -76,7 +78,7 @@ const generatePaths = (path) => {
   const pathTree = pathChunks.map(generateCombinations);
   const paths = mergePathTree(pathTree);
   return paths;
-}
+};
 
 /**
  * Get a value from an object using a path OR multiple possible paths
@@ -110,6 +112,23 @@ const getFromPaths = (obj, path, defaultValue = undefined) => {
   return defaultValue;
 };
 
+/** REMARK UTILS */
+
+const removeUndefined = ([key, value]) => {
+  if (value === undefined) return false;
+  return [key, value];
+};
+
+const kvToAttribute = ([key, value]) => ({
+  type: "mdxJsxAttribute",
+  name: key,
+  value: value,
+});
+
+const toAttributes = (props) =>
+  Object.entries(props).filter(removeUndefined).map(kvToAttribute);
+
 module.exports = {
   getFromPaths,
+  toAttributes,
 };

@@ -20,7 +20,7 @@ on:
 jobs:
   publish_connectors:
     name: Publish connectors
-    runs-on: connector-publish-large
+    runs-on: ubuntu-24.04-4core
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "master"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -44,6 +44,8 @@ jobs:
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only publish --main-release"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
+          max_attempts: 2
+          retry_wait_seconds: 600 # 10 minutes
 
       - name: Publish connectors [manual]
         id: publish-connectors
@@ -51,7 +53,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -66,26 +68,14 @@ jobs:
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
-
-  set-instatus-incident-on-failure:
-    name: Create Instatus Incident on Failure
-    runs-on: ubuntu-latest
-    needs:
-      - publish_connectors
-    if: ${{ failure() && github.ref == 'refs/heads/master' }}
-    steps:
-      - name: Call Instatus Webhook
-        uses: joelwmale/webhook-action@master
-        with:
-          url: ${{ secrets.INSTATUS_CONNECTOR_PUBLISH_PIPELINE_WEBHOOK_URL }}
-          body: '{ "trigger": "down", "status": "HASISSUES" }'
+          max_attempts: 2
 
   notify-failure-slack-channel:
-    name: "Notify Slack Channel on Build Failures"
-    runs-on: ubuntu-latest
+    name: "Notify Slack Channel on Publish Failures"
+    runs-on: ubuntu-24.04
     needs:
       - publish_connectors
-    if: ${{ failure() && github.ref == 'refs/heads/master' }}
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -95,16 +85,35 @@ jobs:
         env:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish to OSS Build Failure Slack Channel
-        uses: abinoda/slack-action@master
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+      - name: Send publish failures to connector-publish-failures channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
         with:
-          args: >-
-            {\"channel\":\"C056HGD1QSW\", \"blocks\":[
-            {\"type\":\"divider\"},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Publish Connector Failed! :bangbang: \n\n\"}},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
-            {\"type\":\"divider\"}]}
+          # This data can be any valid JSON from a previous step in the GitHub Action
+          payload: |
+            {
+              "channel": "#connector-publish-failures",
+              "username": "Connectors CI/CD Bot",
+              "text": "🚨 Publish workflow failed:\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \n merged by ${{ github.actor }} (<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>). "
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+
+  notify-failure-pager-duty:
+    name: "Notify PagerDuty on Publish Failures"
+    runs-on: ubuntu-24.04
+    needs:
+      - publish_connectors
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Notify PagerDuty
+        id: pager-duty
+        uses: ./.github/actions/send-pager-duty-event
+        with:
+          # Integration URL: https://airbyte.pagerduty.com/services/P5GNI5T/integrations/PGKH9JV
+          integration_key: ${{ secrets.PAGER_DUTY_PUBLISH_FAILURES_INTEGRATION_KEY }}
+          summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
+          severity: "critical"
+          source: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

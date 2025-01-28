@@ -28,6 +28,17 @@ This project supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject         |
 |:--------|:-----------| :------------------------------------------------------- | :-------------- |
+| 0.2.8 | 2025-01-18 | [51680](https://github.com/airbytehq/airbyte/pull/51680) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51058](https://github.com/airbytehq/airbyte/pull/51058) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50518](https://github.com/airbytehq/airbyte/pull/50518) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50012](https://github.com/airbytehq/airbyte/pull/50012) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49539](https://github.com/airbytehq/airbyte/pull/49539) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [48147](https://github.com/airbytehq/airbyte/pull/48147) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47508](https://github.com/airbytehq/airbyte/pull/47508) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.2.0 | 2024-08-15 | [44151](https://github.com/airbytehq/airbyte/pull/44151) | Refactor connector to manifest-only format |
+| 0.1.13 | 2024-08-10 | [43561](https://github.com/airbytehq/airbyte/pull/43561) | Update dependencies |
+| 0.1.12 | 2024-08-03 | [43205](https://github.com/airbytehq/airbyte/pull/43205) | Update dependencies |
 | 0.1.11 | 2024-07-27 | [42696](https://github.com/airbytehq/airbyte/pull/42696) | Update dependencies |
 | 0.1.10 | 2024-07-20 | [42195](https://github.com/airbytehq/airbyte/pull/42195) | Update dependencies |
 | 0.1.9 | 2024-07-13 | [41834](https://github.com/airbytehq/airbyte/pull/41834) | Update dependencies |

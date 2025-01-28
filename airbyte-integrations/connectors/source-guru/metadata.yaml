@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - api.getguru.com
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-guru
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 30e2d5f2-63c1-4993-8079-c8abf24e747d
+  dockerImageTag: 0.0.12
+  dockerRepository: airbyte/source-guru
+  githubIssueLabel: source-guru
+  icon: icon.svg
+  license: MIT
+  name: Guru
+  releaseDate: 2024-08-31
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/guru
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

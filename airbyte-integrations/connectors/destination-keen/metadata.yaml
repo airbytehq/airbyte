@@ -8,7 +8,7 @@ data:
   icon: chargify.svg
   license: MIT
   name: Chargify (Keen)
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

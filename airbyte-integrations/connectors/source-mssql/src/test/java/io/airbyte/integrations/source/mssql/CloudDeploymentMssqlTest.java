@@ -10,10 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -24,7 +26,7 @@ public class CloudDeploymentMssqlTest {
 
   private MsSQLTestDatabase createTestDatabase(String... containerFactoryMethods) {
     final var container = new MsSQLContainerFactory().shared(
-        "mcr.microsoft.com/mssql/server:2022-latest", containerFactoryMethods);
+        BaseImage.MSSQL_2022.reference, containerFactoryMethods);
     final var testdb = new MsSQLTestDatabase(container);
     return testdb
         .withConnectionProperty("encrypt", "true")
@@ -34,8 +36,8 @@ public class CloudDeploymentMssqlTest {
   }
 
   private Source source() {
-    final var source = new MssqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingDeploymentMode(new EnvVariableFeatureFlags(), "CLOUD"));
+    final var source = new MssqlSource(FeatureFlagsWrapper.overridingDeploymentMode(
+        new EnvVariableFeatureFlags(), AdaptiveSourceRunner.CLOUD_MODE));
     return MssqlSource.sshWrappedSource(source);
   }
 

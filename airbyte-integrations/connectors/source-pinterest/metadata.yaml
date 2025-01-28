@@ -5,10 +5,10 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
-  dockerImageTag: 2.0.7
+  dockerImageTag: 2.0.28
   dockerRepository: airbyte/source-pinterest
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   githubIssueLabel: source-pinterest
   icon: pinterest.svg
   license: MIT
@@ -18,7 +18,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-pinterest
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -62,6 +62,12 @@ data:
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pinterest_config_dev_null
+          id: 4bf1f050-10fd-4ae5-8d7a-05d6fd59820d
+        - name: pinterest_config_oauth_dev_null
+          id: 8d06a86f-fc9a-44b6-b3ef-db633636bc2c
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

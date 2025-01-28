@@ -104,8 +104,31 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                           |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                             |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 1.3.7 | 2025-01-25 | [52216](https://github.com/airbytehq/airbyte/pull/52216) | Update dependencies |
+| 1.3.6 | 2025-01-18 | [51750](https://github.com/airbytehq/airbyte/pull/51750) | Update dependencies |
+| 1.3.5 | 2025-01-11 | [51246](https://github.com/airbytehq/airbyte/pull/51246) | Update dependencies |
+| 1.3.4 | 2025-01-04 | [50915](https://github.com/airbytehq/airbyte/pull/50915) | Update dependencies |
+| 1.3.3 | 2024-12-28 | [50442](https://github.com/airbytehq/airbyte/pull/50442) | Update dependencies |
+| 1.3.2 | 2024-12-21 | [50195](https://github.com/airbytehq/airbyte/pull/50195) | Update dependencies |
+| 1.3.1 | 2024-12-14 | [48966](https://github.com/airbytehq/airbyte/pull/48966) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.3.0 | 2024-12-06 | [48712](https://github.com/airbytehq/airbyte/pull/48712) | Upgrade to process full refresh and non-incremental substreams using concurrent CDK |
+| 1.2.14 | 2024-11-04 | [48175](https://github.com/airbytehq/airbyte/pull/48175) | Update dependencies |
+| 1.2.13 | 2024-10-28 | [47026](https://github.com/airbytehq/airbyte/pull/47026) | Update dependencies |
+| 1.2.12 | 2024-10-12 | [46825](https://github.com/airbytehq/airbyte/pull/46825) | Update dependencies |
+| 1.2.11 | 2024-10-05 | [46501](https://github.com/airbytehq/airbyte/pull/46501) | Update dependencies |
+| 1.2.10 | 2024-09-28 | [46166](https://github.com/airbytehq/airbyte/pull/46166) | Update dependencies |
+| 1.2.9 | 2024-09-21 | [45754](https://github.com/airbytehq/airbyte/pull/45754) | Update dependencies |
+| 1.2.8 | 2024-09-14 | [45547](https://github.com/airbytehq/airbyte/pull/45547) | Update dependencies |
+| 1.2.7 | 2024-09-07 | [45277](https://github.com/airbytehq/airbyte/pull/45277) | Update dependencies |
+| 1.2.6 | 2024-08-31 | [44970](https://github.com/airbytehq/airbyte/pull/44970) | Update dependencies |
+| 1.2.5 | 2024-08-24 | [44722](https://github.com/airbytehq/airbyte/pull/44722) | Update dependencies |
+| 1.2.4 | 2024-08-17 | [44275](https://github.com/airbytehq/airbyte/pull/44275) | Update dependencies |
+| 1.2.3 | 2024-08-12 | [43807](https://github.com/airbytehq/airbyte/pull/43807) | Update dependencies |
+| 1.2.2 | 2024-08-10 | [43532](https://github.com/airbytehq/airbyte/pull/43532) | Update dependencies |
+| 1.2.1 | 2024-08-03 | [43079](https://github.com/airbytehq/airbyte/pull/43079) | Update dependencies |
+| 1.2.0 | 2024-07-27 | [42856](https://github.com/airbytehq/airbyte/pull/42856) | Add task & target data to stories compact stream |
 | 1.1.1 | 2024-07-27 | [42801](https://github.com/airbytehq/airbyte/pull/42801) | Update dependencies |
 | 1.1.0 | 2024-07-24 | [42488](https://github.com/airbytehq/airbyte/pull/42488) | Add task data to stories stream |
 | 1.0.9 | 2024-07-20 | [42144](https://github.com/airbytehq/airbyte/pull/42144) | Update dependencies |

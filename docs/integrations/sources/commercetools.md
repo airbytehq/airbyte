@@ -52,6 +52,27 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 
 | Version | Date       | Pull Request                                             | Subject                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------ |
+| 0.2.30 | 2025-01-25 | [52354](https://github.com/airbytehq/airbyte/pull/52354) | Update dependencies |
+| 0.2.29 | 2025-01-18 | [51665](https://github.com/airbytehq/airbyte/pull/51665) | Update dependencies |
+| 0.2.28 | 2025-01-11 | [51079](https://github.com/airbytehq/airbyte/pull/51079) | Update dependencies |
+| 0.2.27 | 2025-01-04 | [50918](https://github.com/airbytehq/airbyte/pull/50918) | Update dependencies |
+| 0.2.26 | 2024-12-28 | [50516](https://github.com/airbytehq/airbyte/pull/50516) | Update dependencies |
+| 0.2.25 | 2024-12-21 | [50032](https://github.com/airbytehq/airbyte/pull/50032) | Update dependencies |
+| 0.2.24 | 2024-12-12 | [49171](https://github.com/airbytehq/airbyte/pull/49171) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.23 | 2024-11-04 | [48186](https://github.com/airbytehq/airbyte/pull/48186) | Update dependencies |
+| 0.2.22 | 2024-10-29 | [47859](https://github.com/airbytehq/airbyte/pull/47859) | Update dependencies |
+| 0.2.21 | 2024-10-28 | [47112](https://github.com/airbytehq/airbyte/pull/47112) | Update dependencies |
+| 0.2.20 | 2024-10-12 | [46779](https://github.com/airbytehq/airbyte/pull/46779) | Update dependencies |
+| 0.2.19 | 2024-10-05 | [46497](https://github.com/airbytehq/airbyte/pull/46497) | Update dependencies |
+| 0.2.18 | 2024-09-28 | [46103](https://github.com/airbytehq/airbyte/pull/46103) | Update dependencies |
+| 0.2.17 | 2024-09-21 | [45778](https://github.com/airbytehq/airbyte/pull/45778) | Update dependencies |
+| 0.2.16 | 2024-09-14 | [45552](https://github.com/airbytehq/airbyte/pull/45552) | Update dependencies |
+| 0.2.15 | 2024-09-07 | [45287](https://github.com/airbytehq/airbyte/pull/45287) | Update dependencies |
+| 0.2.14 | 2024-08-31 | [45022](https://github.com/airbytehq/airbyte/pull/45022) | Update dependencies |
+| 0.2.13 | 2024-08-24 | [44744](https://github.com/airbytehq/airbyte/pull/44744) | Update dependencies |
+| 0.2.12 | 2024-08-17 | [44209](https://github.com/airbytehq/airbyte/pull/44209) | Update dependencies |
+| 0.2.11 | 2024-08-12 | [43770](https://github.com/airbytehq/airbyte/pull/43770) | Update dependencies |
+| 0.2.10 | 2024-08-03 | [43131](https://github.com/airbytehq/airbyte/pull/43131) | Update dependencies |
 | 0.2.9 | 2024-07-27 | [42673](https://github.com/airbytehq/airbyte/pull/42673) | Update dependencies |
 | 0.2.8 | 2024-07-20 | [42330](https://github.com/airbytehq/airbyte/pull/42330) | Update dependencies |
 | 0.2.7 | 2024-07-13 | [41849](https://github.com/airbytehq/airbyte/pull/41849) | Update dependencies |

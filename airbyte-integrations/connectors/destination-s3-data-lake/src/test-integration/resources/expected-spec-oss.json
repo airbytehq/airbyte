@@ -1,0 +1,164 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/s3-data-lake",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Iceberg V2 Destination Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "description" : "Defines the configurations required to connect to an Iceberg catalog, including warehouse location, main branch name, and catalog type specifics.",
+    "properties" : {
+      "access_key_id" : {
+        "type" : "string",
+        "description" : "The AWS Access Key ID with permissions for S3 and Glue operations.",
+        "title" : "AWS Access Key ID",
+        "airbyte_secret" : true,
+        "always_show" : true,
+        "order" : 0
+      },
+      "secret_access_key" : {
+        "type" : "string",
+        "description" : "The AWS Secret Access Key paired with the Access Key ID for AWS authentication.",
+        "title" : "AWS Secret Access Key",
+        "airbyte_secret" : true,
+        "always_show" : true,
+        "order" : 1
+      },
+      "s3_bucket_name" : {
+        "type" : "string",
+        "description" : "The name of the S3 bucket that will host the Iceberg data.",
+        "title" : "S3 Bucket Name",
+        "always_show" : true,
+        "order" : 2
+      },
+      "s3_bucket_region" : {
+        "type" : "string",
+        "enum" : [ "", "af-south-1", "ap-east-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3", "ap-south-1", "ap-south-2", "ap-southeast-1", "ap-southeast-2", "ap-southeast-3", "ap-southeast-4", "ca-central-1", "ca-west-1", "cn-north-1", "cn-northwest-1", "eu-central-1", "eu-central-2", "eu-north-1", "eu-south-1", "eu-south-2", "eu-west-1", "eu-west-2", "eu-west-3", "il-central-1", "me-central-1", "me-south-1", "sa-east-1", "us-east-1", "us-east-2", "us-gov-east-1", "us-gov-west-1", "us-west-1", "us-west-2" ],
+        "description" : "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\">here</a> for all region codes.",
+        "title" : "S3 Bucket Region",
+        "always_show" : true,
+        "examples" : [ "us-east-1" ],
+        "order" : 3
+      },
+      "s3_endpoint" : {
+        "type" : "string",
+        "description" : "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
+        "title" : "S3 Endpoint",
+        "order" : 4
+      },
+      "warehouse_location" : {
+        "type" : "string",
+        "description" : "The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. Must include the storage protocol (such as \"s3://\" for Amazon S3).",
+        "title" : "Warehouse Location",
+        "examples" : [ "s3://your-bucket/path/to/store/files/in" ],
+        "always_show" : true,
+        "order" : 5
+      },
+      "main_branch_name" : {
+        "type" : "string",
+        "default" : "main",
+        "description" : "The primary or default branch name in the catalog. Most query engines will use \"main\" by default. See <a href=\"https://iceberg.apache.org/docs/latest/branching/\">Iceberg documentation</a> for more information.",
+        "title" : "Main Branch Name",
+        "always_show" : true,
+        "order" : 6
+      },
+      "catalog_type" : {
+        "oneOf" : [ {
+          "title" : "Nessie Catalog",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for connecting to a Nessie-based Iceberg catalog.",
+          "properties" : {
+            "catalog_type" : {
+              "type" : "string",
+              "enum" : [ "NESSIE" ],
+              "default" : "NESSIE"
+            },
+            "server_uri" : {
+              "type" : "string",
+              "description" : "The base URL of the Nessie server used to connect to the Nessie catalog.",
+              "title" : "Nessie Server URI",
+              "order" : 1
+            },
+            "access_token" : {
+              "type" : "string",
+              "description" : "Optional token for authentication with the Nessie server.",
+              "title" : "Nessie Access Token",
+              "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+              "airbyte_secret" : true,
+              "order" : 2
+            },
+            "namespace" : {
+              "type" : "string",
+              "description" : "The Nessie namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
+              "title" : "Namespace"
+            }
+          },
+          "required" : [ "catalog_type", "server_uri" ]
+        }, {
+          "title" : "Glue Catalog",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for connecting to an AWS Glue-based Iceberg catalog.",
+          "properties" : {
+            "catalog_type" : {
+              "type" : "string",
+              "enum" : [ "GLUE" ],
+              "default" : "GLUE"
+            },
+            "glue_id" : {
+              "type" : "string",
+              "description" : "The AWS Account ID associated with the Glue service used by the Iceberg catalog.",
+              "title" : "AWS Account ID",
+              "order" : 1
+            },
+            "role_arn" : {
+              "type" : "string",
+              "description" : "The Role ARN.",
+              "title" : "Role ARN"
+            },
+            "database_name" : {
+              "type" : "string",
+              "description" : "The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`",
+              "title" : "Database Name"
+            }
+          },
+          "required" : [ "catalog_type", "glue_id" ]
+        }, {
+          "title" : "Rest Catalog",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for connecting to a REST catalog.",
+          "properties" : {
+            "catalog_type" : {
+              "type" : "string",
+              "enum" : [ "REST" ],
+              "default" : "REST"
+            },
+            "server_uri" : {
+              "type" : "string",
+              "description" : "The base URL of the Rest server used to connect to the Rest catalog.",
+              "title" : "Rest Server URI",
+              "order" : 1
+            },
+            "namespace" : {
+              "type" : "string",
+              "description" : "The namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
+              "title" : "Namespace"
+            }
+          },
+          "required" : [ "catalog_type", "server_uri" ]
+        } ],
+        "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST) and its associated configuration.",
+        "title" : "Catalog Type",
+        "always_show" : true,
+        "order" : 7,
+        "type" : "object"
+      }
+    },
+    "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}

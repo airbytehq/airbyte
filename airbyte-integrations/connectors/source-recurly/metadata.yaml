@@ -3,18 +3,18 @@ data:
     ql: 200
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.3.8
   dockerRepository: airbyte/source-recurly
   documentationUrl: https://docs.airbyte.com/integrations/sources/recurly
   githubIssueLabel: source-recurly
   icon: recurly.svg
   license: MIT
   name: Recurly
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -22,18 +22,25 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: Version 1.0.0 introduces a number of schema updates to the Recurly connector. To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.
+        message:
+          Version 1.0.0 introduces a number of schema updates to the Recurly
+          connector. To ensure a smooth upgrade, please refresh your schemas and reset
+          your data before resuming syncs.
         upgradeDeadline: "2024-03-05"
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-recurly
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: recurly_config_dev_null
+          id: 33f9384f-dbd1-4f14-86b8-f20f7f0e140f
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

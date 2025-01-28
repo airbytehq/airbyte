@@ -56,6 +56,19 @@ Use this to pull data from Pivotal Tracker.
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.3.9 | 2025-01-25 | [52479](https://github.com/airbytehq/airbyte/pull/52479) | Update dependencies |
+| 0.3.8 | 2025-01-18 | [51850](https://github.com/airbytehq/airbyte/pull/51850) | Update dependencies |
+| 0.3.7 | 2025-01-11 | [51348](https://github.com/airbytehq/airbyte/pull/51348) | Update dependencies |
+| 0.3.6 | 2024-12-28 | [50737](https://github.com/airbytehq/airbyte/pull/50737) | Update dependencies |
+| 0.3.5 | 2024-12-21 | [50277](https://github.com/airbytehq/airbyte/pull/50277) | Update dependencies |
+| 0.3.4 | 2024-12-14 | [49730](https://github.com/airbytehq/airbyte/pull/49730) | Update dependencies |
+| 0.3.3 | 2024-12-12 | [49047](https://github.com/airbytehq/airbyte/pull/49047) | Update dependencies |
+| 0.3.2 | 2024-10-29 | [47679](https://github.com/airbytehq/airbyte/pull/47679) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-14 | [44087](https://github.com/airbytehq/airbyte/pull/44087) | Refactor connector to manifest-only format |
+| 0.2.12 | 2024-08-12 | [43849](https://github.com/airbytehq/airbyte/pull/43849) | Update dependencies |
+| 0.2.11 | 2024-08-10 | [43506](https://github.com/airbytehq/airbyte/pull/43506) | Update dependencies |
+| 0.2.10 | 2024-08-03 | [43223](https://github.com/airbytehq/airbyte/pull/43223) | Update dependencies |
 | 0.2.9 | 2024-07-27 | [42784](https://github.com/airbytehq/airbyte/pull/42784) | Update dependencies |
 | 0.2.8 | 2024-07-20 | [42199](https://github.com/airbytehq/airbyte/pull/42199) | Update dependencies |
 | 0.2.7 | 2024-07-13 | [41772](https://github.com/airbytehq/airbyte/pull/41772) | Update dependencies |

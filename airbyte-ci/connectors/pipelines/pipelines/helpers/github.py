@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 
 import github as github_sdk
 from connector_ops.utils import console  # type: ignore
+
 from pipelines import main_logger
 from pipelines.consts import CIContext
 from pipelines.models.secrets import Secret
@@ -107,7 +108,6 @@ def get_pull_request(pull_request_number: int, github_access_token: Secret) -> g
 
 
 def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Optional[Logger] = None) -> None:
-
     update_commit_status_check(
         click_context["git_revision"],
         github_state,
@@ -138,7 +138,6 @@ def create_or_update_github_pull_request(
     labels: Optional[Iterable[str]] = None,
     force_push: bool = True,
 ) -> github_sdk.PullRequest.PullRequest:
-
     logger = logger or main_logger
     g = github_sdk.Github(auth=github_sdk.Auth.Token(github_token))
     repo = g.get_repo(repo_name)
@@ -152,7 +151,11 @@ def create_or_update_github_pull_request(
                 content = base64.b64encode(file.read()).decode("utf-8")  # Encode file content to base64
                 blob = repo.create_git_blob(content, "base64")
                 changed_file = ChangedFile(path=str(modified_file), sha=blob.sha)
-        changed_files.append(changed_file)
+            changed_files.append(changed_file)
+        else:
+            logger.info(f"{modified_file} no longer exists, adding to PR as a deletion")
+            changed_file = ChangedFile(path=str(modified_file), sha=None)
+            changed_files.append(changed_file)
     existing_ref = None
     try:
         existing_ref = repo.get_git_ref(f"heads/{branch_id}")

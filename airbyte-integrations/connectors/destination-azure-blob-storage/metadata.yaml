@@ -1,14 +1,39 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: file
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: config_gcs_staging.json
+          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-GCS-STAGING__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config_s3_staging.json
+          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-S3-STAGING__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/destination-azure-blob-storage
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/azure-blob-storage
   githubIssueLabel: destination-azure-blob-storage
   icon: azureblobstorage.svg
   license: MIT
   name: Azure Blob Storage
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -20,30 +45,7 @@ data:
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 1Gi
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/azure-blob-storage
+  supportLevel: community
   tags:
     - language:java
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-GCS-STAGING__CREDS
-          fileName: config_gcs_staging.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-S3-STAGING__CREDS
-          fileName: config_s3_staging.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-AZURE-BLOB-STORAGE__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
