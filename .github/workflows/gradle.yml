@@ -50,13 +50,13 @@ jobs:
       matrix:
         gradle-task:
           - name: compile
-            command: compileJava compileKotlin compileTestJava compileTestKotlin
+            command: assemble testClasses
           - name: spotbugs
             command: spotbugsMain spotbugsTest
           - name: unit-tests
-            command: test -x spotbugsMain -x spotbugsTest -x compileJava -x compileKotlin -x compileTestJava -x compileTestKotlin
+            command: test -x spotbugsMain -x spotbugsTest
           - name: integration-tests
-            command: integrationTest -x test -x spotbugsMain -x spotbugsTest -x compileJava -x compileKotlin -x compileTestJava -x compileTestKotlin
+            command: integrationTest -x test -x spotbugsMain -x spotbugsTest
     name: Gradle ${{ matrix.gradle-task.name }}
     timeout-minutes: 60
     steps:
