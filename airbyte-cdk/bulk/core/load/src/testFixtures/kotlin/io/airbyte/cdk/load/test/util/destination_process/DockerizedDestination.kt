@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
@@ -61,10 +62,11 @@ class DockerizedDestination(
 
     private val stdoutDrained = CompletableDeferred<Unit>()
     private val stderrDrained = CompletableDeferred<Unit>()
-    private val fileTransferMountSource = Files.createTempDirectory("tmp")
+    // Mainly, used for file transfer but there are other consumers, name the AWS CRT HTTP client.
+    private val tmpDir = Files.createTempDirectory("tmp")
 
     init {
-        grantAllPermissions(fileTransferMountSource)
+        tmpDir.grantAllPermissions()
         // This is largely copied from the old cdk's DockerProcessFactory /
         // AirbyteIntegrationLauncher / DestinationAcceptanceTest,
         // but cleaned up, consolidated, and simplified.
@@ -73,29 +75,29 @@ class DockerizedDestination(
         val testDir = Path.of("/tmp/airbyte_tests/")
         Files.createDirectories(testDir)
         // Allow ourselves and our connector access to our test dir
-        grantAllPermissions(testDir)
+        testDir.grantAllPermissions()
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
-        grantAllPermissions(workspaceRoot)
+        workspaceRoot.grantAllPermissions()
         // This directory gets mounted to the docker container,
         // presumably so that we can extract some files out of it?
         // It's unclear to me that we actually need to do this...
         // Certainly nothing in the bulk CDK's test suites is reading back
         // anything in this directory.
         val localRoot = Files.createTempDirectory(testDir, "output")
-        grantAllPermissions(localRoot)
+        localRoot.grantAllPermissions()
 
         // This directory will contain the actual inputs to the connector (config+catalog),
         // and is also mounted as a volume.
         val jobDir = "job"
         val jobRoot = Files.createDirectories(workspaceRoot.resolve(jobDir))
-        grantAllPermissions(jobRoot)
+        jobRoot.grantAllPermissions()
 
         val containerDataRoot = "/data"
         val containerJobRoot = "$containerDataRoot/$jobDir"
 
         // This directory is being used for the file transfer feature.
         if (useFileTransfer) {
-            val file = Files.createFile(fileTransferMountSource.resolve("test_file"))
+            val file = Files.createFile(tmpDir.resolve("test_file"))
             file.writeText("123")
         }
         // Extract the string "destination-foo" from "gcr.io/airbyte/destination-foo:1.2.3".
@@ -138,7 +140,7 @@ class DockerizedDestination(
                     "-v",
                     String.format("%s:%s", localRoot, "/local"),
                     "-v",
-                    "$fileTransferMountSource:/tmp",
+                    "$tmpDir:/tmp",
                 ) +
                     additionalEnvEntries +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
@@ -160,7 +162,7 @@ class DockerizedDestination(
                 path,
                 fileContents,
             )
-            grantAllPermissions(path)
+            path.grantAllPermissions()
 
             cmd.add("--$paramName")
             cmd.add("$containerJobRoot/destination_$paramName.json")
@@ -285,26 +287,10 @@ class DockerizedDestination(
     }
 
     override fun verifyFileDeleted() {
-        val file = File(fileTransferMountSource.resolve("test_file").toUri())
+        val file = File(tmpDir.resolve("test_file").toUri())
         assertFalse(file.exists())
     }
 
-    private fun grantAllPermissions(path: Path) {
-        logger.info { "Granting all permissions to $path" }
-        path.setPosixFilePermissions(
-            setOf(
-                PosixFilePermission.OWNER_READ,
-                PosixFilePermission.OWNER_WRITE,
-                PosixFilePermission.OWNER_EXECUTE,
-                PosixFilePermission.GROUP_READ,
-                PosixFilePermission.GROUP_WRITE,
-                PosixFilePermission.GROUP_EXECUTE,
-                PosixFilePermission.OTHERS_READ,
-                PosixFilePermission.OTHERS_WRITE,
-                PosixFilePermission.OTHERS_EXECUTE,
-            ),
-        )
-    }
 }
 
 class DockerizedDestinationFactory(

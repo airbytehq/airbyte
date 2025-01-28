@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
+import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.cdk.integrations.destination.async.model.AirbyteRecordMessageFile
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3BaseDestinationAcceptanceTest
@@ -176,7 +177,9 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         }
         val streamName = "str" + RandomStringUtils.insecure().nextAlphanumeric(5)
         val filePath = createFakeFile()
-        val file = fileTransferMountSource!!.resolve(filePath).toFile()
+        val fullPath = fileTransferMountSource!!.resolve(filePath)
+        fullPath.grantAllPermissions()
+        val file = fullPath.toFile()
         val fileLength = file.length()
         val fileContent = file.readBytes()
         val catalog = configureCatalog(streamName, 32)

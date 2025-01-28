@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.standardtest.destination
 
 import com.fasterxml.jackson.databind.JsonNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.features.FeatureFlagsWrapper
@@ -251,7 +252,7 @@ abstract class BaseDestinationAcceptanceTest(
         val testDir = Path.of("/tmp/airbyte_tests/")
         Files.createDirectories(testDir)
         // Allow ourselves and our connector access to our test dir
-        grantAllPermissions(testDir)
+        testDir.grantAllPermissions()
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
         jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"))
         localRoot = Files.createTempDirectory(testDir, "output")
@@ -262,11 +263,10 @@ abstract class BaseDestinationAcceptanceTest(
         testSchemas = HashSet()
         setup(testEnv, testSchemas)
         fileTransferMountSource =
-            if (supportsFileTransfer) {
-                val tempDir = Files.createTempDirectory(testDir, "file_transfer")
-                grantAllPermissions(tempDir)
-                tempDir
-            } else null
+            if (supportsFileTransfer)
+                Files.createTempDirectory(testDir, "file_transfer")
+                    .grantAllPermissions()
+            else null
 
         processFactory =
             DockerProcessFactory(
@@ -297,21 +297,5 @@ abstract class BaseDestinationAcceptanceTest(
 
     open fun getConnectorEnv(): Map<String, String> {
         return emptyMap()
-    }
-
-    private fun grantAllPermissions(path: Path) {
-        path.setPosixFilePermissions(
-            setOf(
-                PosixFilePermission.OWNER_READ,
-                PosixFilePermission.OWNER_WRITE,
-                PosixFilePermission.OWNER_EXECUTE,
-                PosixFilePermission.GROUP_READ,
-                PosixFilePermission.GROUP_WRITE,
-                PosixFilePermission.GROUP_EXECUTE,
-                PosixFilePermission.OTHERS_READ,
-                PosixFilePermission.OTHERS_WRITE,
-                PosixFilePermission.OTHERS_EXECUTE,
-            ),
-        )
     }
 }
