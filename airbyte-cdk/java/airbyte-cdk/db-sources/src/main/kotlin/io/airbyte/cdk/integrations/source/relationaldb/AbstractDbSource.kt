@@ -302,7 +302,7 @@ protected constructor(driverClassName: String) :
                 result.add(it)
             }
         }
-        return discoverWithoutSystemTables(database)
+        return result
     }
 
     @Throws(Exception::class)
