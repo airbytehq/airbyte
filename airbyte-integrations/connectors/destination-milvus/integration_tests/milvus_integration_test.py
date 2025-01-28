@@ -4,6 +4,7 @@
 
 import json
 import logging
+import os
 
 from destination_milvus.destination import DestinationMilvus
 from langchain.embeddings import OpenAIEmbeddings
@@ -28,26 +29,67 @@ class MilvusIntegrationTest(BaseIntegrationTest):
     """
 
     def _init_milvus(self):
-        connections.connect(alias="test_driver", uri=self.config["indexing"]["host"], token=self.config["indexing"]["auth"]["token"])
+        """Initialize Milvus Lite connection and clean up any existing test collections."""
+        import tempfile
+        import os
+        
+        # Create a temporary directory for Milvus Lite database
+        self.temp_dir = tempfile.mkdtemp(prefix="milvus_lite_")
+        db_path = os.path.join(self.temp_dir, "milvus.db")
+        
+        # Connect using Milvus Lite
+        connections.connect(
+            alias="test_driver",
+            uri=f"sqlite:{db_path}",
+            use_lite=True
+        )
+        
+        # Clean up any existing test collections
         if utility.has_collection(self.config["indexing"]["collection"], using="test_driver"):
             utility.drop_collection(self.config["indexing"]["collection"], using="test_driver")
 
     def setUp(self):
-        with open("secrets/config.json", "r") as f:
+        """Set up test environment with Milvus Lite and test configuration."""
+        # Try to load from secrets first, fall back to template if not available
+        config_path = "secrets/config.json" if os.path.exists("secrets/config.json") else "config_template.json"
+        with open(config_path, "r") as f:
             self.config = json.loads(f.read())
+        
+        # Override host configuration to use Milvus Lite
+        self.config["indexing"]["host"] = f"sqlite://{self.db_path}"
+        self.config["indexing"]["auth"] = {"mode": "no_auth"}
+        
         self._init_milvus()
+        
+    def tearDown(self):
+        """Clean up Milvus Lite resources."""
+        import shutil
+        
+        try:
+            # Disconnect from Milvus Lite
+            connections.disconnect("test_driver")
+            
+            # Remove temporary directory
+            if hasattr(self, 'temp_dir'):
+                shutil.rmtree(self.temp_dir, ignore_errors=True)
+        except Exception as e:
+            logging.warning(f"Error during teardown: {str(e)}")
+            # Continue with cleanup even if there are errors
 
     def test_check_valid_config(self):
         outcome = DestinationMilvus().check(logging.getLogger("airbyte"), self.config)
         assert outcome.status == Status.SUCCEEDED
 
     def _create_collection(self, vector_dimensions=1536):
+        """Create a test collection with specified vector dimensions using Milvus Lite."""
         pk = FieldSchema(name="pk", dtype=DataType.INT64, is_primary=True, auto_id=True)
         vector = FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=vector_dimensions)
         schema = CollectionSchema(fields=[pk, vector], enable_dynamic_field=True)
         collection = Collection(name=self.config["indexing"]["collection"], schema=schema, using="test_driver")
+        # Note: Milvus Lite only supports FLAT index type
         collection.create_index(
-            field_name="vector", index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}}
+            field_name="vector",
+            index_params={"metric_type": "L2", "index_type": "FLAT"}
         )
 
     def test_check_valid_config_pre_created_collection(self):
@@ -113,7 +155,10 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         vs = Milvus(
             embedding_function=embeddings,
             collection_name=self.config["indexing"]["collection"],
-            connection_args={"uri": self.config["indexing"]["host"], "token": self.config["indexing"]["auth"]["token"]},
+            connection_args={
+                "uri": self.config["indexing"]["host"],
+                "use_lite": True
+            },
         )
         vs.fields.append("text")
         vs.fields.append("_ab_record_id")

@@ -1,0 +1,20 @@
+{
+  "processing": {
+    "text_fields": ["str_col"],
+    "chunk_size": 100,
+    "metadata_fields": ["int_col"]
+  },
+  "embedding": {
+    "mode": "fake",
+    "dimensions": 1536
+  },
+  "indexing": {
+    "host": "sqlite://milvus_test.db",
+    "collection": "airbyte_test_collection",
+    "vector_field": "vector",
+    "text_field": "text",
+    "auth": {
+      "mode": "no_auth"
+    }
+  }
+}
