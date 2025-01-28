@@ -359,7 +359,7 @@ data class StreamCheckpoint(
 }
 
 data class GlobalCheckpoint(
-    val state: JsonNode,
+    val state: JsonNode?,
     override val sourceStats: Stats?,
     override val destinationStats: Stats? = null,
     val checkpoints: List<Checkpoint> = emptyList(),
