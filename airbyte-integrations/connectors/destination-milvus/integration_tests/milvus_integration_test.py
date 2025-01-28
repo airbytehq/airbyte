@@ -17,7 +17,7 @@ from airbyte_cdk.models import DestinationSyncMode, Status
 
 class MilvusIntegrationTest(BaseIntegrationTest):
     """Integration tests for the Milvus destination connector using a local Milvus instance.
-    
+
     The test suite automatically manages a local Milvus container using the standalone_embed.sh script.
     Tests verify the connector's ability to:
     - Connect to a local Milvus instance
@@ -45,16 +45,15 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         config_path = Path(__file__).parent / "secrets/config.json"
         if not config_path.exists():
             config_path = Path("secrets/config.json")
-        
+
         with open(config_path, "r") as f:
             self.config = json.loads(f.read())
-        
+
         # Ensure config points to local instance
         self.config["indexing"]["host"] = "127.0.0.1"
         self.config["indexing"]["port"] = 19530
         if "auth" in self.config["indexing"]:
             del self.config["indexing"]["auth"]
-        
         self._init_milvus()
 
     def test_check_valid_config(self):
