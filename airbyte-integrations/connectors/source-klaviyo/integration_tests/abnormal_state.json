@@ -204,7 +204,7 @@
         }
       },
       "stream_descriptor": {
-        "name": "campaigns_email"
+        "name": "campaigns"
       }
     }
   },
@@ -218,35 +218,7 @@
         }
       },
       "stream_descriptor": {
-        "name": "campaigns_sms"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2120-10-10T00:00:00+00:00",
-        "archived": {
-          "updated_at": "2120-10-10T00:00:00+00:00"
-        }
-      },
-      "stream_descriptor": {
-        "name": "campaigns_email_detailed"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2120-10-10T00:00:00+00:00",
-        "archived": {
-          "updated_at": "2120-10-10T00:00:00+00:00"
-        }
-      },
-      "stream_descriptor": {
-        "name": "campaigns_sms_detailed"
+        "name": "campaigns_detailed"
       }
     }
   },

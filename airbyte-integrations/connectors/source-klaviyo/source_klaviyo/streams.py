@@ -222,33 +222,13 @@ class IncrementalKlaviyoStreamWithArchivedRecords(IncrementalKlaviyoStream, ABC)
         return params
 
 
-class CampaignsBase(IncrementalKlaviyoStreamWithArchivedRecords):
+class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
     cursor_field = "updated_at"
     api_revision = "2024-10-15"
 
     def path(self, **kwargs) -> str:
         return "campaigns"
 
-
-class CampaignsEmail(CampaignsBase):
-    def request_params(
-        self,
-        stream_state: Optional[Mapping[str, Any]],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        channel_filter = "equals(messages.channel,'email')"
-        if "filter" not in params:
-            params["filter"] = channel_filter
-            return params
-        params["filter"] = (
-            f"{params['filter'][:-1]},{channel_filter})" if "and(" in params["filter"] else f"and({params['filter']},{channel_filter})"
-        )
-        return params
-
-
-class CampaignsSMS(CampaignsBase):
     def request_params(
         self,
         stream_state: Optional[Mapping[str, Any]],
@@ -266,45 +246,7 @@ class CampaignsSMS(CampaignsBase):
         return params
 
 
-class CampaignsEmailDetailed(CampaignsEmail):
-    def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        for record in super().parse_response(response, **kwargs):
-            yield self._transform_record(record)
-
-    def _transform_record(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        self._set_recipient_count(record)
-        self._set_campaign_message(record)
-        return record
-
-    def _set_recipient_count(self, record: Mapping[str, Any]) -> None:
-        campaign_id = record["id"]
-        _, recipient_count_response = self._http_client.send_request(
-            url=f"{self.url_base}campaign-recipient-estimations/{campaign_id}",
-            request_kwargs={},
-            headers=self.request_headers(),
-            http_method="GET",
-        )
-        record["estimated_recipient_count"] = (
-            recipient_count_response.json().get("data", {}).get("attributes", {}).get("estimated_recipient_count", 0)
-        )
-
-    def _set_campaign_message(self, record: Mapping[str, Any]) -> None:
-        message_id = record.get("attributes", {}).get("message")
-        if message_id:
-            _, campaign_message_response = self._http_client.send_request(
-                url=f"{self.url_base}campaign-messages/{message_id}", request_kwargs={}, headers=self.request_headers(), http_method="GET"
-            )
-            record["campaign_message"] = campaign_message_response.json().get("data")
-
-    def get_error_handler(self) -> ErrorHandler:
-        error_mapping = DEFAULT_ERROR_MAPPING | {
-            404: ErrorResolution(ResponseAction.IGNORE, FailureType.config_error, "Resource not found. Ignoring.")
-        }
-
-        return HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping, max_retries=self.max_retries)
-
-
-class CampaignsSMSDetailed(CampaignsSMS):
+class CampaignsDetailed(Campaigns):
     def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         for record in super().parse_response(response, **kwargs):
             yield self._transform_record(record)

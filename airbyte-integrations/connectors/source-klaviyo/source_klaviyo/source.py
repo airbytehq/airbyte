@@ -9,7 +9,7 @@ from airbyte_cdk import TState
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from source_klaviyo.streams import CampaignsEmail, CampaignsEmailDetailed, CampaignsSMS, CampaignsSMSDetailed, Flows
+from source_klaviyo.streams import Campaigns, CampaignsDetailed, Flows
 
 
 class SourceKlaviyo(YamlDeclarativeSource):
@@ -27,10 +27,8 @@ class SourceKlaviyo(YamlDeclarativeSource):
         streams = super().streams(config)
         streams.extend(
             [
-                CampaignsEmail(api_key=api_key, start_date=start_date),
-                CampaignsSMS(api_key=api_key, start_date=start_date),
-                CampaignsEmailDetailed(api_key=api_key, start_date=start_date),
-                CampaignsSMSDetailed(api_key=api_key, start_date=start_date),
+                Campaigns(api_key=api_key, start_date=start_date),
+                CampaignsDetailed(api_key=api_key, start_date=start_date),
                 Flows(api_key=api_key, start_date=start_date),
             ]
         )
