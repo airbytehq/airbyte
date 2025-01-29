@@ -95,6 +95,12 @@ cd docusaurus
 pnpm install
 ```
 
+:::important
+Before making any documentation changes, always verify that you can successfully build the documentation in your environment. This helps distinguish between pre-existing issues and problems introduced by your changes.
+:::
+
+#### Development Build
+
 To see changes as you make them in a dev build:
 
 1. Run:
@@ -105,16 +111,45 @@ To see changes as you make them in a dev build:
 
 2. Navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you will see them reflected in the server. To stop the running server, press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal.
 
-To create an optimized production build that does not update automatically:
+#### Production Build
 
-1. Run:
+To create an optimized production build:
+
+1. Clear any previous builds and create a new production build:
 
    ```bash
-   pnpm build
+   pnpm clear && pnpm build
+   ```
+
+2. Review the build output carefully for:
+   - Broken links and anchors (common during documentation restructuring)
+   - Module loading warnings (these may indicate compatibility issues)
+   - Missing dependencies or configuration problems
+
+3. To serve the production build locally:
+
+   ```bash
    pnpm serve
    ```
 
-2. Navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. To stop the running server, press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal.
+4. Navigate to [http://localhost:3000/](http://localhost:3000/) to verify your changes. To stop the running server, press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal.
+
+#### Common Build Issues
+
+1. **Broken Links and Anchors**
+   - Links must match the exact case of the target file/heading
+   - Anchors are generated from headings: spaces become hyphens, special characters are removed
+   - Use relative paths for internal documentation links
+   - Always verify links work in both development and production builds
+
+2. **Module Loading Warnings**
+   - CommonJS/ES Module warnings are expected and can be safely ignored
+   - If you see new module-related errors, verify your Node.js version matches the one in `.nvmrc`
+
+3. **Build Performance**
+   - First builds may take longer due to dependency installation
+   - Use `pnpm clear` before `pnpm build` to ensure a clean build
+   - The development server (`pnpm start`) may take 1-2 minutes to initially compile
 
 ### Author content
 
@@ -256,6 +291,28 @@ The [Mermaid documentation](https://mermaid.js.org/intro) goes into more depth.
 
 If you're adding a new file, removing a file, or moving things around, update [`docusaurus/sidebars.js`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebars.js) to reflect the new structure.
 
+### Handle Broken Links
+
+When Docusaurus reports broken links:
+
+1. **Types of Link Issues**
+   - Missing files or incorrect paths
+   - Case sensitivity mismatches
+   - Incorrect anchor references
+   - Relative vs. absolute path issues
+
+2. **Resolution Steps**
+   - Use production builds to catch all link issues
+   - Fix the most critical navigation paths first
+   - Update internal cross-references systematically
+   - Consider adding redirects for moved content
+
+3. **Prevention**
+   - Test links in both development and production builds
+   - Use relative paths for internal documentation
+   - Follow consistent heading case conventions
+   - Document any intentionally external references
+
 ### Add a redirect
 
 If you're moving or renaming a page, you should add a redirect to its new location. If you're deleting a page, you should add a redirect to the most relevant new file, like a replacement topic or a parent page.
@@ -265,6 +322,31 @@ To add a redirect, open the [`docusaurus/redirects.yml`](https://github.com/airb
 :::note
 Your path needs a leading slash `/` to work
 :::
+
+### Handling Documentation Framework Updates
+
+When updating core documentation dependencies (like Docusaurus):
+
+1. **Before Starting**
+   - Create a complete build with current version
+   - Document any existing warnings or errors
+   - Note any custom components or plugins that might be affected
+
+2. **During the Update**
+   - Update dependencies incrementally if possible
+   - Test custom components after each major change
+   - Keep track of any new warnings or errors introduced
+   - Pay special attention to:
+     - Link validation changes
+     - Markdown parsing updates
+     - Plugin compatibility
+     - Custom component behavior
+
+3. **After the Update**
+   - Run a complete production build
+   - Compare new warnings/errors with pre-update list
+   - Test documentation rendering in both development and production modes
+   - Verify all custom components still function correctly
 
 ### Document a code module
 
