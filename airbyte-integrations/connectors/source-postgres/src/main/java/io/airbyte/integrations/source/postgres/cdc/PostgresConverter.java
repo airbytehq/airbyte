@@ -269,13 +269,8 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
           if (x.equals(PostgresValueConverter.POSITIVE_INFINITY_INSTANT)) {
             return POSITIVE_INFINITY_VALUE;
           }
-          if (x instanceof final Long l) {
-            if (getTimePrecision(field) <= 3) {
-              return convertToTimestamp(Conversions.toInstantFromMillis(l));
-            }
-            if (getTimePrecision(field) <= 6) {
-              return convertToTimestamp(Conversions.toInstantFromMicros(l));
-            }
+          if (x instanceof final Long l && getTimePrecision(field) <= 6) {
+            return convertToTimestamp(Conversions.toInstantFromMicros(l));
           }
           return convertToTimestamp(x);
         case "DATE":
