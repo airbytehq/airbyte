@@ -17,7 +17,7 @@ include = "source_amazon_ads"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = { git = "https://github.com/airbytehq/airbyte-python-cdk.git", branch = "artem1205/amazon-ads-asyncretriever-hardcode-fix" }
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-amazon-ads = "source_amazon_ads.run:run"
