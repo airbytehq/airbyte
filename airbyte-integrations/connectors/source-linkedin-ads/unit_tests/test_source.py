@@ -219,14 +219,14 @@ class TestLinkedinAdsStream:
         """
         Test `_next_page_token` in `SimpleRetriever`.
 
-        After reviewing `SimpleRetriever._next_page_token()`, I realized that `last_page_size`, 
-        `last_record`, and `last_page_token_value` are internal state variables that must be 
-        manually set or passed. Initially, I tried setting them manually within the state, 
-        but the tests still failed with: 
-        `TypeError: SimpleRetriever._next_page_token() missing 3 required positional arguments: 
+        After reviewing `SimpleRetriever._next_page_token()`, I realized that `last_page_size`,
+        `last_record`, and `last_page_token_value` are internal state variables that must be
+        manually set or passed. Initially, I tried setting them manually within the state,
+        but the tests still failed with:
+        `TypeError: SimpleRetriever._next_page_token() missing 3 required positional arguments:
         'last_page_size', 'last_record', and 'last_page_token_value'`.
 
-        To resolve this, I manually set and passed these variables as arguments to 
+        To resolve this, I manually set and passed these variables as arguments to
         `_next_page_token`, which got the tests to pass, as shown here.
         """
         requests_mock.get(accounts_stream_url, json=response_json)
