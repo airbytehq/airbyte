@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.29"
+version = "1.0.31"
 name = "source-facebook-pages"
 description = "Source implementation for Facebook Pages."
 authors = [ "Airbyte <contact@airbyte.io>",]
