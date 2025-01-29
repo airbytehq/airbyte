@@ -389,9 +389,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
             }
             .values
-            .map { fields: List<JsonNode> ->
-                jsonFieldListToTableInfo(fields)
-            }
+            .map { fields: List<JsonNode> -> jsonFieldListToTableInfo(fields) }
     }
 
     private fun extractCursorFields(fields: List<JsonNode>): List<String> {
@@ -577,9 +575,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
             }
             .values
-            .map { fields: List<JsonNode> ->
-                jsonFieldListToTableInfo(fields)
-            }
+            .map { fields: List<JsonNode> -> jsonFieldListToTableInfo(fields) }
             .firstOrNull()
     }
 
@@ -600,10 +596,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                 "nullable ${f.get(INTERNAL_IS_NULLABLE).asBoolean()}) -> $jsonType"
                         }
                         object :
-                            CommonField<Datatype>(
-                                f.get(INTERNAL_COLUMN_NAME).asText(),
-                                datatype
-                            ) {}
+                            CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {}
                     },
             cursorFields = extractCursorFields(fields)
         )
