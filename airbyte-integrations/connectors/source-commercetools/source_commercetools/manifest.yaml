@@ -126,6 +126,12 @@ definitions:
       name: "inventory"
       path: "inventory"
 
+  standalone-prices_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "standalone-prices"
+      path: "standalone-prices"
+
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/discount_codes_stream"
@@ -134,6 +140,7 @@ streams:
   - "#/definitions/products_stream"
   - "#/definitions/carts_stream"
   - "#/definitions/inventory_stream"
+  - "#/definitions/standalone-prices_stream"
 
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/commercetools
