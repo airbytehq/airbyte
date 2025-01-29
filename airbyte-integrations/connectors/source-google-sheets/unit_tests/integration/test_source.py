@@ -209,7 +209,12 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}")
         GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}")
 
-        expected_schema = {"$schema": "https://json-schema.org/draft-07/schema#", "additionalProperties": True, "properties": expected_schema_properties, "type": "object"}
+        expected_schema = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "properties": expected_schema_properties,
+            "type": "object",
+        }
         expected_stream = AirbyteStream(
             name=_STREAM_NAME, json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
         )
