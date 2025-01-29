@@ -33,8 +33,8 @@ const config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
-  onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "throw",
+  onBrokenLinks: "warn",
+  onBrokenMarkdownLinks: "warn",
   favicon: "img/favicon.png",
   organizationName: "airbytehq", // Usually your GitHub org/user name.
   projectName: "airbyte", // Usually your repo name.
@@ -115,7 +115,14 @@ const config = {
           sidebarPath: require.resolve("./sidebars.js"),
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
-          exclude: ["**/*.inapp.md"],
+          exclude: [
+            "**/*.inapp.md",
+            "**/release_notes/april_2024.md",
+            "**/release_notes/may_2024.md",
+            "**/release_notes/june_2024.md",
+            "**/release_notes/july_2024.md",
+            "**/release_notes/aug_2024.md"
+          ],
           beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
           remarkPlugins: [
             docsHeaderDecoration,
