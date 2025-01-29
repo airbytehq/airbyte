@@ -52,6 +52,13 @@ The Airbyte connector for e-conomic enables seamless integration with the e-cono
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.8 | 2025-01-25 | [52336](https://github.com/airbytehq/airbyte/pull/52336) | Update dependencies |
+| 0.0.7 | 2025-01-18 | [51645](https://github.com/airbytehq/airbyte/pull/51645) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51139](https://github.com/airbytehq/airbyte/pull/51139) | Update dependencies |
+| 0.0.5 | 2024-12-28 | [50551](https://github.com/airbytehq/airbyte/pull/50551) | Update dependencies |
+| 0.0.4 | 2024-12-21 | [50016](https://github.com/airbytehq/airbyte/pull/50016) | Update dependencies |
+| 0.0.3 | 2024-12-14 | [49523](https://github.com/airbytehq/airbyte/pull/49523) | Update dependencies |
+| 0.0.2 | 2024-12-12 | [49165](https://github.com/airbytehq/airbyte/pull/49165) | Update dependencies |
 | 0.0.1 | 2024-10-28 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

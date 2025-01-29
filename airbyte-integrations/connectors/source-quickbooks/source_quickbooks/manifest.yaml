@@ -18,7 +18,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -71,7 +71,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -124,7 +124,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -177,7 +177,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -230,7 +230,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -283,7 +283,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -336,7 +336,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -389,7 +389,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -442,7 +442,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -495,7 +495,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -548,7 +548,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -601,7 +601,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -654,7 +654,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -707,7 +707,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -760,7 +760,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -813,7 +813,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -866,7 +866,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -919,7 +919,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -972,7 +972,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -1025,7 +1025,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -1078,7 +1078,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -1131,7 +1131,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -1184,7 +1184,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -1237,7 +1237,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -1290,7 +1290,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -1343,7 +1343,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -1396,7 +1396,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -1449,7 +1449,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v3/company/{{ config.credentials.realm_id }}/query
+          path: /v3/company/{{ config.realm_id }}/query
           http_method: GET
           request_parameters:
             query: >-
@@ -1500,10 +1500,19 @@ definitions:
       'https://quickbooks.api.intuit.com' }}
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config['credentials']['client_id'] }}"
-      client_secret: "{{ config['credentials']['client_secret'] }}"
-      refresh_token: "{{ config['credentials']['refresh_token'] }}"
-      refresh_token_updater: {}
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_token: "{{ config['refresh_token'] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - access_token
+        token_expiry_date_config_path:
+          - token_expiry_date
+        refresh_token_config_path:
+          - refresh_token
       token_refresh_endpoint: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
 
 streams:
@@ -1542,66 +1551,63 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - credentials
+      - client_id
+      - client_secret
+      - refresh_token
+      - access_token
+      - token_expiry_date
+      - realm_id
       - start_date
       - sandbox
     properties:
-      credentials:
-        type: object
-        oneOf:
-          - type: object
-            title: OAuth2.0
-            required:
-              - client_id
-              - client_secret
-              - refresh_token
-              - access_token
-              - token_expiry_date
-              - realm_id
-            properties:
-              realm_id:
-                type: string
-                title: Realm ID
-                description: >-
-                  Labeled Company ID. The Make API Calls panel is populated with
-                  the realm id and the current access token.
-                airbyte_secret: true
-              auth_type:
-                type: string
-                const: oauth2.0
-              client_id:
-                type: string
-                title: Client ID
-                description: >-
-                  Identifies which app is making the request. Obtain this value
-                  from the Keys tab on the app profile via My Apps on the
-                  developer site. There are two versions of this key:
-                  development and production.
-              access_token:
-                type: string
-                title: Access Token
-                description: Access token for making authenticated requests.
-                airbyte_secret: true
-              client_secret:
-                type: string
-                title: Client Secret
-                description: " Obtain this value from the Keys tab on the app profile via My Apps on the developer site. There are two versions of this key: development and production."
-                airbyte_secret: true
-              refresh_token:
-                type: string
-                title: Refresh Token
-                description: A token used when refreshing the access token.
-                airbyte_secret: true
-              token_expiry_date:
-                type: string
-                title: Token Expiry Date
-                format: date-time
-                description: The date-time when the access token should be refreshed.
+      realm_id:
+        type: string
         order: 0
-        title: Authorization Method
-      start_date:
+        title: Realm ID
+        description: >-
+          Labeled Company ID. The Make API Calls panel is populated with
+          the realm id and the current access token.
+        airbyte_secret: true
+      auth_type:
         type: string
         order: 1
+        const: oauth2.0
+      client_id:
+        type: string
+        order: 2
+        title: Client ID
+        description: >-
+          Identifies which app is making the request. Obtain this value
+          from the Keys tab on the app profile via My Apps on the
+          developer site. There are two versions of this key:
+          development and production.
+      access_token:
+        type: string
+        order: 3
+        title: Access Token
+        description: Access token for making authenticated requests.
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 4
+        title: Client Secret
+        description: " Obtain this value from the Keys tab on the app profile via My Apps on the developer site. There are two versions of this key: development and production."
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        order: 5
+        title: Refresh Token
+        description: A token used when refreshing the access token.
+        airbyte_secret: true
+      token_expiry_date:
+        type: string
+        order: 6
+        title: Token Expiry Date
+        format: date-time
+        description: The date-time when the access token should be refreshed.
+      start_date:
+        type: string
+        order: 7
         title: Start Date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
@@ -1613,7 +1619,7 @@ spec:
           date will not be replicated.
       sandbox:
         type: boolean
-        order: 2
+        order: 8
         title: Sandbox
         default: false
         description: Determines whether to use the sandbox or production environment.

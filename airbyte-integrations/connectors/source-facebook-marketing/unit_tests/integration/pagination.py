@@ -9,6 +9,7 @@ from urllib.parse import urlunparse
 from airbyte_cdk.test.mock_http.request import HttpRequest
 from airbyte_cdk.test.mock_http.response_builder import PaginationStrategy
 
+
 NEXT_PAGE_TOKEN = "QVFIUlhOX3Rnbm5Y"
 
 

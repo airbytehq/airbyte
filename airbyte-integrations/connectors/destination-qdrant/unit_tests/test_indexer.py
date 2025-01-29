@@ -5,11 +5,12 @@
 import unittest
 from unittest.mock import Mock, call
 
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
-from airbyte_cdk.models.airbyte_protocol import AirbyteLogMessage, AirbyteMessage, AirbyteStream, DestinationSyncMode, Level, SyncMode, Type
 from destination_qdrant.config import QdrantIndexingConfigModel
 from destination_qdrant.indexer import QdrantIndexer
 from qdrant_client import models
+
+from airbyte_cdk.destinations.vector_db_based.utils import format_exception
+from airbyte_cdk.models.airbyte_protocol import AirbyteLogMessage, AirbyteMessage, AirbyteStream, DestinationSyncMode, Level, SyncMode, Type
 
 
 class TestQdrantIndexer(unittest.TestCase):

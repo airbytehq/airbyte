@@ -14,6 +14,7 @@ from typing import Optional
 
 import pkg_resources  # type: ignore
 import requests  # type: ignore
+
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME
 
 LOGGER = logging.getLogger(__name__)

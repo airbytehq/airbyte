@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-kissmetrics
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.1.0@sha256:3ac88000d74db5f9d8dcb004299b917a5dff5cbbc19ebccd49288266095547ca
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: ea2607ce-b94d-4218-83f8-724010403c9e
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.11
   dockerRepository: airbyte/source-kissmetrics
   githubIssueLabel: source-kissmetrics
   icon: icon.svg

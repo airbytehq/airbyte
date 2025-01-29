@@ -2,10 +2,22 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: api
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: config.json
+          name: SECRET_SOURCE-DYNAMODB__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: source
   definitionId: 50401137-8871-4c5a-abb7-1f5fda35545a
-  dockerImageTag: 0.3.6
+  dockerImageTag: 0.3.8
   dockerRepository: airbyte/source-dynamodb
   documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
   githubIssueLabel: source-dynamodb
@@ -21,14 +33,4 @@ data:
   supportLevel: community
   tags:
     - language:java
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: acceptanceTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_SOURCE-DYNAMODB__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

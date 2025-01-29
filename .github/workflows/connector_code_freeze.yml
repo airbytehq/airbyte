@@ -18,7 +18,7 @@ env:
   CODE_FREEZE_END_DATE: "2024-01-02"
 jobs:
   code-freeze-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Code freeze check
     permissions:
       # This is required to be able to comment on PRs and list changed files
@@ -35,10 +35,10 @@ jobs:
 
           if [ "$current_date" -ge "$start_date" ] && [ "$current_date" -le "$end_date" ]; then
               echo "Code freeze is in effect"
-              echo "::set-output name=is_in_code_freeze::true"
+              echo "is_in_code_freeze=true" >> $GITHUB_OUTPUT
           else
               echo "Code freeze is not in effect"
-              echo "::set-output name=is_in_code_freeze::false"
+              echo "is_in_code_freeze=false" >> $GITHUB_OUTPUT
           fi
 
       # Use GitHub PR Api to get the list of changed files

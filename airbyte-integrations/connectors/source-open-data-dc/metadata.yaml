@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-open-data-dc
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 1178ad64-72bb-4326-86fb-b623663842b6
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-open-data-dc
   githubIssueLabel: source-open-data-dc
   icon: icon.svg

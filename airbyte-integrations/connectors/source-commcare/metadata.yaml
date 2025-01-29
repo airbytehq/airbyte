@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f39208dc-7e1c-48b8-919b-5006360cc27f
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.28
   dockerRepository: airbyte/source-commcare
   githubIssueLabel: source-commcare
   icon: commcare.svg

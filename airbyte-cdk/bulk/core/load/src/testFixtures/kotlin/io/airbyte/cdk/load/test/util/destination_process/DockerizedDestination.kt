@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.util.serializeToString
@@ -41,6 +42,7 @@ class DockerizedDestination(
     catalog: ConfiguredAirbyteCatalog?,
     private val testName: String,
     useFileTransfer: Boolean,
+    envVars: Map<String, String>,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
@@ -74,9 +76,14 @@ class DockerizedDestination(
         // Certainly nothing in the bulk CDK's test suites is reading back
         // anything in this directory.
         val localRoot = Files.createTempDirectory(testDir, "output")
+
         // This directory will contain the actual inputs to the connector (config+catalog),
         // and is also mounted as a volume.
-        val jobRoot = Files.createDirectories(workspaceRoot.resolve("job"))
+        val jobDir = "job"
+        val jobRoot = Files.createDirectories(workspaceRoot.resolve(jobDir))
+
+        val containerDataRoot = "/data"
+        val containerJobRoot = "$containerDataRoot/$jobDir"
 
         // This directory is being used for the file transfer feature.
         if (useFileTransfer) {
@@ -94,6 +101,13 @@ class DockerizedDestination(
         val containerName = "$shortImageName-$command-$randomSuffix"
         logger.info { "Creating docker container $containerName" }
         logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
+        val additionalEnvEntries =
+            envVars.flatMap { (key, value) ->
+                logger.info { "Env vars: $key loaded" }
+                listOf("-e", "$key=$value")
+            }
+
+        // DANGER: env vars can contain secrets, so you MUST NOT log this command.
         val cmd: MutableList<String> =
             (listOf(
                     "docker",
@@ -102,7 +116,8 @@ class DockerizedDestination(
                     "--init",
                     "-i",
                     "-w",
-                    "/data/job",
+                    // In real syncs, platform changes the workdir to /dest for destinations.
+                    "/dest",
                     "--log-driver",
                     "none",
                     "--name",
@@ -110,16 +125,13 @@ class DockerizedDestination(
                     "--network",
                     "host",
                     "-v",
-                    String.format("%s:%s", workspaceRoot, "/data"),
+                    String.format("%s:%s", workspaceRoot, containerDataRoot),
                     "-v",
                     String.format("%s:%s", localRoot, "/local"),
                     "-v",
                     "$fileTransferMountSource:/tmp",
-                    "-e",
-                    "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE=1",
-                    "-e",
-                    "USE_FILE_TRANSFER=$useFileTransfer",
                 ) +
+                    additionalEnvEntries +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
                         // Yes, we hardcode the job ID to 0.
@@ -139,12 +151,11 @@ class DockerizedDestination(
                 fileContents,
             )
             cmd.add("--$paramName")
-            cmd.add("destination_$paramName.json")
+            cmd.add("$containerJobRoot/destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
 
-        logger.info { "Executing command: ${cmd.joinToString(" ")}" }
         process = ProcessBuilder(cmd).start()
         // Annoyingly, the process's stdin is called "outputStream"
         destinationStdin = BufferedWriter(OutputStreamWriter(process.outputStream, Charsets.UTF_8))
@@ -275,6 +286,7 @@ class DockerizedDestinationFactory(
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         useFileTransfer: Boolean,
+        micronautProperties: Map<Property, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
@@ -284,6 +296,7 @@ class DockerizedDestinationFactory(
             catalog,
             testName,
             useFileTransfer,
+            micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
             *featureFlags,
         )
     }

@@ -11,13 +11,15 @@ from typing import Iterable, List, Optional
 
 import pytz
 import smart_open
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from google.cloud import storage
 from google.oauth2 import credentials, service_account
+
+from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from source_gcs.config import Config
 from source_gcs.helpers import GCSRemoteFile
 from source_gcs.zip_helper import ZipHelper
+
 
 # google can raise warnings for end user credentials, wrapping it to Logger
 logging.captureWarnings(True)
@@ -96,7 +98,6 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
-
                         if self.config.credentials.auth_type == "Client":
                             uri = f"gs://{blob.bucket.name}/{blob.name}"
                         else:

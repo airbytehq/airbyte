@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-planhat
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.1.0@sha256:3ac88000d74db5f9d8dcb004299b917a5dff5cbbc19ebccd49288266095547ca
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
   connectorSubtype: api
   connectorType: source
   definitionId: 03fdd212-bd09-4e7b-b472-5b8f1b73969b
-  dockerImageTag: 0.0.5
+  dockerImageTag: 0.0.12
   dockerRepository: airbyte/source-planhat
   githubIssueLabel: source-planhat
   icon: icon.svg

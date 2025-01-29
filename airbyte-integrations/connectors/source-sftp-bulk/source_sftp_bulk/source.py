@@ -12,6 +12,7 @@ from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor impo
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
 from source_sftp_bulk.stream_reader import SourceSFTPBulkStreamReader
 
+
 logger = logging.getLogger("airbyte")
 
 

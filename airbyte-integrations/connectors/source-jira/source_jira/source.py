@@ -5,6 +5,9 @@ from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+from pydantic import ValidationError
+from requests.exceptions import InvalidURL
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -12,8 +15,6 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic import ValidationError
-from requests.exceptions import InvalidURL
 
 from .streams import IssueFields, Issues, PullRequests
 from .utils import read_full_refresh

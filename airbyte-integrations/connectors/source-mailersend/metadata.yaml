@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2707d529-3c04-46eb-9c7e-40d4038df6f7
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.11
   dockerRepository: airbyte/source-mailersend
   githubIssueLabel: source-mailersend
   icon: mailersend.svg
@@ -38,5 +38,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.1.0@sha256:3ac88000d74db5f9d8dcb004299b917a5dff5cbbc19ebccd49288266095547ca
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
 metadataSpecVersion: "1.0"

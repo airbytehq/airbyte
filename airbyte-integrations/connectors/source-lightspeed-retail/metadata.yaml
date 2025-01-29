@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-lightspeed-retail
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.14.1@sha256:9e574a3ac58b798da977f55cc21073981c4941b5c61894e6c5e943640c1ddf23
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 0f242d62-dbef-49d7-8cc1-72ff7e54c9ca
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.9
   dockerRepository: airbyte/source-lightspeed-retail
   githubIssueLabel: source-lightspeed-retail
   icon: icon.svg

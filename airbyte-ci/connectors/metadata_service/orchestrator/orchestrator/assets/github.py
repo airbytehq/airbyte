@@ -17,6 +17,7 @@ from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
 from orchestrator.ops.slack import send_slack_message
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
+
 GROUP_NAME = "github"
 TOOLING_TEAM_SLACK_TEAM_ID = "S077R8636CV"
 # We give 6 hours for the metadata to be updated

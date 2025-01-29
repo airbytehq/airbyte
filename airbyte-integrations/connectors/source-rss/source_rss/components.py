@@ -12,12 +12,13 @@ from typing import Any, Iterable, List, Mapping, Optional
 import feedparser
 import pytz
 import requests
+from dateutil.parser import parse
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.core import Stream
-from dateutil.parser import parse
 
 
 class CustomExtractor(RecordExtractor):

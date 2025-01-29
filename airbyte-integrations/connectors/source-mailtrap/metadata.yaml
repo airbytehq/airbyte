@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-mailtrap
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 9ba00df2-313c-46f2-b102-a5063a1ee18a
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.9
   dockerRepository: airbyte/source-mailtrap
   githubIssueLabel: source-mailtrap
   icon: icon.svg
