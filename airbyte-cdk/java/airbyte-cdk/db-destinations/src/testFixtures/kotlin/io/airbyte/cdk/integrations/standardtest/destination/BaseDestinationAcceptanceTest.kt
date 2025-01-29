@@ -250,12 +250,15 @@ abstract class BaseDestinationAcceptanceTest(
     @Throws(Exception::class)
     open fun setUpInternal() {
         val testDir = Path.of("/tmp/airbyte_tests/")
-        Files.createDirectories(testDir)
         // Allow ourselves and our connector access to our test dir
-        testDir.grantAllPermissions()
+        Files.createDirectories(testDir)
+            .grantAllPermissions()
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
+            .grantAllPermissions()
         jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"))
+            .grantAllPermissions()
         localRoot = Files.createTempDirectory(testDir, "output")
+            .grantAllPermissions()
         LOGGER.info { "${"jobRoot: {}"} $jobRoot" }
         LOGGER.info { "${"localRoot: {}"} $localRoot" }
         testEnv = DestinationAcceptanceTest.TestDestinationEnv(localRoot)

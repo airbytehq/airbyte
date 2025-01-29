@@ -63,10 +63,9 @@ class DockerizedDestination(
     private val stdoutDrained = CompletableDeferred<Unit>()
     private val stderrDrained = CompletableDeferred<Unit>()
     // Mainly, used for file transfer but there are other consumers, name the AWS CRT HTTP client.
-    private val tmpDir = Files.createTempDirectory("tmp")
+    private val tmpDir = Files.createTempDirectory("tmp").grantAllPermissions()
 
     init {
-        tmpDir.grantAllPermissions()
         // This is largely copied from the old cdk's DockerProcessFactory /
         // AirbyteIntegrationLauncher / DestinationAcceptanceTest,
         // but cleaned up, consolidated, and simplified.
@@ -78,13 +77,6 @@ class DockerizedDestination(
         testDir.grantAllPermissions()
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
         workspaceRoot.grantAllPermissions()
-        // This directory gets mounted to the docker container,
-        // presumably so that we can extract some files out of it?
-        // It's unclear to me that we actually need to do this...
-        // Certainly nothing in the bulk CDK's test suites is reading back
-        // anything in this directory.
-        val localRoot = Files.createTempDirectory(testDir, "output")
-        localRoot.grantAllPermissions()
 
         // This directory will contain the actual inputs to the connector (config+catalog),
         // and is also mounted as a volume.
@@ -137,8 +129,6 @@ class DockerizedDestination(
                     "host",
                     "-v",
                     String.format("%s:%s", workspaceRoot, containerDataRoot),
-                    "-v",
-                    String.format("%s:%s", localRoot, "/local"),
                     "-v",
                     "$tmpDir:/tmp",
                 ) +
