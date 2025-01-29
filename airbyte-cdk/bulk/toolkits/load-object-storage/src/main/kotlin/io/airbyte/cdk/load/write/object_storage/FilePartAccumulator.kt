@@ -70,14 +70,14 @@ class FilePartAccumulator(
         val canReadParent = localFile.parentFile.canRead()
         val canWExecuteParent = localFile.parentFile.canExecute()
         val result = localFile.delete()
-        throw IllegalStateException("File: $localFile — " +
-            "didDelete = $result " +
-            "canWriteToLocalFile = $canWriteToLocalFile" +
-            "canReadLocalFile = $canReadLocalFile" +
-            "canExecuteLocalFile = $canExecuteLocalFile" +
-            "canWriteToParent = $canWriteToParent" +
-            "canReadParent = $canReadParent" +
-            "canWExecuteParent = $canWExecuteParent")
+//        throw IllegalStateException("File: $localFile — " +
+//            "didDelete = $result " +
+//            "canWriteToLocalFile = $canWriteToLocalFile" +
+//            "canReadLocalFile = $canReadLocalFile" +
+//            "canExecuteLocalFile = $canExecuteLocalFile" +
+//            "canWriteToParent = $canWriteToParent" +
+//            "canReadParent = $canReadParent" +
+//            "canWExecuteParent = $canWExecuteParent")
     }
 
     private suspend fun handleFilePart(
