@@ -36,6 +36,7 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputFile
+import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
@@ -2471,6 +2472,22 @@ abstract class BasicFunctionalityIntegrationTest(
             primaryKey = listOf(listOf("id")),
             cursor = null,
         )
+    }
+
+    @Test
+    open fun testClear() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 42,
+            )
+        assertDoesNotThrow {
+            runSync(configContents, stream, messages = listOf(InputGlobalCheckpoint(null)))
+        }
     }
 
     private fun schematizedObject(
