@@ -186,7 +186,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.4.3 | 2025-01-29 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Update error message during check for `organization_access_enabled` check |
+| 4.4.3 | 2025-01-29 | [52625](https://github.com/airbytehq/airbyte/pull/52625) | Update error message during check for `organization_access_enabled` check |
 | 4.4.2 | 2025-01-11 | [48309](https://github.com/airbytehq/airbyte/pull/48309) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 4.4.1 | 2024-12-13 | [48889](https://github.com/airbytehq/airbyte/pull/48889) | Check if `start_date` exist in check operation |
 | 4.4.0 | 2024-11-11 | [48379](https://github.com/airbytehq/airbyte/pull/48379) | Make DatetimeBasedCursor syncs concurrent |
