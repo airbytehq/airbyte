@@ -198,7 +198,7 @@ abstract class BasicFunctionalityIntegrationTest(
     ) {
 
     // Update config with any replacements.  This may be necessary when using testcontainers.
-    val configAsString = configUpdater.update(configContents)
+    private val configAsString = configUpdater.update(configContents)
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configAsString)
 
     @Test
@@ -385,7 +385,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             val stateMessage =
                 runSyncUntilStateAck(
-                    this@BasicFunctionalityIntegrationTest.configContents,
+                    this@BasicFunctionalityIntegrationTest.configAsString,
                     stream,
                     listOf(
                         InputRecord(
@@ -403,7 +403,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     ),
                     allowGracefulShutdown = false,
                 )
-            runSync(this@BasicFunctionalityIntegrationTest.configContents, stream, emptyList())
+            runSync(this@BasicFunctionalityIntegrationTest.configAsString, stream, emptyList())
 
             val streamName = stateMessage.stream.streamDescriptor.name
             val streamNamespace = stateMessage.stream.streamDescriptor.namespace
@@ -2463,7 +2463,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        assertDoesNotThrow { runSync(configContents, stream, messages = emptyList()) }
+        assertDoesNotThrow { runSync(configAsString, stream, messages = emptyList()) }
         dumpAndDiffRecords(
             parsedConfig,
             canonicalExpectedRecords = emptyList(),
