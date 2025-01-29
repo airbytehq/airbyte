@@ -9,7 +9,7 @@ data:
   license: ELv2
   name: S3
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
   registryOverrides:
     cloud:
       enabled: true
