@@ -28,6 +28,8 @@ class S3DataLakeStreamLoader(
     private var stagingBranchName: String,
     private val mainBranchName: String
 ) : StreamLoader {
+
+    // TODO delete this. It has not place in prod
     init {
         stagingBranchName = mainBranchName
     }
