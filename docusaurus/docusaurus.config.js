@@ -33,8 +33,8 @@ const config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
-  onBrokenLinks: "warn",
-  onBrokenMarkdownLinks: "warn",
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "throw",
   favicon: "img/favicon.png",
   organizationName: "airbytehq", // Usually your GitHub org/user name.
   projectName: "airbyte", // Usually your repo name.
