@@ -26,9 +26,9 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
       // Get the first header of the markdown document
-      const { contentTitle } = parseMarkdownContentTitle(
-        parseMarkdownFile(path.join(dir, `${filename}.md`)).content
-      );
+      const fileContent = parseMarkdownFile(path.join(dir, `${filename}.md`));
+      const parsedContent = parseMarkdownContentTitle(fileContent.content);
+      const contentTitle = parsedContent ? parsedContent.contentTitle : fileContent.content.split('\n')[0].replace('# ', '');
       if (!contentTitle) {
         throw new Error(
           `Could not parse title from ${path.join(
