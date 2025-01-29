@@ -27,9 +27,6 @@ from source_google_drive.utils import get_folder_id
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
 from .spec import SourceGoogleDriveSpec
 
-# remove this, just using while test credentials are prepared
-from .temp_mock import _get_looping_google_api_list_response
-
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
 GOOGLE_DOC_MIME_TYPE = "application/vnd.google-apps.document"
@@ -163,9 +160,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 for item in items:
                     yield item
         except Exception as e:
-            logger.info(f"There was an error listing {key} with {args}: {str(e)}")
-            logger.info(f"Backing off to mocked data for development purposes")
-            yield from _get_looping_google_api_list_response(service, key, args)
+            logger.error(f"There was an error listing {key} with {args}: {str(e)}")
+            raise e
 
     def load_identity_groups(self, logger: logging.Logger) -> Dict[str, Any]:
         domain = self.config.delivery_method.domain
@@ -207,8 +203,6 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 rfp.member_email_addresses.append(member["email"])
 
             yield rfp.dict()
-
-        return ""
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
