@@ -19,6 +19,7 @@ from airbyte_cdk.test.mock_http import HttpMocker
 
 from .conftest import GoogleSheetsBaseTest
 
+
 _SPREADSHEET_ID = "a_spreadsheet_id"
 
 _STREAM_NAME = "a_stream_name"
