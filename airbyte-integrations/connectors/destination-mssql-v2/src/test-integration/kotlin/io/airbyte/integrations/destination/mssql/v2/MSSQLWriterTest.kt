@@ -47,7 +47,6 @@ abstract class MSSQLWriterTest(
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
         supportFileTransfer = false,
-        envVars = emptyMap(),
         configUpdater = MSSQLConfigUpdater(),
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
