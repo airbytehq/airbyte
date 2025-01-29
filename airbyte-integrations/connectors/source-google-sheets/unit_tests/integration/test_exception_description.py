@@ -17,7 +17,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.mock_http import HttpMocker
 
-from conftest import GoogleSheetsBaseTest
+from .conftest import GoogleSheetsBaseTest
 
 
 _SPREADSHEET_ID = "a_spreadsheet_id"

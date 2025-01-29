@@ -21,7 +21,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
-from conftest import GoogleSheetsBaseTest, AUTH_BODY, oauth_credentials, service_account_credentials, service_account_info, AuthBuilder
+from .conftest import GoogleSheetsBaseTest, AUTH_BODY, oauth_credentials, service_account_credentials, service_account_info, AuthBuilder
 
 
 _SPREADSHEET_ID = "a_spreadsheet_id"

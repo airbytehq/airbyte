@@ -33,7 +33,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteSt
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
-from conftest import GoogleSheetsBaseTest, oauth_credentials, service_account_credentials
+from .conftest import GoogleSheetsBaseTest, oauth_credentials, service_account_credentials
 
 
 _SPREADSHEET_ID = "a_spreadsheet_id"
