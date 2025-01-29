@@ -7,6 +7,7 @@ from copy import deepcopy
 from unittest.mock import ANY
 
 import pytest
+from conftest import GoogleSheetsBaseTest, oauth_credentials, service_account_credentials
 from requests.status_codes import codes as status_codes
 
 from airbyte_cdk.models import (
@@ -32,8 +33,6 @@ from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamS
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
-
-from conftest import GoogleSheetsBaseTest, oauth_credentials, service_account_credentials
 
 
 _SPREADSHEET_ID = "a_spreadsheet_id"

@@ -25,6 +25,7 @@ def test_safe_name_conversion():
         safe_name_conversion("*****")
     assert exc_info.value.args[0] == "initial string '*****' converted to empty"
 
+
 @pytest.mark.parametrize(
     "status_code, expected_message",
     [
