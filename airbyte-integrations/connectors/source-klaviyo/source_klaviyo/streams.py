@@ -229,6 +229,18 @@ class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
     def path(self, **kwargs) -> str:
         return "campaigns"
 
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        for slice in slices:
+            for campaign_channel in ["email", "sms"]:
+                slice["campaign_channel"] = campaign_channel
+                yield slice
+
     def request_params(
         self,
         stream_state: Optional[Mapping[str, Any]],
@@ -236,7 +248,8 @@ class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        channel_filter = "equals(messages.channel,'sms')"
+        campaign_channel = stream_slice["campaign_channel"]
+        channel_filter = f"equals(messages.channel,'{campaign_channel}')"
         if "filter" not in params:
             params["filter"] = channel_filter
             return params
