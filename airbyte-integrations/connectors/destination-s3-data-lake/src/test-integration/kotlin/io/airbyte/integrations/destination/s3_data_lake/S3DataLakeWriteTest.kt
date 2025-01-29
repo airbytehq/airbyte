@@ -54,14 +54,6 @@ abstract class S3DataLakeWriteTest(
         nullEqualsUnset = true,
     ) {
     @Test
-    @Disabled(
-        "failing because we have an extra _pos column - that's probably fine, but problem for a different day"
-    )
-    override fun testDedup() {
-        super.testDedup()
-    }
-
-    @Test
     @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
