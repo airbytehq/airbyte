@@ -8,8 +8,6 @@ from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 from unittest import TestCase
 
-from source_google_sheets.batch_size_manager import BatchSizeManager
-
 from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
 )
@@ -35,7 +33,6 @@ class GoogleSheetsBaseTest(TestCase, ABC):
     def setUp(self) -> None:
         self._config = deepcopy(_CONFIG)
         self._service_config = deepcopy(_SERVICE_CONFIG)
-        BatchSizeManager.reset()
 
     @staticmethod
     def _check(config: Dict[str, Any], expecting_exception: bool = True) -> EntrypointOutput:

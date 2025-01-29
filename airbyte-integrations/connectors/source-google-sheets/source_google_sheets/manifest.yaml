@@ -12,14 +12,18 @@ dynamic_streams:
     stream_template:
       type: DeclarativeStream
       name: ""
+      $parameters:
+        i: 123
       primary_key: []
       retriever:
-        type: CustomRetriever
-        class_name: "source_google_sheets.components.SheetsDataRetriever"
+        type: SimpleRetriever
         $parameters:
           row_count: 0
           sheet_id: ""
           batch_size: 0
+        partition_router:
+          type: CustomPartitionRouter
+          class_name: "source_google_sheets.components.partition_routers.RangePartitionRouter"
         paginator:
           type: NoPagination
         record_selector:
@@ -49,8 +53,7 @@ dynamic_streams:
           path: >-
             {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"]}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
           error_handler:
-            type: CustomErrorHandler
-            class_name: source_google_sheets.components.SheetDataErrorHandler
+            type: DefaultErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
             response_filters:
@@ -132,12 +135,14 @@ dynamic_streams:
           description: indexed_schema to match with row values.
         - field_path:
             - retriever
+            - partition_router
             - $parameters
             - row_count
           type: ComponentMappingDefinition
           value: "{{components_values['properties']['gridProperties']['rowCount']}}"
         - field_path:
             - retriever
+            - partition_router
             - $parameters
             - sheet_id
           type: ComponentMappingDefinition
@@ -145,10 +150,11 @@ dynamic_streams:
           description: sheet_id for retriever.
         - field_path:
             - retriever
+            - partition_router
             - $parameters
             - batch_size
           type: ComponentMappingDefinition
-          value: "{{config.get('batch_size', 200)}}"
+          value: "{{config.get('batch_size', 1000000)}}"
           description: batch size count for dynamic stream partition router (slicer).
 
 definitions:
@@ -189,6 +195,7 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://sheets.googleapis.com/v4/spreadsheets/
+    use_cache: true
     authenticator: "#/definitions/authenticator"
   retrievers:
     components_resolver_retriever:
@@ -221,7 +228,6 @@ definitions:
             - type: DefaultErrorHandler
               response_filters:
                 $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
-
   response_filters:
     expected_one_sheet:
       type: HttpResponseFilter

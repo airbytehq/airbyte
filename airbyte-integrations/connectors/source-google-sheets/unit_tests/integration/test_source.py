@@ -484,43 +484,6 @@ class TestSourceRead(GoogleSheetsBaseTest):
         assert len(output.records) > 0
 
     @HttpMocker()
-    def test_when_read_receives_429_and_increases_batch_size(self, http_mocker: HttpMocker) -> None:
-        test_file_base_name = "read_by_batches"
-        stream_name = "d_stream_name"
-        initial_batch_size = 10
-        incremental_batch_size = initial_batch_size
-        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}_2")
-        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}_2", stream_name=stream_name)
-        start_range = 2
-        too_many_response_increase = 100
-        for range_file_postfix in ("first_batch", "second_batch", "third_batch", "fourth_batch", "fifth_batch"):
-            end_range = start_range + incremental_batch_size
-            request_range = (start_range, end_range)
-            mocked_responses = [
-                HttpResponse(json.dumps(find_template("rate_limit_error", __file__)), status_codes.TOO_MANY_REQUESTS),
-                HttpResponse(
-                    json.dumps(find_template(f"{test_file_base_name}_{GET_STREAM_DATA}_{range_file_postfix}", __file__)), status_codes.OK
-                ),
-            ]
-            GoogleSheetsBaseTest.get_stream_data(
-                http_mocker, request_range=request_range, responses=mocked_responses, stream_name=stream_name
-            )
-            # after every 429 response we increase by 100 the batch size
-            incremental_batch_size += too_many_response_increase
-            start_range = end_range + 1
-        catalog_properties = {}
-        for expected_property in ["id", "name", "normalized_name"]:
-            catalog_properties[expected_property] = {"type": ["null", "string"]}
-        configured_catalog = (
-            CatalogBuilder()
-            .with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_json_schema({"properties": catalog_properties}))
-            .build()
-        )
-        self._config["batch_size"] = initial_batch_size
-        output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
-        assert len(output.records) > 0
-
-    @HttpMocker()
     def test_when_read_then_return_records_with_name_conversion(self, http_mocker: HttpMocker) -> None:
         # will convert '1 тест' to '_1_test and 'header2' to 'header_2'
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta")

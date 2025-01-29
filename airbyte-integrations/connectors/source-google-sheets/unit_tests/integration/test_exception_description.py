@@ -43,7 +43,7 @@ def exception_description_by_status_code(code: int, spreadsheet_id) -> str:
         )
 
     if code == status_codes.TOO_MANY_REQUESTS:
-        return "Rate limit has been reached. Please try later or request a higher quota for your account."
+        return "Exception while syncing stream a_stream_name: Rate limit has been reached. Please try later or request a higher quota for your account."
 
     return ""
 
@@ -213,5 +213,5 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
         with patch("time.sleep"):
             output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
 
-        expected_message = f"{exception_description_by_status_code(status_codes.INTERNAL_SERVER_ERROR, _SPREADSHEET_ID)}"
+        expected_message = f"Exception while syncing stream a_stream_name: {exception_description_by_status_code(status_codes.INTERNAL_SERVER_ERROR, _SPREADSHEET_ID)}"
         assert output.errors[0].trace.error.internal_message == expected_message
