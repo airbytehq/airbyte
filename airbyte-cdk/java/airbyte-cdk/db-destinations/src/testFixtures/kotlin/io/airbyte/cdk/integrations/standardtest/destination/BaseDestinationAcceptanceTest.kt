@@ -249,14 +249,11 @@ abstract class BaseDestinationAcceptanceTest(
     open fun setUpInternal() {
         val testDir = Path.of("/tmp/airbyte_tests/")
         // Allow ourselves and our connector access to our test dir
-        Files.createDirectories(testDir)
-            .grantAllPermissions()
-        val workspaceRoot = Files.createTempDirectory(testDir, "test")
-            .grantAllPermissions()
-        jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"))
-            .grantAllPermissions()
-        localRoot = Files.createTempDirectory(testDir, "output")
-            .grantAllPermissions()
+        Files.createDirectories(testDir).grantAllPermissions()
+        val workspaceRoot = Files.createTempDirectory(testDir, "test").grantAllPermissions()
+        jobRoot =
+            Files.createDirectories(Path.of(workspaceRoot.toString(), "job")).grantAllPermissions()
+        localRoot = Files.createTempDirectory(testDir, "output").grantAllPermissions()
         LOGGER.info { "${"jobRoot: {}"} $jobRoot" }
         LOGGER.info { "${"localRoot: {}"} $localRoot" }
         testEnv = DestinationAcceptanceTest.TestDestinationEnv(localRoot)
@@ -265,8 +262,7 @@ abstract class BaseDestinationAcceptanceTest(
         setup(testEnv, testSchemas)
         fileTransferMountSource =
             if (supportsFileTransfer)
-                Files.createTempDirectory(testDir, "file_transfer")
-                    .grantAllPermissions()
+                Files.createTempDirectory(testDir, "file_transfer").grantAllPermissions()
             else null
 
         processFactory =

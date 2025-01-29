@@ -81,10 +81,7 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         val fileSize = 1_024 * 1_024
 
         val absoluteDirPath = fileTransferMountSource!!.resolve(dirPath).createDirectories()
-        val absoluteFilePath =
-            fileTransferMountSource!!
-                .resolve(filePath)
-                .createFile()
+        val absoluteFilePath = fileTransferMountSource!!.resolve(filePath).createFile()
 
         absoluteDirPath.grantAllPermissions()
         absoluteFilePath.grantAllPermissions()
