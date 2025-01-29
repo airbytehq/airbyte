@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const {
   parseMarkdownContentTitle,
-  parseFrontMatter,
+  parseMarkdownString,
 } = require("@docusaurus/utils");
 
 const connectorsDocsRoot = "../docs/integrations";
@@ -26,9 +26,9 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
       // Get the first header of the markdown document
+      const fileContent = fs.readFileSync(path.join(dir, `${filename}.md`), 'utf8');
       const { contentTitle } = parseMarkdownContentTitle(
-        parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`)))
-          .content
+        parseMarkdownString(fileContent).content
       );
       if (!contentTitle) {
         throw new Error(
