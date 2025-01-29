@@ -238,8 +238,9 @@ class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
         slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
         for slice in slices:
             for campaign_channel in ["email", "sms"]:
-                slice["campaign_channel"] = campaign_channel
-                yield slice
+                new_slice = slice.copy()
+                new_slice["campaign_channel"] = campaign_channel
+                yield new_slice
 
     def request_params(
         self,
