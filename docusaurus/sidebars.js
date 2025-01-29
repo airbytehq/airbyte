@@ -2,8 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const {
   parseMarkdownContentTitle,
-  parseFileContentFrontMatter,
 } = require("@docusaurus/utils");
+const matter = require("gray-matter");
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -27,7 +27,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .map((filename) => {
       // Get the first header of the markdown document
       const fileContent = fs.readFileSync(path.join(dir, `${filename}.md`), 'utf8');
-      const { content } = parseFileContentFrontMatter(fileContent);
+      const { content } = matter(fileContent);
       const { contentTitle } = parseMarkdownContentTitle(content);
       if (!contentTitle) {
         throw new Error(
