@@ -5,10 +5,11 @@
 from typing import Any, Mapping
 from unittest.mock import MagicMock
 
-from airbyte_cdk.sources.streams import Stream
 from pytest import fixture
 from source_pinterest.reports import CampaignAnalyticsReport
 from source_pinterest.source import SourcePinterest
+
+from airbyte_cdk.sources.streams import Stream
 
 
 @fixture

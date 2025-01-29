@@ -8,10 +8,11 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import semver
 import yaml
-from metadata_service.docker_hub import get_latest_version_on_dockerhub, is_image_on_docker_hub
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from pydantic import ValidationError
 from pydash.objects import get
+
+from metadata_service.docker_hub import get_latest_version_on_dockerhub, is_image_on_docker_hub
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
 
 @dataclass(frozen=True)
@@ -247,7 +248,6 @@ def validate_rc_suffix_and_rollout_configuration(
     if docker_image_tag is None:
         return False, "The dockerImageTag field is not set."
     try:
-
         is_major_release_candidate_version = check_is_major_release_candidate_version(docker_image_tag)
         is_dev_version = check_is_dev_version(docker_image_tag)
         is_rc_version = check_is_release_candidate_version(docker_image_tag)

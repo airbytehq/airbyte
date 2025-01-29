@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
@@ -23,11 +24,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertFalse
 
+private val logger = KotlinLogging.logger {}
+
 class NonDockerizedDestination(
     command: String,
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     useFileTransfer: Boolean,
+    envVars: Map<String, String>,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
@@ -41,6 +45,11 @@ class NonDockerizedDestination(
     private val file = File("/tmp/test_file")
 
     init {
+        envVars.forEach { (key, value) ->
+            IntegrationTest.nonDockerMockEnvVars.set(key, value)
+            logger.info { "Env vars: $key loaded" }
+        }
+
         if (useFileTransfer) {
             IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "true")
             val fileContentStr = "123"
@@ -118,6 +127,7 @@ class NonDockerizedDestinationFactory : DestinationProcessFactory() {
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         useFileTransfer: Boolean,
+        envVars: Map<String, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
@@ -126,6 +136,7 @@ class NonDockerizedDestinationFactory : DestinationProcessFactory() {
             configContents,
             catalog,
             useFileTransfer,
+            envVars,
             *featureFlags
         )
     }

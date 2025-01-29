@@ -80,6 +80,13 @@ RingCentral [API reference](https://platform.devtest.ringcentral.com/restapi/v1.
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.8 | 2025-01-18 | [51882](https://github.com/airbytehq/airbyte/pull/51882) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51353](https://github.com/airbytehq/airbyte/pull/51353) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50716](https://github.com/airbytehq/airbyte/pull/50716) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50298](https://github.com/airbytehq/airbyte/pull/50298) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49665](https://github.com/airbytehq/airbyte/pull/49665) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [49367](https://github.com/airbytehq/airbyte/pull/49367) | Update dependencies |
+| 0.2.2 | 2024-12-11 | [49048](https://github.com/airbytehq/airbyte/pull/49048) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.1 | 2024-10-29 | [47611](https://github.com/airbytehq/airbyte/pull/47611) | Update dependencies |
 | 0.2.0 | 2024-08-20 | [44448](https://github.com/airbytehq/airbyte/pull/44448) | Refactor connector to manifest-only format |
 | 0.1.15 | 2024-08-17 | [44247](https://github.com/airbytehq/airbyte/pull/44247) | Update dependencies |

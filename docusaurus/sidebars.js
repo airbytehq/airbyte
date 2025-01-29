@@ -444,6 +444,7 @@ const deployAirbyte = {
         "deploying-airbyte/integrations/database",
         // "deploying-airbyte/integrations/monitoring",
         "deploying-airbyte/integrations/ingress",
+        "deploying-airbyte/integrations/custom-image-registries",
       ],
     },
 
@@ -455,6 +456,14 @@ const deployAirbyte = {
     {
       type: "doc",
       id: "deploying-airbyte/troubleshoot-deploy",
+    },
+    {
+      type: "doc",
+      id: "deploying-airbyte/migrating-from-docker-compose",
+    },
+    {
+      type: "doc",
+      id: "deploying-airbyte/abctl-ec2",
     },
   ],
 };
@@ -605,7 +614,6 @@ module.exports = {
         id: "operator-guides/configuring-airbyte",
       },
       items: [
-        "operator-guides/configuring-airbyte-db",
         "operator-guides/configuring-connector-resources",
         "operator-guides/telemetry",
       ],
@@ -717,8 +725,11 @@ module.exports = {
       label: "Release Notes",
       link: {
         type: "generated-index",
+        description: "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
       },
       items: [
+        "release_notes/v-1.4",
+        "release_notes/v-1.3",
         "release_notes/v-1.2",
         "release_notes/v-1.1",
         "release_notes/v-1.0",
