@@ -129,6 +129,7 @@ abstract class BaseDestinationAcceptanceTest(
         verifyIndividualStateAndCounts: Boolean
     ) {
         val destinationOutput = runSync(config, messages, catalog, runNormalization, imageName)
+        destinationOutput.forEach { println(it) }
 
         var expected = messages.filter { it.type == AirbyteMessage.Type.STATE }
         var actual = destinationOutput.filter { it.type == AirbyteMessage.Type.STATE }
@@ -220,6 +221,7 @@ abstract class BaseDestinationAcceptanceTest(
                 )
             }
         }
+        destinationOutput.forEach { println(it) }
 
         try {
             destination.close()
