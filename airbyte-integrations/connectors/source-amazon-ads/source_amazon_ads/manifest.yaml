@@ -1308,8 +1308,12 @@ definitions:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
         download_decoder:
-          type: GzipJsonDecoder
-          encoding: utf
+          type: CompositeRawDecoder
+          parser:
+            type: GzipParser
+            inner_parser:
+              type: JsonParser
+              encoding: utf
         download_extractor:
           type: DpathExtractor
           field_path: []
