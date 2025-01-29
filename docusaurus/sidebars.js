@@ -27,14 +27,22 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .map((filename) => {
       // Get the first header of the markdown document
       try {
-        const fileContent = parseMarkdownFile(path.join(dir, `${filename}.md`));
-        const content = fileContent?.content || '';
-        const parsedContent = parseMarkdownContentTitle(content);
-        const contentTitle = parsedContent?.contentTitle || content.split('\n')[0].replace(/^#\s*/, '') || filename;
-        return contentTitle.trim() || filename;
+        const filePath = path.join(dir, `${filename}.md`);
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const firstLine = fileContent.split('\n').find(line => line.trim().startsWith('# '));
+        const contentTitle = firstLine ? firstLine.replace(/^#\s*/, '').trim() : filename;
+        return {
+          type: 'doc',
+          id: prefix + filename,
+          label: contentTitle || filename
+        };
       } catch (error) {
         console.warn(`Warning: Using filename as title for ${path.join(prefix, filename)}`);
-        return filename;
+        return {
+          type: 'doc',
+          id: prefix + filename,
+          label: filename
+        };
       }
 
       // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
@@ -368,7 +376,11 @@ const connectorCatalog = {
         sourceMysql,
         sourceMssql,
         ...getSourceConnectors(),
-      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
+      ].sort((itemA, itemB) => {
+        const labelA = itemA?.label || '';
+        const labelB = itemB?.label || '';
+        return labelA.localeCompare(labelB);
+      }),
     },
     {
       type: "category",
@@ -381,7 +393,11 @@ const connectorCatalog = {
         destinationS3,
         destinationPostgres,
         ...getDestinationConnectors(),
-      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
+      ].sort((itemA, itemB) => {
+        const labelA = itemA?.label || '';
+        const labelB = itemB?.label || '';
+        return labelA.localeCompare(labelB);
+      }),
     },
     {
       type: "doc",
@@ -593,9 +609,11 @@ module.exports = {
             type: "doc",
             id: "integrations/enterprise-connectors/README",
           },
-          items: [...getEnterpriseConnectors()].sort((itemA, itemB) =>
-            itemA.label.localeCompare(itemB.label)
-          ),
+          items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
+            const labelA = itemA?.label || '';
+            const labelB = itemB?.label || '';
+            return labelA.localeCompare(labelB);
+          }),
         },
       ],
     },
@@ -740,11 +758,6 @@ module.exports = {
         "release_notes/v-1.2",
         "release_notes/v-1.1",
         "release_notes/v-1.0",
-        "release_notes/aug_2024",
-        "release_notes/july_2024",
-        "release_notes/june_2024",
-        "release_notes/may_2024",
-        "release_notes/april_2024",
         "release_notes/march_2024",
         "release_notes/february_2024",
         "release_notes/january_2024",
