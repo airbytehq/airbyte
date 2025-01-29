@@ -390,29 +390,7 @@ abstract class AbstractJdbcSource<Datatype>(
             }
             .values
             .map { fields: List<JsonNode> ->
-                TableInfo<CommonField<Datatype>>(
-                    nameSpace = fields[0].get(INTERNAL_SCHEMA_NAME).asText(),
-                    name = fields[0].get(INTERNAL_TABLE_NAME).asText(),
-                    fields =
-                        fields
-                            // read the column metadata Json object, and determine its
-                            // type
-                            .map { f: JsonNode ->
-                                val datatype = sourceOperations.getDatabaseFieldType(f)
-                                val jsonType = getAirbyteType(datatype)
-                                LOGGER.debug {
-                                    "Table ${fields[0].get(INTERNAL_TABLE_NAME).asText()} column ${f.get(INTERNAL_COLUMN_NAME).asText()}" +
-                                        "(type ${f.get(INTERNAL_COLUMN_TYPE_NAME).asText()}[${f.get(INTERNAL_COLUMN_SIZE).asInt()}], " +
-                                        "nullable ${f.get(INTERNAL_IS_NULLABLE).asBoolean()}) -> $jsonType"
-                                }
-                                object :
-                                    CommonField<Datatype>(
-                                        f.get(INTERNAL_COLUMN_NAME).asText(),
-                                        datatype
-                                    ) {}
-                            },
-                    cursorFields = extractCursorFields(fields)
-                )
+                jsonFieldListToTableInfo(fields)
             }
     }
 
@@ -600,32 +578,37 @@ abstract class AbstractJdbcSource<Datatype>(
             }
             .values
             .map { fields: List<JsonNode> ->
-                TableInfo<CommonField<Datatype>>(
-                    nameSpace = fields[0].get(INTERNAL_SCHEMA_NAME).asText(),
-                    name = fields[0].get(INTERNAL_TABLE_NAME).asText(),
-                    fields =
-                        fields
-                            // read the column metadata Json object, and determine its
-                            // type
-                            .map { f: JsonNode ->
-                                val datatype = sourceOperations.getDatabaseFieldType(f)
-                                val jsonType = getAirbyteType(datatype)
-                                LOGGER.debug {
-                                    "Table ${fields[0].get(INTERNAL_TABLE_NAME).asText()} column ${f.get(INTERNAL_COLUMN_NAME).asText()}" +
-                                        "(type ${f.get(INTERNAL_COLUMN_TYPE_NAME).asText()}[${f.get(INTERNAL_COLUMN_SIZE).asInt()}], " +
-                                        "nullable ${f.get(INTERNAL_IS_NULLABLE).asBoolean()}) -> $jsonType"
-                                }
-                                object :
-                                    CommonField<Datatype>(
-                                        f.get(INTERNAL_COLUMN_NAME).asText(),
-                                        datatype
-                                    ) {}
-                            },
-                    cursorFields = extractCursorFields(fields)
-                )
+                jsonFieldListToTableInfo(fields)
             }
             .firstOrNull()
     }
+
+    private fun jsonFieldListToTableInfo(fields: List<JsonNode>): TableInfo<CommonField<Datatype>> {
+        return TableInfo<CommonField<Datatype>>(
+            nameSpace = fields[0].get(INTERNAL_SCHEMA_NAME).asText(),
+            name = fields[0].get(INTERNAL_TABLE_NAME).asText(),
+            fields =
+                fields
+                    // read the column metadata Json object, and determine its
+                    // type
+                    .map { f: JsonNode ->
+                        val datatype = sourceOperations.getDatabaseFieldType(f)
+                        val jsonType = getAirbyteType(datatype)
+                        LOGGER.debug {
+                            "Table ${fields[0].get(INTERNAL_TABLE_NAME).asText()} column ${f.get(INTERNAL_COLUMN_NAME).asText()}" +
+                                "(type ${f.get(INTERNAL_COLUMN_TYPE_NAME).asText()}[${f.get(INTERNAL_COLUMN_SIZE).asInt()}], " +
+                                "nullable ${f.get(INTERNAL_IS_NULLABLE).asBoolean()}) -> $jsonType"
+                        }
+                        object :
+                            CommonField<Datatype>(
+                                f.get(INTERNAL_COLUMN_NAME).asText(),
+                                datatype
+                            ) {}
+                    },
+            cursorFields = extractCursorFields(fields)
+        )
+    }
+
     public override fun isCursorType(type: Datatype): Boolean {
         return sourceOperations.isCursorType(type)
     }
