@@ -25,10 +25,8 @@ import io.airbyte.workers.process.ProcessFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.attribute.PosixFilePermission
 import java.util.*
 import java.util.function.Consumer
-import kotlin.io.path.setPosixFilePermissions
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mockito
@@ -129,7 +127,6 @@ abstract class BaseDestinationAcceptanceTest(
         verifyIndividualStateAndCounts: Boolean
     ) {
         val destinationOutput = runSync(config, messages, catalog, runNormalization, imageName)
-        destinationOutput.forEach { println(it) }
 
         var expected = messages.filter { it.type == AirbyteMessage.Type.STATE }
         var actual = destinationOutput.filter { it.type == AirbyteMessage.Type.STATE }
@@ -221,7 +218,6 @@ abstract class BaseDestinationAcceptanceTest(
                 )
             }
         }
-        destinationOutput.forEach { println(it) }
 
         try {
             destination.close()

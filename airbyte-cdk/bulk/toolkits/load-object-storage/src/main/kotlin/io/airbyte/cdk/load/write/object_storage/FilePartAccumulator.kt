@@ -17,7 +17,6 @@ import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.object_storage.LoadablePart
 import io.airbyte.cdk.load.write.FileBatchAccumulator
 import java.io.File
-import java.lang.IllegalStateException
 import java.nio.file.Path
 
 @SuppressFBWarnings(
@@ -63,21 +62,7 @@ class FilePartAccumulator(
                 handleFilePart(batch, stream.descriptor, index)
             }
         }
-        val canWriteToLocalFile = localFile.canWrite()
-        val canReadLocalFile = localFile.canRead()
-        val canExecuteLocalFile = localFile.canExecute()
-        val canWriteToParent = localFile.parentFile.canWrite()
-        val canReadParent = localFile.parentFile.canRead()
-        val canWExecuteParent = localFile.parentFile.canExecute()
-        val result = localFile.delete()
-        throw IllegalStateException("File: $localFile — " +
-            "didDelete = $result " +
-            "canWriteToLocalFile = $canWriteToLocalFile" +
-            "canReadLocalFile = $canReadLocalFile" +
-            "canExecuteLocalFile = $canExecuteLocalFile" +
-            "canWriteToParent = $canWriteToParent" +
-            "canReadParent = $canReadParent" +
-            "canWExecuteParent = $canWExecuteParent")
+        localFile.delete()
     }
 
     private suspend fun handleFilePart(

@@ -180,8 +180,7 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         }
         val streamName = "str" + RandomStringUtils.insecure().nextAlphanumeric(5)
         val filePath = createFakeFile()
-        val fullPath = fileTransferMountSource!!.resolve(filePath)
-        val file = fullPath.toFile()
+        val file = fileTransferMountSource!!.resolve(filePath).toFile()
         val fileLength = file.length()
         val fileContent = file.readBytes()
         val catalog = configureCatalog(streamName, 32)

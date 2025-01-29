@@ -20,11 +20,9 @@ import java.io.File
 import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.attribute.PosixFilePermission
 import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
-import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -101,8 +99,7 @@ class DockerizedDestination(
         // and the destination container is just called "destination")
         val shortImageName = imageTag.substringAfterLast("/").substringBefore(":")
         val containerName = "$shortImageName-$command-$randomSuffix"
-        logger.info { "Hello world." }
-        logger.info { "Launching docker container: $containerName" }
+        logger.info { "Creating docker container $containerName" }
         logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
         val additionalEnvEntries =
             envVars.flatMap { (key, value) ->
@@ -156,7 +153,6 @@ class DockerizedDestination(
 
             cmd.add("--$paramName")
             cmd.add("$containerJobRoot/destination_$paramName.json")
-//            cmd.add("/tmp/airbyte_tests/destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
@@ -280,7 +276,6 @@ class DockerizedDestination(
         val file = File(tmpDir.resolve("test_file").toUri())
         assertFalse(file.exists())
     }
-
 }
 
 class DockerizedDestinationFactory(
