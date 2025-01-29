@@ -76,7 +76,7 @@ definitions:
       inject_into: "request_parameter"
       field_name: "page"
 
-  incremental_sync:
+  semi_incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "modify_time"
     cursor_datetime_formats:
@@ -87,6 +87,7 @@ definitions:
       type: MinMaxDatetime
       datetime: "{{ config.get('start_date', '2016-09-01') }}"
       datetime_format: "%Y-%m-%d"
+    is_client_side_incremental: true
 
   single_id_partition_router:
     - class_name: "source_tiktok_marketing.components.advertiser_ids_partition_router.SingleAdvertiserIdPerPartition"
@@ -124,13 +125,13 @@ definitions:
           stream:
             $ref: "#/definitions/advertiser_ids_stream"
 
-  incremental_stream:
+  semi_incremental_stream:
     retriever:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
       record_selector:
-        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+        $ref: "#/definitions/record_selector"
       paginator:
         $ref: "#/definitions/paginator_page_increment"
         pagination_strategy:
@@ -140,7 +141,7 @@ definitions:
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: "#/definitions/semi_incremental_sync"
 
   advertiser_ids_stream:
     type: DeclarativeStream
@@ -281,13 +282,13 @@ definitions:
         request_parameters:
           filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
-        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+        $ref: "#/definitions/record_selector"
       paginator:
-        $ref: "#/definitions/incremental_stream/retriever/paginator"
+        $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: "#/definitions/semi_incremental_sync"
 
   ad_groups_stream:
     type: DeclarativeStream
@@ -307,13 +308,13 @@ definitions:
         request_parameters:
           filtering: '{{ {"secondary_status": "ADGROUP_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
-        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+        $ref: "#/definitions/record_selector"
       paginator:
-        $ref: "#/definitions/incremental_stream/retriever/paginator"
+        $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: "#/definitions/semi_incremental_sync"
 
   ads_stream:
     type: DeclarativeStream
@@ -333,13 +334,13 @@ definitions:
         request_parameters:
           filtering: '{{ {"secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
-        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+        $ref: "#/definitions/record_selector"
       paginator:
-        $ref: "#/definitions/incremental_stream/retriever/paginator"
+        $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: "#/definitions/semi_incremental_sync"
 
   creative_assets_images_stream:
     type: DeclarativeStream
@@ -349,7 +350,7 @@ definitions:
       page_size: 100
     primary_key:
       - image_id
-    $ref: "#/definitions/incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -363,7 +364,7 @@ definitions:
       page_size: 100
     primary_key:
       - video_id
-    $ref: "#/definitions/incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     schema_loader:
       type: InlineSchemaLoader
       schema:

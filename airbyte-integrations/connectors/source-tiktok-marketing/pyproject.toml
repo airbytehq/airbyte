@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "5.0.0"
+version = "4.4.0"
 name = "source-tiktok-marketing"
 description = "Source implementation for Tiktok Marketing."
 authors = [ "Airbyte <contact@airbyte.io>",]
