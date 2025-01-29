@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https:"
+      - "*.gorgias.com"
   registryOverrides:
     oss:
       enabled: true
