@@ -50,18 +50,44 @@ def paginate_github(url: str, headers: Mapping[str, Any]) -> List[Any]:
         response.raise_for_status()
         data = response.json()
 
-        # Handle different response shapes
-        if isinstance(data, dict) and "organizations" in data:
-            # Enterprise org listing
-            org_count = len(data["organizations"])
-            logger.debug(f"Received {org_count} organizations from enterprise listing.")
-            results.extend(data["organizations"])
+        if isinstance(data, dict):
+            if "organizations" in data:
+                # Enterprise org listing
+                org_count = len(data["organizations"])
+                logger.debug(f"Received {org_count} organizations from enterprise listing.")
+                results.extend(data["organizations"])
+
+            elif "workflow_runs" in data:
+                # GitHub Actions workflow runs
+                run_count = len(data["workflow_runs"])
+                logger.debug(f"Received {run_count} workflow runs from endpoint.")
+                results.extend(data["workflow_runs"])
+
+            elif isinstance(data.get("items"), list):
+                # Some search APIs return {"total_count": X, "items": [...]}
+                # e.g., searching code, issues, repos, or users
+                item_count = len(data["items"])
+                logger.debug(f"Received {item_count} items from search endpoint.")
+                results.extend(data["items"])
+
+            elif isinstance(data.get("repositories"), list):
+                # Some GitHub endpoints respond with "repositories": [...]
+                repo_count = len(data["repositories"])
+                logger.debug(f"Received {repo_count} repositories from endpoint.")
+                results.extend(data["repositories"])
+
+            else:
+                # If you want to handle even more shapes, add more conditions
+                logger.debug("Received an unexpected dictionary shape from GitHub endpoint.")
+
         elif isinstance(data, list):
+            # A plain list of objects
             item_count = len(data)
             logger.debug(f"Received {item_count} items from endpoint.")
             results.extend(data)
+
         else:
-            logger.debug("Received unexpected data shape from GitHub endpoint.")
+            logger.debug("Received an unexpected data shape from GitHub endpoint.")
 
         # Check for pagination link
         url = None
@@ -601,3 +627,183 @@ class OrgInstallationsStream(BaseGithubStream):
             logger.debug(f"Emitting installation record for app: {app_id} | {app_name} - {installation}")
             installation["org"] = org_name
             yield installation
+
+class OrgWebhooksStream(BaseGithubStream):
+    """
+    Lists organization-level webhooks for each organization provided by ParentOrgsStream.
+    """
+
+    name = "org_webhooks"  # <-- class-level attribute
+
+    def get_json_schema(self) -> dict:
+        # Load the schema from "org_webhooks.json" in your "schemas" directory
+        return self.load_schema("org_webhooks")
+
+    def stream_slices(self, sync_mode: SyncMode, cursor_field=None, stream_state=None) -> Iterable[Mapping[str, Any]]:
+        logger.debug("Generating slices for org_webhooks from parent orgs...")
+        parent = ParentOrgsStream(self.app_id, self.private_key, self.org_or_enterprise, self.is_enterprise)
+        for org_record in parent.read_records(sync_mode=sync_mode):
+            org_login = org_record["login"]
+            logger.debug(f"Yielding slice for org: {org_login}")
+            yield org_record
+
+    def read_records(self, sync_mode: SyncMode, cursor_field=None, stream_slice=None, stream_state=None) -> Iterable[Mapping[str, Any]]:
+        if stream_slice is None:
+            logger.debug("No stream_slice provided for org_webhooks, yielding no records.")
+            return
+
+        org_name = stream_slice["login"]
+        logger.info(f"Listing org-level webhooks for organization '{org_name}'...")
+        token = self.get_installation_token_for_target()
+        url = f"https://api.github.com/orgs/{org_name}/hooks"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json"
+        }
+
+        webhooks = paginate_github(url, headers)
+        logger.info(f"Found {len(webhooks)} org-level webhooks in org '{org_name}'.")
+
+        for webhook in webhooks:
+            webhook_id = webhook.get("id")
+            logger.debug(f"Emitting org-level webhook record: {webhook_id} in org '{org_name}'")
+            # Attach context to the record, if desired
+            webhook["org"] = org_name
+            yield webhook
+
+class RepoWebhooksStream(BaseGithubStream):
+    """
+    Lists repository-level webhooks for each repository retrieved from OrgReposStream.
+    """
+
+    name = "repo_webhooks"  # <-- class-level attribute
+
+    def get_json_schema(self) -> dict:
+        # Load the schema from "repo_webhooks.json" in your "schemas" directory
+        return self.load_schema("repo_webhooks")
+
+    def stream_slices(self, sync_mode: SyncMode, cursor_field=None, stream_state=None) -> Iterable[Mapping[str, Any]]:
+        logger.debug("Generating slices for repo_collaborators from parent orgs...")
+        parent = ParentOrgsStream(self.app_id, self.private_key, self.org_or_enterprise, self.is_enterprise)
+        for org_record in parent.read_records(sync_mode=sync_mode):
+            org_name = org_record["login"]
+            logger.info(f"Listing repositories for organization '{org_name}'...")
+            token = self.get_installation_token_for_target()
+            url = f"https://api.github.com/orgs/{org_name}/repos?type=all&per_page=100"
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json"
+            }
+            repos = paginate_github(url, headers)
+            logger.info(f"Found {len(repos)} repositories in org '{org_name}'.")
+
+            for repo_record in repos:
+                repo_name = repo_record["name"]
+                logger.debug(f"Emitting repository record: {repo_name} in org '{org_name}'")
+                yield repo_record
+
+    def read_records(self, sync_mode: SyncMode, cursor_field=None, stream_slice=None, stream_state=None) -> Iterable[Mapping[str, Any]]:
+        if not stream_slice:
+            logger.debug("No stream_slice provided for repo_webhooks, yielding no records.")
+            return
+
+        owner = stream_slice["owner"]["login"]
+        repo = stream_slice["name"]
+
+        logger.info(f"Listing repo-level webhooks for '{owner}/{repo}'...")
+        token = self.get_installation_token_for_target()
+
+        url = f"https://api.github.com/repos/{owner}/{repo}/hooks"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json"
+        }
+
+        webhooks = paginate_github(url, headers)
+        logger.info(f"Found {len(webhooks)} repo-level webhooks in '{owner}/{repo}'.")
+
+        for webhook in webhooks:
+            webhook_id = webhook.get("id")
+            logger.debug(f"Emitting repo webhook record: {webhook_id} for '{owner}/{repo}'")
+            # Attach context to the record, if desired
+            webhook["repo"] = repo
+            webhook["owner"] = owner
+            yield webhook
+
+class RepoWorkflowRunsStream(BaseGithubStream):
+    """
+    Lists all workflow runs (GitHub Actions executions) for each repository
+    from the OrgReposStream, and includes all the steps for each run.
+    """
+
+    name = "repo_workflow_runs"  # Stream name used to identify in code/tests
+
+    # (Optional) If you maintain JSON schemas, ensure you have a
+    # repo_workflow_runs.json in your schemas folder
+    def get_json_schema(self) -> dict:
+        return self.load_schema("repo_workflow_runs")
+
+    def stream_slices(self, sync_mode: SyncMode, cursor_field=None, stream_state=None) -> Iterable[Mapping[str, Any]]:
+        logger.debug("Generating slices for repo_collaborators from parent orgs...")
+        parent = ParentOrgsStream(self.app_id, self.private_key, self.org_or_enterprise, self.is_enterprise)
+        for org_record in parent.read_records(sync_mode=sync_mode):
+            org_name = org_record["login"]
+            logger.info(f"Listing repositories for organization '{org_name}'...")
+            token = self.get_installation_token_for_target()
+            url = f"https://api.github.com/orgs/{org_name}/repos?type=all&per_page=100"
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json"
+            }
+            repos = paginate_github(url, headers)
+            logger.info(f"Found {len(repos)} repositories in org '{org_name}'.")
+
+            for repo_record in repos:
+                repo_name = repo_record["name"]
+                logger.debug(f"Emitting repository record: {repo_name} in org '{org_name}'")
+                yield repo_record
+
+    def read_records(self, sync_mode: SyncMode, cursor_field=None, stream_slice=None, stream_state=None) -> Iterable[Mapping[str, Any]]:
+        if not stream_slice:
+            logger.debug("No stream_slice provided for repo_workflow_runs, yielding no records.")
+            return
+
+        owner = stream_slice["owner"]["login"]
+        repo = stream_slice["name"]
+
+        logger.info(f"Fetching workflow runs for repo: {owner}/{repo}")
+        token = self.get_installation_token_for_target()
+
+        runs_url = f"https://api.github.com/repos/{owner}/{repo}/actions/runs"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json"
+        }
+
+        # 1. Get all workflow runs for the repo
+        workflow_runs = paginate_github(runs_url, headers)
+        logger.info(f"Found {len(workflow_runs)} workflow runs in {owner}/{repo}")
+
+        # 2. For each run, fetch its jobs (and thereby steps)
+        for run in workflow_runs:
+            run_id = run["id"]
+            logger.debug(f"Fetching jobs for workflow run_id={run_id} in {owner}/{repo}")
+
+            jobs_url = f"https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}/jobs"
+            jobs_response = requests.get(jobs_url, headers=headers)
+            jobs_response.raise_for_status()
+            jobs_data = jobs_response.json()
+            # jobs_data is typically {"total_count": X, "jobs": [...]}
+
+            # We only want the list of jobs
+            jobs = jobs_data.get("jobs", [])
+
+            # Each job contains a "steps" array with details about each step
+            # If you want them all in one record, attach them to the run
+            run["jobs"] = jobs
+
+            # Add some extra context fields to the record, if desired
+            run["owner"] = owner
+            run["repo"] = repo
+
+            yield run

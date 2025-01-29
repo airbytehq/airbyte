@@ -278,3 +278,112 @@ def test_org_installations_integration(config):
 
     assert isinstance(all_records, list), "Records should be a list."
     # If you expect an installation, you could assert len(all_records) > 0
+
+import pytest
+import time
+import json
+import os
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
+from source_pulse_github_app.source import SourcePulseGithubApp
+
+
+@pytest.mark.integration
+def test_org_webhooks_stream_integration(config):
+    """
+    Test the org_webhooks stream.
+    Ensures that the connector can list organization-level webhooks.
+    """
+    logger = AirbyteLogger()
+    source = SourcePulseGithubApp()
+
+    success, error = source.check_connection(logger, config)
+    assert success, f"Connection check failed: {error}"
+
+    streams = source.streams(config)
+    org_webhooks_stream = next((s for s in streams if s.name == "org_webhooks"), None)
+    assert org_webhooks_stream, "org_webhooks stream not found."
+
+    # Generate all the slices we need to read
+    slices = list(org_webhooks_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+    all_records = []
+
+    # Iterate over each slice and collect records
+    for slice_ in slices:
+        records = list(org_webhooks_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
+        all_records.extend(records)
+
+    # Asserts
+    assert isinstance(all_records, list), "Expected a list of org webhook records."
+    # The org_webhooks stream might return zero webhooks if none exist in the org.
+    # As long as it doesn't crash, it's still a pass.
+    # If you expect at least one, you could assert len(all_records) > 0
+
+
+@pytest.mark.integration
+def test_repo_webhooks_stream_integration(config):
+    """
+    Test the repo_webhooks stream.
+    Ensures that the connector can list repository-level webhooks.
+    """
+    logger = AirbyteLogger()
+    source = SourcePulseGithubApp()
+
+    success, error = source.check_connection(logger, config)
+    assert success, f"Connection check failed: {error}"
+
+    streams = source.streams(config)
+    repo_webhooks_stream = next((s for s in streams if s.name == "repo_webhooks"), None)
+    assert repo_webhooks_stream, "repo_webhooks stream not found."
+
+    # Generate all the slices
+    slices = list(repo_webhooks_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+    assert len(slices) > 0, "Expected at least one slice from repo_webhooks"
+
+    all_records = []
+    # Read and aggregate records across slices
+    for slice_ in slices:
+        records = list(repo_webhooks_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
+        all_records.extend(records)
+
+    # Asserts
+    assert isinstance(all_records, list), "Expected a list of repo webhook records."
+    # Similarly, you could optionally test for non-empty if you expect actual webhooks.
+
+@pytest.mark.integration
+def test_repo_workflow_runs_stream_integration(config):
+    """
+    Test the repo_workflow_runs stream:
+    Ensures that the connector can list workflow runs for each repo,
+    along with their job steps.
+    """
+    logger = AirbyteLogger()
+    source = SourcePulseGithubApp()
+    success, error = source.check_connection(logger, config)
+    assert success, f"Connection check failed: {error}"
+
+    streams = source.streams(config)
+    workflow_runs_stream = next((s for s in streams if s.name == "repo_workflow_runs"), None)
+    assert workflow_runs_stream, "repo_workflow_runs stream not found."
+
+    slices = list(workflow_runs_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+    assert len(slices) > 0, "Expected at least one slice from repo_workflow_runs"
+
+    all_records = []
+    for slice_ in slices:
+        records = list(workflow_runs_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
+        all_records.extend(records)
+
+    # Make sure we got a list of records (possibly zero if no runs in the repo).
+    assert isinstance(all_records, list), "Expected a list of workflow run records."
+
+    # Optional: If you expect at least one run in your test org, you could:
+    # assert len(all_records) > 0, "Expected at least one workflow run."
+
+    # If you want to test that steps are populated:
+    for run_record in all_records:
+        # run_record["jobs"] is attached in the stream code above
+        assert "jobs" in run_record, "Expected 'jobs' key in the run record."
+        # Each job might have an array of steps
+        # e.g., run_record["jobs"] = [{"steps": [...]}]
+        # but it can also be empty if no steps exist or run is queued, etc.

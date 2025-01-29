@@ -17,6 +17,9 @@ from .streams import (
     AuditLogsStream,
     OrgCredentialAuthorizationsStream,
     OrgInstallationsStream,
+    OrgWebhooksStream,
+    RepoWebhooksStream,
+    RepoWorkflowRunsStream,
     create_jwt,  # if you want to reuse the JWT function here
 )
 
@@ -96,6 +99,9 @@ class SourcePulseGithubApp(AbstractSource):
             AuditLogsStream(app_id, private_key, org_or_enterprise, is_enterprise),
             OrgCredentialAuthorizationsStream(app_id, private_key, org_or_enterprise, is_enterprise),
             OrgInstallationsStream(app_id, private_key, org_or_enterprise, is_enterprise),
+            OrgWebhooksStream(app_id, private_key, org_or_enterprise, is_enterprise),
+            RepoWebhooksStream(app_id, private_key, org_or_enterprise, is_enterprise),
+            RepoWorkflowRunsStream(app_id, private_key, org_or_enterprise, is_enterprise),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

@@ -119,6 +119,22 @@
       "type": "string",
       "description": "The visibility type of the user",
       "enum": ["public", "private"]
+    },
+    "repo": {
+      "type": "string",
+      "description": "The repo name",
+    },
+    "email": {
+      "type": "string",
+      "description": "The email address",
+    },
+    "org": {
+      "type": "string",
+      "description": "The org name",
+    },
+    "owner": {
+      "type": "string",
+      "description": "The owner name",
     }
   },
   "additionalProperties": true
