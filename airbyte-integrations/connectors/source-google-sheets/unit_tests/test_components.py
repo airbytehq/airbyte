@@ -19,7 +19,7 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import (
     IterableDecoder,
     JsonDecoder,
 )
-from unit_tests.integration.conftest import oauth_credentials, catalog_helper
+from unit_tests.integration.conftest import catalog_helper, oauth_credentials
 
 
 config = {"field": "record_array"}
