@@ -2,12 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import json
-import logging
-from typing import Any, Iterator, List, Mapping, Optional
-
-import dpath
-from airbyte_protocol_dataclasses.models import AirbyteConnectionStatus, AirbyteMessage, AirbyteStateMessage
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource

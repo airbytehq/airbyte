@@ -1,10 +1,11 @@
+#
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
-
+#
 
 from functools import wraps
 from typing import Dict
 from unittest.mock import patch
-from urllib.parse import parse_qsl, unquote, urlencode, urlunparse
+from urllib.parse import unquote, urlunparse
 
 from httplib2 import Response
 

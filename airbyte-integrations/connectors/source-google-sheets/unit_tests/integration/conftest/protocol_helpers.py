@@ -1,7 +1,9 @@
+#
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
 
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 from source_google_sheets import SourceGoogleSheets
 
