@@ -65,7 +65,6 @@ class TestSourceCheck(GoogleSheetsBaseTest):
         TestSourceCheck.get_sheet_first_row(http_mocker, "check_succeeded_range")
 
         output = self._check(self._config, expecting_exception=False)
-        breakpoint()
         expected_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Check succeeded"))
         assert output.logs[-1] == expected_message
 
@@ -116,7 +115,8 @@ class TestSourceCheck(GoogleSheetsBaseTest):
         TestSourceCheck.get_sheet_first_row(http_mocker, "only_headers_range", 200)
 
         expected_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
             "properties": {"header1": {"type": ["null", "string"]}, "header2": {"type": ["null", "string"]}},
             "type": "object",
         }
@@ -149,7 +149,8 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         expected_streams = []
         for expected_stream_name, expected_stream_properties in expected_schemas_properties.items():
             expected_schema = {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
+                "additionalProperties": True,
                 "properties": expected_stream_properties,
                 "type": "object",
             }
@@ -178,7 +179,8 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         expected_streams = []
         for expected_stream_name, expected_stream_properties in expected_schemas_properties.items():
             expected_schema = {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
+                "additionalProperties": True,
                 "properties": expected_stream_properties,
                 "type": "object",
             }
@@ -207,7 +209,7 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}")
         GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"{test_file_base_name}_{GET_SHEETS_FIRST_ROW}")
 
-        expected_schema = {"$schema": "http://json-schema.org/draft-07/schema#", "properties": expected_schema_properties, "type": "object"}
+        expected_schema = {"$schema": "https://json-schema.org/draft-07/schema#", "additionalProperties": True, "properties": expected_schema_properties, "type": "object"}
         expected_stream = AirbyteStream(
             name=_STREAM_NAME, json_schema=expected_schema, supported_sync_modes=[SyncMode.full_refresh], is_resumable=False
         )
@@ -230,7 +232,8 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "only_headers_meta", 200)
         GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "names_conversion_range", 200)
         expected_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
             "properties": {"_1_test": {"type": ["null", "string"]}, "header_2": {"type": ["null", "string"]}},
             "type": "object",
         }

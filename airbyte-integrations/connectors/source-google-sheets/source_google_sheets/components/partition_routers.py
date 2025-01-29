@@ -28,7 +28,8 @@ class RangePartitionRouter(SinglePartitionRouter):
         self.batch_size_manager = BatchSizeManager(parameters.get("batch_size"))
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        start_range = 2
+        start_range = 2  # skip 1 row, as expected column (fields) names there
+
         while start_range <= self.sheet_row_count:
             end_range = start_range + self.batch_size_manager.get_batch_size()
             logger.info(f"Fetching range {self._sheet_id}!{start_range}:{end_range}")

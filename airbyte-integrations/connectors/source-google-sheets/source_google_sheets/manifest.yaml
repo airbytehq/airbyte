@@ -5,6 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckDynamicStream
   stream_count: 1
+  use_check_availability: false
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -221,7 +222,6 @@ definitions:
       action: FAIL
       predicate: >-
         {{ 'sheets' in response and response["sheets"] | length != 1  }}
-      http_codes: []
       # error lacks of information as error_message can't interpolate stream_slice["potato"]
       error_message: >-
         Unable to read the schema of sheet. Error: Unexpected return
