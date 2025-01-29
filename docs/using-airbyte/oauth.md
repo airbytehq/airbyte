@@ -4,7 +4,7 @@ products: all
 
 # Using OAuth to Connect
 
-Many Airbyte connectors support OAuth 2.0, enabling secure and seamless integration between Airbyte and third-party APIs. This guide explains how the OAuth flow works in Cloud and Self-Managed instances.
+Many Airbyte connectors support OAuth 2.0, enabling secure and seamless integration between Airbyte and third-party APIs. This guide explains how OAuth works for connectors in Airbyte.
 
 ## What is OAuth?
 
