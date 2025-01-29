@@ -7,5 +7,4 @@ type: string
 enum:
   - community
   - certified
-  - enterprise
   - archived

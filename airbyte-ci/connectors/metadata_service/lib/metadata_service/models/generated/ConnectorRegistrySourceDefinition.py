@@ -20,7 +20,7 @@ class ReleaseStage(BaseModel):
 
 
 class SupportLevel(BaseModel):
-    __root__: Literal["community", "certified", "enterprise", "archived"] = Field(
+    __root__: Literal["community", "certified", "archived"] = Field(
         ...,
         description="enum that describes a connector's release stage",
         title="SupportLevel",
@@ -77,7 +77,9 @@ class RolloutConfiguration(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    enableProgressiveRollout: Optional[bool] = Field(False, description="Whether to enable progressive rollout for the connector.")
+    enableProgressiveRollout: Optional[bool] = Field(
+        False, description="Whether to enable progressive rollout for the connector."
+    )
     initialPercentage: Optional[conint(ge=0, le=100)] = Field(
         0,
         description="The percentage of users that should receive the new version initially.",
@@ -128,6 +130,7 @@ class AirbyteInternal(BaseModel):
 
     sl: Optional[Literal[0, 100, 200, 300]] = None
     ql: Optional[Literal[0, 100, 200, 300, 400, 500, 600]] = None
+    isEnterprise: Optional[bool] = False
 
 
 class GitInfo(BaseModel):
@@ -220,8 +223,12 @@ class VersionBreakingChange(BaseModel):
         ...,
         description="The deadline by which to upgrade before the breaking change takes effect.",
     )
-    message: str = Field(..., description="Descriptive message detailing the breaking change.")
-    deadlineAction: Optional[Literal["auto_upgrade", "disable"]] = Field(None, description="Action to do when the deadline is reached.")
+    message: str = Field(
+        ..., description="Descriptive message detailing the breaking change."
+    )
+    deadlineAction: Optional[Literal["auto_upgrade", "disable"]] = Field(
+        None, description="Action to do when the deadline is reached."
+    )
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
@@ -265,7 +272,9 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         False,
         description="true if this connector definition is available to all workspaces",
     )
-    custom: Optional[bool] = Field(False, description="whether this is a custom connector definition")
+    custom: Optional[bool] = Field(
+        False, description="whether this is a custom connector definition"
+    )
     releaseStage: Optional[ReleaseStage] = None
     supportLevel: Optional[SupportLevel] = None
     releaseDate: Optional[date] = Field(
@@ -273,19 +282,25 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         description="The date when this connector was first released, in yyyy-mm-dd format.",
     )
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
-    protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
+    protocolVersion: Optional[str] = Field(
+        None, description="the Airbyte Protocol version supported by the connector"
+    )
     allowedHosts: Optional[AllowedHosts] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     maxSecondsBetweenMessages: Optional[int] = Field(
         None,
         description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach",
     )
-    erdUrl: Optional[str] = Field(None, description="The URL where you can visualize the ERD")
+    erdUrl: Optional[str] = Field(
+        None, description="The URL where you can visualize the ERD"
+    )
     releases: Optional[ConnectorRegistryReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
-    language: Optional[str] = Field(None, description="The language the connector is written in")
+    language: Optional[str] = Field(
+        None, description="The language the connector is written in"
+    )
     supportsFileTransfer: Optional[bool] = False
 
 
@@ -306,7 +321,9 @@ class ConnectorReleaseCandidates(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+(-[0-9A-Za-z-.]+)?$"), VersionReleaseCandidate] = Field(
+    __root__: Dict[
+        constr(regex=r"^\d+\.\d+\.\d+(-[0-9A-Za-z-.]+)?$"), VersionReleaseCandidate
+    ] = Field(
         ...,
         description="Each entry denotes a release candidate version of a connector.",
     )
@@ -316,7 +333,9 @@ class VersionReleaseCandidate(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    __root__: Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition] = Field(
+    __root__: Union[
+        ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition
+    ] = Field(
         ...,
         description="Contains information about a release candidate version of a connector.",
     )
@@ -342,7 +361,9 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
         False,
         description="true if this connector definition is available to all workspaces",
     )
-    custom: Optional[bool] = Field(False, description="whether this is a custom connector definition")
+    custom: Optional[bool] = Field(
+        False, description="whether this is a custom connector definition"
+    )
     releaseStage: Optional[ReleaseStage] = None
     supportLevel: Optional[SupportLevel] = None
     releaseDate: Optional[date] = Field(
@@ -354,7 +375,9 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
     )
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
-    protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
+    protocolVersion: Optional[str] = Field(
+        None, description="the Airbyte Protocol version supported by the connector"
+    )
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     supportsDbt: Optional[bool] = Field(
         None,
@@ -367,7 +390,9 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     supportsFileTransfer: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
-    language: Optional[str] = Field(None, description="The language the connector is written in")
+    language: Optional[str] = Field(
+        None, description="The language the connector is written in"
+    )
 
 
 ConnectorRegistrySourceDefinition.update_forward_refs()

@@ -37,8 +37,12 @@ class VersionBreakingChange(BaseModel):
         ...,
         description="The deadline by which to upgrade before the breaking change takes effect.",
     )
-    message: str = Field(..., description="Descriptive message detailing the breaking change.")
-    deadlineAction: Optional[Literal["auto_upgrade", "disable"]] = Field(None, description="Action to do when the deadline is reached.")
+    message: str = Field(
+        ..., description="Descriptive message detailing the breaking change."
+    )
+    deadlineAction: Optional[Literal["auto_upgrade", "disable"]] = Field(
+        None, description="Action to do when the deadline is reached."
+    )
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",

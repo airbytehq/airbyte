@@ -8,7 +8,7 @@ from typing_extensions import Literal
 
 
 class SupportLevel(BaseModel):
-    __root__: Literal["community", "certified", "enterprise", "archived"] = Field(
+    __root__: Literal["community", "certified", "archived"] = Field(
         ...,
         description="enum that describes a connector's release stage",
         title="SupportLevel",
