@@ -23,7 +23,7 @@ data:
   icon: icon.svg
   license: MIT
   name: Gorgias
-  releaseDate: 2025-01-29
+  releaseDate: 2024-09-29
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/gorgias
