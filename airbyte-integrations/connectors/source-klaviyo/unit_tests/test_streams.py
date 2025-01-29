@@ -502,9 +502,21 @@ class TestCampaignsStream:
                 "updated_at": "2021-05-12T20:45:47+00:00",
             },
             {
+                "attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+            {
+                "attributes": {"name": "Some name 2", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            },
+            {
                 "attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"},
                 "updated_at": "2021-05-12T20:45:47+00:00",
             },
+            {
+                "attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"},
+                "updated_at": "2021-05-12T20:45:47+00:00",
+            }
         ]
 
         records = []
