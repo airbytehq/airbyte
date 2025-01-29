@@ -556,13 +556,28 @@ class TestCampaignsStream:
 
     def test_stream_slices(self):
         stream = Campaigns(api_key=API_KEY)
-        assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh)) == [{"archived": False, "campaign_channel": "email"}, {"archived": False, "campaign_channel": "sms"}, {"archived": True, "campaign_channel": "email"}, {"archived": True, "campaign_channel": "sms"}]
+        assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh)) == [
+            {"archived": False, "campaign_channel": "email"},
+            {"archived": False, "campaign_channel": "sms"},
+            {"archived": True, "campaign_channel": "email"},
+            {"archived": True, "campaign_channel": "sms"},
+        ]
 
     @pytest.mark.parametrize(
         ("stream_state", "stream_slice", "next_page_token", "expected_params"),
         (
-            ({}, {"archived": False, "campaign_channel": "email"}, None, {"filter": "equals(messages.channel,'email')", "sort": "updated_at"}),
-            ({}, {"archived": True, "campaign_channel": "email"}, None, {"filter": "and(equals(archived,true),equals(messages.channel,'email'))", "sort": "updated_at"}),
+            (
+                {},
+                {"archived": False, "campaign_channel": "email"},
+                None,
+                {"filter": "equals(messages.channel,'email')", "sort": "updated_at"},
+            ),
+            (
+                {},
+                {"archived": True, "campaign_channel": "email"},
+                None,
+                {"filter": "and(equals(archived,true),equals(messages.channel,'email'))", "sort": "updated_at"},
+            ),
             (
                 {"updated_at": "2023-10-10T00:00:00+00:00"},
                 {"archived": False, "campaign_channel": "sms"},
