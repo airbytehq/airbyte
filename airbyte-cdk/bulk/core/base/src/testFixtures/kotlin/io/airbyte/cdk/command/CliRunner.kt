@@ -41,7 +41,12 @@ data object CliRunner {
         val out = CliRunnerOutputStream()
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
-                AirbyteSourceRunner(args, featureFlags.systemEnv, out.beanDefinition)
+                AirbyteSourceRunner(
+                    args,
+                    additionalMicronautEnvs = emptyList(),
+                    featureFlags.systemEnv,
+                    out.beanDefinition
+                )
             }
         return CliRunnable(runnable, out.results)
     }
@@ -53,6 +58,8 @@ data object CliRunner {
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         inputStream: InputStream,
+        additionalMicronautEnvs: List<String> = emptyList(),
+        micronautProperties: Map<String, String> = emptyMap(),
         vararg featureFlags: FeatureFlag,
     ): CliRunnable {
         val inputBeanDefinition: RuntimeBeanDefinition<InputStream> =
@@ -65,7 +72,9 @@ data object CliRunner {
             makeRunnable(op, configPath, catalog, state) { args: Array<String> ->
                 AirbyteDestinationRunner(
                     args,
+                    additionalMicronautEnvs = additionalMicronautEnvs,
                     featureFlags.systemEnv,
+                    micronautProperties,
                     inputBeanDefinition,
                     out.beanDefinition,
                 )
@@ -80,6 +89,8 @@ data object CliRunner {
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         featureFlags: Set<FeatureFlag> = setOf(),
+        additionalMicronautEnvs: List<String> = emptyList(),
+        micronautProperties: Map<String, String> = emptyMap(),
         vararg input: AirbyteMessage,
     ): CliRunnable {
         val inputJsonBytes: ByteArray =
@@ -97,6 +108,8 @@ data object CliRunner {
             catalog,
             state,
             inputStream,
+            additionalMicronautEnvs,
+            micronautProperties,
             *featureFlags.toTypedArray()
         )
     }
