@@ -35,9 +35,6 @@ function getFilenamesInDir(prefix, dir, excludes) {
       } catch (error) {
         console.warn(`Warning: Using filename as title for ${path.join(prefix, filename)}`);
         return filename;
-            filename
-          )}. Make sure there's no content above the first heading!`
-        );
       }
 
       // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
