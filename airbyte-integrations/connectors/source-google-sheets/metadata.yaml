@@ -40,17 +40,17 @@ data:
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-GOOGLE_SHEETS_CREDS
+        - name: SECRET_SOURCE-GOOGLE_SHEETS__CREDS
           fileName: config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-GOOGLE_SHEETS_SERVICE_CREDS
+        - name: SECRET_SOURCE-GOOGLE_SHEETS_SERVICE__CREDS
           fileName: service_config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-GOOGLE_SHEETS_WITH_URL_CREDS
+        - name: SECRET_SOURCE-GOOGLE_SHEETS_WITH_URL__CREDS
           fileName: config_with_url.json
           secretStore:
             type: GSM
