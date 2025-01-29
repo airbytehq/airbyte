@@ -7,6 +7,12 @@ data:
       enabled: true
     cloud:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2025-02-28"
+        message:
+          "The verison makes domain field mandatory in specification. The connector will not work without domain field in the configuration."
   remoteRegistries:
     pypi:
       enabled: true
