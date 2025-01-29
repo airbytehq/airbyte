@@ -20,7 +20,7 @@ The complexity of setting up OAuth flows is handled internally by Airbyte. When 
 
 3. **The third-party API**: The service to which the connector needs access.
 
-This highly simplified diagrams visualizes this process.
+This simplified diagram visualizes the connection process.
 
 ```mermaid
 graph TD;
