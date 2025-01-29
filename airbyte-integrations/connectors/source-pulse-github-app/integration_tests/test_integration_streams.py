@@ -279,15 +279,6 @@ def test_org_installations_integration(config):
     assert isinstance(all_records, list), "Records should be a list."
     # If you expect an installation, you could assert len(all_records) > 0
 
-import pytest
-import time
-import json
-import os
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
-from source_pulse_github_app.source import SourcePulseGithubApp
-
-
 @pytest.mark.integration
 def test_org_webhooks_stream_integration(config):
     """
