@@ -17,7 +17,7 @@ include = "source_linkedin_ads"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = { version = "6.12.1.dev0", allow-prereleases = true } # Set this to an official release as soon as https://github.com/airbytehq/airbyte-python-cdk/pull/177 is merged and included in a CDK release.
+airbyte-cdk = "^6"
 coverage = "^7.5.3"
 
 [tool.poetry.scripts]

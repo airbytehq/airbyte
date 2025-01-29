@@ -37,7 +37,7 @@ interface FlushStrategy {
 class DefaultFlushStrategy(
     private val config: DestinationConfiguration,
     private val eventQueue: QueueReader<ForceFlushEvent>,
-    @Value("\${airbyte.destination.record-batch-size-override}")
+    @Value("\${airbyte.destination.core.record-batch-size-override}")
     private val recordBatchSizeOverride: Long? = null
 ) : FlushStrategy {
     private val forceFlushIndexes = ConcurrentHashMap<DestinationStream.Descriptor, Long>()
