@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.load.command.Append
@@ -14,11 +18,10 @@ import java.security.SecureRandom
 /**
  * Single stream performance test.
  *
- * This performance scenario will insert [recordsToInsert] records are generated from the
- * [idColumn] and [columns] parameters. Records are the same except for the id which will be
- * automatically incremented.
- * [dedup] controls whether the insert mode is `Append` or `Dedupe`.
- * [duplicateChance] if non 0 will insert random duplicates of records.
+ * This performance scenario will insert [recordsToInsert] records are generated from the [idColumn]
+ * and [columns] parameters. Records are the same except for the id which will be automatically
+ * incremented. [dedup] controls whether the insert mode is `Append` or `Dedupe`. [duplicateChance]
+ * if non 0 will insert random duplicates of records.
  */
 class SingleStreamInsert(
     private val idColumn: NamedField,
@@ -36,16 +39,16 @@ class SingleStreamInsert(
 
     private val stream = run {
         val importType =
-            if (!dedup)
-                Append
+            if (!dedup) Append
             else
                 Dedupe(
                     primaryKey = listOf(listOf(idColumn.name)),
                     cursor = listOf(idColumn.name),
                 )
-        val schema = (listOf(idColumn) + columns).map {
-            Pair(it.name, FieldType(type = it.type, nullable = true))
-        }
+        val schema =
+            (listOf(idColumn) + columns).map {
+                Pair(it.name, FieldType(type = it.type, nullable = true))
+            }
 
         DestinationStream(
             descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName),
@@ -58,7 +61,8 @@ class SingleStreamInsert(
     }
 
     private val random = SecureRandom()
-    private val randomThreshold: Int = if (duplicateChance > 0.0) ((duplicateChance % 1.0) * 100).toInt() else 0
+    private val randomThreshold: Int =
+        if (duplicateChance > 0.0) ((duplicateChance % 1.0) * 100).toInt() else 0
 
     private var recordCount: Long = 0
     private var byteCount: Long = 0
@@ -71,11 +75,9 @@ class SingleStreamInsert(
         stream: DestinationStream,
         private val destination: DestinationProcess,
         private val recordBufferSize: Long = 1,
-    ): AutoCloseable {
+    ) : AutoCloseable {
         private val baseRecord = run {
-            val data = (listOf(indexColumn) + columns).associate {
-                Pair(it.name, it.sample)
-            }
+            val data = (listOf(indexColumn) + columns).associate { Pair(it.name, it.sample) }
             InputRecord(
                 namespace = stream.descriptor.namespace,
                 name = stream.descriptor.name,
@@ -83,8 +85,8 @@ class SingleStreamInsert(
                 emittedAtMs = System.currentTimeMillis(),
             )
         }
-        private val messageParts = Jsons.serialize(baseRecord.asProtocolMessage())
-            .split(indexColumn.sample.toString())
+        private val messageParts =
+            Jsons.serialize(baseRecord.asProtocolMessage()).split(indexColumn.sample.toString())
         private val baseMessageSize = messageParts.sumOf { it.length }
 
         private val sb = StringBuilder()
@@ -120,28 +122,30 @@ class SingleStreamInsert(
 
     override fun send(destination: DestinationProcess) {
         RecordWriter(
-            indexColumn = idColumn,
-            columns = columns,
-            stream = stream,
-            destination = destination,
-            recordBufferSize = 10,
-        ).use { writer ->
-            (1..recordsToInsert).forEach {
-                writer.write(it)
-                if (randomThreshold > 0 && random.nextInt(0, 100) <= randomThreshold) {
+                indexColumn = idColumn,
+                columns = columns,
+                stream = stream,
+                destination = destination,
+                recordBufferSize = 10,
+            )
+            .use { writer ->
+                (1..recordsToInsert).forEach {
                     writer.write(it)
+                    if (randomThreshold > 0 && random.nextInt(0, 100) <= randomThreshold) {
+                        writer.write(it)
+                    }
                 }
+                recordCount = writer.recordWritten
+                byteCount = writer.bytesWritten
             }
-            recordCount = writer.recordWritten
-            byteCount = writer.bytesWritten
-        }
     }
 
-    override fun getSummary() = PerformanceTestScenario.Summary(
-        recordCount,
-        byteCount,
-        expectedRecordsCount = if (dedup) recordsToInsert else recordCount,
-    )
+    override fun getSummary() =
+        PerformanceTestScenario.Summary(
+            recordCount,
+            byteCount,
+            expectedRecordsCount = if (dedup) recordsToInsert else recordCount,
+        )
 }
 
 private fun Long.length(): Long =

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -44,9 +48,7 @@ private val log = KotlinLogging.logger {}
 
 data class NamedField(val name: String, val type: AirbyteType, val sample: Any)
 
-/**
- * Defines a performance test scenario.
- */
+/** Defines a performance test scenario. */
 interface PerformanceTestScenario {
     data class Summary(
         val records: Long,
@@ -54,9 +56,7 @@ interface PerformanceTestScenario {
         val expectedRecordsCount: Long,
     )
 
-    /**
-     * The catalog used for the performance test.
-     */
+    /** The catalog used for the performance test. */
     val catalog: DestinationCatalog
 
     /**
@@ -69,19 +69,17 @@ interface PerformanceTestScenario {
 
     /**
      * Returns the expectations from the test scenario: how many records were emitted, how many
-     * records are expected to be written in the final table (in the case of duplicates, this
-     * should be the number of distinct records) and the volume of data emitted.
+     * records are expected to be written in the final table (in the case of duplicates, this should
+     * be the number of distinct records) and the volume of data emitted.
      */
     fun getSummary(): Summary
 }
 
-/**
- * Interface to implement for destination that support data validation.
- */
+/** Interface to implement for destination that support data validation. */
 interface DataValidator {
     /**
-     * Returns the count of how many records are present for the stream in the final table. null
-     * if not found.
+     * Returns the count of how many records are present for the stream in the final table. null if
+     * not found.
      */
     fun count(spec: ConfigurationSpecification, stream: DestinationStream): Long?
 }
@@ -116,16 +114,18 @@ abstract class BasicPerformanceTest(
     val randomizedNamespace = run {
         val randomSuffix = RandomStringUtils.secure().nextAlphabetic(4)
         val randomizedNamespaceDateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-        val timestampString = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-            .format(randomizedNamespaceDateFormatter)
+        val timestampString =
+            LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
+                .format(randomizedNamespaceDateFormatter)
         "test$timestampString$randomSuffix"
     }
 
     val idColumn = NamedField("id", IntegerType, 1337)
-    val twoStringColumns = listOf(
-        NamedField("column1", StringType, "1".repeat(100)),
-        NamedField("column2", StringType, "2".repeat(100)),
-    )
+    val twoStringColumns =
+        listOf(
+            NamedField("column1", StringType, "1".repeat(100)),
+            NamedField("column2", StringType, "2".repeat(100)),
+        )
 
     @Test
     open fun testInsertRecords() {
@@ -134,13 +134,14 @@ abstract class BasicPerformanceTest(
 
     protected fun testInsertRecords(validation: ValidationFunction?) {
         runSync(
-            testScenario = SingleStreamInsert(
-                idColumn = idColumn,
-                columns = twoStringColumns,
-                recordsToInsert = defaultRecordsToInsert,
-                randomizedNamespace = randomizedNamespace,
-                streamName = testInfo.testMethod.get().name,
-            ),
+            testScenario =
+                SingleStreamInsert(
+                    idColumn = idColumn,
+                    columns = twoStringColumns,
+                    recordsToInsert = defaultRecordsToInsert,
+                    randomizedNamespace = randomizedNamespace,
+                    streamName = testInfo.testMethod.get().name,
+                ),
             validation = validation,
         )
     }
@@ -152,19 +153,37 @@ abstract class BasicPerformanceTest(
 
     protected fun testInsertRecordsComplexTypes(validation: ValidationFunction?) {
         runSync(
-            testScenario = SingleStreamInsert(
-                idColumn = idColumn,
-                columns = listOf(
-                    NamedField("tWithTz", TimeTypeWithTimezone, LocalTime.now().atOffset(ZoneOffset.UTC).toString()),
-                    NamedField("t", TimeTypeWithoutTimezone, LocalTime.now().toString()),
-                    NamedField("tsWithTz", TimestampTypeWithTimezone, OffsetDateTime.now().toString()),
-                    NamedField("ts", TimestampTypeWithoutTimezone, OffsetDateTime.now().toLocalDateTime().toString()),
-                    NamedField("object", ObjectTypeWithoutSchema, Jsons.serialize(mapOf("object" to "value")))
+            testScenario =
+                SingleStreamInsert(
+                    idColumn = idColumn,
+                    columns =
+                        listOf(
+                            NamedField(
+                                "tWithTz",
+                                TimeTypeWithTimezone,
+                                LocalTime.now().atOffset(ZoneOffset.UTC).toString()
+                            ),
+                            NamedField("t", TimeTypeWithoutTimezone, LocalTime.now().toString()),
+                            NamedField(
+                                "tsWithTz",
+                                TimestampTypeWithTimezone,
+                                OffsetDateTime.now().toString()
+                            ),
+                            NamedField(
+                                "ts",
+                                TimestampTypeWithoutTimezone,
+                                OffsetDateTime.now().toLocalDateTime().toString()
+                            ),
+                            NamedField(
+                                "object",
+                                ObjectTypeWithoutSchema,
+                                Jsons.serialize(mapOf("object" to "value"))
+                            )
+                        ),
+                    recordsToInsert = defaultRecordsToInsert,
+                    randomizedNamespace = randomizedNamespace,
+                    streamName = testInfo.testMethod.get().name,
                 ),
-                recordsToInsert = defaultRecordsToInsert,
-                randomizedNamespace = randomizedNamespace,
-                streamName = testInfo.testMethod.get().name,
-            ),
             validation = validation,
         )
     }
@@ -176,15 +195,16 @@ abstract class BasicPerformanceTest(
 
     protected fun testInsertRecordsWithDedup(validation: ValidationFunction?) {
         runSync(
-            testScenario = SingleStreamInsert(
-                idColumn = idColumn,
-                columns = twoStringColumns,
-                dedup = true,
-                duplicateChance = 0.25,
-                recordsToInsert = defaultRecordsToInsert,
-                randomizedNamespace = randomizedNamespace,
-                streamName = testInfo.testMethod.get().name,
-            ),
+            testScenario =
+                SingleStreamInsert(
+                    idColumn = idColumn,
+                    columns = twoStringColumns,
+                    dedup = true,
+                    duplicateChance = 0.25,
+                    recordsToInsert = defaultRecordsToInsert,
+                    randomizedNamespace = randomizedNamespace,
+                    streamName = testInfo.testMethod.get().name,
+                ),
             validation = validation,
         )
     }
@@ -196,15 +216,14 @@ abstract class BasicPerformanceTest(
 
     protected fun testInsertRecordsWithManyColumns(validation: ValidationFunction?) {
         runSync(
-            testScenario = SingleStreamInsert(
-                idColumn = idColumn,
-                columns = (1..100).map {
-                    NamedField("column$it", StringType, "1".repeat(50))
-                },
-                recordsToInsert = defaultRecordsToInsert,
-                randomizedNamespace = randomizedNamespace,
-                streamName = testInfo.testMethod.get().name,
-            ),
+            testScenario =
+                SingleStreamInsert(
+                    idColumn = idColumn,
+                    columns = (1..100).map { NamedField("column$it", StringType, "1".repeat(50)) },
+                    recordsToInsert = defaultRecordsToInsert,
+                    randomizedNamespace = randomizedNamespace,
+                    streamName = testInfo.testMethod.get().name,
+                ),
             validation = validation,
         )
     }
@@ -216,15 +235,16 @@ abstract class BasicPerformanceTest(
 
     protected fun testAppendRecordsWithDuplicates(validation: ValidationFunction?) {
         runSync(
-            testScenario = SingleStreamInsert(
-                idColumn = idColumn,
-                columns = twoStringColumns,
-                dedup = false,
-                duplicateChance = 0.25,
-                recordsToInsert = defaultRecordsToInsert,
-                randomizedNamespace = randomizedNamespace,
-                streamName = testInfo.testMethod.get().name,
-            ),
+            testScenario =
+                SingleStreamInsert(
+                    idColumn = idColumn,
+                    columns = twoStringColumns,
+                    dedup = false,
+                    duplicateChance = 0.25,
+                    recordsToInsert = defaultRecordsToInsert,
+                    randomizedNamespace = randomizedNamespace,
+                    streamName = testInfo.testMethod.get().name,
+                ),
             validation = validation,
         )
     }
@@ -259,59 +279,67 @@ abstract class BasicPerformanceTest(
         validation: ValidationFunction? = null,
     ): List<PerformanceTestSummary> {
         val testConfig = configUpdater.update(configContents)
-        val destination = destinationProcessFactory.createDestinationProcess(
-            "write",
-            testConfig,
-            testScenario.catalog.asProtocolObject(),
-            useFileTransfer = useFileTransfer,
-            envVars = envVars,
-        )
+        val destination =
+            destinationProcessFactory.createDestinationProcess(
+                "write",
+                testConfig,
+                testScenario.catalog.asProtocolObject(),
+                useFileTransfer = useFileTransfer,
+                envVars = envVars,
+            )
 
-        val duration = runBlocking(Dispatchers.IO) {
-            launch { destination.run() }
+        val duration =
+            runBlocking(Dispatchers.IO) {
+                launch { destination.run() }
 
-            measureTime {
-                testScenario.send(destination)
-                testScenario.catalog.streams.forEach {
-                    destination.sendMessage(
-                        DestinationRecordStreamComplete(it.descriptor, System.currentTimeMillis())
-                            .asProtocolMessage()
-                    )
+                measureTime {
+                    testScenario.send(destination)
+                    testScenario.catalog.streams.forEach {
+                        destination.sendMessage(
+                            DestinationRecordStreamComplete(
+                                    it.descriptor,
+                                    System.currentTimeMillis()
+                                )
+                                .asProtocolMessage()
+                        )
+                    }
+                    destination.shutdown()
                 }
-                destination.shutdown()
             }
-        }
 
         val summary = testScenario.getSummary()
         val recordPerSeconds = summary.records.toDouble() / duration.inWholeMilliseconds * 1000
-        val megabytePerSeconds = summary.size.toDouble() / 1000000 / duration.inWholeMilliseconds * 1000
+        val megabytePerSeconds =
+            summary.size.toDouble() / 1000000 / duration.inWholeMilliseconds * 1000
         log.info { "$testPrettyName: loaded ${summary.records} records in $duration" }
         log.info { "$testPrettyName: loaded ${"%.2f".format(recordPerSeconds)} rps" }
         log.info { "$testPrettyName: loaded ${"%.2f".format(megabytePerSeconds)} MBps" }
 
-        val recordCount = dataValidator?.let { validator ->
-            val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, testConfig)
-            val recordCount = validator.count(parsedConfig, testScenario.catalog.streams[0])
+        val recordCount =
+            dataValidator?.let { validator ->
+                val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, testConfig)
+                val recordCount = validator.count(parsedConfig, testScenario.catalog.streams[0])
 
-            recordCount?.also {
-                log.info {
-                    "$testPrettyName: table contains ${it} records" +
-                        " (expected ${summary.expectedRecordsCount} records, " +
-                        "emitted ${summary.records} records)"
+                recordCount?.also {
+                    log.info {
+                        "$testPrettyName: table contains ${it} records" +
+                            " (expected ${summary.expectedRecordsCount} records, " +
+                            "emitted ${summary.records} records)"
+                    }
                 }
             }
-        }
 
-        val performanceTestSummary = listOf(
-            PerformanceTestSummary(
-                namespace = testScenario.catalog.streams[0].descriptor.namespace,
-                streamName = testScenario.catalog.streams[0].descriptor.name,
-                recordCount = recordCount,
-                emittedRecordCount = summary.records,
-                recordPerSeconds = recordPerSeconds,
-                megabytePerSeconds = megabytePerSeconds,
+        val performanceTestSummary =
+            listOf(
+                PerformanceTestSummary(
+                    namespace = testScenario.catalog.streams[0].descriptor.namespace,
+                    streamName = testScenario.catalog.streams[0].descriptor.name,
+                    recordCount = recordCount,
+                    emittedRecordCount = summary.records,
+                    recordPerSeconds = recordPerSeconds,
+                    megabytePerSeconds = megabytePerSeconds,
+                )
             )
-        )
         validation?.let { it(performanceTestSummary) }
         return performanceTestSummary
     }
