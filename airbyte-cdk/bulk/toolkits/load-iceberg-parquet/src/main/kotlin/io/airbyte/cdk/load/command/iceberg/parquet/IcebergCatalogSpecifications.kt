@@ -466,7 +466,10 @@ data class DremioCatalogConfiguration(
             "nessie.authentication.oauth2.token-exchange.subject-token-type"
     }
 
-    fun getCatalogProperties(icebergCatalogConfig: IcebergCatalogConfiguration, region: String): Map<String, String> {
+    fun getCatalogProperties(
+        icebergCatalogConfig: IcebergCatalogConfiguration,
+        region: String
+    ): Map<String, String> {
         val baseUri = cleanBaseUri()
 
         val tokenEndpoint = "$baseUri:9047/oauth/token"
@@ -482,7 +485,10 @@ data class DremioCatalogConfiguration(
             // OAuth2 authentication configuration
             put(NessieConfigConstants.CONF_NESSIE_AUTH_TYPE, "OAUTH2")
             put(NessieConfigConstants.CONF_NESSIE_OAUTH2_CLIENT_ID, "nessie-cli")
-            put(NessieConfigConstants.CONF_NESSIE_OAUTH2_GRANT_TYPE, NessieConfigConstants.CONF_NESSIE_OAUTH2_GRANT_TYPE_TOKEN_EXCHANGE)
+            put(
+                NessieConfigConstants.CONF_NESSIE_OAUTH2_GRANT_TYPE,
+                NessieConfigConstants.CONF_NESSIE_OAUTH2_GRANT_TYPE_TOKEN_EXCHANGE
+            )
             put(CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN, pat)
             put(
                 CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN_TYPE,
