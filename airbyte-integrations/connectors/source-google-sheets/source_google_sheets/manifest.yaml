@@ -51,6 +51,8 @@ dynamic_streams:
           error_handler:
             type: CustomErrorHandler
             class_name: source_google_sheets.components.SheetDataErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
             response_filters:
               $ref: "#/definitions/response_filters/response_error_filters"
       schema_loader:
@@ -85,6 +87,8 @@ dynamic_streams:
               type: CompositeErrorHandler
               error_handlers:
                 - type: DefaultErrorHandler
+                  backoff_strategies:
+                    - type: ExponentialBackoffStrategy
                   response_filters:
                     $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
         schema_type_identifier:
@@ -163,6 +167,8 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
                 response_filters:
                   $ref: "#/definitions/response_filters/response_error_filters"
         record_selector:
@@ -298,7 +304,7 @@ definitions:
         Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support
     rate_limit:
       type: HttpResponseFilter
-      action: RETRY
+      action: RATE_LIMITED
       http_codes:
         - 429
       error_message: >-
