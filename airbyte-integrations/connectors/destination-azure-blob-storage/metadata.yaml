@@ -26,7 +26,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/destination-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/destinations/azure-blob-storage
   githubIssueLabel: destination-azure-blob-storage
