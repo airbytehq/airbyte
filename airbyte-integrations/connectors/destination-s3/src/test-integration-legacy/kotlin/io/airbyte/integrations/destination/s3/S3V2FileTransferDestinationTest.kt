@@ -87,7 +87,6 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
                 .createFile()
 
         absoluteFilePath.grantAllPermissions()
-
         absoluteFilePath.writeText(RandomStringUtils.insecure().nextAlphanumeric(fileSize))
 
         return Path.of(filePath)
@@ -179,7 +178,6 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         LOGGER.info {
             "${EnvVariableFeatureFlags.DEFAULT_AIRBYTE_STAGING_DIRECTORY} is mounted from $fileTransferMountSource"
         }
-        fileTransferMountSource!!.grantAllPermissions()
         val streamName = "str" + RandomStringUtils.insecure().nextAlphanumeric(5)
         val filePath = createFakeFile()
         val fullPath = fileTransferMountSource!!.resolve(filePath)
@@ -204,7 +202,6 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
                 .getUserMetaDataOf(S3StorageOperations.GENERATION_ID_USER_META_KEY)
                 .toLong()
         assertEquals(generationId, 32L)
-        assertFalse(file.exists(), "file should have been deleted by the connector")
         assertEquals(fileLength, objectInStore.size)
         assertEquals("$testBucketPath/$streamName/${filePath.toString()}", objectInStore.key)
         assertContentEquals(
@@ -214,5 +211,6 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
                 .objectContent
                 .readBytes()
         )
+        assertFalse(file.exists(), "file should have been deleted by the connector")
     }
 }
