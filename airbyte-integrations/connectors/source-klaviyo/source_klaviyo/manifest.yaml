@@ -66,6 +66,9 @@ definitions:
     record_selector:
       $ref: "#/definitions/selector"
       record_filter:
+        # Removing the record filter will migrate `lists_detailed` to concurrency,
+        # which will cause it to fail due to rate limits.
+        # Rate limiting for this stream should be implemented first.
         type: RecordFilter
         condition: |
           {% set starting_point = stream_state.get('updated', config.get('start_date')) %}
@@ -250,7 +253,7 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/lists_detailed_schema"
     retriever:
-      $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/semi_incremental_retriever"
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
@@ -1084,6 +1087,7 @@ metadata:
 # - M: 10/s burst; 150/m steady
 # - L: 75/s burst; 700/m steady
 # - XL: 350/s burst; 3500/m steady
+# - `lists_detailed`: 1/s burst, 15/m steady (Rate limits when using the additional-fields[list]=profile_count parameter in your API request)
 
 # As of 2024-11-11, we have the following streams:
 # | Stream            | Endpoint                                                             | Klaviyo Rate Limit Size | Source Concurrency Between Streams | Source Concurrency Within Stream                  | Source Max Number of Threads Sharing Rate Limits                 |                                                                                 |
@@ -1095,7 +1099,7 @@ metadata:
 #| email_templates   | https://developers.klaviyo.com/en/reference/get_templates            | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
 #| metrics           | https://developers.klaviyo.com/en/reference/get_metrics              | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
 #| lists             | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists_detailed    | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists_detailed), not within stream as `step` not defined    |
-#| lists_detailed    | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists             | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists), not within stream as `step` not defined             |
+#| lists_detailed    | https://developers.klaviyo.com/en/reference/get_lists                | 1/s                     | Yes, shared with lists             | No as `step` is not defined in `incremental_sync` | 1                                                                | With other streams (lists), not within stream as `step` not defined             |
 # Note: As of 2024-11-11, `metrics`, `lists` and `lists_detailed` are not supported by the Concurrent CDK as they do client side-filtering.
 
 # Based on the above, the only threads that allow for slicing and hence might perform more concurrent HTTP requests are `events` and `events_detailed`. There are no slicing for the others and hence the concurrency is limited by the number of streams querying the same endpoint. Given that the event endpoint is XL, we will set a default concurrency to 10.

@@ -276,6 +276,7 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.4.9 | 2025-01-25 | [52318](https://github.com/airbytehq/airbyte/pull/52318) | Update dependencies |
 | 0.4.8 | 2025-01-18 | [51687](https://github.com/airbytehq/airbyte/pull/51687) | Update dependencies |
 | 0.4.7 | 2025-01-11 | [51120](https://github.com/airbytehq/airbyte/pull/51120) | Update dependencies |
 | 0.4.6 | 2025-01-04 | [50921](https://github.com/airbytehq/airbyte/pull/50921) | Update dependencies |
