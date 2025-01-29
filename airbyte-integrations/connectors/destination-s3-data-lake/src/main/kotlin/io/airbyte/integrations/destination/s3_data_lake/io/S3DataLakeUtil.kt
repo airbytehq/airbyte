@@ -218,7 +218,7 @@ class S3DataLakeUtil(
             is GlueCatalogConfiguration ->
                 buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region)
             is RestCatalogConfiguration -> buildRestProperties(config, catalogConfig, s3Properties)
-            is DremioCatalogConfiguration -> catalogConfig.getCatalogProperties(icebergCatalogConfig, region)
+            is DremioCatalogConfiguration -> catalogConfig.getCatalogProperties(icebergCatalogConfig)
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"

@@ -19,8 +19,10 @@ import java.net.URI
 import java.net.URISyntaxException
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.CatalogUtil
-import org.apache.iceberg.io.ResolvingFileIO
-import org.projectnessie.client.NessieConfigConstants
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.codehaus.jettison.json.JSONObject
 
 /**
  * Interface defining the specifications for configuring an Iceberg catalog.
@@ -459,38 +461,80 @@ data class DremioCatalogConfiguration(
         return "$scheme://$host"
     }
 
-    object CustomNessieConfigConstants {
-        const val CONF_NESSIE_OAUTH2_SUBJECT_TOKEN =
-            "nessie.authentication.oauth2.token-exchange.subject-token"
-        const val CONF_NESSIE_OAUTH2_SUBJECT_TOKEN_TYPE =
-            "nessie.authentication.oauth2.token-exchange.subject-token-type"
+    /**
+     * Obtains a JWT (JSON Web Token) by exchanging a Personal Access Token (PAT)
+     * using Dremio's OAuth token exchange endpoint.
+     *
+     * The method sends a POST request to the OAuth token URL constructed from the
+     * provided [baseUri] (specifically, `[baseUri]:9047/oauth/token`) with the
+     * following fields:
+     *  - `grant_type`: "urn:ietf:params:oauth:grant-type:token-exchange"
+     *  - `scope`: "dremio.all"
+     *  - `subject_token_type`: "urn:ietf:params:oauth:token-type:dremio:personal-access-token"
+     *  - `subject_token`: The (url encoded) personal access token (PAT)
+     *
+     * On success, the "access_token" field from the JSON response is returned.
+     * If the request fails or the response is malformed, a [RuntimeException] is thrown.
+     *
+     * @param baseUri The base URI used to build the token endpoint.
+     * @return A [String] containing the received JWT.
+     * @throws RuntimeException If the HTTP request fails or the response body is empty.
+     */
+    private fun getJWTFromPAT(baseUri: String): String {
+        val client = OkHttpClient()
+        val formBody = FormBody.Builder()
+            .addEncoded("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
+            .addEncoded("scope", "dremio.all")
+            .addEncoded("subject_token_type", "urn:ietf:params:oauth:token-type:dremio:personal-access-token")
+            .add("subject_token", pat)
+            .build()
+
+        val url = "$baseUri:9047/oauth/token"
+        val request = Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw RuntimeException("Failed to fetch token. HTTP code: ${response.code}")
+            }
+
+            val responseBody =
+                response.body?.string() ?: throw RuntimeException("No response body!")
+            val jsonObject = JSONObject(responseBody)
+            return jsonObject.getString("access_token")
+        }
     }
 
-    fun getCatalogProperties(icebergCatalogConfig: IcebergCatalogConfiguration, region: String): Map<String, String> {
+    /**
+     * Extracts the warehouse name from the given warehouse URI.
+     * For example, given "s3://a-warehouse/iceberg",
+     * this function returns "a-warehouse".
+     *
+     * @param warehouseUri The full S3 URI (e.g., "s3://my-bucket/path/to/object").
+     * @return The bucket name (e.g., "my-bucket").
+     * @throws IllegalArgumentException If the URI doesn't start with "s3://".
+     */
+    private fun getWarehouseName(warehouseUri: String): String {
+        require(warehouseUri.startsWith("s3://")) { "Invalid warehouse URI: $warehouseUri" }
+
+        // Remove the "s3://" prefix, then split on '/'
+        // The first part after removing "s3://" is the bucket name.
+        val withoutScheme = warehouseUri.removePrefix("s3://")
+        return withoutScheme.substringBefore('/')
+    }
+
+    fun getCatalogProperties(icebergCatalogConfig: IcebergCatalogConfiguration): Map<String, String> {
         val baseUri = cleanBaseUri()
+        val jwt = getJWTFromPAT(baseUri)
 
-        val tokenEndpoint = "$baseUri:9047/oauth/token"
-        val serverUri = "$baseUri:19120/api/v2"
-
-        val catalogProperties = buildMap {
-            put(CatalogUtil.ICEBERG_CATALOG_TYPE, CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE)
-            put(CatalogProperties.URI, serverUri)
-            put(NessieConfigConstants.CONF_NESSIE_REF, icebergCatalogConfig.mainBranchName)
-            put(CatalogProperties.WAREHOUSE_LOCATION, icebergCatalogConfig.warehouseLocation)
-            put(CatalogProperties.FILE_IO_IMPL, ResolvingFileIO::class.java.name)
-            put(NessieConfigConstants.CONF_NESSIE_AWS_REGION, region)
-            // OAuth2 authentication configuration
-            put(NessieConfigConstants.CONF_NESSIE_AUTH_TYPE, "OAUTH2")
-            put(NessieConfigConstants.CONF_NESSIE_OAUTH2_CLIENT_ID, "nessie-cli")
-            put(NessieConfigConstants.CONF_NESSIE_OAUTH2_GRANT_TYPE, NessieConfigConstants.CONF_NESSIE_OAUTH2_GRANT_TYPE_TOKEN_EXCHANGE)
-            put(CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN, pat)
-            put(
-                CustomNessieConfigConstants.CONF_NESSIE_OAUTH2_SUBJECT_TOKEN_TYPE,
-                "urn:ietf:params:oauth:token-type:dremio:personal-access-token"
-            )
-            put(NessieConfigConstants.CONF_NESSIE_OAUTH2_TOKEN_ENDPOINT, tokenEndpoint)
-            put(NessieConfigConstants.CONF_NESSIE_OAUTH2_CLIENT_SCOPES, "dremio.all")
-        }
+        val catalogProperties = mapOf(
+            CatalogUtil.ICEBERG_CATALOG_TYPE to CatalogUtil.ICEBERG_CATALOG_TYPE_REST,
+            CatalogProperties.URI to "$baseUri:19120/iceberg/${icebergCatalogConfig.mainBranchName}",
+            CatalogProperties.WAREHOUSE_LOCATION to getWarehouseName(icebergCatalogConfig.warehouseLocation),
+            "token" to jwt,
+        )
 
         return catalogProperties
     }

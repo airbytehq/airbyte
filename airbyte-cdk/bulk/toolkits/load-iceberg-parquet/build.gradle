@@ -7,6 +7,7 @@ dependencies {
 
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+    api "com.squareup.okhttp3:okhttp:4.12.0"
     api "org.apache.iceberg:iceberg-aws:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}"
