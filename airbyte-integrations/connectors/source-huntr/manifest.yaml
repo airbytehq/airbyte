@@ -214,8 +214,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /actions
           http_method: GET
-          request_parameters:
-            action_type: MEMBER_DEACTIVATED
         record_selector:
           type: RecordSelector
           extractor:
@@ -282,6 +280,82 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/candidates"
+    member_deactivated_actions:
+      type: DeclarativeStream
+      name: member_deactivated_actions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /actions
+          http_method: GET
+          request_parameters:
+            action_type: MEMBER_DEACTIVATED
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/member_deactivated_actions"
+    candidate_profile_viewed_actions:
+      type: DeclarativeStream
+      name: candidate_profile_viewed_actions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /actions
+          http_method: GET
+          request_parameters:
+            action_type: CANDIDATE_PROFILE_VIEWED
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"next\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/candidate_profile_viewed_actions"
   base_requester:
     type: HttpRequester
     url_base: https://api.huntr.co/org
@@ -297,6 +371,8 @@ streams:
   - $ref: "#/definitions/streams/notes"
   - $ref: "#/definitions/streams/actions"
   - $ref: "#/definitions/streams/candidates"
+  - $ref: "#/definitions/streams/member_deactivated_actions"
+  - $ref: "#/definitions/streams/candidate_profile_viewed_actions"
 
 spec:
   type: Spec
@@ -322,6 +398,8 @@ metadata:
     notes: true
     actions: true
     candidates: true
+    member_deactivated_actions: true
+    candidate_profile_viewed_actions: true
   testedStreams:
     members:
       hasRecords: true
@@ -360,18 +438,32 @@ metadata:
       responsesAreSuccessful: true
     actions:
       hasRecords: true
-      streamHash: a5fc37dc8d23202af9533019cff90c4cf45d613d
+      streamHash: c09218e2b4319ad0629b41f153d0466529dccad4
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     candidates:
+      hasRecords: true
       streamHash: 05f9cc9ed5977fc1f9eefdeeb5a9cf1e5ede4084
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    member_deactivated_actions:
+      hasRecords: true
+      streamHash: a34e67ca6e3ab4012fd408754a408d42e913f8d3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    candidate_profile_viewed_actions:
+      hasRecords: true
+      streamHash: d874d9244081b58359c56e9e809d1d48d24f6815
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -1278,6 +1370,110 @@ schemas:
         type:
           - string
           - "null"
+      activity:
+        type:
+          - object
+          - "null"
+        properties:
+          completed:
+            type:
+              - boolean
+              - "null"
+          completedAt:
+            type:
+              - number
+              - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          createdByWorkflow:
+            type:
+              - boolean
+              - "null"
+          endAt:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          note:
+            type:
+              - string
+              - "null"
+          startAt:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      activityCategory:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      activityId:
+        type:
+          - string
+          - "null"
+      boardId:
+        type:
+          - string
+          - "null"
+      candidate:
+        type:
+          - object
+          - "null"
+        properties:
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          profiles:
+            type:
+              - object
+              - "null"
+            properties:
+              github:
+                type:
+                  - string
+                  - "null"
+              linkedin:
+                type:
+                  - string
+                  - "null"
+      candidateId:
+        type:
+          - string
+          - "null"
       createdAt:
         type:
           - number
@@ -1286,6 +1482,31 @@ schemas:
         type:
           - boolean
           - "null"
+      creatorEmployerMember:
+        type:
+          - object
+          - "null"
+        properties:
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
       creatorMember:
         type:
           - object
@@ -1372,6 +1593,183 @@ schemas:
                       type:
                         - string
                         - "null"
+              6516d5336f0d78007e63ddea:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              6516d7ce85cdd6006797ce91:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              651fa7960d6b610053131858:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              659f8db0587682007c5f3ea8:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              "666958440297480067932137":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66712d5216511b007d6504f2:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669786b0867f7f00805862ad:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669786cf825817005ab3c21c:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669788b06f8cc80060c52d87:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              6697c9c219442e0075c45d7d:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b23ee5376425007bebcbe0:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b2f80336e4d8050af4ec60:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b2f82182fa370059c82009:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
               66ec16249b764b00713e9190:
                 type:
                   - object
@@ -1385,6 +1783,2202 @@ schemas:
                     type:
                       - string
                       - "null"
+      date:
+        type:
+          - number
+          - "null"
+      document:
+        type:
+          - object
+          - "null"
+        properties:
+          documentCategoryName:
+            type:
+              - string
+              - "null"
+          extension:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      documentId:
+        type:
+          - string
+          - "null"
+      employer:
+        type:
+          - object
+          - "null"
+        properties:
+          domain:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isPartner:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      employerId:
+        type:
+          - string
+          - "null"
+      filters:
+        type:
+          - object
+          - "null"
+        properties:
+          candidateListIds:
+            type:
+              - array
+              - "null"
+          filters:
+            type:
+              - array
+              - "null"
+      fromList:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      fromListId:
+        type:
+          - string
+          - "null"
+      goal:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          enrollmentStartDate:
+            type:
+              - number
+              - "null"
+          enrollmentTriggers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                actionType:
+                  type:
+                    - string
+                    - "null"
+                conditions:
+                  type:
+                    - array
+                    - "null"
+          enrollmentType:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          instructions:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          objectiveEntity:
+            type:
+              - string
+              - "null"
+          objectiveEntityConditions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                key:
+                  type:
+                    - string
+                    - "null"
+                operator:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  anyOf:
+                    - type: boolean
+                    - type: array
+                      items:
+                        type: string
+          objectiveNumericTarget:
+            type:
+              - number
+              - "null"
+          objectiveTargetType:
+            type:
+              - string
+              - "null"
+          oneTimeGoalDueDaysCount:
+            type:
+              - number
+              - "null"
+          scheduleType:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      goalEnrollment:
+        type:
+          - object
+          - "null"
+        properties:
+          goalId:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      goalProgress:
+        type:
+          - object
+          - "null"
+        properties:
+          end:
+            type:
+              - number
+              - "null"
+          goalEnrollmentId:
+            type:
+              - string
+              - "null"
+          goalId:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          objectiveActionIds:
+            type:
+              - array
+              - "null"
+          objectiveActivityIds:
+            type:
+              - array
+              - "null"
+          objectiveContactIds:
+            type:
+              - array
+              - "null"
+          objectiveEntity:
+            type:
+              - string
+              - "null"
+          objectiveJobIds:
+            type:
+              - array
+              - "null"
+          objectiveNumericCount:
+            type:
+              - number
+              - "null"
+          objectiveNumericTarget:
+            type:
+              - number
+              - "null"
+          progressIndex:
+            type:
+              - number
+              - "null"
+          start:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      job:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          boardId:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          htmlDescription:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          listId:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              address:
+                type:
+                  - string
+                  - "null"
+              lat:
+                type:
+                  - string
+                  - "null"
+              lng:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              placeId:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          salary:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      jobId:
+        type:
+          - string
+          - "null"
+      jobPost:
+        type:
+          - object
+          - "null"
+        properties:
+          applicationInstructions:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          employerId:
+            type:
+              - string
+              - "null"
+          htmlDescription:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isRemote:
+            type:
+              - boolean
+              - "null"
+          jobPostStatus:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+          jobType:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              address:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              lat:
+                type:
+                  - string
+                  - "null"
+              lng:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          locations:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                address:
+                  type:
+                    - string
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                lat:
+                  type:
+                    - string
+                    - "null"
+                lng:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          postDate:
+            type:
+              - number
+              - "null"
+          sourceName:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - string
+              - "null"
+          visibleMemberGroupIds:
+            type:
+              - array
+              - "null"
+      jobPostId:
+        type:
+          - string
+          - "null"
+      jobs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            boardId:
+              type:
+                - string
+                - "null"
+            createdAt:
+              type:
+                - number
+                - "null"
+            htmlDescription:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            listId:
+              type:
+                - string
+                - "null"
+            location:
+              type:
+                - object
+                - "null"
+              properties:
+                address:
+                  type:
+                    - string
+                    - "null"
+                lat:
+                  type:
+                    - string
+                    - "null"
+                lng:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+            title:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      member:
+        type:
+          - object
+          - "null"
+        properties:
+          boardIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          fullName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isActive:
+            type:
+              - boolean
+              - "null"
+          lastSeenAt:
+            type:
+              - number
+              - "null"
+          memberFieldValues:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                fieldId:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  anyOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+          memberFieldValuesKeyedById:
+            type:
+              - object
+              - "null"
+            properties:
+              6516d4ca3d98fd0053e5ea66:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              6516d5336f0d78007e63ddea:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              6516d7ce85cdd6006797ce91:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              651fa7960d6b610053131858:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              659f8db0587682007c5f3ea8:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              "666958440297480067932137":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66712d5216511b007d6504f2:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669786b0867f7f00805862ad:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669786cf825817005ab3c21c:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              6697c9c219442e0075c45d7d:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b23ee5376425007bebcbe0:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b2f80336e4d8050af4ec60:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b2f82182fa370059c82009:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+      memberId:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - object
+          - "null"
+        properties:
+          htmlText:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          memberId:
+            type:
+              - string
+              - "null"
+          text:
+            type:
+              - string
+              - "null"
+      noteId:
+        type:
+          - string
+          - "null"
+      organizationEmployerPartnership:
+        type:
+          - object
+          - "null"
+        properties:
+          createdAt:
+            type:
+              - number
+              - "null"
+          employerCanBrowseCandidates:
+            type:
+              - boolean
+              - "null"
+          employerCanPostJobs:
+            type:
+              - boolean
+              - "null"
+          employerId:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      organizationEmployerPartnershipId:
+        type:
+          - string
+          - "null"
+      organizationInvitationId:
+        type:
+          - string
+          - "null"
+      ownerMember:
+        type:
+          - object
+          - "null"
+        properties:
+          boardIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          fullName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isActive:
+            type:
+              - boolean
+              - "null"
+          lastSeenAt:
+            type:
+              - number
+              - "null"
+          memberFieldValues:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                fieldId:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  anyOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+          memberFieldValuesKeyedById:
+            type:
+              - object
+              - "null"
+            properties:
+              6516d4ca3d98fd0053e5ea66:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              6516d5336f0d78007e63ddea:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              6516d7ce85cdd6006797ce91:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              651fa7960d6b610053131858:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              659f8db0587682007c5f3ea8:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              "666958440297480067932137":
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66712d5216511b007d6504f2:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669786b0867f7f00805862ad:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669786cf825817005ab3c21c:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              669788b06f8cc80060c52d87:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              6697c9c219442e0075c45d7d:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b23ee5376425007bebcbe0:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b2f80336e4d8050af4ec60:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66b2f82182fa370059c82009:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              66ec16249b764b00713e9190:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+      toList:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      toListId:
+        type:
+          - string
+          - "null"
+      update:
+        type:
+          - object
+          - "null"
+        properties:
+          _backgroundPhoto:
+            type:
+              - string
+              - "null"
+          _documents:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          _industryPreferences:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          _primaryRolePreference:
+            type:
+              - string
+              - "null"
+          _profilePhoto:
+            type:
+              - string
+              - "null"
+          _rolePreferences:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          _skills:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          backgroundPhotoUrl:
+            type:
+              - string
+              - "null"
+          bio:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          currentLocation:
+            type:
+              - object
+              - "null"
+            properties:
+              _administrativeRegions:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              _city:
+                type:
+                  - string
+                  - "null"
+              _country:
+                type:
+                  - string
+                  - "null"
+              address:
+                type:
+                  - string
+                  - "null"
+              administrativeRegionsNames:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              geohash:
+                type:
+                  - string
+                  - "null"
+              lat:
+                type:
+                  - number
+                  - "null"
+              lng:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              point:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  coordinates:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - number
+                        - "null"
+          educations:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                _degreeType:
+                  type:
+                    - string
+                    - "null"
+                _id:
+                  type:
+                    - string
+                    - "null"
+                _schoolCompany:
+                  type:
+                    - string
+                    - "null"
+                achievements:
+                  type:
+                    - array
+                    - "null"
+                dateFormat:
+                  type:
+                    - string
+                    - "null"
+                degreeTypeName:
+                  type:
+                    - string
+                    - "null"
+                fieldOfStudyName:
+                  type:
+                    - string
+                    - "null"
+                graduationAt:
+                  type:
+                    - string
+                    - "null"
+                schoolCompany:
+                  type:
+                    - string
+                    - "null"
+                schoolLogoUrl:
+                  type:
+                    - string
+                    - "null"
+                schoolName:
+                  type:
+                    - string
+                    - "null"
+          email:
+            type:
+              - string
+              - "null"
+          emails:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                _id:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+          expectedSalary:
+            type:
+              - object
+              - "null"
+            properties:
+              actual:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              interval:
+                type:
+                  - string
+                  - "null"
+              max:
+                type:
+                  - number
+                  - "null"
+              min:
+                type:
+                  - number
+                  - "null"
+          experiencePreference:
+            type:
+              - string
+              - "null"
+          headline:
+            type:
+              - string
+              - "null"
+          htmlBio:
+            type:
+              - string
+              - "null"
+          htmlDescription:
+            type:
+              - string
+              - "null"
+          industryPreferencesNames:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          isPublicProfile:
+            type:
+              - boolean
+              - "null"
+          isVisibleToAllEmployers:
+            type:
+              - boolean
+              - "null"
+          jobTypePreferences:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          keywords:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                jobMatches:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      text:
+                        type:
+                          - string
+                          - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          legallyAuthorizedToWorkInUsa:
+            type:
+              - boolean
+              - "null"
+          links:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                _id:
+                  type:
+                    - string
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              address:
+                type:
+                  - string
+                  - "null"
+              lat:
+                type:
+                  - number
+                  - "null"
+              lng:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              placeId:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+          locationPreferences:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _administrativeRegions:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                _city:
+                  type:
+                    - string
+                    - "null"
+                _country:
+                  type:
+                    - string
+                    - "null"
+                address:
+                  type:
+                    - string
+                    - "null"
+                administrativeRegionsNames:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                geohash:
+                  type:
+                    - string
+                    - "null"
+                lat:
+                  type:
+                    - number
+                    - "null"
+                lng:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                point:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    coordinates:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - number
+                          - "null"
+          phoneNumber:
+            type:
+              - string
+              - "null"
+          phoneNumbers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                number:
+                  type:
+                    - string
+                    - "null"
+          primaryRoleExperienceYears:
+            type:
+              - number
+              - "null"
+          primaryRoleExperienceYearsText:
+            type:
+              - string
+              - "null"
+          primaryRolePreferenceName:
+            type:
+              - string
+              - "null"
+          profilePhotoUrl:
+            type:
+              - string
+              - "null"
+          profiles:
+            type:
+              - object
+              - "null"
+            properties:
+              github:
+                type:
+                  - string
+                  - "null"
+              linkedin:
+                type:
+                  - string
+                  - "null"
+          requireWorkVisaSponsorshipInUsa:
+            type:
+              - boolean
+              - "null"
+          rolePreferencesNames:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          rootDomain:
+            type:
+              - string
+              - "null"
+          sentences:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                probability:
+                  type:
+                    - number
+                    - "null"
+                sentenceIndex:
+                  type:
+                    - number
+                    - "null"
+                sentenceType:
+                  type:
+                    - string
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+          skillNames:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          status:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          titleBaseKeyword:
+            type:
+              - string
+              - "null"
+          totalWorkExperienceYears:
+            type:
+              - number
+              - "null"
+          totalWorkExperienceYearsText:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          volunteerExperiences:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                _employerCompany:
+                  type:
+                    - string
+                    - "null"
+                _id:
+                  type:
+                    - string
+                    - "null"
+                _jobSubSpace:
+                  type:
+                    - string
+                    - "null"
+                _role:
+                  type:
+                    - string
+                    - "null"
+                _skills:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                achievements:
+                  type:
+                    - array
+                    - "null"
+                achievementsWithVectors:
+                  type:
+                    - array
+                    - "null"
+                dateFormat:
+                  type:
+                    - string
+                    - "null"
+                employerLogoUrl:
+                  type:
+                    - string
+                    - "null"
+                employerName:
+                  type:
+                    - string
+                    - "null"
+                endedAt:
+                  type:
+                    - string
+                    - "null"
+                isCurrentPosition:
+                  type:
+                    - boolean
+                    - "null"
+                jobTitle:
+                  type:
+                    - string
+                    - "null"
+                location:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    _administrativeRegions:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    _country:
+                      type:
+                        - string
+                        - "null"
+                    address:
+                      type:
+                        - string
+                        - "null"
+                    administrativeRegionsNames:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    country:
+                      type:
+                        - string
+                        - "null"
+                    geohash:
+                      type:
+                        - string
+                        - "null"
+                    lat:
+                      type:
+                        - string
+                        - "null"
+                    lng:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    placeId:
+                      type:
+                        - string
+                        - "null"
+                    point:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        _id:
+                          type:
+                            - string
+                            - "null"
+                        coordinates:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - number
+                              - "null"
+                    url:
+                      type:
+                        - string
+                        - "null"
+                skillNames:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                skills:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                startedAt:
+                  type:
+                    - string
+                    - "null"
+          willingToRelocate:
+            type:
+              - boolean
+              - "null"
+          workEnvironmentPreference:
+            type:
+              - string
+              - "null"
+          workExperiences:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                _employerCompany:
+                  type:
+                    - string
+                    - "null"
+                _id:
+                  type:
+                    - string
+                    - "null"
+                _jobSubSpace:
+                  type:
+                    - string
+                    - "null"
+                _role:
+                  type:
+                    - string
+                    - "null"
+                _skills:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                achievements:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                achievementsWithVectors:
+                  type:
+                    - array
+                    - "null"
+                dateFormat:
+                  type:
+                    - string
+                    - "null"
+                employerCompany:
+                  type:
+                    - string
+                    - "null"
+                employerLogoUrl:
+                  type:
+                    - string
+                    - "null"
+                employerName:
+                  type:
+                    - string
+                    - "null"
+                endedAt:
+                  type:
+                    - string
+                    - "null"
+                isCurrentPosition:
+                  type:
+                    - boolean
+                    - "null"
+                jobSubSpace:
+                  type:
+                    - string
+                    - "null"
+                jobSummary:
+                  type:
+                    - string
+                    - "null"
+                jobTitle:
+                  type:
+                    - string
+                    - "null"
+                location:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    _administrativeRegions:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    _city:
+                      type:
+                        - string
+                        - "null"
+                    _country:
+                      type:
+                        - string
+                        - "null"
+                    address:
+                      type:
+                        - string
+                        - "null"
+                    administrativeRegionsNames:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    country:
+                      type:
+                        - string
+                        - "null"
+                    geohash:
+                      type:
+                        - string
+                        - "null"
+                    lat:
+                      type:
+                        - string
+                        - "null"
+                    lng:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    placeId:
+                      type:
+                        - string
+                        - "null"
+                    point:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        _id:
+                          type:
+                            - string
+                            - "null"
+                        coordinates:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - number
+                              - string
+                              - "null"
+                    url:
+                      type:
+                        - string
+                        - "null"
+                role:
+                  type:
+                    - string
+                    - "null"
+                skillNames:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                skills:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                startedAt:
+                  type:
+                    - string
+                    - "null"
+    required:
+      - id
+  candidates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lastName:
+        type:
+          - string
+          - "null"
+      memberId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  member_deactivated_actions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actionType:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      createdByWorkflow:
+        type:
+          - boolean
+          - "null"
+      creatorMember:
+        type:
+          - object
+          - "null"
+        properties:
+          boardIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          familyName:
+            type:
+              - string
+              - "null"
+          fullName:
+            type:
+              - string
+              - "null"
+          givenName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          isActive:
+            type:
+              - boolean
+              - "null"
+          lastSeenAt:
+            type:
+              - number
+              - "null"
+          memberFieldValues:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                fieldId:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          memberFieldValuesKeyedById:
+            type:
+              - object
+              - "null"
+            properties:
+              6516d4ca3d98fd0053e5ea66:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  fieldId:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
       date:
         type:
           - number
@@ -1533,19 +4127,6 @@ schemas:
                       type:
                         - string
                         - "null"
-              659f9264ed00b30053336771:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  fieldId:
-                    type:
-                      - string
-                      - "null"
-                  value:
-                    type:
-                      - string
-                      - "null"
               "666958440297480067932137":
                 type:
                   - object
@@ -1839,19 +4420,6 @@ schemas:
                       type:
                         - string
                         - "null"
-              659f9264ed00b30053336771:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  fieldId:
-                    type:
-                      - string
-                      - "null"
-                  value:
-                    type:
-                      - string
-                      - "null"
               "666958440297480067932137":
                 type:
                   - object
@@ -2001,28 +4569,8 @@ schemas:
                       - "null"
     required:
       - id
-  candidates:
+  candidate_profile_viewed_actions:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties:
-      email:
-        type:
-          - string
-          - "null"
-      firstName:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      lastName:
-        type:
-          - string
-          - "null"
-      memberId:
-        type:
-          - string
-          - "null"
-    required:
-      - id
+    properties: {}
