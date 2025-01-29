@@ -116,12 +116,7 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: [
-            "**/*.inapp.md",
-            "**/release_notes/april_2024.md",
-            "**/release_notes/may_2024.md",
-            "**/release_notes/june_2024.md",
-            "**/release_notes/july_2024.md",
-            "**/release_notes/aug_2024.md"
+            "**/*.inapp.md"
           ],
           beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
           remarkPlugins: [
