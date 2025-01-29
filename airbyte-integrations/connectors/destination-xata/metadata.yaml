@@ -7,7 +7,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 2a51c92d-0fb4-4e54-94d2-cce631f24d1f
-  dockerImageTag: 0.1.32
+  dockerImageTag: 0.1.34
   dockerRepository: airbyte/destination-xata
   githubIssueLabel: destination-xata
   icon: xata.svg

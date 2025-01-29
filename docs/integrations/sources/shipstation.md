@@ -51,6 +51,8 @@ Copy your key and secret and paste them into the respective fields.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.5 | 2025-01-25 | [52405](https://github.com/airbytehq/airbyte/pull/52405) | Update dependencies |
+| 0.0.4 | 2025-01-18 | [51911](https://github.com/airbytehq/airbyte/pull/51911) | Update dependencies |
 | 0.0.3 | 2025-01-11 | [51328](https://github.com/airbytehq/airbyte/pull/51328) | Update dependencies |
 | 0.0.2 | 2024-12-28 | [50726](https://github.com/airbytehq/airbyte/pull/50726) | Update dependencies |
 | 0.0.1 | 2024-12-21 | | Initial release by [@JohnnyRafael](https://github.com/JohnnyRafael) via Connector Builder |
