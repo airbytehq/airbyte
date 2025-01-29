@@ -93,8 +93,8 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         if "organization_access_enabled" not in active_features:
             return (
                 False,
-                "Please verify that the account linked to the API key has admin permissions and try again."
-                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408832171034-About-team-member-product-roles-and-access.",
+                "Please verify that the account linked to the API key has organization_access_enabled and try again."
+                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408821417114-About-the-Organizations-page#topic_n2f_23d_nqb."",
             )
         return True, None
 
