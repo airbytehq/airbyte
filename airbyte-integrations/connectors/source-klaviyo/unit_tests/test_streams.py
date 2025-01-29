@@ -516,7 +516,7 @@ class TestCampaignsStream:
             {
                 "attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"},
                 "updated_at": "2021-05-12T20:45:47+00:00",
-            }
+            },
         ]
 
         records = []
