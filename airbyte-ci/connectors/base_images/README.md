@@ -41,7 +41,7 @@ RUN mkdir -p 755 /usr/share/nltk_data
 
 ### Example for `airbyte/java-connector-base`:
 ```dockerfile
-FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33
+FROM docker.io/amazoncorretto:21-al2023@sha256:c90f38f8a5c4494cb773a984dc9fa9a727b3e6c2f2ee2cba27c834a6e101af0d
 RUN sh -c set -o xtrace && yum install -y shadow-utils tar openssl findutils && yum update -y --security && yum clean all && rm -rf /var/cache/yum && groupadd --gid 1000 airbyte && useradd --uid 1000 --gid airbyte --shell /bin/bash --create-home airbyte && mkdir /secrets && mkdir /config && mkdir --mode 755 /airbyte && mkdir --mode 755 /custom_cache && chown -R airbyte:airbyte /airbyte && chown -R airbyte:airbyte /custom_cache && chown -R airbyte:airbyte /secrets && chown -R airbyte:airbyte /config && chown -R airbyte:airbyte /usr/share/pki/ca-trust-source && chown -R airbyte:airbyte /etc/pki/ca-trust && chown -R airbyte:airbyte /tmp
 ENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec
 ENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check
@@ -60,6 +60,8 @@ ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
 
 | Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
+|  3.0.2 | ✅| docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75 |  |
+|  3.0.1-rc.1 | ✅| docker.io/airbyte/python-connector-base:3.0.1-rc.1@sha256:5b5cbe613691cc61d643a347ee4ba21d6358252f274ebb040ef820c7b9f4a5a7 |  |
 |  3.0.0 | ✅| docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844 | Create airbyte user |
 |  3.0.0-rc.1 | ✅| docker.io/airbyte/python-connector-base:3.0.0-rc.1@sha256:ee046486af9ad90b1b248afe5e92846b51375a21463dff1cd377c4f06abb55b5 | Update Python 3.10.4 image + create airbyte user |
 |  2.0.0 | ✅| docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916 | Use Python 3.10 |
@@ -77,6 +79,7 @@ ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
 
 | Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
+|  2.0.1 | ✅| docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3 | Bump Amazon Coretto image version for compatibility with Apple M4 architecture. |
 |  2.0.0 | ✅| docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454 | ~Release non root base image~ |
 |  2.0.0-rc.2 | ✅| docker.io/airbyte/java-connector-base:2.0.0-rc.2@sha256:e5543b3de4c38e9ef45dba886bad5ee319b0d7bfe921f310c788f1d4466e25eb | Fine tune permissions and reproduce platform java base implementation |
 |  2.0.0-rc.1 | ✅| docker.io/airbyte/java-connector-base:2.0.0-rc.1@sha256:484b929684b9e4f60d06cde171ee0b8238802cb434403293fcede81c1e73c537 |  Make the java base image non root |
@@ -100,12 +103,12 @@ ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
 3. Make changes to the `AirbytePythonConnectorBaseImage`, you're likely going to change the `get_container` method to change the base image.
 4. Implement the `container` property which must return a `dagger.Container` object.
 5. **Recommended**: Add new sanity checks to `run_sanity_check` to confirm that the new version is working as expected.
-6. Cut a new base image version by running `poetry run generate-release`. You'll need your DockerHub credentials.
+6. Cut a new base image version by running `dagger run --silent poetry run generate-release`. You'll need your DockerHub credentials.
 
 It will:
   - Prompt you to pick which base image you'd like to publish.
   - Prompt you for a major/minor/patch/pre-release version bump.
-  - Prompt you for  a changelog message.
+  - Prompt you for a changelog message.
   - Run the sanity checks on the new version.
   - Optional: Publish the new version to DockerHub.
   - Regenerate the docs and the registry json file.

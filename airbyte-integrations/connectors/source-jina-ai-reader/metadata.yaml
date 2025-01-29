@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47077a7f-7ab0-47ee-b428-650396a708c7
-  dockerImageTag: 0.1.27
+  dockerImageTag: 0.1.28
   dockerRepository: airbyte/source-jina-ai-reader
   githubIssueLabel: source-jina-ai-reader
   icon: jina-ai-reader.svg
