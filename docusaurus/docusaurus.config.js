@@ -69,6 +69,24 @@ const config = {
 
   plugins: [
     [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "release-notes",
+        path: "../docs/release_notes",
+        routeBasePath: "release-notes",
+        sidebarPath: require.resolve("./sidebars.js"),
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        onBrokenLinks: "warn",
+        onBrokenMarkdownLinks: "warn",
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+        ],
+      },
+    ],
+    [
       "@docusaurus/plugin-client-redirects",
       {
         fromExtensions: ["html", "htm"], // /myPage.html -> /myPage
@@ -115,7 +133,7 @@ const config = {
           sidebarPath: require.resolve("./sidebars.js"),
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
-          exclude: ["**/*.inapp.md"],
+          exclude: ["**/*.inapp.md", "release_notes/**"],
           beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
           remarkPlugins: [
             docsHeaderDecoration,
