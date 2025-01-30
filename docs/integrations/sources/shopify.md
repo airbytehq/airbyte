@@ -245,6 +245,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2.6.2 | 2024-03-19 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add Pendulum as an explicit dependency |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.6.1 | 2025-02-16 | [51602](https://github.com/airbytehq/airbyte/pull/51602) | Updated the `UpgradeDeadline` for the deprecation notice about [this change](https://github.com/airbytehq/airbyte/pull/51037) |
 | 2.6.0 | 2025-01-15 | [51037](https://github.com/airbytehq/airbyte/pull/51037) | Deprecated the `ProductsGraphQL` and `CustomerSavedSearch` stream from the stream catalog |
