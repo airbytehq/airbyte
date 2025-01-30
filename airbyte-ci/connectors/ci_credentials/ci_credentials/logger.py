@@ -33,7 +33,7 @@ class Logger:
     """
 
     def __init__(self):
-        formatter = MyFormatter(fmt="[%(asctime)s] - %(levelname)-6s - %(message)s", datefmt="%d/%m/%Y %H:%M:%S.%f")
+        formatter = MyFormatter(fmt="[%(asctime)s] - %(levelname)s  - %(message)s", datefmt="%d/%m/%Y %H:%M:%S.%f")
 
         logger_name = __name__
         stack_items = inspect.stack()
@@ -62,11 +62,11 @@ class Logger:
 
                     # show last 3 path items only
                     filepath = "/".join(filepath.split("/")[-3:])
-                    prefix = f"[{filepath}:{line_number}]"
+                    prefix = f"[{filepath}:{line_number}] # "
                     break
             if prefix:
                 args = list(args)
-                args[0] = f"{prefix} # {args[0]}"
+                args[0] = f"{prefix}{args[0]}"
             func(*args)
             if func_name == "critical":
                 sys.exit(1)
