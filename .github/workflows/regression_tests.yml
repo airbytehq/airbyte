@@ -34,7 +34,7 @@ on:
         default: "false"
         type: boolean
       disable_proxy:
-        description: Disable proxy to call requests
+        description: Disable proxy for requests
         default: "false"
         type: boolean
       connection_subset:

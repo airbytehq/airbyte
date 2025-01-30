@@ -180,6 +180,11 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+
+### 0.21.0
+Add `disable_proxy` flag
+
+
 ### 0.20.0
 Support multiple connection objects in the regression tests suite.
 
