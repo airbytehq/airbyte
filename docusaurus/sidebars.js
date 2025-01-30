@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const {
   parseMarkdownContentTitle,
+  parseMarkdownFile,
 } = require("@docusaurus/utils");
 const matter = require("gray-matter");
 
@@ -26,16 +27,23 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
       // Get the first header of the markdown document
-      const fileContent = fs.readFileSync(path.join(dir, `${filename}.md`), 'utf8');
-      const { content } = matter(fileContent);
-      const { contentTitle } = parseMarkdownContentTitle(content);
-      if (!contentTitle) {
-        throw new Error(
-          `Could not parse title from ${path.join(
-            prefix,
-            filename
-          )}. Make sure there's no content above the first heading!`
-        );
+      try {
+        const filePath = path.join(dir, `${filename}.md`);
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const firstLine = fileContent.split('\n').find(line => line.trim().startsWith('# '));
+        const contentTitle = firstLine ? firstLine.replace(/^#\s*/, '').trim() : filename;
+        return {
+          type: 'doc',
+          id: prefix + filename,
+          label: contentTitle || filename
+        };
+      } catch (error) {
+        console.warn(`Warning: Using filename as title for ${path.join(prefix, filename)}`);
+        return {
+          type: 'doc',
+          id: prefix + filename,
+          label: filename
+        };
       }
 
       // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
@@ -369,7 +377,11 @@ const connectorCatalog = {
         sourceMysql,
         sourceMssql,
         ...getSourceConnectors(),
-      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
+      ].sort((itemA, itemB) => {
+        const labelA = itemA?.label || '';
+        const labelB = itemB?.label || '';
+        return labelA.localeCompare(labelB);
+      }),
     },
     {
       type: "category",
@@ -382,7 +394,11 @@ const connectorCatalog = {
         destinationS3,
         destinationPostgres,
         ...getDestinationConnectors(),
-      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
+      ].sort((itemA, itemB) => {
+        const labelA = itemA?.label || '';
+        const labelB = itemB?.label || '';
+        return labelA.localeCompare(labelB);
+      }),
     },
     {
       type: "doc",
@@ -594,9 +610,11 @@ module.exports = {
             type: "doc",
             id: "integrations/enterprise-connectors/README",
           },
-          items: [...getEnterpriseConnectors()].sort((itemA, itemB) =>
-            itemA.label.localeCompare(itemB.label)
-          ),
+          items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
+            const labelA = itemA?.label || '';
+            const labelB = itemB?.label || '';
+            return labelA.localeCompare(labelB);
+          }),
         },
       ],
     },
