@@ -1,0 +1,59 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/kobotoolbox
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Kobotoolbox Spec
+  type: object
+  additionalProperties: true
+  required:
+    - username
+    - password
+    - base_url
+  properties:
+    username:
+      type: string
+      title: Username
+      description: Username to authenticate into the KoboToolBox server
+      order: 1
+    password:
+      type: string
+      title: Password
+      description: Password to authenticate into the KoboToolBox server
+      airbyte_secret: true
+      order: 2
+    base_url:
+      type: string
+      title: Base Url
+      description: Base url for the kobo server
+      enum:
+        - https://kf.kobotoolbox.org
+        - https://kobo.humanitarianresponse.info
+        - https://eu.kobotoolbox.org
+      order: 3
+    start_time:
+      type: string
+      title: Start Time
+      description: Any data before this date will not be replicated.
+      default: "2023-03-15T00:00:00"
+      order: 4
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+    exclude_fields:
+      type: array
+      title: Exclude Fields
+      description: Column names not to sync
+      order: 5
+    forms_using_endtime:
+      type: array
+      title: Forms Using Endtime
+      description: List of forms that use endtime instead of submission time
+      order: 6
+    forms_using_end:
+      type: array
+      title: Forms Using End
+      description: List of forms that use end instead of submission time
+      order: 6
+    max_days_to_close:
+      type: integer
+      title: Max Days To Close
+      description: The maximum number of days between a form's submission date and end date, for those forms listed above
+      default: 30
+      order: 7

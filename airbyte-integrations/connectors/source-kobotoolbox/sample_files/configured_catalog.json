@@ -1,0 +1,16 @@
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "kobo_tool_stream",
+                "json_schema": {},
+                "supported_sync_modes": ["full_refresh", "incremental"],
+                "source_defined_cursor": true,
+                "default_cursor_field": ["_submission_time"]
+            },
+            "sync_mode": "incremental",
+            "cursor_field": ["_submission_time"],
+            "destination_sync_mode": "append"
+        }
+    ]
+}

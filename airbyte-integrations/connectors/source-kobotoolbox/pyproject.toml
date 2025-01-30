@@ -1,0 +1,28 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-kobotoolbox"
+description = "Source implementation for kobotoolbox."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/kobotoolbox"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [ { include = "source_kobotoolbox" }, {include = "main.py" } ]
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = "6.13.0"
+
+[tool.poetry.scripts]
+source-kobotoolbox = "source_kobotoolbox.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"
+

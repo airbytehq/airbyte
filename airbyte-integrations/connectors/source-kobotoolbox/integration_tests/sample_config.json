@@ -1,0 +1,10 @@
+{
+  "username": "username",
+  "password": "password",
+  "base_url": "https://kf.kobotoolbox.org",
+  "start_time": "2023-03-15T00:00:00",
+  "exclude_fields": [],
+  "forms_using_endtime": [],
+  "forms_using_end": [],
+  "max_days_to_close": 30
+}
