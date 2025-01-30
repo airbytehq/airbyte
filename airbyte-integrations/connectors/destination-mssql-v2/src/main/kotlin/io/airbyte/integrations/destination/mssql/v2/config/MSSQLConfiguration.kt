@@ -29,11 +29,13 @@ data class MSSQLConfiguration(
 class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
     DestinationConfigurationFactory<MSSQLSpecification, MSSQLConfiguration> {
 
-    constructor(): this(emptySet())
+    constructor() : this(emptySet())
 
     override fun makeWithoutExceptionHandling(pojo: MSSQLSpecification): MSSQLConfiguration {
-        if (pojo.sslMethod is Unencrypted &&
-            featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)) {
+        if (
+            pojo.sslMethod is Unencrypted &&
+                featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+        ) {
             throw ConfigErrorException("Connection from Airbyte Cloud requires SSL encryption")
         }
         return makeWithOverrides(spec = pojo)
