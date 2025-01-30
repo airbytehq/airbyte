@@ -505,12 +505,7 @@ async def run_command(
         proxy_hostname = f"proxy_server_{command.value}_{execution_inputs.connector_under_test.version.replace('.', '_')}"
         proxy = Proxy(dagger_client, proxy_hostname, connection_objects.connection_id)
 
-    runner = ConnectorRunner(
-        dagger_client,
-        execution_inputs,
-        runs_in_ci,
-        http_proxy=proxy
-    )
+    runner = ConnectorRunner(dagger_client, execution_inputs, runs_in_ci, http_proxy=proxy)
     execution_result = await runner.run()
     return execution_result, proxy
 
