@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.mssql.v2.config
 
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.micronaut.context.annotation.Factory
@@ -24,9 +26,18 @@ data class MSSQLConfiguration(
 }
 
 @Singleton
-class MSSQLConfigurationFactory :
+class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
     DestinationConfigurationFactory<MSSQLSpecification, MSSQLConfiguration> {
+
+    constructor() : this(emptySet())
+
     override fun makeWithoutExceptionHandling(pojo: MSSQLSpecification): MSSQLConfiguration {
+        if (
+            pojo.sslMethod is Unencrypted &&
+                featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+        ) {
+            throw ConfigErrorException("Connection from Airbyte Cloud requires SSL encryption")
+        }
         return makeWithOverrides(spec = pojo)
     }
 
