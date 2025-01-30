@@ -16,6 +16,7 @@ requests = "^2.31"
 cryptography = ">=42.0"
 click = "^8.1.3"
 pyyaml = "^6.0"
+pyjwt = "2.8.0"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.10.0"
