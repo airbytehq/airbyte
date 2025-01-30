@@ -484,17 +484,21 @@ async def run_command(
     test_artifacts_directory: Path,
     duckdb_path: Path,
     runs_in_ci,
+    enable_proxy: bool = True,
 ) -> ExecutionResult:
     """Run the given command for the given connector and connection objects."""
     execution_inputs = get_execution_inputs_for_command(command, connection_objects, connector, test_artifacts_directory, duckdb_path)
     logging.info(f"Running {command} for {connector.target_or_control.value} connector {execution_inputs.connector_under_test.name}")
     proxy_hostname = f"proxy_server_{command.value}_{execution_inputs.connector_under_test.version.replace('.', '_')}"
     proxy = Proxy(dagger_client, proxy_hostname, connection_objects.connection_id)
+    kwargs = {}
+    if enable_proxy:
+        kwargs["http_proxy"] = proxy
     runner = ConnectorRunner(
         dagger_client,
         execution_inputs,
         runs_in_ci,
-        http_proxy=proxy,
+        **kwargs
     )
     execution_result = await runner.run()
     return execution_result, proxy
@@ -510,6 +514,7 @@ async def run_command_and_add_to_report(
     runs_in_ci,
     test_report: TestReport,
     private_details_report: PrivateDetailsReport,
+    enable_proxy: bool = True,
 ) -> ExecutionResult:
     """Run the given command for the given connector and connection objects and add the results to the test report."""
     execution_result, proxy = await run_command(
@@ -520,6 +525,7 @@ async def run_command_and_add_to_report(
         test_artifacts_directory,
         duckdb_path,
         runs_in_ci,
+        enable_proxy=enable_proxy,
     )
     if connector.target_or_control is TargetOrControl.CONTROL:
         test_report.add_control_execution_result(execution_result)
