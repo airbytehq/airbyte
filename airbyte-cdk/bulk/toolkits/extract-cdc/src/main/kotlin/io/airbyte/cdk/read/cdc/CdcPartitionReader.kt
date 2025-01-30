@@ -5,6 +5,7 @@
 package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
@@ -15,7 +16,7 @@ import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.*
+import java.util.Properties
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
@@ -31,12 +32,15 @@ class CdcPartitionReader<T : Comparable<T>>(
     val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
-    val input: DebeziumInput,
+    val debeziumProperties: Map<String, String>,
+    val startingOffset: DebeziumOffset,
+    val startingSchemaHistory: DebeziumSchemaHistory?,
+    val isInputStateSynthetic: Boolean,
 ) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
     private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
     private lateinit var stateFilesAccessor: DebeziumStateFilesAccessor
-    private lateinit var properties: Properties
+    private lateinit var decoratedProperties: Properties
     private lateinit var engine: DebeziumEngine<ChangeEvent<String?, String?>>
 
     internal val closeReasonReference = AtomicReference<CloseReason>()
@@ -64,19 +68,19 @@ class CdcPartitionReader<T : Comparable<T>>(
     }
 
     override suspend fun run() {
-        stateFilesAccessor.writeOffset(input.state.offset)
-        if (input.state.schemaHistory != null) {
-            stateFilesAccessor.writeSchema(input.state.schemaHistory)
+        stateFilesAccessor.writeOffset(startingOffset)
+        if (startingSchemaHistory != null) {
+            stateFilesAccessor.writeSchema(startingSchemaHistory)
         }
-        properties =
+        decoratedProperties =
             DebeziumPropertiesBuilder()
-                .with(input.properties)
+                .with(debeziumProperties)
                 .withOffsetFile(stateFilesAccessor.offsetFilePath)
                 .withSchemaHistoryFile(stateFilesAccessor.schemaFilePath)
                 .build()
         engine =
             DebeziumEngine.create(Json::class.java)
-                .using(properties)
+                .using(decoratedProperties)
                 .using(ConnectorCallback())
                 .using(CompletionCallback())
                 .notifying(EventConsumer(coroutineContext))
@@ -116,15 +120,15 @@ class CdcPartitionReader<T : Comparable<T>>(
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
-        val offset: DebeziumOffset = stateFilesAccessor.readUpdatedOffset(input.state.offset)
+        val offset: DebeziumOffset = stateFilesAccessor.readUpdatedOffset(startingOffset)
         val schemaHistory: DebeziumSchemaHistory? =
-            if (DebeziumPropertiesBuilder().with(properties).expectsSchemaHistoryFile) {
+            if (DebeziumPropertiesBuilder().with(decoratedProperties).expectsSchemaHistoryFile) {
                 stateFilesAccessor.readSchema()
             } else {
                 null
             }
-        val output = DebeziumState(offset, schemaHistory)
-        return PartitionReadCheckpoint(readerOps.serialize(output), numEmittedRecords.get())
+        val serializedState: OpaqueStateValue = readerOps.serializeState(offset, schemaHistory)
+        return PartitionReadCheckpoint(serializedState, numEmittedRecords.get())
     }
 
     inner class EventConsumer(
@@ -173,7 +177,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 // Ignore events which can't be mapped to a stream.
                 ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
             val deserializedRecord: DeserializedRecord =
-                readerOps.deserialize(event.key, event.value, streamRecordConsumer.stream)
+                readerOps.deserializeRecord(event.key, event.value, streamRecordConsumer.stream)
                 // Ignore events which can't be deserialized into records.
                 ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
             // Emit the record at the end of the happy path.
@@ -209,7 +213,7 @@ class CdcPartitionReader<T : Comparable<T>>(
         }
 
         private fun findCloseReason(event: DebeziumEvent, eventType: EventType): CloseReason? {
-            if (input.isSynthetic && eventType != EventType.HEARTBEAT) {
+            if (isInputStateSynthetic && eventType != EventType.HEARTBEAT) {
                 // Special case where the engine started with a synthetic offset:
                 // don't even consider closing the engine unless handling a heartbeat event.
                 // For some databases, such as Oracle, Debezium actually needs to snapshot the
@@ -298,7 +302,6 @@ class CdcPartitionReader<T : Comparable<T>>(
     }
 
     enum class CloseReason(val message: String) {
-        TIMEOUT("timed out"),
         HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION(
             "heartbeat or tombstone indicates that WAL consumption has reached the target position"
         ),
