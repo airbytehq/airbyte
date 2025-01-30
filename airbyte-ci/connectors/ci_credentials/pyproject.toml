@@ -30,7 +30,7 @@ build-backend = "poetry.core.masonry.api"
 ci_credentials = "ci_credentials.main:ci_credentials"
 
 [tool.poe.tasks]
-test = "pytest tests"
+test = "pytest tests --config-file=./pyproject.toml"
 
 [tool.airbyte_ci]
 python_versions = ["3.10"]
