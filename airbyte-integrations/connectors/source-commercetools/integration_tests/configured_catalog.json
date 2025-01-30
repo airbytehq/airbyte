@@ -195,6 +195,34 @@
       },
       "sync_id": null,
       "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": [
+          "lastModifiedAt"
+        ],
+        "is_resumable": true,
+        "json_schema": {},
+        "name": "standalone-prices",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_id": null,
+      "sync_mode": "full_refresh"
     }
   ]
 }

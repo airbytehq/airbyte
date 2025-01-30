@@ -1,0 +1,214 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "active": {
+      "type": "boolean"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "createdBy": {
+      "additionalProperties": true,
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "isPlatformClient": {
+          "type": "boolean"
+        },
+        "user": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "customerGroup": {
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "typeId": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "discounted": {
+      "additionalProperties": true,
+      "properties": {
+        "discount": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "value": {
+          "additionalProperties": true,
+          "properties": {
+            "centAmount": {
+              "type": "integer"
+            },
+            "currencyCode": {
+              "type": "string"
+            },
+            "fractionDigits": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "expiresAt": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "lastMessageSequenceNumber": {
+      "type": "integer"
+    },
+    "lastModifiedAt": {
+      "type": "string"
+    },
+    "lastModifiedBy": {
+      "additionalProperties": true,
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "isPlatformClient": {
+          "type": "boolean"
+        },
+        "user": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "staged": {
+      "additionalProperties": true,
+      "properties": {
+        "discounted": {
+          "additionalProperties": true,
+          "properties": {
+            "discount": {
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "typeId": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "value": {
+              "additionalProperties": true,
+              "properties": {
+                "centAmount": {
+                  "type": "integer"
+                },
+                "currencyCode": {
+                  "type": "string"
+                },
+                "fractionDigits": {
+                  "type": "integer"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "value": {
+          "additionalProperties": true,
+          "properties": {
+            "centAmount": {
+              "type": "integer"
+            },
+            "currencyCode": {
+              "type": "string"
+            },
+            "fractionDigits": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "validFrom": {
+      "type": "string"
+    },
+    "validUntil": {
+      "type": "string"
+    },
+    "value": {
+      "additionalProperties": true,
+      "properties": {
+        "centAmount": {
+          "type": "integer"
+        },
+        "currencyCode": {
+          "type": "string"
+        },
+        "fractionDigits": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "versionModifiedAt": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
