@@ -6,8 +6,6 @@
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
-import pendulum
-
 from airbyte_cdk import TState
 from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
