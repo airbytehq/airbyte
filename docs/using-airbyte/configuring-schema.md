@@ -12,7 +12,7 @@ To learn more about streams and fields, see our [Core Concepts](/using-airbyte/c
 
 On the "Schema" tab of a connection, you choose which streams to sync and how they are loaded to the destination. 
 
-![Enabled Streams](./assets/enabled-streams.png)
+![Enabled Streams](./assets/schema-tab-streams.png)
 
 To modify which streams are enabled:
 
@@ -20,10 +20,10 @@ To modify which streams are enabled:
 
 2. Click the **Schema** tab. All the streams Airbyte has discovered from your source will appear. 
 
-3. Toggle **Sync** on or off for your selected stream. To select or deselect all streams at once, use the summary toggle in the table header. To select or deselect an individual stream, use the toggle in its row. 
+3. Toggle the checkbox on or off for your selected stream. To select or deselect all streams at once, use the summary toggle for all the streams in the namespace. Most sources only have one namespace, so the summary toggle will be located in the header. To select or deselect an individual stream, use the toggle in its row. 
 
 :::tip
-Use the toggle "Hide disabled streams" to quickly view all enabled streams or all disabled streams. 
+Use the tabs to show only enabled streams or all disabled streams. 
 ::: 
 
 ## Modify Stream Names
@@ -33,8 +33,8 @@ By default, Airbyte does not add any text to the **Stream prefix**. Streams with
 
 | Source stream name | Stream Prefix | Destination stream name |
 |--|--|--|
-| Accounts |  | Accounts |
-| Accounts | salesforce_ | salesforce_accounts |
+| accounts |  | accounts |
+| accounts | salesforce_ | salesforce_accounts |
 
 Airbyte does not allow for the renaming of individual streams at this time. 
 
@@ -58,9 +58,9 @@ Cursors and Primary Keys that are defined by the source are automatically select
 
 To modify a cursor or primary key for a stream:
 
-1. Click on a specific stream that is enabled.
+1. Click on the toggle for a stream that is enabled to show all it's fields.
 
-2. Select a sync mode specific to the stream.
+2. Select the cursor or primary key from the fields displayed.
 
 3. Save your changes. You may need to `Refresh` or `Clear` your data to ensure data continues syncing successfully.
 
@@ -80,13 +80,11 @@ When you refresh the schema, newly added fields will be selected by default, eve
 
 To select a partial set of fields:
 
-1. Click on a stream to display the stream details panel. A new pane showing all the fields in the stream will open. You'll see each field we detect from the source.
+1. Toggle a stream to display the fields in that stream. The fields will appear nested under the stream name. You'll see each field we detect from the source.
 
-2. Toggle individual fields to include or exclude them in the sync, or use the toggle in the table header to select or deselect all fields at once.
+2. Toggle individual fields to include or exclude them in the sync.
 
-5. Click the **X** to close the stream details panel.
-
-6. Click **Save changes**, or click **Cancel** to discard the changes.
+3. Click **Save changes**, or click **Cancel** to discard the changes.
 
 7. The **Stream configuration changed** dialog may display. This gives you the option to `Refresh` the edited streams when you save your changes. If your destination does not support `Refreshes`, you will need to `Clear` your data instead.
 

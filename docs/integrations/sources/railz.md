@@ -95,6 +95,21 @@ The Railz connector should gracefully handle Railz API limitations under normal 
 
 | Version | Date       | Pull Request                                             | Subject           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------- |
+| 0.1.25 | 2025-01-25 | [52519](https://github.com/airbytehq/airbyte/pull/52519) | Update dependencies |
+| 0.1.24 | 2025-01-18 | [51928](https://github.com/airbytehq/airbyte/pull/51928) | Update dependencies |
+| 0.1.23 | 2025-01-11 | [51318](https://github.com/airbytehq/airbyte/pull/51318) | Update dependencies |
+| 0.1.22 | 2025-01-04 | [50926](https://github.com/airbytehq/airbyte/pull/50926) | Update dependencies |
+| 0.1.21 | 2024-12-28 | [50699](https://github.com/airbytehq/airbyte/pull/50699) | Update dependencies |
+| 0.1.20 | 2024-12-21 | [50266](https://github.com/airbytehq/airbyte/pull/50266) | Update dependencies |
+| 0.1.19 | 2024-12-14 | [49067](https://github.com/airbytehq/airbyte/pull/49067) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.18 | 2024-10-28 | [47114](https://github.com/airbytehq/airbyte/pull/47114) | Update dependencies |
+| 0.1.17 | 2024-10-12 | [46786](https://github.com/airbytehq/airbyte/pull/46786) | Update dependencies |
+| 0.1.16 | 2024-10-05 | [46462](https://github.com/airbytehq/airbyte/pull/46462) | Update dependencies |
+| 0.1.15 | 2024-09-28 | [46182](https://github.com/airbytehq/airbyte/pull/46182) | Update dependencies |
+| 0.1.14 | 2024-09-21 | [45811](https://github.com/airbytehq/airbyte/pull/45811) | Update dependencies |
+| 0.1.13 | 2024-09-14 | [45576](https://github.com/airbytehq/airbyte/pull/45576) | Update dependencies |
+| 0.1.12 | 2024-09-07 | [45317](https://github.com/airbytehq/airbyte/pull/45317) | Update dependencies |
+| 0.1.11 | 2024-08-31 | [45036](https://github.com/airbytehq/airbyte/pull/45036) | Update dependencies |
 | 0.1.10 | 2024-08-24 | [44649](https://github.com/airbytehq/airbyte/pull/44649) | Update dependencies |
 | 0.1.9 | 2024-08-17 | [44206](https://github.com/airbytehq/airbyte/pull/44206) | Update dependencies |
 | 0.1.8 | 2024-08-12 | [43801](https://github.com/airbytehq/airbyte/pull/43801) | Update dependencies |

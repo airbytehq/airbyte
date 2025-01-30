@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.2.16"
+version = "2.3.5"
 name = "source-pipedrive"
 description = "Source implementation for Pipedrive."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_pipedrive"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+python = "^3.10,<3.12"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-pipedrive = "source_pipedrive.run:run"

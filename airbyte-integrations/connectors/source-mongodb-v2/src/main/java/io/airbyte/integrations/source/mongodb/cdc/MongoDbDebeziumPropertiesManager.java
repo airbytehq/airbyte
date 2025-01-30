@@ -96,7 +96,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   protected String createCollectionIncludeString(final List<ConfiguredAirbyteStream> streams, final List<String> cdcStreamNames) {
     return streams.stream()
-        .map(s -> s.getStream().getNamespace() + "." + s.getStream().getName())
+        .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
         .filter(s -> cdcStreamNames.contains(s))
         .collect(Collectors.joining(","));
   }

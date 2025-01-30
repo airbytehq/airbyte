@@ -77,6 +77,21 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.42 | 2025-01-25 | [52551](https://github.com/airbytehq/airbyte/pull/52551) | Update dependencies |
+| 0.1.41 | 2025-01-18 | [51929](https://github.com/airbytehq/airbyte/pull/51929) | Update dependencies |
+| 0.1.40 | 2025-01-11 | [51465](https://github.com/airbytehq/airbyte/pull/51465) | Update dependencies |
+| 0.1.39 | 2024-12-28 | [50827](https://github.com/airbytehq/airbyte/pull/50827) | Update dependencies |
+| 0.1.38 | 2024-12-21 | [50383](https://github.com/airbytehq/airbyte/pull/50383) | Update dependencies |
+| 0.1.37 | 2024-12-14 | [49801](https://github.com/airbytehq/airbyte/pull/49801) | Update dependencies |
+| 0.1.36 | 2024-12-12 | [49443](https://github.com/airbytehq/airbyte/pull/49443) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.35 | 2024-11-04 | [47107](https://github.com/airbytehq/airbyte/pull/47107) | Update dependencies |
+| 0.1.34 | 2024-10-12 | [46780](https://github.com/airbytehq/airbyte/pull/46780) | Update dependencies |
+| 0.1.33 | 2024-10-05 | [46431](https://github.com/airbytehq/airbyte/pull/46431) | Update dependencies |
+| 0.1.32 | 2024-09-28 | [46141](https://github.com/airbytehq/airbyte/pull/46141) | Update dependencies |
+| 0.1.31 | 2024-09-21 | [45823](https://github.com/airbytehq/airbyte/pull/45823) | Update dependencies |
+| 0.1.30 | 2024-09-14 | [45485](https://github.com/airbytehq/airbyte/pull/45485) | Update dependencies |
+| 0.1.29 | 2024-09-07 | [45249](https://github.com/airbytehq/airbyte/pull/45249) | Update dependencies |
+| 0.1.28 | 2024-08-31 | [45044](https://github.com/airbytehq/airbyte/pull/45044) | Update dependencies |
 | 0.1.27 | 2024-08-24 | [44680](https://github.com/airbytehq/airbyte/pull/44680) | Update dependencies |
 | 0.1.26 | 2024-08-17 | [44334](https://github.com/airbytehq/airbyte/pull/44334) | Update dependencies |
 | 0.1.25 | 2024-08-10 | [43647](https://github.com/airbytehq/airbyte/pull/43647) | Update dependencies |

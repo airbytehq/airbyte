@@ -40,6 +40,20 @@ The Commcare source connector supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------- |
+| 0.1.28 | 2025-01-25 | [52319](https://github.com/airbytehq/airbyte/pull/52319) | Update dependencies |
+| 0.1.27 | 2025-01-18 | [51097](https://github.com/airbytehq/airbyte/pull/51097) | Update dependencies |
+| 0.1.26 | 2024-12-28 | [50509](https://github.com/airbytehq/airbyte/pull/50509) | Update dependencies |
+| 0.1.25 | 2024-12-21 | [50064](https://github.com/airbytehq/airbyte/pull/50064) | Update dependencies |
+| 0.1.24 | 2024-12-14 | [49172](https://github.com/airbytehq/airbyte/pull/49172) | Update dependencies |
+| 0.1.23 | 2024-11-25 | [48645](https://github.com/airbytehq/airbyte/pull/48645) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.22 | 2024-10-29 | [47767](https://github.com/airbytehq/airbyte/pull/47767) | Update dependencies |
+| 0.1.21 | 2024-10-28 | [46795](https://github.com/airbytehq/airbyte/pull/46795) | Update dependencies |
+| 0.1.20 | 2024-10-05 | [46413](https://github.com/airbytehq/airbyte/pull/46413) | Update dependencies |
+| 0.1.19 | 2024-09-28 | [46163](https://github.com/airbytehq/airbyte/pull/46163) | Update dependencies |
+| 0.1.18 | 2024-09-21 | [45758](https://github.com/airbytehq/airbyte/pull/45758) | Update dependencies |
+| 0.1.17 | 2024-09-14 | [45549](https://github.com/airbytehq/airbyte/pull/45549) | Update dependencies |
+| 0.1.16 | 2024-09-07 | [45266](https://github.com/airbytehq/airbyte/pull/45266) | Update dependencies |
+| 0.1.15 | 2024-08-31 | [45038](https://github.com/airbytehq/airbyte/pull/45038) | Update dependencies |
 | 0.1.14 | 2024-08-24 | [44714](https://github.com/airbytehq/airbyte/pull/44714) | Update dependencies |
 | 0.1.13 | 2024-08-17 | [44261](https://github.com/airbytehq/airbyte/pull/44261) | Update dependencies |
 | 0.1.12 | 2024-08-10 | [43590](https://github.com/airbytehq/airbyte/pull/43590) | Update dependencies |

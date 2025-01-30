@@ -58,6 +58,20 @@ stringData:
 ```
 </TabItem>
 
+<TabItem label="Azure Key Vault" value="Azure">
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-config-secrets
+type: Opaque
+stringData:
+  azure-key-vault-client-id: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+  azure-key-vault-client-secret: ## KWP6egqixiQeQoKqFZuZq2weRbYoVxMH
+```
+</TabItem>
+
 </Tabs>
 
 ## Values
@@ -73,6 +87,7 @@ If authenticating with credentials, ensure you've already created a Kubernetes s
 global:
   secretsManager:
     type: awsSecretManager
+    secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     awsSecretManager:
       region: <aws-region>
       authenticationType: credentials ## Use "credentials" or "instanceProfile"
@@ -97,11 +112,31 @@ Ensure you've already created a Kubernetes secret containing the credentials blo
 global:
   secretsManager:
     type: googleSecretManager
-    storageSecretName: gcp-cred-secrets
+    secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     googleSecretManager:
       projectId: <project-id>
       credentialsSecretKey: gcp.json
 ```
 
 </TabItem>
+
+<TabItem label="Azure Key Vault" value="Azure">
+
+```yaml
+global:
+  secretsManager:
+    type: azureKeyVault
+    secretsManagerSecretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
+    azureKeyVault:
+      vaultUrl: ## https://my-vault.vault.azure.net/
+      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+      tags: ## Optional - You may add tags to new secrets created by Airbyte.
+        - key: ## e.g. team
+          value: ## e.g. deployments
+        - key: business-unit
+          value: engineering
+```
+
+</TabItem>
+
 </Tabs>

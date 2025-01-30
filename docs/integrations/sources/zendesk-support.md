@@ -56,14 +56,16 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 ### Set up the Zendesk Support connector in Airbyte
 
 <!-- env:cloud -->
+
 #### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
 4. Enter a name for the Zendesk Support connector.
-<!-- /env:cloud -->
-<!-- env:oss -->
+   <!-- /env:cloud -->
+   <!-- env:oss -->
+
 #### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
@@ -114,6 +116,7 @@ The Zendesk Support source connector supports the following streams:
 - [Article Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Attribute Definitions](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions)
 - [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
+- [Automations](https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 - [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
 - [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
@@ -138,6 +141,7 @@ The Zendesk Support source connector supports the following streams:
 - [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
 - [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
 - [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Incremental\)
+- [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
@@ -147,7 +151,7 @@ The Zendesk Support source connector supports the following streams:
 The Zendesk Support connector fetches deleted records in the following streams:
 
 | Stream                   | Deletion indicator field |
-|:-------------------------|:-------------------------|
+| :----------------------- | :----------------------- |
 | **Brands**               | `is_deleted`             |
 | **Groups**               | `deleted`                |
 | **Organizations**        | `deleted_at`             |
@@ -181,7 +185,21 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.2 | 2025-01-11 | [48309](https://github.com/airbytehq/airbyte/pull/48309) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 4.4.1 | 2024-12-13 | [48889](https://github.com/airbytehq/airbyte/pull/48889) | Check if `start_date` exist in check operation |
+| 4.4.0 | 2024-11-11 | [48379](https://github.com/airbytehq/airbyte/pull/48379) | Make DatetimeBasedCursor syncs concurrent |
+| 4.3.3 | 2024-10-28 | [47663](https://github.com/airbytehq/airbyte/pull/47663) | Update dependencies |
+| 4.3.2 | 2024-10-21 | [47202](https://github.com/airbytehq/airbyte/pull/47202) | Update dependencies and expected records |
+| 4.3.1 | 2024-10-12 | [46794](https://github.com/airbytehq/airbyte/pull/46794) | Update dependencies |
+| 4.3.0 | 2024-10-09 | [46096](https://github.com/airbytehq/airbyte/pull/46096) | Updates `TicketMetrics` stream for improved reliability for long syncs, updates state cursor field to `_ab_updated_at`, automatically migrates legacy state |
+| 4.2.3 | 2024-10-05 | [46408](https://github.com/airbytehq/airbyte/pull/46408) | Update dependencies |
+| 4.2.2 | 2024-09-28 | [45784](https://github.com/airbytehq/airbyte/pull/45784) | Update dependencies |
+| 4.2.1 | 2024-09-14 | [45561](https://github.com/airbytehq/airbyte/pull/45561) | Update dependencies |
+| 4.2.0 | 2024-09-10 | [44610](https://github.com/airbytehq/airbyte/pull/44610) | Add `Automations` and `Triggers` stream |
+| 4.1.1 | 2024-09-07 | [45215](https://github.com/airbytehq/airbyte/pull/45215) | Update dependencies |
+| 4.1.0 | 2024-09-06 | [45187](https://github.com/airbytehq/airbyte/pull/45187) | Migrate to CDK v5 |
+| 4.0.2 | 2024-08-31 | [44965](https://github.com/airbytehq/airbyte/pull/44965) | Update dependencies |
 | 4.0.1 | 2024-08-24 | [44692](https://github.com/airbytehq/airbyte/pull/44692) | Update dependencies |
 | 4.0.0 | 2024-08-19 | [44096](https://github.com/airbytehq/airbyte/pull/44096) | Stream `Tags`: use cursor based pagination |
 | 3.0.1 | 2024-08-17 | [44324](https://github.com/airbytehq/airbyte/pull/44324) | Update dependencies |

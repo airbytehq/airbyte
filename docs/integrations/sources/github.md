@@ -138,6 +138,9 @@ This connector outputs the following incremental streams:
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ### Notes
 
 1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the listed above streams are pure incremental meaning that they:
@@ -222,6 +225,23 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.23 | 2025-01-25 | [52364](https://github.com/airbytehq/airbyte/pull/52364) | Update dependencies |
+| 1.8.22 | 2025-01-18 | [51666](https://github.com/airbytehq/airbyte/pull/51666) | Update dependencies |
+| 1.8.21 | 2025-01-11 | [51130](https://github.com/airbytehq/airbyte/pull/51130) | Update dependencies |
+| 1.8.20 | 2025-01-04 | [50517](https://github.com/airbytehq/airbyte/pull/50517) | Update dependencies |
+| 1.8.19 | 2024-12-21 | [50055](https://github.com/airbytehq/airbyte/pull/50055) | Update dependencies |
+| 1.8.18 | 2024-12-14 | [49178](https://github.com/airbytehq/airbyte/pull/49178) | Update dependencies |
+| 1.8.17 | 2024-11-25 | [48631](https://github.com/airbytehq/airbyte/pull/48631) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.8.16 | 2024-11-05 | [48318](https://github.com/airbytehq/airbyte/pull/48318) | Update dependencies |
+| 1.8.15 | 2024-10-28 | [47051](https://github.com/airbytehq/airbyte/pull/47051) | Update dependencies |
+| 1.8.14 | 2024-10-12 | [46766](https://github.com/airbytehq/airbyte/pull/46766) | Update dependencies |
+| 1.8.13 | 2024-10-05 | [46415](https://github.com/airbytehq/airbyte/pull/46415) | Update dependencies |
+| 1.8.12 | 2024-09-28 | [46117](https://github.com/airbytehq/airbyte/pull/46117) | Update dependencies |
+| 1.8.11 | 2024-09-21 | [45742](https://github.com/airbytehq/airbyte/pull/45742) | Update dependencies |
+| 1.8.10 | 2024-09-14 | [45557](https://github.com/airbytehq/airbyte/pull/45557) | Update dependencies |
+| 1.8.9 | 2024-09-07 | [45320](https://github.com/airbytehq/airbyte/pull/45320) | Update dependencies |
+| 1.8.8 | 2024-08-23 | [44592](https://github.com/airbytehq/airbyte/pull/44592) | Fix state handling for stream WorkflowRuns |
+| 1.8.7 | 2024-08-31 | [45061](https://github.com/airbytehq/airbyte/pull/45061) | Update dependencies |
 | 1.8.6 | 2024-08-24 | [44703](https://github.com/airbytehq/airbyte/pull/44703) | Update dependencies |
 | 1.8.5 | 2024-08-17 | [44227](https://github.com/airbytehq/airbyte/pull/44227) | Update dependencies |
 | 1.8.4 | 2024-08-12 | [43749](https://github.com/airbytehq/airbyte/pull/43749) | Update dependencies |

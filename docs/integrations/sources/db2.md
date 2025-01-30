@@ -63,12 +63,14 @@ You can also enter your own password for the keystore, but if you don't, the pas
 
 | Version | Date       | Pull Request                                                                                                  | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| 0.2.2   | 2024-02-13 | [35233](https://github.com/airbytehq/airbyte/pull/35233)                                                      | Adopt CDK 0.20.4                                                                                                                          |
-| 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453)                                                      | bump CDK version                                                                                                                          |
-| 0.2.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485)                                                      | Remove LEGACY state                                                                                                                       |
-| 0.1.20  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212)                                                      | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                  |
-| 0.1.19  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760)                                                      | Removed redundant date-time datatypes formatting                                                                                          |
-| 0.1.18  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455)                                                      | For network isolation, source connector accepts a list of hosts it is allowed to connect to                                               |
+| 0.2.4 | 2025-01-10 | [51502](https://github.com/airbytehq/airbyte/pull/51502) | Use a non root base image |
+| 0.2.3 | 2024-12-18 | [49909](https://github.com/airbytehq/airbyte/pull/49909) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.2.2 | 2024-02-13 | [35233](https://github.com/airbytehq/airbyte/pull/35233) | Adopt CDK 0.20.4 |
+| 0.2.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
+| 0.2.0 | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Remove LEGACY state |
+| 0.1.20 | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase |
+| 0.1.19 | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting |
+| 0.1.18 | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect to |
 | 0.1.17  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)                                                      | Consolidate date/time values mapping for JDBC sources                                                                                     |
 |         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238)                                                      | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.1.16  | 2022-09-06 | [16354](https://github.com/airbytehq/airbyte/pull/16354)                                                      | Add custom JDBC params                                                                                                                    |

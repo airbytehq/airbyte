@@ -25,7 +25,7 @@ env:
 jobs:
   publish-bulk-cdk:
     name: Publish Bulk CDK
-    runs-on: connector-test-large
+    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 30
     steps:
       - name: Checkout Airbyte
@@ -95,7 +95,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
-          channel-id: C04J1M66D8B
+          channel-id: C07K1P3UL6Q # The `#dev-java-cdk-releases` channel
           payload: |
             {
                 "text": "Error while publishing Bulk CDK!",
@@ -124,7 +124,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
-          channel-id: C04J1M66D8B
+          channel-id: C07K1P3UL6Q # The `#dev-java-cdk-releases` channel
           payload: |
             {
                 "text": "Bulk CDK version 0.${{ env.BUILD_NUMBER }} published successfully!",

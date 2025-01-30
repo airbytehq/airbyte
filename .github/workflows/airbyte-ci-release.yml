@@ -43,6 +43,8 @@ jobs:
       - name: Install Poetry
         id: install_poetry
         uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
 
       - name: Install Dependencies
         id: install_dependencies
@@ -54,7 +56,7 @@ jobs:
         working-directory: airbyte-ci/connectors/pipelines/
         run: poetry run poe build-release-binary ${{ env.BINARY_FILE_NAME }}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: airbyte-ci-${{ matrix.os }}-${{ steps.get_short_sha.outputs.sha }}
           path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
@@ -87,7 +89,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         working-directory: airbyte-ci/connectors/pipelines/
         run: |
-          echo "::set-output name=version::$(poetry version --short)"
+          echo "version=$(poetry version --short)" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud Prod
         id: auth_prod

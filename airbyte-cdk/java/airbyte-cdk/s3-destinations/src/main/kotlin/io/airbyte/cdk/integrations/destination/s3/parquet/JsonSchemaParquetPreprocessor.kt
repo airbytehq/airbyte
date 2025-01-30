@@ -36,6 +36,15 @@ class JsonSchemaParquetPreprocessor : JsonSchemaIdentityMapper() {
                 AirbyteJsonSchemaType.UNION,
                 AirbyteJsonSchemaType.COMBINED ->
                     throw IllegalStateException("Nested unions are not supported")
+                // Parquet has a native JSON type, which we would ideally use here.
+                // Unfortunately, we're currently building parquet schemas via
+                // Avro schemas, and Avro doesn't have a native JSON type.
+                // So for now, we assume that the JsonSchemaAvroPreprocessor
+                // was invoked before this preprocessor.
+                AirbyteJsonSchemaType.UNKNOWN ->
+                    throw IllegalStateException(
+                        "JSON fields should be converted to string upstream of this processor"
+                    )
             }
         }
     }

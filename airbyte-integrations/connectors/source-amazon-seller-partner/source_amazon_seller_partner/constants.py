@@ -31,6 +31,7 @@ Singapore	A19VAU5U5O7RUS	SG
 Australia	A39IBJ37TRP1C6	AU
 Japan	A1VC38T7YXB528	JP
 """
+
 from enum import Enum
 from typing import Dict, Tuple
 

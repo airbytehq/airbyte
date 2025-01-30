@@ -7,13 +7,15 @@ import os
 from multiprocessing import Process
 from typing import Optional
 
+from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
+
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_milvus.config import MilvusIndexingConfigModel
-from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
+
 
 CLOUD_DEPLOYMENT_MODE = "cloud"
 

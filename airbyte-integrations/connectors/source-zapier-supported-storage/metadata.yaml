@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: b8c917bc-7d1b-4828-995f-6726820266d0
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.10
   dockerRepository: airbyte/source-zapier-supported-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/zapier-supported-storage
   githubIssueLabel: source-zapier-supported-storage
@@ -16,7 +16,7 @@ data:
   name: Zapier Supported Storage
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha

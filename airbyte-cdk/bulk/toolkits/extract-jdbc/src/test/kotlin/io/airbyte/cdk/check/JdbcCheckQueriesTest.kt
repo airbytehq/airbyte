@@ -22,6 +22,12 @@ class JdbcCheckQueriesTest {
     @Inject lateinit var checkQueries: JdbcCheckQueries
 
     @Test
+    fun testEmpty() {
+        val empty = JdbcCheckQueries()
+        Assertions.assertDoesNotThrow { h2.createConnection().use { empty.executeAll(it) } }
+    }
+
+    @Test
     @Property(name = "$Q[0]", value = "SELECT DATABASE_PATH() FROM DUAL")
     fun testPass() {
         Assertions.assertDoesNotThrow { h2.createConnection().use { checkQueries.executeAll(it) } }

@@ -65,6 +65,19 @@ an Orb Account and API Key.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                               |
 |---------|------------| -------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.7 | 2025-01-25 | [52516](https://github.com/airbytehq/airbyte/pull/52516) | Update dependencies |
+| 2.1.6 | 2025-01-18 | [51886](https://github.com/airbytehq/airbyte/pull/51886) | Update dependencies |
+| 2.1.5 | 2025-01-11 | [51350](https://github.com/airbytehq/airbyte/pull/51350) | Update dependencies |
+| 2.1.4 | 2024-12-28 | [50741](https://github.com/airbytehq/airbyte/pull/50741) | Update dependencies |
+| 2.1.3 | 2024-12-21 | [50228](https://github.com/airbytehq/airbyte/pull/50228) | Update dependencies |
+| 2.1.2 | 2024-12-14 | [49693](https://github.com/airbytehq/airbyte/pull/49693) | Update dependencies |
+| 2.1.1 | 2024-12-12 | [48296](https://github.com/airbytehq/airbyte/pull/48296) | Update dependencies |
+| 2.1.0 | 2024-10-23 | [47288](https://github.com/airbytehq/airbyte/pull/47288) | Migrate to manifest only format |
+| 2.0.14 | 2024-10-29 | [46770](https://github.com/airbytehq/airbyte/pull/46770) | Update dependencies |
+| 2.0.13 | 2024-10-05 | [46395](https://github.com/airbytehq/airbyte/pull/46395) | Update dependencies |
+| 2.0.12 | 2024-09-28 | [45785](https://github.com/airbytehq/airbyte/pull/45785) | Update dependencies |
+| 2.0.11 | 2024-09-14 | [45472](https://github.com/airbytehq/airbyte/pull/45472) | Update dependencies |
+| 2.0.10 | 2024-09-07 | [45212](https://github.com/airbytehq/airbyte/pull/45212) | Update dependencies |
 | 2.0.9 | 2024-08-24 | [44626](https://github.com/airbytehq/airbyte/pull/44626) | Update dependencies |
 | 2.0.8 | 2024-08-10 | [43601](https://github.com/airbytehq/airbyte/pull/43601) | Update dependencies |
 | 2.0.7 | 2024-08-03 | [43163](https://github.com/airbytehq/airbyte/pull/43163) | Update dependencies |

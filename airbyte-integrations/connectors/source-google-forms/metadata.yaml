@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "forms.googleapis.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-google-forms
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4100f944-1bef-4a73-a1c6-6042e3137749
+  dockerImageTag: 0.0.7
+  dockerRepository: airbyte/source-google-forms
+  githubIssueLabel: source-google-forms
+  icon: icon.svg
+  license: MIT
+  name: Google Forms
+  releaseDate: 2024-11-09
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-forms
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

@@ -20,7 +20,7 @@ class H2SourceIntegrationTest {
     fun testCheckFailBadConfig() {
         SyncsTestFixture.testCheck(
             configPojo =
-                H2SourceConfigurationJsonObject().apply {
+                H2SourceConfigurationSpecification().apply {
                     port = -1
                     database = ""
                 },
@@ -32,7 +32,7 @@ class H2SourceIntegrationTest {
     fun testCheckFailNoDatabase() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
-                H2SourceConfigurationJsonObject().apply {
+                H2SourceConfigurationSpecification().apply {
                     port = h2.port
                     database = h2.database + "_garbage"
                 }
@@ -44,7 +44,7 @@ class H2SourceIntegrationTest {
     fun testCheckFailNoTables() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
-                H2SourceConfigurationJsonObject().apply {
+                H2SourceConfigurationSpecification().apply {
                     port = h2.port
                     database = h2.database
                 }
@@ -57,7 +57,7 @@ class H2SourceIntegrationTest {
         H2TestFixture().use { h2: H2TestFixture ->
             h2.createConnection().use(Companion::prelude)
             val configPojo =
-                H2SourceConfigurationJsonObject().apply {
+                H2SourceConfigurationSpecification().apply {
                     port = h2.port
                     database = h2.database
                 }
@@ -72,7 +72,7 @@ class H2SourceIntegrationTest {
             Testcontainers.exposeHostPorts(h2.port)
             SshBastionContainer(tunnelingToHostPort = h2.port).use { ssh: SshBastionContainer ->
                 val configPojo =
-                    H2SourceConfigurationJsonObject().apply {
+                    H2SourceConfigurationSpecification().apply {
                         host =
                             DOCKER_HOST_FROM_WITHIN_CONTAINER // required only because of container
                         port = h2.port
@@ -91,7 +91,7 @@ class H2SourceIntegrationTest {
         H2TestFixture().use { h2: H2TestFixture ->
             h2.createConnection().use(Companion::prelude)
             val configPojo =
-                H2SourceConfigurationJsonObject().apply {
+                H2SourceConfigurationSpecification().apply {
                     port = h2.port
                     database = h2.database
                 }
@@ -100,25 +100,16 @@ class H2SourceIntegrationTest {
     }
 
     @Test
-    fun testReadGlobal() {
+    fun testDiscoverFakeCdc() {
         H2TestFixture().use { h2: H2TestFixture ->
+            h2.createConnection().use(Companion::prelude)
             val configPojo =
-                H2SourceConfigurationJsonObject().apply {
+                H2SourceConfigurationSpecification().apply {
                     port = h2.port
                     database = h2.database
                     setCursorMethodValue(CdcCursor)
-                    resumablePreferred = false
                 }
-            SyncsTestFixture.testSyncs(
-                configPojo,
-                h2::createConnection,
-                Companion::prelude,
-                "h2source/expected-cdc-catalog.json",
-                "h2source/cdc-catalog.json",
-                SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "h2source/expected-messages-global-cold-start.json",
-                ),
-            )
+            SyncsTestFixture.testDiscover(configPojo, "h2source/expected-fake-cdc-catalog.json")
         }
     }
 
@@ -126,7 +117,7 @@ class H2SourceIntegrationTest {
     fun testReadStreams() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
-                H2SourceConfigurationJsonObject().apply {
+                H2SourceConfigurationSpecification().apply {
                     port = h2.port
                     database = h2.database
                     resumablePreferred = true
@@ -151,7 +142,7 @@ class H2SourceIntegrationTest {
     fun testReadStreamStateTooFarAhead() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
-                H2SourceConfigurationJsonObject().apply {
+                H2SourceConfigurationSpecification().apply {
                     port = h2.port
                     database = h2.database
                     resumablePreferred = true
@@ -173,7 +164,7 @@ class H2SourceIntegrationTest {
     fun testReadBadCatalog() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
-                H2SourceConfigurationJsonObject().apply {
+                H2SourceConfigurationSpecification().apply {
                     port = h2.port
                     database = h2.database
                     resumablePreferred = true

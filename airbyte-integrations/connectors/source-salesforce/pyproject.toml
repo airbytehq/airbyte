@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.5.29"
+version = "2.6.4"
 name = "source-salesforce"
 description = "Source implementation for Salesforce."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,9 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_salesforce"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-pandas = "2.2.1"
-airbyte-cdk = "^2"
+python = "^3.10,<3.12"
+airbyte-cdk = "^5.10.2"
 
 [tool.poetry.scripts]
 source-salesforce = "source_salesforce.run:run"

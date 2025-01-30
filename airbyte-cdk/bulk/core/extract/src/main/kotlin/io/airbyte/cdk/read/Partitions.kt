@@ -9,19 +9,19 @@ import io.airbyte.cdk.read.PartitionsCreator.TryAcquireResourcesStatus
  * entrypoint to how READ operations are executed for that connector, via the [PartitionsCreator]
  * and [PartitionReader] instances which are ultimately created by it.
  */
-fun interface PartitionsCreatorFactory {
+interface PartitionsCreatorFactory {
     /**
-     * Returns a [PartitionsCreator] which will cause the READ to advance for this particular [feed]
-     * when possible. A [StateQuerier] is provided to obtain the current [OpaqueStateValue] for this
-     * [feed] but may also be used to peek at the state of other [Feed]s. This may be useful for
-     * synchronizing the READ for this [feed] by waiting for other [Feed]s to reach a desired state
-     * before proceeding; the waiting may be triggered by [PartitionsCreator.tryAcquireResources] or
-     * [PartitionReader.tryAcquireResources].
+     * Returns a [PartitionsCreator] which will cause the READ to advance for the [Feed] for which
+     * the [FeedBootstrap] argument is associated to. The latter exposes a [StateQuerier] to obtain
+     * the current [OpaqueStateValue] for this [feed] but may also be used to peek at the state of
+     * other [Feed]s. This may be useful for synchronizing the READ for this [feed] by waiting for
+     * other [Feed]s to reach a desired state before proceeding; the waiting may be triggered by
+     * [PartitionsCreator.tryAcquireResources] or [PartitionReader.tryAcquireResources].
+     *
+     * Returns null when the factory is unable to generate a [PartitionsCreator]. This causes
+     * another factory to be used instead.
      */
-    fun make(
-        stateQuerier: StateQuerier,
-        feed: Feed,
-    ): PartitionsCreator
+    fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator?
 }
 
 /**
@@ -154,3 +154,6 @@ data class PartitionReadCheckpoint(
     val opaqueStateValue: OpaqueStateValue,
     val numRecords: Long,
 )
+
+/** A [PartitionReader] with no time limit for its execution. */
+interface UnlimitedTimePartitionReader : PartitionReader

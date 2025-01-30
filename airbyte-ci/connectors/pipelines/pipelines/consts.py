@@ -10,12 +10,11 @@ from dagger import Platform
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 MANIFEST_FILE_PATH = "manifest.yaml"
+COMPONENTS_FILE_PATH = "components.py"
 LICENSE_SHORT_FILE_PATH = "LICENSE_SHORT"
 CONNECTOR_TESTING_REQUIREMENTS = [
     "pip==21.3.1",
     "mccabe==0.6.1",
-    # "flake8==4.0.1",
-    # "pyproject-flake8==0.0.1a2",
     "pytest==6.2.5",
     "coverage[toml]==6.3.1",
     "pytest-custom_exit_code",
@@ -33,7 +32,6 @@ LOCAL_MACHINE_TYPE = platform.machine()
 LOCAL_BUILD_PLATFORM = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[LOCAL_MACHINE_TYPE]
 AMAZONCORRETTO_IMAGE = "amazoncorretto:21-al2023"
 NODE_IMAGE = "node:18.18.0-slim"
-GO_IMAGE = "golang:1.17"
 PYTHON_3_10_IMAGE = "python:3.10.13-slim"
 MAVEN_IMAGE = "maven:3.9.6-amazoncorretto-21-al2023"
 DOCKER_VERSION = "24"
@@ -69,6 +67,8 @@ MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES = ["Regression Tests"]
 
 PUBLISH_UPDATES_SLACK_CHANNEL = "#connector-publish-updates"
 PUBLISH_FAILURE_SLACK_CHANNEL = "#connector-publish-failures"
+# TODO this should be passed via an env var or a CLI input
+PATH_TO_LOCAL_CDK = "../airbyte-python-cdk"
 
 
 class CIContext(str, Enum):

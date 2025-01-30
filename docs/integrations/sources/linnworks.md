@@ -74,6 +74,22 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| 0.1.39 | 2025-01-25 | [51807](https://github.com/airbytehq/airbyte/pull/51807) | Update dependencies |
+| 0.1.38 | 2025-01-11 | [51157](https://github.com/airbytehq/airbyte/pull/51157) | Update dependencies |
+| 0.1.37 | 2024-12-28 | [50634](https://github.com/airbytehq/airbyte/pull/50634) | Update dependencies |
+| 0.1.36 | 2024-12-21 | [50148](https://github.com/airbytehq/airbyte/pull/50148) | Update dependencies |
+| 0.1.35 | 2024-12-14 | [48880](https://github.com/airbytehq/airbyte/pull/48880) | Update dependencies |
+| 0.1.34 | 2024-11-25 | [48665](https://github.com/airbytehq/airbyte/pull/48665) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.33 | 2024-11-04 | [48271](https://github.com/airbytehq/airbyte/pull/48271) | Update dependencies |
+| 0.1.32 | 2024-10-29 | [47877](https://github.com/airbytehq/airbyte/pull/47877) | Update dependencies |
+| 0.1.31 | 2024-10-28 | [47116](https://github.com/airbytehq/airbyte/pull/47116) | Update dependencies |
+| 0.1.30 | 2024-10-12 | [46798](https://github.com/airbytehq/airbyte/pull/46798) | Update dependencies |
+| 0.1.29 | 2024-10-05 | [46406](https://github.com/airbytehq/airbyte/pull/46406) | Update dependencies |
+| 0.1.28 | 2024-09-28 | [46124](https://github.com/airbytehq/airbyte/pull/46124) | Update dependencies |
+| 0.1.27 | 2024-09-21 | [45730](https://github.com/airbytehq/airbyte/pull/45730) | Update dependencies |
+| 0.1.26 | 2024-09-14 | [45571](https://github.com/airbytehq/airbyte/pull/45571) | Update dependencies |
+| 0.1.25 | 2024-09-07 | [45262](https://github.com/airbytehq/airbyte/pull/45262) | Update dependencies |
+| 0.1.24 | 2024-08-31 | [44968](https://github.com/airbytehq/airbyte/pull/44968) | Update dependencies |
 | 0.1.23 | 2024-08-24 | [44740](https://github.com/airbytehq/airbyte/pull/44740) | Update dependencies |
 | 0.1.22 | 2024-08-17 | [44304](https://github.com/airbytehq/airbyte/pull/44304) | Update dependencies |
 | 0.1.21 | 2024-08-10 | [43604](https://github.com/airbytehq/airbyte/pull/43604) | Update dependencies |

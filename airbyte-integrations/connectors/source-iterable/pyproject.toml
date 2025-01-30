@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.6.7"
+version = "0.6.25"
 name = "source-iterable"
 description = "Source implementation for Iterable."
 authors = [ "Airbyte <contact@airbyte.io>",]

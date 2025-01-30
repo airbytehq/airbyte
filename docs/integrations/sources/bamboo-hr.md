@@ -91,6 +91,22 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.5.7 | 2025-01-25 | [52201](https://github.com/airbytehq/airbyte/pull/52201) | Update dependencies |
+| 0.5.6 | 2025-01-18 | [51771](https://github.com/airbytehq/airbyte/pull/51771) | Update dependencies |
+| 0.5.5 | 2025-01-11 | [51263](https://github.com/airbytehq/airbyte/pull/51263) | Update dependencies |
+| 0.5.4 | 2024-12-28 | [50440](https://github.com/airbytehq/airbyte/pull/50440) | Update dependencies |
+| 0.5.3 | 2024-12-21 | [50206](https://github.com/airbytehq/airbyte/pull/50206) | Update dependencies |
+| 0.5.2 | 2024-12-14 | [49543](https://github.com/airbytehq/airbyte/pull/49543) | Update dependencies |
+| 0.5.1 | 2024-12-12 | [49025](https://github.com/airbytehq/airbyte/pull/49025) | Update dependencies |
+| 0.5.0 | 2024-10-28 | [47262](https://github.com/airbytehq/airbyte/pull/47262) | Migrate to Manifest-only |
+| 0.4.14 | 2024-10-28 | [47072](https://github.com/airbytehq/airbyte/pull/47072) | Update dependencies |
+| 0.4.13 | 2024-10-12 | [46842](https://github.com/airbytehq/airbyte/pull/46842) | Update dependencies |
+| 0.4.12 | 2024-10-05 | [46500](https://github.com/airbytehq/airbyte/pull/46500) | Update dependencies |
+| 0.4.11 | 2024-09-28 | [46157](https://github.com/airbytehq/airbyte/pull/46157) | Update dependencies |
+| 0.4.10 | 2024-09-21 | [45766](https://github.com/airbytehq/airbyte/pull/45766) | Update dependencies |
+| 0.4.9 | 2024-09-14 | [45542](https://github.com/airbytehq/airbyte/pull/45542) | Update dependencies |
+| 0.4.8 | 2024-09-07 | [45210](https://github.com/airbytehq/airbyte/pull/45210) | Update dependencies |
+| 0.4.7 | 2024-08-31 | [44978](https://github.com/airbytehq/airbyte/pull/44978) | Update dependencies |
 | 0.4.6 | 2024-08-24 | [44652](https://github.com/airbytehq/airbyte/pull/44652) | Update dependencies |
 | 0.4.5 | 2024-08-17 | [44272](https://github.com/airbytehq/airbyte/pull/44272) | Update dependencies |
 | 0.4.4 | 2024-08-12 | [43851](https://github.com/airbytehq/airbyte/pull/43851) | Update dependencies |

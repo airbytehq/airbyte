@@ -94,6 +94,24 @@ which will be translated for compatibility with the Glue Data Catalog:
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 |:--------| :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
+| 0.1.44 | 2025-01-25 | [51770](https://github.com/airbytehq/airbyte/pull/51770) | Update dependencies |
+| 0.1.43 | 2025-01-11 | [51289](https://github.com/airbytehq/airbyte/pull/51289) | Update dependencies |
+| 0.1.42 | 2025-01-04 | [50914](https://github.com/airbytehq/airbyte/pull/50914) | Update dependencies |
+| 0.1.41 | 2024-12-28 | [50458](https://github.com/airbytehq/airbyte/pull/50458) | Update dependencies |
+| 0.1.40 | 2024-12-21 | [50220](https://github.com/airbytehq/airbyte/pull/50220) | Update dependencies |
+| 0.1.39 | 2024-12-14 | [48945](https://github.com/airbytehq/airbyte/pull/48945) | Update dependencies |
+| 0.1.38 | 2024-11-25 | [48671](https://github.com/airbytehq/airbyte/pull/48671) | Update dependencies |
+| 0.1.37 | 2024-11-04 | [48243](https://github.com/airbytehq/airbyte/pull/48243) | Update dependencies |
+| 0.1.36 | 2024-10-29 | [47878](https://github.com/airbytehq/airbyte/pull/47878) | Update dependencies |
+| 0.1.35 | 2024-10-28 | [47590](https://github.com/airbytehq/airbyte/pull/47590) | Update dependencies |
+| 0.1.34 | 2024-10-22 | [47091](https://github.com/airbytehq/airbyte/pull/47091) | Update dependencies |
+| 0.1.33 | 2024-10-12 | [46790](https://github.com/airbytehq/airbyte/pull/46790) | Update dependencies |
+| 0.1.32 | 2024-10-05 | [46400](https://github.com/airbytehq/airbyte/pull/46400) | Update dependencies |
+| 0.1.31 | 2024-09-28 | [46126](https://github.com/airbytehq/airbyte/pull/46126) | Update dependencies |
+| 0.1.30 | 2024-09-21 | [45821](https://github.com/airbytehq/airbyte/pull/45821) | Update dependencies |
+| 0.1.29 | 2024-09-14 | [45533](https://github.com/airbytehq/airbyte/pull/45533) | Update dependencies |
+| 0.1.28 | 2024-09-07 | [45328](https://github.com/airbytehq/airbyte/pull/45328) | Update dependencies |
+| 0.1.27 | 2024-08-31 | [45032](https://github.com/airbytehq/airbyte/pull/45032) | Update dependencies |
 | 0.1.26 | 2024-08-24 | [44677](https://github.com/airbytehq/airbyte/pull/44677) | Update dependencies |
 | 0.1.25 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
 | 0.1.24 | 2024-08-17 | [44341](https://github.com/airbytehq/airbyte/pull/44341) | Update dependencies |

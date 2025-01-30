@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "live-tests"
-version = "0.18.6"
+version = "0.21.0"
 description = "Contains utilities for testing connectors against live data."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -19,7 +19,7 @@ python = "^3.10,<3.12"
 airbyte-cdk = "*"
 airbyte-protocol-models = "<1.0.0"
 cachetools = "~=5.3.3"
-dagger-io = "==0.9.6"
+dagger-io = "==0.13.3"
 decorator = ">=5.1.1"
 deepdiff = "6.7.1"
 jsonschema = "*"
@@ -29,7 +29,6 @@ pytest = "^8.1.1"
 pydash = "~=7.0.7"
 docker = ">=6,<7"
 asyncclick = "^8.1.7.1"
-# TODO: when this is open-sourced, don't require connection-retriever
 connection-retriever = {git = "git@github.com:airbytehq/airbyte-platform-internal", subdirectory = "tools/connection-retriever"}
 duckdb = "<=0.10.1"  # Pinned due to this issue https://github.com/duckdb/duckdb/issues/11152
 pandas = "^2.2.1"
@@ -44,16 +43,18 @@ genson = "^1.2.2"
 segment-analytics-python = "^2.3.2"
 python-slugify = ">=8.0.4"
 
-[tool.poetry.scripts]
-live-tests = "live_tests.cli:live_tests"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.3.0"
+ruff = "^0.6"
 mypy = "^1.8.0"
 types-cachetools = "^5.3.0.7"
 pandas-stubs = "^2.2.0.240218"
 types-requests = "^2.31.0.20240311"
 types-pyyaml = "^6.0.12.20240311"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 140
 
 [tool.ruff.lint]
 select = ["I", "F"]

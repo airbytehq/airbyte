@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
+    cdkVersionRequired = '0.44.23'
     features = ['db-destinations']
     useLocalCdk = false
 }
@@ -19,7 +19,7 @@ java {
 airbyteJavaConnector.addCdkDependencies()
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.iceberg.IcebergDestination'
+    mainClass = 'io.airbyte.integrations.destination.iceberg.IcebergDestinationRunner'
 }
 
 dependencies {
@@ -55,8 +55,8 @@ dependencies {
         }
     }
 
-    testImplementation libs.testcontainers.postgresql
-    integrationTestJavaImplementation libs.testcontainers.postgresql
+    testImplementation 'org.testcontainers:postgresql:1.19.0'
+    integrationTestJavaImplementation 'org.testcontainers:postgresql:1.19.0'
 
     testImplementation 'org.mockito:mockito-inline:4.7.0'
 }

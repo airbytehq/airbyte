@@ -148,6 +148,9 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 - [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - Analytics report by custom dimensions
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ## Connector-specific configurations
 
 ### Custom reports
@@ -226,7 +229,16 @@ Google Search Console only retains data for websites from the last 16 months. An
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| 1.5.12 | 2025-01-25 | [52303](https://github.com/airbytehq/airbyte/pull/52303) | Update dependencies |
+| 1.5.11 | 2025-01-18 | [51629](https://github.com/airbytehq/airbyte/pull/51629) | Update dependencies |
+| 1.5.10 | 2025-01-11 | [51129](https://github.com/airbytehq/airbyte/pull/51129) | Update dependencies |
+| 1.5.9 | 2025-01-04 | [50919](https://github.com/airbytehq/airbyte/pull/50919) | Update dependencies |
+| 1.5.8 | 2024-12-28 | [50579](https://github.com/airbytehq/airbyte/pull/50579) | Update dependencies |
+| 1.5.7 | 2024-12-21 | [50040](https://github.com/airbytehq/airbyte/pull/50040) | Update dependencies |
+| 1.5.6 | 2024-12-14 | [49173](https://github.com/airbytehq/airbyte/pull/49173) | Update dependencies |
+| 1.5.5 | 2024-11-25 | [43730](https://github.com/airbytehq/airbyte/pull/43730) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.5.4 | 2024-09-06 | [45196](https://github.com/airbytehq/airbyte/pull/45196) | Fix request body for report streams by keyword |
 | 1.5.3 | 2024-08-03 | [43067](https://github.com/airbytehq/airbyte/pull/43067) | Update dependencies |
 | 1.5.2 | 2024-07-27 | [42786](https://github.com/airbytehq/airbyte/pull/42786) | Update dependencies |
 | 1.5.1 | 2024-07-20 | [42142](https://github.com/airbytehq/airbyte/pull/42142) | Update dependencies |

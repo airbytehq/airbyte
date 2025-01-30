@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.26"
+version = "0.1.44"
 name = "destination-aws-datalake"
 description = "Destination Implementation for AWS Datalake."
 authors = [ "Airbyte <contact@airbyte.io>",]

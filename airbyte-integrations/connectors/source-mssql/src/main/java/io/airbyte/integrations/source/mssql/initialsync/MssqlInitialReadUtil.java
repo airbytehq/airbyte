@@ -436,7 +436,6 @@ public class MssqlInitialReadUtil {
     final JDBCType ocFieldType = table.getFields().stream()
         .filter(field -> field.getName().equals(ocFieldName))
         .findFirst().get().getType();
-
     final String ocMaxValue = MssqlQueryUtils.getMaxOcValueForStream(database, stream, ocFieldName, quoteString);
     return Optional.of(new OrderedColumnInfo(ocFieldName, ocFieldType, ocMaxValue));
   }

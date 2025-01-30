@@ -6,20 +6,20 @@ from typing import Optional, Union
 
 import pandas as pd
 from dagster import OpExecutionContext
-from metadata_service.constants import METADATA_FILE_NAME
-from metadata_service.gcs_upload import get_metadata_remote_file_path
+from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 
 
 def _get_version_specific_registry_entry_file_path(registry_entry, registry_name):
     """Get the file path for the version specific registry entry file."""
-    docker_reposiory = registry_entry.dockerRepository
+    docker_repository = registry_entry.dockerRepository
     docker_version = registry_entry.dockerImageTag
 
-    assumed_metadata_file_path = get_metadata_remote_file_path(docker_reposiory, docker_version)
+    assumed_metadata_file_path = f"{METADATA_FOLDER}/{docker_repository}/{docker_version}/{METADATA_FILE_NAME}"
     registry_entry_file_path = assumed_metadata_file_path.replace(METADATA_FILE_NAME, registry_name)
     return registry_entry_file_path
 

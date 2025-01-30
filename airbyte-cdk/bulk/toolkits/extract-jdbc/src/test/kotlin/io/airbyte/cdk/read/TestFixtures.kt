@@ -6,10 +6,13 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.TestClockFactory
+import io.airbyte.cdk.ClockFactory
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
@@ -20,9 +23,10 @@ import io.airbyte.cdk.output.CatalogValidationFailure
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.SyncMode
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Duration
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import org.junit.jupiter.api.Assertions
 
 object TestFixtures {
@@ -36,10 +40,10 @@ object TestFixtures {
         withCursor: Boolean = true,
     ) =
         Stream(
-            name = "events",
-            namespace = "test",
-            fields = listOf(id, ts, msg),
-            configuredSyncMode = if (withCursor) SyncMode.INCREMENTAL else SyncMode.FULL_REFRESH,
+            id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("events")),
+            schema = setOf(id, ts, msg),
+            configuredSyncMode =
+                if (withCursor) ConfiguredSyncMode.INCREMENTAL else ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = listOf(id).takeIf { withPK },
             configuredCursor = ts.takeIf { withCursor },
         )
@@ -74,14 +78,23 @@ object TestFixtures {
         maxConcurrency: Int = 10,
         maxMemoryBytesForTesting: Long = 1_000_000L,
         constants: DefaultJdbcConstants = DefaultJdbcConstants(),
+        maxSnapshotReadTime: Duration? = null,
         vararg mockedQueries: MockedQuery,
-    ) =
-        DefaultJdbcSharedState(
-            StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency),
-            BufferingOutputConsumer(TestClockFactory().fixed()),
+    ): DefaultJdbcSharedState {
+        val configuration =
+            StubbedJdbcSourceConfiguration(
+                global,
+                checkpointTargetInterval,
+                maxConcurrency,
+                maxSnapshotReadTime
+            )
+        return DefaultJdbcSharedState(
+            configuration,
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
-            constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting)
+            constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
+            ConcurrencyResource(configuration),
         )
+    }
 
     fun DefaultJdbcSharedState.factory() =
         DefaultJdbcPartitionFactory(
@@ -113,6 +126,7 @@ object TestFixtures {
         override val global: Boolean,
         override val checkpointTargetInterval: Duration,
         override val maxConcurrency: Int,
+        override val maxSnapshotReadDuration: Duration?,
     ) : JdbcSourceConfiguration {
         override val realHost: String
             get() = TODO("Not yet implemented")
@@ -145,7 +159,11 @@ object TestFixtures {
             return object : SelectQuerier.Result {
                 val wrapped: Iterator<ObjectNode> = mockedQuery.results.iterator()
                 override fun hasNext(): Boolean = wrapped.hasNext()
-                override fun next(): ObjectNode = wrapped.next()
+                override fun next(): SelectQuerier.ResultRow =
+                    object : SelectQuerier.ResultRow {
+                        override val data: ObjectNode = wrapped.next()
+                        override val changes: Map<Field, FieldValueChange> = emptyMap()
+                    }
                 override fun close() {}
             }
         }
@@ -171,4 +189,39 @@ object TestFixtures {
         override fun generate(ast: SelectQuerySpec): SelectQuery =
             SelectQuery(ast.toString(), listOf(), listOf())
     }
+
+    object MockStateQuerier : StateQuerier {
+        override val feeds: List<Feed> = listOf()
+        override fun current(feed: Feed): OpaqueStateValue? = null
+        override fun resetFeedStates() {
+            // no-op
+        }
+    }
+
+    object MockMetaFieldDecorator : MetaFieldDecorator {
+        override val globalCursor: MetaField? = null
+        override val globalMetaFields: Set<MetaField> = emptySet()
+
+        override fun decorateRecordData(
+            timestamp: OffsetDateTime,
+            globalStateValue: OpaqueStateValue?,
+            stream: Stream,
+            recordData: ObjectNode
+        ) {}
+    }
+
+    fun Stream.bootstrap(opaqueStateValue: OpaqueStateValue?): StreamFeedBootstrap =
+        StreamFeedBootstrap(
+            outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
+            metaFieldDecorator = MockMetaFieldDecorator,
+            stateQuerier =
+                object : StateQuerier {
+                    override val feeds: List<Feed> = listOf(this@bootstrap)
+                    override fun current(feed: Feed): OpaqueStateValue? = opaqueStateValue
+                    override fun resetFeedStates() {
+                        // no-op
+                    }
+                },
+            stream = this
+        )
 }

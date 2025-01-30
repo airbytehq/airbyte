@@ -29,9 +29,9 @@ private val LOGGER = KotlinLogging.logger {}
 
 object Jsons {
 
-    // allow jackson to deserialize anything under 50 MiB
+    // allow jackson to deserialize anything under 100 MiB
     // (the default, at time of writing 2024-05-29, with jackson 2.15.2, is 20 MiB)
-    private const val JSON_MAX_LENGTH = 50 * 1024 * 1024
+    private const val JSON_MAX_LENGTH = 100 * 1024 * 1024
     private val STREAM_READ_CONSTRAINTS =
         StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
 

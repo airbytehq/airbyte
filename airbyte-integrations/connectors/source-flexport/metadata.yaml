@@ -5,17 +5,17 @@ data:
       - flexport.com
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-flexport
   registryOverrides:
     oss:
       enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: f95337f1-2ad1-4baf-922f-2ca9152de630
-  dockerImageTag: 0.2.14
+  dockerImageTag: 0.3.10
   dockerRepository: airbyte/source-flexport
   githubIssueLabel: source-flexport
   icon: flexport.svg
@@ -25,12 +25,12 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/flexport
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
 metadataSpecVersion: "1.0"

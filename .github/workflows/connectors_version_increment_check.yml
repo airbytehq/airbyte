@@ -21,9 +21,9 @@ on:
 jobs:
   connectors_ci:
     name: Connectors Version Increment Check
-    runs-on: connector-test-large
+    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
     if: github.event.pull_request.head.repo.fork != true
-    timeout-minutes: 12
+    timeout-minutes: 22
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -35,13 +35,13 @@ jobs:
       - name: Fetch last commit id from remote branch [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
-        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+        run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
-          # dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }} Commenting this out as we believe Dagger cloud caching is causing excessively long jobs for such a small check
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

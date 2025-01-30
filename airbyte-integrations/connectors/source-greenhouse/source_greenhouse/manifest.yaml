@@ -203,6 +203,11 @@ definitions:
           id:
             description: Unique identifier for the application.
             type: integer
+          job_post_id:
+            decscription: The ID of the job post through which the candidate applied. This value is null if the application was created through other means, e.g. manually adding candidates or importing candidates through sourcing integrations
+            type:
+              - integer
+              - "null"
           current_stage:
             description: Current stage of the application process.
             type:
@@ -3560,7 +3565,7 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["applications"]
+  stream_names: ["users"]
 
 spec:
   type: Spec

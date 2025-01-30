@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "https:"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-sparkpost
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5f3256c6-4247-4b6d-a8e4-1df61dc9322c
+  dockerImageTag: 0.0.11
+  dockerRepository: airbyte/source-sparkpost
+  githubIssueLabel: source-sparkpost
+  icon: icon.svg
+  license: MIT
+  name: SparkPost
+  releaseDate: 2024-10-22
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sparkpost
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

@@ -76,6 +76,22 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 2.0.8 | 2025-01-25 | [52350](https://github.com/airbytehq/airbyte/pull/52350) | Update dependencies |
+| 2.0.7 | 2025-01-18 | [51677](https://github.com/airbytehq/airbyte/pull/51677) | Update dependencies |
+| 2.0.6 | 2024-01-16 | [48537](https://github.com/airbytehq/airbyte/pull/48537) | Update default start and end dates for logs stream, if they are not configured as default |
+| 2.0.5 | 2025-01-11 | [51122](https://github.com/airbytehq/airbyte/pull/51122) | Update dependencies |
+| 2.0.4 | 2024-12-28 | [50567](https://github.com/airbytehq/airbyte/pull/50567) | Update dependencies |
+| 2.0.3 | 2024-12-21 | [49988](https://github.com/airbytehq/airbyte/pull/49988) | Update dependencies |
+| 2.0.2 | 2024-12-14 | [49472](https://github.com/airbytehq/airbyte/pull/49472) | Update dependencies |
+| 2.0.1 | 2024-12-12 | [48300](https://github.com/airbytehq/airbyte/pull/48300) | Update dependencies |
+| 2.0.0 | 2024-12-06 | [48833](https://github.com/airbytehq/airbyte/pull/48833) | Remove `is_read_only` parameter from dashboards stream schema |
+| 1.1.1 | 2024-10-28 | [46502](https://github.com/airbytehq/airbyte/pull/46502) | Update dependencies |
+| 1.1.0 | 2023-10-04 | [46387](https://github.com/airbytehq/airbyte/pull/46387) | Migrate to manifest only |
+| 1.0.6 | 2024-09-28 | [46190](https://github.com/airbytehq/airbyte/pull/46190) | Update dependencies |
+| 1.0.5 | 2024-09-21 | [45771](https://github.com/airbytehq/airbyte/pull/45771) | Update dependencies |
+| 1.0.4 | 2024-09-14 | [45581](https://github.com/airbytehq/airbyte/pull/45581) | Update dependencies |
+| 1.0.3 | 2024-09-07 | [45297](https://github.com/airbytehq/airbyte/pull/45297) | Update dependencies |
+| 1.0.2 | 2024-08-31 | [44992](https://github.com/airbytehq/airbyte/pull/44992) | Update dependencies |
 | 1.0.1 | 2024-08-24 | [44706](https://github.com/airbytehq/airbyte/pull/44706) | Update dependencies |
 | 1.0.0 | 2024-08-19 | [44371](https://github.com/airbytehq/airbyte/pull/44371) | Update CDK version and dependencies, remove parameters and migrate to inline schemas |
 | 0.4.15 | 2024-08-17 | [44313](https://github.com/airbytehq/airbyte/pull/44313) | Update dependencies |

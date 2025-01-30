@@ -78,7 +78,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/retriever/record_selector"
         record_filter:
-          condition: "{{ record[parameters['cursor_field']] >= stream_state.get(parameters['cursor_field'], config.get('start_date')) }}"
+          condition: "{{ record[parameters['cursor_field']] >= stream_interval.get('start_time', config.get('start_date')) }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
@@ -87,7 +87,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
       start_datetime:
-        datetime: "{{ config.get('start_date') }}"
+        datetime: "{{ config.get('start_date') or day_delta(-730, '%Y-%m-%dT%H:%M:%SZ') }}"
 
   cursor_incremental_sync:
     type: DatetimeBasedCursor
@@ -98,7 +98,7 @@ definitions:
     datetime_format: "%s"
     cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
     start_datetime:
-      datetime: "{{ timestamp(config.get('start_date')) | int or day_delta(-730, '%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else day_delta(-730, '%s') }}"
     start_time_option:
       inject_into: request_parameter
       field_name: "{{ parameters['cursor_filter'] }}"
@@ -198,6 +198,17 @@ definitions:
       name: "tags"
       path: "tags"
       primary_key: "name"
+
+  automations_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "automations"
+      path: "automations"
+      primary_key: "id"
 
   # Incremental cursor-based streams
   audit_logs_stream:
@@ -554,6 +565,14 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  triggers_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    $parameters:
+      name: "triggers"
+      path: "triggers"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
   users_stream:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
@@ -581,6 +600,7 @@ streams:
   - $ref: "#/definitions/ticket_forms_stream"
   - $ref: "#/definitions/topics_stream"
   - $ref: "#/definitions/user_fields_stream"
+  - $ref: "#/definitions/automations_stream"
   # Incremental streams
   - $ref: "#/definitions/audit_logs_stream"
   - $ref: "#/definitions/groups_stream"
@@ -595,4 +615,18 @@ streams:
   - $ref: "#/definitions/ticket_comments_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
+  - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"
+
+# Zendesk Support offers four tiers of rate limits:
+# - Team: 200 req/min (3.3 req/sec)
+# - Professional: 400 req/min (6.7 req/sec)
+# - Enterprise: 700 req/min (11.7 req/sec)
+# - High Volume API add-on: 2500 req/min (41.7 req/sec)
+#
+# We use defer to a level of 3 because we assume by default that customers are on the Team tier, but
+# customers can specify a higher concurrency level as needed up to the theoretical max rate limit.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 40

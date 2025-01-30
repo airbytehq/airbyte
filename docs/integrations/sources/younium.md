@@ -46,6 +46,19 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.4.6 | 2025-01-25 | [52423](https://github.com/airbytehq/airbyte/pull/52423) | Update dependencies |
+| 0.4.5 | 2025-01-18 | [51956](https://github.com/airbytehq/airbyte/pull/51956) | Update dependencies |
+| 0.4.4 | 2025-01-11 | [51416](https://github.com/airbytehq/airbyte/pull/51416) | Update dependencies |
+| 0.4.3 | 2024-12-28 | [50781](https://github.com/airbytehq/airbyte/pull/50781) | Update dependencies |
+| 0.4.2 | 2024-12-21 | [49787](https://github.com/airbytehq/airbyte/pull/49787) | Update dependencies |
+| 0.4.1 | 2024-12-12 | [46856](https://github.com/airbytehq/airbyte/pull/46856) | Update dependencies |
+| 0.4.0 | 2024-10-23 | [47281](https://github.com/airbytehq/airbyte/pull/47281) | Migrate to Manifest-only |
+| 0.3.22 | 2024-10-05 | [46432](https://github.com/airbytehq/airbyte/pull/46432) | Update dependencies |
+| 0.3.21 | 2024-09-28 | [46176](https://github.com/airbytehq/airbyte/pull/46176) | Update dependencies |
+| 0.3.20 | 2024-09-21 | [45807](https://github.com/airbytehq/airbyte/pull/45807) | Update dependencies |
+| 0.3.19 | 2024-09-14 | [45475](https://github.com/airbytehq/airbyte/pull/45475) | Update dependencies |
+| 0.3.18 | 2024-09-07 | [45276](https://github.com/airbytehq/airbyte/pull/45276) | Update dependencies |
+| 0.3.17 | 2024-08-31 | [45054](https://github.com/airbytehq/airbyte/pull/45054) | Update dependencies |
 | 0.3.16 | 2024-08-24 | [44711](https://github.com/airbytehq/airbyte/pull/44711) | Update dependencies |
 | 0.3.15 | 2024-08-17 | [44362](https://github.com/airbytehq/airbyte/pull/44362) | Update dependencies |
 | 0.3.14 | 2024-08-12 | [43925](https://github.com/airbytehq/airbyte/pull/43925) | Update dependencies |

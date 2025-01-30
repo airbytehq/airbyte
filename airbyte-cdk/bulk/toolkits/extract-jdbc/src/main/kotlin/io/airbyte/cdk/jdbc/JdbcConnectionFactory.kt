@@ -26,12 +26,15 @@ private val log = KotlinLogging.logger {}
 class JdbcConnectionFactory(
     val config: JdbcSourceConfiguration,
 ) : Supplier<Connection> {
+
+    fun ensureTunnelSession(): TunnelSession =
+        tunnelSessions.computeIfAbsent(config) {
+            val remote = SshdSocketAddress(it.realHost.trim(), it.realPort)
+            createTunnelSession(remote, it.sshTunnel, it.sshConnectionOptions)
+        }
+
     override fun get(): Connection {
-        val tunnelSession =
-            tunnelSessions.computeIfAbsent(config) {
-                val remote = SshdSocketAddress(it.realHost.trim(), it.realPort)
-                createTunnelSession(remote, it.sshTunnel, it.sshConnectionOptions)
-            }
+        val tunnelSession: TunnelSession = ensureTunnelSession()
         val jdbcUrl: String =
             String.format(
                 config.jdbcUrlFmt,

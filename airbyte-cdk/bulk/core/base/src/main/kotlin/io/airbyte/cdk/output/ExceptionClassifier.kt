@@ -15,6 +15,16 @@ interface ExceptionClassifier : Ordered {
     val orderValue: Int
 
     override fun getOrder(): Int = orderValue
+
+    companion object {
+        fun unwind(e: Throwable, stopUnwind: (Throwable) -> Boolean): Throwable? {
+            var unwound = e
+            while (!stopUnwind(unwound)) {
+                unwound = unwound.cause ?: return null
+            }
+            return unwound
+        }
+    }
 }
 
 /** Each [ConnectorError] subtype corresponds to a [AirbyteErrorTraceMessage.FailureType]. */
@@ -54,10 +64,8 @@ interface RuleBasedExceptionClassifier<T : RuleBasedExceptionClassifier.Rule> :
 
     override fun classify(e: Throwable): ConnectorError? {
         for (rule in rules) {
-            if (!rule.matches(e)) {
-                continue
-            }
-            val message: String = rule.output ?: e.message ?: e.toString()
+            val match: Throwable = ExceptionClassifier.unwind(e, rule::matches) ?: continue
+            val message: String = rule.output ?: match.message ?: match.toString()
             val firstLine: String = if (rule.group == null) message else "${rule.group}: $message"
             val lines: List<String> = listOf(firstLine) + rule.referenceLinks
             val displayMessage: String = lines.joinToString(separator = "\n")

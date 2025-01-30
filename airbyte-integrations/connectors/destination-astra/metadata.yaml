@@ -11,11 +11,11 @@ data:
     # Please update to the latest version of the connector base image.
     # Please use the full address with sha256 hash to guarantee build reproducibility.
     # https://hub.docker.com/r/airbyte/python-connector-base
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: database
   connectorType: destination
   definitionId: 042ce96f-1158-4662-9543-e2ff015be97a
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.36
   dockerRepository: airbyte/destination-astra
   githubIssueLabel: destination-astra
   icon: astra.svg
