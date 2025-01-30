@@ -778,7 +778,8 @@ definitions:
         properties:
           assigned_to:
             description:
-              The user or team member who is assigned to handle this conversation part.
+              The user or team member who is assigned to handle this conversation
+              part.
             oneOf:
               - type: object
                 properties:
@@ -794,7 +795,8 @@ definitions:
               - type: "null"
           attachments:
             description:
-              Represents the attachments associated with the conversation part.
+              Represents the attachments associated with the conversation
+              part.
             type:
               - "null"
               - array
@@ -929,126 +931,6 @@ definitions:
             type:
               - "null"
               - boolean
-          waiting_since:
-            description: The timestamp indicating how long the conversation has been waiting.
-            type:
-              - "null"
-              - integer
-          snoozed_until:
-            description: The timestamp indicating when the conversation is snoozed until.
-            type:
-              - "null"
-              - integer
-          contacts:
-            description: A list of contacts associated with the conversation.
-            type:
-              - "null"
-              - object
-            properties:
-              type:
-                description: The type of the contacts list.
-                type:
-                  - "null"
-                  - string
-              contacts:
-                description: The individual contacts in the list.
-                type:
-                  - "null"
-                  - array
-                items:
-                  type: object
-                  properties:
-                    type:
-                      description: The type of contact.
-                      type:
-                        - "null"
-                        - string
-                    id:
-                      description: The unique identifier of the contact.
-                      type:
-                        - "null"
-                        - string
-                    external_id:
-                      description: An external identifier associated with the contact.
-                      type:
-                        - "null"
-                        - string
-          tags:
-            description: A list of tags associated with the conversation.
-            type:
-              - "null"
-              - object
-            properties:
-              type:
-                description: The type of the tags list.
-                type:
-                  - "null"
-                  - string
-              tags:
-                description: The individual tags in the list.
-                type:
-                  - "null"
-                  - array
-                items:
-                  type: string
-          priority:
-            description: The priority level of the conversation.
-            type:
-              - "null"
-              - string
-          linked_objects:
-            description: Objects linked to the conversation.
-            type:
-              - "null"
-              - object
-            properties:
-              type:
-                description: The type of the linked objects list.
-                type:
-                  - "null"
-                  - string
-              data:
-                description: The individual linked objects in the list.
-                type:
-                  - "null"
-                  - array
-                items:
-                  type: object
-              total_count:
-                description: The total number of linked objects.
-                type:
-                  - "null"
-                  - integer
-              has_more:
-                description: Indicates if more linked objects are available.
-                type:
-                  - "null"
-                  - boolean
-          ai_agent:
-            description: The AI agent associated with the conversation, if any.
-            type:
-              - "null"
-              - object
-          ai_agent_participated:
-            description: Indicates whether an AI agent participated in the conversation.
-            type:
-              - "null"
-              - boolean
-          sla_applied:
-            description: The SLA applied to the conversation.
-            type:
-              - "null"
-              - object
-          statistics:
-            description: Statistical data related to the conversation.
-            type:
-              - "null"
-              - object
-          conversation_rating:
-            description: The rating given to the conversation, if applicable.
-            type:
-              - "null"
-              - object
   company_segments:
     $ref: "#/definitions/substream_semi_incremental"
     $parameters:
@@ -2409,34 +2291,88 @@ definitions:
             type:
               - "null"
               - boolean
-          linked_objects:
-            description: Objects linked to the conversation.
+          ai_agent:
+            description: Data related to AI Agent involvement in the conversation.
             type:
               - "null"
               - object
             properties:
-              type:
-                description: The type of the linked objects list.
+              source_type:
+                description: The type of the source that triggered AI Agent involvement in the conversation.
                 type:
                   - "null"
                   - string
-              data:
-                description: The individual linked objects in the list.
+              source_title:
+                description: The title of the source that triggered AI Agent involvement in the conversation.
                 type:
                   - "null"
-                  - array
-                items:
-                  type: object
-              total_count:
-                description: The total number of linked objects.
+                  - string
+              last_answer_type:
+                description: The type of the last answer delivered by AI Agent.
+                type:
+                  - "null"
+                  - string
+              resolution_state:
+                description: The resolution state of AI Agent.
+                type:
+                  - "null"
+                  - string
+              rating:
+                description: The customer satisfaction rating given to AI Agent, from 1-5.
                 type:
                   - "null"
                   - integer
-              has_more:
-                description: Indicates if more linked objects are available.
+              rating_remark:
+                description: The customer satisfaction rating remark given to AI Agent.
                 type:
                   - "null"
-                  - boolean
+                  - string
+              content_sources:
+                description: The content sources used by AI Agent in the conversation.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    description: The type of the content source.
+                    type:
+                      - "null"
+                      - string
+                  total_count:
+                    description: The total number of content sources used by AI Agent in the conversation.
+                    type:
+                      - "null"
+                      - integer
+                  content_sources:
+                    description: The content sources used by AI Agent in the conversation.
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        content_type:
+                          description: The type of the content source.
+                          type:
+                            - "null"
+                            - string
+                        url:
+                          description: The internal URL linking to the content source for teammates.
+                          type:
+                            - "null"
+                            - string
+                        title:
+                          description: The title of the content source.
+                          type:
+                            - "null"
+                            - string
+                        locale:
+                          description: The ISO 639 language code of the content source.
+                          type:
+                            - "null"
+                            - string
   activity_logs:
     $ref: "#/definitions/stream_full_refresh"
     primary_key: id
