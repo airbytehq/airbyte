@@ -30,7 +30,7 @@ data class S3DataLakeConfiguration(
     IcebergCatalogConfigurationProvider,
     S3BucketConfigurationProvider {
     override val recordBatchSizeBytes: Long
-        get() = 1500*1024*1024
+        get() = 1500 * 1024 * 1024
 
     override val numOpenStreamWorkers: Int
         get() = 2
