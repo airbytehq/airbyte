@@ -565,6 +565,7 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
             request: SubRequest, dagger_client: dagger.Client, control_connector: ConnectorUnderTest, test_artifacts_directory: Path
         ) -> ExecutionResult:
             connection_objects = request.param
+            disable_proxy = request.config.stash[stash_keys.DISABLE_PROXY]
 
             execution_results, proxy = await run_command_and_add_to_report(
                 dagger_client,
@@ -576,11 +577,13 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
                 request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
                 request.config.stash[stash_keys.TEST_REPORT],
                 request.config.stash[stash_keys.PRIVATE_DETAILS_REPORT],
-                disable_proxy=request.config.stash[stash_keys.DISABLE_PROXY],
+                disable_proxy=disable_proxy,
             )
 
             yield execution_results
-            await proxy.clear_cache_volume()
+
+            if not disable_proxy:
+                await proxy.clear_cache_volume()
 
     else:
 
@@ -589,6 +592,7 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
             request: SubRequest, dagger_client: dagger.Client, target_connector: ConnectorUnderTest, test_artifacts_directory: Path
         ) -> ExecutionResult:
             connection_objects = request.param
+            disable_proxy = request.config.stash[stash_keys.DISABLE_PROXY]
 
             execution_results, proxy = await run_command_and_add_to_report(
                 dagger_client,
@@ -600,11 +604,13 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
                 request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
                 request.config.stash[stash_keys.TEST_REPORT],
                 request.config.stash[stash_keys.PRIVATE_DETAILS_REPORT],
-                disable_proxy=request.config.stash[stash_keys.DISABLE_PROXY],
+                disable_proxy=disable_proxy,
             )
 
             yield execution_results
-            await proxy.clear_cache_volume()
+
+            if not disable_proxy:
+                await proxy.clear_cache_volume()
 
     return generated_fixture
 
