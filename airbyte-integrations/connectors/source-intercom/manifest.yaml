@@ -1721,13 +1721,6 @@ definitions:
               - string
   conversations:
     $ref: "#/definitions/stream_incremental_search"
-    retriever:
-      $ref: "#/definitions/stream_incremental_search/retriever"
-      requester:
-        $ref: "#/definitions/requester_incremental_search"
-        request_headers:
-          Intercom-Version: "2.11"
-          Accept: "application/json"
     $parameters:
       name: "conversations"
       path: "conversations/search"
@@ -1861,6 +1854,11 @@ definitions:
                     - string
                 id:
                   description: The ID of the contact
+                  type:
+                    - "null"
+                    - string
+                external_id:
+                  description: The unique identifier for the contact which is provided by the Client.
                   type:
                     - "null"
                     - string
@@ -2406,6 +2404,39 @@ definitions:
                 type:
                   - "null"
                   - integer
+          ai_agent_participated:
+            description: Indicates whether the AI Agent participated in the conversation.
+            type:
+              - "null"
+              - boolean
+          linked_objects:
+            description: Objects linked to the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the linked objects list.
+                type:
+                  - "null"
+                  - string
+              data:
+                description: The individual linked objects in the list.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+              total_count:
+                description: The total number of linked objects.
+                type:
+                  - "null"
+                  - integer
+              has_more:
+                description: Indicates if more linked objects are available.
+                type:
+                  - "null"
+                  - boolean
   activity_logs:
     $ref: "#/definitions/stream_full_refresh"
     primary_key: id
