@@ -6,7 +6,7 @@ from unittest import TestCase
 
 import pendulum
 import requests_mock
-from source_amazon_ads.streams.report_streams import brands_report, display_report, products_report
+from source_amazon_ads.streams.report_streams import display_report, products_report
 
 from airbyte_cdk.models import AirbyteStateBlob, SyncMode
 from airbyte_cdk.models import Level as LogLevel
@@ -38,6 +38,28 @@ from .ad_responses.records import (
 )
 from .config import ConfigBuilder
 from .utils import get_log_messages_by_log_level, read_stream
+
+
+BRANDS_METRICS_MAP_V3 = {
+    "purchasedAsin": [
+        "campaignBudgetCurrencyCode",
+        "campaignName",
+        "adGroupName",
+        "attributionType",
+        "purchasedAsin",
+        "productName",
+        "productCategory",
+        "sales14d",
+        "orders14d",
+        "unitsSold14d",
+        "newToBrandSales14d",
+        "newToBrandPurchases14d",
+        "newToBrandUnitsSold14d",
+        "newToBrandSalesPercentage14d",
+        "newToBrandPurchasesPercentage14d",
+        "newToBrandUnitsSoldPercentage14d",
+    ]
+}
 
 
 class TestDisplayReportStreams(TestCase):
@@ -180,8 +202,7 @@ class TestDisplayReportStreams(TestCase):
 
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
         start_date = pendulum.today(tz=profile_timezone).date()
-
-        for report_type, metrics in brands_report.METRICS_MAP_V3.items():
+        for report_type, metrics in BRANDS_METRICS_MAP_V3.items():
             report_id = str(uuid.uuid4())
             http_mocker.post(
                 SponsoredBrandsV3ReportRequestBuilder._init_report_endpoint(
@@ -243,7 +264,7 @@ class TestDisplayReportStreams(TestCase):
             start_date = pendulum.today(tz=profile_timezone).date()
             non_breaking_error = ErrorRecordBuilder.non_breaking_error().with_error_message(msg)
 
-            for report_type, metrics in brands_report.METRICS_MAP_V3.items():
+            for report_type, metrics in BRANDS_METRICS_MAP_V3.items():
                 http_mocker.post(
                     SponsoredBrandsV3ReportRequestBuilder._init_report_endpoint(
                         self._config["client_id"],

@@ -17,7 +17,7 @@ from freezegun import freeze_time
 from pendulum import Date
 from pytest import raises
 from requests.exceptions import ConnectionError
-from source_amazon_ads.streams import SponsoredBrandsV3ReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream
+from source_amazon_ads.streams import SponsoredDisplayReportStream, SponsoredProductsReportStream
 from source_amazon_ads.streams.report_streams.report_stream_models import RecordType
 from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests
 
@@ -267,22 +267,6 @@ def test_products_report_stream_without_pk(config):
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
 
     assert len(metrics) == len(stream.metrics_map)
-
-
-@responses.activate
-def test_brands_v3_report_stream(config):
-    setup_responses(
-        init_response_products=REPORT_INIT_RESPONSE,
-        status_response=REPORT_STATUS_RESPONSE,
-        metric_response=METRIC_RESPONSE,
-    )
-
-    profiles = make_profiles(profile_type="vendor")
-
-    stream = SponsoredBrandsV3ReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
-    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
 
 
 @responses.activate
