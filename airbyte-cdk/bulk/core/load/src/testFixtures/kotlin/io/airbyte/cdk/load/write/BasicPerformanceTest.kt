@@ -23,7 +23,6 @@ import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.cdk.load.test.util.IntegrationTest
-import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.defaultMicronautProperties
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcess
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.protocol.models.Jsons
