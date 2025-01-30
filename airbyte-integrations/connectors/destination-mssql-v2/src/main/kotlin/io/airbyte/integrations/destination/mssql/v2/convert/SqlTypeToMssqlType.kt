@@ -23,6 +23,9 @@ enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
         val fromSqlType: Map<Int, MssqlType> =
             entries
                 .associateByTo(mutableMapOf()) { it.sqlType }
+                // Manually adding an extra mapping because we since represent both
+                // sqlTypes TIMESTAMP_WITH_TIMEZONE and TIME_WITH_TIMEZONE as DATETIMEOFFSET
+                // the auto generated reverse map is missing the nuance.
                 .apply { this[Types.TIME_WITH_TIMEZONE] = DATETIMEOFFSET }
                 .toMap()
     }
