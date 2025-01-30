@@ -14,7 +14,6 @@ import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReader
-import io.airbyte.cdk.read.StateQuerier
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -40,8 +39,6 @@ class CdcPartitionsCreatorTest {
     @MockK lateinit var creatorOps: CdcPartitionsCreatorDebeziumOperations<CreatorPosition>
 
     @MockK lateinit var readerOps: CdcPartitionReaderDebeziumOperations<CreatorPosition>
-
-    @MockK lateinit var stateQuerier: StateQuerier
 
     @MockK lateinit var globalFeedBootstrap: GlobalFeedBootstrap
 
@@ -78,9 +75,8 @@ class CdcPartitionsCreatorTest {
     @BeforeEach
     fun setup() {
         every { globalFeedBootstrap.feed } returns global
-        every { globalFeedBootstrap.stateQuerier } returns stateQuerier
+        every { globalFeedBootstrap.feeds } returns listOf(global, stream)
         every { globalFeedBootstrap.streamRecordConsumers() } returns emptyMap()
-        every { stateQuerier.feeds } returns listOf(global, stream)
         every { creatorOps.position(syntheticOffset) } returns 123L
         every { creatorOps.position(incumbentOffset) } returns 123L
         every { creatorOps.generateColdStartOffset() } returns syntheticOffset
@@ -91,7 +87,7 @@ class CdcPartitionsCreatorTest {
     @Test
     fun testCreateWithSyntheticOffset() {
         every { globalFeedBootstrap.currentState } returns null
-        every { stateQuerier.current(stream) } returns null
+        every { globalFeedBootstrap.currentState(stream) } returns null
         val syntheticOffset = DebeziumOffset(mapOf(Jsons.nullNode() to Jsons.nullNode()))
         every { creatorOps.position(syntheticOffset) } returns 123L
         every { creatorOps.generateColdStartOffset() } returns syntheticOffset
@@ -106,7 +102,7 @@ class CdcPartitionsCreatorTest {
     @Test
     fun testCreateWithDeserializedOffset() {
         every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
-        every { stateQuerier.current(stream) } returns Jsons.objectNode()
+        every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
         val deserializedState =
             ValidDebeziumWarmStartState(offset = incumbentOffset, schemaHistory = null)
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns deserializedState
@@ -121,7 +117,7 @@ class CdcPartitionsCreatorTest {
     @Test
     fun testCreateNothing() {
         every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
-        every { stateQuerier.current(stream) } returns Jsons.objectNode()
+        every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
         val deserializedState =
             ValidDebeziumWarmStartState(offset = incumbentOffset, schemaHistory = null)
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns deserializedState
@@ -133,7 +129,7 @@ class CdcPartitionsCreatorTest {
     @Test
     fun testCreateWithFailedValidation() {
         every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
-        every { stateQuerier.current(stream) } returns Jsons.objectNode()
+        every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns
             AbortDebeziumWarmStartState("boom")
         assertThrows(ConfigErrorException::class.java) { runBlocking { creator.run() } }
