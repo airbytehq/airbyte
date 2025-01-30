@@ -19,7 +19,7 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 
 ### Example for `airbyte/python-connector-base`:
 ```dockerfile
-FROM docker.io/python:3.10.14-slim-bookworm@sha256:2407c61b1a18067393fecd8a22cf6fceede893b6aaca817bf9fbfe65e33614a3
+FROM docker.io/python:3.11.8-slim-bookworm@sha256:44c3a7e8c2f9f3c5f7f5f5b7c5f5b7c5f5b7c5f5b7c5f5b7c5f5b7c5f5b7c5f5
 RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN adduser --uid 1000 --system --group --no-create-home airbyte
 RUN mkdir --mode 755 /custom_cache

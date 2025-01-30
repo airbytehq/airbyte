@@ -125,7 +125,7 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
         container = self.get_container(platform)
         await base_sanity_checks.check_timezone_is_utc(container)
         await base_sanity_checks.check_a_command_is_available_using_version_option(container, "bash")
-        await python_sanity_checks.check_python_version(container, "3.10.14")
+        await python_sanity_checks.check_python_version(container, "3.11.8")
         await python_sanity_checks.check_pip_version(container, "24.0")
         await base_sanity_checks.check_user_exists(container, self.USER, expected_uid=self.USER_ID, expected_gid=self.USER_ID)
         await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.AIRBYTE_DIR_PATH)

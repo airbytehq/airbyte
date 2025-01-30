@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "airbyte-connectors-base-images"
-version = "1.5.1"
+version = "4.0.0"
 description = "This package is used to generate and publish the base images for Airbyte Connectors."
 authors = ["Augustin Lafanechere <augustin@airbyte.io>"]
 readme = "README.md"
@@ -37,7 +37,7 @@ publish = "base_images.commands:publish_existing_version"
 test = "pytest tests"
 
 [tool.airbyte_ci]
-python_versions = ["3.10"]
+python_versions = ["3.11"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["test"]
 mount_docker_socket = true
