@@ -25,14 +25,10 @@ object MSSQLContainerHelper {
             .withLogConsumer({ e -> logger.debug { e.utf8String } })
 
     fun start() {
-        if (!testContainer.isRunning()) {
-            testContainer.start()
-        }
-    }
-    fun stop() {
-        if (testContainer.isRunning()) {
-            testContainer.stop()
-            testContainer.close()
+        synchronized(lock=testContainer) {
+            if (!testContainer.isRunning()) {
+                testContainer.start()
+            }
         }
     }
 
