@@ -17,7 +17,7 @@ include = "source_google_sheets"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-airbyte-cdk = { version = "6.29.0.dev0", allow-prereleases = true }
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-google-sheets = "source_google_sheets.run:run"
