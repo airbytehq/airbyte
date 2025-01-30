@@ -190,14 +190,6 @@ object TestFixtures {
             SelectQuery(ast.toString(), listOf(), listOf())
     }
 
-    object MockStateQuerier : StateQuerier {
-        override val feeds: List<Feed> = listOf()
-        override fun current(feed: Feed): OpaqueStateValue? = null
-        override fun resetFeedStates() {
-            // no-op
-        }
-    }
-
     object MockMetaFieldDecorator : MetaFieldDecorator {
         override val globalCursor: MetaField? = null
         override val globalMetaFields: Set<MetaField> = emptySet()
@@ -214,14 +206,7 @@ object TestFixtures {
         StreamFeedBootstrap(
             outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
             metaFieldDecorator = MockMetaFieldDecorator,
-            stateQuerier =
-                object : StateQuerier {
-                    override val feeds: List<Feed> = listOf(this@bootstrap)
-                    override fun current(feed: Feed): OpaqueStateValue? = opaqueStateValue
-                    override fun resetFeedStates() {
-                        // no-op
-                    }
-                },
+            stateManager = StateManager(initialStreamStates = mapOf(this to opaqueStateValue)),
             stream = this
         )
 }
