@@ -199,7 +199,7 @@ abstract class BasicFunctionalityIntegrationTest(
     ) {
 
     // Update config with any replacements.  This may be necessary when using testcontainers.
-    private val updatedConfig = configUpdater.update(configContents)
+    val updatedConfig = configUpdater.update(configContents)
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
 
     @Test
