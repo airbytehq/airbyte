@@ -35,7 +35,7 @@ on:
         type: boolean
       disable_proxy:
         description: Disable proxy to call requests
-        default: "true"
+        default: "false"
         type: boolean
       connection_subset:
         description: The subset of connections to select from.
