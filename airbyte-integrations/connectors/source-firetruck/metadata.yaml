@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 196a42fc-39f2-473f-88ff-d68b2ea702e9
-  dockerImageTag: 0.0.31
+  dockerImageTag: 0.0.32
   dockerRepository: airbyte/source-firetruck
   documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-oracle
   githubIssueLabel: source-firetruck

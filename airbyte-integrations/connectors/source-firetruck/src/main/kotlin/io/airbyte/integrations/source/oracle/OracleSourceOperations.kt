@@ -62,7 +62,7 @@ import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
-import io.airbyte.cdk.read.cdc.DebeziumState
+import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -263,8 +263,8 @@ class OracleSourceOperations :
         if (globalStateValue == null) {
             return
         }
-        val debeziumState: DebeziumState =
-            OracleSourceDebeziumOperations.deserializeDebeziumState(globalStateValue)
+        val debeziumState: ValidDebeziumWarmStartState =
+            OracleSourceDebeziumOperations.deserializeStateInternal(globalStateValue)
         val position: OracleSourcePosition =
             OracleSourceDebeziumOperations.position(debeziumState.offset)
         recordData.set<JsonNode>(

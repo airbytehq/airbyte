@@ -15,15 +15,17 @@ import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.read.cdc.DebeziumInput
+import io.airbyte.cdk.read.cdc.AbortDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.read.cdc.DebeziumOperations
 import io.airbyte.cdk.read.cdc.DebeziumPropertiesBuilder
 import io.airbyte.cdk.read.cdc.DebeziumRecordKey
 import io.airbyte.cdk.read.cdc.DebeziumRecordValue
 import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
-import io.airbyte.cdk.read.cdc.DebeziumState
+import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
+import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
+import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.util.Jsons
 import io.debezium.connector.oracle.OracleConnector
 import io.debezium.connector.oracle.converters.NumberOneToBooleanConverter
@@ -36,7 +38,6 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
 import java.net.InetSocketAddress
-import java.security.MessageDigest
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
@@ -44,6 +45,7 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.Base64
+import java.util.UUID
 import java.util.function.Supplier
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
@@ -55,7 +57,7 @@ class OracleSourceDebeziumOperations(
     val oracleDatabaseStateSupplier: Supplier<CurrentDatabaseState>,
 ) : DebeziumOperations<OracleSourcePosition> {
 
-    override fun deserialize(
+    override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
         stream: Stream,
@@ -109,29 +111,30 @@ class OracleSourceDebeziumOperations(
     override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
         value.source["table"]?.asText()
 
-    override fun deserialize(
-        opaqueStateValue: OpaqueStateValue,
-        streams: List<Stream>
-    ): DebeziumInput {
-        val debeziumState: DebeziumState =
-            try {
-                deserializeDebeziumState(opaqueStateValue)
-            } catch (e: Exception) {
-                throw ConfigErrorException("Error deserializing $opaqueStateValue", e)
+    override fun deserializeState(opaqueStateValue: OpaqueStateValue): DebeziumWarmStartState =
+        try {
+            deserializeStateInternal(opaqueStateValue)
+        } catch (e: ConfigErrorException) {
+            if (
+                configuration.cdc?.invalidCdcCursorPositionBehavior ==
+                    InvalidCdcCursorPositionBehavior.RESET_SYNC
+            ) {
+                ResetDebeziumWarmStartState(e.message ?: e.toString())
+            } else {
+                AbortDebeziumWarmStartState(e.message ?: e.toString())
             }
+        }
 
-        val properties =
-            DebeziumPropertiesBuilder()
-                .with(commonProperties)
-                .with("snapshot.mode", "when_needed")
-                .withStreams(streams)
-                // Custom metric tags are required for smooth repeated DebeziumEngine
-                // initialization, otherwise we get error messages due to name collisions
-                // when debezium-oracle registers JMX metrics beans.
-                .with("custom.metric.tags", customMetricTags(debeziumState))
-                .buildMap()
-        return DebeziumInput(properties, debeziumState, isSynthetic = false)
-    }
+    override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
+        DebeziumPropertiesBuilder()
+            .with(commonProperties)
+            .with("snapshot.mode", "when_needed")
+            .withStreams(streams)
+            // Custom metric tags are required for smooth repeated DebeziumEngine
+            // initialization, otherwise we get error messages due to name collisions
+            // when debezium-oracle registers JMX metrics beans.
+            .with("custom.metric.tags", "rnd=${UUID.randomUUID()}")
+            .buildMap()
 
     override fun position(offset: DebeziumOffset): OracleSourcePosition = Companion.position(offset)
 
@@ -141,22 +144,26 @@ class OracleSourceDebeziumOperations(
     override fun position(sourceRecord: SourceRecord): OracleSourcePosition? =
         (sourceRecord.sourceOffset()["scn"])?.toString()?.toLong()?.let(::OracleSourcePosition)
 
-    override fun serialize(debeziumState: DebeziumState): OpaqueStateValue {
+    override fun serializeState(
+        offset: DebeziumOffset,
+        schemaHistory: DebeziumSchemaHistory?
+    ): OpaqueStateValue {
         val result: ObjectNode = Jsons.objectNode()
         // Serialize offset.
         val offsetNode: JsonNode =
             Jsons.objectNode().apply {
-                for ((k, v) in debeziumState.offset.wrapped) {
+                for ((k, v) in offset.wrapped) {
                     put(Jsons.writeValueAsString(k), Jsons.writeValueAsString(v))
                 }
             }
         result.set<JsonNode>(OFFSET, offsetNode)
         // Serialize schema history.
-        val schemaHistory: List<HistoryRecord> =
-            debeziumState.schemaHistory?.wrapped ?: return result
+        if (schemaHistory == null) {
+            return result
+        }
         val uncompressed: ArrayNode =
             Jsons.arrayNode().apply {
-                for (historyRecord in schemaHistory) {
+                for (historyRecord in schemaHistory.wrapped) {
                     add(DocumentWriter.defaultWriter().write(historyRecord.document()))
                 }
             }
@@ -171,20 +178,23 @@ class OracleSourceDebeziumOperations(
         return result
     }
 
-    override fun synthesize(): DebeziumInput {
-        val properties =
-            DebeziumPropertiesBuilder()
-                .with(commonProperties)
-                // See comment in [deserialize] for why we're setting a custom metric tag here.
-                .with("custom.metric.tags", "synthetic=true")
-                .with("snapshot.mode", "recovery")
-                // This extra exclude list is required to support Amazon RDS.
-                // Otherwise, Debezium tries to lock tables in the ADMIN and RDSADMIN schemas
-                // when capturing the schema change history of the database.
-                // For some reason, these tables are not present in the hardcoded ignore-list:
-                // https://debezium.io/documentation/reference/stable/connectors/oracle.html#schemas-that-the-debezium-oracle-connector-excludes-when-capturing-change-events
-                .with("table.exclude.list", """"?RDSADMIN"?\..*,"?ADMIN"?\..*""")
-                .buildMap()
+    override fun generateColdStartProperties(): Map<String, String> =
+        DebeziumPropertiesBuilder()
+            .with(commonProperties)
+            // See comment in [generateWarmStartProperties] for why we're setting a custom metric
+            // tag here.
+            .with("custom.metric.tags", "rnd=${UUID.randomUUID()}")
+            .with("snapshot.mode", "recovery")
+            // This extra exclude list is required to support Amazon RDS.
+            // Otherwise, Debezium tries to lock tables in the ADMIN and RDSADMIN schemas
+            // when capturing the schema change history of the database.
+            // For some reason, these tables are not present in the hardcoded ignore-list:
+            // https://debezium.io/documentation/reference/stable/connectors/oracle.html#schemas-that-the-debezium-oracle-connector-excludes-when-capturing-change-events
+            .with("table.exclude.list", """"?RDSADMIN"?\..*,"?ADMIN"?\..*""")
+            .buildMap()
+
+    override fun generateColdStartOffset(): DebeziumOffset {
+        val currentDatabaseState: CurrentDatabaseState = oracleDatabaseStateSupplier.get()
         val offsetKey: JsonNode =
             Jsons.arrayNode().apply {
                 add(currentDatabaseState.debeziumName)
@@ -196,13 +206,7 @@ class OracleSourceDebeziumOperations(
                 putNull("snapshot_scn")
                 put("scn", currentDatabaseState.position.scn)
             }
-        val offset = DebeziumOffset(mapOf(offsetKey to offsetValue))
-        val state = DebeziumState(offset, DebeziumSchemaHistory(emptyList()))
-        return DebeziumInput(properties, state, isSynthetic = true)
-    }
-
-    private val currentDatabaseState: CurrentDatabaseState by lazy {
-        oracleDatabaseStateSupplier.get()
+        return DebeziumOffset(mapOf(offsetKey to offsetValue))
     }
 
     @Singleton
@@ -251,6 +255,7 @@ class OracleSourceDebeziumOperations(
     }
 
     val commonProperties: Map<String, String> by lazy {
+        val currentDatabaseState: CurrentDatabaseState = oracleDatabaseStateSupplier.get()
         val address: InetSocketAddress = currentDatabaseState.address
         DebeziumPropertiesBuilder()
             .withDefault()
@@ -288,7 +293,9 @@ class OracleSourceDebeziumOperations(
         internal fun position(offset: DebeziumOffset): OracleSourcePosition =
             OracleSourcePosition(offset.wrapped.values.firstOrNull()?.get("scn")?.asLong() ?: 0)
 
-        internal fun deserializeDebeziumState(opaqueStateValue: OpaqueStateValue): DebeziumState {
+        internal fun deserializeStateInternal(
+            opaqueStateValue: OpaqueStateValue
+        ): ValidDebeziumWarmStartState {
             // Deserialize offset.
             val offsetNode: ObjectNode = opaqueStateValue[OFFSET] as ObjectNode
             val offsetMap: Map<JsonNode, JsonNode> =
@@ -298,7 +305,7 @@ class OracleSourceDebeziumOperations(
                     .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
                     .toMap()
             if (offsetMap.size != 1) {
-                throw RuntimeException("$OFFSET object should have 1 key in $opaqueStateValue")
+                throw ConfigErrorException("$OFFSET object should have 1 key in $opaqueStateValue")
             }
             val offset = DebeziumOffset(offsetMap)
             // Deserialize schema history.
@@ -306,7 +313,7 @@ class OracleSourceDebeziumOperations(
                 when (val node: JsonNode? = opaqueStateValue[SCHEMA_HISTORY]) {
                     is ArrayNode -> node
                     is NullNode,
-                    null -> return DebeziumState(offset, schemaHistory = null)
+                    null -> return ValidDebeziumWarmStartState(offset, schemaHistory = null)
                     is BinaryNode -> unzipSchemaHistory(node.binaryValue())
                     is TextNode -> unzipSchemaHistory(node.textValue())
                     else -> throw ConfigErrorException("unexpected type for $SCHEMA_HISTORY")
@@ -317,7 +324,7 @@ class OracleSourceDebeziumOperations(
                     .asSequence()
                     .map { HistoryRecord(DocumentReader.defaultReader().read(it.asText())) }
                     .toList()
-            return DebeziumState(offset, DebeziumSchemaHistory(decodedRecords))
+            return ValidDebeziumWarmStartState(offset, DebeziumSchemaHistory(decodedRecords))
         }
 
         private fun unzipSchemaHistory(gzippedSchemaHistoryBase64: String): ArrayNode =
@@ -327,15 +334,6 @@ class OracleSourceDebeziumOperations(
             val unzipped: ByteArray =
                 GZIPInputStream(ByteArrayInputStream(gzippedSchemaHistory)).readAllBytes()
             return Jsons.readTree(unzipped) as ArrayNode
-        }
-
-        internal fun customMetricTags(debeziumState: DebeziumState): String {
-            val position: OracleSourcePosition = position(debeziumState.offset)
-            val offsetBytes: ByteArray =
-                debeziumState.offset.wrapped.toString().toByteArray(Charsets.UTF_8)
-            val hashBytes: ByteArray = MessageDigest.getInstance("MD5").digest(offsetBytes)
-            val hashString: String = Base64.getEncoder().encodeToString(hashBytes)
-            return "initial_scn=${position.scn},initial_offset_hash=$hashString"
         }
     }
 }

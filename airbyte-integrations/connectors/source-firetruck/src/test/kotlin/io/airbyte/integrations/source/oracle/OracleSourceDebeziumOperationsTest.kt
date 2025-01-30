@@ -5,9 +5,9 @@
 package io.airbyte.integrations.source.oracle
 
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.read.cdc.DebeziumInput
 import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
-import io.airbyte.cdk.read.cdc.DebeziumState
+import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
+import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.debezium.relational.history.HistoryRecord
@@ -50,20 +50,24 @@ class OracleSourceDebeziumOperationsTest {
     }
 
     @Test
-    fun testSynthesize() {
-        val input: DebeziumInput = ops.synthesize()
-        Assertions.assertTrue(input.isSynthetic)
+    fun testColdStartOffset() {
+        Assertions.assertDoesNotThrow { ops.generateColdStartOffset() }
+    }
+
+    @Test
+    fun testColdStartProperties() {
+        Assertions.assertDoesNotThrow { ops.generateColdStartProperties() }
     }
 
     @Test
     fun testDeserializeUncompressed() {
         val opaqueState: OpaqueStateValue =
             Jsons.readTree(ResourceUtils.readResource("test-state-uncompressed.json"))
-        val deserializedInput: DebeziumInput = ops.deserialize(opaqueState, streams = emptyList())
-        Assertions.assertFalse(deserializedInput.isSynthetic)
+        val deserializedState: DebeziumWarmStartState = ops.deserializeState(opaqueState)
+        Assertions.assertTrue(deserializedState is ValidDebeziumWarmStartState)
         Assertions.assertEquals(
             OracleSourcePosition(479703),
-            ops.position(deserializedInput.state.offset)
+            ops.position((deserializedState as ValidDebeziumWarmStartState).offset)
         )
     }
 
@@ -71,11 +75,11 @@ class OracleSourceDebeziumOperationsTest {
     fun testDeserializeCompressed() {
         val opaqueState: OpaqueStateValue =
             Jsons.readTree(ResourceUtils.readResource("test-state-compressed.json"))
-        val deserializedInput: DebeziumInput = ops.deserialize(opaqueState, streams = emptyList())
-        Assertions.assertFalse(deserializedInput.isSynthetic)
+        val deserializedState: DebeziumWarmStartState = ops.deserializeState(opaqueState)
+        Assertions.assertTrue(deserializedState is ValidDebeziumWarmStartState)
         Assertions.assertEquals(
             OracleSourcePosition(479703),
-            ops.position(deserializedInput.state.offset)
+            ops.position((deserializedState as ValidDebeziumWarmStartState).offset)
         )
     }
 
@@ -83,26 +87,33 @@ class OracleSourceDebeziumOperationsTest {
     fun testSerializeUncompressed() {
         val opaqueState: OpaqueStateValue =
             Jsons.readTree(ResourceUtils.readResource("test-state-uncompressed.json"))
-        val deserializedInput: DebeziumInput = ops.deserialize(opaqueState, streams = emptyList())
-        val roundTrippedOpaqueState: OpaqueStateValue = ops.serialize(deserializedInput.state)
+        val deserializedState: DebeziumWarmStartState = ops.deserializeState(opaqueState)
+        Assertions.assertTrue(deserializedState is ValidDebeziumWarmStartState)
+        deserializedState as ValidDebeziumWarmStartState
+        val roundTrippedOpaqueState: OpaqueStateValue =
+            ops.serializeState(deserializedState.offset, deserializedState.schemaHistory)
 
         Assertions.assertEquals(opaqueState, roundTrippedOpaqueState)
     }
 
     @Test
     fun testSerializeCompressed() {
-        val state: DebeziumState = generateVeryLargeState()
-        val opaqueState: OpaqueStateValue = ops.serialize(state)
+        val state: ValidDebeziumWarmStartState = generateVeryLargeState()
+        val opaqueState: OpaqueStateValue = ops.serializeState(state.offset, state.schemaHistory)
         Assertions.assertFalse(opaqueState["schema_history"].isArray)
-        val deserializedInput: DebeziumInput = ops.deserialize(opaqueState, streams = emptyList())
-        val roundTrippedOpaqueState: OpaqueStateValue = ops.serialize(deserializedInput.state)
+        val deserializedState: DebeziumWarmStartState = ops.deserializeState(opaqueState)
+        Assertions.assertTrue(deserializedState is ValidDebeziumWarmStartState)
+        deserializedState as ValidDebeziumWarmStartState
+        val roundTrippedOpaqueState: OpaqueStateValue =
+            ops.serializeState(deserializedState.offset, deserializedState.schemaHistory)
         Assertions.assertEquals(opaqueState, roundTrippedOpaqueState)
     }
 
-    private fun generateVeryLargeState(): DebeziumState {
+    private fun generateVeryLargeState(): ValidDebeziumWarmStartState {
         val opaqueState: OpaqueStateValue =
             Jsons.readTree(ResourceUtils.readResource("test-state-uncompressed.json"))
-        val state: DebeziumState = ops.deserialize(opaqueState, streams = emptyList()).state
+        val state: DebeziumWarmStartState = ops.deserializeState(opaqueState)
+        state as ValidDebeziumWarmStartState
         val bigHistory: List<HistoryRecord> = (1..20).flatMap { state.schemaHistory!!.wrapped }
         return state.copy(schemaHistory = DebeziumSchemaHistory(bigHistory))
     }
