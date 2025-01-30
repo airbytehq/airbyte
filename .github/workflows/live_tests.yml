@@ -33,6 +33,10 @@ on:
         description: Use the local CDK when building the target connector
         default: "false"
         type: boolean
+      enable_proxy:
+        description: Disable proxy to call requests
+        default: "true"
+        type: boolean
       connection_subset:
         description: The subset of connections to select from.
         required: true
@@ -108,6 +112,15 @@ jobs:
             echo "READ_WITH_STATE_FLAG=" >> $GITHUB_ENV
           fi
 
+      - name: Setup Proxy Flag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if ${{ github.event.inputs.disable_proxy }}; then
+            echo "DISABLE_PROXY_FLAG=--connector_live_tests.disable-proxy" >> $GITHUB_ENV
+          else
+            echo "DISABLE_PROXY_FLAG=" >> $GITHUB_ENV
+          fi
+
       - name: Setup Connection Subset Option
         if: github.event_name == 'workflow_dispatch'
         run: |
@@ -129,4 +142,4 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=live --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.READ_WITH_STATE_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }}
+          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=live --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }}
