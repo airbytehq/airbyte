@@ -68,6 +68,13 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_descriptor": { "name": "deal_splits" },
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_descriptor": { "name": "deals" },
       "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
     }

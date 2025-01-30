@@ -18,6 +18,7 @@ from source_hubspot.streams import (
     DealPipelines,
     Deals,
     DealsArchived,
+    DealSplits,
     EmailEvents,
     EmailSubscriptions,
     EngagementsCalls,
@@ -94,6 +95,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (DealPipelines, "deal", {"updatedAt": 1675121674226}),
+        (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EmailEvents, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EmailSubscriptions, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsCalls, "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -168,6 +170,58 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
 
     records = read_full_refresh(stream)
+    assert records
+
+@pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
+def test_crm_search_streams_with_no_associations(sync_mode, common_params,  requests_mock, fake_properties_list):
+    stream = DealSplits(**common_params)
+    stream_state = {
+        "type": "STREAM",
+        "stream": {
+            "stream_descriptor": { "name": "deal_splits" },
+            "stream_state": { "updatedAt": "2021-01-01T00:00:00.000000Z" }
+        }
+    }
+    cursor_value = {"updatedAt": "2022-02-25T16:43:11Z"}
+    responses = [
+        {
+            "json": {
+                stream.data_field: [
+                    {
+                        "id": "test_id",
+                        "created": "2022-02-25T16:43:11Z",
+                    }
+                    | cursor_value
+                ],
+            }
+        }
+    ]
+    if sync_mode == SyncMode.full_refresh:
+        stream.set_sync(SyncMode.full_refresh, stream_state=None)
+        endpoint_path = f"/crm/v3/objects/{stream.entity}"
+        requests_mock.register_uri("GET", endpoint_path, responses)
+    else:
+        stream.set_sync(SyncMode.incremental, stream_state)
+        endpoint_path = f"/crm/v3/objects/{stream.entity}/search"
+        requests_mock.register_uri("POST", endpoint_path, responses)
+    properties_path = f"/properties/v2/{stream.entity}/properties"
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+    stream._sync_mode = sync_mode
+    requests_mock.register_uri("POST", endpoint_path, responses)
+    requests_mock.register_uri("GET", properties_path, properties_response)
+    if sync_mode == SyncMode.incremental:
+        records, state = read_incremental(stream, stream_state=stream_state)
+        assert state
+    else:
+        records = read_full_refresh(stream)
     assert records
 
 

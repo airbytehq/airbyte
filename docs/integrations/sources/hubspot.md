@@ -109,10 +109,15 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
      You might encounter errors during the connection process in the popup window, such as `An invalid scope name was provided`.
      To resolve this, close the window and attempt authentication again.
      :::
-   - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
-5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
-   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
-6. Click **Set up source** and wait for the tests to complete.
+   - (Not Recommended) To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+
+<FieldAnchor field="start_date">
+
+6. For **Start date**, use the provided datepicker or enter the date in the following format: `yyyy-mm-ddThh:mm:ssZ`. Data added on and after this date will be replicated. If this is not set, "2006-06-01T00:00:00Z" (the date Hubspot was created) will be used as a start date.
+
+</FieldAnchor>
+
+7. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -283,7 +288,9 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
   }
   ```
 
-- **Unnesting top level properties**: Since version 1.5.0, in order to not make the users query their destinations for complicated json fields, we duplicate most of nested data as top level fields.
+- **Hubspot object labels** In Hubspot, a label can be applied to a stream that differs from the original API name of the stream. Hubspot's UI shows the label of the stream, whereas Airbyte shows the name of the stream. If you are having issues seeing a particular stream your user should have access to, search for the `name` of the Hubspot object instead.
+
+- **Unnesting top level properties**: Since version 1.5.0, in order to offer users access to nested fields, we also denest the top-level fields into individual fields in the destination. This is most commonly observed in the `properties` field, which is now split into each attribute in the destination.
 
   For instance:
 
@@ -334,7 +341,26 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.1.4   | 2024-05-16 | [38286](https://github.com/airbytehq/airbyte/pull/38286) | Added default schema normalization for the  `Tickets` stream, to ensure the data types |
+| 4.2.17  | 2024-08-21 | [44538](https://github.com/airbytehq/airbyte/pull/44538) | Fix issue with CRM search streams when they have no `associations`                                                                                                               |
+| 4.2.16  | 2024-08-20 | [42919](https://github.com/airbytehq/airbyte/pull/42919) | Add support for Deal Splits                                                                                                                                                      |
+| 4.2.15  | 2024-08-08 | [43381](https://github.com/airbytehq/airbyte/pull/43381) | Fix associations retrieval for Engagements streams (calls, meetings, notes, tasks, emails) in Incremental with existing state                                                    |
+| 4.2.14  | 2024-07-27 | [42688](https://github.com/airbytehq/airbyte/pull/42688) | Update dependencies                                                                                                                                                              |
+| 4.2.13  | 2024-07-20 | [42264](https://github.com/airbytehq/airbyte/pull/42264) | Update dependencies                                                                                                                                                              |
+| 4.2.12  | 2024-07-13 | [41766](https://github.com/airbytehq/airbyte/pull/41766) | Update dependencies                                                                                                                                                              |
+| 4.2.11  | 2024-07-10 | [41558](https://github.com/airbytehq/airbyte/pull/41558) | Update dependencies                                                                                                                                                              |
+| 4.2.10  | 2024-07-09 | [41286](https://github.com/airbytehq/airbyte/pull/41286) | Update dependencies                                                                                                                                                              |
+| 4.2.9   | 2024-07-08 | [41045](https://github.com/airbytehq/airbyte/pull/41045) | Use latest `CDK` version possible                                                                                                                                                |
+| 4.2.8   | 2024-07-06 | [40923](https://github.com/airbytehq/airbyte/pull/40923) | Update dependencies                                                                                                                                                              |
+| 4.2.7   | 2024-06-25 | [40441](https://github.com/airbytehq/airbyte/pull/40441) | Update dependencies                                                                                                                                                              |
+| 4.2.6   | 2024-06-22 | [40126](https://github.com/airbytehq/airbyte/pull/40126) | Update dependencies                                                                                                                                                              |
+| 4.2.5   | 2024-06-17 | [39432](https://github.com/airbytehq/airbyte/pull/39432) | Remove references to deprecated state method                                                                                                                                     |
+| 4.2.4   | 2024-06-10 | [38800](https://github.com/airbytehq/airbyte/pull/38800) | Retry hubspot \_parse_and_handle_errors on JSON decode errors                                                                                                                    |
+| 4.2.3   | 2024-06-06 | [39314](https://github.com/airbytehq/airbyte/pull/39314) | Added missing schema types for the `Workflows` stream schema                                                                                                                     |
+| 4.2.2   | 2024-06-04 | [38981](https://github.com/airbytehq/airbyte/pull/38981) | [autopull] Upgrade base image to v1.2.1                                                                                                                                          |
+| 4.2.1   | 2024-05-30 | [38024](https://github.com/airbytehq/airbyte/pull/38024) | etry when attempting to get scopes                                                                                                                                               |
+| 4.2.0   | 2024-05-24 | [38049](https://github.com/airbytehq/airbyte/pull/38049) | Add resumable full refresh support to `contacts_form_submissions` and `contacts_merged_audit` streams                                                                            |
+| 4.1.5   | 2024-05-17 | [38243](https://github.com/airbytehq/airbyte/pull/38243) | Replace AirbyteLogger with logging.Logger                                                                                                                                        |
+| 4.1.4   | 2024-05-16 | [38286](https://github.com/airbytehq/airbyte/pull/38286) | Added default schema normalization for the `Tickets` stream, to ensure the data types                                                                                            |
 | 4.1.3   | 2024-05-13 | [38128](https://github.com/airbytehq/airbyte/pull/38128) | contacts_list_memberships as semi-incremental stream                                                                                                                             |
 | 4.1.2   | 2024-04-24 | [36642](https://github.com/airbytehq/airbyte/pull/36642) | Schema descriptions and CDK 0.80.0                                                                                                                                               |
 | 4.1.1   | 2024-04-11 | [35945](https://github.com/airbytehq/airbyte/pull/35945) | Add integration tests                                                                                                                                                            |
