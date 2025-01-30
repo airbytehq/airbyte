@@ -823,6 +823,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | 4.49.4  | [#52104](https://github.com/airbytehq/airbyte/pull/52104)  | Stream Gradle task output to the step logger                                                                 |
+| 5.0.0  | [#](https://github.com/airbytehq/airbyte/pull/)  | Removed migration and formatting commands.                                                                 |
 | 4.49.3  | [#52102](https://github.com/airbytehq/airbyte/pull/52102)  | Load docker image to local docker host for java connectors                                                                 |
 | 4.49.2  | [#52090](https://github.com/airbytehq/airbyte/pull/52090)  | Re-add custom task parameters in GradleTask                                                                                  |
 | 4.49.1  | [#52087](https://github.com/airbytehq/airbyte/pull/52087)  | Wire the `--enable-report-auto-open` correctly for connector tests                                                           |
