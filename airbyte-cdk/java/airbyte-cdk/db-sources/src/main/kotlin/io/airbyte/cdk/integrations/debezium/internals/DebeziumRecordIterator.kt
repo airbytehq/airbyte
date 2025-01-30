@@ -294,6 +294,8 @@ class DebeziumRecordIterator<T>(
     internal fun getHeartbeatPosition(heartbeatEvent: ChangeEvent<String?, String?>): T {
         try {
             val eventClass: Class<out ChangeEvent<*, *>?> = heartbeatEvent.javaClass
+            LOGGER.info{"SGX getting heartbeat for $heartbeatEvent"}
+            LOGGER.info { "SGX eventClass=$eventClass" }
             val f: Field?
             if (heartbeatEventSourceField.containsKey(eventClass)) {
                 f = heartbeatEventSourceField[eventClass]

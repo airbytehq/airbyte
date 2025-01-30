@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.*
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
+import io.airbyte.cdk.read.LOGGER
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -57,6 +58,7 @@ constructor(val featureFlags: Set<FeatureFlag>) :
         pojo: MsSqlServerSourceConfigurationSpecification,
     ): MsSqlServerSourceConfiguration {
         val replicationMethodPojo = pojo.replicationMethodJson
+        LOGGER.info { "SGX replicationMethodPojo=$replicationMethodPojo" }
         val incrementalReplicationConfiguration =
             when (replicationMethodPojo) {
                 is MsSqlServerCdcReplicationConfigurationSpecification ->
@@ -118,14 +120,14 @@ constructor(val featureFlags: Set<FeatureFlag>) :
                 }
             }
 
+        val global = incrementalReplicationConfiguration is MsSqlServerCdcIncrementalReplicationConfiguration
+        LOGGER.info { "SGX global=$global" }
         return MsSqlServerSourceConfiguration(
             realHost = pojo.host,
             realPort = pojo.port,
             sshTunnel = sshTunnel,
             sshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap()),
-            global =
-                incrementalReplicationConfiguration
-                    is MsSqlServerCdcIncrementalReplicationConfiguration,
+            global = global,
             maxSnapshotReadDuration = null,
             checkpointTargetInterval = Duration.ofHours(1),
             jdbcUrlFmt = "jdbc:sqlserver://%s:%d;databaseName=${pojo.database}",

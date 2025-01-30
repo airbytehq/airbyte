@@ -98,45 +98,12 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                 Insert(4, 4),
                 Insert(5, 5),
             )
-
-            container.insert12345()
-            val insert =
-                listOf<Record>(
-                    Insert(1, 1),
-                    Insert(2, 2),
-                    Insert(3, 3),
-                    Insert(4, 4),
-                    Insert(5, 5),
-                )
-            container.update135()
-            val update =
-                listOf<Record>(
-                    Update(1, 6),
-                    Update(3, 7),
-                    Update(5, 8),
-                )
-            val p1: T = container.currentPosition()
-            container.delete24()
-            val delete =
-                listOf<Record>(
-                    Delete(2),
-                    Delete(4),
-                )
-            val p2: T = container.currentPosition()
-
-            val input = DebeziumInput(container.debeziumProperties(), r0.state, isSynthetic = false)
-            val r1: ReadResult = read(input, p1)
-            Assertions.assertEquals(insert + update, r1.records.take(insert.size + update.size))
-            Assertions.assertNotNull(r1.closeReason)
-
-        container.insert12345()
-        val insert =
+        container.update135()
+        val update =
             listOf<Record>(
-                Insert(1, 1),
-                Insert(2, 2),
-                Insert(3, 3),
-                Insert(4, 4),
-                Insert(5, 5),
+                Update(1, 6),
+                Update(3, 7),
+                Update(5, 8),
             )
         val p1: T = debeziumOperations.position(debeziumOperations.synthesize().state.offset)
         container.delete24()
@@ -228,7 +195,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         Assertions.assertEquals(0, reader.numSourceRecordsWithoutPosition.get())
         Assertions.assertEquals(0, reader.numEventValuesWithoutPosition.get())
         return ReadResult(
-            outputConsumer.records().map {Jsons.treeToValue(it.data, Record::class.java)},
+            outputConsumer.records().map { Jsons.treeToValue(it.data, Record::class.java) },
             debeziumOperations.deserialize(checkpoint.opaqueStateValue, listOf(stream)).state,
             reader.closeReasonReference.get(),
         )
@@ -254,29 +221,29 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     data class Delete(override val id: Int) : Record
 
     inner class CdcPartitionReaderDebeziumOperationsFromProdForTest<T: Comparable<T>>(
-        val prodImpl: DebeziumOperations<T>
-    ): DebeziumOperations<T> by prodImpl {
-        override fun deserialize(
-            key: DebeziumRecordKey,
-            value: DebeziumRecordValue,
-            stream: Stream,
-        ): DeserializedRecord {
-            val id: Int = key.element("id").asInt()
-            val after: Int? = value.after["v"]?.asInt()
-            val record: Record =
-                if (after == null) {
-                    Delete(id)
-                } else if (value.before["v"] == null) {
-                    Insert(id, after)
-                } else {
-                    Update(id, after)
-                }
-            return DeserializedRecord(
-                data = Jsons.valueToTree(record) as ObjectNode,
-                changes = emptyMap(),
-            )
-        }
-    }
+           val prodImpl: DebeziumOperations<T>
+       ): DebeziumOperations<T> by prodImpl {
+           override fun deserialize(
+                   key: DebeziumRecordKey,
+                   value: DebeziumRecordValue,
+                   stream: Stream,
+               ): DeserializedRecord {
+                   val id: Int = key.element("id").asInt()
+                   val after: Int? = value.after["v"]?.asInt()
+                   val record: Record =
+                           if (after == null) {
+                                   Delete(id)
+                               } else if (value.before["v"] == null) {
+                                   Insert(id, after)
+                               } else {
+                                   Update(id, after)
+                               }
+                   return DeserializedRecord(
+                           data = Jsons.valueToTree(record) as ObjectNode,
+                           changes = emptyMap(),
+                       )
+               }
+       }
 
     abstract inner class AbstractCdcPartitionReaderDebeziumOperationsForTest<T : Comparable<T>>(
         val stream: Stream
@@ -307,10 +274,8 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
             value: DebeziumRecordValue
         ): String? = stream.id.namespace
 
-        override fun findStreamNamespace(
-            key: DebeziumRecordKey,
-            value: DebeziumRecordValue
-        ): String? = stream.id.namespace
+        override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
+            stream.id.name
 
         override fun serialize(debeziumState: DebeziumState): OpaqueStateValue =
             Jsons.valueToTree(

@@ -235,7 +235,8 @@ abstract class AbstractSourceConnectorTest {
     @Throws(Exception::class)
     protected fun runRead(
         catalog: ConfiguredAirbyteCatalog?,
-        state: JsonNode?
+        state: JsonNode?,
+        imageName: String = this.imageName
     ): List<AirbyteMessage> {
         val sourceConfig =
             WorkerSourceConfig()

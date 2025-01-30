@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.collect.Iterables
 import com.google.common.collect.Lists
+import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.Jsons.jsonNode
 import io.airbyte.cdk.test.fixtures.legacy.SourceAcceptanceTest
 import io.airbyte.cdk.test.fixtures.legacy.SshHelpers.specAndInjectSsh
@@ -16,6 +17,7 @@ import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.Companion.`in`
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jooq.DSLContext
 import org.junit.Assert
 import org.junit.jupiter.api.Assertions
@@ -26,13 +28,14 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 import java.util.*
 import java.util.stream.Collectors
 
+val LOGGER=KotlinLogging.logger { }
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @Execution(ExecutionMode.CONCURRENT)
 class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
     private var testdb: MsSQLTestDatabase? = null
 
     override val imageName: String
-        get() = "airbyte/source-mssql:dev"
+        get() = "airbyte/source-mssql-v1:dev"
 
     @get:Throws(Exception::class)
     override val spec: ConnectorSpecification
@@ -63,6 +66,7 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
                         .withSupportedSyncModes(
                             Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
+                        .withDefaultCursorField(listOf("_ab_cdc_cursor"))
                 ),
             ConfiguredAirbyteStream()
                 .withSyncMode(SyncMode.INCREMENTAL)
@@ -116,6 +120,64 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
 
     @Test
     @Throws(Exception::class)
+    override fun testIncrementalSyncWithState() {
+        val configuredCatalog = withSourceDefinedCursors(configuredCatalog)
+        // only sync incremental streams
+        configuredCatalog.streams =
+            configuredCatalog.streams.filter { s: ConfiguredAirbyteStream ->
+                s.syncMode == SyncMode.INCREMENTAL
+            }
+
+        val airbyteMessages = runRead(configuredCatalog, state)
+        val recordMessages = filterRecords(airbyteMessages)
+        val stateMessages =
+            airbyteMessages
+                .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.STATE }
+                .map { obj: AirbyteMessage -> obj.state }
+
+        Assertions.assertFalse(
+            recordMessages.isEmpty(),
+            "Expected the first incremental sync to produce records"
+        )
+        Assertions.assertFalse(
+            stateMessages.isEmpty(),
+            "Expected incremental sync to produce STATE messages"
+        )
+
+        // when we run incremental sync again there should be no new records. Run a sync with the
+        // latest
+        // state message and assert no records were emitted.
+        var latestState: JsonNode? = null
+        for (stateMessage in stateMessages) {
+            if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.STREAM) {
+                latestState = Jsons.jsonNode(stateMessages)
+                break
+            } else if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
+                latestState = Jsons.jsonNode(java.util.List.of(Iterables.getLast(stateMessages)))
+                break
+            } else {
+                throw RuntimeException("Unknown state type " + stateMessage.type)
+            }
+        }
+
+        LOGGER.info { "SGX read2" }
+        assert(Objects.nonNull(latestState))
+        var secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState, "airbyte/source-mssql-v1:dev"))
+        Assertions.assertTrue(
+            secondSyncRecords.isEmpty(),
+            "Expected the second incremental sync to produce no records when given the first sync's output state."
+        )
+
+        LOGGER.info { "SGX read3" }
+        secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState))
+        Assertions.assertTrue(
+            secondSyncRecords.isEmpty(),
+            "Expected the second incremental sync to produce no records when given the first sync's output state."
+        )
+    }
+
+    @Test
+    @Throws(Exception::class)
     fun testAddNewStreamToExistingSync() {
         val configuredCatalogWithOneStream =
             ConfiguredAirbyteCatalog().withStreams(
@@ -137,9 +199,11 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
         Assertions.assertEquals(SCHEMA_NAME, streamStates[0].streamDescriptor.namespace)
 
         val lastStateMessage = Iterables.getLast(stateMessages)
+        LOGGER.info {"SGX lastStateMessage=$lastStateMessage"}
 
         val configuredCatalogWithTwoStreams = configuredCatalogWithOneStream.withStreams(configuredAirbyteStreams)
 
+        LOGGER.info{"SGXXXX read2"}
         // Start another sync with a newly added stream
         val messages2 = runRead(configuredCatalogWithTwoStreams, jsonNode(java.util.List.of(lastStateMessage)))
         val recordMessages2 = filterRecords(messages2)
@@ -157,6 +221,23 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
         Assertions.assertEquals(SCHEMA_NAME, streamStates2[0].streamDescriptor.namespace)
         Assertions.assertEquals(STREAM_NAME2, streamStates2[1].streamDescriptor.name)
         Assertions.assertEquals(SCHEMA_NAME, streamStates2[1].streamDescriptor.namespace)
+
+        /*LOGGER.info{"SGXXXX read3"}
+        val messages3 = runRead(configuredCatalogWithTwoStreams, jsonNode(java.util.List.of(lastStateMessage)), imageName="airbyte/source-mssql:dev")
+        val recordMessages3 = filterRecords(messages3)
+        val stateMessages3 = filterStateMessages(messages3)
+        Assertions.assertEquals(3, recordMessages3.size)
+        Assertions.assertEquals(2, stateMessages3.size)
+
+        val lastStateMessage3 = Iterables.getLast(stateMessages3)
+        val streamStates3 = lastStateMessage3.global.streamStates
+
+        Assertions.assertEquals(2, streamStates3.size)
+
+        Assertions.assertEquals(STREAM_NAME, streamStates3[0].streamDescriptor.name)
+        Assertions.assertEquals(SCHEMA_NAME, streamStates3[0].streamDescriptor.namespace)
+        Assertions.assertEquals(STREAM_NAME2, streamStates3[1].streamDescriptor.name)
+        Assertions.assertEquals(SCHEMA_NAME, streamStates3[1].streamDescriptor.namespace)*/
     }
 
     private fun filterStateMessages(messages: List<AirbyteMessage>): List<AirbyteStateMessage> {

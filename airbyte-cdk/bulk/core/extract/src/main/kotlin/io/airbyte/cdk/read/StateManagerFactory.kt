@@ -42,6 +42,7 @@ private val logger = KotlinLogging.logger {}
  * A factory for instantiating [StateManager] based on the inputs of a READ. These inputs are
  * deliberately not injected here to make testing easier.
  */
+val LOGGER=KotlinLogging.logger {  }
 @Singleton
 open class StateManagerFactory(
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
@@ -55,6 +56,7 @@ open class StateManagerFactory(
         configuredCatalog: ConfiguredAirbyteCatalog,
         inputState: InputState,
     ): StateManager {
+        LOGGER.info{"SGX configuredCatalog=$configuredCatalog"}
         val allStreams: List<Stream> =
             metadataQuerierFactory.session(config).use { mq ->
                 configuredCatalog.streams.mapNotNull { toStream(mq, it) }
@@ -89,7 +91,11 @@ open class StateManagerFactory(
                 }
             }
         val globalStreams: List<Stream> =
-            decoratedStreams.filter { it.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL }
+            decoratedStreams.filter {
+                LOGGER.info { "SGX configuresyncMode=${it.configuredSyncMode} for ${it.name}" }
+                it.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
+            }
+        LOGGER.info{"SGX decoratedStreams=$decoratedStreams, undecoratedStreams=$undecoratedStreams, globalStreams=$globalStreams"}
         val initialStreamStates: Map<Stream, OpaqueStateValue?> =
             decoratedStreams.associateWith { stream: Stream ->
                 when (stream.configuredSyncMode) {
@@ -107,11 +113,13 @@ open class StateManagerFactory(
     private fun forStream(
         streams: List<Stream>,
         inputState: StreamInputState? = null,
-    ) =
-        StateManager(
+    ): StateManager {
+        LOGGER.info { "SGX streams=$streams" }
+        return StateManager(
             initialStreamStates =
-                streams.associateWith { stream: Stream -> inputState?.streams?.get(stream.id) },
+            streams.associateWith { stream: Stream -> inputState?.streams?.get(stream.id) },
         )
+    }
 
     protected open fun checkColumnTypes(streamId: StreamIdentifier, fieldName: String, expectedAirbyteSchemaType: AirbyteSchemaType, actualColumn: Field): Field? {
         val actualAirbyteSchemaType: AirbyteSchemaType = actualColumn.type.airbyteSchemaType
@@ -227,6 +235,7 @@ open class StateManagerFactory(
             configuredStream.primaryKey?.asSequence()?.let { pkOrNull(it.toList()) }
         val configuredCursor: FieldOrMetaField? =
             configuredStream.cursorField?.asSequence()?.let { cursorOrNull(it.toList()) }
+        logger.info { "SGX configuredStream.syncMode=${configuredStream.syncMode}, configuredCursor=$configuredCursor" }
         val configuredSyncMode: ConfiguredSyncMode =
             when (configuredStream.syncMode) {
                 SyncMode.INCREMENTAL ->

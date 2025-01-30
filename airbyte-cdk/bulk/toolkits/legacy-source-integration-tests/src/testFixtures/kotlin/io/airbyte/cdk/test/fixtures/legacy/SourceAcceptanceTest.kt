@@ -213,7 +213,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
      */
     @Test
     @Throws(Exception::class)
-    fun testIncrementalSyncWithState() {
+    open fun testIncrementalSyncWithState() {
         if (!sourceSupportsIncremental()) {
             return
         }

@@ -90,27 +90,6 @@ class JdbcSelectQuerier(
             conn = jdbcConnectionFactory.get()
             stmt = conn!!.prepareStatement(q.sql)
             parameters.statementFetchSize?.let { fetchSize: Int ->
-                log.debug { "Setting Statement fetchSize to $fetchSize." }
-                stmt!!.fetchSize = fetchSize
-            }
-            var paramIdx = 1
-            for (binding in q.bindings) {
-                log.debug { "Setting parameter #$paramIdx to $binding." }
-                binding.type.set(stmt!!, paramIdx, binding.value)
-                paramIdx++
-            }
-            rs = stmt!!.executeQuery()
-            parameters.resultSetFetchSize?.let { fetchSize: Int ->
-                log.debug { "Setting ResultSet fetchSize to $fetchSize." }
-                rs!!.fetchSize = fetchSize
-            }
-        }
-
-        /** Initializes a connection and readies the resultset. */
-        fun initQueryExecution() {
-            conn = jdbcConnectionFactory.get()
-            stmt = conn!!.prepareStatement(q.sql)
-            parameters.statementFetchSize?.let { fetchSize: Int ->
                 log.info { "Setting Statement fetchSize to $fetchSize." }
                 stmt!!.fetchSize = fetchSize
             }
@@ -179,7 +158,7 @@ class JdbcSelectQuerier(
             hasNext = false
             try {
                 if (rs != null) {
-                    log.debug { "Closing ${q.sql}" }
+                    log.info { "Closing ${q.sql}" }
                     rs!!.close()
                 }
             } finally {

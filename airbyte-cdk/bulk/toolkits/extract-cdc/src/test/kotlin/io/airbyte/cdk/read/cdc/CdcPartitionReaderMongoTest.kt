@@ -106,15 +106,6 @@ class CdcPartitionReaderMongoTest :
             }
 
             override fun deserialize(
-                opaqueStateValue: OpaqueStateValue,
-                streams: List<Stream>
-            ): DebeziumInput {
-                return super.deserialize(opaqueStateValue, streams).let {
-                    DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
-                }
-            }
-
-            override fun deserialize(
                 key: DebeziumRecordKey,
                 value: DebeziumRecordValue,
                 stream: Stream,

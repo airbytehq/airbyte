@@ -180,6 +180,7 @@ class CursorManager<S : Any>(
                 .map<List<String>> { obj: ConfiguredAirbyteStream -> obj.cursorField }
                 .isPresent
         ) {
+            LOGGER.info{"SGX cursor field is set in catalog for ${streamOptional.map { it.stream.name }}, value=${streamOptional.map{it.cursorField}}"}
             cursorField =
                 streamOptional
                     .map { obj: ConfiguredAirbyteStream -> obj.cursorField }
@@ -187,8 +188,10 @@ class CursorManager<S : Any>(
                         if (f.size > 0) Optional.of(f[0]) else Optional.empty()
                     }
                     .orElse(null)
+            LOGGER.info { "SGX cursorField=$cursorField" }
             // if cursor field is set in state.
             if (stateOptional.map<List<String>?>(cursorFieldFunction).isPresent) {
+                LOGGER.info { "SGX cursorField is set in state cursorFieldFunction=$cursorFieldFunction" }
                 // if cursor field in catalog and state are the same.
                 if (
                     stateOptional.map<List<String>?>(cursorFieldFunction) ==
@@ -196,6 +199,7 @@ class CursorManager<S : Any>(
                             obj.cursorField
                         }
                 ) {
+                    LOGGER.info { "SGX cursor field in state and catalog are the same" }
                     cursor = stateOptional.map(cursorFunction).orElse(null)
                     cursorRecordCount = stateOptional.map(cursorRecordCountFunction).orElse(0L)
                     // If a matching cursor is found in the state, and it's value is null - this
@@ -208,6 +212,7 @@ class CursorManager<S : Any>(
                     }
                     // if cursor field in catalog and state are different.
                 } else {
+                    LOGGER.info { "SGX cursor field ins tate and catalog are NOT the same" }
                     cursor = null
                     cursorRecordCount = 0L
                     LOGGER.info {
@@ -218,6 +223,7 @@ class CursorManager<S : Any>(
                 }
                 // if cursor field is not set in state but is set in catalog.
             } else {
+                LOGGER.info { "SGX cursor field in catalog but not in state" }
                 LOGGER.info {
                     "No cursor field set in catalog but not present in state. " +
                         "Stream: $pair, New Cursor Field: $cursorField. Resetting cursor value"
@@ -227,6 +233,7 @@ class CursorManager<S : Any>(
             }
             // if cursor field is not set in catalog.
         } else {
+            LOGGER.info { "SGX cursor field is not set in catalog" }
             LOGGER.info {
                 "Cursor field set in state but not present in catalog. " +
                     "Stream: $pair. Original Cursor Field: $originalCursorField. " +
@@ -236,6 +243,7 @@ class CursorManager<S : Any>(
             cursor = null
             cursorRecordCount = 0L
         }
+        LOGGER.info{"SGX returning cursorInfo with originalCursorField=$originalCursorField, originalCursor=$originalCursor, cursorField=$cursorField, cursor=$cursor"}
 
         return CursorInfo(
             originalCursorField,
