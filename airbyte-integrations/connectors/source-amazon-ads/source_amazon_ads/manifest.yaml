@@ -32,6 +32,22 @@ definitions:
         action: IGNORE
         error_message: "{{ response.code }}; {{ response.details }}"
 
+  report_creation_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - predicate: "{{ 'KDP authors do not have access to Sponsored Brands functionality' in response.details }}"
+        action: FAIL
+        error_message: "{{ response.details }}"
+      - predicate: "{{ 'Not authorized to access scope' in response.details }}"
+        action: FAIL
+        error_message: "{{ response.details }}"
+      - predicate: "{{ 'Tactic T00020 is not supported for report API in marketplace' in response.details }}"
+        action: FAIL
+        error_message: "{{ response.details }}"
+      - predicate: "{{ 'Report date is too far in the past' in response.details }}"
+        action: FAIL
+        error_message: "{{ response.details }}"
+
   oauth_authenticator:
     type: OAuthAuthenticator
     refresh_request_body: {}
@@ -1198,7 +1214,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["reportDate"]
-              value: "{{ stream_slice.cursor_slice.end_time }}"
+              value: "{{ stream_slice.end_time }}"
         - type: AddFields
           fields:
             - path: ["profileId"]
@@ -1253,9 +1269,9 @@ definitions:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           request_body_json:
-            name: "purchasedAsin report {{ stream_slice.cursor_slice.start_time }}" # TODO: make configurable
-            startDate: "{{ stream_slice.cursor_slice.start_time }}" # TODO: set today via datetimebased cursor ???
-            endDate: "{{ stream_slice.cursor_slice.end_time }}" # TODO: set today via datetimebased cursor ???
+            name: "purchasedAsin report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
             configuration:
               adProduct: SPONSORED_BRANDS
               groupBy: ["purchasedAsin"]
@@ -1282,6 +1298,8 @@ definitions:
               filters: []
               timeUnit: SUMMARY
               format: GZIP_JSON
+          error_handler:
+            $ref: "#/definitions/report_creation_error_handler"
         polling_requester:
           type: HttpRequester
           path: /reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}

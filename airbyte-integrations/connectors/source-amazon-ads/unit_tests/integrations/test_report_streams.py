@@ -218,7 +218,9 @@ class TestDisplayReportStreams(TestCase):
         output = read_stream("sponsored_brands_v3_report_stream", SyncMode.incremental, self._config)
         # OLd format
         # assert output.most_recent_state.stream_state == AirbyteStateBlob({"1": {"reportDate": start_date.format("YYYY-MM-DD")}})
-        assert output.most_recent_state.stream_state.states == [{'cursor': {'reportDate': start_date.format("YYYY-MM-DD")}, 'partition': {'parent_slice': {}, 'profileId': 1}}]
+        assert output.most_recent_state.stream_state.states == [
+            {"cursor": {"reportDate": start_date.format("YYYY-MM-DD")}, "partition": {"parent_slice": {}, "profileId": 1}}
+        ]
         assert len(output.records) == 1
 
     @HttpMocker()
@@ -261,10 +263,7 @@ class TestDisplayReportStreams(TestCase):
             assert len(output.records) == 0
 
             warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-            expected_warning_log = (
-                f"Unexpected HTTP status code {status_code} when registering purchasedAsin, "
-                f"SponsoredBrandsV3ReportStream for 1 profile: {json.dumps(non_breaking_error.build())}"
-            )
+            expected_warning_log = f"Exception has occurred during job creation: {msg}"
             assert any([expected_warning_log in warn for warn in warning_logs])
             http_mocker.clear_all_matchers()
 
