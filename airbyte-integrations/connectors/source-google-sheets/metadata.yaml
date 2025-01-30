@@ -28,6 +28,9 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   supportLevel: certified
   tags:
     - language:python
