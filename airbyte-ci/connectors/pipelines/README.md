@@ -721,39 +721,7 @@ Steps
 
 ### <a id="format-subgroup"></a>`format` command subgroup
 
-Available commands:
-
-- `airbyte-ci format check all`
-- `airbyte-ci format fix all`
-
-### Options
-
-| Option              | Required | Default | Mapped environment variable | Description                                                                                 |
-| ------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
-| `--quiet/-q`        | False    | False   |                             | Hide formatter execution details in reporting.                                              |
-| `--ci-requirements` | False    |         |                             | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
-
-### Examples
-
-- Check for formatting errors in the repository: `airbyte-ci format check all`
-- Fix formatting for only python files: `airbyte-ci format fix python`
-
-### <a id="format-check-command"></a>`format check all` command
-
-This command runs formatting checks, but does not format the code in place. It will exit 1 as soon
-as a failure is encountered. To fix errors, use `airbyte-ci format fix all`.
-
-Running `airbyte-ci format check` will run checks on all different types of code. Run
-`airbyte-ci format check --help` for subcommands to check formatting for only certain types of
-files.
-
-### <a id="format-fix-command"></a>`format fix all` command
-
-This command runs formatting checks and reformats any code that would be reformatted, so it's
-recommended to stage changes you might have before running this command.
-
-Running `airbyte-ci format fix all` will format all of the different types of code. Run
-`airbyte-ci format fix --help` for subcommands to format only certain types of files.
+`airbyte-ci format` is no longer available. To format code in this repository, we're using `pre-commit`. Assuming `pre-commit` is installed, `pre-commit run` will run the formatters for you.
 
 ### <a id="poetry-subgroup"></a>`poetry` command subgroup
 
