@@ -157,7 +157,6 @@ class GlueWriteTest :
             )
         )
     ) {
-
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
     override fun testFunkyCharacters() {
