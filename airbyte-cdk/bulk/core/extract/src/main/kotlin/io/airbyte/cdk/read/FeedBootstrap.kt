@@ -57,7 +57,8 @@ sealed class FeedBootstrap<T : Feed>(
      * to the next. Not doing this generates a lot of garbage and the increased GC activity has a
      * measurable impact on performance.
      */
-    private inner class EfficientStreamRecordConsumer(val stream: Stream) : StreamRecordConsumer {
+    private inner class EfficientStreamRecordConsumer(override val stream: Stream) :
+        StreamRecordConsumer {
 
         override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
             if (changes.isNullOrEmpty()) {
@@ -107,7 +108,7 @@ sealed class FeedBootstrap<T : Feed>(
                 stream.schema.forEach { recordData.putNull(it.id) }
                 if (feed is Stream && precedingGlobalFeed != null) {
                     metaFieldDecorator.decorateRecordData(
-                        timestamp = outputConsumer.emittedAt.atOffset(ZoneOffset.UTC),
+                        timestamp = outputConsumer.recordEmittedAt.atOffset(ZoneOffset.UTC),
                         globalStateValue = stateQuerier.current(precedingGlobalFeed),
                         stream,
                         recordData,
@@ -124,7 +125,7 @@ sealed class FeedBootstrap<T : Feed>(
                     AirbyteRecordMessage()
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
-                        .withEmittedAt(outputConsumer.emittedAt.toEpochMilli())
+                        .withEmittedAt(outputConsumer.recordEmittedAt.toEpochMilli())
                         .withData(reusedRecordData)
                 )
 
@@ -137,7 +138,7 @@ sealed class FeedBootstrap<T : Feed>(
                     AirbyteRecordMessage()
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
-                        .withEmittedAt(outputConsumer.emittedAt.toEpochMilli())
+                        .withEmittedAt(outputConsumer.recordEmittedAt.toEpochMilli())
                         .withData(reusedRecordData)
                         .withMeta(reusedRecordMeta)
                 )
@@ -214,7 +215,10 @@ sealed class FeedBootstrap<T : Feed>(
  *    b) field value changes and the motivating reason for these in the record metadata.
  * ```
  */
-fun interface StreamRecordConsumer {
+interface StreamRecordConsumer {
+
+    val stream: Stream
+
     fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?)
 }
 

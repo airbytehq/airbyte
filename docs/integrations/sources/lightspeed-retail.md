@@ -51,6 +51,14 @@ After logging in, you can create your personal token by navigating to Setup -&gt
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2025-01-25 | [52226](https://github.com/airbytehq/airbyte/pull/52226) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51831](https://github.com/airbytehq/airbyte/pull/51831) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51213](https://github.com/airbytehq/airbyte/pull/51213) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50619](https://github.com/airbytehq/airbyte/pull/50619) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50129](https://github.com/airbytehq/airbyte/pull/50129) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49651](https://github.com/airbytehq/airbyte/pull/49651) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [49226](https://github.com/airbytehq/airbyte/pull/49226) | Update dependencies |
+| 0.0.2 | 2024-12-11 | [48954](https://github.com/airbytehq/airbyte/pull/48954) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-10-23 | | Initial release by [@aazam-gh](https://github.com/aazam-gh) via Connector Builder |
 
 </details>

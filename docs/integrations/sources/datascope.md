@@ -64,6 +64,12 @@ GET https://www.mydatascope.com/api/external/locations
 
 | Version | Date       | Pull Request                                              | Subject        |
 | :------ | :--------- | :-------------------------------------------------------- | :------------- |
+| 0.2.11 | 2025-01-25 | [52302](https://github.com/airbytehq/airbyte/pull/52302) | Update dependencies |
+| 0.2.10 | 2025-01-18 | [51649](https://github.com/airbytehq/airbyte/pull/51649) | Update dependencies |
+| 0.2.9 | 2025-01-11 | [51069](https://github.com/airbytehq/airbyte/pull/51069) | Update dependencies |
+| 0.2.8 | 2024-12-28 | [50569](https://github.com/airbytehq/airbyte/pull/50569) | Update dependencies |
+| 0.2.7 | 2024-12-21 | [49542](https://github.com/airbytehq/airbyte/pull/49542) | Update dependencies |
+| 0.2.6 | 2024-12-12 | [49161](https://github.com/airbytehq/airbyte/pull/49161) | Update dependencies |
 | 0.2.5 | 2024-11-05 | [48357](https://github.com/airbytehq/airbyte/pull/48357) | Revert to source-declarative-manifest v5.17.0 |
 | 0.2.4 | 2024-11-05 | [48336](https://github.com/airbytehq/airbyte/pull/48336) | Update dependencies |
 | 0.2.3 | 2024-10-29 | [47857](https://github.com/airbytehq/airbyte/pull/47857) | Update dependencies |

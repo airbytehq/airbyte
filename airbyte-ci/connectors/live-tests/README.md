@@ -179,6 +179,26 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.20.0
+Support multiple connection objects in the regression tests suite.
+
+
+### 0.19.10
+Pin the connection retriever until we make required changes to support the new version.
+
+
+### 0.19.8
+
+Give ownership of copied connection object files to the image user to make sure it has permission to write them (config migration).
+
+### 0.19.7
+
+Mount connection objects to readable paths in the container for rootless images.
+
+### 0.19.6
+
+Write connector output to a different in container path to avoid permission issues now that connector images are rootless.
+
 ### 0.19.5
 
 Fix `ZeroDivisionError` in Regression test tool

@@ -15,7 +15,8 @@ data class TimeWindowTrigger(
     private val clock: Clock,
     private val windowWidthMs: Long,
 ) {
-    private var openedAtMs: Long? = null
+    var openedAtMs: Long? = null
+        private set
 
     /*
      * Sets window open timestamp for computing completeness. Idempotent. Mutative.

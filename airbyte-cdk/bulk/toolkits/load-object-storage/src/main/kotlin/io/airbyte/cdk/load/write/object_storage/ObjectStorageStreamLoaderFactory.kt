@@ -4,201 +4,118 @@
 
 package io.airbyte.cdk.load.write.object_storage
 
+import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
-import io.airbyte.cdk.load.file.NoopProcessor
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.file.StreamProcessor
+import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
-import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.MultiProducerChannel
+import io.airbyte.cdk.load.message.object_storage.*
 import io.airbyte.cdk.load.state.DestinationStateManager
-import io.airbyte.cdk.load.state.StreamIncompleteResult
+import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
+import io.airbyte.cdk.load.write.BatchAccumulator
+import io.airbyte.cdk.load.write.FileBatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.OutputStream
-import java.nio.file.Path
-import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
 @Secondary
-class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>>(
+class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
     private val client: ObjectStorageClient<T>,
-    private val compressionConfig: ObjectStorageCompressionConfigurationProvider<*>? = null,
     private val pathFactory: ObjectStoragePathFactory,
-    private val writerFactory: ObjectStorageFormattingWriterFactory,
+    private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
+    private val compressionConfigurationProvider:
+        ObjectStorageCompressionConfigurationProvider<U>? =
+        null,
+    private val uploadConfigurationProvider: ObjectStorageUploadConfigurationProvider,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
+    @Value("\${airbyte.destination.core.record-batch-size-override}")
+    private val recordBatchSizeOverride: Long? = null
 ) {
     fun create(stream: DestinationStream): StreamLoader {
         return ObjectStorageStreamLoader(
             stream,
             client,
-            compressionConfig?.objectStorageCompressionConfiguration?.compressor ?: NoopProcessor,
+            compressionConfigurationProvider?.objectStorageCompressionConfiguration?.compressor,
             pathFactory,
-            writerFactory,
-            destinationStateManager
+            bufferedWriterFactory,
+            destinationStateManager,
+            uploadConfigurationProvider.objectStorageUploadConfiguration.uploadPartSizeBytes,
+            recordBatchSizeOverride
+                ?: uploadConfigurationProvider.objectStorageUploadConfiguration.fileSizeBytes
         )
     }
 }
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"],
+    justification = "Kotlin async continuation"
+)
 class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     override val stream: DestinationStream,
     private val client: ObjectStorageClient<T>,
-    private val compressor: StreamProcessor<U>,
+    private val compressor: StreamProcessor<U>?,
     private val pathFactory: ObjectStoragePathFactory,
-    private val writerFactory: ObjectStorageFormattingWriterFactory,
+    private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
+    private val partSizeBytes: Long,
+    private val fileSizeBytes: Long,
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
-    sealed interface ObjectStorageBatch : Batch
-    data class StagedObject<T>(
-        override val state: Batch.State = Batch.State.PERSISTED,
-        val remoteObject: T,
-        val partNumber: Long
-    ) : ObjectStorageBatch
-    data class FinalizedObject<T>(
-        override val state: Batch.State = Batch.State.COMPLETE,
-        val remoteObject: T,
-    ) : ObjectStorageBatch
+    private val objectAccumulator = PartToObjectAccumulator(stream, client)
 
-    private val partNumber = AtomicLong(0L)
-
-    override suspend fun start() {
+    override suspend fun createBatchAccumulator(): BatchAccumulator {
         val state = destinationStateManager.getState(stream)
-        val maxPartNumber =
-            state.generations
-                .mapNotNull { it.objects.maxOfOrNull { obj -> obj.partNumber } }
-                .maxOrNull()
-        log.info { "Got max part number from destination state: $maxPartNumber" }
-        maxPartNumber?.let { partNumber.set(it + 1L) }
-    }
-
-    override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
-    ): Batch {
-        val partNumber = partNumber.getAndIncrement()
-        val key =
-            pathFactory
-                .getPathToFile(stream, partNumber, isStaging = pathFactory.supportsStaging)
-                .toString()
-
-        log.info { "Writing records to $key" }
-        val state = destinationStateManager.getState(stream)
-        state.addObject(stream.generationId, key, partNumber)
-
-        val metadata = ObjectStorageDestinationState.metadataFor(stream)
-        val obj =
-            client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
-                writerFactory.create(stream, outputStream).use { writer ->
-                    records.forEach { writer.accept(it) }
-                }
-            }
-        log.info { "Finished writing records to $key" }
-        return if (pathFactory.supportsStaging) {
-            StagedObject(remoteObject = obj, partNumber = partNumber)
-        } else {
-            FinalizedObject(remoteObject = obj)
+        return RecordToPartAccumulator(
+            pathFactory,
+            bufferedWriterFactory,
+            partSizeBytes = partSizeBytes,
+            fileSizeBytes = fileSizeBytes,
+            stream,
+            state.getPartIdCounter(pathFactory.getFinalDirectory(stream)),
+        ) { name ->
+            state.ensureUnique(name)
         }
     }
 
-    override suspend fun processFile(file: DestinationFile): Batch {
-        if (pathFactory.supportsStaging) {
-            throw IllegalStateException("Staging is not supported for files")
-        }
-        val key =
-            Path.of(pathFactory.getFinalDirectory(stream).toString(), file.fileMessage.fileUrl!!)
-                .toString()
+    override suspend fun createFileBatchAccumulator(
+        outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
+    ): FileBatchAccumulator = FilePartAccumulator(pathFactory, stream, outputQueue)
 
-        val state = destinationStateManager.getState(stream)
-        state.addObject(
-            generationId = stream.generationId,
-            key = key,
-            partNumber = 0,
-            isStaging = false
-        )
+    @VisibleForTesting fun createFile(url: String) = File(url)
 
-        val metadata = ObjectStorageDestinationState.metadataFor(stream)
-        val obj =
-            client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
-                File(file.fileMessage.fileUrl!!).inputStream().use { it.copyTo(outputStream) }
-            }
-        return FinalizedObject(remoteObject = obj)
-    }
+    override suspend fun processBatch(batch: Batch): Batch = objectAccumulator.processBatch(batch)
 
-    @Suppress("UNCHECKED_CAST")
-    override suspend fun processBatch(batch: Batch): Batch {
-        when (batch) {
-            is StagedObject<*> -> {
-                val stagedObject = batch as StagedObject<T>
-                val finalKey =
-                    pathFactory
-                        .getPathToFile(stream, stagedObject.partNumber, isStaging = false)
-                        .toString()
-                log.info {
-                    "Moving staged object from ${stagedObject.remoteObject.key} to $finalKey"
-                }
-                val newObject = client.move(stagedObject.remoteObject, finalKey)
-
-                val state = destinationStateManager.getState(stream)
-                state.removeObject(stream.generationId, stagedObject.remoteObject.key)
-                state.addObject(stream.generationId, newObject.key, stagedObject.partNumber)
-
-                val finalizedObject = FinalizedObject(remoteObject = newObject)
-                return finalizedObject
-            }
-            else -> throw IllegalStateException("Unexpected batch type: $batch")
-        }
-    }
-
-    override suspend fun close(streamFailure: StreamIncompleteResult?) {
+    override suspend fun close(streamFailure: StreamProcessingFailed?) {
         if (streamFailure != null) {
             log.info { "Sync failed, persisting destination state for next run" }
-            destinationStateManager.persistState(stream)
-        } else {
-            log.info { "Sync succeeded, Moving any stragglers out of staging" }
+        } else if (stream.shouldBeTruncatedAtEndOfSync()) {
+            log.info { "Truncate sync succeeded, Removing old files" }
             val state = destinationStateManager.getState(stream)
-            val stagingToKeep =
-                state.generations.filter {
-                    it.isStaging && it.generationId >= stream.minimumGenerationId
+
+            state.getObjectsToDelete().forEach { (generationId, objectAndPart) ->
+                log.info {
+                    "Deleting old object for generation $generationId: ${objectAndPart.key}"
                 }
-            stagingToKeep.toList().forEach {
-                it.objects.forEach { obj ->
-                    val newKey =
-                        pathFactory
-                            .getPathToFile(stream, obj.partNumber, isStaging = false)
-                            .toString()
-                    log.info { "Moving staged object from ${obj.key} to $newKey" }
-                    val newObject = client.move(obj.key, newKey)
-                    state.removeObject(it.generationId, obj.key, isStaging = true)
-                    state.addObject(it.generationId, newObject.key, obj.partNumber)
-                }
+                client.delete(objectAndPart.key)
             }
 
-            log.info { "Removing old files" }
-            val (toKeep, toDrop) =
-                state.generations.partition { it.generationId >= stream.minimumGenerationId }
-            val keepKeys = toKeep.flatMap { it.objects.map { obj -> obj.key } }.toSet()
-            toDrop
-                .flatMap { it.objects.filter { obj -> obj.key !in keepKeys } }
-                .forEach {
-                    log.info { "Deleting object ${it.key}" }
-                    client.delete(it.key)
-                }
-
-            log.info { "Updating and persisting state" }
-            state.dropGenerationsBefore(stream.minimumGenerationId)
-            destinationStateManager.persistState(stream)
+            log.info { "Persisting state" }
         }
+        destinationStateManager.persistState(stream)
     }
 }

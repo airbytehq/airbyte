@@ -18,11 +18,11 @@ class MapperPipelineTest {
 
     class TurnSchemalessObjectsIntoIntegers : AirbyteValueIdentityMapper() {
         override fun mapObjectWithoutSchema(
-            value: ObjectValue,
+            value: AirbyteValue,
             schema: ObjectTypeWithoutSchema,
             context: Context
         ): Pair<AirbyteValue, Context> {
-            if (value.values.size == 1) {
+            if ((value as ObjectValue).values.size == 1) {
                 throw IllegalStateException("Arbitrarily reject 1")
             }
             return IntegerValue(value.values.size.toLong()) to context
@@ -35,10 +35,10 @@ class MapperPipelineTest {
 
     class TurnIntegersIntoStrings : AirbyteValueIdentityMapper() {
         override fun mapInteger(
-            value: IntegerValue,
+            value: AirbyteValue,
             context: Context
         ): Pair<AirbyteValue, Context> {
-            if (value.value.toLong() == 2L) {
+            if ((value as IntegerValue).value.toLong() == 2L) {
                 throw IllegalStateException("Arbitrarily reject 2")
             }
             return StringValue(value.value.toString()) to context

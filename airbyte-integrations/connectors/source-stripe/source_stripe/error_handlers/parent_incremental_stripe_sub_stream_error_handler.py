@@ -5,6 +5,7 @@
 from typing import Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
 from source_stripe.error_handlers.stripe_error_handler import StripeErrorHandler
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "auto-merge"
-version = "0.1.2"
+version = "0.1.4"
 description = ""
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
@@ -19,6 +19,9 @@ mypy = "^1.10.0"
 ruff = "^0.4.3"
 pytest = "^8.2.0"
 pyinstrument = "^4.6.2"
+
+[tool.ruff]
+line-length = 140
 
 [tool.ruff.lint]
 select = [
