@@ -103,10 +103,9 @@ abstract class BasicPerformanceTest(
     val configSpecClass: Class<out ConfigurationSpecification>,
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val dataValidator: DataValidator? = null,
-    val envVars: Map<String, String> = emptyMap(),
 ) {
 
-    protected val destinationProcessFactory = DestinationProcessFactory.get()
+    protected val destinationProcessFactory = DestinationProcessFactory.get(emptyList())
 
     private lateinit var testInfo: TestInfo
     private lateinit var testPrettyName: String
@@ -285,7 +284,6 @@ abstract class BasicPerformanceTest(
                 testConfig,
                 testScenario.catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
-                envVars = envVars,
             )
 
         val duration =
