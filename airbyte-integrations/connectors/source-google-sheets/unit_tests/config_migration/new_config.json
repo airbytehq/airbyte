@@ -1,8 +1,0 @@
-{
-  "credentials": {
-    "auth_type": "Service",
-    "service_account_info": "{ \"type\": \"service_account\",   \"project_id\": \"project_id\" }",
-    "service_account": { "type": "service_account", "project_id": "project_id" }
-  },
-  "spreadsheet_id": "spreadsheet_id"
-}

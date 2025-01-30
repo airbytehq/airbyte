@@ -334,12 +334,12 @@ definitions:
       - values
   jwt_authenticator:
     type: JwtAuthenticator
-    secret_key: "{{ config['credentials']['service_account']['private_key'] }}"
+    secret_key: "{{ json_load(config['credentials']['service_account_info'])['private_key'] }}"
     algorithm: "RS256"
     token_duration: 3600
     jwt_payload:
-      aud: "{{ config['credentials']['service_account']['token_uri'] }}"
-      iss: "{{ config['credentials']['service_account']['client_email'] }}"
+      aud: "{{ json_load(config['credentials']['service_account_info'])['token_uri'] }}"
+      iss: "{{ json_load(config['credentials']['service_account_info'])['client_email'] }}"
     additional_jwt_payload:
       scope: "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly"
   oauth_authenticator:
