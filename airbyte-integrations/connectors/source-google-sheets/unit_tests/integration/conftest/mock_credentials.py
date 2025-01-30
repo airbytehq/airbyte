@@ -1,4 +1,7 @@
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
+
 import json
 
 
@@ -34,6 +37,8 @@ jHfASOY3OsGgYW95pkyx5TH7
 -----END PRIVATE KEY-----
 
 """
+
+AUTH_BODY = "grant_type=refresh_token&client_id=43987534895734985.apps.googleusercontent.com&client_secret=2347586435987643598&refresh_token=1%2F%2F4398574389537495437983457985437"
 
 service_account_info = {
     "type": "service_account",
