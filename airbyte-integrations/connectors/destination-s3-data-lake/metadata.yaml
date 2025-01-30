@@ -19,14 +19,19 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_SYSTEM_AWS_CONFIG
-          fileName: glue_aws_assume_role.json
+        - name: SECRET_DESTINATION-S3-DATA-LAKE_SYSTEM_AWS_CONFIG
+          fileName: system_aws_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-DATA-LAKE_DREMIO_NESSIE_CATALOG_CONFIG
+          fileName: dremio_nessie_config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorType: destination
   definitionId: 716ca874-520b-4902-9f80-9fad66754b89
-  dockerImageTag: 0.2.23
+  dockerImageTag: 0.2.24
   dockerRepository: airbyte/destination-s3-data-lake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-data-lake
   githubIssueLabel: destination-s3-data-lake

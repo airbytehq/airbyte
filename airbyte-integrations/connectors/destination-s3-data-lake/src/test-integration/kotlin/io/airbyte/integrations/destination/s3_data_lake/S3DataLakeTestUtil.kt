@@ -17,8 +17,8 @@ import java.nio.file.Path
 object S3DataLakeTestUtil {
     val GLUE_CONFIG_PATH: Path = Path.of("secrets/glue.json")
     val GLUE_ASSUME_ROLE_CONFIG_PATH: Path = Path.of("secrets/glue_assume_role.json")
-    private val GLUE_AWS_ASSUME_ROLE_CONFIG_PATH: Path =
-        Path.of("secrets/glue_aws_assume_role.json")
+    private val AWS_SECRET_CONFIG_PATH: Path = Path.of("secrets/system_aws_config.json")
+    val DREMIO_CONFIG_PATH: Path = Path.of("secrets/dremio_nessie_config.json")
 
     fun parseConfig(path: Path) =
         getConfig(
@@ -36,7 +36,7 @@ object S3DataLakeTestUtil {
 
     fun getAwsAssumeRoleCredentialsAsMap(): Map<String, String> {
         val parsedAssumeRoleCreds =
-            Jsons.readTree(Files.readString(GLUE_AWS_ASSUME_ROLE_CONFIG_PATH)) as ObjectNode
+            Jsons.readTree(Files.readString(AWS_SECRET_CONFIG_PATH)) as ObjectNode
         return parsedAssumeRoleCreds.properties().associate { it.key to it.value.textValue() }
     }
 
