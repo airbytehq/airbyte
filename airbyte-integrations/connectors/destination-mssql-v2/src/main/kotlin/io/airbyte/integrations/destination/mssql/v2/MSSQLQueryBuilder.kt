@@ -117,13 +117,15 @@ const val CREATE_INDEX_QUERY = """
 
 const val INSERT_INTO_QUERY =
     """
-        INSERT INTO [?$SCHEMA_KEY].[?$TABLE_KEY] (?$COLUMNS_KEY)
+        SET NOCOUNT ON;
+        INSERT INTO [?$SCHEMA_KEY].[?$TABLE_KEY] WITH (TABLOCK) (?$COLUMNS_KEY)
             SELECT table_value.*
             FROM (VALUES (?$TEMPLATE_COLUMNS_KEY)) table_value(?$COLUMNS_KEY)
     """
 
 const val MERGE_INTO_QUERY =
     """
+        SET NOCOUNT ON;
         MERGE INTO [?$SCHEMA_KEY].[?$TABLE_KEY] AS Target
         USING (VALUES (?$TEMPLATE_COLUMNS_KEY)) AS Source (?$COLUMNS_KEY)
         ON ?$UNIQUENESS_CONSTRAINT_KEY
@@ -138,6 +140,7 @@ const val ALTER_TABLE_ADD = """
         ALTER TABLE [?].[?]
         ADD [?] ? NULL;
     """
+
 const val ALTER_TABLE_DROP = """
         ALTER TABLE [?].[?]
         DROP COLUMN [?];
@@ -161,6 +164,11 @@ const val DELETE_WHERE_COL_LESS_THAN = """
 
 const val SELECT_FROM = """
         SELECT *
+        FROM [?].[?]
+    """
+
+const val COUNT_FROM = """
+        SELECT COUNT(*)
         FROM [?].[?]
     """
 
@@ -204,7 +212,7 @@ class MSSQLQueryBuilder(
 
     val outputSchema: String = stream.descriptor.namespace ?: config.schema
     val tableName: String = stream.descriptor.name
-    private val uniquenessKey: List<String> =
+    val uniquenessKey: List<String> =
         when (stream.importType) {
             is Dedupe ->
                 if ((stream.importType as Dedupe).primaryKey.isNotEmpty()) {

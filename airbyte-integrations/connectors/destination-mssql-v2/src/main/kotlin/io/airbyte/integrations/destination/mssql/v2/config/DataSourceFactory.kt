@@ -19,12 +19,12 @@ class DataSourceFactory {
         val sqlServerDataSource = config.toSQLServerDataSource()
         val dataSource = HikariDataSource()
         dataSource.dataSource = sqlServerDataSource
-        dataSource.connectionTimeout = 30000
+        dataSource.connectionTimeout = 60000
         dataSource.connectionTestQuery = "SELECT 1"
         dataSource.maximumPoolSize = 10
         dataSource.minimumIdle = 0
         dataSource.idleTimeout = 60000
-        dataSource.leakDetectionThreshold = dataSource.connectionTimeout + 10000
+        dataSource.leakDetectionThreshold = dataSource.connectionTimeout + 30000
         return dataSource
     }
 }
