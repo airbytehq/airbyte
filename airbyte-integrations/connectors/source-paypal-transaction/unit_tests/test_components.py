@@ -2,14 +2,12 @@
 
 import logging
 import time
+from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 import requests
 import requests_mock
-
-from datetime import datetime
-from unittest.mock import patch
-
 
 
 @pytest.fixture
