@@ -30,7 +30,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   supportLevel: certified
   tags:
     - language:python
