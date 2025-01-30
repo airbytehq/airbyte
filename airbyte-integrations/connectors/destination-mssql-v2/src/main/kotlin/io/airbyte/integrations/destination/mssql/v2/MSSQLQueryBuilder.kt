@@ -18,6 +18,10 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToSqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
@@ -167,20 +171,15 @@ class MSSQLQueryBuilder(
     companion object {
 
         const val SQL_ERROR_OBJECT_EXISTS = 2714
-
-        const val AIRBYTE_RAW_ID = "_airbyte_raw_id"
-        const val AIRBYTE_EXTRACTED_AT = "_airbyte_extracted_at"
-        const val AIRBYTE_META = "_airbyte_meta"
-        const val AIRBYTE_GENERATION_ID = "_airbyte_generation_id"
         const val AIRBYTE_CDC_DELETED_AT = "_ab_cdc_deleted_at"
         const val DEFAULT_SEPARATOR = ",\n        "
 
         val airbyteFinalTableFields =
             listOf(
-                NamedField(AIRBYTE_RAW_ID, FieldType(StringType, false)),
-                NamedField(AIRBYTE_EXTRACTED_AT, FieldType(IntegerType, false)),
-                NamedField(AIRBYTE_META, FieldType(ObjectTypeWithoutSchema, false)),
-                NamedField(AIRBYTE_GENERATION_ID, FieldType(IntegerType, false)),
+                NamedField(COLUMN_NAME_AB_RAW_ID, FieldType(StringType, false)),
+                NamedField(COLUMN_NAME_AB_EXTRACTED_AT, FieldType(IntegerType, false)),
+                NamedField(COLUMN_NAME_AB_META, FieldType(ObjectTypeWithoutSchema, false)),
+                NamedField(COLUMN_NAME_AB_GENERATION_ID, FieldType(IntegerType, false)),
             )
 
         val airbyteFields = airbyteFinalTableFields.map { it.name }.toSet()
@@ -313,7 +312,7 @@ class MSSQLQueryBuilder(
         DELETE_WHERE_COL_LESS_THAN.toQuery(
                 outputSchema,
                 tableName,
-                AIRBYTE_GENERATION_ID,
+                COLUMN_NAME_AB_GENERATION_ID,
                 minGenerationId.toString()
             )
             .executeUpdate(connection)
@@ -337,11 +336,13 @@ class MSSQLQueryBuilder(
             val statementIndex = index + 1
             if (field.name in airbyteFields) {
                 when (field.name) {
-                    AIRBYTE_RAW_ID ->
+                    COLUMN_NAME_AB_RAW_ID ->
                         statement.setString(statementIndex, UUID.randomUUID().toString())
-                    AIRBYTE_EXTRACTED_AT -> statement.setLong(statementIndex, record.emittedAtMs)
-                    AIRBYTE_GENERATION_ID -> statement.setLong(statementIndex, stream.generationId)
-                    AIRBYTE_META -> airbyteMetaStatementIndex = statementIndex
+                    COLUMN_NAME_AB_EXTRACTED_AT ->
+                        statement.setLong(statementIndex, record.emittedAtMs)
+                    COLUMN_NAME_AB_GENERATION_ID ->
+                        statement.setLong(statementIndex, stream.generationId)
+                    COLUMN_NAME_AB_META -> airbyteMetaStatementIndex = statementIndex
                 }
             } else {
                 try {

@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
 import org.apache.iceberg.catalog.Namespace
@@ -52,6 +53,12 @@ class TableIdGeneratorFactory(private val s3DataLakeConfiguration: S3DataLakeCon
                 SimpleTableIdGenerator(
                     (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
                             as NessieCatalogConfiguration)
+                        .namespace
+                )
+            is RestCatalogConfiguration ->
+                SimpleTableIdGenerator(
+                    (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
+                            as RestCatalogConfiguration)
                         .namespace
                 )
         }

@@ -359,7 +359,7 @@ data class StreamCheckpoint(
 }
 
 data class GlobalCheckpoint(
-    val state: JsonNode,
+    val state: JsonNode?,
     override val sourceStats: Stats?,
     override val destinationStats: Stats? = null,
     val checkpoints: List<Checkpoint> = emptyList(),
@@ -406,7 +406,8 @@ data object Undefined : DestinationMessage {
 @Singleton
 class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
-    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.destination.core.file-transfer.enabled}")
+    private val fileTransferEnabled: Boolean,
 ) {
     fun fromAirbyteMessage(
         message: AirbyteMessage,
