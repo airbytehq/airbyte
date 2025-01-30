@@ -54,8 +54,8 @@ def matchers():
         "gsm_only",
     ],
 )
-@patch("common_utils.GoogleApi.get_access_token", lambda *args: ("fake_token", None))
-@patch("common_utils.GoogleApi.project_id", "fake_id")
+@patch("ci_credentials.google_api.GoogleApi.get_access_token", lambda *args: ("fake_token", None))
+@patch("ci_credentials.google_api.GoogleApi.project_id", "fake_id")
 def test_read(matchers, connector_name, gsm_secrets, expected_secrets):
     secrets_list = {
         "secrets": [
@@ -163,8 +163,8 @@ def test_validate_mask_values(connector_name, dict_json_value, expected_secret, 
     assert expected_secret in capsys.readouterr().out
 
 
-@patch("common_utils.GoogleApi.get_access_token", lambda *args: ("fake_token", None))
-@patch("common_utils.GoogleApi.project_id", "fake_id")
+@patch("ci_credentials.google_api.GoogleApi.get_access_token", lambda *args: ("fake_token", None))
+@patch("ci_credentials.google_api.GoogleApi.project_id", "fake_id")
 @pytest.mark.parametrize(
     "old_secret_value, updated_configurations",
     [

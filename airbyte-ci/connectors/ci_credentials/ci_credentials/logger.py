@@ -38,7 +38,7 @@ class Logger:
         logger_name = __name__
         stack_items = inspect.stack()
         for i in range(len(stack_items)):
-            if stack_items[i].filename.endswith("common_utils/logger.py"):
+            if stack_items[i].filename.endswith("ci_credentials/logger.py"):
                 logger_name = ".".join(stack_items[i + 1].filename.split("/")[-3:])[:-3]
 
         self._logger = logging.getLogger(logger_name)
@@ -56,7 +56,7 @@ class Logger:
             prefix = ""
             stack_items = inspect.stack()
             for i in range(len(stack_items)):
-                if stack_items[i].filename.endswith("common_utils/logger.py"):
+                if stack_items[i].filename.endswith("ci_credentials/logger.py"):
                     filepath = stack_items[i + 1].filename
                     line_number = stack_items[i + 1].lineno
 
