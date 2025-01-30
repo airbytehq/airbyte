@@ -6,7 +6,7 @@ data:
     hosts:
       - api.intercom.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.28.0@sha256:6935048f02debe2cd6e33707b1f6885fc620914ef49ac00af75220ee7a596adf
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.29.1@sha256:a1c2b3769e56d1beb7a0449f8c369aaa841f9f5c9e43e1b6d628394d32cba70c
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
