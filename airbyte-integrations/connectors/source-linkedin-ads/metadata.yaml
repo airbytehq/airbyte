@@ -26,6 +26,7 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 5.1.2
     oss:
       enabled: true
   releaseStage: generally_available
