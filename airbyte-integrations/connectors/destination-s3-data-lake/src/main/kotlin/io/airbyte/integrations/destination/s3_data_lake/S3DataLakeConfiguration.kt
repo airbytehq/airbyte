@@ -31,6 +31,9 @@ data class S3DataLakeConfiguration(
     S3BucketConfigurationProvider {
     override val recordBatchSizeBytes: Long
         get() = 1000*1024*1024
+
+    override val numOpenStreamWorkers: Int
+        get() = 2
 }
 
 @Singleton
