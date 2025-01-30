@@ -19,6 +19,7 @@ include = "source_linkedin_ads"
 python = "^3.10,<3.12"
 airbyte-cdk = "v6.28.0dev0"
 coverage = "^7.5.3"
+pendulum = "<3.0.0"
 
 [tool.poetry.scripts]
 source-linkedin-ads = "source_linkedin_ads.run:run"
