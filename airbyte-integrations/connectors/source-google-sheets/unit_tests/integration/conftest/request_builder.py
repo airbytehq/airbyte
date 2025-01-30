@@ -1,13 +1,14 @@
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
 
 from __future__ import annotations
 
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
 
-#  todo: this should be picked from manifest in the future
 GOOGLE_SHEETS_BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets"
-OAUTH_AUTHORIZATION_ENDPOINT = "https://oauth2.googleapis.com"
+OAUTH_AUTHORIZATION_ENDPOINT = "https://www.googleapis.com/oauth2/v4"
 
 
 class RequestBuilder:

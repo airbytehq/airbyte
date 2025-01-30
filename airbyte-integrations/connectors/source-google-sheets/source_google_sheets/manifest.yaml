@@ -1,0 +1,407 @@
+version: 6.7.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckDynamicStream
+  stream_count: 1
+  use_check_availability: false
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      type: DeclarativeStream
+      name: ""
+      $parameters:
+        i: 123
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        $parameters:
+          row_count: 0
+          sheet_id: ""
+          batch_size: 0
+        partition_router:
+          type: CustomPartitionRouter
+          class_name: "source_google_sheets.components.partition_routers.RangePartitionRouter"
+        paginator:
+          type: NoPagination
+        record_selector:
+          decoder:
+            type: JsonDecoder
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_google_sheets.components.DpathSchemaMatchingExtractor
+            description: Extract record list of values (rows) and matches such values to correct schema property to generate individual records.
+            field_path:
+              - valueRanges
+              - "*"
+            $parameters:
+              schema_type_identifier:
+                $ref: "#/definitions/schema_type_identifier"
+              values_to_match_key: "values"
+              properties_to_match: ""
+          type: RecordSelector
+          $parameters:
+            name: ""
+        requester:
+          $ref: "#/definitions/base_requester"
+          $parameters:
+            sheet_id: ""
+            name: ""
+          http_method: GET
+          path: >-
+            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"]}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+            response_filters:
+              $ref: "#/definitions/response_filters/response_error_filters"
+      schema_loader:
+        type: DynamicSchemaLoader
+        retriever:
+          type: SimpleRetriever
+          paginator:
+            type: NoPagination
+          record_selector:
+            extractor:
+              type: CustomRecordExtractor
+              class_name: source_google_sheets.components.DpathSchemaExtractor
+              parameters:
+                schema_type_identifier:
+                  $ref: "#/definitions/schema_type_identifier"
+              field_path:
+                - sheets
+                - "*"
+                - data
+                - "*"
+                - rowData
+                - "*"
+            type: RecordSelector
+          requester:
+            $ref: "#/definitions/base_requester"
+            $parameters:
+              sheet_id: ""
+            http_method: GET
+            path: >-
+              {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"]}}!1:1&alt=json
+            error_handler:
+              type: CompositeErrorHandler
+              error_handlers:
+                - type: DefaultErrorHandler
+                  backoff_strategies:
+                    - type: ExponentialBackoffStrategy
+                  response_filters:
+                    $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
+        schema_type_identifier:
+          $ref: "#/definitions/schema_type_identifier"
+    components_resolver:
+      type: HttpComponentsResolver
+      description: We use first row of sheet to obtain data.
+      retriever:
+        $ref: "#/definitions/retrievers/components_resolver_retriever"
+      components_mapping:
+        - field_path:
+            - name
+          type: ComponentMappingDefinition
+          value: "{{components_values['properties']['title']}}"
+          description: name for dynamic stream.
+        - field_path:
+            - schema_loader
+            - retriever
+            - requester
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['properties']['title']}}"
+          description: sheet_id for dynamic schema loader requester.
+        - field_path:
+            - retriever
+            - requester
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['properties']['title']}}"
+          description: sheet_id for dynamic stream retriever requester.
+        - field_path:
+            - retriever
+            - record_selector
+            - extractor
+            - $parameters
+            - properties_to_match
+          type: ComponentMappingDefinition
+          value: "{{components_values['data'][0].get('rowData', [{}])[0]}}"
+          description: indexed_schema to match with row values.
+        - field_path:
+            - retriever
+            - partition_router
+            - $parameters
+            - row_count
+          type: ComponentMappingDefinition
+          value: "{{components_values['properties']['gridProperties']['rowCount']}}"
+        - field_path:
+            - retriever
+            - partition_router
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['properties']['title']}}"
+          description: sheet_id for retriever.
+        - field_path:
+            - retriever
+            - partition_router
+            - $parameters
+            - batch_size
+          type: ComponentMappingDefinition
+          value: "{{config.get('batch_size', 1000000)}}"
+          description: batch size count for dynamic stream partition router (slicer).
+
+definitions:
+  streams:
+    get_spreadsheet_info_and_sheets:
+      type: DeclarativeStream
+      name: get_spreadsheet_info_and_sheets
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=false&alt=json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                response_filters:
+                  $ref: "#/definitions/response_filters/response_error_filters"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sheets
+              - "*"
+              - properties
+          record_filter:
+            type: RecordFilter
+            condition: '{{ record["sheetType"] == "GRID" and record["gridProperties"]["rowCount"] > 0}}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sheets"
+  base_requester:
+    type: HttpRequester
+    url_base: https://sheets.googleapis.com/v4/spreadsheets/
+    use_cache: true
+    authenticator: "#/definitions/authenticator"
+  retrievers:
+    components_resolver_retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - sheets
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: title
+            partition_field: sheet_id
+            stream:
+              $ref: "#/definitions/streams/get_spreadsheet_info_and_sheets"
+      requester:
+        $ref: "#/definitions/base_requester"
+        description: spreadsheet_id can be either the full url to spreadsheet or the spreadsheet id.
+        http_method: GET
+        path: >-
+          {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{stream_partition.sheet_id}}!1:1&alt=json
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
+  response_filters:
+    expected_one_sheet:
+      type: HttpResponseFilter
+      action: FAIL
+      predicate: >-
+        {{ 'sheets' in response and response["sheets"] | length != 1  }}
+      # error lacks of information as error_message can't interpolate stream_slice["potato"]
+      error_message: >-
+        Unable to read the schema of sheet. Error: Unexpected return
+        result: Sheet was
+        expected to contain data on exactly 1 sheet.
+    ignore_duplicate_headers:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: >-
+        {{ response["sheets"][0]["data"][0]["rowData"][0]["values"] |
+        map(attribute="formattedValue") | list | length !=
+        response["sheets"][0]["data"][0]["rowData"][0]["values"] |
+        map(attribute="formattedValue") | list | unique | list | length }}
+      error_message: >-
+        {%- set headers_found = response["sheets"][0]["data"][0]["rowData"][0]["values"] | map(attribute="formattedValue") | list -%}
+        {%- set headers_count = {} -%}
+        {%- set duplicate_fields = [] -%}
+        {%- for headerFound in headers_found -%}
+            {%- if headerFound is not none -%}
+                {%- set headers_count = headers_count.update({headerFound: headers_count.get(headerFound, 0) + 1}) or headers_count -%}
+                {%- if headers_count.get(headerFound) > 1 and headerFound not in duplicate_fields -%}
+                    {%- set duplicate_fields = duplicate_fields.append(headerFound) -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+        Duplicate headers found in sheet {{ response["sheets"][0]["properties"]["title"] }}.
+        Ignoring them: {{ duplicate_fields }}
+    fail_duplicate_headers:
+      $ref: "#/definitions/response_filters/ignore_duplicate_headers"
+      action: FAIL
+      error_message: >-
+        {%- set headers_found = response["sheets"][0]["data"][0]["rowData"][0]["values"] | map(attribute="formattedValue") | list -%}
+        {%- set headers_count = {} -%}
+        {%- set duplicate_fields = [] -%}
+        {%- for headerFound in headers_found -%}
+            {%- if headerFound is not none -%}
+                {%- set headers_count = headers_count.update({headerFound: headers_count.get(headerFound, 0) + 1}) or headers_count -%}
+                {%- if headers_count.get(headerFound) > 1 and headerFound not in duplicate_fields -%}
+                    {%- set duplicate_fields = duplicate_fields.append(headerFound) -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+        The following duplicate headers were found in the sheet.
+        Please fix them to continue: {{ duplicate_fields }}
+    server_error:
+      type: HttpResponseFilter
+      action: RETRY
+      http_codes:
+        - 500
+        - 502
+        - 503
+      error_message: >-
+        There was an issue
+        with the Google Sheets API. This is usually a temporary issue from
+        Google's side. Please try again. If this issue persists, contact
+        support
+    forbidden:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 403
+      error_message: >-
+        The authenticated Google Sheets user does not have permissions to view the
+        spreadsheet with id {{config["spreadsheet_id"]}}. Please ensure the authenticated user has access
+        to the Spreadsheet and reauthenticate. If the issue persists, contact support.
+        The caller does not have right permissions.
+    not_found:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 404
+      error_message: >-
+        The requested Google Sheets spreadsheet with id {{config["spreadsheet_id"]}} does not exist.
+        Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support
+    rate_limit:
+      type: HttpResponseFilter
+      action: RATE_LIMITED
+      http_codes:
+        - 429
+      error_message: >-
+        Rate limit has been
+        reached. Please try later or request a higher quota for your account.
+    single_sheet_response_error_filters:
+      - $ref: "#/definitions/response_filters/expected_one_sheet"
+      - $ref: "#/definitions/response_filters/ignore_duplicate_headers"
+    check_operation_single_sheet_response_error_filters:
+      - $ref: "#/definitions/response_filters/expected_one_sheet"
+      - $ref: "#/definitions/response_filters/fail_duplicate_headers"
+    response_error_filters:
+      - $ref: "#/definitions/response_filters/server_error"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
+      - $ref: "#/definitions/response_filters/rate_limit"
+  schema_type_identifier:
+    key_pointer:
+      - formattedValue
+    schema_pointer:
+      - values
+  jwt_authenticator:
+    type: JwtAuthenticator
+    secret_key: "{{ json_loads(config['credentials']['service_account_info'])['private_key'] }}"
+    algorithm: "RS256"
+    token_duration: 3600
+    jwt_payload:
+      aud: "{{ json_loads(config['credentials']['service_account_info'])['token_uri'] }}"
+      iss: "{{ json_loads(config['credentials']['service_account_info'])['client_email'] }}"
+    additional_jwt_payload:
+      scope: "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://www.googleapis.com/oauth2/v4/token
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+  jwt_profile_assertion_oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    refresh_request_headers:
+      Content-Type: application/x-www-form-urlencoded
+    use_profile_assertion: true
+    profile_assertion:
+      $ref: "#/definitions/jwt_authenticator"
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      Client: "#/definitions/oauth_authenticator"
+      Service: "#/definitions/jwt_profile_assertion_oauth_authenticator"
+
+schemas:
+  sheets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      gridProperties:
+        type:
+          - object
+          - "null"
+        properties:
+          columnCount:
+            type:
+              - number
+              - "null"
+          rowCount:
+            type:
+              - number
+              - "null"
+      index:
+        type:
+          - number
+          - "null"
+      sheetId:
+        type:
+          - number
+          - "null"
+      sheetType:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
+  max_concurrency: 1
