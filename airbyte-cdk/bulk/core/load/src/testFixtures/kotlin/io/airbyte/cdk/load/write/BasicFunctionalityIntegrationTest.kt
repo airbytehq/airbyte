@@ -143,7 +143,7 @@ enum class UnionBehavior {
 
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
-    val configContents: String,
+    configContents: String,
     val configSpecClass: Class<out ConfigurationSpecification>,
     dataDumper: DestinationDataDumper,
     destinationCleaner: DestinationCleaner,
@@ -199,8 +199,8 @@ abstract class BasicFunctionalityIntegrationTest(
     ) {
 
     // Update config with any replacements.  This may be necessary when using testcontainers.
-    private val configAsString = configUpdater.update(configContents)
-    val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configAsString)
+    private val updatedConfig = configUpdater.update(configContents)
+    val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
 
     @Test
     open fun testBasicWrite() {
@@ -215,7 +215,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val messages =
             runSync(
-                configAsString,
+                updatedConfig,
                 stream,
                 listOf(
                     InputRecord(
@@ -266,7 +266,7 @@ abstract class BasicFunctionalityIntegrationTest(
             {
                 if (verifyDataWriting) {
                     dumpAndDiffRecords(
-                        ValidatedJsonUtils.parseOne(configSpecClass, configAsString),
+                        ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig),
                         listOf(
                             OutputRecord(
                                 extractedAt = 1234,
@@ -327,7 +327,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val messages =
             runSync(
-                configAsString,
+                updatedConfig,
                 stream,
                 listOf(
                     InputFile(
@@ -365,7 +365,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         })
 
-        val config = ValidatedJsonUtils.parseOne(configSpecClass, configAsString)
+        val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
         val fileContent = dataDumper.dumpFile(config, stream)
 
         assertEquals(listOf("123"), fileContent)
@@ -386,7 +386,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             val stateMessage =
                 runSyncUntilStateAck(
-                    this@BasicFunctionalityIntegrationTest.configAsString,
+                    this@BasicFunctionalityIntegrationTest.updatedConfig,
                     stream,
                     listOf(
                         InputRecord(
@@ -404,7 +404,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     ),
                     allowGracefulShutdown = false,
                 )
-            runSync(this@BasicFunctionalityIntegrationTest.configAsString, stream, emptyList())
+            runSync(this@BasicFunctionalityIntegrationTest.updatedConfig, stream, emptyList())
 
             val streamName = stateMessage.stream.streamDescriptor.name
             val streamNamespace = stateMessage.stream.streamDescriptor.namespace
@@ -467,7 +467,7 @@ abstract class BasicFunctionalityIntegrationTest(
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
         runSync(
-            configAsString,
+            updatedConfig,
             DestinationCatalog(
                 listOf(
                     stream1,
@@ -596,7 +596,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     serialized = "",
                 )
             }
-        runSync(configAsString, catalog, messages)
+        runSync(updatedConfig, catalog, messages)
         assertAll(
             catalog.streams.map { stream ->
                 {
@@ -636,7 +636,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
             listOf(
                 InputRecord(
@@ -649,7 +649,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         val finalStream = makeStream(generationId = 13, minimumGenerationId = 13, syncId = 43)
         runSync(
-            configAsString,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -731,7 +731,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 41,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             stream1,
             listOf(
                 makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
@@ -770,7 +770,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         // Run a sync, but emit a status incomplete. This should not delete any existing data.
         runSyncUntilStateAck(
-            configAsString,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -819,7 +819,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a third sync, this time with a successful status.
         // This should delete the first sync's data, and retain the second+third syncs' data.
         runSync(
-            configAsString,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -900,7 +900,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         // Run a sync, but emit a stream status incomplete.
         runSyncUntilStateAck(
-            configAsString,
+            updatedConfig,
             stream,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -935,7 +935,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a second sync, this time with a successful status.
         // This should retain the first syncs' data.
         runSync(
-            configAsString,
+            updatedConfig,
             stream,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -1021,7 +1021,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 41,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             stream1,
             listOf(
                 makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
@@ -1061,7 +1061,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a sync, but emit a stream status incomplete. This should not delete any existing
         // data.
         runSyncUntilStateAck(
-            configAsString,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -1116,7 +1116,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 43,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             stream3,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -1176,7 +1176,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             makeStream(syncId = 42),
             listOf(
                 InputRecord(
@@ -1189,7 +1189,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         val finalStream = makeStream(syncId = 43)
         runSync(
-            configAsString,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -1242,7 +1242,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             makeStream(
                 syncId = 42,
                 linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType)
@@ -1262,7 +1262,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType)
             )
         runSync(
-            configAsString,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -1336,7 +1336,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val sync1Stream = makeStream(syncId = 42)
         runSync(
-            configAsString,
+            updatedConfig,
             sync1Stream,
             listOf(
                 // emitted_at:1000 is equal to 1970-01-01 00:00:01Z.
@@ -1397,7 +1397,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val sync2Stream = makeStream(syncId = 43)
         runSync(
-            configAsString,
+            updatedConfig,
             sync2Stream,
             listOf(
                 // Update both Alice and Bob
@@ -1481,9 +1481,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 // instead of being able to fallback onto extractedAt.
                 emittedAtMs = 100,
             )
-        runSync(configAsString, makeStream("cursor1"), listOf(makeRecord("cursor1")))
+        runSync(updatedConfig, makeStream("cursor1"), listOf(makeRecord("cursor1")))
         val stream2 = makeStream("cursor2")
-        runSync(configAsString, stream2, listOf(makeRecord("cursor2")))
+        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2")))
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
@@ -1540,7 +1540,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             }
         // Just verify that we don't crash.
-        assertDoesNotThrow { runSync(configAsString, DestinationCatalog(streams), messages) }
+        assertDoesNotThrow { runSync(updatedConfig, DestinationCatalog(streams), messages) }
     }
 
     /**
@@ -1593,7 +1593,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 emittedAtMs = 100,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             stream,
             listOf(
                 // A record with valid values for all fields
@@ -1877,7 +1877,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2056,7 +2056,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2227,7 +2227,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2420,7 +2420,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configAsString,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2464,7 +2464,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        assertDoesNotThrow { runSync(configAsString, stream, messages = emptyList()) }
+        assertDoesNotThrow { runSync(updatedConfig, stream, messages = emptyList()) }
         dumpAndDiffRecords(
             parsedConfig,
             canonicalExpectedRecords = emptyList(),
@@ -2486,7 +2486,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         assertDoesNotThrow {
-            runSync(configContents, stream, messages = listOf(InputGlobalCheckpoint(null)))
+            runSync(updatedConfig, stream, messages = listOf(InputGlobalCheckpoint(null)))
         }
     }
 
