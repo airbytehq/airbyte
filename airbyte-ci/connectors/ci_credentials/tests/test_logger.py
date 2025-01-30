@@ -16,7 +16,7 @@ TEST_MESSAGE = "sbhY=)9'v-}LT=)jjF66(XrZh=]>7Xp\"?/zCz,=eu8K47u8"
 
 def check_output(msg: str, expected_line_number: int, expected_log_level: str):
     m = LOG_RE.match(msg)
-    assert m is not None, f"incorrect message format, pattern: {LOG_RE.pattern}"
+    assert m is not None, f"incorrect message format, pattern: {LOG_RE.pattern}, message: {msg}"
     date_time, log_level, line_number, msg = m.groups()
 
     assert int(line_number) == expected_line_number
