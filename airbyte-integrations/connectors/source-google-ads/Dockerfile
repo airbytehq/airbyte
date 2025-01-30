@@ -8,6 +8,7 @@ COPY source_google_ads ./source_google_ads
 COPY main.py ./main.py
 COPY poetry.lock ./poetry.lock
 COPY pyproject.toml ./pyproject.toml
+COPY README.md ./README.md
 
 ENV POETRY_VIRTUALENVS_CREATE=false
 
