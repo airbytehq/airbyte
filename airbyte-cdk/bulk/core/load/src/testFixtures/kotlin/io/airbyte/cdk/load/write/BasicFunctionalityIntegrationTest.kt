@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -35,6 +36,7 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputFile
+import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
@@ -147,6 +149,8 @@ abstract class BasicFunctionalityIntegrationTest(
     destinationCleaner: DestinationCleaner,
     recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     nameMapper: NameMapper = NoopNameMapper,
+    additionalMicronautEnvs: List<String> = emptyList(),
+    micronautProperties: Map<Property, String> = emptyMap(),
     /**
      * Whether to actually verify that the connector wrote data to the destination. This should only
      * ever be disabled for test destinations (dev-null, etc.).
@@ -182,16 +186,16 @@ abstract class BasicFunctionalityIntegrationTest(
     val nullUnknownTypes: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
-    envVars: Map<String, String> = emptyMap(),
 ) :
     IntegrationTest(
+        additionalMicronautEnvs = additionalMicronautEnvs,
         dataDumper = dataDumper,
         destinationCleaner = destinationCleaner,
         recordMangler = recordMangler,
         nameMapper = nameMapper,
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = configUpdater,
-        envVars = envVars,
+        micronautProperties = micronautProperties,
     ) {
     val parsedConfig =
         ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))
@@ -2403,6 +2407,7 @@ abstract class BasicFunctionalityIntegrationTest(
      * happens sometimes.
      */
     open fun testNoColumns() {
+        assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -2445,6 +2450,44 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    @Test
+    open fun testNoData() {
+        assumeTrue(verifyDataWriting)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        assertDoesNotThrow { runSync(configContents, stream, messages = emptyList()) }
+        dumpAndDiffRecords(
+            parsedConfig,
+            canonicalExpectedRecords = emptyList(),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    open fun testClear() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 42,
+            )
+        assertDoesNotThrow {
+            runSync(configContents, stream, messages = listOf(InputGlobalCheckpoint(null)))
+        }
+    }
+
     private fun schematizedObject(
         fullObject: LinkedHashMap<String, Any?>,
         coercedObject: LinkedHashMap<String, Any?> = fullObject
@@ -2463,9 +2506,9 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     companion object {
-        private val intType = FieldType(IntegerType, nullable = true)
+        val intType = FieldType(IntegerType, nullable = true)
         private val numberType = FieldType(NumberType, nullable = true)
-        private val stringType = FieldType(StringType, nullable = true)
+        val stringType = FieldType(StringType, nullable = true)
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
 }

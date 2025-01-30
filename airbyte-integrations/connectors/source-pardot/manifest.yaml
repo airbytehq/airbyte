@@ -1,4 +1,4 @@
-version: 6.10.0
+version: 6.27.0
 
 type: DeclarativeSource
 
@@ -34,6 +34,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -65,8 +85,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -89,6 +107,26 @@ definitions:
             sort_order: ascending
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -137,8 +175,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -168,6 +204,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -199,8 +255,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -230,6 +284,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -261,8 +335,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -286,6 +358,26 @@ definitions:
             orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -338,6 +430,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -369,8 +481,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -400,6 +510,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -431,8 +561,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -461,6 +589,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -492,8 +640,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -523,6 +669,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -554,8 +720,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -584,6 +748,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -615,8 +799,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -639,6 +821,26 @@ definitions:
             orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -683,14 +885,28 @@ definitions:
               id,name,url,destinationUrl,vanityUrl,campaignId,salesforceId,isDeleted,folderId,trackerDomainId,trackerDomain.domain,vanityUrlPath,trackedUrl,bitlyIsPersonalized,bitlyShortUrl,gaSource,gaMedium,gaTerm,gaContent,gaCampaign,createdAt,updatedAt,createdById,updatedById
             deleted: "{{ 'all' if not next_page_token.next_page_token }}"
             orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
-            updatedAtAfterOrEqualTo: >-
-              {{ stream_interval.start_time if stream_interval.start_time and
-              not next_page_token.next_page_token }}
-            updatedAtBeforeOrEqualTo: >-
-              {{ stream_interval.end_time if stream_interval.end_time and not
-              next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -734,6 +950,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -765,8 +1001,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: P1D
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -796,6 +1030,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -827,8 +1081,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -851,6 +1103,26 @@ definitions:
             orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -894,6 +1166,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -925,8 +1217,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -950,6 +1240,26 @@ definitions:
             orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -993,6 +1303,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1024,8 +1354,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1049,6 +1377,26 @@ definitions:
             orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1086,6 +1434,26 @@ definitions:
             orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1130,6 +1498,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1161,8 +1549,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1186,6 +1572,26 @@ definitions:
             orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1229,6 +1635,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1260,8 +1686,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1289,6 +1713,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1320,8 +1764,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1351,6 +1793,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1382,8 +1844,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1412,6 +1872,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1443,8 +1923,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1472,6 +1950,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1503,8 +2001,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1528,6 +2024,26 @@ definitions:
             orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1571,6 +2087,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1602,8 +2138,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1624,6 +2158,26 @@ definitions:
               id,company,level,website,pluginCampaignId,addressOne,addressTwo,city,state,zip,territory,country,phone,fax,adminId,maximumDailyApiCalls,apiCallsUsed,createdAt,updatedAt,createdById,updatedById
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1659,6 +2213,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1690,8 +2264,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1721,6 +2293,26 @@ definitions:
               next_page_token.next_page_token }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1752,8 +2344,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "{{ config.split_up_interval }}"
-        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1779,6 +2369,26 @@ definitions:
               }}
           request_headers:
             Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
         record_selector:
           type: RecordSelector
           extractor:
@@ -1798,10 +2408,10 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: id
-              partition_field: dynamic_content_id
               stream:
                 $ref: "#/definitions/streams/dynamic_contents"
+              parent_key: id
+              partition_field: dynamic_content_id
               incremental_dependency: true
       schema_loader:
         type: InlineSchemaLoader
@@ -1938,25 +2548,6 @@ spec:
         order: 6
         title: Is Sandbox App?
         default: false
-      split_up_interval:
-        type: string
-        description: >-
-          If you're hitting the max pagination limit of the v5 API (100K), try
-          choosing a more granular value (e.g. P7D). Similarly for small
-          accounts unlikely to hit this limit, a less granular value (e.g. P1Y)
-          may speed up the sync.
-        enum:
-          - P1Y
-          - P6M
-          - P3M
-          - P1M
-          - P14D
-          - P7D
-          - P3D
-          - P1D
-        order: 7
-        title: Default Split Up Interval
-        default: P3M
     additionalProperties: true
 
 metadata:
@@ -1997,14 +2588,14 @@ metadata:
   testedStreams:
     campaigns:
       hasRecords: true
-      streamHash: fc1d627201b08eec5c250804ed7dcd7f09f9675c
+      streamHash: 7536ac4cfbf470a6b43e48d7733c7001cc8103f9
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     email_clicks:
       hasRecords: true
-      streamHash: 411f4328e02a6d5ce0a3ec3a9a3cb54804e374e0
+      streamHash: bfc7e24950291e29382e51bb4ed61fdf9601642c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -2067,14 +2658,14 @@ metadata:
       responsesAreSuccessful: true
     folders:
       hasRecords: true
-      streamHash: 952ec71d864df0763936fcf9a48ca5ee2a3f9037
+      streamHash: 8f5e6b1eac5be51cd312ffd7a513fc7a813a1e51
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     custom_redirects:
-      hasRecords: false
-      streamHash: 73ca21e4c8acb6ca7a4efad4517b31af4dfcb6f6
+      hasRecords: true
+      streamHash: d4d6e3e082fcb92f42fb66274c141813450ca896
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -2094,8 +2685,8 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     files:
-      hasRecords: false
-      streamHash: 9dd470ef4814f6fab7a1acf61671ef171b839da2
+      hasRecords: true
+      streamHash: b14555b12fb2a68b662c00a974ddef56b3163012
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -2199,28 +2790,33 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     account:
-      streamHash: 0893578c116978dad6459ef40fe2a52ea26a68e9
+      streamHash: 6142a595bef18df928175d18130b05c40876ea33
       hasResponse: true
-      responsesAreSuccessful: false
-      hasRecords: false
+      responsesAreSuccessful: true
+      hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     custom_fields:
       streamHash: 020b57ff80114642d70f122a63b22f05d63d8386
       hasResponse: true
-      responsesAreSuccessful: false
-      hasRecords: false
+      responsesAreSuccessful: true
+      hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     dynamic_contents:
       streamHash: 795500f19349e89d320fb4814aedf19f5bff9dff
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: false
+      hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     dynamic_content_variations:
-      streamHash: null
+      streamHash: 8979c7bbf2f7ec9b1e18f015cbce13eb64d88e94
+      hasRecords: true
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -2232,7 +2828,7 @@ schemas:
       cost:
         type:
           - "null"
-          - integer
+          - number
       id:
         type:
           - integer
@@ -2240,6 +2836,43 @@ schemas:
         type:
           - "null"
           - string
+      folderId:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      isDeleted:
+        type:
+          - "null"
+          - boolean
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdById:
+        type:
+          - "null"
+          - integer
+      updatedById:
+        type:
+          - "null"
+          - integer
+      salesforceId:
+        type:
+          - "null"
+          - string
+      parentCampaignId:
+        type:
+          - "null"
+          - integer
+    required:
+      - id
+      - updatedAt
   email_clicks:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2250,6 +2883,7 @@ schemas:
           - "null"
           - string
         format: date-time
+        airbyte_type: timestamp_without_timezone
       drip_program_action_id:
         type:
           - "null"
@@ -3107,6 +3741,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       createdById:
         type:
           - "null"
@@ -3129,6 +3764,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       updatedById:
         type:
           - "null"
@@ -3160,6 +3796,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       createdById:
         type:
           - "null"
@@ -3205,7 +3842,7 @@ schemas:
       salesforceId:
         type:
           - "null"
-          - integer
+          - string
       trackedUrl:
         type:
           - "null"
@@ -3222,6 +3859,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       updatedById:
         type:
           - "null"
@@ -4302,6 +4940,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       subject:
         type:
           - string
@@ -4633,7 +5272,6 @@ schemas:
           - "null"
     required:
       - id
-      - createdAt
       - updatedAt
   custom_fields:
     type: object
@@ -4655,7 +5293,7 @@ schemas:
           - "null"
       fieldId:
         type:
-          - integer
+          - string
           - "null"
       id:
         type: integer
@@ -4694,7 +5332,6 @@ schemas:
           - "null"
     required:
       - id
-      - createdAt
       - updatedAt
   dynamic_contents:
     type: object
@@ -4707,7 +5344,7 @@ schemas:
           - "null"
       basedOnProspectApiFieldId:
         type:
-          - integer
+          - string
           - "null"
       createdAt:
         type:

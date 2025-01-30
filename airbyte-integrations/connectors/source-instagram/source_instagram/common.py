@@ -31,7 +31,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def should_retry_api_error(exc: FacebookRequestError):
         # Retryable OAuth Error Codes
-        if exc.api_error_type() == "OAuthException" and exc.api_error_code() in (1, 2, 4, 17, 341, 368):
+        if exc.api_error_type() == "OAuthException" and exc.api_error_code() in (1, 200, 4, 17, 341, 368):
             return True
 
         # Rate Limiting Error Codes
