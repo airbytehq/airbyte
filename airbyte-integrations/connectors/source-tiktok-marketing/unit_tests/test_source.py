@@ -108,5 +108,4 @@ def test_source_check_connection_failed(config, requests_mock, capsys, json_resp
         assert result == expected_result
     if expected_message is not None:
         trace_messages = capsys.readouterr().out.split()
-        print(f"AAAAAAAAAAAAAAaaaa{trace_messages}")
         assert len(trace_messages) == expected_message
