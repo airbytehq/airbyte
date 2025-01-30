@@ -43,6 +43,6 @@ lint = "ruff check src --fix"
 ci = ["type_check", "lint"]
 
 [tool.airbyte_ci]
-python_versions = ["3.10"]
+python_versions = ["3.11"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["ci"]

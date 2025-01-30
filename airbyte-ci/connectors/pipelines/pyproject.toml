@@ -9,7 +9,7 @@ description = "Packaged maintained by the connector operations team to perform C
 authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
-python = "~3.10"
+python = "~3.11"
 dagger-io = "==0.13.3"
 beartype = ">=0.18.2"
 asyncer = "^0"
@@ -71,7 +71,7 @@ type_check = "mypy pipelines --disallow-untyped-defs"
 lint = "ruff check pipelines"
 
 [tool.airbyte_ci]
-python_versions = ["3.10"]
+python_versions = ["3.11"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["type_check", "test"]
 mount_docker_socket = true
