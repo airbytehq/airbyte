@@ -85,18 +85,19 @@ value class DebeziumRecordValue(val wrapped: JsonNode) {
     }
 }
 
-/** Debezium Engine input. */
-data class DebeziumInput(
-    val properties: Map<String, String>,
-    val state: DebeziumState,
-    val isSynthetic: Boolean,
-)
+/** Return type for [CdcPartitionsCreatorDebeziumOperations.deserializeState]. */
+sealed interface DebeziumWarmStartState
 
-/** Debezium Engine output, other than records of course. */
-data class DebeziumState(
+data class ValidDebeziumWarmStartState(
     val offset: DebeziumOffset,
-    val schemaHistory: DebeziumSchemaHistory?,
-)
+    val schemaHistory: DebeziumSchemaHistory?
+) : DebeziumWarmStartState
+
+sealed interface InvalidDebeziumWarmStartState : DebeziumWarmStartState
+
+data class AbortDebeziumWarmStartState(val reason: String) : InvalidDebeziumWarmStartState
+
+data class ResetDebeziumWarmStartState(val reason: String) : InvalidDebeziumWarmStartState
 
 /** [DebeziumOffset] wraps the contents of a Debezium offset file. */
 @JvmInline value class DebeziumOffset(val wrapped: Map<JsonNode, JsonNode>)
