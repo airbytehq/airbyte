@@ -95,7 +95,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          git_repo_url: ${{ steps.job-vars.outputs.repo }}
+          git_repo_url: https://github.com/${{ steps.job-vars.outputs.repo }}.git
           subcommand: |
             connectors --modified bump-version \
               ${{ github.event.inputs.type }} \
