@@ -494,7 +494,7 @@ async def run_command(
         dagger_client,
         execution_inputs,
         runs_in_ci,
-        # http_proxy=proxy,
+        http_proxy=proxy,
     )
     execution_result = await runner.run()
     return execution_result, proxy
