@@ -15,6 +15,14 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
+import java.net.URI
+import java.net.URISyntaxException
+import org.apache.iceberg.CatalogProperties
+import org.apache.iceberg.CatalogUtil
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.codehaus.jettison.json.JSONObject
 
 /**
  * Interface defining the specifications for configuring an Iceberg catalog.
@@ -93,6 +101,12 @@ interface IcebergCatalogSpecifications {
                         (catalogType as RestCatalogSpecification).serverUri,
                         (catalogType as RestCatalogSpecification).namespace
                     )
+                is DremioCatalogSpecification ->
+                    DremioCatalogConfiguration(
+                        (catalogType as DremioCatalogSpecification).serverUri,
+                        (catalogType as DremioCatalogSpecification).namespace,
+                        (catalogType as DremioCatalogSpecification).pat,
+                    )
             }
 
         return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, catalogConfiguration)
@@ -114,6 +128,7 @@ interface IcebergCatalogSpecifications {
     JsonSubTypes.Type(value = NessieCatalogSpecification::class, name = "NESSIE"),
     JsonSubTypes.Type(value = GlueCatalogSpecification::class, name = "GLUE"),
     JsonSubTypes.Type(value = RestCatalogSpecification::class, name = "REST"),
+    JsonSubTypes.Type(value = DremioCatalogSpecification::class, name = "DREMIO"),
 )
 @JsonSchemaTitle("Iceberg Catalog Type")
 @JsonSchemaDescription(
@@ -125,6 +140,7 @@ sealed class CatalogType(@JsonSchemaTitle("Catalog Type") open val catalogType: 
         NESSIE("NESSIE"),
         GLUE("GLUE"),
         REST("REST"),
+        DREMIO("DREMIO"),
     }
 }
 
@@ -270,6 +286,47 @@ class RestCatalogSpecification(
 ) : CatalogType(catalogType)
 
 /**
+ * Dremio catalog specifications.
+ *
+ * Provides configuration details required to connect to the Dremio catalog service and manage
+ * Iceberg table metadata.
+ */
+@JsonSchemaTitle("Dremio Catalog")
+@JsonSchemaDescription("Configuration details for connecting to a Dremio catalog.")
+class DremioCatalogSpecification(
+    @JsonSchemaTitle("Catalog Type")
+    @JsonProperty("catalog_type")
+    @JsonSchemaInject(json = """{"order":0}""")
+    override val catalogType: Type = Type.DREMIO,
+
+    /**
+     * The URI of the Dremio server.
+     *
+     * This is required to establish a connection.
+     */
+    @get:JsonSchemaTitle("Dremio Server URI")
+    @get:JsonPropertyDescription(
+        "The base URL of the Dremio server used to connect to the catalog. Please omit any port or path in the url"
+    )
+    @get:JsonProperty("server_uri")
+    @JsonSchemaInject(json = """{"order":1, "examples": "https://my.dremio.server.com"}""")
+    val serverUri: String,
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The namespace to be used in the Table identifier. 
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
+    )
+    val namespace: String,
+    @get:JsonSchemaTitle("PAT")
+    @JsonSchemaInject(json = """{"airbyte_secret": true}""")
+    @get:JsonPropertyDescription(
+        """The Personal Access Token generated through your Dremio server"""
+    )
+    val pat: String
+) : CatalogType(catalogType)
+
+/**
  * Represents a unified Iceberg catalog configuration.
  *
  * This class encapsulates the warehouse location, main branch, and a generic catalog configuration
@@ -362,6 +419,126 @@ data class RestCatalogConfiguration(
     )
     val namespace: String?
 ) : CatalogConfiguration
+
+/**
+ * Dremio catalog configuration details.
+ *
+ * Stores information required to connect to a Rest server.
+ */
+@JsonSchemaTitle("Rest Catalog Configuration")
+@JsonSchemaDescription("Rest-specific configuration details for connecting an Iceberg catalog.")
+data class DremioCatalogConfiguration(
+    @JsonSchemaTitle("Dremio Server URI")
+    @JsonPropertyDescription("The base URL of the Dremio server.")
+    val serverUri: String,
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The namespace to be used in the Table identifier. 
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
+    )
+    val namespace: String,
+    @get:JsonSchemaTitle("PAT")
+    @get:JsonPropertyDescription(
+        """The Personal Access Token generated through your Dremio server"""
+    )
+    val pat: String
+) : CatalogConfiguration {
+
+    /**
+     * Parses the current serverUri, forces the scheme to "https" if the URI scheme is HTTPS,
+     * otherwise uses "http". Returns only "scheme://host".
+     *
+     * @throws URISyntaxException if [serverUri] is invalid or does not contain a host.
+     * @return A cleaned URI of the form "http(s)://host"
+     */
+    private fun cleanBaseUri(): String {
+        val uri = URI(serverUri) // may throw URISyntaxException if invalid
+
+        val scheme = if (uri.scheme?.equals("https", ignoreCase = true) == true) "https" else "http"
+        val host = uri.host ?: throw URISyntaxException(serverUri, "No host found in URI")
+
+        return "$scheme://$host"
+    }
+
+    /**
+     * Obtains a JWT (JSON Web Token) by exchanging a Personal Access Token (PAT)
+     * using Dremio's OAuth token exchange endpoint.
+     *
+     * The method sends a POST request to the OAuth token URL constructed from the
+     * provided [baseUri] (specifically, `[baseUri]:9047/oauth/token`) with the
+     * following fields:
+     *  - `grant_type`: "urn:ietf:params:oauth:grant-type:token-exchange"
+     *  - `scope`: "dremio.all"
+     *  - `subject_token_type`: "urn:ietf:params:oauth:token-type:dremio:personal-access-token"
+     *  - `subject_token`: The (url encoded) personal access token (PAT)
+     *
+     * On success, the "access_token" field from the JSON response is returned.
+     * If the request fails or the response is malformed, a [RuntimeException] is thrown.
+     *
+     * @param baseUri The base URI used to build the token endpoint.
+     * @return A [String] containing the received JWT.
+     * @throws RuntimeException If the HTTP request fails or the response body is empty.
+     */
+    private fun getJWTFromPAT(baseUri: String): String {
+        val client = OkHttpClient()
+        val formBody = FormBody.Builder()
+            .addEncoded("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
+            .addEncoded("scope", "dremio.all")
+            .addEncoded("subject_token_type", "urn:ietf:params:oauth:token-type:dremio:personal-access-token")
+            .add("subject_token", pat)
+            .build()
+
+        val url = "$baseUri:9047/oauth/token"
+        val request = Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw RuntimeException("Failed to fetch token. HTTP code: ${response.code}")
+            }
+
+            val responseBody =
+                response.body?.string() ?: throw RuntimeException("No response body!")
+            val jsonObject = JSONObject(responseBody)
+            return jsonObject.getString("access_token")
+        }
+    }
+
+    /**
+     * Extracts the warehouse name from the given warehouse URI.
+     * For example, given "s3://a-warehouse/iceberg",
+     * this function returns "a-warehouse".
+     *
+     * @param warehouseUri The full S3 URI (e.g., "s3://my-bucket/path/to/object").
+     * @return The bucket name (e.g., "my-bucket").
+     * @throws IllegalArgumentException If the URI doesn't start with "s3://".
+     */
+    private fun getWarehouseName(warehouseUri: String): String {
+        require(warehouseUri.startsWith("s3://")) { "Invalid warehouse URI: $warehouseUri" }
+
+        // Remove the "s3://" prefix, then split on '/'
+        // The first part after removing "s3://" is the bucket name.
+        val withoutScheme = warehouseUri.removePrefix("s3://")
+        return withoutScheme.substringBefore('/')
+    }
+
+    fun getCatalogProperties(icebergCatalogConfig: IcebergCatalogConfiguration): Map<String, String> {
+        val baseUri = cleanBaseUri()
+        val jwt = getJWTFromPAT(baseUri)
+
+        val catalogProperties = mapOf(
+            CatalogUtil.ICEBERG_CATALOG_TYPE to CatalogUtil.ICEBERG_CATALOG_TYPE_REST,
+            CatalogProperties.URI to "$baseUri:19120/iceberg/${icebergCatalogConfig.mainBranchName}",
+            CatalogProperties.WAREHOUSE_LOCATION to getWarehouseName(icebergCatalogConfig.warehouseLocation),
+            "token" to jwt,
+        )
+
+        return catalogProperties
+    }
+}
 
 /**
  * Provides a way to retrieve the unified Iceberg catalog configuration.
