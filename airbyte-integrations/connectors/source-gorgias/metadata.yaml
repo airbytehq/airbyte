@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9fdc3733-c51a-4129-9be5-7e9ad6eab6ac
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/source-gorgias
   githubIssueLabel: source-gorgias
   icon: icon.svg
