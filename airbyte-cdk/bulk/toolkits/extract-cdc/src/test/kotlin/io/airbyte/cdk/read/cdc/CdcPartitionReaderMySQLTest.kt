@@ -6,9 +6,7 @@ package io.airbyte.cdk.read.cdc
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.read.cdc.*
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.airbyte.cdk.util.Jsons
 import io.debezium.connector.mysql.MySqlConnector
@@ -73,90 +71,82 @@ class CdcPartitionReaderMySQLTest :
         }
 
     override fun createDebeziumOperations(): DebeziumOperations<Position> =
-        object : AbstractCdcPartitionReaderDebeziumOperationsForTest<Position>(stream) {
-            override fun position(offset: DebeziumOffset): Position {
-                val offsetAsJson = offset.wrapped.values.first()
-                val retVal = Position(offsetAsJson["file"].asText(), offsetAsJson["pos"].asLong())
-                return retVal
-            }
+        MySQLTestDebeziumOperations()
 
-            override fun position(recordValue: DebeziumRecordValue): Position? {
-                val file: String =
-                    recordValue.source["file"]?.takeIf { it.isTextual }?.asText() ?: return null
-                val pos: Long =
-                    recordValue.source["pos"]?.takeIf { it.isIntegralNumber }?.asLong()
-                        ?: return null
-                return Position(file, pos)
-            }
+    inner class MySQLTestDebeziumOperations : AbstractDebeziumOperationsForTest<Position>() {
 
-            override fun position(sourceRecord: SourceRecord): Position? {
-                val offset: Map<String, *> = sourceRecord.sourceOffset()
-                val file: String = offset["file"]?.toString() ?: return null
-                val pos: Long = offset["pos"] as? Long ?: return null
-                return Position(file, pos)
-            }
-
-            override fun synthesize(): DebeziumInput {
-                val position: Position = currentPosition()
-                val timestamp: Instant = Instant.now()
-                val key: ArrayNode =
-                    Jsons.arrayNode().apply {
-                        add(container.databaseName)
-                        add(Jsons.objectNode().apply { put("server", container.databaseName) })
-                    }
-                val value: ObjectNode =
-                    Jsons.objectNode().apply {
-                        put("ts_sec", timestamp.epochSecond)
-                        put("file", position.file)
-                        put("pos", position.pos)
-                    }
-                val offset = DebeziumOffset(mapOf(key to value))
-                val state = DebeziumState(offset, schemaHistory = null)
-                val syntheticProperties: Map<String, String> =
-                    DebeziumPropertiesBuilder()
-                        .with(debeziumProperties())
-                        .with("snapshot.mode", "recovery")
-                        .withStreams(listOf())
-                        .buildMap()
-                return DebeziumInput(syntheticProperties, state, isSynthetic = true)
-            }
-
-            override fun deserialize(
-                opaqueStateValue: OpaqueStateValue,
-                streams: List<Stream>
-            ): DebeziumInput {
-                return super.deserialize(opaqueStateValue, streams).let {
-                    DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
-                }
-            }
-
-            fun currentPosition(): Position =
-                container.withStatement { statement: Statement ->
-                    statement.executeQuery("SHOW MASTER STATUS").use {
-                        it.next()
-                        Position(it.getString("File"), it.getLong("Position"))
-                    }
-                }
-
-            fun debeziumProperties(): Map<String, String> =
-                DebeziumPropertiesBuilder()
-                    .withDefault()
-                    .withConnector(MySqlConnector::class.java)
-                    .withDebeziumName(container.databaseName)
-                    .withHeartbeats(heartbeat)
-                    .with("include.schema.changes", "false")
-                    .with("connect.keep.alive.interval.ms", "1000")
-                    .withDatabase("hostname", container.host)
-                    .withDatabase("port", container.firstMappedPort.toString())
-                    .withDatabase("user", container.username)
-                    .withDatabase("password", container.password)
-                    .withDatabase("dbname", container.databaseName)
-                    .withDatabase("server.id", Random.Default.nextInt(5400..6400).toString())
-                    .withDatabase("include.list", container.databaseName)
-                    .withOffset()
-                    .withSchemaHistory()
-                    .with("snapshot.mode", "when_needed")
-                    .withStreams(listOf(stream))
-                    .buildMap()
+        override fun position(offset: DebeziumOffset): Position {
+            val offsetAsJson = offset.wrapped.values.first()
+            val retVal = Position(offsetAsJson["file"].asText(), offsetAsJson["pos"].asLong())
+            return retVal
         }
+
+        override fun position(recordValue: DebeziumRecordValue): Position? {
+            val file: String =
+                recordValue.source["file"]?.takeIf { it.isTextual }?.asText() ?: return null
+            val pos: Long =
+                recordValue.source["pos"]?.takeIf { it.isIntegralNumber }?.asLong() ?: return null
+            return Position(file, pos)
+        }
+
+        override fun position(sourceRecord: SourceRecord): Position? {
+            val offset: Map<String, *> = sourceRecord.sourceOffset()
+            val file: String = offset["file"]?.toString() ?: return null
+            val pos: Long = offset["pos"] as? Long ?: return null
+            return Position(file, pos)
+        }
+
+        override fun generateColdStartOffset(): DebeziumOffset {
+            val position: Position = currentPosition()
+            val timestamp: Instant = Instant.now()
+            val key: ArrayNode =
+                Jsons.arrayNode().apply {
+                    add(container.databaseName)
+                    add(Jsons.objectNode().apply { put("server", container.databaseName) })
+                }
+            val value: ObjectNode =
+                Jsons.objectNode().apply {
+                    put("ts_sec", timestamp.epochSecond)
+                    put("file", position.file)
+                    put("pos", position.pos)
+                }
+            return DebeziumOffset(mapOf(key to value))
+        }
+
+        override fun generateColdStartProperties(): Map<String, String> =
+            DebeziumPropertiesBuilder()
+                .with(generateWarmStartProperties(emptyList()))
+                .with("snapshot.mode", "recovery")
+                .withStreams(listOf())
+                .buildMap()
+
+        override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
+            DebeziumPropertiesBuilder()
+                .withDefault()
+                .withConnector(MySqlConnector::class.java)
+                .withDebeziumName(container.databaseName)
+                .withHeartbeats(heartbeat)
+                .with("include.schema.changes", "false")
+                .with("connect.keep.alive.interval.ms", "1000")
+                .withDatabase("hostname", container.host)
+                .withDatabase("port", container.firstMappedPort.toString())
+                .withDatabase("user", container.username)
+                .withDatabase("password", container.password)
+                .withDatabase("dbname", container.databaseName)
+                .withDatabase("server.id", Random.Default.nextInt(5400..6400).toString())
+                .withDatabase("include.list", container.databaseName)
+                .withOffset()
+                .withSchemaHistory()
+                .with("snapshot.mode", "when_needed")
+                .withStreams(streams)
+                .buildMap()
+
+        fun currentPosition(): Position =
+            container.withStatement { statement: Statement ->
+                statement.executeQuery("SHOW MASTER STATUS").use {
+                    it.next()
+                    Position(it.getString("File"), it.getLong("Position"))
+                }
+            }
+    }
 }
