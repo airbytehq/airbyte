@@ -63,6 +63,9 @@ runs:
       with:
         python-version: "3.11"
         token: ${{ inputs.github_token }}
+        cache: "pip"
+        check-latest: true
+        update-environment: true
 
     - name: Install Airbyte CI from source
       id: install-airbyte-ci-source
