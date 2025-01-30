@@ -295,8 +295,7 @@ abstract class BasicPerformanceTest(
                 testConfig,
                 testScenario.catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
-                micronautProperties =
-                    micronautProperties + fileTransferProperty,
+                micronautProperties = micronautProperties + fileTransferProperty,
             )
 
         val duration =
