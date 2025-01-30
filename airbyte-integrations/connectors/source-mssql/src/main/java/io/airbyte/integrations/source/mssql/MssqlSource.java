@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -42,6 +43,8 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
@@ -102,13 +105,26 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private MssqlInitialLoadStateManager initialLoadStateManager = null;
   public static final String JDBC_DELIMITER = ";";
   private List<String> schemas;
+  private int stateEmissionFrequency;
+  private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource(final MssqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MssqlSource() {
+    this(new EnvVariableFeatureFlags());
+  }
+
+  public MssqlSource(final FeatureFlags featureFlags) {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+    this.featureFlags = featureFlags;
+    this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
+  @Override
+  public FeatureFlags getFeatureFlags() {
+    return featureFlags;
   }
 
   @Override
@@ -444,7 +460,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   protected int getStateEmissionFrequency() {
-    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+    return this.stateEmissionFrequency;
+  }
+
+  @VisibleForTesting
+  protected void setStateEmissionFrequencyForDebug(final int stateEmissionFrequency) {
+    this.stateEmissionFrequency = stateEmissionFrequency;
   }
 
   @Override
@@ -517,7 +538,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
         if (config.has("certificate")) {
           String certificate = config.get("certificate").asText();
-          String password = RandomStringUtils.randomAlphanumeric(100);
+          String password = RandomStringUtils.secure().nextAlphanumeric(100);
           final URI keyStoreUri;
           try {
             keyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(certificate, password, null, null);

@@ -122,6 +122,28 @@ class ObjectStoragePathFactoryUTest {
         assertNotNull(matcher.match("prefix/stream/any_filename"))
     }
 
+    @Test
+    fun `test stream name contains legal regex`() {
+        every { pathConfigProvider.objectStoragePathConfiguration } returns
+            ObjectStoragePathConfiguration(
+                "prefix",
+                "staging",
+                "\${STREAM_NAME}/",
+                "any_filename",
+                true,
+            )
+        val streamWithLegalRegex = mockk<DestinationStream>()
+        every { streamWithLegalRegex.descriptor } returns
+            DestinationStream.Descriptor("test", "stream+1")
+        val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
+        assertEquals(
+            "prefix/stream+1/any_filename",
+            factory.getPathToFile(streamWithLegalRegex, 0L, isStaging = false)
+        )
+        val matcher = factory.getPathMatcher(streamWithLegalRegex, "(-foo)?")
+        assertNotNull(matcher.match("prefix/stream+1/any_filename"))
+    }
+
     @ParameterizedTest
     @MethodSource("pathTemplateMatrix")
     fun `handles duplicate vars in path templates`(
