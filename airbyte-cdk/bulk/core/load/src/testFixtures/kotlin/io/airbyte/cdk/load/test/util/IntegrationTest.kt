@@ -310,7 +310,7 @@ abstract class IntegrationTest(
          * You probably don't want to actually interact with this. This is generally intended to
          * support a specific legacy behavior. Prefer using micronaut properties when possible.
          */
-        @SystemStub private lateinit var nonDockerMockEnvVars: EnvironmentVariables
+        @SystemStub internal lateinit var nonDockerMockEnvVars: EnvironmentVariables
 
         @JvmStatic
         @BeforeAll
