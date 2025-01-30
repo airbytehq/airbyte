@@ -56,12 +56,12 @@ runs:
         sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
         sudo chmod +x /usr/local/bin/airbyte-ci
 
-    - name: Install Python 3.10
-      id: install-python-3-10
+    - name: Install Python 3.11
+      id: install-python-3-11
       uses: actions/setup-python@v4
       # if: steps.determine-install-mode.outputs.install-mode == 'source'
       with:
-        python-version: "3.10"
+        python-version: "3.11"
         token: ${{ inputs.github_token }}
 
     - name: Install Airbyte CI from source
