@@ -15,8 +15,8 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v17.services.services.google_ads_service.pagers import SearchPager
-from google.ads.googleads.v17.services.types.google_ads_service import SearchGoogleAdsResponse
+from google.ads.googleads.v18.services.services.google_ads_service.pagers import SearchPager
+from google.ads.googleads.v18.services.types.google_ads_service import SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests, Unauthenticated
 from grpc import StatusCode
 

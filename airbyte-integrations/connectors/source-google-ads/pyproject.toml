@@ -17,7 +17,7 @@ include = "source_google_ads"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-google-ads = "==25.0.0"
+google-ads = "==25.1.0"
 protobuf = "==4.25.2"
 airbyte-cdk = "0.80.0"
 
