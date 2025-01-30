@@ -3,7 +3,6 @@
 #
 from .profiles import Profiles
 from .report_streams import (
-    SponsoredBrandsV3ReportStream,
     SponsoredDisplayReportStream,
     SponsoredProductsReportStream,
 )
@@ -12,5 +11,4 @@ __all__ = [
     "Profiles",
     "SponsoredDisplayReportStream",
     "SponsoredProductsReportStream",
-    "SponsoredBrandsV3ReportStream",
 ]

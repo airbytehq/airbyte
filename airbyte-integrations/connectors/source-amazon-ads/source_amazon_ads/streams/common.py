@@ -27,7 +27,6 @@ airbyte_cdk.sources.streams.core.Stream
     │       ├── Profiles
     │       ├── Portfolios
     └── ReportStream
-        ├── SponsoredBrandsV3ReportStream
         ├── SponsoredDisplayReportStream
         └── SponsoredProductsReportStream
 
