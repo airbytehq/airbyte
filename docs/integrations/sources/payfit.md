@@ -5,7 +5,7 @@ Connector for PayFit.
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key_2` | `string` | API Key.  |  |
+| `api_key` | `string` | API Key.  |  |
 | `company_id` | `string` | Company ID.  |  |
 
 ## Streams
