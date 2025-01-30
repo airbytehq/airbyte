@@ -2,19 +2,16 @@
     "streams": [
         {
             "stream": {
-                "name": "Employability Skill Assessment Registration",
-                "json_schema": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
-                    "type": "object",
-                    "properties": {}
-                  },
+                "name": "kobo_tool_stream",
+                "json_schema": {},
                 "supported_sync_modes": ["full_refresh", "incremental"],
-                "source_defined_cursor": false,
+                "source_defined_cursor": true,
                 "default_cursor_field": ["_submission_time"]
             },
             "sync_mode": "incremental",
             "cursor_field": ["_submission_time"],
-            "destination_sync_mode": "append_dedup"
+            "destination_sync_mode": "append"
         }
     ]
 }
+
