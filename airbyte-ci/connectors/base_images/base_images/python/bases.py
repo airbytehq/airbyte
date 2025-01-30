@@ -10,7 +10,7 @@ import dagger
 from base_images import bases, published_image
 from base_images import sanity_checks as base_sanity_checks
 from base_images.python import sanity_checks as python_sanity_checks
-from base_images.root_images import PYTHON_3_10_14
+from base_images.root_images import PYTHON_3_11_8
 
 
 class AirbyteManifestOnlyConnectorBaseImage(bases.AirbyteConnectorBaseImage):
@@ -20,7 +20,7 @@ class AirbyteManifestOnlyConnectorBaseImage(bases.AirbyteConnectorBaseImage):
 
 
 class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
-    root_image: Final[published_image.PublishedImage] = PYTHON_3_10_14
+    root_image: Final[published_image.PublishedImage] = PYTHON_3_11_8
     repository: Final[str] = "airbyte/python-connector-base"
     pip_cache_name: Final[str] = "pip_cache"
     nltk_data_path: Final[str] = "/usr/share/nltk_data"
