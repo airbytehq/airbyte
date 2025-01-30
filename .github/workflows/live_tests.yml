@@ -33,7 +33,7 @@ on:
         description: Use the local CDK when building the target connector
         default: "false"
         type: boolean
-      enable_proxy:
+      disable_proxy:
         description: Disable proxy to call requests
         default: "true"
         type: boolean
