@@ -106,6 +106,7 @@ dynamic_streams:
             - name
           type: ComponentMappingDefinition
           value: "{{components_values['properties']['title']}}"
+          value_type: string
           description: name for dynamic stream.
         - field_path:
             - schema_loader
