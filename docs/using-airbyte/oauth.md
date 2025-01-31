@@ -33,7 +33,21 @@ graph TD;
 
 ## OAuth in Airbyte Cloud
 
-In Airbyte Cloud, all client credentials are securely managed by Airbyte. You only need to click the authentication button and use the third-party platform's UI to authorize Airbyte.
+In Airbyte Cloud, the process depends on a [connector's support level](../integrations/connector-support-levels).
+
+### Airbyte connectors
+
+For Airbyte connectors, client credentials are securely managed by Airbyte. You only need to click the authentication button and use the third-party platform's UI to authorize Airbyte. 
+
+### Marketplace and custom connectors
+
+For Marketplace or custom connectors, you must configure your own client credentials.
+
+1. Register an application on the third-party platform to obtain a **Client ID** and **Client Secret**. The exact process differs slightly for each third-party, but most explain this process in their documentation. The documentation for an Airbyte connector often provides these steps, too.
+
+2. Enter your **Client ID** and **Client Secret** into the connector settings in Airbyte.
+
+3. Click the authentication button.
 
 ## OAuth in Self-Managed Airbyte
 
@@ -45,9 +59,9 @@ In Self-Managed Airbyte, for security reasons, you must configure your own clien
 
 3. Click the authentication button.
 
-### Security Considerations
+## Security Considerations
 
-- You are responsible for managing client credentials in your self-managed infrastructure. Treat these keys like a username and password, and handle your sensitive data securely.
+- You are responsible for managing client credentials except when Airbyte Cloud provides the OAuth app for you. Treat these keys like a username and password, and handle your sensitive data securely.
 
 - OAuth is supported in airgapped instances of Airbyte. Redirects happen in your web browser, not the Airbyte server.
 
@@ -67,4 +81,4 @@ When OAuth connections fail, it's usually one of these problems.
 
 ### Redirect URI Mismatch
 
-- Confirm that the redirect URI registered with the third-party platform matches the URI used by Airbyte. For local deployments of Airbyte that use the default port, use `https://localhost:8000/auth_flow` as your redirect URI.
+- Confirm that the redirect URI registered with the third-party platform matches the URI used by Airbyte. Airbyte's user interface provides this URI when you set up a new connector. Make sure you enter this value exactly.
