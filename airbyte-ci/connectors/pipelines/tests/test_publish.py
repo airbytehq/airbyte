@@ -96,7 +96,8 @@ class TestUploadSpecToCache:
         step = publish_pipeline.UploadSpecToCache(publish_context)
         step_result = await step.run(connector_container)
         if valid_spec:
-            publish_pipeline.upload_to_gcs.assert_called_with(
+            # First call should be for OSS spec
+            publish_pipeline.upload_to_gcs.assert_any_call(
                 publish_context.dagger_client,
                 mocker.ANY,
                 f"specs/{image_name.replace(':', '/')}/spec.json",
@@ -104,6 +105,16 @@ class TestUploadSpecToCache:
                 publish_context.spec_cache_gcs_credentials,
                 flags=['--cache-control="no-cache"'],
             )
+            # Second call should be for Cloud spec if different from OSS
+            if await publish_pipeline.UploadSpecToCache._get_connector_spec(connector_container, "OSS") != await publish_pipeline.UploadSpecToCache._get_connector_spec(connector_container, "CLOUD"):
+                publish_pipeline.upload_to_gcs.assert_any_call(
+                    publish_context.dagger_client,
+                    mocker.ANY,
+                    f"specs/{image_name.replace(':', '/')}/spec.cloud.json",
+                    publish_context.spec_cache_bucket_name,
+                    publish_context.spec_cache_gcs_credentials,
+                    flags=['--cache-control="no-cache"'],
+                )
 
             spec_file = publish_pipeline.upload_to_gcs.call_args.args[1]
             uploaded_content = await spec_file.contents()
