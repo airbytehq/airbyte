@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.data.FieldType
@@ -25,9 +26,11 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.junit.jupiter.api.Assumptions
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 abstract class S3DataLakeWriteTest(
     configContents: String,
@@ -164,7 +167,37 @@ class GlueWriteTest :
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
             )
         )
-    )
+    ) {
+    @Test
+    fun testNameConflicts() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(
+            name: String,
+            namespaceSuffix: String,
+        ) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace + namespaceSuffix, name),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
+        // So these two streams will collide.
+        val catalog =
+            DestinationCatalog(
+                listOf(
+                    makeStream("stream_with_spécial_character", "_foo"),
+                    makeStream("STREAM_WITH_SPÉCIAL_CHARACTER", "_FOO"),
+                )
+            )
+        // TODO figure out what exception we actually throw + assert on its message
+        assertThrows<IllegalArgumentException> {
+            runSync(configContents, catalog, messages = emptyList())
+        }
+    }
+}
 
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
