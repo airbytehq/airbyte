@@ -71,16 +71,7 @@ exclude_also = [
     "\\.\\.\\."
 ]
 
-[tool.poe.tasks]
-test = { shell = "pytest" }
-
-coverage = { shell = "coverage run -m pytest && coverage report" }
-coverage-report = { shell = "coverage report" }
-coverage-html = { shell = "coverage html -d htmlcov || open htmlcov/index.html" }
-coverage-reset = { shell = "coverage erase" }
-
-check = { shell = "ruff check . && mypy ." }
-
-fix = { shell = "ruff format . && ruff check --fix -s || ruff format ." }
-fix-unsafe = { shell = "ruff format . && ruff check --fix --unsafe-fixes . && ruff format ." }
-fix-and-check = { shell = "poe fix && poe check" }
+[tool.poe]
+include = [
+    "../../../poe-tasks/poetry-source-tasks.toml",
+]
