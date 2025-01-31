@@ -41,7 +41,7 @@ object S3DataLakeTestUtil {
     }
 
     fun getConfig(spec: ConfigurationSpecification) =
-        S3DataLakeConfigurationFactory(anyStreamIsDedup = false)
+        S3DataLakeConfigurationFactory()
             .makeWithoutExceptionHandling(spec as S3DataLakeSpecification)
 
     fun getCatalog(
