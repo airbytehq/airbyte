@@ -576,6 +576,9 @@
           "id": {
             "type": "string"
           },
+          "inventoryMode": {
+            "type": "string"
+          },
           "lastModifiedAt": {
             "type": "string"
           },
