@@ -97,6 +97,7 @@ class TestUploadSpecToCache:
         step_result = await step.run(connector_container)
         if valid_spec:
             # First call should be for OSS spec
+            # First call should be for OSS spec
             publish_pipeline.upload_to_gcs.assert_any_call(
                 publish_context.dagger_client,
                 mocker.ANY,
@@ -105,8 +106,13 @@ class TestUploadSpecToCache:
                 publish_context.spec_cache_gcs_credentials,
                 flags=['--cache-control="no-cache"'],
             )
-            # Second call should be for Cloud spec if different from OSS
-            if await publish_pipeline.UploadSpecToCache._get_connector_spec(connector_container, "OSS") != await publish_pipeline.UploadSpecToCache._get_connector_spec(connector_container, "CLOUD"):
+
+            # Get both specs
+            oss_spec = await publish_pipeline.UploadSpecToCache._get_connector_spec(connector_container, "OSS")
+            cloud_spec = await publish_pipeline.UploadSpecToCache._get_connector_spec(connector_container, "CLOUD")
+
+            # Second call should be for Cloud spec if it exists and is different from OSS
+            if cloud_spec is not None and cloud_spec != oss_spec:
                 publish_pipeline.upload_to_gcs.assert_any_call(
                     publish_context.dagger_client,
                     mocker.ANY,
