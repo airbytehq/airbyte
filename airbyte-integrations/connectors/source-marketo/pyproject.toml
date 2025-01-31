@@ -18,6 +18,7 @@ include = "source_marketo"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "2.3.0"  # Newer CDK versions cause breaking changes. This is the latest version that we are sure can pass tests.
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-marketo = "source_marketo.run:run"
