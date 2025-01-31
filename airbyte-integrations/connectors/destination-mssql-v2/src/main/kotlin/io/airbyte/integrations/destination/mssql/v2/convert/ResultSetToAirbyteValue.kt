@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.mssql.v2.convert
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
-import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
@@ -20,7 +19,6 @@ import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
@@ -35,7 +33,6 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.integrations.destination.mssql.v2.MSSQLQueryBuilder
 import io.airbyte.integrations.destination.mssql.v2.MSSQLQueryBuilder.NamedValue
-import io.airbyte.protocol.models.Jsons
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.LocalTime

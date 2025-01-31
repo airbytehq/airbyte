@@ -10,11 +10,9 @@ import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
-import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
@@ -163,6 +161,5 @@ class AirbyteValueToStatement {
         ) {
             setTimestamp(idx, Timestamp.valueOf(value.value))
         }
-
     }
 }
