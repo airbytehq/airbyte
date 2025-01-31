@@ -14,7 +14,8 @@ dagger-io = "==0.13.3"
 beartype = ">=0.18.2"
 asyncer = "^0"
 exceptiongroup = ">=1.2.0"
-anyio = "^4"
+anyio = ">=4.2.0"  # Required by Python 3.11
+trio = ">=0.24.0"  # Required by anyio
 more-itertools = "^8.11.0"
 docker = "^7"
 semver = "^3"
