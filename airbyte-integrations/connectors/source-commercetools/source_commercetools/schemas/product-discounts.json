@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "createdAt": {
+      "type": "string"
+    },
+    "createdBy": {
+      "additionalProperties": true,
+      "properties": {
+        "isPlatformClient": {
+          "type": "boolean"
+        },
+        "user": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "description": {
+      "additionalProperties": true,
+      "properties": {
+        "en-CA": {
+          "type": "string"
+        },
+        "en-US": {
+          "type": "string"
+        },
+        "es-MX": {
+          "type": "string"
+        },
+        "fr-CA": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "key": {
+      "type": "string"
+    },
+    "lastModifiedAt": {
+      "type": "string"
+    },
+    "lastModifiedBy": {
+      "additionalProperties": true,
+      "properties": {
+        "isPlatformClient": {
+          "type": "boolean"
+        },
+        "user": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "name": {
+      "additionalProperties": true,
+      "properties": {
+        "en-CA": {
+          "type": "string"
+        },
+        "en-US": {
+          "type": "string"
+        },
+        "es-MX": {
+          "type": "string"
+        },
+        "fr-CA": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "predicate": {
+      "type": "string"
+    },
+    "references": {
+      "type": "array"
+    },
+    "sortOrder": {
+      "type": "string"
+    },
+    "validFrom": {
+      "type": "string"
+    },
+    "validUntil": {
+      "type": "string"
+    },
+    "value": {
+      "additionalProperties": true,
+      "properties": {
+        "money": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "centAmount": {
+                "type": "integer"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "fractionDigits": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "permyriad": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "versionModifiedAt": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
