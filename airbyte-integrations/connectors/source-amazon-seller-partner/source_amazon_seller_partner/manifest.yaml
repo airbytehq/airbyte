@@ -2111,5 +2111,5 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
-  max_concurrency: 10
+  default_concurrency: 1
+  max_concurrency: 1
