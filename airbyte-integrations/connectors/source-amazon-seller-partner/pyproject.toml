@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.5.0-rc.3"
+version = "4.5.0-rc.4"
 name = "source-amazon-seller-partner"
 description = "Source implementation for Amazon Seller Partner."
 authors = ["Airbyte <contact@airbyte.io>"]
