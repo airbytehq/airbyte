@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "orchestrator"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.14"
 dagit = "^1.5.14"
 dagster = "^1.5.14"
 pandas = "^1.5.3"
