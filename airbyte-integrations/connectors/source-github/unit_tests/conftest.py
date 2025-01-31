@@ -4,6 +4,7 @@ import os
 
 import pytest
 import responses
+
 from airbyte_cdk.testing.proxy_cache.fixtures.auto import mitmproxy_auto
 from airbyte_cdk.testing.proxy_cache.fixtures.manual import mitmproxy_cache
 
