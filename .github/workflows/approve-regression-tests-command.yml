@@ -97,7 +97,7 @@ jobs:
             --data '{
               "state": "success",
               "context": "Regression Test Results Reviewed and Approved",
-              "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
+              "target_url": "${{ format('https://storage.cloud.google.com/{0}/connectors/all/latest/output.html', secrets.CI_REPORT_BUCKET_NAME) }}"
             }')
           if [ $response -ne 201 ]; then
             echo "Failed to update regression test approval status check. HTTP status code: $response"

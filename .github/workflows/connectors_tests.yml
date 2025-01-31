@@ -66,9 +66,9 @@ jobs:
           --header 'content-type: application/json' \
           --data '{
             "state": "success",
-            "description": "[Skipped]",
+            "description": "[Skipped] No connector changes detected",
             "context": "Regression Test Results Reviewed and Approved",
-            "target_url": "${{ github.event.workflow_run.html_url }}"
+            "target_url": "${{ format('https://storage.cloud.google.com/{0}/connectors/all/latest/output.html', secrets.CI_REPORT_BUCKET_NAME) }}"
             }' \
 
   connectors_ci:
