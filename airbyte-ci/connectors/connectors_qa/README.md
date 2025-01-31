@@ -108,9 +108,6 @@ poe lint
 
 ## Changelog
 
-### 1.10.2
-Update Python version requirement from 3.10 to 3.11.
-
 ### 1.10.0
 Do not enforce that PyPi publication is enabled for Python connectors.
 Enforce that it's declared in the metadata file.

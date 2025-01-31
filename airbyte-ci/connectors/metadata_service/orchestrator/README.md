@@ -104,11 +104,6 @@ commands, see the [Dagster CLI documentation](https://docs.dagster.io/_apidocs/c
 poetry run pytest
 ```
 
-## Changelog
-
-### 0.7.1
-Update Python version requirement from 3.10 to 3.11.
-
 ## Deploying to Dagster Automatically
 
 GitHub Actions is used to automatically deploy the orchestrator to Dagster Cloud
