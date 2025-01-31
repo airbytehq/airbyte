@@ -9,6 +9,8 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.EnvVarConstants
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -89,6 +91,7 @@ data class PerformanceTestSummary(
     val namespace: String?,
     val streamName: String,
     val recordCount: Long?,
+    val expectedRecordCount: Long,
     val emittedRecordCount: Long,
     val recordPerSeconds: Double,
     val megabytePerSeconds: Double,
@@ -105,6 +108,7 @@ abstract class BasicPerformanceTest(
     val configSpecClass: Class<out ConfigurationSpecification>,
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val dataValidator: DataValidator? = null,
+    val micronautProperties: Map<Property, String> = emptyMap(),
 ) {
 
     protected val destinationProcessFactory = DestinationProcessFactory.get(emptyList())
@@ -279,6 +283,12 @@ abstract class BasicPerformanceTest(
         useFileTransfer: Boolean = false,
         validation: ValidationFunction? = null,
     ): List<PerformanceTestSummary> {
+        val fileTransferProperty =
+            if (useFileTransfer) {
+                mapOf(EnvVarConstants.FILE_TRANSFER_ENABLED to "true")
+            } else {
+                emptyMap()
+            }
         val testConfig = configUpdater.update(configContents)
         val destination =
             destinationProcessFactory.createDestinationProcess(
@@ -286,6 +296,7 @@ abstract class BasicPerformanceTest(
                 testConfig,
                 testScenario.catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
+                micronautProperties = micronautProperties + fileTransferProperty,
             )
 
         val duration =
@@ -335,6 +346,7 @@ abstract class BasicPerformanceTest(
                     namespace = testScenario.catalog.streams[0].descriptor.namespace,
                     streamName = testScenario.catalog.streams[0].descriptor.name,
                     recordCount = recordCount,
+                    expectedRecordCount = summary.expectedRecordsCount,
                     emittedRecordCount = summary.records,
                     recordPerSeconds = recordPerSeconds,
                     megabytePerSeconds = megabytePerSeconds,

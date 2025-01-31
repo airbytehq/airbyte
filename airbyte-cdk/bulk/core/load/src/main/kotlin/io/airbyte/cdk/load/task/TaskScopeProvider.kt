@@ -21,9 +21,11 @@ class TaskScopeProvider(config: DestinationConfiguration) {
 
     private val timeoutMs = config.gracefulCancellationTimeoutMs
 
+    data class AnnotatedJob(val job: Job, val task: Task)
+
     private val ioScope = CoroutineScope(Dispatchers.IO)
-    private val verifyCompletion = ConcurrentHashSet<Job>()
-    private val killOnSyncFailure = ConcurrentHashSet<Job>()
+    private val verifyCompletion = ConcurrentHashSet<AnnotatedJob>()
+    private val killOnSyncFailure = ConcurrentHashSet<AnnotatedJob>()
     private val cancelAtEndOfSync = ConcurrentHashSet<Job>()
 
     suspend fun launch(task: Task) {
@@ -35,8 +37,8 @@ class TaskScopeProvider(config: DestinationConfiguration) {
             }
         when (task.terminalCondition) {
             is OnEndOfSync -> cancelAtEndOfSync.add(job)
-            is OnSyncFailureOnly -> killOnSyncFailure.add(job)
-            is SelfTerminating -> verifyCompletion.add(job)
+            is OnSyncFailureOnly -> killOnSyncFailure.add(AnnotatedJob(job, task))
+            is SelfTerminating -> verifyCompletion.add(AnnotatedJob(job, task))
         }
     }
 
@@ -46,26 +48,27 @@ class TaskScopeProvider(config: DestinationConfiguration) {
 
         log.info { "Verifying task completion" }
         (verifyCompletion + killOnSyncFailure).forEach {
-            if (!it.isCompleted) {
-                log.info { "$it incomplete, waiting $timeoutMs ms" }
-                withTimeout(timeoutMs) { it.join() }
+            if (!it.job.isCompleted) {
+                log.info { "${it.task} incomplete, waiting $timeoutMs ms" }
+                withTimeout(timeoutMs) { it.job.join() }
             }
         }
     }
 
     suspend fun kill() {
         log.info { "Failing, killing input tasks and canceling long-running tasks" }
-        killOnSyncFailure.forEach { it.cancel() }
+        killOnSyncFailure.forEach { it.job.cancel() }
         cancelAtEndOfSync.forEach { it.cancel() }
 
         // Give the implementor tasks a chance to fail gracefully
+        log.info {
+            "Cancelled killable tasks, waiting ${timeoutMs}ms for remaining tasks to complete"
+        }
         withTimeoutOrNull(timeoutMs) {
             verifyCompletion.forEach {
-                log.info {
-                    "Cancelled killable tasks, waiting ${timeoutMs}ms for remaining tasks to complete"
-                }
-                it.join()
-                log.info { "Tasks completed" }
+                log.info { "Waiting for ${it.task} to complete" }
+                it.job.join()
+                log.info { "Task completed" }
             }
         }
             ?: log.error { "Timed out waiting for tasks to complete" }
