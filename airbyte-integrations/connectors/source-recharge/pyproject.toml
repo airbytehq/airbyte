@@ -19,6 +19,7 @@ include = "source_recharge"
 python = "^3.10,<3.12"
 airbyte-cdk = "^4"
 freezegun = "^1.4.0"
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-recharge = "source_recharge.run:run"
