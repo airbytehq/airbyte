@@ -43,12 +43,12 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**.
-3. On the source selection page, select **GitHub** from the list of Sources.
-4. Add a name for your GitHub connector.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select GitHub from the Source type dropdown.
+4. Enter a name for the GitHub connector.
 5. To authenticate:
 <!-- env:cloud -->
 
@@ -72,6 +72,13 @@ Repositories with the wrong name or repositories that do not exist or have the w
 - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
+
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+Click Sources and then click + New source.
+3. On the Set up the source page, select GitHub from the Source type dropdown.
+4. Enter a name for the GitHub connector.
 
 <HideInUI>
 
@@ -130,6 +137,9 @@ This connector outputs the following incremental streams:
 - [WorkflowJobs](https://docs.github.com/pt/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
+
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ### Notes
 
@@ -215,6 +225,28 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.23 | 2025-01-25 | [52364](https://github.com/airbytehq/airbyte/pull/52364) | Update dependencies |
+| 1.8.22 | 2025-01-18 | [51666](https://github.com/airbytehq/airbyte/pull/51666) | Update dependencies |
+| 1.8.21 | 2025-01-11 | [51130](https://github.com/airbytehq/airbyte/pull/51130) | Update dependencies |
+| 1.8.20 | 2025-01-04 | [50517](https://github.com/airbytehq/airbyte/pull/50517) | Update dependencies |
+| 1.8.19 | 2024-12-21 | [50055](https://github.com/airbytehq/airbyte/pull/50055) | Update dependencies |
+| 1.8.18 | 2024-12-14 | [49178](https://github.com/airbytehq/airbyte/pull/49178) | Update dependencies |
+| 1.8.17 | 2024-11-25 | [48631](https://github.com/airbytehq/airbyte/pull/48631) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.8.16 | 2024-11-05 | [48318](https://github.com/airbytehq/airbyte/pull/48318) | Update dependencies |
+| 1.8.15 | 2024-10-28 | [47051](https://github.com/airbytehq/airbyte/pull/47051) | Update dependencies |
+| 1.8.14 | 2024-10-12 | [46766](https://github.com/airbytehq/airbyte/pull/46766) | Update dependencies |
+| 1.8.13 | 2024-10-05 | [46415](https://github.com/airbytehq/airbyte/pull/46415) | Update dependencies |
+| 1.8.12 | 2024-09-28 | [46117](https://github.com/airbytehq/airbyte/pull/46117) | Update dependencies |
+| 1.8.11 | 2024-09-21 | [45742](https://github.com/airbytehq/airbyte/pull/45742) | Update dependencies |
+| 1.8.10 | 2024-09-14 | [45557](https://github.com/airbytehq/airbyte/pull/45557) | Update dependencies |
+| 1.8.9 | 2024-09-07 | [45320](https://github.com/airbytehq/airbyte/pull/45320) | Update dependencies |
+| 1.8.8 | 2024-08-23 | [44592](https://github.com/airbytehq/airbyte/pull/44592) | Fix state handling for stream WorkflowRuns |
+| 1.8.7 | 2024-08-31 | [45061](https://github.com/airbytehq/airbyte/pull/45061) | Update dependencies |
+| 1.8.6 | 2024-08-24 | [44703](https://github.com/airbytehq/airbyte/pull/44703) | Update dependencies |
+| 1.8.5 | 2024-08-17 | [44227](https://github.com/airbytehq/airbyte/pull/44227) | Update dependencies |
+| 1.8.4 | 2024-08-12 | [43749](https://github.com/airbytehq/airbyte/pull/43749) | Update dependencies |
+| 1.8.3 | 2024-08-10 | [42671](https://github.com/airbytehq/airbyte/pull/42671) | Update dependencies |
+| 1.8.2 | 2024-08-20 | [42966](https://github.com/airbytehq/airbyte/pull/42966) | Bump cdk version and enable RFR for all non-incremental streams |
 | 1.8.1 | 2024-07-20 | [42342](https://github.com/airbytehq/airbyte/pull/42342) | Update dependencies |
 | 1.8.0 | 2024-07-16 | [41677](https://github.com/airbytehq/airbyte/pull/41677) | Update to 3.4.0 CDK |
 | 1.7.13 | 2024-07-13 | [41746](https://github.com/airbytehq/airbyte/pull/41746) | Update dependencies |

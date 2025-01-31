@@ -6,17 +6,26 @@ import base64
 import datetime
 import hashlib
 import os
+import textwrap
 
-import dateutil
-import humanize
 import pandas as pd
+import yaml
 from dagster import OpExecutionContext, Output, asset
 from github import Repository
 from orchestrator.logging import sentry
+from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
 from orchestrator.ops.slack import send_slack_message
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
+
 GROUP_NAME = "github"
+TOOLING_TEAM_SLACK_TEAM_ID = "S077R8636CV"
+# We give 6 hours for the metadata to be updated
+# This is an empirical value that we can adjust if needed
+# When our auto-merge pipeline runs it can merge hundreds of up-to-date PRs following.
+# Given our current publish concurrency of 10 runners, it can take up to 6 hours to publish all the connectors.
+# A shorter grace period could lead to false positives in stale metadata detection.
+PUBLISH_GRACE_PERIOD = datetime.timedelta(hours=int(os.getenv("PUBLISH_GRACE_PERIOD_HOURS", 6)))
 
 
 def _get_md5_of_github_file(context: OpExecutionContext, github_connector_repo: Repository, path: str) -> str:
@@ -32,6 +41,11 @@ def _get_md5_of_github_file(context: OpExecutionContext, github_connector_repo: 
     md5_hash.update(file_contents.decoded_content)
     base_64_value = base64.b64encode(md5_hash.digest()).decode("utf8")
     return base_64_value
+
+
+def _get_content_of_github_file(context: OpExecutionContext, github_connector_repo: Repository, path: str) -> str:
+    context.log.debug(f"retrieving contents of {path}")
+    return github_connector_repo.get_contents(path)
 
 
 @asset(required_resource_keys={"github_connectors_directory"}, group_name=GROUP_NAME)
@@ -65,75 +79,111 @@ def github_metadata_file_md5s(context):
     return Output(metadata_file_paths, metadata={"preview": metadata_file_paths})
 
 
-def _should_publish_have_ran(datetime_string: str) -> bool:
+@asset(required_resource_keys={"github_connector_repo", "github_connectors_metadata_files"}, group_name=GROUP_NAME)
+def github_metadata_definitions(context):
     """
-    Return true if the datetime is 2 hours old.
-
+    Return a list of all metadata definitions hosted on our github repo
     """
-    dt = dateutil.parser.parse(datetime_string)
-    now = datetime.datetime.now(datetime.timezone.utc)
-    two_hours_ago = now - datetime.timedelta(hours=2)
-    return dt < two_hours_ago
+    github_connector_repo = context.resources.github_connector_repo
+    github_connectors_metadata_files = context.resources.github_connectors_metadata_files
+
+    metadata_definitions = []
+    for metadata_file in github_connectors_metadata_files:
+        metadata_raw = _get_content_of_github_file(context, github_connector_repo, metadata_file["path"])
+        metadata_dict = yaml.safe_load(metadata_raw.decoded_content)
+        if metadata_dict.get("data").get("supportLevel") == "archived":
+            print(f"Skipping archived connector: {metadata_dict.get('data').get('dockerRepository')}")
+            continue
+        metadata_definitions.append(
+            LatestMetadataEntry(
+                metadata_definition=MetadataDefinition.parse_obj(metadata_dict), last_modified=metadata_file["last_modified"]
+            )
+        )
+
+    return Output(metadata_definitions, metadata={"preview": [md.json() for md in metadata_definitions]})
 
 
-def _to_time_ago(datetime_string: str) -> str:
+def entry_is_younger_than_grace_period(entry: LatestMetadataEntry) -> bool:
+    grace_period_marker = datetime.datetime.now(datetime.timezone.utc) - PUBLISH_GRACE_PERIOD
+    entry_last_modified = datetime.datetime.strptime(entry.last_modified, "%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=datetime.timezone.utc)
+    return entry_last_modified > grace_period_marker
+
+
+def entry_should_be_on_gcs(metadata_entry: LatestMetadataEntry) -> bool:
+    """For stale metadata detection, we only want to scan latest metadata files from our master branch that are expected to be on GCS.
+    A metadata file should be on GCS, in the latest directory, if:
+    - it is not archived
+    - not a release candidate
+    - has been published for more than the grace period (just to reduce false positives when publish pipeline and stale detection run concurrently).
+
+    Args:
+        metadata_entry (LatestMetadataEntry): The metadata entry to check
+
+    Returns:
+        bool: True if the metadata entry should be on GCS, False otherwise
     """
-    Return a string of how long ago the datetime is human readable format. 10 min
-    """
-    dt = dateutil.parser.parse(datetime_string)
-    return humanize.naturaltime(dt)
+    if metadata_entry.metadata_definition.data.supportLevel == "archived":
+        return False
+    # TODO: We should improve this logic to be able to detect missing metadata files for release candidates.
+    if "-rc" in metadata_entry.metadata_definition.data.dockerImageTag:
+        return False
+    if entry_is_younger_than_grace_period(metadata_entry):
+        return False
+    return True
 
 
-def _is_stale(github_file_info: dict, latest_gcs_metadata_md5s: dict) -> bool:
-    """
-    Return true if the github info is stale.
-    """
-    not_in_gcs = latest_gcs_metadata_md5s.get(github_file_info["md5"]) is None
-    return not_in_gcs and _should_publish_have_ran(github_file_info["last_modified"])
-
-
-@asset(required_resource_keys={"slack", "latest_metadata_file_blobs"}, group_name=GROUP_NAME)
-def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> OutputDataFrame:
+@asset(required_resource_keys={"slack"}, group_name=GROUP_NAME)
+def stale_gcs_latest_metadata_file(context, github_metadata_definitions: list, latest_metadata_entries: list) -> OutputDataFrame:
     """
     Return a list of all metadata files in the github repo and denote whether they are stale or not.
 
     Stale means that the file in the github repo is not in the latest metadata file blobs.
     """
-    human_readable_stale_bools = {True: "🚨 YES!!!", False: "No"}
-    latest_gcs_metadata_file_blobs = context.resources.latest_metadata_file_blobs
-    latest_gcs_metadata_md5s = {blob.md5_hash: blob.name for blob in latest_gcs_metadata_file_blobs}
 
-    stale_report = [
-        {
-            "stale": _is_stale(github_file_info, latest_gcs_metadata_md5s),
-            "github_path": github_path,
-            "github_md5": github_file_info["md5"],
-            "github_last_modified": _to_time_ago(github_file_info["last_modified"]),
-            "gcs_md5": latest_gcs_metadata_md5s.get(github_file_info["md5"]),
-            "gcs_path": latest_gcs_metadata_md5s.get(github_file_info["md5"]),
-        }
-        for github_path, github_file_info in github_metadata_file_md5s.items()
-    ]
+    # TODO:
+    # The logic here is not bulletproof. It can't find release candidate metadata which did not made their way to GCS.
+    # We should improve this logic to be able to detect those cases as well.
 
-    stale_metadata_files_df = pd.DataFrame(stale_report)
+    latest_versions_on_gcs = {
+        metadata_entry.metadata_definition.data.dockerRepository: metadata_entry.metadata_definition.data.dockerImageTag
+        for metadata_entry in latest_metadata_entries
+        if metadata_entry.metadata_definition.data.supportLevel != "archived"
+    }
 
-    # sort by stale true to false, then by github_path
-    stale_metadata_files_df = stale_metadata_files_df.sort_values(
-        by=["stale", "github_path"],
-        ascending=[False, True],
-    )
+    latest_versions_on_github = {
+        metadata_entry.metadata_definition.data.dockerRepository: metadata_entry.metadata_definition.data.dockerImageTag
+        for metadata_entry in github_metadata_definitions
+        if entry_should_be_on_gcs(metadata_entry)
+    }
+
+    stale_connectors = []
+    for docker_repository, github_docker_image_tag in latest_versions_on_github.items():
+        gcs_docker_image_tag = latest_versions_on_gcs.get(docker_repository)
+        if gcs_docker_image_tag != github_docker_image_tag:
+            stale_connectors.append(
+                {"connector": docker_repository, "master_version": github_docker_image_tag, "gcs_version": gcs_docker_image_tag}
+            )
+
+    stale_connectors_df = pd.DataFrame(stale_connectors)
 
     # If any stale files exist, report to slack
-    channel = os.getenv("STALE_REPORT_CHANNEL")
-    any_stale = stale_metadata_files_df["stale"].any()
-    if channel and any_stale:
-        only_stale_df = stale_metadata_files_df[stale_metadata_files_df["stale"] == True]
-        pretty_stale_df = only_stale_df.replace(human_readable_stale_bools)
-        stale_report_md = pretty_stale_df.to_markdown(index=False)
-        send_slack_message(context, channel, stale_report_md, enable_code_block_wrapping=True)
-
-    stale_metadata_files_df.replace(human_readable_stale_bools, inplace=True)
-    return output_dataframe(stale_metadata_files_df)
+    stale_report_channel = os.getenv("STALE_REPORT_CHANNEL")
+    publish_update_channel = os.getenv("PUBLISH_UPDATE_CHANNEL")
+    any_stale = len(stale_connectors_df) > 0
+    if any_stale and stale_report_channel:
+        stale_report_md = stale_connectors_df.to_markdown(index=False)
+        send_slack_message(context, stale_report_channel, f"🚨 Stale metadata detected! (cc. <!subteam^{TOOLING_TEAM_SLACK_TEAM_ID}>)")
+        send_slack_message(context, stale_report_channel, stale_report_md, enable_code_block_wrapping=True)
+    if not any_stale and publish_update_channel:
+        message = textwrap.dedent(
+            f"""
+        Analyzed {len(latest_versions_on_github)} metadata files on our master branch and {len(latest_versions_on_gcs)} latest metadata files hosted in GCS.
+        All dockerImageTag value on master match the latest metadata files on GCS.
+        No stale metadata: GCS metadata are up to date with metadata hosted on GCS.
+        """
+        )
+        send_slack_message(context, publish_update_channel, message)
+    return output_dataframe(stale_connectors_df)
 
 
 @asset(required_resource_keys={"github_connector_nightly_workflow_successes"}, group_name=GROUP_NAME)

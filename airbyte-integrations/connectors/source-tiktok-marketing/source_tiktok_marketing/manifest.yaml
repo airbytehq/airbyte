@@ -22,6 +22,8 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       response_filters:
+        - predicate: "{{ response.get('code') == 40100 }}"
+          action: RATE_LIMITED
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"
@@ -74,7 +76,7 @@ definitions:
       inject_into: "request_parameter"
       field_name: "page"
 
-  incremental_sync:
+  semi_incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "modify_time"
     cursor_datetime_formats:
@@ -85,6 +87,7 @@ definitions:
       type: MinMaxDatetime
       datetime: "{{ config.get('start_date', '2016-09-01') }}"
       datetime_format: "%Y-%m-%d"
+    is_client_side_incremental: true
 
   single_id_partition_router:
     - class_name: "source_tiktok_marketing.components.advertiser_ids_partition_router.SingleAdvertiserIdPerPartition"
@@ -122,13 +125,13 @@ definitions:
           stream:
             $ref: "#/definitions/advertiser_ids_stream"
 
-  incremental_stream:
+  semi_incremental_stream:
     retriever:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
       record_selector:
-        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+        $ref: "#/definitions/record_selector"
       paginator:
         $ref: "#/definitions/paginator_page_increment"
         pagination_strategy:
@@ -138,7 +141,7 @@ definitions:
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: "#/definitions/semi_incremental_sync"
 
   advertiser_ids_stream:
     type: DeclarativeStream
@@ -279,13 +282,13 @@ definitions:
         request_parameters:
           filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
-        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+        $ref: "#/definitions/record_selector"
       paginator:
-        $ref: "#/definitions/incremental_stream/retriever/paginator"
+        $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: "#/definitions/semi_incremental_sync"
 
   ad_groups_stream:
     type: DeclarativeStream
@@ -305,13 +308,13 @@ definitions:
         request_parameters:
           filtering: '{{ {"secondary_status": "ADGROUP_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
-        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+        $ref: "#/definitions/record_selector"
       paginator:
-        $ref: "#/definitions/incremental_stream/retriever/paginator"
+        $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: "#/definitions/semi_incremental_sync"
 
   ads_stream:
     type: DeclarativeStream
@@ -331,13 +334,13 @@ definitions:
         request_parameters:
           filtering: '{{ {"secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
-        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+        $ref: "#/definitions/record_selector"
       paginator:
-        $ref: "#/definitions/incremental_stream/retriever/paginator"
+        $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: "#/definitions/semi_incremental_sync"
 
   creative_assets_images_stream:
     type: DeclarativeStream
@@ -347,7 +350,7 @@ definitions:
       page_size: 100
     primary_key:
       - image_id
-    $ref: "#/definitions/incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -361,7 +364,7 @@ definitions:
       page_size: 100
     primary_key:
       - video_id
-    $ref: "#/definitions/incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -397,11 +400,7 @@ definitions:
         metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
         start_date: "{{ stream_interval['start_time'] }}"
         end_date: "{{ stream_interval['end_time'] }}"
-        filters: '{{ [
-          {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
-          {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
-          {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
-          ] | string if config.get("include_deleted", False)}}'
+        filtering: '{{ parameters["filtering"] | string if parameters.get("filtering") and config.get("include_deleted", False)}}'
       authenticator:
         $ref: "#/definitions/authenticator"
       request_body_json: {}
@@ -517,6 +516,14 @@ definitions:
     $parameters:
       path: "report/integrated/get/"
       data_level: "AUCTION_AD"
+      filtering:
+        [
+          {
+            "field_name": "ad_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
       report_metrics:
         [
           "campaign_name",
@@ -579,6 +586,14 @@ definitions:
     $parameters:
       path: "report/integrated/get/"
       data_level: "AUCTION_ADGROUP"
+      filtering:
+        [
+          {
+            "field_name": "adgroup_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
       report_metrics:
         [
           "campaign_name",
@@ -649,6 +664,14 @@ definitions:
     $parameters:
       path: "report/integrated/get/"
       data_level: "AUCTION_CAMPAIGN"
+      filtering:
+        [
+          {
+            "field_name": "campaign_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_day"]
     primary_key:
@@ -1227,6 +1250,14 @@ definitions:
     $parameters:
       path: "report/integrated/get/"
       data_level: "AUCTION_AD"
+      filtering:
+        [
+          {
+            "field_name": "ad_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
       report_metrics:
         [
           "campaign_name",
@@ -1310,6 +1341,14 @@ definitions:
     $parameters:
       path: "report/integrated/get/"
       data_level: "AUCTION_CAMPAIGN"
+      filtering:
+        [
+          {
+            "field_name": "campaign_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_hour"]
     primary_key:
@@ -1332,6 +1371,14 @@ definitions:
     $parameters:
       path: "report/integrated/get/"
       data_level: "AUCTION_ADGROUP"
+      filtering:
+        [
+          {
+            "field_name": "adgroup_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
       report_metrics:
         [
           "campaign_name",
@@ -4261,6 +4308,14 @@ spec:
         required:
           - app_id
           - secret
+
+# Based on https://developers.tiktok.com/doc/tiktok-api-v2-rate-limit, the rate limiting for the API on all endpoint is 600 requests per minutes.
+# This means 10 requests per second. Assuming response time of 250 ms (there is very little based for this response time though) and a bit of time for processing the responses, it would mean a thread can do ~3 requests per second.
+# If time allows it, we can definitely try to scope this number a bit better empirically.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 3
+  max_concurrency: 20
 
 metadata:
   autoImportSchema:

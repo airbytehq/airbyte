@@ -3750,7 +3750,7 @@ streams:
         request_body_json:
           search:
             created_at:
-              min: "{{ stream_interval.start_time }}"
+              min: "{{ format_datetime(stream_interval.start_time, '%Y-%m-%d %H:%M:%S %z') }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -3764,6 +3764,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           start_from_page: 1
+          page_size: 50
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at
@@ -9748,7 +9749,7 @@ streams:
         request_body_json:
           search:
             created_at:
-              min: "{{ stream_interval.start_time }}"
+              min: "{{ format_datetime(stream_interval.start_time, '%Y-%m-%d %H:%M:%S %z') }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -9762,6 +9763,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           start_from_page: 1
+          page_size: 50
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at
@@ -15705,7 +15707,7 @@ streams:
         request_body_json:
           search:
             created_at:
-              min: "{{ stream_interval.start_time }}"
+              min: "{{ format_datetime(stream_interval.start_time, '%Y-%m-%d %H:%M:%S %z') }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -15719,6 +15721,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           start_from_page: 1
+          page_size: 50
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at

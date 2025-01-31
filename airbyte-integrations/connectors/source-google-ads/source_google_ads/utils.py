@@ -13,15 +13,17 @@ from datetime import datetime
 from typing import Any, Callable, Generator, Iterable, MutableMapping, Optional, Tuple, Type, Union
 
 import pendulum
+from google.ads.googleads.errors import GoogleAdsException
+from google.ads.googleads.v17.errors.types.authentication_error import AuthenticationErrorEnum
+from google.ads.googleads.v17.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v17.errors.types.query_error import QueryErrorEnum
+from google.ads.googleads.v17.errors.types.quota_error import QuotaErrorEnum
+from google.ads.googleads.v17.errors.types.request_error import RequestErrorEnum
+from google.api_core.exceptions import Unauthenticated
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v15.errors.types.authentication_error import AuthenticationErrorEnum
-from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v15.errors.types.query_error import QueryErrorEnum
-from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
-from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
-from google.api_core.exceptions import Unauthenticated
+
 
 logger = logging.getLogger("airbyte")
 

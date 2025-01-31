@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-vectara"
-version = "0.2.14"
+version = "0.2.31"
 description = "Airbyte destination implementation for Vectara"
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -22,7 +22,7 @@ python = "^3.9,<3.12"
 airbyte-cdk = "0.81.6"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2"
+pytest = "^8.3.2"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
 

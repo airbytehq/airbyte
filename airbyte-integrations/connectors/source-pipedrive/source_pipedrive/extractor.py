@@ -5,6 +5,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor

@@ -72,6 +72,26 @@ The Braintree connector should not run into Braintree API limitations under norm
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 0.3.27 | 2025-01-25 | [51769](https://github.com/airbytehq/airbyte/pull/51769) | Update dependencies |
+| 0.3.26 | 2025-01-11 | [51238](https://github.com/airbytehq/airbyte/pull/51238) | Update dependencies |
+| 0.3.25 | 2024-12-28 | [50500](https://github.com/airbytehq/airbyte/pull/50500) | Update dependencies |
+| 0.3.24 | 2024-12-21 | [50211](https://github.com/airbytehq/airbyte/pull/50211) | Update dependencies |
+| 0.3.23 | 2024-12-14 | [49556](https://github.com/airbytehq/airbyte/pull/49556) | Update dependencies |
+| 0.3.22 | 2024-12-12 | [49032](https://github.com/airbytehq/airbyte/pull/49032) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.3.21 | 2024-11-04 | [48212](https://github.com/airbytehq/airbyte/pull/48212) | Update dependencies |
+| 0.3.20 | 2024-10-21 | [47062](https://github.com/airbytehq/airbyte/pull/47062) | Update dependencies |
+| 0.3.19 | 2024-10-12 | [46849](https://github.com/airbytehq/airbyte/pull/46849) | Update dependencies |
+| 0.3.18 | 2024-10-05 | [46496](https://github.com/airbytehq/airbyte/pull/46496) | Update dependencies |
+| 0.3.17 | 2024-09-28 | [46180](https://github.com/airbytehq/airbyte/pull/46180) | Update dependencies |
+| 0.3.16 | 2024-09-21 | [45810](https://github.com/airbytehq/airbyte/pull/45810) | Update dependencies |
+| 0.3.15 | 2024-09-14 | [45555](https://github.com/airbytehq/airbyte/pull/45555) | Update dependencies |
+| 0.3.14 | 2024-09-07 | [45310](https://github.com/airbytehq/airbyte/pull/45310) | Update dependencies |
+| 0.3.13 | 2024-08-31 | [45041](https://github.com/airbytehq/airbyte/pull/45041) | Update dependencies |
+| 0.3.12 | 2024-08-24 | [44287](https://github.com/airbytehq/airbyte/pull/44287) | Update dependencies |
+| 0.3.11 | 2024-08-12 | [43953](https://github.com/airbytehq/airbyte/pull/43953) | Corrects timezone handling |
+| 0.3.10 | 2024-08-10 | [43666](https://github.com/airbytehq/airbyte/pull/43666) | Update dependencies |
+| 0.3.9 | 2024-08-03 | [43225](https://github.com/airbytehq/airbyte/pull/43225) | Update dependencies |
+| 0.3.8 | 2024-07-29 | [42848](https://github.com/airbytehq/airbyte/pull/42848) | Corrects pagination issues |
 | 0.3.7 | 2024-07-27 | [42796](https://github.com/airbytehq/airbyte/pull/42796) | Update dependencies |
 | 0.3.6 | 2024-07-20 | [42372](https://github.com/airbytehq/airbyte/pull/42372) | Update dependencies |
 | 0.3.5 | 2024-07-18 | [42096](https://github.com/airbytehq/airbyte/pull/42096) | Adds pagination to get more than 50 records per sync |

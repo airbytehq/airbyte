@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "5.0.9"
+version = "6.2.7"
 name = "source-amazon-ads"
 description = "Source implementation for Amazon Ads."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,17 +16,14 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_amazon_ads"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-requests-oauthlib = "==1.3.1"
-airbyte-cdk = "0.90.0"
-pendulum = "==2.1.2"
+python = "^3.10,<3.12"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-amazon-ads = "source_amazon_ads.run:run"
 
 [tool.poetry.group.dev.dependencies]
-responses = "^0.23.1"
-freezegun = "^1.2.0"
-requests-mock = "^1.9.3"
-pytest-mock = "^3.7.0"
-pytest = "^6.1"
+responses = "^0.25"
+freezegun = "*"
+requests-mock = "*"
+pytest-mock = "*"

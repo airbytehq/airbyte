@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.salesforce.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
-  dockerImageTag: 2.5.24
+  dockerImageTag: 2.6.4
   dockerRepository: airbyte/source-salesforce
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   githubIssueLabel: source-salesforce
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-salesforce
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -33,6 +33,14 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: salesforce_config_bulk_dev_null
+          id: 114d8a58-804d-49cd-be0f-14d8f20012b6
+        - name: salesforce_config_dev_null
+          id: 36b229e8-cea8-4d92-8b3d-cdfe488b00a5
+        - name: salesforce_config_sandbox_dev_null
+          id: 4cfaad00-8911-450e-a8f0-d31c6acd2fe2
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

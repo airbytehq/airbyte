@@ -6,8 +6,9 @@
 import logging
 
 import pytest
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from source_gitlab import SourceGitlab
+
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
 def test_streams(config):
@@ -19,9 +20,7 @@ def test_streams(config):
 
 def test_connection_success(config, requests_mock):
     requests_mock.get(url="/api/v4/groups", json=[{"id": "g1"}])
-    requests_mock.get(
-        url="/api/v4/groups/g1", json=[{"id": "g1", "projects": [{"id": "p1", "path_with_namespace": "p1"}]}]
-    )
+    requests_mock.get(url="/api/v4/groups/g1", json=[{"id": "g1", "projects": [{"id": "p1", "path_with_namespace": "p1"}]}])
     requests_mock.get(url="/api/v4/projects/p1", json={"id": "p1"})
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), config)
@@ -30,17 +29,12 @@ def test_connection_success(config, requests_mock):
 
 def test_connection_invalid_projects_and_projects(config_with_project_groups, requests_mock):
     requests_mock.register_uri("GET", "https://gitlab.com/api/v4/groups/g1?per_page=50", status_code=404)
-    requests_mock.register_uri(
-        "GET", "https://gitlab.com/api/v4/groups/g1/descendant_groups?per_page=50", status_code=404
-    )
+    requests_mock.register_uri("GET", "https://gitlab.com/api/v4/groups/g1/descendant_groups?per_page=50", status_code=404)
     requests_mock.register_uri("GET", "https://gitlab.com/api/v4/projects/p1?per_page=50&statistics=1", status_code=404)
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), config_with_project_groups)
     assert status is False
-    assert msg == (
-        "Unable to connect to stream projects - "
-        "Groups and/or projects that you provide are invalid or you don't have permission to view it."
-    )
+    assert "Groups and/or projects that you provide are invalid or you don't have permission to view it." in msg
 
 
 def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
@@ -50,10 +44,7 @@ def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), config)
     assert status is False
-    assert msg == (
-        "Unable to connect to stream projects - Unable to refresh the `access_token`, "
-        "please re-authenticate in Sources > Settings."
-    )
+    assert "Unable to refresh the `access_token`" in msg
 
 
 def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_mock):
@@ -70,10 +61,7 @@ def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_m
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), oauth_config)
     assert status is False
-    assert msg == (
-        "Unable to connect to stream projects - Unable to refresh the `access_token`, "
-        "please re-authenticate in Sources > Settings."
-    )
+    assert "Unable to refresh the `access_token`" in msg
 
 
 @pytest.mark.parametrize(

@@ -2,29 +2,32 @@ data:
   allowedHosts:
     hosts:
       - api.primetric.com
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
-      enabled: false
+      enabled: true
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-primetric
   releases:
     breakingChanges:
       1.0.0:
         upgradeDeadline: "2024-05-30"
-        message: "The verison migrates the Primetric connector to the low-code framework for greater maintainability. !! Important: The uuid field now have a string format (without 'format: uuid') for all streams"
+        message:
+          "The verison migrates the Primetric connector to the low-code framework
+          for greater maintainability. !! Important: The uuid field now have a string
+          format (without 'format: uuid') for all streams"
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: f636c3c6-4077-45ac-b109-19fc62a283c1
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.1.7
   dockerRepository: airbyte/source-primetric
   githubIssueLabel: source-primetric
   icon: primetric.svg
@@ -38,8 +41,8 @@ data:
     sl: 100
     ql: 100
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: acceptanceTests

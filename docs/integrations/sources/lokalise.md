@@ -64,6 +64,21 @@ The Lokalise source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.9 | 2025-01-25 | [52294](https://github.com/airbytehq/airbyte/pull/52294) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [51803](https://github.com/airbytehq/airbyte/pull/51803) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51204](https://github.com/airbytehq/airbyte/pull/51204) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50635](https://github.com/airbytehq/airbyte/pull/50635) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50121](https://github.com/airbytehq/airbyte/pull/50121) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49216](https://github.com/airbytehq/airbyte/pull/49216) | Update dependencies |
+| 0.2.3 | 2024-12-11 | [48995](https://github.com/airbytehq/airbyte/pull/48995) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.2 | 2024-11-04 | [47935](https://github.com/airbytehq/airbyte/pull/47935) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47629](https://github.com/airbytehq/airbyte/pull/47629) | Update dependencies |
+| 0.2.0 | 2024-08-26 | [44765](https://github.com/airbytehq/airbyte/pull/44765) | Refactor connector to manifest-only format |
+| 0.1.15 | 2024-08-24 | [44696](https://github.com/airbytehq/airbyte/pull/44696) | Update dependencies |
+| 0.1.14 | 2024-08-17 | [44203](https://github.com/airbytehq/airbyte/pull/44203) | Update dependencies |
+| 0.1.13 | 2024-08-12 | [43917](https://github.com/airbytehq/airbyte/pull/43917) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43699](https://github.com/airbytehq/airbyte/pull/43699) | Update dependencies |
+| 0.1.11 | 2024-08-03 | [43121](https://github.com/airbytehq/airbyte/pull/43121) | Update dependencies |
 | 0.1.10 | 2024-07-27 | [42644](https://github.com/airbytehq/airbyte/pull/42644) | Update dependencies |
 | 0.1.9 | 2024-07-20 | [42307](https://github.com/airbytehq/airbyte/pull/42307) | Update dependencies |
 | 0.1.8 | 2024-07-13 | [41803](https://github.com/airbytehq/airbyte/pull/41803) | Update dependencies |

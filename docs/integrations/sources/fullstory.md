@@ -73,6 +73,19 @@ FullStory [API reference](https://api.fullstory.com) has v1 at present. The conn
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.8 | 2025-01-25 | [52304](https://github.com/airbytehq/airbyte/pull/52304) | Update dependencies |
+| 0.2.7 | 2025-01-18 | [51657](https://github.com/airbytehq/airbyte/pull/51657) | Update dependencies |
+| 0.2.6 | 2025-01-11 | [51078](https://github.com/airbytehq/airbyte/pull/51078) | Update dependencies |
+| 0.2.5 | 2025-01-04 | [50587](https://github.com/airbytehq/airbyte/pull/50587) | Update dependencies |
+| 0.2.4 | 2024-12-21 | [50050](https://github.com/airbytehq/airbyte/pull/50050) | Update dependencies |
+| 0.2.3 | 2024-12-14 | [49524](https://github.com/airbytehq/airbyte/pull/49524) | Update dependencies |
+| 0.2.2 | 2024-12-12 | [49156](https://github.com/airbytehq/airbyte/pull/49156) | Update dependencies |
+| 0.2.1 | 2024-10-29 | [47794](https://github.com/airbytehq/airbyte/pull/47794) | Update dependencies |
+| 0.2.0 | 2024-08-23 | [44612](https://github.com/airbytehq/airbyte/pull/44612) | Refactor connector to manifest-only format |
+| 0.1.14 | 2024-08-17 | [44222](https://github.com/airbytehq/airbyte/pull/44222) | Update dependencies |
+| 0.1.13 | 2024-08-12 | [43781](https://github.com/airbytehq/airbyte/pull/43781) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43688](https://github.com/airbytehq/airbyte/pull/43688) | Update dependencies |
+| 0.1.11 | 2024-08-03 | [43197](https://github.com/airbytehq/airbyte/pull/43197) | Update dependencies |
 | 0.1.10 | 2024-07-27 | [42694](https://github.com/airbytehq/airbyte/pull/42694) | Update dependencies |
 | 0.1.9 | 2024-07-20 | [42299](https://github.com/airbytehq/airbyte/pull/42299) | Update dependencies |
 | 0.1.8 | 2024-07-13 | [41798](https://github.com/airbytehq/airbyte/pull/41798) | Update dependencies |

@@ -1,5 +1,4 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
 from __future__ import annotations
 
 import logging
@@ -65,7 +64,6 @@ class LocalDir(ResultBackend):
 
 
 class GCSBucket(ResultBackend):
-
     DEFAULT_GCP_PROJECT = "prod-ab-cloud-proj"
 
     def __init__(self, bucket_name: str, key_prefix: str, gcp_project: str = DEFAULT_GCP_PROJECT):

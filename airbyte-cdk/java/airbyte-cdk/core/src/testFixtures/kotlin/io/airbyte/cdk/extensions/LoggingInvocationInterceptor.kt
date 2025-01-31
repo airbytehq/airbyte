@@ -11,6 +11,7 @@ import java.time.format.DateTimeParseException
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 import kotlin.concurrent.Volatile
 import org.apache.commons.lang3.StringUtils
@@ -88,7 +89,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 logLineSuffix = "execution of unknown intercepted call $methodName"
             }
             val currentThread = Thread.currentThread()
-            val timeoutTask = TimeoutInteruptor(currentThread)
+            val timeoutTask = TimeoutInteruptor(currentThread, logLineSuffix)
             val start = Instant.now()
             try {
                 val timeout = reflectiveInvocationContext?.let(::getTimeout)
@@ -116,6 +117,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 val elapsedMs = Duration.between(start, Instant.now()).toMillis()
                 val t1: Throwable
                 if (timeoutTask.wasTriggered) {
+                    LOGGER.info { "timeoutTask ${timeoutTask.id} was triggered." }
                     val timeoutAsString =
                         DurationFormatUtils.formatDurationWords(elapsedMs, true, true)
                     t1 =
@@ -126,6 +128,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                         )
                     t1.initCause(throwable)
                 } else {
+                    LOGGER.info { "timeoutTask ${timeoutTask.id} was not triggered." }
                     t1 = throwable
                 }
                 var belowCurrentCall = false
@@ -157,24 +160,35 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 throw t1
             } finally {
                 timeoutTask.cancel()
-                TestContext.CURRENT_TEST_NAME.set(null)
+                TestContext.CURRENT_TEST_NAME.set(TestContext.NO_RUNNING_TEST)
             }
         }
 
-        private class TimeoutInteruptor(private val parentThread: Thread) : TimerTask() {
+        private class TimeoutInteruptor(
+            private val parentThread: Thread,
+            private val context: String
+        ) : TimerTask() {
             @Volatile var wasTriggered: Boolean = false
+            val id = timerIdentifier.incrementAndGet()
 
             override fun run() {
                 LOGGER.info(
-                    "interrupting running task on ${parentThread.name}. Current Stacktrace is ${parentThread.stackTrace.asList()}"
+                    "interrupting running task on ${parentThread.name}. " +
+                        "Current Stacktrace is ${parentThread.stackTrace.asList()}" +
+                        "TimeoutIterruptor $id interrupting running task on ${parentThread.name}: $context. " +
+                        "Current Stacktrace is ${parentThread.stackTrace.asList()}"
                 )
                 wasTriggered = true
                 parentThread.interrupt()
             }
 
             override fun cancel(): Boolean {
-                LOGGER.info("cancelling timer task on ${parentThread.name}")
+                LOGGER.info("cancelling TimeoutIterruptor  $id on ${parentThread.name}")
                 return super.cancel()
+            }
+
+            companion object {
+                private val timerIdentifier = AtomicLong(1)
             }
         }
 

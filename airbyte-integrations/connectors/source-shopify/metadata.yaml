@@ -7,13 +7,14 @@ data:
       - ${shop}.myshopify.com
       - shopify.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 2.4.15
+  dockerImageTag: 2.6.1
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
+  erdUrl: https://dbdocs.io/airbyteio/source-shopify?view=relationships
   githubIssueLabel: source-shopify
   icon: shopify.svg
   license: ELv2
@@ -23,7 +24,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-shopify
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -74,6 +75,14 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["countries"]
+      2.6.1:
+        message:
+          "The `ProductsGraphQL` and the `CustomerSavedSearch` streams have been deprecated by Shopify and removed from Airbyte.
+          Please the `Products` stream instead. As of 2025-01-16, Spotify no longer provides data for the affected streams. More details here: https://github.com/airbytehq/airbyte/pull/51037."
+        upgradeDeadline: "2025-01-16"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["products_graph_ql", "customer_saved_search"]
   suggestedStreams:
     streams:
       - customers
@@ -91,7 +100,6 @@ data:
       - inventory_levels
       - custom_collections
       - fulfillments
-      - products_graph_ql
       - product_images
       - collects
       - tender_transactions
@@ -114,6 +122,16 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: shopify_config_dev_null
+          id: 1de7c985-bcce-425a-a762-57389cea3900
+        - name: shopify_config_old_dev_null
+          id: 1f3550b3-740a-4841-8337-0e28a7b23458
+        - name: shopify_config_transactions_with_user_id_dev_null
+          id: 5f1d6da1-87bc-46b4-8de7-1b3fe1a2be90
+        - name: shopify_config_oauth_dev_null
+          id: a08529a9-618c-4bfc-884f-f5dccba1c1ab
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

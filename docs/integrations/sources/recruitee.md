@@ -53,6 +53,20 @@ The Recruitee source connector supports the following [sync modes](https://docs.
 
 | Version | Date       | Pull Request                                             | Subject               |
 |:--------|:-----------| :------------------------------------------------------- | :-------------------- |
+| 0.2.10 | 2025-01-25 | [52475](https://github.com/airbytehq/airbyte/pull/52475) | Update dependencies |
+| 0.2.9 | 2025-01-18 | [51852](https://github.com/airbytehq/airbyte/pull/51852) | Update dependencies |
+| 0.2.8 | 2025-01-11 | [51298](https://github.com/airbytehq/airbyte/pull/51298) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50689](https://github.com/airbytehq/airbyte/pull/50689) | Update dependencies |
+| 0.2.6 | 2024-12-21 | [50263](https://github.com/airbytehq/airbyte/pull/50263) | Update dependencies |
+| 0.2.5 | 2024-12-14 | [49701](https://github.com/airbytehq/airbyte/pull/49701) | Update dependencies |
+| 0.2.4 | 2024-12-12 | [49074](https://github.com/airbytehq/airbyte/pull/49074) | Update dependencies |
+| 0.2.3 | 2024-10-29 | [47924](https://github.com/airbytehq/airbyte/pull/47924) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47522](https://github.com/airbytehq/airbyte/pull/47522) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.2.0 | 2024-08-14 | [44079](https://github.com/airbytehq/airbyte/pull/44079) | Refactor connector to manifest-only format |
+| 0.1.14 | 2024-08-12 | [43810](https://github.com/airbytehq/airbyte/pull/43810) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43508](https://github.com/airbytehq/airbyte/pull/43508) | Update dependencies |
+| 0.1.12 | 2024-08-03 | [43264](https://github.com/airbytehq/airbyte/pull/43264) | Update dependencies |
 | 0.1.11 | 2024-07-27 | [42605](https://github.com/airbytehq/airbyte/pull/42605) | Update dependencies |
 | 0.1.10 | 2024-07-20 | [42268](https://github.com/airbytehq/airbyte/pull/42268) | Update dependencies |
 | 0.1.9 | 2024-07-13 | [41930](https://github.com/airbytehq/airbyte/pull/41930) | Update dependencies |

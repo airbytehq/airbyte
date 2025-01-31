@@ -1,6 +1,8 @@
-version: 0.78.5
+version: 3.9.6
 
 type: DeclarativeSource
+
+description: This is just a test
 
 check:
   type: CheckStream
@@ -12,8 +14,6 @@ definitions:
     pokemon:
       type: DeclarativeStream
       name: pokemon
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -25,6 +25,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+      primary_key:
+        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -46,9 +48,7 @@ spec:
     properties:
       pokemon_name:
         type: string
-        title: Pokemon Name
         description: Pokemon requested from the API.
-        pattern: ^[a-z0-9_\-]+$
         enum:
           - bulbasaur
           - ivysaur
@@ -948,14 +948,24 @@ spec:
           - glastrier
           - spectrier
           - calyrex
+        order: 0
+        title: Pokemon Name
+        pattern: ^[a-z0-9_\-]+$
         examples:
           - ditto
           - luxray
           - snorlax
-        order: 0
     additionalProperties: true
 
 metadata:
+  testedStreams:
+    pokemon:
+      hasRecords: true
+      streamHash: f619395f8c7a553f51cec2a7274a4ce517ab46c8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   autoImportSchema:
     pokemon: false
 
@@ -963,44 +973,15 @@ schemas:
   pokemon:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties:
-      abilities:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          additionalProperties: true
-          properties:
-            ability:
-              type:
-                - "null"
-                - object
-              additionalProperties: true
-              properties:
-                name:
-                  type:
-                    - "null"
-                    - string
-                url:
-                  type:
-                    - "null"
-                    - string
-            is_hidden:
-              type:
-                - "null"
-                - boolean
-            slot:
-              type:
-                - "null"
-                - integer
-      base_experience:
+      id:
         type:
           - "null"
           - integer
+      name:
+        type:
+          - "null"
+          - string
       forms:
         type:
           - "null"
@@ -1009,112 +990,16 @@ schemas:
           type:
             - "null"
             - object
-          additionalProperties: true
           properties:
-            name:
-              type:
-                - "null"
-                - string
             url:
               type:
                 - "null"
                 - string
-      game_indices:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
+            name:
+              type:
+                - "null"
+                - string
           additionalProperties: true
-          properties:
-            version:
-              type:
-                - "null"
-                - object
-              additionalProperties: true
-              properties:
-                name:
-                  type:
-                    - "null"
-                    - string
-                url:
-                  type:
-                    - "null"
-                    - string
-            game_index:
-              type:
-                - "null"
-                - integer
-      height:
-        type:
-          - "null"
-          - integer
-      held_items:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          additionalProperties: true
-          properties:
-            item:
-              type:
-                - "null"
-                - object
-              additionalProperties: true
-              properties:
-                name:
-                  type:
-                    - "null"
-                    - string
-                url:
-                  type:
-                    - "null"
-                    - string
-            version_details:
-              type:
-                - "null"
-                - array
-              items:
-                type:
-                  - "null"
-                  - object
-                additionalProperties: true
-                properties:
-                  version:
-                    type:
-                      - "null"
-                      - object
-                    additionalProperties: true
-                    properties:
-                      name:
-                        type:
-                          - "null"
-                          - string
-                      url:
-                        type:
-                          - "null"
-                          - string
-                  rarity:
-                    type:
-                      - "null"
-                      - integer
-      id:
-        type:
-          - "null"
-          - integer
-      is_default:
-        type:
-          - "null"
-          - boolean
-      location_area_encounters:
-        type:
-          - "null"
-          - string
       moves:
         type:
           - "null"
@@ -1123,22 +1008,21 @@ schemas:
           type:
             - "null"
             - object
-          additionalProperties: true
           properties:
             move:
               type:
                 - "null"
                 - object
-              additionalProperties: true
               properties:
-                name:
-                  type:
-                    - "null"
-                    - string
                 url:
                   type:
                     - "null"
                     - string
+                name:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
             version_group_details:
               type:
                 - "null"
@@ -1147,8 +1031,21 @@ schemas:
                 type:
                   - "null"
                   - object
-                additionalProperties: true
                 properties:
+                  version_group:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      url:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
                   level_learned_at:
                     type:
                       - "null"
@@ -1157,142 +1054,22 @@ schemas:
                     type:
                       - "null"
                       - object
-                    additionalProperties: true
                     properties:
-                      name:
-                        type:
-                          - "null"
-                          - string
                       url:
                         type:
                           - "null"
                           - string
-                  version_group:
-                    type:
-                      - "null"
-                      - object
-                    additionalProperties: true
-                    properties:
                       name:
                         type:
                           - "null"
                           - string
-                      url:
-                        type:
-                          - "null"
-                          - string
-      name:
-        type:
-          - "null"
-          - string
+                    additionalProperties: true
+                additionalProperties: true
+          additionalProperties: true
       order:
         type:
           - "null"
           - integer
-      past_types:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          additionalProperties: true
-          properties:
-            generation:
-              type:
-                - "null"
-                - object
-              additionalProperties: true
-              properties:
-                name:
-                  type:
-                    - "null"
-                    - string
-                url:
-                  type:
-                    - "null"
-                    - string
-            types:
-              type:
-                - "null"
-                - array
-              items:
-                type:
-                  - "null"
-                  - object
-                additionalProperties: true
-                properties:
-                  type:
-                    type:
-                      - "null"
-                      - object
-                    additionalProperties: true
-                    properties:
-                      name:
-                        type:
-                          - "null"
-                          - string
-                      url:
-                        type:
-                          - "null"
-                          - string
-                  slot:
-                    type:
-                      - "null"
-                      - integer
-      species:
-        type:
-          - "null"
-          - object
-        additionalProperties: true
-        properties:
-          name:
-            type:
-              - "null"
-              - string
-          url:
-            type:
-              - "null"
-              - string
-      sprites:
-        type:
-          - "null"
-          - object
-        additionalProperties: true
-        properties:
-          back_default:
-            type:
-              - "null"
-              - string
-          back_female:
-            type:
-              - "null"
-              - string
-          back_shiny:
-            type:
-              - "null"
-              - string
-          back_shiny_female:
-            type:
-              - "null"
-              - string
-          front_default:
-            type:
-              - "null"
-              - string
-          front_female:
-            type:
-              - "null"
-              - string
-          front_shiny:
-            type:
-              - "null"
-              - string
-          front_shiny_female:
-            type:
-              - "null"
-              - string
       stats:
         type:
           - "null"
@@ -1301,30 +1078,30 @@ schemas:
           type:
             - "null"
             - object
-          additionalProperties: true
           properties:
-            base_stat:
-              type:
-                - "null"
-                - integer
-            effort:
-              type:
-                - "null"
-                - integer
             stat:
               type:
                 - "null"
                 - object
-              additionalProperties: true
               properties:
-                name:
-                  type:
-                    - "null"
-                    - string
                 url:
                   type:
                     - "null"
                     - string
+                name:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
+            effort:
+              type:
+                - "null"
+                - integer
+            base_stat:
+              type:
+                - "null"
+                - integer
+          additionalProperties: true
       types:
         type:
           - "null"
@@ -1333,18 +1110,17 @@ schemas:
           type:
             - "null"
             - object
-          additionalProperties: true
           properties:
             type:
               type:
                 - "null"
                 - object
               properties:
-                name:
+                url:
                   type:
                     - "null"
                     - string
-                url:
+                name:
                   type:
                     - "null"
                     - string
@@ -1352,7 +1128,241 @@ schemas:
               type:
                 - "null"
                 - integer
+          additionalProperties: true
+      height:
+        type:
+          - "null"
+          - integer
       weight:
         type:
           - "null"
           - integer
+      species:
+        type:
+          - "null"
+          - object
+        properties:
+          url:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      sprites:
+        type:
+          - "null"
+          - object
+        properties:
+          back_shiny:
+            type:
+              - "null"
+              - string
+          back_female:
+            type:
+              - "null"
+              - string
+          front_shiny:
+            type:
+              - "null"
+              - string
+          back_default:
+            type:
+              - "null"
+              - string
+          front_female:
+            type:
+              - "null"
+              - string
+          front_default:
+            type:
+              - "null"
+              - string
+          back_shiny_female:
+            type:
+              - "null"
+              - string
+          front_shiny_female:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      abilities:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            slot:
+              type:
+                - "null"
+                - integer
+            ability:
+              type:
+                - "null"
+                - object
+              properties:
+                url:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
+            is_hidden:
+              type:
+                - "null"
+                - boolean
+          additionalProperties: true
+      held_items:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            item:
+              type:
+                - "null"
+                - object
+              properties:
+                url:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
+            version_details:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  version:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      url:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  rarity:
+                    type:
+                      - "null"
+                      - integer
+                additionalProperties: true
+          additionalProperties: true
+      is_default:
+        type:
+          - "null"
+          - boolean
+      past_types:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            types:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      url:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                    additionalProperties: true
+                  slot:
+                    type:
+                      - "null"
+                      - integer
+                additionalProperties: true
+            generation:
+              type:
+                - "null"
+                - object
+              properties:
+                url:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
+          additionalProperties: true
+      game_indices:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            version:
+              type:
+                - "null"
+                - object
+              properties:
+                url:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+              additionalProperties: true
+            game_index:
+              type:
+                - "null"
+                - integer
+          additionalProperties: true
+      base_experience:
+        type:
+          - "null"
+          - integer
+      location_area_encounters:
+        type:
+          - "null"
+          - string
+    additionalProperties: true

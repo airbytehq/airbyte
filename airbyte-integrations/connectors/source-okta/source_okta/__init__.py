@@ -5,4 +5,4 @@
 
 from .source import SourceOkta
 
-__all__ = ["SourceOkta", "custom_authenticators"]
+__all__ = ["SourceOkta", "components"]

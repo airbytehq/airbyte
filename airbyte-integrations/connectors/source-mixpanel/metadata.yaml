@@ -7,11 +7,11 @@ data:
       - mixpanel.com
       - eu.mixpanel.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
-  dockerImageTag: 3.3.1
+  dockerImageTag: 3.4.16
   dockerRepository: airbyte/source-mixpanel
   documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   githubIssueLabel: source-mixpanel
@@ -23,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-mixpanel
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -65,6 +65,16 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: mixpanel_config_incremental_dev_null
+          id: 1684fa59-b23d-4955-b9f3-f56f77599606
+        - name: mixpanel_config_old_dev_null
+          id: 4158acfe-9e39-46f4-bf0b-6865368ed5a8
+        - name: mixpanel_config_project_secret_dev_null
+          id: 575b938b-35ad-459c-a820-291e1e94c293
+        - name: mixpanel_config_dev_null
+          id: 94ebb422-0a1f-4c4d-b4a1-cc0aa63a4114
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

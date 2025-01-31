@@ -2,24 +2,24 @@ data:
   allowedHosts:
     hosts:
       - graph.microsoft.com
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
       enabled: true
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-microsoft-teams
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
   connectorSubtype: api
   connectorType: source
   definitionId: eaf50f04-21dd-4620-913b-2a83f5635227
-  dockerImageTag: 1.1.8
+  dockerImageTag: 1.2.3
   dockerRepository: airbyte/source-microsoft-teams
   githubIssueLabel: source-microsoft-teams
   icon: microsoft-teams.svg
@@ -30,14 +30,27 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: Version 1.0.0 introduces breaking schema changes to all streams. A full schema refresh is required to upgrade to this version. For more details, see our <a href='https://docs.airbyte.io/integrations/sources/microsoft-teams-migrations'>migration guide</a>.
+        message:
+          Version 1.0.0 introduces breaking schema changes to all streams.
+          A full schema refresh is required to upgrade to this version. For more details,
+          see our <a
+          href='https://docs.airbyte.io/integrations/sources/microsoft-teams-migrations'>migration
+          guide</a>.
         upgradeDeadline: "2024-01-24"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-teams
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: microsoft-teams_old_config_dev_null
+          id: 173d587d-2f13-4289-a5c9-a45641b07f7f
+        - name: microsoft-teams_config_dev_null
+          id: 64010141-ad84-4986-a354-e6613967459e
+        - name: microsoft-teams_config_oauth_dev_null
+          id: 7502d493-2e74-40e4-8e61-ee9cede09b98
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-MICROSOFT-TEAMS_CREDS

@@ -1,5 +1,41 @@
 # Changelog
 
+## 3.9.8
+
+Give ownership of copied connection object files to the image user to make sure it has permission to write them (config migration).
+
+## 3.9.7
+
+Mount connection objects to readable paths in the container for rootless images.
+ 
+## 3.9.6
+
+Write connector output to a writtable directory to avoid permission issues on rootless images.
+
+## 3.9.5
+
+Fix parsing of inlined manifest specs in `test_match_expected`
+
+## 3.9.4
+
+Upgrade to Dagger 0.13
+
+## 3.9.3
+
+Undo failure trace message test case changes from 3.9.1
+
+## 3.9.2
+
+Relax test_oneof_usage criteria for constant value definitions.
+
+## 3.9.1
+
+Bug fixes for dagger execution caching and for failure trace message test case.
+
+## 3.9.0
+
+Add support for using `manifest.yaml` as a spec input.
+
 ## 3.8.6
 
 Allow a final teardown command to be run after all tests.

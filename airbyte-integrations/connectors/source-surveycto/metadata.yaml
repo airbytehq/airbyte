@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dd4632f4-15e0-4649-9b71-41719fb1fdee
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.34
   dockerRepository: airbyte/source-surveycto
   githubIssueLabel: source-surveycto
   icon: surveycto.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-surveycto
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -40,5 +40,5 @@ data:
     #         type: GSM
     #         alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
 metadataSpecVersion: "1.0"

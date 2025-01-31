@@ -1,0 +1,3423 @@
+Table "campaigns" {
+    "appId" integer
+    "appName" string
+    "contentId" integer
+    "counters" object
+    "counters_open" integer
+    "counters_processed" integer
+    "counters_sent" integer
+    "counters_deferred" integer
+    "counters_unsubscribed" integer
+    "counters_statuschange" integer
+    "counters_bounce" integer
+    "counters_mta_dropped" integer
+    "counters_dropped" integer
+    "counters_suppressed" integer
+    "counters_click" integer
+    "counters_delivered" integer
+    "counters_forward" integer
+    "counters_print" integer
+    "counters_reply" integer
+    "counters_spamreport" integer
+    "id" integer [pk]
+    "lastProcessingFinishedAt" integer
+    "lastProcessingStateChangeAt" integer
+    "lastProcessingStartedAt" integer
+    "processingState" string
+    "name" string
+    "numIncluded" integer
+    "numQueued" integer
+    "subType" string
+    "subject" string
+    "type" string
+    "lastUpdatedTime" integer
+}
+
+Table "companies" {
+    "id" string [pk]
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "contacts" array
+    "properties" object
+    "properties_about_us" string
+    "properties_address" string
+    "properties_address2" string
+    "properties_annualrevenue" number
+    "properties_city" string
+    "properties_closedate" string
+    "properties_closedate_timestamp_earliest_value_a2a17e6e" string
+    "properties_country" string
+    "properties_createdate" string
+    "properties_custom_company_property" string
+    "properties_days_to_close" number
+    "properties_description" string
+    "properties_domain" string
+    "properties_engagements_last_meeting_booked" string
+    "properties_engagements_last_meeting_booked_campaign" string
+    "properties_engagements_last_meeting_booked_medium" string
+    "properties_engagements_last_meeting_booked_source" string
+    "properties_facebook_company_page" string
+    "properties_facebookfans" number
+    "properties_first_contact_createdate" string
+    "properties_first_contact_createdate_timestamp_earliest_value_78b50eea" string
+    "properties_first_conversion_date" string
+    "properties_first_conversion_date_timestamp_earliest_value_61f58f2c" string
+    "properties_first_conversion_event_name" string
+    "properties_first_conversion_event_name_timestamp_earliest_value_68ddae0a" string
+    "properties_first_deal_created_date" string
+    "properties_founded_year" string
+    "properties_googleplus_page" string
+    "properties_hs_additional_domains" string
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_analytics_first_timestamp" string
+    "properties_hs_analytics_first_timestamp_timestamp_earliest_value_11e3a63a" string
+    "properties_hs_analytics_first_touch_converting_campaign" string
+    "properties_hs_analytics_first_touch_converting_campaign_timestamp_earliest_value_4757fe10" string
+    "properties_hs_analytics_first_visit_timestamp" string
+    "properties_hs_analytics_first_visit_timestamp_timestamp_earliest_value_accc17ae" string
+    "properties_hs_analytics_last_timestamp" string
+    "properties_hs_analytics_last_timestamp_timestamp_latest_value_4e16365a" string
+    "properties_hs_analytics_last_touch_converting_campaign" string
+    "properties_hs_analytics_last_touch_converting_campaign_timestamp_latest_value_81a64e30" string
+    "properties_hs_analytics_last_visit_timestamp" string
+    "properties_hs_analytics_last_visit_timestamp_timestamp_latest_value_999a0fce" string
+    "properties_hs_analytics_latest_source" string
+    "properties_hs_analytics_latest_source_data_1" string
+    "properties_hs_analytics_latest_source_data_2" string
+    "properties_hs_analytics_latest_source_timestamp" string
+    "properties_hs_analytics_num_page_views" number
+    "properties_hs_analytics_num_page_views_cardinality_sum_e46e85b0" number
+    "properties_hs_analytics_num_visits" number
+    "properties_hs_analytics_num_visits_cardinality_sum_53d952a6" number
+    "properties_hs_analytics_source" string
+    "properties_hs_analytics_source_data_1" string
+    "properties_hs_analytics_source_data_1_timestamp_earliest_value_9b2f1fa1" string
+    "properties_hs_analytics_source_data_2" string
+    "properties_hs_analytics_source_data_2_timestamp_earliest_value_9b2f9400" string
+    "properties_hs_analytics_source_timestamp_earliest_value_25a3a52c" string
+    "properties_hs_annual_revenue_currency_code" string
+    "properties_hs_avatar_filemanager_key" string
+    "properties_hs_country_code" string
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_csm_sentiment" string
+    "properties_hs_customer_success_ticket_sentiment" number
+    "properties_hs_date_entered_customer" string
+    "properties_hs_date_entered_evangelist" string
+    "properties_hs_date_entered_lead" string
+    "properties_hs_date_entered_marketingqualifiedlead" string
+    "properties_hs_date_entered_opportunity" string
+    "properties_hs_date_entered_other" string
+    "properties_hs_date_entered_salesqualifiedlead" string
+    "properties_hs_date_entered_subscriber" string
+    "properties_hs_date_exited_customer" string
+    "properties_hs_date_exited_evangelist" string
+    "properties_hs_date_exited_lead" string
+    "properties_hs_date_exited_marketingqualifiedlead" string
+    "properties_hs_date_exited_opportunity" string
+    "properties_hs_date_exited_other" string
+    "properties_hs_date_exited_salesqualifiedlead" string
+    "properties_hs_date_exited_subscriber" string
+    "properties_hs_ideal_customer_profile" string
+    "properties_hs_is_target_account" boolean
+    "properties_hs_last_booked_meeting_date" string
+    "properties_hs_last_logged_call_date" string
+    "properties_hs_last_open_task_date" string
+    "properties_hs_last_sales_activity_date" string
+    "properties_hs_last_sales_activity_timestamp" string
+    "properties_hs_last_sales_activity_type" string
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_latest_createdate_of_active_subscriptions" string
+    "properties_hs_latest_meeting_activity" string
+    "properties_hs_lead_status" string
+    "properties_hs_logo_url" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_notes_next_activity_type" string
+    "properties_hs_num_blockers" number
+    "properties_hs_num_child_companies" number
+    "properties_hs_num_contacts_with_buying_roles" number
+    "properties_hs_num_decision_makers" number
+    "properties_hs_num_open_deals" number
+    "properties_hs_object_id" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_parent_company_id" number
+    "properties_hs_pinned_engagement_id" number
+    "properties_hs_pipeline" string
+    "properties_hs_predictivecontactscore_v2" number
+    "properties_hs_predictivecontactscore_v2_next_max_max_d4e58c1e" number
+    "properties_hs_read_only" boolean
+    "properties_hs_sales_email_last_replied" string
+    "properties_hs_target_account" string
+    "properties_hs_target_account_probability" number
+    "properties_hs_target_account_recommendation_snooze_time" string
+    "properties_hs_target_account_recommendation_state" string
+    "properties_hs_time_in_customer" number
+    "properties_hs_time_in_evangelist" number
+    "properties_hs_time_in_lead" number
+    "properties_hs_time_in_marketingqualifiedlead" number
+    "properties_hs_time_in_opportunity" number
+    "properties_hs_time_in_other" number
+    "properties_hs_time_in_salesqualifiedlead" number
+    "properties_hs_time_in_subscriber" number
+    "properties_hs_total_deal_value" number
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hs_was_imported" boolean
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_hubspotscore" number
+    "properties_industry" string
+    "properties_is_public" boolean
+    "properties_lifecyclestage" string
+    "properties_linkedin_company_page" string
+    "properties_linkedinbio" string
+    "properties_name" string
+    "properties_notes_last_contacted" string
+    "properties_notes_last_updated" string
+    "properties_notes_next_activity_date" string
+    "properties_num_associated_contacts" number
+    "properties_num_associated_deals" number
+    "properties_num_contacted_notes" number
+    "properties_num_conversion_events" number
+    "properties_num_conversion_events_cardinality_sum_d095f14b" number
+    "properties_num_notes" number
+    "properties_numberofemployees" number
+    "properties_phone" string
+    "properties_recent_conversion_date" string
+    "properties_recent_conversion_date_timestamp_latest_value_72856da1" string
+    "properties_recent_conversion_event_name" string
+    "properties_recent_conversion_event_name_timestamp_latest_value_66c820bf" string
+    "properties_recent_deal_amount" number
+    "properties_recent_deal_close_date" string
+    "properties_state" string
+    "properties_timezone" string
+    "properties_total_money_raised" string
+    "properties_total_revenue" number
+    "properties_twitterbio" string
+    "properties_twitterfollowers" number
+    "properties_twitterhandle" string
+    "properties_type" string
+    "properties_web_technologies" string
+    "properties_website" string
+    "properties_zip" string
+}
+
+Table "contact_lists" {
+    "parentId" integer
+    "metaData" object
+    "metaData_processing" string
+    "metaData_size" integer
+    "metaData_error" string
+    "metaData_lastProcessingStateChangeAt" integer
+    "metaData_lastSizeChangeAt" integer
+    "metaData_listReferencesCount" integer
+    "metaData_parentFolderId" integer
+    "dynamic" boolean
+    "name" string
+    "filters" array
+    "ilsFilterBranch" string
+    "internal" boolean
+    "authorId" integer
+    "limitExempt" boolean
+    "teamIds" array
+    "portalId" integer
+    "createdAt" integer
+    "listId" integer [pk]
+    "updatedAt" integer
+    "internalListId" integer
+    "readOnly" boolean
+    "deleteable" boolean
+    "listType" string
+    "archived" boolean
+}
+
+Table "contacts" {
+    "id" string [pk]
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "companies" array
+    "properties" object
+    "properties_address" string
+    "properties_annualrevenue" string
+    "properties_associatedcompanyid" number
+    "properties_associatedcompanylastupdated" number
+    "properties_city" string
+    "properties_closedate" string
+    "properties_company" string
+    "properties_company_size" string
+    "properties_country" string
+    "properties_createdate" string
+    "properties_currentlyinworkflow" string
+    "properties_date_of_birth" string
+    "properties_days_to_close" number
+    "properties_degree" string
+    "properties_email" string
+    "properties_engagements_last_meeting_booked" string
+    "properties_engagements_last_meeting_booked_campaign" string
+    "properties_engagements_last_meeting_booked_medium" string
+    "properties_engagements_last_meeting_booked_source" string
+    "properties_fax" string
+    "properties_field_of_study" string
+    "properties_first_conversion_date" string
+    "properties_first_conversion_event_name" string
+    "properties_first_deal_created_date" string
+    "properties_firstname" string
+    "properties_gender" string
+    "properties_graduation_date" string
+    "properties_hs_additional_emails" string
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_contact_vids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_analytics_average_page_views" number
+    "properties_hs_analytics_first_referrer" string
+    "properties_hs_analytics_first_timestamp" string
+    "properties_hs_analytics_first_touch_converting_campaign" string
+    "properties_hs_analytics_first_url" string
+    "properties_hs_analytics_first_visit_timestamp" string
+    "properties_hs_analytics_last_referrer" string
+    "properties_hs_analytics_last_timestamp" string
+    "properties_hs_analytics_last_touch_converting_campaign" string
+    "properties_hs_analytics_last_url" string
+    "properties_hs_analytics_last_visit_timestamp" string
+    "properties_hs_analytics_num_event_completions" number
+    "properties_hs_analytics_num_page_views" number
+    "properties_hs_analytics_num_visits" number
+    "properties_hs_analytics_revenue" number
+    "properties_hs_analytics_source" string
+    "properties_hs_analytics_source_data_1" string
+    "properties_hs_analytics_source_data_2" string
+    "properties_hs_associated_target_accounts" number
+    "properties_hs_avatar_filemanager_key" string
+    "properties_hs_buying_role" string
+    "properties_hs_calculated_form_submissions" string
+    "properties_hs_calculated_merged_vids" string
+    "properties_hs_calculated_mobile_number" string
+    "properties_hs_calculated_phone_number" string
+    "properties_hs_calculated_phone_number_area_code" string
+    "properties_hs_calculated_phone_number_country_code" string
+    "properties_hs_calculated_phone_number_region_code" string
+    "properties_hs_clicked_linkedin_ad" string
+    "properties_hs_content_membership_email" string
+    "properties_hs_content_membership_email_confirmed" boolean
+    "properties_hs_content_membership_follow_up_enqueued_at" string
+    "properties_hs_content_membership_notes" string
+    "properties_hs_content_membership_registered_at" string
+    "properties_hs_content_membership_registration_domain_sent_to" string
+    "properties_hs_content_membership_registration_email_sent_at" string
+    "properties_hs_content_membership_status" string
+    "properties_hs_conversations_visitor_email" string
+    "properties_hs_count_is_unworked" number
+    "properties_hs_count_is_worked" number
+    "properties_hs_created_by_conversations" boolean
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_date_entered_customer" string
+    "properties_hs_date_entered_evangelist" string
+    "properties_hs_date_entered_lead" string
+    "properties_hs_date_entered_marketingqualifiedlead" string
+    "properties_hs_date_entered_opportunity" string
+    "properties_hs_date_entered_other" string
+    "properties_hs_date_entered_salesqualifiedlead" string
+    "properties_hs_date_entered_subscriber" string
+    "properties_hs_date_exited_customer" string
+    "properties_hs_date_exited_evangelist" string
+    "properties_hs_date_exited_lead" string
+    "properties_hs_date_exited_marketingqualifiedlead" string
+    "properties_hs_date_exited_opportunity" string
+    "properties_hs_date_exited_other" string
+    "properties_hs_date_exited_salesqualifiedlead" string
+    "properties_hs_date_exited_subscriber" string
+    "properties_hs_document_last_revisited" string
+    "properties_hs_email_bad_address" boolean
+    "properties_hs_email_bounce" number
+    "properties_hs_email_click" number
+    "properties_hs_email_customer_quarantined_reason" string
+    "properties_hs_email_delivered" number
+    "properties_hs_email_domain" string
+    "properties_hs_email_first_click_date" string
+    "properties_hs_email_first_open_date" string
+    "properties_hs_email_first_reply_date" string
+    "properties_hs_email_first_send_date" string
+    "properties_hs_email_hard_bounce_reason" string
+    "properties_hs_email_hard_bounce_reason_enum" string
+    "properties_hs_email_is_ineligible" boolean
+    "properties_hs_email_last_click_date" string
+    "properties_hs_email_last_email_name" string
+    "properties_hs_email_last_open_date" string
+    "properties_hs_email_last_reply_date" string
+    "properties_hs_email_last_send_date" string
+    "properties_hs_email_open" number
+    "properties_hs_email_optout" boolean
+    "properties_hs_email_optout_10798197" string
+    "properties_hs_email_optout_11890603" string
+    "properties_hs_email_optout_11890831" string
+    "properties_hs_email_optout_23704464" string
+    "properties_hs_email_optout_313921448" string
+    "properties_hs_email_optout_94692364" string
+    "properties_hs_email_quarantined" boolean
+    "properties_hs_email_quarantined_reason" string
+    "properties_hs_email_recipient_fatigue_recovery_time" string
+    "properties_hs_email_replied" number
+    "properties_hs_email_sends_since_last_engagement" number
+    "properties_hs_emailconfirmationstatus" string
+    "properties_hs_facebook_ad_clicked" boolean
+    "properties_hs_facebook_click_id" string
+    "properties_hs_feedback_last_nps_follow_up" string
+    "properties_hs_feedback_last_nps_rating" string
+    "properties_hs_feedback_last_survey_date" string
+    "properties_hs_feedback_show_nps_web_survey" boolean
+    "properties_hs_first_engagement_object_id" number
+    "properties_hs_first_outreach_date" string
+    "properties_hs_first_subscription_create_date" string
+    "properties_hs_google_click_id" string
+    "properties_hs_has_active_subscription" number
+    "properties_hs_ip_timezone" string
+    "properties_hs_is_contact" boolean
+    "properties_hs_is_unworked" boolean
+    "properties_hs_language" string
+    "properties_hs_last_sales_activity_date" string
+    "properties_hs_last_sales_activity_timestamp" string
+    "properties_hs_last_sales_activity_type" string
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_latest_disqualified_lead_date" string
+    "properties_hs_latest_meeting_activity" string
+    "properties_hs_latest_open_lead_date" string
+    "properties_hs_latest_qualified_lead_date" string
+    "properties_hs_latest_sequence_ended_date" string
+    "properties_hs_latest_sequence_enrolled" number
+    "properties_hs_latest_sequence_enrolled_date" string
+    "properties_hs_latest_sequence_finished_date" string
+    "properties_hs_latest_sequence_unenrolled_date" string
+    "properties_hs_latest_source" string
+    "properties_hs_latest_source_data_1" string
+    "properties_hs_latest_source_data_2" string
+    "properties_hs_latest_source_timestamp" string
+    "properties_hs_latest_subscription_create_date" string
+    "properties_hs_lead_status" string
+    "properties_hs_legal_basis" string
+    "properties_hs_lifecyclestage_customer_date" string
+    "properties_hs_lifecyclestage_evangelist_date" string
+    "properties_hs_lifecyclestage_lead_date" string
+    "properties_hs_lifecyclestage_marketingqualifiedlead_date" string
+    "properties_hs_lifecyclestage_opportunity_date" string
+    "properties_hs_lifecyclestage_other_date" string
+    "properties_hs_lifecyclestage_salesqualifiedlead_date" string
+    "properties_hs_lifecyclestage_subscriber_date" string
+    "properties_hs_linkedin_ad_clicked" string
+    "properties_hs_marketable_reason_id" string
+    "properties_hs_marketable_reason_type" string
+    "properties_hs_marketable_status" string
+    "properties_hs_marketable_until_renewal" string
+    "properties_hs_membership_has_accessed_private_content" number
+    "properties_hs_membership_last_private_content_access_date" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_mobile_sdk_push_tokens" string
+    "properties_hs_notes_next_activity_type" string
+    "properties_hs_object_id" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_persona" string
+    "properties_hs_pinned_engagement_id" number
+    "properties_hs_pipeline" string
+    "properties_hs_predictivecontactscore" number
+    "properties_hs_predictivecontactscore_v2" number
+    "properties_hs_predictivecontactscorebucket" string
+    "properties_hs_predictivescoringtier" string
+    "properties_hs_quarantined_emails" string
+    "properties_hs_read_only" boolean
+    "properties_hs_registered_member" number
+    "properties_hs_registration_method" string
+    "properties_hs_sa_first_engagement_date" string
+    "properties_hs_sa_first_engagement_descr" string
+    "properties_hs_sa_first_engagement_object_type" string
+    "properties_hs_sales_email_last_clicked" string
+    "properties_hs_sales_email_last_opened" string
+    "properties_hs_sales_email_last_replied" string
+    "properties_hs_searchable_calculated_international_mobile_number" string
+    "properties_hs_searchable_calculated_international_phone_number" string
+    "properties_hs_searchable_calculated_mobile_number" string
+    "properties_hs_searchable_calculated_phone_number" string
+    "properties_hs_sequences_actively_enrolled_count" number
+    "properties_hs_sequences_enrolled_count" number
+    "properties_hs_sequences_is_enrolled" boolean
+    "properties_hs_testpurge" string
+    "properties_hs_testrollback" string
+    "properties_hs_time_between_contact_creation_and_deal_close" number
+    "properties_hs_time_between_contact_creation_and_deal_creation" number
+    "properties_hs_time_in_customer" number
+    "properties_hs_time_in_evangelist" number
+    "properties_hs_time_in_lead" number
+    "properties_hs_time_in_marketingqualifiedlead" number
+    "properties_hs_time_in_opportunity" number
+    "properties_hs_time_in_other" number
+    "properties_hs_time_in_salesqualifiedlead" number
+    "properties_hs_time_in_subscriber" number
+    "properties_hs_time_to_first_engagement" number
+    "properties_hs_time_to_move_from_lead_to_customer" number
+    "properties_hs_time_to_move_from_marketingqualifiedlead_to_customer" number
+    "properties_hs_time_to_move_from_opportunity_to_customer" number
+    "properties_hs_time_to_move_from_salesqualifiedlead_to_customer" number
+    "properties_hs_time_to_move_from_subscriber_to_customer" number
+    "properties_hs_timezone" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hs_v2_cumulative_time_in_customer" number
+    "properties_hs_v2_cumulative_time_in_evangelist" number
+    "properties_hs_v2_cumulative_time_in_lead" number
+    "properties_hs_v2_cumulative_time_in_marketingqualifiedlead" number
+    "properties_hs_v2_cumulative_time_in_opportunity" number
+    "properties_hs_v2_cumulative_time_in_other" number
+    "properties_hs_v2_cumulative_time_in_salesqualifiedlead" number
+    "properties_hs_v2_cumulative_time_in_subscriber" number
+    "properties_hs_v2_date_entered_customer" string
+    "properties_hs_v2_date_entered_evangelist" string
+    "properties_hs_v2_date_entered_lead" string
+    "properties_hs_v2_date_entered_marketingqualifiedlead" string
+    "properties_hs_v2_date_entered_opportunity" string
+    "properties_hs_v2_date_entered_other" string
+    "properties_hs_v2_date_entered_salesqualifiedlead" string
+    "properties_hs_v2_date_entered_subscriber" string
+    "properties_hs_v2_date_exited_customer" string
+    "properties_hs_v2_date_exited_evangelist" string
+    "properties_hs_v2_date_exited_lead" string
+    "properties_hs_v2_date_exited_marketingqualifiedlead" string
+    "properties_hs_v2_date_exited_opportunity" string
+    "properties_hs_v2_date_exited_other" string
+    "properties_hs_v2_date_exited_salesqualifiedlead" string
+    "properties_hs_v2_date_exited_subscriber" string
+    "properties_hs_v2_latest_time_in_customer" number
+    "properties_hs_v2_latest_time_in_evangelist" number
+    "properties_hs_v2_latest_time_in_lead" number
+    "properties_hs_v2_latest_time_in_marketingqualifiedlead" number
+    "properties_hs_v2_latest_time_in_opportunity" number
+    "properties_hs_v2_latest_time_in_other" number
+    "properties_hs_v2_latest_time_in_salesqualifiedlead" number
+    "properties_hs_v2_latest_time_in_subscriber" number
+    "properties_hs_was_imported" boolean
+    "properties_hs_whatsapp_phone_number" string
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_hubspotscore" number
+    "properties_industry" string
+    "properties_ip_city" string
+    "properties_ip_country" string
+    "properties_ip_country_code" string
+    "properties_ip_latlon" string
+    "properties_ip_state" string
+    "properties_ip_state_code" string
+    "properties_ip_zipcode" string
+    "properties_job_function" string
+    "properties_jobtitle" string
+    "properties_lastmodifieddate" string
+    "properties_lastname" string
+    "properties_lifecyclestage" string
+    "properties_marital_status" string
+    "properties_message" string
+    "properties_military_status" string
+    "properties_mobilephone" string
+    "properties_my_custom_test_property" string
+    "properties_notes_last_contacted" string
+    "properties_notes_last_updated" string
+    "properties_notes_next_activity_date" string
+    "properties_num_associated_deals" number
+    "properties_num_contacted_notes" number
+    "properties_num_conversion_events" number
+    "properties_num_notes" number
+    "properties_num_unique_conversion_events" number
+    "properties_numemployees" string
+    "properties_phone" string
+    "properties_recent_conversion_date" string
+    "properties_recent_conversion_event_name" string
+    "properties_recent_deal_amount" number
+    "properties_recent_deal_close_date" string
+    "properties_relationship_status" string
+    "properties_salutation" string
+    "properties_school" string
+    "properties_seniority" string
+    "properties_start_date" string
+    "properties_state" string
+    "properties_surveymonkeyeventlastupdated" number
+    "properties_test" number
+    "properties_total_revenue" number
+    "properties_twitterhandle" string
+    "properties_webinareventlastupdated" number
+    "properties_website" string
+    "properties_work_email" string
+    "properties_zip" string
+}
+
+Table "contacts_form_submissions" {
+    "canonical-vid" integer [pk]
+    "canonical-url" string
+    "conversion-id" string
+    "page-title" string
+    "timestamp" integer
+    "form-id" string
+    "portal-id" integer
+    "title" string
+    "page-url" string
+    "form-type" string
+    "contact-associated-by" array
+    "meta-data" array
+}
+
+Table "contacts_list_memberships" {
+    "canonical-vid" integer [pk]
+    "static-list-id" integer
+    "internal-list-id" integer
+    "timestamp" integer
+    "vid" integer
+    "is-member" boolean
+}
+
+Table "contacts_merged_audit" {
+    "canonical-vid" integer [pk]
+    "vid-to-merge" integer
+    "timestamp" integer
+    "entity-id" string
+    "user-id" integer
+    "num-properties-moved" integer
+    "merged_from_email" object
+    "merged_from_email_source-vids" array
+    "merged_from_email_updated-by-user-id" integer
+    "merged_from_email_source-label" string
+    "merged_from_email_source-type" string
+    "merged_from_email_value" string
+    "merged_from_email_source-id" string
+    "merged_from_email_selected" boolean
+    "merged_from_email_timestamp" integer
+    "merged_to_email" object
+    "merged_to_email_updated-by-user-id" integer
+    "merged_to_email_source-label" string
+    "merged_to_email_source-type" string
+    "merged_to_email_value" string
+    "merged_to_email_source-id" string
+    "merged_to_email_selected" boolean
+    "merged_to_email_timestamp" integer
+    "first-name" string
+    "last-name" string
+}
+
+Table "deal_pipelines" {
+    "label" string
+    "displayOrder" integer
+    "active" boolean
+    "stages" array
+    "objectType" string
+    "objectTypeId" string
+    "pipelineId" string [pk]
+    "createdAt" integer
+    "updatedAt" integer
+    "default" boolean
+}
+
+Table "deals" {
+    "id" string [pk]
+    "properties" object
+    "properties_amount" number
+    "properties_amount_in_home_currency" number
+    "properties_closed_lost_reason" string
+    "properties_closed_won_reason" string
+    "properties_closedate" string
+    "properties_createdate" string
+    "properties_days_to_close" number
+    "properties_dealname" string
+    "properties_dealstage" string
+    "properties_dealtype" string
+    "properties_description" string
+    "properties_engagements_last_meeting_booked" string
+    "properties_engagements_last_meeting_booked_campaign" string
+    "properties_engagements_last_meeting_booked_medium" string
+    "properties_engagements_last_meeting_booked_source" string
+    "properties_hs_acv" number
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_analytics_source" string
+    "properties_hs_analytics_source_data_1" string
+    "properties_hs_analytics_source_data_2" string
+    "properties_hs_arr" number
+    "properties_hs_closed_amount" number
+    "properties_hs_closed_amount_in_home_currency" number
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_date_entered_9567448" string
+    "properties_hs_date_entered_9567449" string
+    "properties_hs_date_entered_appointmentscheduled" string
+    "properties_hs_date_entered_closedlost" string
+    "properties_hs_date_entered_closedwon" string
+    "properties_hs_date_entered_contractsent" string
+    "properties_hs_date_entered_customclosedwonstage" string
+    "properties_hs_date_entered_decisionmakerboughtin" string
+    "properties_hs_date_entered_presentationscheduled" string
+    "properties_hs_date_entered_qualifiedtobuy" string
+    "properties_hs_date_exited_9567448" string
+    "properties_hs_date_exited_9567449" string
+    "properties_hs_date_exited_appointmentscheduled" string
+    "properties_hs_date_exited_closedlost" string
+    "properties_hs_date_exited_closedwon" string
+    "properties_hs_date_exited_contractsent" string
+    "properties_hs_date_exited_customclosedwonstage" string
+    "properties_hs_date_exited_decisionmakerboughtin" string
+    "properties_hs_date_exited_presentationscheduled" string
+    "properties_hs_date_exited_qualifiedtobuy" string
+    "properties_hs_deal_amount_calculation_preference" string
+    "properties_hs_deal_stage_probability" number
+    "properties_hs_deal_stage_probability_shadow" number
+    "properties_hs_forecast_amount" number
+    "properties_hs_forecast_probability" number
+    "properties_hs_is_closed" boolean
+    "properties_hs_is_closed_won" boolean
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_latest_meeting_activity" string
+    "properties_hs_likelihood_to_close" number
+    "properties_hs_line_item_global_term_hs_discount_percentage" string
+    "properties_hs_line_item_global_term_hs_discount_percentage_enabled" boolean
+    "properties_hs_line_item_global_term_hs_recurring_billing_period" string
+    "properties_hs_line_item_global_term_hs_recurring_billing_period_enabled" boolean
+    "properties_hs_line_item_global_term_hs_recurring_billing_start_date" string
+    "properties_hs_line_item_global_term_hs_recurring_billing_start_date_enabled" boolean
+    "properties_hs_line_item_global_term_recurringbillingfrequency" string
+    "properties_hs_line_item_global_term_recurringbillingfrequency_enabled" boolean
+    "properties_hs_manual_forecast_category" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_mrr" number
+    "properties_hs_next_step" string
+    "properties_hs_num_target_accounts" number
+    "properties_hs_object_id" number
+    "properties_hs_predicted_amount" number
+    "properties_hs_predicted_amount_in_home_currency" number
+    "properties_hs_priority" string
+    "properties_hs_projected_amount" number
+    "properties_hs_projected_amount_in_home_currency" number
+    "properties_hs_sales_email_last_replied" string
+    "properties_hs_tcv" number
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_notes_last_contacted" string
+    "properties_notes_last_updated" string
+    "properties_notes_next_activity_date" string
+    "properties_num_associated_contacts" number
+    "properties_num_contacted_notes" number
+    "properties_num_notes" number
+    "properties_pipeline" string
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "companies" array
+    "contacts" array
+    "line_items" array
+    "properties_hs_all_collaborator_owner_ids" string
+    "properties_hs_all_deal_split_owner_ids" string
+    "properties_hs_analytics_latest_source" string
+    "properties_hs_analytics_latest_source_company" string
+    "properties_hs_analytics_latest_source_contact" string
+    "properties_hs_analytics_latest_source_data_1" string
+    "properties_hs_analytics_latest_source_data_1_company" string
+    "properties_hs_analytics_latest_source_data_1_contact" string
+    "properties_hs_analytics_latest_source_data_2" string
+    "properties_hs_analytics_latest_source_data_2_company" string
+    "properties_hs_analytics_latest_source_data_2_contact" string
+    "properties_hs_analytics_latest_source_timestamp" string
+    "properties_hs_analytics_latest_source_timestamp_company" string
+    "properties_hs_analytics_latest_source_timestamp_contact" string
+    "properties_hs_campaign" string
+    "properties_hs_closed_deal_close_date" number
+    "properties_hs_closed_deal_create_date" number
+    "properties_hs_closed_won_count" number
+    "properties_hs_closed_won_date" string
+    "properties_hs_date_entered_66894120" string
+    "properties_hs_date_exited_66894120" string
+    "properties_hs_days_to_close_raw" number
+    "properties_hs_deal_score" number
+    "properties_hs_exchange_rate" number
+    "properties_hs_has_empty_conditional_stage_properties" boolean
+    "properties_hs_is_closed_count" number
+    "properties_hs_is_deal_split" boolean
+    "properties_hs_is_in_first_deal_stage" boolean
+    "properties_hs_is_open_count" number
+    "properties_hs_latest_approval_status" string
+    "properties_hs_latest_approval_status_approval_id" number
+    "properties_hs_next_step_updated_at" string
+    "properties_hs_notes_next_activity_type" string
+    "properties_hs_num_associated_deal_splits" number
+    "properties_hs_num_of_associated_line_items" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_open_deal_create_date" number
+    "properties_hs_pinned_engagement_id" number
+    "properties_hs_read_only" boolean
+    "properties_hs_tag_ids" string
+    "properties_hs_time_in_66894120" number
+    "properties_hs_time_in_9567448" number
+    "properties_hs_time_in_9567449" number
+    "properties_hs_time_in_appointmentscheduled" number
+    "properties_hs_time_in_closedlost" number
+    "properties_hs_time_in_closedwon" number
+    "properties_hs_time_in_contractsent" number
+    "properties_hs_time_in_customclosedwonstage" number
+    "properties_hs_time_in_decisionmakerboughtin" number
+    "properties_hs_time_in_presentationscheduled" number
+    "properties_hs_time_in_qualifiedtobuy" number
+    "properties_hs_v2_cumulative_time_in_66894120" number
+    "properties_hs_v2_cumulative_time_in_9567448" number
+    "properties_hs_v2_cumulative_time_in_9567449" number
+    "properties_hs_v2_cumulative_time_in_appointmentscheduled" number
+    "properties_hs_v2_cumulative_time_in_closedlost" number
+    "properties_hs_v2_cumulative_time_in_closedwon" number
+    "properties_hs_v2_cumulative_time_in_contractsent" number
+    "properties_hs_v2_cumulative_time_in_customclosedwonstage" number
+    "properties_hs_v2_cumulative_time_in_decisionmakerboughtin" number
+    "properties_hs_v2_cumulative_time_in_presentationscheduled" number
+    "properties_hs_v2_cumulative_time_in_qualifiedtobuy" number
+    "properties_hs_v2_date_entered_66894120" string
+    "properties_hs_v2_date_entered_9567448" string
+    "properties_hs_v2_date_entered_9567449" string
+    "properties_hs_v2_date_entered_appointmentscheduled" string
+    "properties_hs_v2_date_entered_closedlost" string
+    "properties_hs_v2_date_entered_closedwon" string
+    "properties_hs_v2_date_entered_contractsent" string
+    "properties_hs_v2_date_entered_customclosedwonstage" string
+    "properties_hs_v2_date_entered_decisionmakerboughtin" string
+    "properties_hs_v2_date_entered_presentationscheduled" string
+    "properties_hs_v2_date_entered_qualifiedtobuy" string
+    "properties_hs_v2_date_exited_66894120" string
+    "properties_hs_v2_date_exited_9567448" string
+    "properties_hs_v2_date_exited_9567449" string
+    "properties_hs_v2_date_exited_appointmentscheduled" string
+    "properties_hs_v2_date_exited_closedlost" string
+    "properties_hs_v2_date_exited_closedwon" string
+    "properties_hs_v2_date_exited_contractsent" string
+    "properties_hs_v2_date_exited_customclosedwonstage" string
+    "properties_hs_v2_date_exited_decisionmakerboughtin" string
+    "properties_hs_v2_date_exited_presentationscheduled" string
+    "properties_hs_v2_date_exited_qualifiedtobuy" string
+    "properties_hs_v2_latest_time_in_66894120" number
+    "properties_hs_v2_latest_time_in_9567448" number
+    "properties_hs_v2_latest_time_in_9567449" number
+    "properties_hs_v2_latest_time_in_appointmentscheduled" number
+    "properties_hs_v2_latest_time_in_closedlost" number
+    "properties_hs_v2_latest_time_in_closedwon" number
+    "properties_hs_v2_latest_time_in_contractsent" number
+    "properties_hs_v2_latest_time_in_customclosedwonstage" number
+    "properties_hs_v2_latest_time_in_decisionmakerboughtin" number
+    "properties_hs_v2_latest_time_in_presentationscheduled" number
+    "properties_hs_v2_latest_time_in_qualifiedtobuy" number
+    "properties_hs_was_imported" boolean
+}
+
+Table "deals_archived" {
+    "id" string [pk]
+    "properties" object
+    "properties_amount" number
+    "properties_amount_in_home_currency" number
+    "properties_closed_lost_reason" string
+    "properties_closed_won_reason" string
+    "properties_closedate" string
+    "properties_createdate" string
+    "properties_days_to_close" number
+    "properties_dealname" string
+    "properties_dealstage" string
+    "properties_dealtype" string
+    "properties_description" string
+    "properties_engagements_last_meeting_booked" string
+    "properties_engagements_last_meeting_booked_campaign" string
+    "properties_engagements_last_meeting_booked_medium" string
+    "properties_engagements_last_meeting_booked_source" string
+    "properties_hs_acv" number
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_analytics_source" string
+    "properties_hs_analytics_source_data_1" string
+    "properties_hs_analytics_source_data_2" string
+    "properties_hs_arr" number
+    "properties_hs_closed_amount" number
+    "properties_hs_closed_amount_in_home_currency" number
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_date_entered_9567448" string
+    "properties_hs_date_entered_9567449" string
+    "properties_hs_date_entered_appointmentscheduled" string
+    "properties_hs_date_entered_closedlost" string
+    "properties_hs_date_entered_closedwon" string
+    "properties_hs_date_entered_contractsent" string
+    "properties_hs_date_entered_customclosedwonstage" string
+    "properties_hs_date_entered_decisionmakerboughtin" string
+    "properties_hs_date_entered_presentationscheduled" string
+    "properties_hs_date_entered_qualifiedtobuy" string
+    "properties_hs_date_exited_9567448" string
+    "properties_hs_date_exited_9567449" string
+    "properties_hs_date_exited_appointmentscheduled" string
+    "properties_hs_date_exited_closedlost" string
+    "properties_hs_date_exited_closedwon" string
+    "properties_hs_date_exited_contractsent" string
+    "properties_hs_date_exited_customclosedwonstage" string
+    "properties_hs_date_exited_decisionmakerboughtin" string
+    "properties_hs_date_exited_presentationscheduled" string
+    "properties_hs_date_exited_qualifiedtobuy" string
+    "properties_hs_deal_amount_calculation_preference" string
+    "properties_hs_deal_stage_probability" number
+    "properties_hs_deal_stage_probability_shadow" number
+    "properties_hs_forecast_amount" number
+    "properties_hs_forecast_probability" number
+    "properties_hs_is_closed" boolean
+    "properties_hs_is_closed_won" boolean
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_latest_meeting_activity" string
+    "properties_hs_likelihood_to_close" number
+    "properties_hs_line_item_global_term_hs_discount_percentage" string
+    "properties_hs_line_item_global_term_hs_discount_percentage_enabled" boolean
+    "properties_hs_line_item_global_term_hs_recurring_billing_period" string
+    "properties_hs_line_item_global_term_hs_recurring_billing_period_enabled" boolean
+    "properties_hs_line_item_global_term_hs_recurring_billing_start_date" string
+    "properties_hs_line_item_global_term_hs_recurring_billing_start_date_enabled" boolean
+    "properties_hs_line_item_global_term_recurringbillingfrequency" string
+    "properties_hs_line_item_global_term_recurringbillingfrequency_enabled" boolean
+    "properties_hs_manual_forecast_category" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_mrr" number
+    "properties_hs_next_step" string
+    "properties_hs_num_target_accounts" number
+    "properties_hs_object_id" number
+    "properties_hs_predicted_amount" number
+    "properties_hs_predicted_amount_in_home_currency" number
+    "properties_hs_priority" string
+    "properties_hs_projected_amount" number
+    "properties_hs_projected_amount_in_home_currency" number
+    "properties_hs_sales_email_last_replied" string
+    "properties_hs_tcv" number
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_notes_last_contacted" string
+    "properties_notes_last_updated" string
+    "properties_notes_next_activity_date" string
+    "properties_num_associated_contacts" number
+    "properties_num_contacted_notes" number
+    "properties_num_notes" number
+    "properties_pipeline" string
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "archivedAt" string
+    "companies" array
+    "contacts" array
+    "line_items" array
+    "properties_hs_all_collaborator_owner_ids" string
+    "properties_hs_all_deal_split_owner_ids" string
+    "properties_hs_analytics_latest_source" string
+    "properties_hs_analytics_latest_source_company" string
+    "properties_hs_analytics_latest_source_contact" string
+    "properties_hs_analytics_latest_source_data_1" string
+    "properties_hs_analytics_latest_source_data_1_company" string
+    "properties_hs_analytics_latest_source_data_1_contact" string
+    "properties_hs_analytics_latest_source_data_2" string
+    "properties_hs_analytics_latest_source_data_2_company" string
+    "properties_hs_analytics_latest_source_data_2_contact" string
+    "properties_hs_analytics_latest_source_timestamp" string
+    "properties_hs_analytics_latest_source_timestamp_company" string
+    "properties_hs_analytics_latest_source_timestamp_contact" string
+    "properties_hs_campaign" string
+    "properties_hs_closed_deal_close_date" number
+    "properties_hs_closed_deal_create_date" number
+    "properties_hs_closed_won_count" number
+    "properties_hs_closed_won_date" string
+    "properties_hs_date_entered_66894120" string
+    "properties_hs_date_exited_66894120" string
+    "properties_hs_days_to_close_raw" number
+    "properties_hs_deal_score" number
+    "properties_hs_exchange_rate" number
+    "properties_hs_has_empty_conditional_stage_properties" boolean
+    "properties_hs_is_closed_count" number
+    "properties_hs_is_deal_split" boolean
+    "properties_hs_is_in_first_deal_stage" boolean
+    "properties_hs_is_open_count" number
+    "properties_hs_latest_approval_status" string
+    "properties_hs_latest_approval_status_approval_id" number
+    "properties_hs_next_step_updated_at" string
+    "properties_hs_notes_next_activity_type" string
+    "properties_hs_num_associated_deal_splits" number
+    "properties_hs_num_of_associated_line_items" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_open_deal_create_date" number
+    "properties_hs_pinned_engagement_id" number
+    "properties_hs_read_only" boolean
+    "properties_hs_tag_ids" string
+    "properties_hs_time_in_66894120" number
+    "properties_hs_time_in_9567448" number
+    "properties_hs_time_in_9567449" number
+    "properties_hs_time_in_appointmentscheduled" number
+    "properties_hs_time_in_closedlost" number
+    "properties_hs_time_in_closedwon" number
+    "properties_hs_time_in_contractsent" number
+    "properties_hs_time_in_customclosedwonstage" number
+    "properties_hs_time_in_decisionmakerboughtin" number
+    "properties_hs_time_in_presentationscheduled" number
+    "properties_hs_time_in_qualifiedtobuy" number
+    "properties_hs_v2_cumulative_time_in_66894120" number
+    "properties_hs_v2_cumulative_time_in_9567448" number
+    "properties_hs_v2_cumulative_time_in_9567449" number
+    "properties_hs_v2_cumulative_time_in_appointmentscheduled" number
+    "properties_hs_v2_cumulative_time_in_closedlost" number
+    "properties_hs_v2_cumulative_time_in_closedwon" number
+    "properties_hs_v2_cumulative_time_in_contractsent" number
+    "properties_hs_v2_cumulative_time_in_customclosedwonstage" number
+    "properties_hs_v2_cumulative_time_in_decisionmakerboughtin" number
+    "properties_hs_v2_cumulative_time_in_presentationscheduled" number
+    "properties_hs_v2_cumulative_time_in_qualifiedtobuy" number
+    "properties_hs_v2_date_entered_66894120" string
+    "properties_hs_v2_date_entered_9567448" string
+    "properties_hs_v2_date_entered_9567449" string
+    "properties_hs_v2_date_entered_appointmentscheduled" string
+    "properties_hs_v2_date_entered_closedlost" string
+    "properties_hs_v2_date_entered_closedwon" string
+    "properties_hs_v2_date_entered_contractsent" string
+    "properties_hs_v2_date_entered_customclosedwonstage" string
+    "properties_hs_v2_date_entered_decisionmakerboughtin" string
+    "properties_hs_v2_date_entered_presentationscheduled" string
+    "properties_hs_v2_date_entered_qualifiedtobuy" string
+    "properties_hs_v2_date_exited_66894120" string
+    "properties_hs_v2_date_exited_9567448" string
+    "properties_hs_v2_date_exited_9567449" string
+    "properties_hs_v2_date_exited_appointmentscheduled" string
+    "properties_hs_v2_date_exited_closedlost" string
+    "properties_hs_v2_date_exited_closedwon" string
+    "properties_hs_v2_date_exited_contractsent" string
+    "properties_hs_v2_date_exited_customclosedwonstage" string
+    "properties_hs_v2_date_exited_decisionmakerboughtin" string
+    "properties_hs_v2_date_exited_presentationscheduled" string
+    "properties_hs_v2_date_exited_qualifiedtobuy" string
+    "properties_hs_v2_latest_time_in_66894120" number
+    "properties_hs_v2_latest_time_in_9567448" number
+    "properties_hs_v2_latest_time_in_9567449" number
+    "properties_hs_v2_latest_time_in_appointmentscheduled" number
+    "properties_hs_v2_latest_time_in_closedlost" number
+    "properties_hs_v2_latest_time_in_closedwon" number
+    "properties_hs_v2_latest_time_in_contractsent" number
+    "properties_hs_v2_latest_time_in_customclosedwonstage" number
+    "properties_hs_v2_latest_time_in_decisionmakerboughtin" number
+    "properties_hs_v2_latest_time_in_presentationscheduled" number
+    "properties_hs_v2_latest_time_in_qualifiedtobuy" number
+    "properties_hs_was_imported" boolean
+}
+
+Table "email_events" {
+    "appId" integer
+    "appName" string
+    "bcc" array
+    "cc" array
+    "attempt" integer
+    "bounced" boolean
+    "browser" object
+    "category" string
+    "causedBy" object
+    "created" integer
+    "deviceType" string
+    "dropMessage" string
+    "dropReason" string
+    "duration" integer
+    "emailCampaignId" integer
+    "emailCampaignGroupId" integer
+    "filteredEvent" boolean
+    "from" string
+    "hmid" string
+    "id" string [pk]
+    "ipAddress" string
+    "linkId" integer
+    "location" object
+    "obsoletedBy" object
+    "portalId" integer
+    "portalSubscriptionStatus" string
+    "recipient" string
+    "referer" string
+    "replyTo" array
+    "requestedBy" string
+    "requestedByUserId" integer
+    "response" string
+    "sentBy" object
+    "smtpId" string
+    "source" string
+    "sourceId" string
+    "subscriptions" array
+    "status" string
+    "subject" string
+    "type" string
+    "url" string
+    "userAgent" string
+}
+
+Table "email_subscriptions" {
+    "active" boolean
+    "portalId" integer
+    "description" string
+    "id" integer [pk]
+    "name" string
+    "order" integer
+    "businessUnitId" integer
+    "internal" boolean
+    "internalName" string
+    "category" string
+    "channel" string
+}
+
+Table "engagements" {
+    "id" integer [pk]
+    "uid" string
+    "teamId" integer
+    "portalId" integer
+    "queueMembershipIds" array
+    "scheduledTasks" array
+    "active" boolean
+    "createdAt" integer
+    "createdBy" integer
+    "modifiedBy" integer
+    "lastUpdated" integer
+    "ownerId" integer
+    "type" string
+    "timestamp" integer
+    "bodyPreview" string
+    "bodyPreviewHtml" string
+    "bodyPreviewIsTruncated" boolean
+    "allAccessibleTeamIds" array
+    "activityType" string
+    "gdprDeleted" boolean
+    "source" string
+    "sourceId" string
+    "associations" object
+    "associations_contactIds" array
+    "associations_contentIds" array
+    "associations_companyIds" array
+    "associations_dealIds" array
+    "associations_marketingEventIds" array
+    "associations_ownerIds" array
+    "associations_quoteIds" array
+    "associations_workflowIds" array
+    "associations_ticketIds" array
+    "attachments" array
+    "metadata" object
+    "metadata_attendeeOwnerIds" array
+    "metadata_calendarEventHash" string
+    "metadata_createdFromLinkId" integer
+    "metadata_meetingChangeId" string
+    "ownerIdsBcc" array
+    "ownerIdsFrom" array
+    "ownerIdsTo" array
+    "pendingInlineImageIds" array
+    "validationSkipped" array
+    "ownerIdsCc" array
+    "metadata_guestEmails" array
+    "metadata_iCalUid" string
+    "metadata_includeDescriptionInReminder" boolean
+    "metadata_internalMeetingNotes" string
+    "metadata_location" string
+    "metadata_locationType" string
+    "metadata_meetingOutcome" string
+    "metadata_timezone" string
+    "metadata_preMeetingProspectReminders" array
+    "metadata_body" string
+    "metadata_from" object
+    "metadata_sender" object
+    "metadata_to" array
+    "metadata_cc" array
+    "metadata_bounceErrorDetail" object
+    "metadata_emailSendEventId" object
+    "metadata_ownerIdsBcc" array
+    "metadata_ownerIdsCc" array
+    "metadata_ownerIdsFrom" array
+    "metadata_ownerIdsTo" array
+    "metadata_pendingInlineImageIds" array
+    "metadata_validationSkipped" array
+    "metadata_bcc" array
+    "metadata_subject" string
+    "metadata_html" string
+    "metadata_text" string
+    "metadata_status" string
+    "metadata_forObjectType" string
+    "metadata_startTime" integer
+    "metadata_endTime" integer
+    "metadata_title" string
+    "metadata_toNumber" string
+    "metadata_fromNumber" string
+    "metadata_externalId" string
+    "metadata_durationMilliseconds" integer
+    "metadata_externalAccountId" string
+    "metadata_recordingUrl" string
+    "metadata_disposition" string
+    "metadata_completionDate" integer
+    "metadata_taskType" string
+    "metadata_reminders" array
+    "metadata_threadId" string
+    "metadata_messageId" string
+    "metadata_loggedFrom" string
+    "metadata_attachedVideoOpened" boolean
+    "metadata_attachedVideoWatched" boolean
+    "metadata_trackerKey" string
+    "metadata_sendDefaultReminder" boolean
+    "metadata_source" string
+    "metadata_unknownVisitorConversation" boolean
+    "metadata_facsimileSendId" string
+    "metadata_sentVia" string
+    "metadata_sequenceStepOrder" integer
+    "metadata_externalUrl" string
+    "metadata_postSendStatus" string
+    "metadata_errorMessage" string
+    "metadata_recipientDropReasons" string
+    "metadata_calleeObjectId" integer
+    "metadata_calleeObjectType" string
+    "metadata_mediaProcessingStatus" string
+    "metadata_sourceId" string
+    "metadata_priority" string
+    "metadata_isAllDay" boolean
+}
+
+Table "engagements_calls" {
+    "id" string [pk]
+    "properties" object
+    "properties_hs_activity_type" string
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_at_mentioned_owner_ids" string
+    "properties_hs_attachment_ids" string
+    "properties_hs_body_preview" string
+    "properties_hs_body_preview_html" string
+    "properties_hs_body_preview_is_truncated" boolean
+    "properties_hs_call_app_id" number
+    "properties_hs_call_authed_url_provider" string
+    "properties_hs_call_body" string
+    "properties_hs_call_callee_object_id" number
+    "properties_hs_call_callee_object_type" string
+    "properties_hs_call_disposition" string
+    "properties_hs_call_duration" number
+    "properties_hs_call_external_account_id" string
+    "properties_hs_call_external_id" string
+    "properties_hs_call_from_number" string
+    "properties_hs_call_has_transcript" boolean
+    "properties_hs_call_recording_url" string
+    "properties_hs_call_source" string
+    "properties_hs_call_status" string
+    "properties_hs_call_title" string
+    "properties_hs_call_to_number" string
+    "properties_hs_call_transcription_id" number
+    "properties_hs_call_video_recording_url" string
+    "properties_hs_call_zoom_meeting_uuid" string
+    "properties_hs_calls_service_call_id" number
+    "properties_hs_created_by" number
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_engagement_source" string
+    "properties_hs_engagement_source_id" string
+    "properties_hs_follow_up_action" string
+    "properties_hs_gdpr_deleted" boolean
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_modified_by" number
+    "properties_hs_object_id" number
+    "properties_hs_product_name" string
+    "properties_hs_queue_membership_ids" string
+    "properties_hs_timestamp" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_unique_id" string
+    "properties_hs_unknown_visitor_conversation" boolean
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_all_accessible_team_ids" string
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "contacts" array
+    "deals" array
+    "companies" array
+    "tickets" array
+    "properties_hs_call_deal_stage_during_call" string
+    "properties_hs_call_direction" string
+    "properties_hs_call_from_number_nickname" string
+    "properties_hs_call_has_voicemail" string
+    "properties_hs_call_ms_teams_payload" string
+    "properties_hs_call_primary_deal" string
+    "properties_hs_call_summary" string
+    "properties_hs_call_summary_execution_id" string
+    "properties_hs_call_to_number_nickname" string
+    "properties_hs_call_transcript_audio_num_channels" number
+    "properties_hs_call_transcript_tracked_terms" string
+    "properties_hs_call_video_meeting_type" string
+    "properties_hs_connected_count" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_read_only" boolean
+    "properties_hs_shared_team_ids" string
+    "properties_hs_shared_user_ids" string
+    "properties_hs_voicemail_count" number
+    "properties_hs_was_imported" boolean
+}
+
+Table "engagements_emails" {
+    "id" string [pk]
+    "properties" object
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_at_mentioned_owner_ids" string
+    "properties_hs_attachment_ids" string
+    "properties_hs_body_preview" string
+    "properties_hs_body_preview_html" string
+    "properties_hs_body_preview_is_truncated" boolean
+    "properties_hs_created_by" string
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_direction_and_unique_id" string
+    "properties_hs_email_attached_video_id" string
+    "properties_hs_email_attached_video_name" string
+    "properties_hs_email_attached_video_opened" boolean
+    "properties_hs_email_attached_video_watched" boolean
+    "properties_hs_email_bcc_email" string
+    "properties_hs_email_bcc_firstname" string
+    "properties_hs_email_bcc_lastname" string
+    "properties_hs_email_bcc_raw" string
+    "properties_hs_email_cc_email" string
+    "properties_hs_email_cc_firstname" string
+    "properties_hs_email_cc_lastname" string
+    "properties_hs_email_cc_raw" string
+    "properties_hs_email_direction" string
+    "properties_hs_email_encoded_email_associations_request" string
+    "properties_hs_email_error_message" string
+    "properties_hs_email_facsimile_send_id" string
+    "properties_hs_email_from_email" string
+    "properties_hs_email_from_firstname" string
+    "properties_hs_email_from_lastname" string
+    "properties_hs_email_from_raw" string
+    "properties_hs_email_headers" string
+    "properties_hs_email_html" string
+    "properties_hs_email_logged_from" string
+    "properties_hs_email_media_processing_status" string
+    "properties_hs_email_member_of_forwarded_subthread" boolean
+    "properties_hs_email_message_id" string
+    "properties_hs_email_migrated_via_portal_data_migration" string
+    "properties_hs_email_pending_inline_image_ids" string
+    "properties_hs_email_post_send_status" string
+    "properties_hs_email_recipient_drop_reasons" string
+    "properties_hs_email_send_event_id" string
+    "properties_hs_email_send_event_id_created" string
+    "properties_hs_email_sender_email" string
+    "properties_hs_email_sender_firstname" string
+    "properties_hs_email_sender_lastname" string
+    "properties_hs_email_sender_raw" string
+    "properties_hs_email_sent_via" string
+    "properties_hs_email_status" string
+    "properties_hs_email_subject" string
+    "properties_hs_email_text" string
+    "properties_hs_email_thread_id" string
+    "properties_hs_email_to_email" string
+    "properties_hs_email_to_firstname" string
+    "properties_hs_email_to_lastname" string
+    "properties_hs_email_to_raw" string
+    "properties_hs_email_tracker_key" string
+    "properties_hs_email_validation_skipped" string
+    "properties_hs_engagement_source" string
+    "properties_hs_engagement_source_id" string
+    "properties_hs_follow_up_action" string
+    "properties_hs_gdpr_deleted" boolean
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_modified_by" string
+    "properties_hs_object_id" number
+    "properties_hs_product_name" string
+    "properties_hs_queue_membership_ids" string
+    "properties_hs_timestamp" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_unique_id" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_all_accessible_team_ids" string
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "contacts" array
+    "deals" array
+    "companies" array
+    "tickets" array
+    "properties_hs_email_bounce_error_detail_message" string
+    "properties_hs_email_bounce_error_detail_status_code" number
+    "properties_hs_email_click_count" number
+    "properties_hs_email_has_inline_images_stripped" boolean
+    "properties_hs_email_ms_teams_payload" string
+    "properties_hs_email_open_count" number
+    "properties_hs_email_reply_count" number
+    "properties_hs_email_sent_count" number
+    "properties_hs_email_stripped_attachment_count" number
+    "properties_hs_email_thread_summary" string
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_owner_ids_bcc" string
+    "properties_hs_owner_ids_cc" string
+    "properties_hs_owner_ids_from" string
+    "properties_hs_owner_ids_to" string
+    "properties_hs_read_only" boolean
+    "properties_hs_scs_association_status" string
+    "properties_hs_scs_audit_id" string
+    "properties_hs_shared_team_ids" string
+    "properties_hs_shared_user_ids" string
+    "properties_hs_was_imported" boolean
+}
+
+Table "engagements_meetings" {
+    "id" string [pk]
+    "properties" object
+    "properties_hs_activity_type" string
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_at_mentioned_owner_ids" string
+    "properties_hs_attachment_ids" string
+    "properties_hs_attendee_owner_ids" string
+    "properties_hs_body_preview" string
+    "properties_hs_body_preview_html" string
+    "properties_hs_body_preview_is_truncated" boolean
+    "properties_hs_created_by" number
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_engagement_source" string
+    "properties_hs_engagement_source_id" string
+    "properties_hs_follow_up_action" string
+    "properties_hs_gdpr_deleted" boolean
+    "properties_hs_i_cal_uid" string
+    "properties_hs_internal_meeting_notes" string
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_meeting_body" string
+    "properties_hs_meeting_calendar_event_hash" string
+    "properties_hs_meeting_change_id" string
+    "properties_hs_meeting_created_from_link_id" string
+    "properties_hs_meeting_end_time" string
+    "properties_hs_meeting_external_url" string
+    "properties_hs_meeting_location" string
+    "properties_hs_meeting_location_type" string
+    "properties_hs_meeting_outcome" string
+    "properties_hs_meeting_pre_meeting_prospect_reminders" string
+    "properties_hs_meeting_source" string
+    "properties_hs_meeting_source_id" string
+    "properties_hs_meeting_start_time" string
+    "properties_hs_meeting_title" string
+    "properties_hs_meeting_web_conference_meeting_id" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_modified_by" number
+    "properties_hs_object_id" number
+    "properties_hs_product_name" string
+    "properties_hs_queue_membership_ids" string
+    "properties_hs_scheduled_tasks" string
+    "properties_hs_timestamp" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_unique_id" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_all_accessible_team_ids" string
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "contacts" array
+    "deals" array
+    "companies" array
+    "tickets" array
+    "properties_hs_contact_first_outreach_date" string
+    "properties_hs_follow_up_tasks_remaining" number
+    "properties_hs_guest_emails" string
+    "properties_hs_include_description_in_reminder" boolean
+    "properties_hs_meeting_ms_teams_payload" string
+    "properties_hs_meeting_payments_session_id" string
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_outcome_canceled_count" number
+    "properties_hs_outcome_completed_count" number
+    "properties_hs_outcome_no_show_count" number
+    "properties_hs_outcome_rescheduled_count" number
+    "properties_hs_outcome_scheduled_count" number
+    "properties_hs_read_only" boolean
+    "properties_hs_roster_object_coordinates" string
+    "properties_hs_shared_team_ids" string
+    "properties_hs_shared_user_ids" string
+    "properties_hs_time_to_book_meeting_from_first_contact" number
+    "properties_hs_timezone" string
+    "properties_hs_video_conference_url" string
+    "properties_hs_was_imported" boolean
+}
+
+Table "engagements_notes" {
+    "id" string [pk]
+    "properties" object
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_at_mentioned_owner_ids" string
+    "properties_hs_attachment_ids" string
+    "properties_hs_body_preview" string
+    "properties_hs_body_preview_html" string
+    "properties_hs_body_preview_is_truncated" boolean
+    "properties_hs_created_by" number
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_engagement_source" string
+    "properties_hs_engagement_source_id" string
+    "properties_hs_follow_up_action" string
+    "properties_hs_gdpr_deleted" boolean
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_modified_by" number
+    "properties_hs_note_body" string
+    "properties_hs_object_id" number
+    "properties_hs_product_name" string
+    "properties_hs_queue_membership_ids" string
+    "properties_hs_timestamp" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_unique_id" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_all_accessible_team_ids" string
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "contacts" array
+    "deals" array
+    "companies" array
+    "tickets" array
+    "properties_hs_note_ms_teams_payload" string
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_read_only" boolean
+    "properties_hs_shared_team_ids" string
+    "properties_hs_shared_user_ids" string
+    "properties_hs_was_imported" boolean
+}
+
+Table "engagements_tasks" {
+    "id" string [pk]
+    "properties" object
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_at_mentioned_owner_ids" string
+    "properties_hs_attachment_ids" string
+    "properties_hs_body_preview" string
+    "properties_hs_body_preview_html" string
+    "properties_hs_body_preview_is_truncated" boolean
+    "properties_hs_calendar_event_id" string
+    "properties_hs_created_by" number
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_engagement_source" string
+    "properties_hs_engagement_source_id" string
+    "properties_hs_follow_up_action" string
+    "properties_hs_gdpr_deleted" boolean
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_modified_by" number
+    "properties_hs_msteams_message_id" string
+    "properties_hs_num_associated_companies" number
+    "properties_hs_num_associated_contacts" number
+    "properties_hs_num_associated_deals" number
+    "properties_hs_num_associated_queue_objects" number
+    "properties_hs_num_associated_tickets" number
+    "properties_hs_object_id" number
+    "properties_hs_product_name" string
+    "properties_hs_queue_membership_ids" string
+    "properties_hs_scheduled_tasks" string
+    "properties_hs_task_body" string
+    "properties_hs_task_completion_date" string
+    "properties_hs_task_contact_timezone" string
+    "properties_hs_task_for_object_type" string
+    "properties_hs_task_is_all_day" boolean
+    "properties_hs_task_last_contact_outreach" string
+    "properties_hs_task_last_sales_activity_timestamp" string
+    "properties_hs_task_priority" string
+    "properties_hs_task_probability_to_complete" number
+    "properties_hs_task_relative_reminders" string
+    "properties_hs_task_reminders" string
+    "properties_hs_task_repeat_interval" string
+    "properties_hs_task_send_default_reminder" boolean
+    "properties_hs_task_sequence_enrollment_active" boolean
+    "properties_hs_task_sequence_step_enrollment_id" string
+    "properties_hs_task_sequence_step_order" number
+    "properties_hs_task_status" string
+    "properties_hs_task_subject" string
+    "properties_hs_task_template_id" number
+    "properties_hs_task_type" string
+    "properties_hs_timestamp" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_unique_id" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_all_accessible_team_ids" string
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "contacts" array
+    "deals" array
+    "companies" array
+    "tickets" array
+    "properties_hs_date_entered_60b5c368_04c4_4d32_9b4a_457e159f49b7_13292096" string
+    "properties_hs_date_entered_61bafb31_e7fa_46ed_aaa9_1322438d6e67_1866552342" string
+    "properties_hs_date_entered_af0e6a5c_2ea3_4c72_b69f_7c6cb3fdb591_1652950531" string
+    "properties_hs_date_entered_dd5826e4_c976_4654_a527_b59ada542e52_2144133616" string
+    "properties_hs_date_entered_fc8148fb_3a2d_4b59_834e_69b7859347cb_1813133675" string
+    "properties_hs_date_exited_60b5c368_04c4_4d32_9b4a_457e159f49b7_13292096" string
+    "properties_hs_date_exited_61bafb31_e7fa_46ed_aaa9_1322438d6e67_1866552342" string
+    "properties_hs_date_exited_af0e6a5c_2ea3_4c72_b69f_7c6cb3fdb591_1652950531" string
+    "properties_hs_date_exited_dd5826e4_c976_4654_a527_b59ada542e52_2144133616" string
+    "properties_hs_date_exited_fc8148fb_3a2d_4b59_834e_69b7859347cb_1813133675" string
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_read_only" boolean
+    "properties_hs_repeat_status" string
+    "properties_hs_shared_team_ids" string
+    "properties_hs_shared_user_ids" string
+    "properties_hs_task_completion_count" number
+    "properties_hs_task_family" string
+    "properties_hs_task_is_completed" number
+    "properties_hs_task_is_completed_call" number
+    "properties_hs_task_is_completed_email" number
+    "properties_hs_task_is_completed_linked_in" number
+    "properties_hs_task_is_completed_sequence" number
+    "properties_hs_task_is_overdue" boolean
+    "properties_hs_task_is_past_due_date" boolean
+    "properties_hs_task_missed_due_date" boolean
+    "properties_hs_task_missed_due_date_count" number
+    "properties_hs_task_ms_teams_payload" string
+    "properties_hs_time_in_60b5c368_04c4_4d32_9b4a_457e159f49b7_13292096" number
+    "properties_hs_time_in_61bafb31_e7fa_46ed_aaa9_1322438d6e67_1866552342" number
+    "properties_hs_time_in_af0e6a5c_2ea3_4c72_b69f_7c6cb3fdb591_1652950531" number
+    "properties_hs_time_in_dd5826e4_c976_4654_a527_b59ada542e52_2144133616" number
+    "properties_hs_time_in_fc8148fb_3a2d_4b59_834e_69b7859347cb_1813133675" number
+    "properties_hs_was_imported" boolean
+}
+
+Table "forms" {
+    "id" string [pk]
+    "name" string
+    "formType" string
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "deletedAt" string
+    "fieldGroups" array
+    "configuration" object
+    "displayOptions" object
+    "legalConsentOptions" object
+    "properties" object
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_cloneable" string
+    "properties_hs_created_at" string
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_deletable" string
+    "properties_hs_editable" string
+    "properties_hs_embed_version" string
+    "properties_hs_folder_id" number
+    "properties_hs_form_id" string
+    "properties_hs_form_interactions" number
+    "properties_hs_form_submissions" number
+    "properties_hs_form_submissions_per_form_interaction" number
+    "properties_hs_form_submissions_per_form_view" number
+    "properties_hs_form_submissions_per_page_view" number
+    "properties_hs_form_submissions_per_pop_up_cta_view" number
+    "properties_hs_form_type" string
+    "properties_hs_form_views" number
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_marketing_campaign_guid" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_name" string
+    "properties_hs_object_id" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_page_views" number
+    "properties_hs_pop_up_cta_views" number
+    "properties_hs_read_only" boolean
+    "properties_hs_shared_team_ids" string
+    "properties_hs_shared_user_ids" string
+    "properties_hs_spam_submissions" number
+    "properties_hs_status" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_at" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hs_was_imported" boolean
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+}
+
+Table "form_submissions" {
+    "submittedAt" integer
+    "updatedAt" integer
+    "values" array
+    "pageUrl" string
+    "formId" string
+}
+
+Table "goals" {
+    "id" string [pk]
+    "properties" object
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_start_datetime" string
+    "properties_hs_end_datetime" string
+    "properties_hs_goal_name" string
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_kpi_value_last_calculated_at" string
+    "properties_hs_object_id" number
+    "properties_hs_target_amount" number
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "properties_hs__migration_soft_delete" string
+    "properties_hs_ad_account_asset_ids" string
+    "properties_hs_ad_campaign_asset_ids" string
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_assignee_team_id" number
+    "properties_hs_assignee_user_id" number
+    "properties_hs_contact_lifecycle_stage" string
+    "properties_hs_currency" string
+    "properties_hs_deal_pipeline_ids" string
+    "properties_hs_edit_updates_notification_frequency" string
+    "properties_hs_end_date" string
+    "properties_hs_fiscal_year_offset" number
+    "properties_hs_forecast_type_id" number
+    "properties_hs_goal_definition_key" string
+    "properties_hs_goal_definition_key_with_team" string
+    "properties_hs_goal_definition_key_with_user" string
+    "properties_hs_goal_target_group_id" number
+    "properties_hs_goal_type" string
+    "properties_hs_group_correlation_uuid" string
+    "properties_hs_is_forecastable" string
+    "properties_hs_is_legacy" string
+    "properties_hs_kpi_display_unit" string
+    "properties_hs_kpi_filter_groups" string
+    "properties_hs_kpi_filter_groups_for_key_grouping" string
+    "properties_hs_kpi_filter_groups_for_key_team_grouping" string
+    "properties_hs_kpi_is_team_rollup" boolean
+    "properties_hs_kpi_metric_type" string
+    "properties_hs_kpi_object_type" string
+    "properties_hs_kpi_object_type_id" string
+    "properties_hs_kpi_progress_percent" number
+    "properties_hs_kpi_property_name" string
+    "properties_hs_kpi_single_object_custom_goal_type_name" string
+    "properties_hs_kpi_time_period_property" string
+    "properties_hs_kpi_tracking_method" string
+    "properties_hs_kpi_unit_type" string
+    "properties_hs_kpi_value" number
+    "properties_hs_kpi_value_calculated_at" number
+    "properties_hs_legacy_active" string
+    "properties_hs_legacy_created_at" number
+    "properties_hs_legacy_created_by" number
+    "properties_hs_legacy_quarterly_target_composite_id" string
+    "properties_hs_legacy_sql_id" number
+    "properties_hs_legacy_unique_sql_id" number
+    "properties_hs_legacy_updated_at" number
+    "properties_hs_legacy_updated_by" number
+    "properties_hs_marketing_campaign_object_ids" number
+    "properties_hs_merged_object_ids" string
+    "properties_hs_migration_soft_delete" string
+    "properties_hs_milestone" string
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_outcome" string
+    "properties_hs_owner_ids_of_all_owners" string
+    "properties_hs_pipelines" string
+    "properties_hs_progress_updates_notification_frequency" string
+    "properties_hs_read_only" boolean
+    "properties_hs_shared_team_ids" string
+    "properties_hs_shared_user_ids" string
+    "properties_hs_should_notify_on_achieved" string
+    "properties_hs_should_notify_on_edit_updates" string
+    "properties_hs_should_notify_on_exceeded" string
+    "properties_hs_should_notify_on_kickoff" string
+    "properties_hs_should_notify_on_missed" string
+    "properties_hs_should_notify_on_progress_updates" string
+    "properties_hs_should_recalculate" string
+    "properties_hs_start_date" string
+    "properties_hs_static_kpi_filter_groups" string
+    "properties_hs_status" string
+    "properties_hs_status_display_order" number
+    "properties_hs_target_amount_in_home_currency" number
+    "properties_hs_team_id" number
+    "properties_hs_template_id" number
+    "properties_hs_ticket_pipeline_ids" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hs_was_imported" boolean
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+}
+
+Table "line_items" {
+    "id" string [pk]
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "properties" object
+    "properties_amount" number
+    "properties_createdate" string
+    "properties_description" string
+    "properties_discount" number
+    "properties_hs_acv" number
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_allow_buyer_selected_quantity" string
+    "properties_hs_arr" number
+    "properties_hs_billing_period_end_date" string
+    "properties_hs_billing_period_start_date" string
+    "properties_hs_billing_start_delay_days" number
+    "properties_hs_billing_start_delay_months" number
+    "properties_hs_billing_start_delay_type" string
+    "properties_hs_buyer_selected_quantity_max" number
+    "properties_hs_buyer_selected_quantity_min" number
+    "properties_hs_cost_of_goods_sold" number
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_discount_percentage" number
+    "properties_hs_external_id" number
+    "properties_hs_images" string
+    "properties_hs_is_editable_price" boolean
+    "properties_hs_is_optional" boolean
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_line_item_currency_code" string
+    "properties_hs_margin" number
+    "properties_hs_margin_acv" number
+    "properties_hs_margin_arr" number
+    "properties_hs_margin_mrr" number
+    "properties_hs_margin_tcv" number
+    "properties_hs_merged_object_ids" string
+    "properties_hs_mrr" number
+    "properties_hs_object_id" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_position_on_quote" number
+    "properties_hs_post_tax_amount" number
+    "properties_hs_pre_discount_amount" number
+    "properties_hs_product_id" number
+    "properties_hs_product_type" string
+    "properties_hs_read_only" boolean
+    "properties_hs_recurring_billing_end_date" string
+    "properties_hs_recurring_billing_number_of_payments" number
+    "properties_hs_recurring_billing_period" string
+    "properties_hs_recurring_billing_start_date" string
+    "properties_hs_recurring_billing_terms" string
+    "properties_hs_shared_team_ids" string
+    "properties_hs_shared_user_ids" string
+    "properties_hs_sku" string
+    "properties_hs_sync_amount" number
+    "properties_hs_tax_label" string
+    "properties_hs_tax_rate" number
+    "properties_hs_tax_rate_group_id" string
+    "properties_hs_tcv" number
+    "properties_hs_term_in_months" number
+    "properties_hs_total_discount" number
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_url" string
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hs_variant_id" number
+    "properties_hs_was_imported" boolean
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_name" string
+    "properties_price" number
+    "properties_quantity" number
+    "properties_recurringbillingfrequency" string
+    "properties_tax" number
+    "properties_test" string
+    "properties_test_product_price" string
+}
+
+Table "marketing_emails" {
+    "id" integer [pk]
+    "ab" boolean
+    "abHoursToWait" integer
+    "abSampleSizeDefault" string
+    "abSamplingDefault" string
+    "abStatus" string
+    "abSuccessMetric" string
+    "abTestPercentage" integer
+    "abVariation" boolean
+    "absoluteUrl" string
+    "aifeatures" object
+    "allEmailCampaignIds" array
+    "analyticsPageId" string
+    "analyticsPageType" string
+    "archived" boolean
+    "authorAt" integer
+    "authorName" string
+    "authorUserId" integer
+    "blogEmailType" string
+    "campaign" string
+    "campaignName" string
+    "canSpamSettingsId" integer
+    "categoryId" integer
+    "clonedFrom" integer
+    "contentTypeCategory" integer
+    "createPage" boolean
+    "created" integer
+    "createdById" integer
+    "currentState" string
+    "currentlyPublished" boolean
+    "customReplyTo" string
+    "customReplyToEnabled" boolean
+    "domain" string
+    "emailBody" string
+    "emailNote" string
+    "emailTemplateMode" string
+    "emailType" string
+    "emailbodyPlaintext" string
+    "feedbackEmailCategory" string
+    "feedbackSurveyId" integer
+    "folderId" integer
+    "freezeDate" integer
+    "fromName" string
+    "htmlTitle" string
+    "isGraymailSuppressionEnabled" boolean
+    "isLocalTimezoneSend" boolean
+    "isPublished" boolean
+    "isRecipientFatigueSuppressionEnabled" boolean
+    "leadFlowId" integer
+    "liveDomain" string
+    "mailingListsExcluded" array
+    "mailingListsIncluded" array
+    "maxRssEntries" integer
+    "metaDescription" string
+    "name" string
+    "pageExpiryEnabled" boolean
+    "pageRedirected" boolean
+    "portalId" integer
+    "previewKey" string
+    "primaryEmailCampaignId" integer
+    "processingStatus" string
+    "publishDate" integer
+    "publishedById" integer
+    "publishedByName" string
+    "publishImmediately" boolean
+    "publishedUrl" string
+    "replyTo" string
+    "resolvedDomain" string
+    "rootMicId" string
+    "selected" integer
+    "slug" string
+    "smartEmailFields" object
+    "state" string
+    "stats" object
+    "subcategory" string
+    "subject" string
+    "subscription" integer
+    "subscriptionName" string
+    "templatePath" string
+    "transactional" boolean
+    "unpublishedAt" integer
+    "updated" integer
+    "updatedById" integer
+    "url" string
+    "useRssHeadlineAsSubject" boolean
+    "vidsExcluded" array
+    "vidsIncluded" array
+    "publishedByEmail" string
+    "sections" object
+    "author" string
+    "isCreatedFomSandboxSync" boolean
+    "rssEmailUrl" string
+    "teamPerms" array
+    "securityState" string
+    "isInstanceLayoutPage" boolean
+    "audienceAccess" string
+    "campaignUtm" string
+    "contentAccessRuleTypes" array
+    "pastMabExperimentIds" array
+    "rssEmailClickThroughText" string
+    "rssEmailImageMaxWidth" integer
+    "flexAreas" object
+    "emailCampaignGroupId" integer
+    "layoutSections" object
+    "blogRssSettings" string
+    "archivedInDashboard" boolean
+    "publishedAt" integer
+    "lastEditUpdateId" integer
+    "lastEditSessionId" integer
+    "styleSettings" object
+    "visibleToAll" boolean
+    "language" string
+    "rssEmailByText" string
+    "rssEmailCommentText" string
+    "hasContentAccessRules" boolean
+    "archivedAt" integer
+    "translations" object
+    "userPerms" array
+    "contentAccessRuleIds" array
+    "rssEmailEntryTemplateEnabled" boolean
+    "mailingIlsListsExcluded" array
+    "mailingIlsListsIncluded" array
+}
+
+Table "owners" {
+    "id" string [pk]
+    "email" string
+    "firstName" string
+    "lastName" string
+    "userId" integer
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "teams" array
+}
+
+Table "owners_archived" {
+    "id" string [pk]
+    "email" string
+    "firstName" string
+    "lastName" string
+    "userId" integer
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "teams" array
+}
+
+Table "products" {
+    "id" string [pk]
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "properties" object
+    "properties_amount" number
+    "properties_createdate" string
+    "properties_description" string
+    "properties_discount" number
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_assigned_business_unit_ids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_avatar_filemanager_key" string
+    "properties_hs_cost_of_goods_sold" number
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_discount_percentage" number
+    "properties_hs_folder" string
+    "properties_hs_folder_id" number
+    "properties_hs_folder_name" string
+    "properties_hs_images" string
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_object_id" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_product_type" string
+    "properties_hs_read_only" boolean
+    "properties_hs_recurring_billing_period" string
+    "properties_hs_recurring_billing_start_date" string
+    "properties_hs_shared_team_ids" string
+    "properties_hs_shared_user_ids" string
+    "properties_hs_sku" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_url" string
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hs_was_imported" boolean
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_name" string
+    "properties_price" number
+    "properties_quantity" number
+    "properties_recurringbillingfrequency" string
+    "properties_tax" number
+    "properties_test" string
+    "properties_test_product_price" string
+}
+
+Table "contacts_property_history" {
+    "value" string
+    "source-type" string
+    "source-id" string
+    "source-label" string
+    "updated-by-user-id" integer
+    "timestamp" integer
+    "selected" boolean
+    "is-contact" boolean
+    "property" string
+    "vid" integer
+    "canonical-vid" integer
+    "portal-id" integer
+    "source-vids" array
+    "properties" object
+    "properties_address" string
+    "properties_annualrevenue" string
+    "properties_associatedcompanyid" number
+    "properties_associatedcompanylastupdated" number
+    "properties_city" string
+    "properties_closedate" string
+    "properties_company" string
+    "properties_company_size" string
+    "properties_country" string
+    "properties_createdate" string
+    "properties_currentlyinworkflow" string
+    "properties_date_of_birth" string
+    "properties_days_to_close" number
+    "properties_degree" string
+    "properties_email" string
+    "properties_engagements_last_meeting_booked" string
+    "properties_engagements_last_meeting_booked_campaign" string
+    "properties_engagements_last_meeting_booked_medium" string
+    "properties_engagements_last_meeting_booked_source" string
+    "properties_fax" string
+    "properties_field_of_study" string
+    "properties_first_conversion_date" string
+    "properties_first_conversion_event_name" string
+    "properties_first_deal_created_date" string
+    "properties_firstname" string
+    "properties_gender" string
+    "properties_graduation_date" string
+    "properties_hs_additional_emails" string
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_contact_vids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_analytics_average_page_views" number
+    "properties_hs_analytics_first_referrer" string
+    "properties_hs_analytics_first_timestamp" string
+    "properties_hs_analytics_first_touch_converting_campaign" string
+    "properties_hs_analytics_first_url" string
+    "properties_hs_analytics_first_visit_timestamp" string
+    "properties_hs_analytics_last_referrer" string
+    "properties_hs_analytics_last_timestamp" string
+    "properties_hs_analytics_last_touch_converting_campaign" string
+    "properties_hs_analytics_last_url" string
+    "properties_hs_analytics_last_visit_timestamp" string
+    "properties_hs_analytics_num_event_completions" number
+    "properties_hs_analytics_num_page_views" number
+    "properties_hs_analytics_num_visits" number
+    "properties_hs_analytics_revenue" number
+    "properties_hs_analytics_source" string
+    "properties_hs_analytics_source_data_1" string
+    "properties_hs_analytics_source_data_2" string
+    "properties_hs_associated_target_accounts" number
+    "properties_hs_avatar_filemanager_key" string
+    "properties_hs_buying_role" string
+    "properties_hs_calculated_form_submissions" string
+    "properties_hs_calculated_merged_vids" string
+    "properties_hs_calculated_mobile_number" string
+    "properties_hs_calculated_phone_number" string
+    "properties_hs_calculated_phone_number_area_code" string
+    "properties_hs_calculated_phone_number_country_code" string
+    "properties_hs_calculated_phone_number_region_code" string
+    "properties_hs_clicked_linkedin_ad" string
+    "properties_hs_content_membership_email" string
+    "properties_hs_content_membership_email_confirmed" boolean
+    "properties_hs_content_membership_follow_up_enqueued_at" string
+    "properties_hs_content_membership_notes" string
+    "properties_hs_content_membership_registered_at" string
+    "properties_hs_content_membership_registration_domain_sent_to" string
+    "properties_hs_content_membership_registration_email_sent_at" string
+    "properties_hs_content_membership_status" string
+    "properties_hs_conversations_visitor_email" string
+    "properties_hs_count_is_unworked" number
+    "properties_hs_count_is_worked" number
+    "properties_hs_created_by_conversations" boolean
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_date_entered_customer" string
+    "properties_hs_date_entered_evangelist" string
+    "properties_hs_date_entered_lead" string
+    "properties_hs_date_entered_marketingqualifiedlead" string
+    "properties_hs_date_entered_opportunity" string
+    "properties_hs_date_entered_other" string
+    "properties_hs_date_entered_salesqualifiedlead" string
+    "properties_hs_date_entered_subscriber" string
+    "properties_hs_date_exited_customer" string
+    "properties_hs_date_exited_evangelist" string
+    "properties_hs_date_exited_lead" string
+    "properties_hs_date_exited_marketingqualifiedlead" string
+    "properties_hs_date_exited_opportunity" string
+    "properties_hs_date_exited_other" string
+    "properties_hs_date_exited_salesqualifiedlead" string
+    "properties_hs_date_exited_subscriber" string
+    "properties_hs_document_last_revisited" string
+    "properties_hs_email_bad_address" boolean
+    "properties_hs_email_bounce" number
+    "properties_hs_email_click" number
+    "properties_hs_email_customer_quarantined_reason" string
+    "properties_hs_email_delivered" number
+    "properties_hs_email_domain" string
+    "properties_hs_email_first_click_date" string
+    "properties_hs_email_first_open_date" string
+    "properties_hs_email_first_reply_date" string
+    "properties_hs_email_first_send_date" string
+    "properties_hs_email_hard_bounce_reason" string
+    "properties_hs_email_hard_bounce_reason_enum" string
+    "properties_hs_email_is_ineligible" boolean
+    "properties_hs_email_last_click_date" string
+    "properties_hs_email_last_email_name" string
+    "properties_hs_email_last_open_date" string
+    "properties_hs_email_last_reply_date" string
+    "properties_hs_email_last_send_date" string
+    "properties_hs_email_open" number
+    "properties_hs_email_optout" boolean
+    "properties_hs_email_optout_10798197" string
+    "properties_hs_email_optout_11890603" string
+    "properties_hs_email_optout_11890831" string
+    "properties_hs_email_optout_23704464" string
+    "properties_hs_email_optout_313921448" string
+    "properties_hs_email_optout_94692364" string
+    "properties_hs_email_quarantined" boolean
+    "properties_hs_email_quarantined_reason" string
+    "properties_hs_email_recipient_fatigue_recovery_time" string
+    "properties_hs_email_replied" number
+    "properties_hs_email_sends_since_last_engagement" number
+    "properties_hs_emailconfirmationstatus" string
+    "properties_hs_facebook_ad_clicked" boolean
+    "properties_hs_facebook_click_id" string
+    "properties_hs_feedback_last_nps_follow_up" string
+    "properties_hs_feedback_last_nps_rating" string
+    "properties_hs_feedback_last_survey_date" string
+    "properties_hs_feedback_show_nps_web_survey" boolean
+    "properties_hs_first_engagement_object_id" number
+    "properties_hs_first_outreach_date" string
+    "properties_hs_first_subscription_create_date" string
+    "properties_hs_google_click_id" string
+    "properties_hs_has_active_subscription" number
+    "properties_hs_ip_timezone" string
+    "properties_hs_is_contact" boolean
+    "properties_hs_is_unworked" boolean
+    "properties_hs_language" string
+    "properties_hs_last_sales_activity_date" string
+    "properties_hs_last_sales_activity_timestamp" string
+    "properties_hs_last_sales_activity_type" string
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_latest_disqualified_lead_date" string
+    "properties_hs_latest_meeting_activity" string
+    "properties_hs_latest_open_lead_date" string
+    "properties_hs_latest_qualified_lead_date" string
+    "properties_hs_latest_sequence_ended_date" string
+    "properties_hs_latest_sequence_enrolled" number
+    "properties_hs_latest_sequence_enrolled_date" string
+    "properties_hs_latest_sequence_finished_date" string
+    "properties_hs_latest_sequence_unenrolled_date" string
+    "properties_hs_latest_source" string
+    "properties_hs_latest_source_data_1" string
+    "properties_hs_latest_source_data_2" string
+    "properties_hs_latest_source_timestamp" string
+    "properties_hs_latest_subscription_create_date" string
+    "properties_hs_lead_status" string
+    "properties_hs_legal_basis" string
+    "properties_hs_lifecyclestage_customer_date" string
+    "properties_hs_lifecyclestage_evangelist_date" string
+    "properties_hs_lifecyclestage_lead_date" string
+    "properties_hs_lifecyclestage_marketingqualifiedlead_date" string
+    "properties_hs_lifecyclestage_opportunity_date" string
+    "properties_hs_lifecyclestage_other_date" string
+    "properties_hs_lifecyclestage_salesqualifiedlead_date" string
+    "properties_hs_lifecyclestage_subscriber_date" string
+    "properties_hs_linkedin_ad_clicked" string
+    "properties_hs_marketable_reason_id" string
+    "properties_hs_marketable_reason_type" string
+    "properties_hs_marketable_status" string
+    "properties_hs_marketable_until_renewal" string
+    "properties_hs_membership_has_accessed_private_content" number
+    "properties_hs_membership_last_private_content_access_date" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_mobile_sdk_push_tokens" string
+    "properties_hs_notes_next_activity_type" string
+    "properties_hs_object_id" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_persona" string
+    "properties_hs_pinned_engagement_id" number
+    "properties_hs_pipeline" string
+    "properties_hs_predictivecontactscore" number
+    "properties_hs_predictivecontactscore_v2" number
+    "properties_hs_predictivecontactscorebucket" string
+    "properties_hs_predictivescoringtier" string
+    "properties_hs_quarantined_emails" string
+    "properties_hs_read_only" boolean
+    "properties_hs_registered_member" number
+    "properties_hs_registration_method" string
+    "properties_hs_sa_first_engagement_date" string
+    "properties_hs_sa_first_engagement_descr" string
+    "properties_hs_sa_first_engagement_object_type" string
+    "properties_hs_sales_email_last_clicked" string
+    "properties_hs_sales_email_last_opened" string
+    "properties_hs_sales_email_last_replied" string
+    "properties_hs_searchable_calculated_international_mobile_number" string
+    "properties_hs_searchable_calculated_international_phone_number" string
+    "properties_hs_searchable_calculated_mobile_number" string
+    "properties_hs_searchable_calculated_phone_number" string
+    "properties_hs_sequences_actively_enrolled_count" number
+    "properties_hs_sequences_enrolled_count" number
+    "properties_hs_sequences_is_enrolled" boolean
+    "properties_hs_testpurge" string
+    "properties_hs_testrollback" string
+    "properties_hs_time_between_contact_creation_and_deal_close" number
+    "properties_hs_time_between_contact_creation_and_deal_creation" number
+    "properties_hs_time_in_customer" number
+    "properties_hs_time_in_evangelist" number
+    "properties_hs_time_in_lead" number
+    "properties_hs_time_in_marketingqualifiedlead" number
+    "properties_hs_time_in_opportunity" number
+    "properties_hs_time_in_other" number
+    "properties_hs_time_in_salesqualifiedlead" number
+    "properties_hs_time_in_subscriber" number
+    "properties_hs_time_to_first_engagement" number
+    "properties_hs_time_to_move_from_lead_to_customer" number
+    "properties_hs_time_to_move_from_marketingqualifiedlead_to_customer" number
+    "properties_hs_time_to_move_from_opportunity_to_customer" number
+    "properties_hs_time_to_move_from_salesqualifiedlead_to_customer" number
+    "properties_hs_time_to_move_from_subscriber_to_customer" number
+    "properties_hs_timezone" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hs_v2_cumulative_time_in_customer" number
+    "properties_hs_v2_cumulative_time_in_evangelist" number
+    "properties_hs_v2_cumulative_time_in_lead" number
+    "properties_hs_v2_cumulative_time_in_marketingqualifiedlead" number
+    "properties_hs_v2_cumulative_time_in_opportunity" number
+    "properties_hs_v2_cumulative_time_in_other" number
+    "properties_hs_v2_cumulative_time_in_salesqualifiedlead" number
+    "properties_hs_v2_cumulative_time_in_subscriber" number
+    "properties_hs_v2_date_entered_customer" string
+    "properties_hs_v2_date_entered_evangelist" string
+    "properties_hs_v2_date_entered_lead" string
+    "properties_hs_v2_date_entered_marketingqualifiedlead" string
+    "properties_hs_v2_date_entered_opportunity" string
+    "properties_hs_v2_date_entered_other" string
+    "properties_hs_v2_date_entered_salesqualifiedlead" string
+    "properties_hs_v2_date_entered_subscriber" string
+    "properties_hs_v2_date_exited_customer" string
+    "properties_hs_v2_date_exited_evangelist" string
+    "properties_hs_v2_date_exited_lead" string
+    "properties_hs_v2_date_exited_marketingqualifiedlead" string
+    "properties_hs_v2_date_exited_opportunity" string
+    "properties_hs_v2_date_exited_other" string
+    "properties_hs_v2_date_exited_salesqualifiedlead" string
+    "properties_hs_v2_date_exited_subscriber" string
+    "properties_hs_v2_latest_time_in_customer" number
+    "properties_hs_v2_latest_time_in_evangelist" number
+    "properties_hs_v2_latest_time_in_lead" number
+    "properties_hs_v2_latest_time_in_marketingqualifiedlead" number
+    "properties_hs_v2_latest_time_in_opportunity" number
+    "properties_hs_v2_latest_time_in_other" number
+    "properties_hs_v2_latest_time_in_salesqualifiedlead" number
+    "properties_hs_v2_latest_time_in_subscriber" number
+    "properties_hs_was_imported" boolean
+    "properties_hs_whatsapp_phone_number" string
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_hubspotscore" number
+    "properties_industry" string
+    "properties_ip_city" string
+    "properties_ip_country" string
+    "properties_ip_country_code" string
+    "properties_ip_latlon" string
+    "properties_ip_state" string
+    "properties_ip_state_code" string
+    "properties_ip_zipcode" string
+    "properties_job_function" string
+    "properties_jobtitle" string
+    "properties_lastmodifieddate" string
+    "properties_lastname" string
+    "properties_lifecyclestage" string
+    "properties_marital_status" string
+    "properties_message" string
+    "properties_military_status" string
+    "properties_mobilephone" string
+    "properties_my_custom_test_property" string
+    "properties_notes_last_contacted" string
+    "properties_notes_last_updated" string
+    "properties_notes_next_activity_date" string
+    "properties_num_associated_deals" number
+    "properties_num_contacted_notes" number
+    "properties_num_conversion_events" number
+    "properties_num_notes" number
+    "properties_num_unique_conversion_events" number
+    "properties_numemployees" string
+    "properties_phone" string
+    "properties_recent_conversion_date" string
+    "properties_recent_conversion_event_name" string
+    "properties_recent_deal_amount" number
+    "properties_recent_deal_close_date" string
+    "properties_relationship_status" string
+    "properties_salutation" string
+    "properties_school" string
+    "properties_seniority" string
+    "properties_start_date" string
+    "properties_state" string
+    "properties_surveymonkeyeventlastupdated" number
+    "properties_test" number
+    "properties_total_revenue" number
+    "properties_twitterhandle" string
+    "properties_webinareventlastupdated" number
+    "properties_website" string
+    "properties_work_email" string
+    "properties_zip" string
+
+    indexes {
+        (vid, property, timestamp) [pk]
+    }
+}
+
+Table "companies_property_history" {
+    "updatedByUserId" number
+    "timestamp" string
+    "property" string
+    "companyId" string
+    "sourceType" string
+    "sourceId" string
+    "value" string
+    "archived" boolean
+    "properties" object
+    "properties_about_us" string
+    "properties_address" string
+    "properties_address2" string
+    "properties_annualrevenue" number
+    "properties_city" string
+    "properties_closedate" string
+    "properties_closedate_timestamp_earliest_value_a2a17e6e" string
+    "properties_country" string
+    "properties_createdate" string
+    "properties_custom_company_property" string
+    "properties_days_to_close" number
+    "properties_description" string
+    "properties_domain" string
+    "properties_engagements_last_meeting_booked" string
+    "properties_engagements_last_meeting_booked_campaign" string
+    "properties_engagements_last_meeting_booked_medium" string
+    "properties_engagements_last_meeting_booked_source" string
+    "properties_facebook_company_page" string
+    "properties_facebookfans" number
+    "properties_first_contact_createdate" string
+    "properties_first_contact_createdate_timestamp_earliest_value_78b50eea" string
+    "properties_first_conversion_date" string
+    "properties_first_conversion_date_timestamp_earliest_value_61f58f2c" string
+    "properties_first_conversion_event_name" string
+    "properties_first_conversion_event_name_timestamp_earliest_value_68ddae0a" string
+    "properties_first_deal_created_date" string
+    "properties_founded_year" string
+    "properties_googleplus_page" string
+    "properties_hs_additional_domains" string
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_analytics_first_timestamp" string
+    "properties_hs_analytics_first_timestamp_timestamp_earliest_value_11e3a63a" string
+    "properties_hs_analytics_first_touch_converting_campaign" string
+    "properties_hs_analytics_first_touch_converting_campaign_timestamp_earliest_value_4757fe10" string
+    "properties_hs_analytics_first_visit_timestamp" string
+    "properties_hs_analytics_first_visit_timestamp_timestamp_earliest_value_accc17ae" string
+    "properties_hs_analytics_last_timestamp" string
+    "properties_hs_analytics_last_timestamp_timestamp_latest_value_4e16365a" string
+    "properties_hs_analytics_last_touch_converting_campaign" string
+    "properties_hs_analytics_last_touch_converting_campaign_timestamp_latest_value_81a64e30" string
+    "properties_hs_analytics_last_visit_timestamp" string
+    "properties_hs_analytics_last_visit_timestamp_timestamp_latest_value_999a0fce" string
+    "properties_hs_analytics_latest_source" string
+    "properties_hs_analytics_latest_source_data_1" string
+    "properties_hs_analytics_latest_source_data_2" string
+    "properties_hs_analytics_latest_source_timestamp" string
+    "properties_hs_analytics_num_page_views" number
+    "properties_hs_analytics_num_page_views_cardinality_sum_e46e85b0" number
+    "properties_hs_analytics_num_visits" number
+    "properties_hs_analytics_num_visits_cardinality_sum_53d952a6" number
+    "properties_hs_analytics_source" string
+    "properties_hs_analytics_source_data_1" string
+    "properties_hs_analytics_source_data_1_timestamp_earliest_value_9b2f1fa1" string
+    "properties_hs_analytics_source_data_2" string
+    "properties_hs_analytics_source_data_2_timestamp_earliest_value_9b2f9400" string
+    "properties_hs_analytics_source_timestamp_earliest_value_25a3a52c" string
+    "properties_hs_annual_revenue_currency_code" string
+    "properties_hs_avatar_filemanager_key" string
+    "properties_hs_country_code" string
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_csm_sentiment" string
+    "properties_hs_customer_success_ticket_sentiment" number
+    "properties_hs_date_entered_customer" string
+    "properties_hs_date_entered_evangelist" string
+    "properties_hs_date_entered_lead" string
+    "properties_hs_date_entered_marketingqualifiedlead" string
+    "properties_hs_date_entered_opportunity" string
+    "properties_hs_date_entered_other" string
+    "properties_hs_date_entered_salesqualifiedlead" string
+    "properties_hs_date_entered_subscriber" string
+    "properties_hs_date_exited_customer" string
+    "properties_hs_date_exited_evangelist" string
+    "properties_hs_date_exited_lead" string
+    "properties_hs_date_exited_marketingqualifiedlead" string
+    "properties_hs_date_exited_opportunity" string
+    "properties_hs_date_exited_other" string
+    "properties_hs_date_exited_salesqualifiedlead" string
+    "properties_hs_date_exited_subscriber" string
+    "properties_hs_ideal_customer_profile" string
+    "properties_hs_is_target_account" boolean
+    "properties_hs_last_booked_meeting_date" string
+    "properties_hs_last_logged_call_date" string
+    "properties_hs_last_open_task_date" string
+    "properties_hs_last_sales_activity_date" string
+    "properties_hs_last_sales_activity_timestamp" string
+    "properties_hs_last_sales_activity_type" string
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_latest_createdate_of_active_subscriptions" string
+    "properties_hs_latest_meeting_activity" string
+    "properties_hs_lead_status" string
+    "properties_hs_logo_url" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_notes_next_activity_type" string
+    "properties_hs_num_blockers" number
+    "properties_hs_num_child_companies" number
+    "properties_hs_num_contacts_with_buying_roles" number
+    "properties_hs_num_decision_makers" number
+    "properties_hs_num_open_deals" number
+    "properties_hs_object_id" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_parent_company_id" number
+    "properties_hs_pinned_engagement_id" number
+    "properties_hs_pipeline" string
+    "properties_hs_predictivecontactscore_v2" number
+    "properties_hs_predictivecontactscore_v2_next_max_max_d4e58c1e" number
+    "properties_hs_read_only" boolean
+    "properties_hs_sales_email_last_replied" string
+    "properties_hs_target_account" string
+    "properties_hs_target_account_probability" number
+    "properties_hs_target_account_recommendation_snooze_time" string
+    "properties_hs_target_account_recommendation_state" string
+    "properties_hs_time_in_customer" number
+    "properties_hs_time_in_evangelist" number
+    "properties_hs_time_in_lead" number
+    "properties_hs_time_in_marketingqualifiedlead" number
+    "properties_hs_time_in_opportunity" number
+    "properties_hs_time_in_other" number
+    "properties_hs_time_in_salesqualifiedlead" number
+    "properties_hs_time_in_subscriber" number
+    "properties_hs_total_deal_value" number
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hs_was_imported" boolean
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_hubspotscore" number
+    "properties_industry" string
+    "properties_is_public" boolean
+    "properties_lifecyclestage" string
+    "properties_linkedin_company_page" string
+    "properties_linkedinbio" string
+    "properties_name" string
+    "properties_notes_last_contacted" string
+    "properties_notes_last_updated" string
+    "properties_notes_next_activity_date" string
+    "properties_num_associated_contacts" number
+    "properties_num_associated_deals" number
+    "properties_num_contacted_notes" number
+    "properties_num_conversion_events" number
+    "properties_num_conversion_events_cardinality_sum_d095f14b" number
+    "properties_num_notes" number
+    "properties_numberofemployees" number
+    "properties_phone" string
+    "properties_recent_conversion_date" string
+    "properties_recent_conversion_date_timestamp_latest_value_72856da1" string
+    "properties_recent_conversion_event_name" string
+    "properties_recent_conversion_event_name_timestamp_latest_value_66c820bf" string
+    "properties_recent_deal_amount" number
+    "properties_recent_deal_close_date" string
+    "properties_state" string
+    "properties_timezone" string
+    "properties_total_money_raised" string
+    "properties_total_revenue" number
+    "properties_twitterbio" string
+    "properties_twitterfollowers" number
+    "properties_twitterhandle" string
+    "properties_type" string
+    "properties_web_technologies" string
+    "properties_website" string
+    "properties_zip" string
+
+    indexes {
+        (companyId, property, timestamp) [pk]
+    }
+}
+
+Table "deals_property_history" {
+    "updatedByUserId" number
+    "timestamp" string
+    "property" string
+    "dealId" string
+    "sourceType" string
+    "sourceId" string
+    "value" string
+    "archived" boolean
+    "properties" object
+    "properties_amount" number
+    "properties_amount_in_home_currency" number
+    "properties_closed_lost_reason" string
+    "properties_closed_won_reason" string
+    "properties_closedate" string
+    "properties_createdate" string
+    "properties_days_to_close" number
+    "properties_dealname" string
+    "properties_dealstage" string
+    "properties_dealtype" string
+    "properties_description" string
+    "properties_engagements_last_meeting_booked" string
+    "properties_engagements_last_meeting_booked_campaign" string
+    "properties_engagements_last_meeting_booked_medium" string
+    "properties_engagements_last_meeting_booked_source" string
+    "properties_hs_acv" number
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_collaborator_owner_ids" string
+    "properties_hs_all_deal_split_owner_ids" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_analytics_latest_source" string
+    "properties_hs_analytics_latest_source_company" string
+    "properties_hs_analytics_latest_source_contact" string
+    "properties_hs_analytics_latest_source_data_1" string
+    "properties_hs_analytics_latest_source_data_1_company" string
+    "properties_hs_analytics_latest_source_data_1_contact" string
+    "properties_hs_analytics_latest_source_data_2" string
+    "properties_hs_analytics_latest_source_data_2_company" string
+    "properties_hs_analytics_latest_source_data_2_contact" string
+    "properties_hs_analytics_latest_source_timestamp" string
+    "properties_hs_analytics_latest_source_timestamp_company" string
+    "properties_hs_analytics_latest_source_timestamp_contact" string
+    "properties_hs_analytics_source" string
+    "properties_hs_analytics_source_data_1" string
+    "properties_hs_analytics_source_data_2" string
+    "properties_hs_arr" number
+    "properties_hs_campaign" string
+    "properties_hs_closed_amount" number
+    "properties_hs_closed_amount_in_home_currency" number
+    "properties_hs_closed_deal_close_date" number
+    "properties_hs_closed_deal_create_date" number
+    "properties_hs_closed_won_count" number
+    "properties_hs_closed_won_date" string
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_date_entered_66894120" string
+    "properties_hs_date_entered_9567448" string
+    "properties_hs_date_entered_9567449" string
+    "properties_hs_date_entered_appointmentscheduled" string
+    "properties_hs_date_entered_closedlost" string
+    "properties_hs_date_entered_closedwon" string
+    "properties_hs_date_entered_contractsent" string
+    "properties_hs_date_entered_customclosedwonstage" string
+    "properties_hs_date_entered_decisionmakerboughtin" string
+    "properties_hs_date_entered_presentationscheduled" string
+    "properties_hs_date_entered_qualifiedtobuy" string
+    "properties_hs_date_exited_66894120" string
+    "properties_hs_date_exited_9567448" string
+    "properties_hs_date_exited_9567449" string
+    "properties_hs_date_exited_appointmentscheduled" string
+    "properties_hs_date_exited_closedlost" string
+    "properties_hs_date_exited_closedwon" string
+    "properties_hs_date_exited_contractsent" string
+    "properties_hs_date_exited_customclosedwonstage" string
+    "properties_hs_date_exited_decisionmakerboughtin" string
+    "properties_hs_date_exited_presentationscheduled" string
+    "properties_hs_date_exited_qualifiedtobuy" string
+    "properties_hs_days_to_close_raw" number
+    "properties_hs_deal_amount_calculation_preference" string
+    "properties_hs_deal_score" number
+    "properties_hs_deal_stage_probability" number
+    "properties_hs_deal_stage_probability_shadow" number
+    "properties_hs_exchange_rate" number
+    "properties_hs_forecast_amount" number
+    "properties_hs_forecast_probability" number
+    "properties_hs_has_empty_conditional_stage_properties" boolean
+    "properties_hs_is_closed" boolean
+    "properties_hs_is_closed_count" number
+    "properties_hs_is_closed_won" boolean
+    "properties_hs_is_deal_split" boolean
+    "properties_hs_is_in_first_deal_stage" boolean
+    "properties_hs_is_open_count" number
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_latest_approval_status" string
+    "properties_hs_latest_approval_status_approval_id" number
+    "properties_hs_latest_meeting_activity" string
+    "properties_hs_likelihood_to_close" number
+    "properties_hs_line_item_global_term_hs_discount_percentage" string
+    "properties_hs_line_item_global_term_hs_discount_percentage_enabled" boolean
+    "properties_hs_line_item_global_term_hs_recurring_billing_period" string
+    "properties_hs_line_item_global_term_hs_recurring_billing_period_enabled" boolean
+    "properties_hs_line_item_global_term_hs_recurring_billing_start_date" string
+    "properties_hs_line_item_global_term_hs_recurring_billing_start_date_enabled" boolean
+    "properties_hs_line_item_global_term_recurringbillingfrequency" string
+    "properties_hs_line_item_global_term_recurringbillingfrequency_enabled" boolean
+    "properties_hs_manual_forecast_category" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_mrr" number
+    "properties_hs_next_step" string
+    "properties_hs_next_step_updated_at" string
+    "properties_hs_notes_next_activity_type" string
+    "properties_hs_num_associated_deal_splits" number
+    "properties_hs_num_of_associated_line_items" number
+    "properties_hs_num_target_accounts" number
+    "properties_hs_object_id" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_open_deal_create_date" number
+    "properties_hs_pinned_engagement_id" number
+    "properties_hs_predicted_amount" number
+    "properties_hs_predicted_amount_in_home_currency" number
+    "properties_hs_priority" string
+    "properties_hs_projected_amount" number
+    "properties_hs_projected_amount_in_home_currency" number
+    "properties_hs_read_only" boolean
+    "properties_hs_sales_email_last_replied" string
+    "properties_hs_tag_ids" string
+    "properties_hs_tcv" number
+    "properties_hs_time_in_66894120" number
+    "properties_hs_time_in_9567448" number
+    "properties_hs_time_in_9567449" number
+    "properties_hs_time_in_appointmentscheduled" number
+    "properties_hs_time_in_closedlost" number
+    "properties_hs_time_in_closedwon" number
+    "properties_hs_time_in_contractsent" number
+    "properties_hs_time_in_customclosedwonstage" number
+    "properties_hs_time_in_decisionmakerboughtin" number
+    "properties_hs_time_in_presentationscheduled" number
+    "properties_hs_time_in_qualifiedtobuy" number
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hs_v2_cumulative_time_in_66894120" number
+    "properties_hs_v2_cumulative_time_in_9567448" number
+    "properties_hs_v2_cumulative_time_in_9567449" number
+    "properties_hs_v2_cumulative_time_in_appointmentscheduled" number
+    "properties_hs_v2_cumulative_time_in_closedlost" number
+    "properties_hs_v2_cumulative_time_in_closedwon" number
+    "properties_hs_v2_cumulative_time_in_contractsent" number
+    "properties_hs_v2_cumulative_time_in_customclosedwonstage" number
+    "properties_hs_v2_cumulative_time_in_decisionmakerboughtin" number
+    "properties_hs_v2_cumulative_time_in_presentationscheduled" number
+    "properties_hs_v2_cumulative_time_in_qualifiedtobuy" number
+    "properties_hs_v2_date_entered_66894120" string
+    "properties_hs_v2_date_entered_9567448" string
+    "properties_hs_v2_date_entered_9567449" string
+    "properties_hs_v2_date_entered_appointmentscheduled" string
+    "properties_hs_v2_date_entered_closedlost" string
+    "properties_hs_v2_date_entered_closedwon" string
+    "properties_hs_v2_date_entered_contractsent" string
+    "properties_hs_v2_date_entered_customclosedwonstage" string
+    "properties_hs_v2_date_entered_decisionmakerboughtin" string
+    "properties_hs_v2_date_entered_presentationscheduled" string
+    "properties_hs_v2_date_entered_qualifiedtobuy" string
+    "properties_hs_v2_date_exited_66894120" string
+    "properties_hs_v2_date_exited_9567448" string
+    "properties_hs_v2_date_exited_9567449" string
+    "properties_hs_v2_date_exited_appointmentscheduled" string
+    "properties_hs_v2_date_exited_closedlost" string
+    "properties_hs_v2_date_exited_closedwon" string
+    "properties_hs_v2_date_exited_contractsent" string
+    "properties_hs_v2_date_exited_customclosedwonstage" string
+    "properties_hs_v2_date_exited_decisionmakerboughtin" string
+    "properties_hs_v2_date_exited_presentationscheduled" string
+    "properties_hs_v2_date_exited_qualifiedtobuy" string
+    "properties_hs_v2_latest_time_in_66894120" number
+    "properties_hs_v2_latest_time_in_9567448" number
+    "properties_hs_v2_latest_time_in_9567449" number
+    "properties_hs_v2_latest_time_in_appointmentscheduled" number
+    "properties_hs_v2_latest_time_in_closedlost" number
+    "properties_hs_v2_latest_time_in_closedwon" number
+    "properties_hs_v2_latest_time_in_contractsent" number
+    "properties_hs_v2_latest_time_in_customclosedwonstage" number
+    "properties_hs_v2_latest_time_in_decisionmakerboughtin" number
+    "properties_hs_v2_latest_time_in_presentationscheduled" number
+    "properties_hs_v2_latest_time_in_qualifiedtobuy" number
+    "properties_hs_was_imported" boolean
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_notes_last_contacted" string
+    "properties_notes_last_updated" string
+    "properties_notes_next_activity_date" string
+    "properties_num_associated_contacts" number
+    "properties_num_contacted_notes" number
+    "properties_num_notes" number
+    "properties_pipeline" string
+
+    indexes {
+        (dealId, property, timestamp) [pk]
+    }
+}
+
+Table "subscription_changes" {
+    "timestamp" integer
+    "portalId" integer
+    "recipient" string
+    "normalizedEmailId" string
+    "changes" array
+}
+
+Table "tickets" {
+    "id" string [pk]
+    "createdAt" string
+    "updatedAt" string
+    "archived" boolean
+    "contacts" array
+    "companies" array
+    "deals" array
+    "properties" object
+    "properties_closed_date" string
+    "properties_content" string
+    "properties_created_by" number
+    "properties_createdate" string
+    "properties_first_agent_reply_date" string
+    "properties_hs_all_accessible_team_ids" string
+    "properties_hs_all_associated_contact_companies" string
+    "properties_hs_all_associated_contact_emails" string
+    "properties_hs_all_associated_contact_firstnames" string
+    "properties_hs_all_associated_contact_lastnames" string
+    "properties_hs_all_associated_contact_mobilephones" string
+    "properties_hs_all_associated_contact_phones" string
+    "properties_hs_all_conversation_mentions" string
+    "properties_hs_all_owner_ids" string
+    "properties_hs_all_team_ids" string
+    "properties_hs_applied_sla_rule_config_at" string
+    "properties_hs_assigned_team_ids" string
+    "properties_hs_assignment_method" string
+    "properties_hs_auto_generated_from_thread_id" number
+    "properties_hs_conversations_originating_message_id" string
+    "properties_hs_conversations_originating_thread_id" number
+    "properties_hs_created_by_user_id" number
+    "properties_hs_createdate" string
+    "properties_hs_custom_inbox" number
+    "properties_hs_date_entered_1" string
+    "properties_hs_date_entered_151692305" string
+    "properties_hs_date_entered_151692306" string
+    "properties_hs_date_entered_151692307" string
+    "properties_hs_date_entered_151692308" string
+    "properties_hs_date_entered_2" string
+    "properties_hs_date_entered_3" string
+    "properties_hs_date_entered_4" string
+    "properties_hs_date_exited_1" string
+    "properties_hs_date_exited_151692305" string
+    "properties_hs_date_exited_151692306" string
+    "properties_hs_date_exited_151692307" string
+    "properties_hs_date_exited_151692308" string
+    "properties_hs_date_exited_2" string
+    "properties_hs_date_exited_3" string
+    "properties_hs_date_exited_4" string
+    "properties_hs_email_subject" string
+    "properties_hs_external_object_ids" string
+    "properties_hs_feedback_last_ces_follow_up" string
+    "properties_hs_feedback_last_ces_rating" string
+    "properties_hs_feedback_last_survey_date" string
+    "properties_hs_file_upload" string
+    "properties_hs_first_agent_message_sent_at" string
+    "properties_hs_helpdesk_sort_timestamp" string
+    "properties_hs_in_helpdesk" boolean
+    "properties_hs_inbox_id" number
+    "properties_hs_is_latest_message_failed" boolean
+    "properties_hs_is_visible_in_help_desk" boolean
+    "properties_hs_last_email_activity" string
+    "properties_hs_last_email_date" string
+    "properties_hs_last_message_from_visitor" boolean
+    "properties_hs_last_message_received_at" string
+    "properties_hs_last_message_sent_at" string
+    "properties_hs_lastactivitydate" string
+    "properties_hs_lastcontacted" string
+    "properties_hs_lastmodifieddate" string
+    "properties_hs_latest_message_attachment_types" string
+    "properties_hs_latest_message_is_forwarded_email" boolean
+    "properties_hs_latest_message_is_thread_comment" boolean
+    "properties_hs_latest_message_seen_by_agent_ids" string
+    "properties_hs_latest_message_text" string
+    "properties_hs_latest_message_visible_to_visitor" string
+    "properties_hs_merged_object_ids" string
+    "properties_hs_most_relevant_sla_status" string
+    "properties_hs_most_relevant_sla_type" string
+    "properties_hs_msteams_message_id" string
+    "properties_hs_nextactivitydate" string
+    "properties_hs_notes_next_activity_type" string
+    "properties_hs_num_associated_companies" number
+    "properties_hs_num_associated_conversations" number
+    "properties_hs_num_times_contacted" number
+    "properties_hs_object_id" number
+    "properties_hs_object_source" string
+    "properties_hs_object_source_detail_1" string
+    "properties_hs_object_source_detail_2" string
+    "properties_hs_object_source_detail_3" string
+    "properties_hs_object_source_id" string
+    "properties_hs_object_source_label" string
+    "properties_hs_object_source_user_id" number
+    "properties_hs_originating_channel_instance_id" string
+    "properties_hs_originating_email_engagement_id" number
+    "properties_hs_originating_generic_channel_id" string
+    "properties_hs_pinned_engagement_id" number
+    "properties_hs_pipeline" string
+    "properties_hs_pipeline_stage" string
+    "properties_hs_primary_company" string
+    "properties_hs_primary_company_id" number
+    "properties_hs_primary_company_name" string
+    "properties_hs_read_only" boolean
+    "properties_hs_resolution" string
+    "properties_hs_sales_email_last_replied" string
+    "properties_hs_seen_by_agent_ids" string
+    "properties_hs_tag_ids" string
+    "properties_hs_thread_ids_to_restore" string
+    "properties_hs_ticket_category" string
+    "properties_hs_ticket_id" number
+    "properties_hs_ticket_priority" string
+    "properties_hs_time_in_1" number
+    "properties_hs_time_in_151692305" number
+    "properties_hs_time_in_151692306" number
+    "properties_hs_time_in_151692307" number
+    "properties_hs_time_in_151692308" number
+    "properties_hs_time_in_2" number
+    "properties_hs_time_in_3" number
+    "properties_hs_time_in_4" number
+    "properties_hs_time_to_close_sla_at" string
+    "properties_hs_time_to_close_sla_status" string
+    "properties_hs_time_to_first_response_sla_at" string
+    "properties_hs_time_to_first_response_sla_status" string
+    "properties_hs_time_to_next_response_sla_at" string
+    "properties_hs_time_to_next_response_sla_status" string
+    "properties_hs_unique_creation_key" string
+    "properties_hs_updated_by_user_id" number
+    "properties_hs_user_ids_of_all_notification_followers" string
+    "properties_hs_user_ids_of_all_notification_unfollowers" string
+    "properties_hs_user_ids_of_all_owners" string
+    "properties_hs_was_imported" boolean
+    "properties_hubspot_owner_assigneddate" string
+    "properties_hubspot_owner_id" string
+    "properties_hubspot_team_id" string
+    "properties_last_engagement_date" string
+    "properties_last_reply_date" string
+    "properties_notes_last_contacted" string
+    "properties_notes_last_updated" string
+    "properties_notes_next_activity_date" string
+    "properties_nps_follow_up_answer" string
+    "properties_nps_follow_up_question_version" number
+    "properties_nps_score" string
+    "properties_num_contacted_notes" number
+    "properties_num_notes" number
+    "properties_source_ref" string
+    "properties_source_thread_id" string
+    "properties_source_type" string
+    "properties_subject" string
+    "properties_tags" string
+    "properties_time_to_close" number
+    "properties_time_to_first_agent_reply" number
+}
+
+Table "ticket_pipelines" {
+    "label" string
+    "displayOrder" integer
+    "id" string [pk]
+    "archived" boolean
+    "stages" array
+    "createdAt" string
+    "updatedAt" string
+}
+
+Table "workflows" {
+    "name" string
+    "id" integer [pk]
+    "type" string
+    "enabled" boolean
+    "insertedAt" integer
+    "updatedAt" integer
+    "personaTagIds" array
+    "contactListIds" object
+    "contactListIds_enrolled" integer
+    "contactListIds_active" integer
+    "contactListIds_completed" integer
+    "contactListIds_succeeded" integer
+    "contactListIds_steps" array
+    "lastUpdatedByUserId" integer
+    "contactCounts" object
+    "description" string
+    "originalAuthorUserId" integer
+    "migrationStatus" object
+    "updateSource" object
+    "creationSource" object
+    "portalId" integer
+}
+
+Ref {
+    "companies"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "companies"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "companies"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "companies"."properties_hs_parent_company_id" <> "companies"."id"
+}
+
+Ref {
+    "contact_lists"."parentId" <> "contact_lists"."listId"
+}
+
+Ref {
+    "contact_lists"."authorId" <> "owners"."userId"
+}
+
+Ref {
+    "contacts"."properties_associatedcompanyid" <> "companies"."id"
+}
+
+Ref {
+    "contacts"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "contacts"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "contacts"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "contacts_form_submissions"."canonical-vid" <> "contacts"."id"
+}
+
+Ref {
+    "contacts_list_memberships"."canonical-vid" <> "contacts"."id"
+}
+
+Ref {
+    "contacts_list_memberships"."static-list-id" <> "contact_lists"."listId"
+}
+
+Ref {
+    "contacts_merged_audit"."canonical-vid" <> "contacts"."id"
+}
+
+Ref {
+    "contacts_merged_audit"."vid-to-merge" <> "contacts"."id"
+}
+
+Ref {
+    "contacts_merged_audit"."user-id" <> "owners"."userId"
+}
+
+Ref {
+    "deals"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "deals"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "deals"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "deals_archived"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "deals_archived"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "deals_archived"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "email_events"."emailCampaignId" <> "campaigns"."id"
+}
+
+Ref {
+    "email_events"."emailCampaignGroupId" <> "marketing_emails"."emailCampaignGroupId"
+}
+
+Ref {
+    "email_events"."requestedByUserId" <> "owners"."userId"
+}
+
+Ref {
+    "engagements"."createdBy" <> "owners"."userId"
+}
+
+Ref {
+    "engagements"."modifiedBy" <> "owners"."userId"
+}
+
+Ref {
+    "engagements"."ownerId" <> "owners"."userId"
+}
+
+Ref {
+    "engagements"."metadata_calleeObjectId" <> "contacts"."id"
+}
+
+Ref {
+    "engagements"."metadata_facsimileSendId" <> "engagements_emails"."id"
+}
+
+Ref {
+    "engagements"."metadata_sourceId" <> "engagements_emails"."id"
+}
+
+Ref {
+    "engagements_calls"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_calls"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_calls"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_calls"."properties_hs_call_callee_object_id" <> "contacts"."id"
+}
+
+Ref {
+    "engagements_emails"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_emails"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_emails"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_meetings"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_meetings"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_meetings"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_notes"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_notes"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_notes"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_tasks"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_tasks"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "engagements_tasks"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "forms"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "forms"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "forms"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "form_submissions"."formId" <> "forms"."id"
+}
+
+Ref {
+    "goals"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "goals"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "goals"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "goals"."properties_hs_assignee_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "goals"."properties_hs_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "line_items"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "line_items"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "line_items"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "marketing_emails"."authorUserId" <> "owners"."userId"
+}
+
+Ref {
+    "marketing_emails"."createdById" <> "owners"."userId"
+}
+
+Ref {
+    "marketing_emails"."primaryEmailCampaignId" <> "campaigns"."id"
+}
+
+Ref {
+    "marketing_emails"."publishedById" <> "owners"."userId"
+}
+
+Ref {
+    "marketing_emails"."subscription" <> "email_subscriptions"."id"
+}
+
+Ref {
+    "products"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "products"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "products"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "contacts_property_history"."updated-by-user-id" <> "owners"."userId"
+}
+
+Ref {
+    "contacts_property_history"."canonical-vid" <> "contacts"."id"
+}
+
+Ref {
+    "companies_property_history"."updatedByUserId" <> "owners"."userId"
+}
+
+Ref {
+    "companies_property_history"."companyId" <> "companies"."id"
+}
+
+Ref {
+    "deals_property_history"."updatedByUserId" <> "owners"."userId"
+}
+
+Ref {
+    "deals_property_history"."dealId" <> "deals"."id"
+}
+
+Ref {
+    "tickets"."properties_hs_created_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "tickets"."properties_hs_updated_by_user_id" <> "owners"."userId"
+}
+
+Ref {
+    "tickets"."properties_hubspot_owner_id" <> "owners"."userId"
+}
+
+Ref {
+    "tickets"."properties_hs_originating_email_engagement_id" <> "engagements_emails"."id"
+}
+
+Ref {
+    "tickets"."properties_hs_primary_company_id" <> "companies"."id"
+}
+
+Ref {
+    "tickets"."properties_hs_ticket_id" <> "tickets"."id"
+}
+
+Ref {
+    "workflows"."lastUpdatedByUserId" <> "owners"."userId"
+}
+
+Ref {
+    "workflows"."originalAuthorUserId" <> "owners"."userId"
+}

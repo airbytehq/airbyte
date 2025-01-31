@@ -6,10 +6,12 @@
 import json
 from typing import Any, Mapping
 
-from airbyte_cdk.models import OrchestratorType, Type
-from airbyte_cdk.sources import Source
 from source_google_ads.config_migrations import MigrateCustomQuery
 from source_google_ads.source import SourceGoogleAds
+
+from airbyte_cdk.models import OrchestratorType, Type
+from airbyte_cdk.sources import Source
+
 
 # BASE ARGS
 CMD = "check"
@@ -34,7 +36,7 @@ def revert_migration(config_path: str = TEST_CONFIG_PATH) -> None:
             updated_config.write(config)
 
 
-def test_migrate_config():
+def test_migrate_config(capsys):
     migration_instance = MigrateCustomQuery()
     original_config = load_config()
     original_config_queries = original_config["custom_queries"].copy()
@@ -54,12 +56,13 @@ def test_migrate_config():
     # load the old custom reports VS migrated
     new_config_queries = test_migrated_config["custom_queries_array"].copy()
     new_config_queries[0]["query"] = new_config_queries[0]["query"].replace(", segments.date", "")
-    print(f"{original_config=} \n {test_migrated_config=}")
     assert original_config["custom_queries"] == new_config_queries
     # test CONTROL MESSAGE was emitted
-    control_msg = migration_instance.message_repository._message_queue[0]
-    assert control_msg.type == Type.CONTROL
-    assert control_msg.control.type == OrchestratorType.CONNECTOR_CONFIG
+    what = capsys.readouterr().out
+    control_msg = json.loads(what)
+    # control_msg = migration_instance.message_repository._message_queue[0]
+    assert control_msg["type"] == Type.CONTROL.value
+    assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
     # revert the test_config to the starting point
     revert_migration()
 

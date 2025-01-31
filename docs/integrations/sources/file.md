@@ -1,41 +1,87 @@
-# Files (CSV, JSON, Excel, Feather, Parquet)
+# File (CSV, JSON, Excel, Feather, Parquet)
 
-This page contains the setup guide and reference information for the Files source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [File (CSV, JSON, Excel, Feather, Parquet)](https://docs.airbyte.com/integrations/sources/file#storage-providers) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
 - A file hosted on AWS S3, GCS, HTTPS, or an SFTP server
+- Dataset Name
+- File Format
+- URL
+- Storage Provider
 
 ## Setup guide
 
 <!-- env:cloud -->
 
+### Set up File (CSV, JSON, Excel, Feather, Parquet)
+
+:::note
 **For Airbyte Cloud users:** Please note that locally stored files cannot be used as a source in Airbyte Cloud.
+:::
 
 <!-- /env:cloud -->
 
-### Step 1: Set up the connector in Airbyte
+### Set up the File (CSV, JSON, Excel, Feather, Parquet) connector in Airbyte
 
-1. From the Airbyte UI, click the **Sources** tab, then click **+ New source** and select **Files (CSV, JSON, Excel, Feather, Parquet)** from the list of available sources.
-2. Enter a **Source name** of your choosing.
-3. For **Dataset Name**, enter the _name_ of the final table to replicate this file into (should include letters, numbers, dashes and underscores only).
-4. For **File Format**, select the _format_ of the file to replicate from the dropdown menu (Warning: some formats may be experimental. Please refer to [the table of supported formats](#file-formats)).
+<!-- env:cloud -->
+
+#### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select File (CSV, JSON, Excel, Feather, Parquet) from the Source type dropdown.
+4. Enter a name for the File (CSV, JSON, Excel, Feather, Parquet) connector.
+<FieldAnchor field="dataset_name">
+5. For **Dataset Name**, enter the _name_ of the final table to replicate this file into (should include letters, numbers, dashes and underscores only).
+</FieldAnchor>
+<FieldAnchor field="format">
+6. For **File Format**, select the _format_ of the file to replicate from the dropdown menu (Warning: some formats may be experimental. Please refer to [the table of supported formats](#file-formats)).
+</FieldAnchor>
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select File (CSV, JSON, Excel, Feather, Parquet) from the Source type dropdown.
+4. Enter a name for the File (CSV, JSON, Excel, Feather, Parquet) connector.
+<FieldAnchor field="dataset_name">
+5. For **Dataset Name**, enter the _name_ of the final table to replicate this file into (should include letters, numbers, dashes and underscores only).
+</FieldAnchor>
+<FieldAnchor field="format">
+6. For **File Format**, select the _format_ of the file to replicate from the dropdown menu (Warning: some formats may be experimental. Please refer to [the table of supported formats](#file-formats)).
+</FieldAnchor>
+
+<!-- /env:oss -->
 
 ### Step 2: Select the provider and set provider-specific configurations:
 
 1. For **Storage Provider**, use the dropdown menu to select the _Storage Provider_ or _Location_ of the file(s) which should be replicated, then configure the provider-specific fields as needed:
 
+<FieldAnchor field="provider[HTTPS]">
 #### HTTPS: Public Web [Default]
 
 - `User-Agent` (Optional)
 
 Set this to active if you want to add the [User-Agent header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) to requests (inactive by default).
 
+</FieldAnchor>
+<FieldAnchor field="provider[GCS]">
 #### GCS: Google Cloud Storage
 
 - `Service Account JSON` (Required for **private** buckets)
 
 To access **private** buckets stored on Google Cloud, this connector requires a service account JSON credentials file with the appropriate permissions. A detailed breakdown of this topic can be found at the [Google Cloud service accounts page](https://cloud.google.com/iam/docs/service-accounts). Please generate the "credentials.json" file and copy its content to this field, ensuring it is in JSON format. **If you are accessing publicly available data**, this field is not required.
+</FieldAnchor>
+<FieldAnchor field="provider[S3]">
 
 #### S3: Amazon Web Services
 
@@ -46,6 +92,8 @@ To access **private** buckets stored on AWS S3, this connector requires valid cr
 [AWS IAM documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
 More information on setting permissions in AWS can be found
 [here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html). **If you are accessing publicly available data**, these fields are not required.
+</FieldAnchor>
+<FieldAnchor field="provider[AzBlob]">
 
 #### AzBlob: Azure Blob Storage
 
@@ -57,6 +105,8 @@ This is the globally unique name of the storage account that the desired blob si
 
 - `SAS Token`: [Find more information here](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 - `Shared Key`: [Find more information here](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
+</FieldAnchor>
+<FieldAnchor field="provider[SSH],provider[SCP],provider[SFTP]">
 
 #### SSH: Secure Shell / SCP: Secure Copy Protocol / SFTP: Secure File Transfer Protocol
 
@@ -75,9 +125,9 @@ Enter the _username_ associated with your account on the remote server.
 - `Port` (Optional)
 
 Specify the _port number_ to use for the connection. The default port is usually 22. However, if your remote server uses a non-standard port, you can enter the appropriate port number here.
-
+</FieldAnchor>
 <!-- env:oss -->
-
+<FieldAnchor field="provider[local]">
 #### Local Filesystem (Airbyte Open Source only)
 
 - `Storage`
@@ -93,19 +143,22 @@ Please note that if you are replicating data from a locally stored file on Windo
 - `HACK_LOCAL_ROOT_PARENT`
 
 Please set these to an existing absolute path on your machine. Colons in the path need to be replaced with a double forward slash, `//`. `LOCAL_ROOT` & `LOCAL_DOCKER_MOUNT` should be set to the same value, and `HACK_LOCAL_ROOT_PARENT` should be set to their parent directory.
-
+</FieldAnchor>
 <!-- /env:oss -->
+<FieldAnchor field="url">
 
 ### Step 3: Complete the connector setup
 
 1. For **URL**, enter the _URL path_ of the file to be replicated.
 
 :::note
-When connecting to a file located in **Google Drive**, please note that you need to utilize the Download URL format: `https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]`. `[DRIVE_FILE_ID]` should be replaced with the unique string found in the Share URL specific to Google Drive. You can find the Share URL by visiting `https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing`.
+When connecting to a file located in **Google Drive**, please note that you need to utilize the Download URL format: `example: https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]`. `[DRIVE_FILE_ID]` should be replaced with the unique string found in the Share URL specific to Google Drive. You can find the Share URL by visiting `example: https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing`.
 
 When connecting to a file using **Azure Blob Storage**, please note that we account for the base URL. Therefore, you should only need to include the path to your specific file (eg `container/file.csv`).
 :::
 
+</FieldAnchor>
+<FieldAnchor field="reader_options">
 2. For **Reader Options** (Optional), you may choose to enter a _string_ in JSON format. Depending on the file format of your source, this will provide additional options and tune the Reader's behavior. Please refer to the [next section](#reader-options) for a breakdown of the possible inputs. This field may be left blank if you do not wish to configure custom Reader options.
 3. Click **Set up source** and wait for the tests to complete.
 
@@ -137,7 +190,13 @@ If you need to read Excel Binary Workbook, please specify `excel_binary` format 
 This connector does not support syncing unstructured data files such as raw text, audio, or videos.
 :::
 
+</FieldAnchor>
+
+<HideInUI>
+
 ## Supported sync modes
+
+The File (CSV, JSON, Excel, Feather, Parquet) source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 | Feature                                  | Supported? |
 | ---------------------------------------- | ---------- |
@@ -151,7 +210,9 @@ This connector does not support syncing unstructured data files such as raw text
 This source produces a single table for the target file as it replicates only one file at a time for the moment. Note that you should provide the `dataset_name` which dictates how the table will be identified in the destination (since `URL` can be made of complex characters).
 :::
 
-## File / Stream Compression
+## Supported Streams
+
+### File / Stream Compression
 
 | Compression | Supported? |
 | ----------- | ---------- |
@@ -189,6 +250,7 @@ This source produces a single table for the target file as it replicates only on
 | Pickle                | No         |
 | YAML                  | Yes        |
 
+
 ### Changing data types of source columns
 
 Normally, Airbyte tries to infer the data type from the source, but you can use `reader_options` to force specific data types. If you input `{"dtype":"string"}`, all columns will be forced to be parsed as strings. If you only want a specific column to be parsed as a string, simply use `{"dtype" : {"column name": "string"}}`.
@@ -197,11 +259,11 @@ Normally, Airbyte tries to infer the data type from the source, but you can use 
 
 Here are a list of examples of possible file inputs:
 
-| Dataset Name      | Storage | URL                                                                                                                                                        | Reader Impl        | Service Account                                                  | Description                                                                                                                                                                                                           |
-| ----------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| epidemiology      | HTTPS   | [https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv](https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv) |                    |                                                                  | [COVID-19 Public dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-datasets/covid19-public-data-program?filter=solution-type:dataset&id=7d6cc408-53c8-4485-a187-b8cb9a5c0b56) on BigQuery |
-| hr_and_financials | GCS     | gs://airbyte-vault/financial.csv                                                                                                                           | smart_open or gcfs | `{"type": "service_account", "private_key_id": "XXXXXXXX", ...}` | data from a private bucket, a service account is necessary                                                                                                                                                            |
-| landsat_index     | GCS     | gcp-public-data-landsat/index.csv.gz                                                                                                                       | smart_open         |                                                                  | Using smart_open, we don't need to specify the compression (note the gs:// is optional too, same for other providers)                                                                                                 |
+| Dataset Name      | Storage | URL                                                                                                                                                          | Reader Impl        | Service Account                                                  | Description                                                                                                                                                                                                           |
+| ----------------- | ------- |--------------------------------------------------------------------------------------------------------------------------------------------------------------| ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| epidemiology      | HTTPS   | [ https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv ](https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv) |                    |                                                                  | [COVID-19 Public dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-datasets/covid19-public-data-program?filter=solution-type:dataset&id=7d6cc408-53c8-4485-a187-b8cb9a5c0b56) on BigQuery |
+| hr_and_financials | GCS     | gs://airbyte-vault/financial.csv                                                                                                                             | smart_open or gcfs | `{"type": "service_account", "private_key_id": "XXXXXXXX", ...}` | data from a private bucket, a service account is necessary                                                                                                                                                            |
+| landsat_index     | GCS     | gcp-public-data-landsat/index.csv.gz                                                                                                                         | smart_open         |                                                                  | Using smart_open, we don't need to specify the compression (note the gs:// is optional too, same for other providers)                                                                                                 |
 
 Examples with reader options:
 
@@ -227,6 +289,8 @@ In order to read large files from a remote location, this connector uses the [sm
 - Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
 - The JSON implementation needs to be tweaked in order to produce more complex catalog and is still in an experimental state: Simple JSON schemas should work at this point but may not be well handled when there are multiple layers of nesting.
 
+</HideInUI>
+
 ## Changelog
 
 <details>
@@ -234,6 +298,21 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.5.18 | 2025-01-25 | [52317](https://github.com/airbytehq/airbyte/pull/52317) | Update dependencies |
+| 0.5.17 | 2025-01-18 | [48656](https://github.com/airbytehq/airbyte/pull/48656) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.5.16 | 2024-12-10 | [48804](https://github.com/airbytehq/airbyte/pull/48804) | Added reader options: skiprows & header for Excel files |
+| 0.5.15 | 2024-11-05 | [48317](https://github.com/airbytehq/airbyte/pull/48317) | Update dependencies |
+| 0.5.14 | 2024-10-29 | [47115](https://github.com/airbytehq/airbyte/pull/47115) | Update dependencies |
+| 0.5.13 | 2024-10-12 | [45795](https://github.com/airbytehq/airbyte/pull/45795) | Update dependencies |
+| 0.5.12 | 2024-09-14 | [45499](https://github.com/airbytehq/airbyte/pull/45499) | Update dependencies |
+| 0.5.11 | 2024-09-07 | [45261](https://github.com/airbytehq/airbyte/pull/45261) | Update dependencies |
+| 0.5.10 | 2024-08-31 | [44974](https://github.com/airbytehq/airbyte/pull/44974) | Update dependencies |
+| 0.5.9 | 2024-08-24 | [44637](https://github.com/airbytehq/airbyte/pull/44637) | Update dependencies |
+| 0.5.8 | 2024-08-17 | [44286](https://github.com/airbytehq/airbyte/pull/44286) | Update dependencies |
+| 0.5.7 | 2024-08-12 | [43896](https://github.com/airbytehq/airbyte/pull/43896) | Update dependencies |
+| 0.5.6 | 2024-08-10 | [43675](https://github.com/airbytehq/airbyte/pull/43675) | Update dependencies |
+| 0.5.5 | 2024-08-03 | [39978](https://github.com/airbytehq/airbyte/pull/39978) | Update dependencies |
+| 0.5.4 | 2024-07-01 | [39909](https://github.com/airbytehq/airbyte/pull/39909) | Fix error with zip files and encoding. |
 | 0.5.3 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 0.5.2 | 2024-06-06 | [39192](https://github.com/airbytehq/airbyte/pull/39192) | [autopull] Upgrade base image to v1.2.2 |
 | 0.5.1 | 2024-05-03 | [37799](https://github.com/airbytehq/airbyte/pull/37799) | Add fastparquet engine for parquet file reader. |

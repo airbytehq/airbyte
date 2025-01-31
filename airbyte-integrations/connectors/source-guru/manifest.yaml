@@ -1,0 +1,2145 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - teams
+
+definitions:
+  streams:
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: groups
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    group_collection_access:
+      type: DeclarativeStream
+      name: group_collection_access
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: groups/{{ stream_partition.group_id }}/collections
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: group_id
+              stream:
+                $ref: "#/definitions/streams/groups"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/group_collection_access"
+    group_members:
+      type: DeclarativeStream
+      name: group_members
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: groups/{{ stream_partition.group_id }}/members
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: group_id
+              stream:
+                $ref: "#/definitions/streams/groups"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/group_members"
+    members:
+      type: DeclarativeStream
+      name: members
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: members
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/members"
+    team_analytics:
+      type: DeclarativeStream
+      name: team_analytics
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams/{{ config.team_id or stream_partition.team_id }}/analytics
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 400
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: team_id
+              stream:
+                $ref: "#/definitions/streams/teams"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_analytics"
+    collections:
+      type: DeclarativeStream
+      name: collections
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: collections
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/collections"
+    folders:
+      type: DeclarativeStream
+      name: folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: folders
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folders"
+    folder_items:
+      type: DeclarativeStream
+      name: folder_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: folders/{{ stream_partition.folder_id }}/items
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: folder_id
+              stream:
+                $ref: "#/definitions/streams/folders"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folder_items"
+    folders_parent:
+      type: DeclarativeStream
+      name: folders_parent
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: folders/{{ stream_partition.folder_id }}/parent
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: folder_id
+              stream:
+                $ref: "#/definitions/streams/folders"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folders_parent"
+    search_cardmgr:
+      type: DeclarativeStream
+      name: search_cardmgr
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: search/cardmgr
+          http_method: GET
+          request_parameters:
+            q: "{{ config['search_cards_query'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/search_cardmgr"
+    tag_categories:
+      type: DeclarativeStream
+      name: tag_categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams/{{ stream_partition.team_id }}/tagcategories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 400
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("headers", {}).get("Link", {}) }}'
+            stop_condition: '{{ not response.get("headers", {}).get("Link", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: team_id
+              stream:
+                $ref: "#/definitions/streams/teams"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tag_categories"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.getguru.com/api/v1/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: '{{ config["password"] }}'
+      username: '{{ config["username"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/group_collection_access"
+  - $ref: "#/definitions/streams/group_members"
+  - $ref: "#/definitions/streams/members"
+  - $ref: "#/definitions/streams/team_analytics"
+  - $ref: "#/definitions/streams/collections"
+  - $ref: "#/definitions/streams/folders"
+  - $ref: "#/definitions/streams/folder_items"
+  - $ref: "#/definitions/streams/folders_parent"
+  - $ref: "#/definitions/streams/search_cardmgr"
+  - $ref: "#/definitions/streams/tag_categories"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - start_date
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      team_id:
+        type: string
+        description: >-
+          Team ID received through response of /teams streams, make sure about
+          access to the team
+        order: 3
+        title: team_id
+      search_cards_query:
+        type: string
+        description: Query for searching cards
+        order: 4
+        title: search_cards_query
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    teams: true
+    groups: true
+    group_collection_access: true
+    group_members: true
+    members: true
+    team_analytics: true
+    collections: true
+    folders: true
+    folder_items: true
+    folders_parent: true
+    search_cardmgr: true
+    tag_categories: true
+  testedStreams:
+    teams:
+      streamHash: b86ad64152ba6e8df784431eee7c68de338c6755
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    groups:
+      streamHash: b103be9bad72bb7affa3b3dfb3d5f71cf1f085f4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    group_collection_access:
+      streamHash: f407a91ff09122522276b75894ad40da05c6fa81
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    group_members:
+      streamHash: 6e76382bc03a8a52d04f16fe2438691bcba8e3a7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    members:
+      streamHash: 4c0ecac565c04cadd8d5d91c21e6ab6273f71cd8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    team_analytics:
+      streamHash: 66d40d7571685bc8bd308b8dcdd393c6de324bd7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    collections:
+      streamHash: 7fb47bc2d4802bc826db06403fe17e8314d61fa4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    folders:
+      streamHash: 84531182102aade728149caf8a1e95ff9d0eeb93
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    folder_items:
+      streamHash: 7f6abf91a6ba327e149bcba0a85b1ffd39bce620
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    folders_parent:
+      streamHash: 302ae77b5ce851072440ce932965586c18dc677b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    search_cardmgr:
+      streamHash: ae5a1dd1aa3e31f36bdc4278a6e0c7e0b828cb6b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tag_categories:
+      hasRecords: true
+      streamHash: 5a05e0d1cd72ae8520b1bb88a019c7b1aeb257a1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      currentUserIsMember:
+        type:
+          - boolean
+          - "null"
+      dateCreated:
+        type: string
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      organization:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      profilePicUrl:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      topLevelOrganizationId:
+        type:
+          - string
+          - "null"
+      totalUsers:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - dateCreated
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      dateCreated:
+        type: string
+      groupIdentifier:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modifiable:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      team:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          dateCreated:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          organization:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          profilePicUrl:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          topLevelOrganizationId:
+            type:
+              - string
+              - "null"
+          totalUsers:
+            type:
+              - number
+              - "null"
+      userModifiable:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - dateCreated
+  group_collection_access:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      assistEnabled:
+        type:
+          - boolean
+          - "null"
+      collectionType:
+        type:
+          - string
+          - "null"
+      collectionTypeDetail:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      dateCreated:
+        type: string
+      homeBoardSlug:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      madeByGuru:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      publicCardsEnabled:
+        type:
+          - boolean
+          - "null"
+      readOnly:
+        type:
+          - boolean
+          - "null"
+      roiEnabled:
+        type:
+          - boolean
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      team:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - dateCreated
+  group_members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      dateCreated:
+        type: string
+      id:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          profilePicUrl:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+    required:
+      - dateCreated
+  members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      dateCreated:
+        type: string
+      groups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            dateCreated:
+              type:
+                - string
+                - "null"
+            groupIdentifier:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            modifiable:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+            team:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                dateCreated:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                organization:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                profilePicUrl:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                topLevelOrganizationId:
+                  type:
+                    - string
+                    - "null"
+                totalUsers:
+                  type:
+                    - number
+                    - "null"
+            userModifiable:
+              type:
+                - boolean
+                - "null"
+      id:
+        type: string
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          profilePicUrl:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      userAttributes:
+        type:
+          - object
+          - "null"
+        properties:
+          BILLING_TYPE:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - dateCreated
+  team_analytics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      eventDate:
+        type:
+          - string
+          - "null"
+      eventType:
+        type:
+          - string
+          - "null"
+      properties:
+        type:
+          - object
+          - "null"
+        properties:
+          activitySubType:
+            type:
+              - string
+              - "null"
+          application:
+            type:
+              - string
+              - "null"
+          boardId:
+            type:
+              - string
+              - "null"
+          cardId:
+            type:
+              - string
+              - "null"
+          factId:
+            type:
+              - string
+              - "null"
+          numberOfResults:
+            type:
+              - string
+              - "null"
+          searchId:
+            type:
+              - string
+              - "null"
+          searchTerms:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+      user:
+        type:
+          - string
+          - "null"
+  collections:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      administrator:
+        type:
+          - boolean
+          - "null"
+      assistEnabled:
+        type:
+          - boolean
+          - "null"
+      boards:
+        type:
+          - number
+          - "null"
+      cards:
+        type:
+          - number
+          - "null"
+      collectionStats:
+        type:
+          - object
+          - "null"
+        properties:
+          stats:
+            type:
+              - object
+              - "null"
+            properties:
+              card-count:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  count:
+                    type:
+                      - number
+                      - "null"
+              collection-trust-score:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  needsVerificationCount:
+                    type:
+                      - number
+                      - "null"
+                  trustedCount:
+                    type:
+                      - number
+                      - "null"
+      collectionType:
+        type:
+          - string
+          - "null"
+      collectionTypeDetail:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      contexts:
+        type:
+          - number
+          - "null"
+      dateCreated:
+        type: string
+      homeBoardSlug:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      madeByGuru:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      publicCards:
+        type:
+          - number
+          - "null"
+      publicCardsEnabled:
+        type:
+          - boolean
+          - "null"
+      readOnly:
+        type:
+          - boolean
+          - "null"
+      roiEnabled:
+        type:
+          - boolean
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      team:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+      - dateCreated
+  folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      collection:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          assistEnabled:
+            type:
+              - boolean
+              - "null"
+          collectionType:
+            type:
+              - string
+              - "null"
+          collectionTypeDetail:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          dateCreated:
+            type:
+              - string
+              - "null"
+          homeBoardSlug:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          madeByGuru:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          publicCardsEnabled:
+            type:
+              - boolean
+              - "null"
+          readOnly:
+            type:
+              - boolean
+              - "null"
+          roiEnabled:
+            type:
+              - boolean
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          team:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+      home:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      items:
+        type:
+          - array
+          - "null"
+      lastModified:
+        type:
+          - string
+          - "null"
+      lastModifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          profilePicUrl:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      numberOfFacts:
+        type:
+          - number
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  folder_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      commentsEnabled:
+        type:
+          - boolean
+          - "null"
+      folderCount:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      itemId:
+        type:
+          - string
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+      lastModified:
+        type:
+          - string
+          - "null"
+      legacyType:
+        type:
+          - string
+          - "null"
+      numberOfFacts:
+        type:
+          - number
+          - "null"
+      preferredPhrase:
+        type:
+          - string
+          - "null"
+      shareStatus:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      verificationState:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  folders_parent:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      collection:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          assistEnabled:
+            type:
+              - boolean
+              - "null"
+          collectionType:
+            type:
+              - string
+              - "null"
+          collectionTypeDetail:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          dateCreated:
+            type:
+              - string
+              - "null"
+          homeBoardSlug:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          madeByGuru:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          publicCardsEnabled:
+            type:
+              - boolean
+              - "null"
+          readOnly:
+            type:
+              - boolean
+              - "null"
+          roiEnabled:
+            type:
+              - boolean
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          team:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+      home:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+      lastModified:
+        type:
+          - string
+          - "null"
+      lastModifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          profilePicUrl:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      numberOfFacts:
+        type:
+          - number
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+  search_cardmgr:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      boards:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            items:
+              type:
+                - array
+                - "null"
+            numberOfFacts:
+              type:
+                - number
+                - "null"
+            slug:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+      cardInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          analytics:
+            type:
+              - object
+              - "null"
+            properties:
+              boards:
+                type:
+                  - number
+                  - "null"
+              copies:
+                type:
+                  - number
+                  - "null"
+              favorites:
+                type:
+                  - number
+                  - "null"
+              followers:
+                type:
+                  - number
+                  - "null"
+              unverifiedCopies:
+                type:
+                  - number
+                  - "null"
+              unverifiedViews:
+                type:
+                  - number
+                  - "null"
+              views:
+                type:
+                  - number
+                  - "null"
+      cardType:
+        type:
+          - string
+          - "null"
+      collection:
+        type:
+          - object
+          - "null"
+        properties:
+          collectionType:
+            type:
+              - string
+              - "null"
+          collectionTypeDetail:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          madeByGuru:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          publicCardsEnabled:
+            type:
+              - boolean
+              - "null"
+          readOnly:
+            type:
+              - boolean
+              - "null"
+          roiEnabled:
+            type:
+              - boolean
+              - "null"
+      commentsEnabled:
+        type:
+          - boolean
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      dateCreated:
+        type: string
+      folderCount:
+        type:
+          - number
+          - "null"
+      followed:
+        type:
+          - boolean
+          - "null"
+      highlightedAttachments:
+        type:
+          - array
+          - "null"
+      highlightedTitleContent:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      lastModified:
+        type:
+          - string
+          - "null"
+      lastModifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          profilePicUrl:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      lastVerified:
+        type:
+          - string
+          - "null"
+      lastVerifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          profilePicUrl:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      nextVerificationDate:
+        type:
+          - string
+          - "null"
+      originalOwner:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          profilePicUrl:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          profilePicUrl:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      preferredPhrase:
+        type:
+          - string
+          - "null"
+      shareStatus:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      verificationInterval:
+        type:
+          - number
+          - "null"
+      verificationState:
+        type:
+          - string
+          - "null"
+      verificationType:
+        type:
+          - string
+          - "null"
+      verifiers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            user:
+              type:
+                - object
+                - "null"
+              properties:
+                email:
+                  type:
+                    - string
+                    - "null"
+                firstName:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                lastName:
+                  type:
+                    - string
+                    - "null"
+                profilePicUrl:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+    required:
+      - id
+      - dateCreated
+  tag_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      defaultCategory:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"

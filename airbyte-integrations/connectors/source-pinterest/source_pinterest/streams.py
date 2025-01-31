@@ -2,18 +2,25 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+
+from airbyte_cdk import AirbyteTracedException, BackoffStrategy
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_protocol.models import FailureType
 
 from .utils import get_analytics_columns, to_datetime_str
+
 
 # For Pinterest analytics streams rate limit is 300 calls per day / per user.
 # once hit - response would contain `code` property with int.
@@ -28,6 +35,77 @@ class RateLimitExceeded(Exception):
     pass
 
 
+class PinterestErrorHandler(ErrorHandler):
+    def __init__(self, logger: logging.Logger, stream_name: str) -> None:
+        self._logger = logger
+        self._stream_name = stream_name
+
+    @property
+    def max_retries(self) -> Optional[int]:
+        """
+        Default value from HttpStream before the migration
+        """
+        return 5
+
+    @property
+    def max_time(self) -> Optional[int]:
+        """
+        Default value from HttpStream before the migration
+        """
+        return 60 * 10
+
+    def _handle_unknown_error(self, response: Optional[Union[requests.Response, Exception]]) -> Optional[ErrorResolution]:
+        """
+        Error handling could potentially be improved. For example, connection errors are probably transient as we could retry.
+        """
+        if isinstance(response, Exception):
+            return ErrorResolution(
+                ResponseAction.FAIL,
+                FailureType.system_error,
+                f"Failed because of the following error: {response}",
+            )
+        return None
+
+    def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        unhandled_error_resolution = self._handle_unknown_error(response)
+        if unhandled_error_resolution:
+            return unhandled_error_resolution
+
+        try:
+            resp = response.json()
+        except requests.exceptions.JSONDecodeError:
+            raise NonJSONResponse(f"Received unexpected response in non json format: '{response.text}'")
+
+        # when max rate limit exceeded, we should skip the stream.
+        if response.status_code == requests.codes.too_many_requests and (
+            isinstance(resp, dict) and resp.get("code", 0) == MAX_RATE_LIMIT_CODE
+        ):
+            self._logger.error(f"For stream {self._stream_name} Max Rate Limit exceeded.")
+            return ErrorResolution(
+                ResponseAction.FAIL,
+                FailureType.transient_error,
+                "Max Rate Limit exceeded",
+            )
+        elif response.status_code == requests.codes.too_many_requests or 500 <= response.status_code < 600:
+            return ErrorResolution(
+                ResponseAction.RETRY,
+                FailureType.transient_error,
+                f"Failed after retrying on status code {response.status_code}: {response.content}",
+            )
+        elif not response.ok:
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.system_error,
+                error_message=f"Response status code: {response.status_code}. Unexpected error. Failed.",
+            )
+
+        return ErrorResolution(ResponseAction.SUCCESS)
+
+
+def _create_retry_after_backoff_strategy() -> BackoffStrategy:
+    return WaitTimeFromHeaderBackoffStrategy(header="Retry-After", max_waiting_time_in_seconds=600, parameters={}, config={})
+
+
 class PinterestStream(HttpStream, ABC):
     url_base = "https://api.pinterest.com/v5/"
     primary_key = "id"
@@ -39,6 +117,12 @@ class PinterestStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any]) -> None:
         super().__init__(authenticator=config["authenticator"])
         self.config = config
+
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return _create_retry_after_backoff_strategy()
+
+    def get_error_handler(self) -> ErrorHandler:
+        return PinterestErrorHandler(self.logger, self.name)
 
     @property
     def start_date(self) -> str:
@@ -71,30 +155,6 @@ class PinterestStream(HttpStream, ABC):
 
             for record in data:
                 yield record
-
-    def should_retry(self, response: requests.Response) -> bool:
-        try:
-            resp = response.json()
-        except requests.exceptions.JSONDecodeError:
-            raise NonJSONResponse(f"Received unexpected response in non json format: '{response.text}'")
-
-        if isinstance(resp, dict):
-            self.max_rate_limit_exceeded = resp.get("code", 0) == MAX_RATE_LIMIT_CODE
-        # when max rate limit exceeded, we should skip the stream.
-        if response.status_code == requests.codes.too_many_requests and self.max_rate_limit_exceeded:
-            self.logger.error(f"For stream {self.name} Max Rate Limit exceeded.")
-            setattr(self, "raise_on_http_errors", False)
-        return 500 <= response.status_code < 600
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        if response.status_code == requests.codes.too_many_requests:
-            self.logger.error(f"For stream {self.name} rate limit exceeded.")
-            sleep_time = float(response.headers.get("X-RateLimit-Reset", 0))
-            if sleep_time > 600:
-                raise RateLimitExceeded(
-                    f"Rate limit exceeded for stream {self.name}. Waiting time is longer than 10 minutes: {sleep_time}s."
-                )
-            return sleep_time
 
 
 class PinterestSubStream(HttpSubStream):
@@ -192,6 +252,57 @@ class IncrementalPinterestSubStream(IncrementalPinterestStream):
                 yield parents_slice
 
 
+def _lookback_date_limit_reached(response: requests.Response) -> bool:
+    """
+    After few consecutive requests, analytics API return bad request error with 'You can only get data from the last 90 days' error
+    message. But with next request all working good. So, we wait 1 sec and request again if we get this issue.
+    """
+    if isinstance(response.json(), dict):
+        return response.json().get("code", 0) and response.status_code == 400
+    return False
+
+
+class PinterestAnalyticsErrorHandler(ErrorHandler):
+    def __init__(self, logger: logging.Logger, stream_name: str) -> None:
+        self._decorated = PinterestErrorHandler(logger, stream_name)
+
+    @property
+    def max_retries(self) -> Optional[int]:
+        """
+        Default value from HttpStream before the migration
+        """
+        return 5
+
+    @property
+    def max_time(self) -> Optional[int]:
+        """
+        Default value from HttpStream before the migration
+        """
+        return 60 * 10
+
+    def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response, requests.Response) and _lookback_date_limit_reached(response):
+            return ErrorResolution(
+                ResponseAction.RETRY,
+                FailureType.transient_error,
+                f"Analytics API returns bad request error when under load. This error should be retried after a second. If this error message appears, it means the Analytics API did not recover or there might be a bigger issue so please contact the support team.",
+            )
+
+        return self._decorated.interpret_response(response)
+
+
+class AnalyticsApiBackoffStrategyDecorator(BackoffStrategy):
+    def __init__(self) -> None:
+        self._decorated = _create_retry_after_backoff_strategy()
+
+    def backoff_time(
+        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs
+    ) -> Optional[float]:
+        if isinstance(response_or_exception, requests.Response) and _lookback_date_limit_reached(response_or_exception):
+            return 1
+        return self._decorated.backoff_time(response_or_exception)
+
+
 class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     primary_key = None
     cursor_field = "DATE"
@@ -199,26 +310,11 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     granularity = "DAY"
     analytics_target_ids = None
 
-    @staticmethod
-    def lookback_date_limit_reached(response: requests.Response) -> bool:
-        """
-        After few consecutive requests analytics API return bad request error
-        with 'You can only get data from the last 90 days' error message.
-        But with next request all working good. So, we wait 1 sec and
-        request again if we get this issue.
-        """
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return AnalyticsApiBackoffStrategyDecorator()
 
-        if isinstance(response.json(), dict):
-            return response.json().get("code", 0) and response.status_code == 400
-        return False
-
-    def should_retry(self, response: requests.Response) -> bool:
-        return super().should_retry(response) or self.lookback_date_limit_reached(response)
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        if self.lookback_date_limit_reached(response):
-            return 1
-        return super().backoff_time(response)
+    def get_error_handler(self) -> ErrorHandler:
+        return PinterestAnalyticsErrorHandler(self.logger, self.name)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None

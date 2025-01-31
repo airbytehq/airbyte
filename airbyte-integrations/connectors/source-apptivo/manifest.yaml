@@ -1,0 +1,2580 @@
+version: 6.4.0
+
+type: DeclarativeSource
+
+description: >-
+  Apptivo connector  seamless data integration between Apptivo and various data
+  warehouses or databases, automating data transfer for analytics, reporting,
+  and insights. This connector allows businesses to synchronize Apptivo CRM
+  data, such as contacts, deals, and activities, with other systems to
+  streamline workflows and improve data accessibility across platforms.
+
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+
+definitions:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - customerId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /app/dao/v6/customers
+          http_method: GET
+          request_parameters:
+            a: getAll
+            accessKey: "{{ config['access_key'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: startIndex
+          page_size_option:
+            type: RequestOption
+            field_name: numRecords
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - contactId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /app/dao/v6/contacts
+          http_method: GET
+          request_parameters:
+            a: getAll
+            accessKey: "{{ config[\"access_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: startIndex
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: numRecords
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    cases:
+      type: DeclarativeStream
+      name: cases
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /app/dao/v6/cases
+          http_method: GET
+          request_parameters:
+            a: getConfigData
+            accessKey: "{{ config[\"access_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cases"
+    leads:
+      type: DeclarativeStream
+      name: leads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /app/dao/v6/leads
+          http_method: GET
+          request_parameters:
+            a: getAll
+            accessKey: "{{ config[\"access_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: startIndex
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: numRecords
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads"
+    opportunities:
+      type: DeclarativeStream
+      name: opportunities
+      primary_key:
+        - opportunityId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /app/dao/v6/opportunities
+          http_method: GET
+          request_parameters:
+            a: getAll
+            accessKey: "{{ config[\"access_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: startIndex
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: numRecords
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/opportunities"
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.apptivo.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: apiKey
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/cases"
+  - $ref: "#/definitions/streams/leads"
+  - $ref: "#/definitions/streams/opportunities"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - access_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. Find it in your Apptivo account under Business
+          Settings -> API Access.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      access_key:
+        type: string
+        order: 1
+        title: Access Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    customers: true
+    contacts: true
+    cases: true
+    leads: true
+    opportunities: true
+  testedStreams:
+    customers:
+      streamHash: fd3012cf32a546a143d4db55a6936e5cd2695ff7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: 60a5d3b5a5140f0077da15685ede08fba1a3aa6e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    cases:
+      hasRecords: true
+      streamHash: f06a577d96be781ad8edf87c672e9d56dd233520
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    leads:
+      streamHash: bfcf2924569717b33757ead4ff677ea44f5f4f81
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    opportunities:
+      streamHash: 4e76f40c2c7803ec2abf0f5593e5651efe32afd1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.apptivo.com/developer-api/
+
+schemas:
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      accounts:
+        type:
+          - array
+          - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            accountAddressId:
+              type:
+                - number
+                - "null"
+            addressAttributeId:
+              type:
+                - string
+                - "null"
+            addressGroupName:
+              type:
+                - string
+                - "null"
+            addressId:
+              type:
+                - number
+                - "null"
+            addressLine1:
+              type:
+                - string
+                - "null"
+            addressLine2:
+              type:
+                - string
+                - "null"
+            addressType:
+              type:
+                - string
+                - "null"
+            addressTypeCode:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            countryCode:
+              type:
+                - string
+                - "null"
+            countryId:
+              type:
+                - number
+                - "null"
+            countryName:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            stateCode:
+              type:
+                - string
+                - "null"
+            zipCode:
+              type:
+                - string
+                - "null"
+      annualRevenueCurrencyCode:
+        type:
+          - string
+          - "null"
+      assigneeObjectId:
+        type:
+          - number
+          - "null"
+      assigneeObjectRefId:
+        type:
+          - number
+          - "null"
+      assigneeObjectRefName:
+        type:
+          - string
+          - "null"
+      campaignName:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - number
+          - "null"
+      createdByName:
+        type:
+          - string
+          - "null"
+      creationDate:
+        type:
+          - string
+          - "null"
+      creditRating:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      customAttributes:
+        type:
+          - array
+          - "null"
+      customerCategory:
+        type:
+          - string
+          - "null"
+      customerId:
+        type: number
+      customerName:
+        type:
+          - string
+          - "null"
+      customerNameNotAnalysed:
+        type:
+          - string
+          - "null"
+      customerNumber:
+        type:
+          - string
+          - "null"
+      deActivateRendered:
+        type:
+          - boolean
+          - "null"
+      defaultBillingCurrency:
+        type:
+          - string
+          - "null"
+      emailAddresses:
+        type:
+          - array
+          - "null"
+      employeeRange:
+        type:
+          - string
+          - "null"
+      faceBookURL:
+        type:
+          - string
+          - "null"
+      firmId:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      industryName:
+        type:
+          - string
+          - "null"
+      isActive:
+        type:
+          - string
+          - "null"
+      isAffiliate:
+        type:
+          - string
+          - "null"
+      isApproveRendered:
+        type:
+          - boolean
+          - "null"
+      isBounced:
+        type:
+          - string
+          - "null"
+      isExistingCustomer:
+        type:
+          - string
+          - "null"
+      isResponded:
+        type:
+          - string
+          - "null"
+      isUnsubscribed:
+        type:
+          - string
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      lastContactedDate:
+        type:
+          - string
+          - "null"
+      lastUpdateDate:
+        type:
+          - string
+          - "null"
+      lastUpdatedByName:
+        type:
+          - string
+          - "null"
+      linkedInURL:
+        type:
+          - string
+          - "null"
+      marketName:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - array
+          - "null"
+      objectId:
+        type:
+          - number
+          - "null"
+      objectStatus:
+        type:
+          - string
+          - "null"
+      ownership:
+        type:
+          - string
+          - "null"
+      parentCustomerName:
+        type:
+          - string
+          - "null"
+      paymentTerm:
+        type:
+          - string
+          - "null"
+      paymentTermId:
+        type:
+          - number
+          - "null"
+      phoneNumber:
+        type:
+          - string
+          - "null"
+      phoneNumbers:
+        type:
+          - array
+          - "null"
+      reInstateRendered:
+        type:
+          - boolean
+          - "null"
+      removeEmailAddresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            emailType:
+              type:
+                - string
+                - "null"
+            emailTypeCode:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+      removePhoneNumbers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            phoneType:
+              type:
+                - string
+                - "null"
+            phoneTypeCode:
+              type:
+                - string
+                - "null"
+      segmentName:
+        type:
+          - string
+          - "null"
+      skypeName:
+        type:
+          - string
+          - "null"
+      slaName:
+        type:
+          - string
+          - "null"
+      sortNumber:
+        type:
+          - string
+          - "null"
+      statusId:
+        type:
+          - number
+          - "null"
+      statusName:
+        type:
+          - string
+          - "null"
+      supportPlanName:
+        type:
+          - string
+          - "null"
+      syncToGoogle:
+        type:
+          - string
+          - "null"
+      territories:
+        type:
+          - array
+          - "null"
+      tickerSymbol:
+        type:
+          - string
+          - "null"
+      toObjectIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      twitterURL:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - number
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - customerId
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - number
+          - "null"
+      accountName:
+        type:
+          - string
+          - "null"
+      accounts:
+        type:
+          - array
+          - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            addressAttributeId:
+              type:
+                - string
+                - "null"
+            addressGroupName:
+              type:
+                - string
+                - "null"
+            addressId:
+              type:
+                - number
+                - "null"
+            addressLine1:
+              type:
+                - string
+                - "null"
+            addressLine2:
+              type:
+                - string
+                - "null"
+            addressType:
+              type:
+                - string
+                - "null"
+            addressTypeCode:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            countryCode:
+              type:
+                - string
+                - "null"
+            countryId:
+              type:
+                - number
+                - "null"
+            countryName:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            stateCode:
+              type:
+                - string
+                - "null"
+            zipCode:
+              type:
+                - string
+                - "null"
+      assigneeObjectId:
+        type:
+          - number
+          - "null"
+      assigneeObjectRefId:
+        type:
+          - number
+          - "null"
+      assigneeObjectRefName:
+        type:
+          - string
+          - "null"
+      bestWayToContactId:
+        type:
+          - number
+          - "null"
+      bestWayToContactName:
+        type:
+          - string
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+      contactAttributes:
+        type:
+          - array
+          - "null"
+      contactId:
+        type: number
+      contactStatusId:
+        type:
+          - number
+          - "null"
+      contactStatusName:
+        type:
+          - string
+          - "null"
+      contactTypeName:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - number
+          - "null"
+      createdByName:
+        type:
+          - string
+          - "null"
+      creationDate:
+        type:
+          - string
+          - "null"
+      customAttributes:
+        type:
+          - array
+          - "null"
+      customerNumber:
+        type:
+          - string
+          - "null"
+      emailAddresses:
+        type:
+          - array
+          - "null"
+      externalRefId:
+        type:
+          - string
+          - "null"
+      faceBookURL:
+        type:
+          - string
+          - "null"
+      firmId:
+        type:
+          - number
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      foods:
+        type:
+          - string
+          - "null"
+      fullName:
+        type:
+          - string
+          - "null"
+      hobbies:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      industryName:
+        type:
+          - string
+          - "null"
+      isActive:
+        type:
+          - string
+          - "null"
+      isBounced:
+        type:
+          - string
+          - "null"
+      isPrimary:
+        type:
+          - string
+          - "null"
+      isResponded:
+        type:
+          - string
+          - "null"
+      isUnsubscribed:
+        type:
+          - string
+          - "null"
+      jobTitle:
+        type:
+          - string
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      lastContactedDate:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      lastUpdateDate:
+        type:
+          - string
+          - "null"
+      lastUpdatedBy:
+        type:
+          - number
+          - "null"
+      lastUpdatedByName:
+        type:
+          - string
+          - "null"
+      linkedInURL:
+        type:
+          - string
+          - "null"
+      marketName:
+        type:
+          - string
+          - "null"
+      nickName:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - array
+          - "null"
+      objectStatus:
+        type:
+          - string
+          - "null"
+      phoneNumbers:
+        type:
+          - array
+          - "null"
+      phoneticName:
+        type:
+          - string
+          - "null"
+      segmentName:
+        type:
+          - string
+          - "null"
+      skypeName:
+        type:
+          - string
+          - "null"
+      supplierName:
+        type:
+          - string
+          - "null"
+      syncToGoogle:
+        type:
+          - string
+          - "null"
+      syncToO365:
+        type:
+          - string
+          - "null"
+      territories:
+        type:
+          - array
+          - "null"
+      twitterURL:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - contactId
+  cases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accessLevel:
+        type:
+          - string
+          - "null"
+      addressTypes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            isSmsEnabled:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      app360Objects:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            isLandscape:
+              type:
+                - boolean
+                - "null"
+            objectChecked:
+              type:
+                - boolean
+                - "null"
+            objectId:
+              type:
+                - number
+                - "null"
+            objectName:
+              type:
+                - string
+                - "null"
+      appName:
+        type:
+          - string
+          - "null"
+      assigneeObjectId:
+        type:
+          - number
+          - "null"
+      assigneeObjectRefId:
+        type:
+          - number
+          - "null"
+      assigneeObjectRefName:
+        type:
+          - string
+          - "null"
+      assigneeType:
+        type:
+          - string
+          - "null"
+      assignees:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            isLandscape:
+              type:
+                - boolean
+                - "null"
+            objectChecked:
+              type:
+                - boolean
+                - "null"
+            objectId:
+              type:
+                - number
+                - "null"
+            objectRefId:
+              type:
+                - number
+                - "null"
+            objectRefName:
+              type:
+                - string
+                - "null"
+      assignmentLevels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      caseSources:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            caseSourceId:
+              type:
+                - number
+                - "null"
+            caseSourceName:
+              type:
+                - string
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+      casesPortalTabName:
+        type:
+          - string
+          - "null"
+      collaborationSettings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            activityActionSettings:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  code:
+                    type:
+                      - string
+                      - "null"
+                  isEnabled:
+                    type:
+                      - string
+                      - "null"
+                  isShareWithAssignee:
+                    type:
+                      - string
+                      - "null"
+                  isShareWithCustomers:
+                    type:
+                      - string
+                      - "null"
+                  isShareWithOthers:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  privilegeCode:
+                    type:
+                      - string
+                      - "null"
+                  privilegeName:
+                    type:
+                      - string
+                      - "null"
+            code:
+              type:
+                - string
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            privilegeCode:
+              type:
+                - string
+                - "null"
+            privilegeName:
+              type:
+                - string
+                - "null"
+      configVersionNumber:
+        type:
+          - number
+          - "null"
+      conversions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            code:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      countOfAllCases:
+        type:
+          - number
+          - "null"
+      countOfCases:
+        type:
+          - number
+          - "null"
+      countOfMyEmployeeFollowupCases:
+        type:
+          - number
+          - "null"
+      countOfMyEmployeeNotRespondedQueueCases:
+        type:
+          - number
+          - "null"
+      countOfMyEmployeeQueueCases:
+        type:
+          - number
+          - "null"
+      countOfMyQueueCases:
+        type:
+          - number
+          - "null"
+      countOfMyfollowupCases:
+        type:
+          - number
+          - "null"
+      countOfNotRespondedQueueCases:
+        type:
+          - number
+          - "null"
+      countOfUnrespondedCases:
+        type:
+          - number
+          - "null"
+      countOfUnrespondedEmployeesCases:
+        type:
+          - number
+          - "null"
+      countOfUnrespondedTeamsCases:
+        type:
+          - number
+          - "null"
+      createdBy:
+        type:
+          - number
+          - "null"
+      currencies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      currencySymbolType:
+        type:
+          - string
+          - "null"
+      dateFormat:
+        type:
+          - string
+          - "null"
+      default360ObjectId:
+        type:
+          - string
+          - "null"
+      defaultHomePage:
+        type:
+          - string
+          - "null"
+      defaultViewType:
+        type:
+          - string
+          - "null"
+      eSignatureOption:
+        type:
+          - string
+          - "null"
+      editAccessLevel:
+        type:
+          - string
+          - "null"
+      emailTemplates:
+        type:
+          - array
+          - "null"
+      emailTypes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            isSmsEnabled:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      employees:
+        type:
+          - array
+          - "null"
+      firmId:
+        type:
+          - number
+          - "null"
+      followupTeams:
+        type:
+          - array
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isATagEnabled:
+        type:
+          - string
+          - "null"
+      isCasesPortalEnabled:
+        type:
+          - string
+          - "null"
+      isCustomerNotificaitonEnabled:
+        type:
+          - string
+          - "null"
+      isDashboardViewEnabled:
+        type:
+          - string
+          - "null"
+      isDefaultAssigneeEnabled:
+        type:
+          - string
+          - "null"
+      isDuplicationRulesEnabled:
+        type:
+          - boolean
+          - "null"
+      isEnterpriseDuplicateRuleEnabled:
+        type:
+          - boolean
+          - "null"
+      isGenerateEnabled:
+        type:
+          - string
+          - "null"
+      isKbPortalEnabled:
+        type:
+          - string
+          - "null"
+      isListViewEnabled:
+        type:
+          - string
+          - "null"
+      isMultiCurrency:
+        type:
+          - string
+          - "null"
+      isSWPTagEnabled:
+        type:
+          - string
+          - "null"
+      isTimeTrackingEnabled:
+        type:
+          - string
+          - "null"
+      kbPortalTabName:
+        type:
+          - string
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      lastUpdateDate:
+        type:
+          - string
+          - "null"
+      lastUpdatedBy:
+        type:
+          - number
+          - "null"
+      listLayouts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            data:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      mobileViews:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            webLayout:
+              type:
+                - string
+                - "null"
+      notRespondedTeams:
+        type:
+          - array
+          - "null"
+      numRecords:
+        type:
+          - number
+          - "null"
+      numberGenerator:
+        type:
+          - object
+          - "null"
+        properties:
+          isAutoGenerate:
+            type:
+              - string
+              - "null"
+          startsWith:
+            type:
+              - number
+              - "null"
+      objectId:
+        type:
+          - number
+          - "null"
+      parentObjectId:
+        type:
+          - number
+          - "null"
+      pdfDefaultTemplateId:
+        type:
+          - string
+          - "null"
+      pdfTemplates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            content:
+              type:
+                - string
+                - "null"
+            enabled:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            isBarCodeEnabled:
+              type:
+                - boolean
+                - "null"
+            isEsignEnabled:
+              type:
+                - boolean
+                - "null"
+            isQRCodeEnabled:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            prefix:
+              type:
+                - string
+                - "null"
+      phoneTypes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            isSmsEnabled:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      portalEditAccessLevel:
+        type:
+          - string
+          - "null"
+      portalIsParentCustomerVisibility:
+        type:
+          - string
+          - "null"
+      portalViewAccessLevel:
+        type:
+          - string
+          - "null"
+      priorities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            casesCount:
+              type:
+                - number
+                - "null"
+            code:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      privilegeSettings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            actionCode:
+              type:
+                - string
+                - "null"
+            actionName:
+              type:
+                - string
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            privilegeCode:
+              type:
+                - string
+                - "null"
+            privilegeName:
+              type:
+                - string
+                - "null"
+      privileges:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            version:
+              type:
+                - number
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            createdBy:
+              type:
+                - number
+                - "null"
+            creationDate:
+              type:
+                - string
+                - "null"
+            displayName:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            isFromDAP:
+              type:
+                - boolean
+                - "null"
+            lastUpdateDate:
+              type:
+                - string
+                - "null"
+            lastUpdatedBy:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            objectId:
+              type:
+                - number
+                - "null"
+            parentPrivilegeId:
+              type:
+                - string
+                - "null"
+            privilegeAutoGrants:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  autograntPrivilegeId:
+                    type:
+                      - number
+                      - "null"
+      quickLinks:
+        type:
+          - array
+          - "null"
+      referenceFields:
+        type:
+          - array
+          - "null"
+      reportGroups:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            version:
+              type:
+                - number
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            reportGroupName:
+              type:
+                - string
+                - "null"
+            reports:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  version:
+                    type:
+                      - number
+                      - "null"
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  addresses:
+                    type:
+                      - array
+                      - "null"
+                  associatedEntities:
+                    type:
+                      - array
+                      - "null"
+                  customAttributes:
+                    type:
+                      - array
+                      - "null"
+                  emailAddresses:
+                    type:
+                      - array
+                      - "null"
+                  isPaidReport:
+                    type:
+                      - string
+                      - "null"
+                  labels:
+                    type:
+                      - array
+                      - "null"
+                  metaAttributeMap:
+                    type:
+                      - object
+                      - "null"
+                  metaObjectMap:
+                    type:
+                      - object
+                      - "null"
+                  phoneNumbers:
+                    type:
+                      - array
+                      - "null"
+                  privilegeCode:
+                    type:
+                      - string
+                      - "null"
+                  removeAddresses:
+                    type:
+                      - array
+                      - "null"
+                  removeEmailAddresses:
+                    type:
+                      - array
+                      - "null"
+                  removeLabels:
+                    type:
+                      - array
+                      - "null"
+                  removePhoneNumbers:
+                    type:
+                      - array
+                      - "null"
+                  reportCode:
+                    type:
+                      - string
+                      - "null"
+                  reportId:
+                    type:
+                      - number
+                      - "null"
+                  reportName:
+                    type:
+                      - string
+                      - "null"
+                  toObjectIds:
+                    type:
+                      - array
+                      - "null"
+      savedViews:
+        type:
+          - array
+          - "null"
+      slas:
+        type:
+          - array
+          - "null"
+      snapShots:
+        type:
+          - array
+          - "null"
+      statuses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            casesCount:
+              type:
+                - number
+                - "null"
+            isActive:
+              type:
+                - string
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            statusCode:
+              type:
+                - string
+                - "null"
+            statusId:
+              type:
+                - number
+                - "null"
+            statusName:
+              type:
+                - string
+                - "null"
+      sysMessages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            message:
+              type:
+                - string
+                - "null"
+      teams:
+        type:
+          - array
+          - "null"
+      timeTrackingType:
+        type:
+          - string
+          - "null"
+      types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            casesCount:
+              type:
+                - number
+                - "null"
+            isActive:
+              type:
+                - string
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            typeCode:
+              type:
+                - string
+                - "null"
+            typeId:
+              type:
+                - number
+                - "null"
+            typeName:
+              type:
+                - string
+                - "null"
+      userConfig:
+        type:
+          - object
+          - "null"
+        properties:
+          myViews:
+            type:
+              - array
+              - "null"
+          sharedViews:
+            type:
+              - array
+              - "null"
+      versionNumber:
+        type:
+          - number
+          - "null"
+      viewSettings:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            bulkActions:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  code:
+                    type:
+                      - string
+                      - "null"
+                  isEnabled:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+            code:
+              type:
+                - string
+                - "null"
+            isEnabled:
+              type:
+                - string
+                - "null"
+            listLayoutId:
+              type:
+                - string
+                - "null"
+            mobileViewId:
+              type:
+                - string
+                - "null"
+            mobileViewName:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            privilegeCode:
+              type:
+                - string
+                - "null"
+            privilegeName:
+              type:
+                - string
+                - "null"
+      webLayout:
+        type:
+          - string
+          - "null"
+  leads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - number
+          - "null"
+      accountName:
+        type:
+          - string
+          - "null"
+      accounts:
+        type:
+          - array
+          - "null"
+      actualAmount:
+        type:
+          - number
+          - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            addressAttributeId:
+              type:
+                - string
+                - "null"
+            addressGroupName:
+              type:
+                - string
+                - "null"
+            addressId:
+              type:
+                - number
+                - "null"
+            addressLine1:
+              type:
+                - string
+                - "null"
+            addressLine2:
+              type:
+                - string
+                - "null"
+            addressType:
+              type:
+                - string
+                - "null"
+            addressTypeCode:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            countryCode:
+              type:
+                - string
+                - "null"
+            countryId:
+              type:
+                - number
+                - "null"
+            countryName:
+              type:
+                - string
+                - "null"
+            county:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            stateCode:
+              type:
+                - string
+                - "null"
+            zipCode:
+              type:
+                - string
+                - "null"
+      annualRevenueCurrencyCode:
+        type:
+          - string
+          - "null"
+      assigneeObjectId:
+        type:
+          - number
+          - "null"
+      assigneeObjectRefId:
+        type:
+          - number
+          - "null"
+      assigneeObjectRefName:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - number
+          - "null"
+      createdByName:
+        type:
+          - string
+          - "null"
+      createdByObjectId:
+        type:
+          - number
+          - "null"
+      createdByObjectRefId:
+        type:
+          - number
+          - "null"
+      creationDate:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      customAttributes:
+        type:
+          - array
+          - "null"
+      emailAddresses:
+        type:
+          - array
+          - "null"
+      employeeRange:
+        type:
+          - string
+          - "null"
+      firmId:
+        type:
+          - number
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      fromObjectId:
+        type:
+          - number
+          - "null"
+      fromObjectRefId:
+        type:
+          - number
+          - "null"
+      fullName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      industryName:
+        type:
+          - string
+          - "null"
+      isBounced:
+        type:
+          - string
+          - "null"
+      isUnsubscribed:
+        type:
+          - string
+          - "null"
+      jobTitle:
+        type:
+          - string
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      lastContactedDate:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      lastUpdateDate:
+        type:
+          - string
+          - "null"
+      lastUpdatedBy:
+        type:
+          - number
+          - "null"
+      lastUpdatedByName:
+        type:
+          - string
+          - "null"
+      leadId:
+        type:
+          - number
+          - "null"
+      notes:
+        type:
+          - array
+          - "null"
+      objectId:
+        type:
+          - number
+          - "null"
+      objectStatus:
+        type:
+          - string
+          - "null"
+      ownership:
+        type:
+          - string
+          - "null"
+      phoneNumbers:
+        type:
+          - array
+          - "null"
+      potentialAmount:
+        type:
+          - number
+          - "null"
+      potentialAmountCurrencyCode:
+        type:
+          - string
+          - "null"
+      referredById:
+        type:
+          - number
+          - "null"
+      referredByName:
+        type:
+          - string
+          - "null"
+      territories:
+        type:
+          - array
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  opportunities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      accounts:
+        type:
+          - array
+          - "null"
+      actualAmount:
+        type:
+          - number
+          - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      assignedToObjectId:
+        type:
+          - number
+          - "null"
+      assignedToObjectRefId:
+        type:
+          - number
+          - "null"
+      assignedToObjectRefName:
+        type:
+          - string
+          - "null"
+      assigneeManagers:
+        type:
+          - array
+          - "null"
+      campaignName:
+        type:
+          - string
+          - "null"
+      closeDate:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - number
+          - "null"
+      createdByName:
+        type:
+          - string
+          - "null"
+      creationDate:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      customAttributes:
+        type:
+          - array
+          - "null"
+      emailAddresses:
+        type:
+          - array
+          - "null"
+      firmId:
+        type:
+          - number
+          - "null"
+      histories:
+        type:
+          - array
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      inquiryTypes:
+        type:
+          - array
+          - "null"
+      isActive:
+        type:
+          - string
+          - "null"
+      isLocked:
+        type:
+          - string
+          - "null"
+      isMultiCurrency:
+        type:
+          - string
+          - "null"
+      itemList:
+        type:
+          - array
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      lastContactedDate:
+        type:
+          - string
+          - "null"
+      lastUpdateDate:
+        type:
+          - string
+          - "null"
+      lastUpdatedBy:
+        type:
+          - number
+          - "null"
+      lastUpdatedByName:
+        type:
+          - string
+          - "null"
+      leadSourceTypeId:
+        type:
+          - number
+          - "null"
+      leadSourceTypeName:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - array
+          - "null"
+      objectStatus:
+        type:
+          - string
+          - "null"
+      opportunityCustomer:
+        type:
+          - string
+          - "null"
+      opportunityCustomerId:
+        type:
+          - number
+          - "null"
+      opportunityHistory:
+        type:
+          - string
+          - "null"
+      opportunityId:
+        type: number
+      opportunityName:
+        type:
+          - string
+          - "null"
+      opportunityNameNotAnalysed:
+        type:
+          - string
+          - "null"
+      pdfTemplateId:
+        type:
+          - number
+          - "null"
+      pdfTemplateName:
+        type:
+          - string
+          - "null"
+      phoneNumbers:
+        type:
+          - array
+          - "null"
+      probability:
+        type:
+          - number
+          - "null"
+      propertyList:
+        type:
+          - array
+          - "null"
+      removeLabels:
+        type:
+          - array
+          - "null"
+      salesStageHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            version:
+              type:
+                - number
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            closeDate:
+              type:
+                - string
+                - "null"
+            createdBy:
+              type:
+                - number
+                - "null"
+            createdByName:
+              type:
+                - string
+                - "null"
+            creationDate:
+              type:
+                - string
+                - "null"
+            currencyCode:
+              type:
+                - string
+                - "null"
+            firmId:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            lastUpdateDate:
+              type:
+                - string
+                - "null"
+            lastUpdatedBy:
+              type:
+                - number
+                - "null"
+            lastUpdatedByName:
+              type:
+                - string
+                - "null"
+            opportunityId:
+              type:
+                - number
+                - "null"
+            probability:
+              type:
+                - number
+                - "null"
+            stageId:
+              type:
+                - number
+                - "null"
+            stageName:
+              type:
+                - string
+                - "null"
+      salesStageId:
+        type:
+          - number
+          - "null"
+      salesStageName:
+        type:
+          - string
+          - "null"
+      territories:
+        type:
+          - array
+          - "null"
+    required:
+      - opportunityId

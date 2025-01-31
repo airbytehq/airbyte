@@ -96,6 +96,19 @@ TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/intro
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 1.1.9 | 2025-01-25 | [52460](https://github.com/airbytehq/airbyte/pull/52460) | Update dependencies |
+| 1.1.8 | 2025-01-18 | [51982](https://github.com/airbytehq/airbyte/pull/51982) | Update dependencies |
+| 1.1.7 | 2025-01-11 | [51419](https://github.com/airbytehq/airbyte/pull/51419) | Update dependencies |
+| 1.1.6 | 2024-12-28 | [50778](https://github.com/airbytehq/airbyte/pull/50778) | Update dependencies |
+| 1.1.5 | 2024-12-21 | [50323](https://github.com/airbytehq/airbyte/pull/50323) | Update dependencies |
+| 1.1.4 | 2024-12-14 | [49800](https://github.com/airbytehq/airbyte/pull/49800) | Update dependencies |
+| 1.1.3 | 2024-12-12 | [47938](https://github.com/airbytehq/airbyte/pull/47938) | Update dependencies |
+| 1.1.2 | 2024-10-28 | [47676](https://github.com/airbytehq/airbyte/pull/47676) | Update dependencies |
+| 1.1.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 1.1.0 | 2024-08-14 | [44057](https://github.com/airbytehq/airbyte/pull/44057) | Refactor connector to manifest-only format |
+| 1.0.5 | 2024-08-12 | [43816](https://github.com/airbytehq/airbyte/pull/43816) | Update dependencies |
+| 1.0.4 | 2024-08-10 | [43650](https://github.com/airbytehq/airbyte/pull/43650) | Update dependencies |
+| 1.0.3 | 2024-08-03 | [43259](https://github.com/airbytehq/airbyte/pull/43259) | Update dependencies |
 | 1.0.2 | 2024-07-27 | [42811](https://github.com/airbytehq/airbyte/pull/42811) | Update dependencies |
 | 1.0.1 | 2024-07-20 | [42257](https://github.com/airbytehq/airbyte/pull/42257) | Update dependencies |
 | 1.0.0 | 2024-07-15 | [39109](https://github.com/airbytehq/airbyte/pull/39109) | Make compatible with builder, fix schema |

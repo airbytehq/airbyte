@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 60a1efcc-c31c-4c63-b508-5b48b6a9f4a6
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.27
   maxSecondsBetweenMessages: 7200
   dockerRepository: airbyte/source-kyve
   githubIssueLabel: source-kyve
@@ -13,7 +13,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-kyve
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -28,6 +28,12 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: kyve_config_dev_null
+          id: 16c974aa-7f7c-41c3-a20c-da11554057b2
+        - name: kyve_config_multiple_pools_dev_null
+          id: 4e3a020e-0b7e-485b-9823-cdad46a6e972
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
@@ -42,5 +48,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
 metadataSpecVersion: "1.0"

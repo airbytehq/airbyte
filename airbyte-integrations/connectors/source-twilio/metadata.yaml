@@ -9,11 +9,11 @@ data:
       - chat.twilio.com
       - trunking.twilio.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
-  dockerImageTag: 0.11.11
+  dockerImageTag: 0.11.16
   dockerRepository: airbyte/source-twilio
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   githubIssueLabel: source-twilio
@@ -25,7 +25,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-twilio
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -36,6 +36,12 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: twilio_config_with_lookback_dev_null
+          id: 57c28219-3a06-48db-9aec-df3cd20be9f6
+        - name: twilio_config_dev_null
+          id: 91aac9a6-6ece-42e2-9ed5-c6f6a226cc3e
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

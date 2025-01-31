@@ -1,18 +1,20 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
-
+import "dotenv/config.js";
 const yaml = require("js-yaml");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const { themes } = require('prism-react-renderer');
+const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
+const enterpriseDocsHeaderInformation = require("./src/remark/enterpriseDocsHeaderInformation");
 const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
+const docMetaTags = require("./src/remark/docMetaTags");
 
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
@@ -23,7 +25,7 @@ const config = {
   markdown: {
     mermaid: true,
   },
-  themes: ['@docusaurus/theme-mermaid'],
+  themes: ["@docusaurus/theme-mermaid"],
   title: "Airbyte Documentation",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
@@ -46,6 +48,22 @@ const config = {
       type: "module",
       id: "unifytag",
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
+    },
+    {
+      src: "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack.min.js",
+      async: true,
+      "data-apikey": "2094e2379643f69f7aec647a15f786",
+      "data-cookieless": "1",
+      "data-auto-identify": "1",
+    },
+  ],
+  headTags: [
+    {
+      tagName: "meta",
+      attributes: {
+        name: "zd-site-verification",
+        content: "plvcr4wcl9abmq0itvi63c",
+      },
     },
   ],
 
@@ -77,10 +95,12 @@ const config = {
       },
     }),
   ],
-
+  customFields: {
+    requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
+  },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
-    require.resolve('./src/scripts/download-abctl-buttons.js'),
+    require.resolve("./src/scripts/download-abctl-buttons.js"),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
   ],
 
@@ -97,7 +117,12 @@ const config = {
           path: "../docs",
           exclude: ["**/*.inapp.md"],
           beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
-          remarkPlugins: [docsHeaderDecoration, productInformation],
+          remarkPlugins: [
+            docsHeaderDecoration,
+            enterpriseDocsHeaderInformation,
+            productInformation,
+            docMetaTags,
+          ],
         },
         blog: false,
         theme: {
@@ -171,6 +196,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ["bash", "json"],
       },
     }),
 };

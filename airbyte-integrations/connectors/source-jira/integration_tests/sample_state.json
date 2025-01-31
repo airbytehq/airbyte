@@ -93,11 +93,357 @@
         "namespace": null
       },
       "stream_state": {
-        "updated": "2023-05-08T03:04:45.056-0700"
+        "states": [
+          {
+            "partition": {
+              "issue_id": "10063",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:39:56.480-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10055",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:03.372-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10069",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:39:52.625-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10000",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:29.651-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10001",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:26.631-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10019",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:15.339-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10007",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:25.984-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10008",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:22.939-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10017",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:16.658-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10013",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:17.282-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10024",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:13.547-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10029",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:11.701-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10037",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:08.524-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10042",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:07.295-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10043",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:06.582-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10051",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:05.967-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10061",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:01.993-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10062",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:39:58.707-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10065",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:39:55.810-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10080",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:39:47.834-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10021",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:14.775-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10009",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:19.832-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10012",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:40:18.557-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10626",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2023-04-05T05:08:50.033-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10075",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T11:39:50.205-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10632",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10064"
+              }
+            },
+            "cursor": {
+              "updated": "2023-05-08T03:04:45.056-0700"
+            }
+          }
+        ],
+        "parent_state": {
+          "issues": {
+            "states": [
+              {
+                "partition": {
+                  "parent_slice": {},
+                  "project_id": "10000"
+                },
+                "cursor": {
+                  "updated": "2023-10-12T13:43:50.735-0700"
+                }
+              },
+              {
+                "partition": {
+                  "parent_slice": {},
+                  "project_id": "10016"
+                },
+                "cursor": {
+                  "updated": "2023-07-05T12:57:51.258-0700"
+                }
+              },
+              {
+                "partition": {
+                  "parent_slice": {},
+                  "project_id": "10064"
+                },
+                "cursor": {
+                  "updated": "2023-05-08T03:04:45.139-0700"
+                }
+              }
+            ]
+          }
+        }
       }
     },
     "sourceStats": {
-      "recordCount": 21.0
+      "recordCount": 1.0
     }
   },
   {
@@ -108,11 +454,297 @@
         "namespace": null
       },
       "stream_state": {
-        "updated": "2022-12-08T06:32:22.567-0800"
+        "states": [
+          {
+            "partition": {
+              "issue_id": "10063",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-14T14:32:45.445-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10055",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-14T14:32:48.961-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10069",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:08:58.704-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10625",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2022-05-17T04:06:55.076-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10001",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:09:35.737-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10019",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:09:14.283-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10007",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-14T14:32:58.858-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10008",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:09:34.423-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10013",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:09:18.960-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10024",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:09:10.916-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10029",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-14T14:32:53.076-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10037",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-14T14:32:51.879-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10042",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-14T14:32:50.783-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10043",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:09:10.146-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10051",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2022-12-08T06:32:22.567-0800"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10062",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:09:02.883-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10065",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-14T14:32:44.898-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10021",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-14T14:32:53.670-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10009",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:09:29.256-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10012",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:09:23.970-0700"
+            }
+          },
+          {
+            "partition": {
+              "issue_id": "10075",
+              "parent_slice": {
+                "parent_slice": {},
+                "project_id": "10000"
+              }
+            },
+            "cursor": {
+              "updated": "2021-04-15T00:08:53.824-0700"
+            }
+          }
+        ],
+        "parent_state": {
+          "issues": {
+            "states": [
+              {
+                "partition": {
+                  "parent_slice": {},
+                  "project_id": "10000"
+                },
+                "cursor": {
+                  "updated": "2023-10-12T13:43:50.735-0700"
+                }
+              },
+              {
+                "partition": {
+                  "parent_slice": {},
+                  "project_id": "10016"
+                },
+                "cursor": {
+                  "updated": "2023-07-05T12:57:51.258-0700"
+                }
+              },
+              {
+                "partition": {
+                  "parent_slice": {},
+                  "project_id": "10064"
+                },
+                "cursor": {
+                  "updated": "2023-05-08T03:04:45.139-0700"
+                }
+              }
+            ]
+          }
+        }
       }
     },
     "sourceStats": {
-      "recordCount": 2.0
+      "recordCount": 0.0
     }
   },
   {

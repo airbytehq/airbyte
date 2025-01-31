@@ -54,6 +54,19 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
 
 | Version | Date       | Pull Request                                             | Subject                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
+| 0.4.7 | 2025-01-25 | [52323](https://github.com/airbytehq/airbyte/pull/52323) | Update dependencies |
+| 0.4.6 | 2025-01-18 | [51691](https://github.com/airbytehq/airbyte/pull/51691) | Update dependencies |
+| 0.4.5 | 2025-01-11 | [51116](https://github.com/airbytehq/airbyte/pull/51116) | Update dependencies |
+| 0.4.4 | 2024-12-28 | [50546](https://github.com/airbytehq/airbyte/pull/50546) | Update dependencies |
+| 0.4.3 | 2024-12-21 | [50028](https://github.com/airbytehq/airbyte/pull/50028) | Update dependencies |
+| 0.4.2 | 2024-12-14 | [49497](https://github.com/airbytehq/airbyte/pull/49497) | Update dependencies |
+| 0.4.1 | 2024-12-12 | [49149](https://github.com/airbytehq/airbyte/pull/49149) | Update dependencies |
+| 0.4.0 | 2024-08-27 | [44818](https://github.com/airbytehq/airbyte/pull/44818) | Refactor connector to manifest-only format |
+| 0.3.14 | 2024-08-24 | [44666](https://github.com/airbytehq/airbyte/pull/44666) | Update dependencies |
+| 0.3.13 | 2024-08-17 | [44328](https://github.com/airbytehq/airbyte/pull/44328) | Update dependencies |
+| 0.3.12 | 2024-08-12 | [43871](https://github.com/airbytehq/airbyte/pull/43871) | Update dependencies |
+| 0.3.11 | 2024-08-10 | [43474](https://github.com/airbytehq/airbyte/pull/43474) | Update dependencies |
+| 0.3.10 | 2024-08-03 | [43088](https://github.com/airbytehq/airbyte/pull/43088) | Update dependencies |
 | 0.3.9 | 2024-07-27 | [42679](https://github.com/airbytehq/airbyte/pull/42679) | Update dependencies |
 | 0.3.8 | 2024-07-20 | [42156](https://github.com/airbytehq/airbyte/pull/42156) | Update dependencies |
 | 0.3.7 | 2024-07-13 | [41805](https://github.com/airbytehq/airbyte/pull/41805) | Update dependencies |

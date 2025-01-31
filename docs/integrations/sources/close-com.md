@@ -108,7 +108,29 @@ The Close.com connector is subject to rate limits. For more information on this 
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| :------ |:-----------| :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| 0.6.2 | 2025-01-25 | [52306](https://github.com/airbytehq/airbyte/pull/52306) | Update dependencies |
+| 0.6.1 | 2025-01-18 | [51625](https://github.com/airbytehq/airbyte/pull/51625) | Update dependencies |
+| 0.6.0 | 2025-01-16 | [50431](https://github.com/airbytehq/airbyte/pull/50431) | Migrate to manifest-only |
+| 0.5.30 | 2025-01-11 | [51119](https://github.com/airbytehq/airbyte/pull/51119) | Update dependencies |
+| 0.5.29 | 2025-01-04 | [50920](https://github.com/airbytehq/airbyte/pull/50920) | Update dependencies |
+| 0.5.28 | 2024-12-28 | [50532](https://github.com/airbytehq/airbyte/pull/50532) | Update dependencies |
+| 0.5.27 | 2024-12-21 | [50065](https://github.com/airbytehq/airbyte/pull/50065) | Update dependencies |
+| 0.5.26 | 2024-12-14 | [48918](https://github.com/airbytehq/airbyte/pull/48918) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.5.25 | 2024-11-04 | [47933](https://github.com/airbytehq/airbyte/pull/47933) | Update dependencies |
+| 0.5.24 | 2024-10-21 | [47047](https://github.com/airbytehq/airbyte/pull/47047) | Update dependencies |
+| 0.5.23 | 2024-10-12 | [46803](https://github.com/airbytehq/airbyte/pull/46803) | Update dependencies |
+| 0.5.22 | 2024-10-05 | [46449](https://github.com/airbytehq/airbyte/pull/46449) | Update dependencies |
+| 0.5.21 | 2024-09-28 | [46116](https://github.com/airbytehq/airbyte/pull/46116) | Update dependencies |
+| 0.5.20 | 2024-09-21 | [45738](https://github.com/airbytehq/airbyte/pull/45738) | Update dependencies |
+| 0.5.19 | 2024-09-14 | [45483](https://github.com/airbytehq/airbyte/pull/45483) | Update dependencies |
+| 0.5.18 | 2024-09-07 | [45300](https://github.com/airbytehq/airbyte/pull/45300) | Update dependencies |
+| 0.5.17 | 2024-08-31 | [44976](https://github.com/airbytehq/airbyte/pull/44976) | Update dependencies |
+| 0.5.16 | 2024-08-24 | [44651](https://github.com/airbytehq/airbyte/pull/44651) | Update dependencies |
+| 0.5.15 | 2024-08-17 | [44305](https://github.com/airbytehq/airbyte/pull/44305) | Update dependencies |
+| 0.5.14 | 2024-08-12 | [43877](https://github.com/airbytehq/airbyte/pull/43877) | Update dependencies |
+| 0.5.13 | 2024-08-10 | [43574](https://github.com/airbytehq/airbyte/pull/43574) | Update dependencies |
+| 0.5.12 | 2024-08-03 | [43296](https://github.com/airbytehq/airbyte/pull/43296) | Update dependencies |
 | 0.5.11 | 2024-07-27 | [42639](https://github.com/airbytehq/airbyte/pull/42639) | Update dependencies |
 | 0.5.10 | 2024-07-20 | [42318](https://github.com/airbytehq/airbyte/pull/42318) | Update dependencies |
 | 0.5.9 | 2024-07-13 | [41896](https://github.com/airbytehq/airbyte/pull/41896) | Update dependencies |

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "5.4.11"
+version = "5.8.3"
 name = "source-stripe"
 description = "Source implementation for Stripe."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,16 +16,15 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_stripe"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-stripe = "==2.56.0"
+python = "^3.10,<3.12"
 pendulum = "==2.1.2"
-airbyte-cdk = "^2"
+airbyte-cdk = "^5"
 
 [tool.poetry.scripts]
 source-stripe = "source_stripe.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.11.0"
-pytest = "^6.1"
 freezegun = "==1.2.2"
 pytest-mock = "^3.6.1"
+pytest = "^7"

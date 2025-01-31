@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.brevo.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-brevo
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e2276f19-1c19-4d4e-ae6c-7df3c9c4ad49
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/source-brevo
+  githubIssueLabel: source-brevo
+  icon: icon.svg
+  license: MIT
+  name: Brevo
+  releaseDate: 2024-09-11
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/brevo
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

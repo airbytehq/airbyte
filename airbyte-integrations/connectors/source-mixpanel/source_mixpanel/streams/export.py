@@ -4,14 +4,17 @@
 
 import json
 from functools import cache
-from typing import Any, Iterable, Mapping, MutableMapping
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from ..property_transformation import transform_property_names
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from source_mixpanel.errors_handlers import ExportErrorHandler
+from source_mixpanel.property_transformation import transform_property_names
+
 from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
 
 
@@ -88,13 +91,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     def path(self, **kwargs) -> str:
         return "export"
 
-    def should_retry(self, response: requests.Response) -> bool:
-        try:
-            # trying to parse response to avoid ConnectionResetError and retry if it occurs
-            self.iter_dicts(response.iter_lines(decode_unicode=True))
-        except ConnectionResetError:
-            return True
-        return super().should_retry(response)
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return ExportErrorHandler(logger=self.logger, stream=self)
 
     def iter_dicts(self, lines):
         """

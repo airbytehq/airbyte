@@ -2,17 +2,28 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: config.json
+          name: SECRET_SOURCE-REDSHIFT__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: source
   definitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
-  dockerImageTag: 0.5.2
+  dockerImageTag: 0.5.3
   dockerRepository: airbyte/source-redshift
   documentationUrl: https://docs.airbyte.com/integrations/sources/redshift
   githubIssueLabel: source-redshift
   icon: redshift.svg
   license: ELv2
   name: Redshift
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -21,13 +32,4 @@ data:
   supportLevel: community
   tags:
     - language:java
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_SOURCE-REDSHIFT__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

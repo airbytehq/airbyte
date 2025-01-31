@@ -3,17 +3,8 @@ data:
     ql: 200
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
   connectorSubtype: api
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: acceptanceTests
-      testSecrets:
-        - fileName: config.json
-          name: SECRET_SOURCE_NETSUITE_CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
   connectorType: source
   definitionId: 4f2f093d-ce44-4121-8118-9d13b7bfccd0
   dockerImageTag: 0.1.4
@@ -23,18 +14,27 @@ data:
   icon: netsuite.svg
   license: MIT
   name: Netsuite
-  registries:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-netsuite
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-netsuite
   supportLevel: community
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_NETSUITE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

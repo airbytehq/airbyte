@@ -3,12 +3,15 @@
 #
 
 
-from typing import Dict
+from typing import Dict, Optional
 
 import pytest
 import requests
 from source_zendesk_support.source import SourceZendeskSupport
 from source_zendesk_support.streams import Users
+
+
+_ANY_ATTEMPT_COUNT = 10
 
 
 @pytest.fixture(scope="session", name="config")
@@ -22,7 +25,7 @@ def test_config():
 
 
 def prepare_config(config: Dict):
-    return SourceZendeskSupport().convert_config2stream_args(config)
+    return SourceZendeskSupport(config=config, catalog=None, state=None).convert_config2stream_args(config)
 
 
 @pytest.mark.parametrize(
@@ -43,5 +46,5 @@ def test_backoff(requests_mock, config, x_rate_limit, retry_after, expected):
     requests_mock.get(url, json=test_response_json, headers=test_response_header, status_code=429)
     test_response = requests.get(url)
 
-    actual = test_stream.get_backoff_strategy().backoff_time(test_response)
+    actual = test_stream.get_backoff_strategy().backoff_time(test_response, _ANY_ATTEMPT_COUNT)
     assert actual == expected

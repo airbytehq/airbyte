@@ -14,7 +14,7 @@ data:
     hosts:
       - "${host}"
       - "${tunnel_method.tunnel_host}"
-  registries:
+  registryOverrides:
     oss:
       enabled: true
       what: is this?

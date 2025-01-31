@@ -62,6 +62,19 @@ Connector will handle an issue with rate limiting as Klarna returns 429 status c
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.10 | 2025-01-25 | [52268](https://github.com/airbytehq/airbyte/pull/52268) | Update dependencies |
+| 0.3.9 | 2025-01-18 | [51800](https://github.com/airbytehq/airbyte/pull/51800) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51169](https://github.com/airbytehq/airbyte/pull/51169) | Update dependencies |
+| 0.3.7 | 2024-12-28 | [50659](https://github.com/airbytehq/airbyte/pull/50659) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [50146](https://github.com/airbytehq/airbyte/pull/50146) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49639](https://github.com/airbytehq/airbyte/pull/49639) | Update dependencies |
+| 0.3.4 | 2024-12-12 | [49230](https://github.com/airbytehq/airbyte/pull/49230) | Update dependencies |
+| 0.3.3 | 2024-10-29 | [47478](https://github.com/airbytehq/airbyte/pull/47478) | Update dependencies |
+| 0.3.2 | 2024-10-21 | [47195](https://github.com/airbytehq/airbyte/pull/47195) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-15 | [44136](https://github.com/airbytehq/airbyte/pull/44136) | Refactor connector to manifest-only format |
+| 0.2.16 | 2024-08-10 | [43550](https://github.com/airbytehq/airbyte/pull/43550) | Update dependencies |
+| 0.2.15 | 2024-08-03 | [43266](https://github.com/airbytehq/airbyte/pull/43266) | Update dependencies |
 | 0.2.14 | 2024-07-27 | [42818](https://github.com/airbytehq/airbyte/pull/42818) | Update dependencies |
 | 0.2.13 | 2024-07-20 | [42276](https://github.com/airbytehq/airbyte/pull/42276) | Update dependencies |
 | 0.2.12 | 2024-07-13 | [41874](https://github.com/airbytehq/airbyte/pull/41874) | Update dependencies |

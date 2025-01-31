@@ -1,0 +1,25 @@
+[
+  {
+    "union_of_string_and_integer": 1,
+    "union_of_integer_and_object": {
+      "nested_number": 1,
+      "nested_timestamp": "2021-08-01T00:00:00Z"
+    },
+    "union_of_array_and_object": {
+      "nested_number": 1,
+      "nested_timestamp": "00:00:00"
+    },
+    "union_of_schemaless_object_and_array": {
+      "some_stuff": [1, 2, 3],
+      "some_other_stuff": {
+        "nested_stuff": "stuff"
+      }
+    }
+  },
+  {
+    "union_of_string_and_integer": "string",
+    "union_of_integer_and_object": 2,
+    "union_of_array_and_object": [true, false],
+    "union_of_schemaless_object_and_array": [4, 5, 6]
+  }
+]

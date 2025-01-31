@@ -1,0 +1,178 @@
+#
+# Copyright (C) 2024 Dremio
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# To request an access token, use the following command:
+# token=$(curl http://127.0.0.1:8080/realms/iceberg/protocol/openid-connect/token --user client1:s3cr3t -d 'grant_type=client_credentials' -d 'scope=profile' | jq -r .access_token)
+
+# Then use the access token in the Authorization header:
+# curl http://127.0.0.1:19120/api/v2/config -H "Authorization: Bearer $token"
+
+# To connect using Nessie CLI:
+# connect to http://127.0.0.1:19120/api/v2 using
+#   "nessie.authentication.type"="OAUTH2" AND
+#   "nessie.authentication.oauth2.client-id"=client1 AND
+#   "nessie.authentication.oauth2.client-secret"=s3cr3t AND
+#   "nessie.authentication.oauth2.issuer-url"="http://127.0.0.1:8080/realms/iceberg/"
+
+version: "3"
+# This is the file!!!
+services:
+  ## IMPORTANT
+  ##
+  ## 1. Start the pods:
+  ##
+  ##      podman compose -f docker/catalog-auth-s3-otel/docker-compose.yml up
+  ##
+  ## 2. Once the Nessie Catalog pod is up, you can run any of the following commands to start a Spark SQL session with Nessie enabled:
+  ##    The script will ask for the client secret, it is 's3cr3t' for all three clients.
+  ##
+  ##      catalog/bin/spark-sql.sh --no-nessie-start --aws --oauth --client-id client1
+  ##      catalog/bin/spark-sql.sh --no-nessie-start --aws --oauth --client-id client2
+  ##      catalog/bin/spark-sql.sh --no-nessie-start --aws --oauth --client-id client3
+  ##
+  ##    Run the "standard smoketest SQL":
+  ##
+  ##      CREATE NAMESPACE nessie.sales;
+  ##      CREATE NAMESPACE nessie.eng;
+  ##
+  ##      USE nessie.sales;
+  ##      CREATE TABLE city (C_CITYKEY BIGINT, C_NAME STRING, N_NATIONKEY BIGINT, C_COMMENT STRING) USING iceberg PARTITIONED BY (bucket(16, N_NATIONKEY));
+  ##      INSERT INTO city VALUES (1, 'a', 1, 'comment');
+  ##      SELECT * FROM city;
+  ##
+  ##      USE nessie.eng;
+  ##      CREATE TABLE city (C_CITYKEY BIGINT, C_NAME STRING, N_NATIONKEY BIGINT, C_COMMENT STRING) USING iceberg PARTITIONED BY (bucket(16, N_NATIONKEY));
+  ##      INSERT INTO city VALUES (2, 'b', 2, 'comment');
+  ##      SELECT * FROM city;
+  ##
+  nessie:
+    image: ghcr.io/projectnessie/nessie:0.100.0
+    ports:
+      # API port
+      - "19120:19120"
+      # Management port (metrics and health checks)
+      - "9000:9000"
+    depends_on:
+      minio:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    environment:
+      # Version store settings.
+      # This example uses ephemeral storage, data is lost during reset.
+      - nessie.version.store.type=IN_MEMORY
+      # AuthN settings.
+      # This examples uses Keycloak for authentication.
+      - nessie.server.authentication.enabled=true
+      - quarkus.oidc.auth-server-url=http://keycloak:8080/realms/iceberg
+      - quarkus.oidc.client-id=client1
+      - quarkus.oidc.token.issuer=http://127.0.0.1:8080/realms/iceberg
+      # Object store settings.
+      # This example uses MinIO as the object store.
+      - nessie.catalog.default-warehouse=warehouse
+      - nessie.catalog.warehouses.warehouse.location=s3://demobucket/
+      - nessie.catalog.service.s3.default-options.region=us-east-1
+      - nessie.catalog.service.s3.default-options.path-style-access=true
+      - nessie.catalog.service.s3.default-options.access-key=urn:nessie-secret:quarkus:nessie.catalog.secrets.access-key
+      - nessie.catalog.secrets.access-key.name=minioadmin
+      - nessie.catalog.secrets.access-key.secret=minioadmin
+      # MinIO endpoint for Nessie server
+      - nessie.catalog.service.s3.default-options.endpoint=http://minio:9000/
+      # MinIO endpoint for clients (on the Podman/Docker host)
+      - nessie.catalog.service.s3.default-options.external-endpoint=http://127.0.0.1:9002/
+      # Authorization settings.
+      # In this example, Nessie is configured with 3 clients and 3 rules:
+      # - client1: can access all namespaces
+      # - client2: can access all namespaces except 'sales'
+      # - client3: can access all namespaces except 'eng'
+      - nessie.server.authorization.enabled=true
+      - nessie.server.authorization.rules.client1=role=='service-account-client1'
+      - nessie.server.authorization.rules.client2=role=='service-account-client2' && !path.startsWith('sales')
+      - nessie.server.authorization.rules.client3=role=='service-account-client3' && !path.startsWith('eng')
+    healthcheck:
+      test: "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /q/health HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"
+      interval: 5s
+      timeout: 2s
+      retries: 15
+
+  # MinIO
+  minio:
+    image: quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z
+    ports:
+      # API port
+      - "9002:9000"
+      # MinIO UI, browse to http://localhost:9092 to view the MinIO Object Browser
+      - "9092:9090"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_ADDRESS=:9000
+      - MINIO_CONSOLE_ADDRESS=:9090
+    command: server /data
+    healthcheck:
+      test: "bash -c '[[ \"$$(exec 3<>/dev/tcp/localhost/9000 && echo -e '\"'\"'GET /minio/health/live HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n'\"'\"' >&3 && cat <&3 | head -n 1)\" == *\"200 OK\"* ]] || exit 1'"
+      interval: 5s
+      timeout: 2s
+      retries: 15
+
+  # Create MinIO bucket
+  minio-setup:
+    image: quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: /bin/bash
+    restart: "no"
+    command:
+      [
+        "-c",
+        "mc alias set myminio http://minio:9000/ minioadmin minioadmin ; mc admin info myminio ; mc mb myminio/demobucket --ignore-existing",
+      ]
+
+  # Keycloak with the "iceberg" realm
+  # This example uses Keycloak as the identity provider for Nessie.
+  # The "iceberg" realm configuration is imported from iceberg-realm.json.
+  # It contains 3 clients: client1, client2 and client3 (secret for all: "s3cr3t"), and 2 custom scopes: "catalog" and "sign".
+  # Access tokens are valid for 1 hour.
+  # To access the Keycloak admin console, browse to http://localhost:8080 and log in with the admin/admin credentials.
+  #
+  # To request an access token ("bearer token"), use the following command for one of the predefined clients:
+  #   curl http://127.0.0.1:8080/realms/iceberg/protocol/openid-connect/token --user client1:s3cr3t -d 'grant_type=client_credentials' -d 'scope=catalog'
+  #   curl http://127.0.0.1:8080/realms/iceberg/protocol/openid-connect/token --user client2:s3cr3t -d 'grant_type=client_credentials' -d 'scope=catalog'
+  #   curl http://127.0.0.1:8080/realms/iceberg/protocol/openid-connect/token --user client3:s3cr3t -d 'grant_type=client_credentials' -d 'scope=catalog'
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.5
+    ports:
+      - "8080:8080"
+      - "9001:9000"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    volumes:
+      - ./authn-keycloak/config/iceberg-realm.json:/opt/keycloak/data/import/iceberg-realm.json
+    command:
+      [
+        "start-dev",
+        "--features=token-exchange",
+        "--import-realm",
+        "--health-enabled=true",
+        "--verbose",
+      ]
+    healthcheck:
+      test: "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"
+      interval: 5s
+      timeout: 2s
+      retries: 15

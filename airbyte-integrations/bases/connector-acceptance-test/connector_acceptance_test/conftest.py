@@ -17,6 +17,7 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Set
 
 import dagger
 import pytest
+
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (
@@ -34,8 +35,10 @@ from connector_acceptance_test.utils import (
     client_container_runner,
     connector_runner,
     filter_output,
+    is_manifest_file,
     load_config,
     load_yaml_or_json_path,
+    parse_manifest_spec,
 )
 
 
@@ -125,10 +128,15 @@ def image_tag_fixture(acceptance_test_config) -> str:
 
 
 @pytest.fixture(name="connector_config")
-def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
-    with open(str(connector_config_path), "r") as file:
-        contents = file.read()
-    return SecretDict(json.loads(contents))
+def connector_config_fixture(base_path, connector_config_path) -> Optional[SecretDict]:
+    try:
+        with open(str(connector_config_path), "r") as file:
+            contents = file.read()
+
+        return SecretDict(json.loads(contents))
+    except FileNotFoundError:
+        logging.warning(f"Connector config file not found at {connector_config_path}")
+        return None
 
 
 @pytest.fixture(name="client_container_config")
@@ -148,9 +156,9 @@ async def client_container_config_global_fixture(acceptance_test_config: Config)
 
 
 @pytest.fixture(name="client_container_config_secrets")
-def client_container_config_secrets_fixture(client_container_config) -> Optional[SecretDict]:
+def client_container_config_secrets_fixture(base_path, client_container_config) -> Optional[SecretDict]:
     if client_container_config and hasattr(client_container_config, "secrets_path") and client_container_config.secrets_path:
-        with open(str(client_container_config.secrets_path), "r") as file:
+        with open(str(base_path / client_container_config.secrets_path), "r") as file:
             contents = file.read()
         return SecretDict(json.loads(contents))
     return None
@@ -175,6 +183,9 @@ def malformed_connector_config_fixture(connector_config) -> MutableMapping[str, 
 def connector_spec_fixture(connector_spec_path) -> Optional[ConnectorSpecification]:
     try:
         spec_obj = load_yaml_or_json_path(connector_spec_path)
+        # handle the case where a manifest.yaml is specified as the spec file
+        if is_manifest_file(connector_spec_path):
+            return parse_manifest_spec(spec_obj)
         return ConnectorSpecification.parse_obj(spec_obj)
     except FileNotFoundError:
         return None

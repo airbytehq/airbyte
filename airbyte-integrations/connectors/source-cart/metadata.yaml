@@ -3,18 +3,18 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
-  dockerImageTag: 0.3.6
+  dockerImageTag: 0.3.14
   dockerRepository: airbyte/source-cart
   documentationUrl: https://docs.airbyte.com/integrations/sources/cart
   githubIssueLabel: source-cart
   icon: cart.svg
   license: MIT
   name: Cart.com
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -29,6 +29,12 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: cart_config_central_api_router_dev_null
+          id: 6db729e8-f255-43c7-ad44-5573e556d7aa
+        - name: cart_config_dev_null
+          id: 7b6568b0-89a0-4fb8-97a2-2f37402f9d4b
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

@@ -8,7 +8,7 @@ data:
   icon: redpanda.svg
   license: MIT
   name: Redpanda
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

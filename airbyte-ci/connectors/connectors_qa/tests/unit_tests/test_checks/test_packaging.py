@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 from connectors_qa import consts
 from connectors_qa.checks import packaging
@@ -57,28 +58,80 @@ class TestCheckConnectorUsesPoetry:
         assert result.message == "Poetry is used for dependency management"
 
 
-class TestCheckPublishToPyPiIsEnabled:
-    def test_fail_if_publish_to_pypi_is_not_enabled(self, mocker):
-        # Arrange
-        connector = mocker.MagicMock(metadata={"remoteRegistries": {"pypi": {"enabled": False}}})
+class TestCheckManifestOnlyConnectorBaseImage:
+    def test_pass_with_source_declarative_manifest(self, mocker, tmp_path):
+        connector = mocker.MagicMock(
+            code_directory=tmp_path,
+            metadata={"connectorBuildOptions": {"baseImage": "docker.io/airbyte/source-declarative-manifest:4.3.0@SHA"}},
+        )
 
         # Act
-        result = packaging.CheckPublishToPyPiIsEnabled()._run(connector)
+        result = packaging.CheckManifestOnlyConnectorBaseImage()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.PASSED
+        assert "Connector uses source-declarative-manifest base image" in result.message
+
+    def test_fail_with_different_image(self, mocker, tmp_path):
+        connector = mocker.MagicMock(
+            code_directory=tmp_path,
+            metadata={"connectorBuildOptions": {"baseImage": "docker.io/airbyte/connector-base-image:2.0.0@SHA"}},
+        )
+
+        # Act
+        result = packaging.CheckManifestOnlyConnectorBaseImage()._run(connector)
 
         # Assert
         assert result.status == CheckStatus.FAILED
-        assert "PyPi publishing is not enabled" in result.message
+        assert "A manifest-only connector must use `source-declarative-manifest` base image" in result.message
+
+    def test_fail_with_missing_image(self, mocker, tmp_path):
+        connector = mocker.MagicMock(
+            code_directory=tmp_path,
+            metadata={"connectorBuildOptions": {}},
+        )
+
+        # Act
+        result = packaging.CheckManifestOnlyConnectorBaseImage()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert "A manifest-only connector must use `source-declarative-manifest` base image" in result.message
+
+
+class TestCheckPublishToPyPiIsDeclared:
+    def test_fail_if_publish_to_pypi_is_not_declared(self, mocker):
+        # Arrange
+        connector = mocker.MagicMock(metadata={"remoteRegistries": {}})
+
+        # Act
+        result = packaging.CheckPublishToPyPiIsDeclared()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert "PyPi publishing is not declared" in result.message
 
     def test_pass_if_publish_to_pypi_is_enabled(self, mocker):
         # Arrange
         connector = mocker.MagicMock(metadata={"remoteRegistries": {"pypi": {"enabled": True}}})
 
         # Act
-        result = packaging.CheckPublishToPyPiIsEnabled()._run(connector)
+        result = packaging.CheckPublishToPyPiIsDeclared()._run(connector)
 
         # Assert
         assert result.status == CheckStatus.PASSED
-        assert "PyPi publishing is enabled" in result.message
+        assert "PyPi publishing is declared" in result.message
+
+    def test_pass_if_publish_to_pypi_is_disabled(self, mocker):
+        # Arrange
+        connector = mocker.MagicMock(metadata={"remoteRegistries": {"pypi": {"enabled": False}}})
+
+        # Act
+        result = packaging.CheckPublishToPyPiIsDeclared()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.PASSED
+        assert "PyPi publishing is declared" in result.message
 
 
 class TestCheckConnectorLicense:

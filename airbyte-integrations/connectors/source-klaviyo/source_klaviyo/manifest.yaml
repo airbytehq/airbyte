@@ -18,7 +18,8 @@ definitions:
     authenticator: "#/definitions/authenticator"
     http_method: GET
     error_handler:
-      type: DefaultErrorHandler
+      type: CustomErrorHandler
+      class_name: source_klaviyo.components.klaviyo_error_handler.KlaviyoErrorHandler
       backoff_strategies:
         - type: WaitTimeFromHeader
           header: "Retry-After"
@@ -65,6 +66,9 @@ definitions:
     record_selector:
       $ref: "#/definitions/selector"
       record_filter:
+        # Removing the record filter will migrate `lists_detailed` to concurrency,
+        # which will cause it to fail due to rate limits.
+        # Rate limiting for this stream should be implemented first.
         type: RecordFilter
         condition: |
           {% set starting_point = stream_state.get('updated', config.get('start_date')) %}
@@ -87,7 +91,7 @@ definitions:
         Accept: "application/json"
         Revision: "2023-02-22"
       request_parameters:
-        "additional-fields[profile]": "predictive_analytics"
+        "additional-fields[profile]": "{{ 'predictive_analytics' if not config['disable_fetching_predictive_analytics'] else '' }}"
 
   # Base streams
   base_stream:
@@ -99,24 +103,6 @@ definitions:
           - type: AddedFieldDefinition
             path: ["updated"]
             value: "{{ record.get('attributes', {}).get('updated') }}"
-
-  base_incremental_stream:
-    $ref: "#/definitions/base_stream"
-    retriever: "#/definitions/base_retriever"
-    incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_klaviyo.components.datetime_based_cursor.KlaviyoDatetimeBasedCursor
-      cursor_field: "{{ parameters.get('cursor_field', 'updated') }}"
-      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%f%z"
-        - "%Y-%m-%dT%H:%M:%S%z"
-        - "%Y-%m-%d %H:%M:%S%z"
-      start_time_option:
-        type: RequestOption
-        field_name: "{{ parameters.get('cursor_field', 'updated') }}"
-        inject_into: request_parameter
 
   base_semi_incremental_stream:
     $ref: "#/definitions/base_stream"
@@ -131,13 +117,33 @@ definitions:
   profiles_stream:
     # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
     name: "profiles"
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/profiles_schema"
-    retriever: "#/definitions/profiles_retriever"
+    retriever:
+      $ref: "#/definitions/profiles_retriever"
+      requester:
+        $ref: "#/definitions/profiles_retriever/requester"
+        request_parameters:
+          $ref: "#/definitions/profiles_retriever/requester/request_parameters"
+          "filter": "greater-than({{ parameters.cursor_field }},{{ stream_interval.start_time }})"
+          "sort": "{{ parameters.cursor_field }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        schema_normalization: Default
     $parameters:
       path: "profiles"
+      cursor_field: "updated"
 
   global_exclusions_stream:
     # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
@@ -157,7 +163,27 @@ definitions:
   events_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_events
     name: "events"
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "datetime"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
+      step: P7D
+      cursor_granularity: PT1S
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "fields[metric]": "name,created,updated,integration"
+          "include": "metric"
+          "filter": "greater-or-equal({{ parameters.cursor_field }},{{ stream_interval.start_time }}),less-or-equal({{ parameters.cursor_field }},{{ stream_interval.end_time }})"
+          "sort": "{{ parameters.cursor_field }}"
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/events_schema"
@@ -174,12 +200,29 @@ definitions:
   email_templates_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_templates
     name: "email_templates"
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/email_templates_schema"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "filter": "greater-than({{ parameters.cursor_field }},{{ stream_interval.start_time }})"
+          "sort": "{{ parameters.cursor_field }}"
     $parameters:
       path: "templates"
+      cursor_field: "updated"
 
   # Semi-Incremental streams
   metrics_stream:
@@ -210,7 +253,7 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/lists_detailed_schema"
     retriever:
-      $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/semi_incremental_retriever"
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
@@ -228,7 +271,16 @@ definitions:
   events_detailed_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_event
     name: "events_detailed"
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ parameters.get('cursor_field') }}"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/events_detailed_schema"
@@ -245,6 +297,8 @@ definitions:
         request_parameters:
           "include": "metric"
           "fields[metric]": "name"
+          "filter": "greater-than({{ parameters.cursor_field }},{{ stream_interval.start_time }})"
+          "sort": "{{ parameters.cursor_field }}"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_klaviyo.components.per_partition_state_migration.PerPartitionToSingleStateMigration
@@ -919,17 +973,117 @@ spec:
     type: object
     properties:
       api_key:
+        type: string
         title: "Api Key"
         description: 'Klaviyo API Key. See our <a href="https://docs.airbyte.com/integrations/sources/klaviyo">docs</a> if you need help finding this key.'
         airbyte_secret: true
-        type: string
         order: 0
       start_date:
+        type: string
         title: "Start Date"
         description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. This field is optional - if not provided, all data will be replicated."
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples: ["2017-01-25T00:00:00Z"]
-        type: "string"
-        format: "date-time"
+        format: date-time
         order: 1
+      disable_fetching_predictive_analytics:
+        type: boolean
+        title: "Disable Fetching Predictive Analytics"
+        description: >-
+          Certain streams like the profiles stream can retrieve predictive analytics data from Klaviyo's
+          API. However, at high volume, this can lead to service availability issues on the API which can
+          be improved by not fetching this field. WARNING: Enabling this setting will stop the 
+          "predictive_analytics" column from being populated in your downstream destination.
+        order: 2
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 50
+        default: 10
+        examples: [1, 2, 3]
+        description: >-
+          The number of worker threads to use for the sync.
+          The performance upper boundary is based on the limit of your Chargebee plan.
+          More info about the rate limit plan tiers can be found on Chargebee's API <a href="https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling">docs</a>.
+        order: 3
     required: ["api_key"]
+
+metadata:
+  testedStreams:
+    profiles:
+      streamHash: 7d27c2aee801ec7d0038722136c6b7e06b14a9ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    global_exclusions:
+      streamHash: 7e7633526c2855390903d6e60973bb13b23272d7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: af0180236001cbacc0788046bdc916026e1f82f6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lists:
+      streamHash: 9edcccbf069463bf70bdc40db756e0f81eba032b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    email_templates:
+      streamHash: 4c12cf304ffe3cd0fcaba1479498ad19c18c6f32
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    metrics:
+      streamHash: 96e06644c47a223a29c85dc4318ec5f7da1cc414
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lists_detailed:
+      streamHash: 34e4a9f1fb0c879b915d8558d67feb887d76f8e5
+      hasResponse: true
+      responsesAreSuccessful: false
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+
+# Klaviyo's rate limiting is different by endpoints:
+# - XS: 1/s burst; 15/m steady
+# - S: 3/s burst; 60/m steady
+# - M: 10/s burst; 150/m steady
+# - L: 75/s burst; 700/m steady
+# - XL: 350/s burst; 3500/m steady
+# - `lists_detailed`: 1/s burst, 15/m steady (Rate limits when using the additional-fields[list]=profile_count parameter in your API request)
+
+# As of 2024-11-11, we have the following streams:
+# | Stream            | Endpoint                                                             | Klaviyo Rate Limit Size | Source Concurrency Between Streams | Source Concurrency Within Stream                  | Source Max Number of Threads Sharing Rate Limits                 |                                                                                 |
+#|-------------------|----------------------------------------------------------------------|-------------------------|------------------------------------|---------------------------------------------------|------------------------------------------------------------------|---------------------------------------------------------------------------------|
+#| profiles          | https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles | M                       | Yes, shared with global_exclusions | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (global_exclusions), not within stream as `step` not defined |
+#| global_exclusions | https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles | M                       | Yes, shared with profiles          | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (profiles), not within stream as `step` not defined          |
+#| events            | https://developers.klaviyo.com/en/reference/get_events               | XL                      | Yes, shared with events_detailed   | Yes                                               | number of steps for events + number of steps for events_detailed | With other streams (events_detailed) and within stream as sliced on `datetime`  |
+#| events_detailed   | https://developers.klaviyo.com/en/reference/get_events               | XL                      | Yes, shared with events            | Yes                                               | number of steps for events + number of steps for events_detailed | With other streams (events) and within stream as sliced on `datetime`           |
+#| email_templates   | https://developers.klaviyo.com/en/reference/get_templates            | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
+#| metrics           | https://developers.klaviyo.com/en/reference/get_metrics              | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
+#| lists             | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists_detailed    | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists_detailed), not within stream as `step` not defined    |
+#| lists_detailed    | https://developers.klaviyo.com/en/reference/get_lists                | 1/s                     | Yes, shared with lists             | No as `step` is not defined in `incremental_sync` | 1                                                                | With other streams (lists), not within stream as `step` not defined             |
+# Note: As of 2024-11-11, `metrics`, `lists` and `lists_detailed` are not supported by the Concurrent CDK as they do client side-filtering.
+
+# Based on the above, the only threads that allow for slicing and hence might perform more concurrent HTTP requests are `events` and `events_detailed`. There are no slicing for the others and hence the concurrency is limited by the number of streams querying the same endpoint. Given that the event endpoint is XL, we will set a default concurrency to 10.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 50

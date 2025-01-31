@@ -12,19 +12,20 @@ from urllib.parse import parse_qsl, urlparse
 
 import pendulum as pdm
 import requests
-from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-from airbyte_protocol.models import SyncMode
 from requests.exceptions import RequestException
+from source_shopify.http_request import ShopifyErrorHandler
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
-from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery, ShopifyBulkTemplates
-from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord
+from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import ShopifyNonRetryableErrors
 from source_shopify.utils import ShopifyRateLimiter as limiter
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -143,9 +144,8 @@ class ShopifyDeletedEventsStream(ShopifyStream):
             yield {
                 "id": event["subject_id"],
                 self.cursor_field: event["created_at"],
-                "updated_at": event["created_at"],
-                "deleted_message": event["message"],
-                "deleted_description": event["description"],
+                "deleted_message": event.get("message", None),
+                "deleted_description": event.get("description", None),
                 "shop_url": event["shop_url"],
             }
 
@@ -177,9 +177,14 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the check point interval to the limit of the records output
     state_checkpoint_interval = 250
-    # guarantee for the NestedSubstreams to emit the STATE
-    # when we have the abnormal STATE distance between Parent and Substream
-    filter_by_state_checkpoint = False
+
+    @property
+    def filter_by_state_checkpoint(self) -> bool:
+        """
+        This filtering flag stands to guarantee for the NestedSubstreams to emit the STATE correctly,
+        when we have the abnormal STATE distance between Parent and Substream
+        """
+        return False
 
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
@@ -215,15 +220,15 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         if self.filter_by_state_checkpoint:
             # set checkpoint cursor
             if not self._checkpoint_cursor:
-                self._checkpoint_cursor = self.config.get("start_date")
+                self._checkpoint_cursor = self.default_state_comparison_value
             # track checkpoint cursor
-            if record_value >= self._checkpoint_cursor:
+            if str(record_value) >= str(self._checkpoint_cursor):
                 self._checkpoint_cursor = record_value
 
     def should_checkpoint(self, index: int) -> bool:
         return self.filter_by_state_checkpoint and index >= self.state_checkpoint_interval
 
-    # Parse the `stream_slice` with respect to `stream_state` for `Incremental refresh`
+    # Parse the `records` with respect to the `stream_state` for the `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
     def filter_records_newer_than_state(
@@ -566,6 +571,10 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
 
 
 class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
+    def __init__(self, config: Dict) -> None:
+        self._stream_state: MutableMapping[str, Any] = {}
+        super().__init__(config)
+
     @property
     @abstractmethod
     def deleted_events_api_name(self) -> str:
@@ -602,13 +611,13 @@ class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
         """
         We extend the stream state with `deleted` property to store the `destroyed` records STATE separetely from the Stream State.
         """
-        state = super().get_updated_state(current_stream_state, latest_record)
+        self._stream_state = super().get_updated_state(self._stream_state, latest_record)
         # add `deleted` property to each stream supports `deleted events`,
         # to provide the `Incremental` sync mode, for the `Incremental Delete` records.
         last_deleted_record_value = latest_record.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
         current_deleted_state_value = current_stream_state.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
-        state["deleted"] = {self.deleted_cursor_field: max(last_deleted_record_value, current_deleted_state_value)}
-        return state
+        self._stream_state["deleted"] = {self.deleted_cursor_field: max(last_deleted_record_value, current_deleted_state_value)}
+        return self._stream_state
 
     def read_records(
         self,
@@ -632,28 +641,56 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
-        # init BULK Query instance, pass `shop_id` from config
-        self.query = self.bulk_query(shop_id=config.get("shop_id"))
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
-            session=self._http_client._session,
+            http_client=self.bulk_http_client,
             base_url=f"{self.url_base}{self.path()}",
-            stream_name=self.name,
-            query=self.query,
+            query=self.bulk_query(config, self.parent_stream_query_cursor_alias),
             job_termination_threshold=float(config.get("job_termination_threshold", 3600)),
             # overide the default job slice size, if provided (it's auto-adjusted, later on)
-            job_size=config.get("bulk_window_in_days", 0.0),
+            job_size=config.get("bulk_window_in_days", 30.0),
+            # provide the job checkpoint interval value, default value is 200k lines collected
+            job_checkpoint_interval=config.get("job_checkpoint_interval", 200_000),
+            parent_stream_name=self.parent_stream_name,
+            parent_stream_cursor=self.parent_stream_cursor,
         )
 
-        # define Record Producer instance
-        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
+    @property
+    def filter_by_state_checkpoint(self) -> bool:
+        return self.job_manager._supports_checkpointing
+
+    @property
+    def bulk_http_client(self) -> HttpClient:
+        """
+        Returns the instance of the `HttpClient`, with the stream info.
+        """
+        return HttpClient(self.name, self.logger, ShopifyErrorHandler(), session=self._http_client._session)
 
     @cached_property
-    def parent_stream(self) -> object:
+    def parent_stream(self) -> Union[ShopifyStream, IncrementalShopifyStream]:
         """
         Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
         """
         return self.parent_stream_class(self.config) if self.parent_stream_class else None
+
+    @cached_property
+    def parent_stream_name(self) -> Optional[str]:
+        """
+        Returns the parent stream name, if the substream has a `parent_stream_class` dependency.
+        """
+        return self.parent_stream.name if self.parent_stream_class else None
+
+    @cached_property
+    def parent_stream_cursor(self) -> Optional[str]:
+        """
+        Returns the parent stream cursor, if the substream has a `parent_stream_class` dependency.
+        """
+        return self.parent_stream.cursor_field if self.parent_stream_class else None
+
+    @cached_property
+    def parent_stream_query_cursor_alias(self) -> Optional[str]:
+        if self.parent_stream_name and self.parent_stream_cursor:
+            return f"{self.parent_stream_name}_{self.parent_stream_cursor}"
 
     @property
     @abstractmethod
@@ -684,7 +721,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         return None
 
     def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         """UPDATING THE STATE OBJECT:
         Stream: CustomerAddress
@@ -699,37 +738,75 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 }
             }
         """
+
         updated_state = super().get_updated_state(current_stream_state, latest_record)
+
         if self.parent_stream_class:
+            # the default way of getting the parent stream state is to use the value from the RecordProducer,
+            # since the parent record could be present but no substream's records are present to emit,
+            # the parent state is tracked for each parent record processed, thus updated regardless having substream records.
+            tracked_parent_state = self.job_manager.record_producer.get_parent_stream_state()
+            # fallback to the record level to search for the parent cursor or use the stream cursor value
+            parent_state = tracked_parent_state if tracked_parent_state else self._get_parent_state_from_record(latest_record)
             # add parent_stream_state to `updated_state`
-            updated_state[self.parent_stream.name] = {self.parent_stream.cursor_field: latest_record.get(self.parent_stream.cursor_field)}
+            updated_state[self.parent_stream_name] = parent_state
+
         return updated_state
 
-    def get_stream_state_value(self, stream_state: Optional[Mapping[str, Any]]) -> str:
-        if self.parent_stream_class:
-            # get parent stream state from the stream_state object.
-            parent_state = stream_state.get(self.parent_stream.name, {})
-            if parent_state:
-                return parent_state.get(self.parent_stream.cursor_field, self.default_state_comparison_value)
-        else:
-            # get the stream state, if no `parent_stream_class` was assigned.
-            return stream_state.get(self.cursor_field, self.default_state_comparison_value)
+    def _get_parent_state_from_record(self, latest_record: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        parent_state = latest_record.get(self.parent_stream_name, {})
+        parent_state_value = parent_state.get(self.parent_stream_cursor) if parent_state else latest_record.get(self.parent_stream_cursor)
+        parent_state[self.parent_stream_cursor] = parent_state_value
+        return parent_state
 
-    def get_state_value(self, stream_state: Mapping[str, Any] = None) -> Optional[Union[str, int]]:
+    def _get_stream_cursor_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[str]:
         if stream_state:
-            return self.get_stream_state_value(stream_state)
+            return stream_state.get(self.cursor_field, self.default_state_comparison_value)
+        else:
+            return self.config.get("start_date")
+
+    def _get_stream_state_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[str]:
+        if stream_state:
+            if self.parent_stream_class:
+                # get parent stream state from the stream_state object.
+                parent_state = stream_state.get(self.parent_stream_name, {})
+                if parent_state:
+                    return parent_state.get(self.parent_stream_cursor, self.default_state_comparison_value)
+                else:
+                    # use the streams cursor value, if no parent state available
+                    return self._get_stream_cursor_value(stream_state)
+            else:
+                # get the stream state, if no `parent_stream_class` was assigned.
+                return self._get_stream_cursor_value(stream_state)
+        else:
+            return self.config.get("start_date")
+
+    def _get_state_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[Union[str, int]]:
+        if stream_state:
+            return self._get_stream_state_value(stream_state)
         else:
             # for majority of cases we fallback to start_date, otherwise.
             return self.config.get("start_date")
 
     def emit_slice_message(self, slice_start: datetime, slice_end: datetime) -> None:
         slice_size_message = f"Slice size: `P{round(self.job_manager._job_size, 1)}D`"
-        self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}")
+        slice_message = f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}."
+
+        if self.job_manager._supports_checkpointing:
+            checkpointing_message = f" The BULK checkpoint after `{self.job_manager.job_checkpoint_interval}` lines."
+        else:
+            checkpointing_message = f" The BULK checkpointing is not supported."
+
+        self.logger.info(slice_message + checkpointing_message)
+
+    def emit_checkpoint_message(self) -> None:
+        if self.job_manager._job_adjust_slice_from_checkpoint:
+            self.logger.info(f"Stream {self.name}, continue from checkpoint: `{self._checkpoint_cursor}`.")
 
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.filter_field:
-            state = self.get_state_value(stream_state)
+            state = self._get_state_value(stream_state)
             start = pdm.parse(state)
             end = pdm.now()
             while start < end:
@@ -738,10 +815,27 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 self.emit_slice_message(start, slice_end)
                 yield {"start": start.to_rfc3339_string(), "end": slice_end.to_rfc3339_string()}
                 # increment the end of the slice or reduce the next slice
-                start = self.job_manager.get_adjusted_job_end(start, slice_end)
+                start = self.job_manager.get_adjusted_job_end(start, slice_end, self._checkpoint_cursor)
         else:
             # for the streams that don't support filtering
             yield {}
+
+    def sort_output_asc(self, non_sorted_records: Iterable[Mapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        """
+        Apply sorting for collected records, to guarantee the `ASC` output.
+        This handles the STATE and CHECKPOINTING correctly, for the `incremental` streams.
+        """
+        if non_sorted_records:
+            if not self.cursor_field:
+                yield from non_sorted_records
+            else:
+                yield from sorted(
+                    non_sorted_records,
+                    key=lambda x: x.get(self.cursor_field) if x.get(self.cursor_field) else self.default_state_comparison_value,
+                )
+        else:
+            # always return an empty iterable, if no records
+            return []
 
     def read_records(
         self,
@@ -752,13 +846,12 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     ) -> Iterable[StreamData]:
         self.job_manager.create_job(stream_slice, self.filter_field)
         stream_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.default_state_comparison_value})
-
-        filename = self.job_manager.job_check_for_completion()
-        # the `filename` could be `None`, meaning there are no data available for the slice period.
-        if filename:
-            # add `shop_url` field to each record produced
-            records = self.add_shop_url_field(
-                # produce records from saved bulk job result
-                self.record_producer.read_file(filename)
-            )
-            yield from self.filter_records_newer_than_state(stream_state, records)
+        # add `shop_url` field to each record produced
+        records = self.add_shop_url_field(
+            # produce records from saved bulk job result
+            self.job_manager.job_get_results()
+        )
+        # emit records in ASC order
+        yield from self.filter_records_newer_than_state(stream_state, self.sort_output_asc(records))
+        # add log message about the checkpoint value
+        self.emit_checkpoint_message()

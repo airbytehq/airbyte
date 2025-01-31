@@ -1,0 +1,2115 @@
+version: 6.5.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - Orders
+
+definitions:
+  authenticator:
+    type: CustomAuthenticator
+    class_name: source_amazon_seller_partner.components.AmazonSPOauthAuthenticator
+    client_id: "{{ config['lwa_app_id'] }}"
+    client_secret: "{{ config['lwa_client_secret'] }}"
+    refresh_token: "{{ config['refresh_token'] }}"
+    token_refresh_endpoint: "https://api.amazon.com/auth/o2/token"
+    host: "{{ config['endpoint'].replace('https://', '') }}"
+
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['endpoint'] }}"
+    authenticator: "#/definitions/authenticator"
+    request_headers:
+      Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+
+  streams:
+    orders:
+      type: DeclarativeStream
+      name: Orders
+      primary_key:
+        - AmazonOrderId
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: LastUpdateDate
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', (now_utc() - duration('PT2M')).strftime('%Y-%m-%dT%H:%M:%SZ') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: LastUpdatedAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: LastUpdatedBefore
+          inject_into: request_parameter
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "orders/v0/orders"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          request_parameters:
+            MarketplaceIds: '{{ config["marketplace_id"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "Orders"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: NextToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxResultsPerPage
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.payload.NextToken }}"
+
+    order_items:
+      type: DeclarativeStream
+      name: OrderItems
+      primary_key:
+        - OrderItemId
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: LastUpdateDate
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["AmazonOrderId"]
+              value: "{{ stream_slice['AmazonOrderId'] }}"
+        - type: AddFields
+          fields:
+            - path: ["LastUpdateDate"]
+              value: '{{ stream_slice.extra_fields["LastUpdateDate"] }}'
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "orders/v0/orders/{{ stream_slice['AmazonOrderId'] }}/orderItems"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 10
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "AmazonOrderId"
+              stream: "#/definitions/streams/orders"
+              partition_field: "AmazonOrderId"
+              extra_fields:
+                - ["LastUpdateDate"]
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "OrderItems"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: NextToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxResultsPerPage
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.payload.NextToken }}"
+
+    vendor_direct_fulfillment_shipping:
+      type: DeclarativeStream
+      name: VendorDirectFulfillmentShipping
+      primary_key:
+        - purchaseOrderNumber
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdBefore
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P7D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: createdAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: createdBefore
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["createdBefore"]
+              value: "{{ stream_slice['end_time'] }}"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "vendor/directFulfillment/shipping/v1/shippingLabels"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "shippingLabels"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: nextToken
+          #          page_size_option:
+          #            type: RequestOption
+          #            inject_into: request_parameter
+          #            field_name: MaxResultsPerPage
+          pagination_strategy:
+            type: CursorPagination
+            #            page_size: 100
+            cursor_value: "{{ response.payload.get('pagination', {}).get('nextToken') }}"
+
+    vendor_orders:
+      type: DeclarativeStream
+      name: VendorOrders
+      primary_key:
+        - purchaseOrderNumber
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: changedBefore
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P7D"
+        cursor_granularity: "PT0S" # TODO: check if it is valid?
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: changedAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: changedBefore
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["changedBefore"]
+              value: "{{ stream_slice['end_time'] }}"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "vendor/orders/v1/purchaseOrders"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "orders"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: nextToken
+          pagination_strategy:
+            type: CursorPagination
+            stop_condition: '{{ not response.get("payload", {}).get("pagination", {}).get("nextToken") }}'
+            cursor_value: "{{ response.payload.pagination.nextToken }}"
+
+    # FinanceStream
+    list_financial_event_groups:
+      type: DeclarativeStream
+      name: ListFinancialEventGroups
+      primary_key:
+        - FinancialEventGroupId
+      ignore_stream_slicer_parameters_on_paginated_requests: false
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: FinancialEventGroupStart
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          # start date and end date should not be more than 180 days apart.
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P180D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P180D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT5M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: FinancialEventGroupStartedAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: FinancialEventGroupStartedBefore
+          inject_into: request_parameter
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "finances/v0/financialEventGroups"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "FinancialEventGroupList"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: NextToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxResultsPerPage
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.payload.NextToken }}"
+
+    list_financial_events:
+      type: DeclarativeStream
+      name: ListFinancialEvents
+      primary_key: []
+      ignore_stream_slicer_parameters_on_paginated_requests: false
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: PostedBefore
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          # start date and end date should not be more than 180 days apart.
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P180D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P180D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT5M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: PostedAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: PostedBefore
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["PostedBefore"]
+              value: "{{ stream_slice['end_time'] }}"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "finances/v0/financialEvents"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "FinancialEvents"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: NextToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxResultsPerPage
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.payload.NextToken }}"
+
+    get_flat_file_all_orders_data_by_order_date_general:
+      type: DeclarativeStream
+      name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+      primary_key: ["amazon-order-id"]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last-updated-date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The maximum step for this stream is 30 days or lower when the customer configures the period_in_days
+        step: "P{{ min( config.get('period_in_days', 365), 30 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
+    get_flat_file_all_orders_data_by_last_update_general:
+      type: DeclarativeStream
+      name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
+      primary_key: ["amazon-order-id"]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last-updated-date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The maximum step for this stream is 30 days or lower when the customer configures the period_in_days
+        step: "P{{ min( config.get('period_in_days', 365), 30 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
+    get_fba_storage_fee_charges_data:
+      type: DeclarativeStream
+      name: GET_FBA_STORAGE_FEE_CHARGES_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_STORAGE_FEE_CHARGES_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_amazon_fulfilled_shipments_data_general:
+      type: DeclarativeStream
+      name: GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The maximum step for this stream is 30 days or lower when the customer configures the period_in_days
+        step: "P{{ min( config.get('period_in_days', 365), 30 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_flat_file_open_listings_data:
+      type: DeclarativeStream
+      name: GET_FLAT_FILE_OPEN_LISTINGS_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FLAT_FILE_OPEN_LISTINGS_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_fulfillment_removal_order_detail_data:
+      type: DeclarativeStream
+      name: GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last-updated-date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_flat_file_actionable_order_data_shipping:
+      type: DeclarativeStream
+      name: GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_order_report_data_shipping:
+      type: DeclarativeStream
+      name: GET_ORDER_REPORT_DATA_SHIPPING
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_ORDER_REPORT_DATA_SHIPPING
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.GzipXmlDecoder
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_ledger_detail_view_data:
+      type: DeclarativeStream
+      name: GET_LEDGER_DETAIL_VIEW_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: Date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_LEDGER_DETAIL_VIEW_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.LedgerDetailedViewReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_ledger_summary_view_data:
+      type: DeclarativeStream
+      name: GET_LEDGER_SUMMARY_VIEW_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: Date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_LEDGER_SUMMARY_VIEW_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.LedgerDetailedViewReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_reimbursements_data:
+      type: DeclarativeStream
+      name: GET_FBA_REIMBURSEMENTS_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_REIMBURSEMENTS_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_fulfillment_customer_returns_data:
+      type: DeclarativeStream
+      name: GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_seller_feedback_data:
+      type: DeclarativeStream
+      name: GET_SELLER_FEEDBACK_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_SELLER_FEEDBACK_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.SellerFeedbackReportsGzipCsvDecoder
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.SellerFeedbackReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_afn_inventory_data:
+      type: DeclarativeStream
+      name: GET_AFN_INVENTORY_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_AFN_INVENTORY_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_afn_inventory_data_by_country:
+      type: DeclarativeStream
+      name: GET_AFN_INVENTORY_DATA_BY_COUNTRY
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_AFN_INVENTORY_DATA_BY_COUNTRY
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_inventory_planning_data:
+      type: DeclarativeStream
+      name: GET_FBA_INVENTORY_PLANNING_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_INVENTORY_PLANNING_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_flat_file_returns_data_by_return_date:
+      type: DeclarativeStream
+      name: GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The maximum step for this stream is 60 days or lower when the customer configures the period_in_days
+        step: "P{{ min( config.get('period_in_days', 365), 60 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_flat_file_archived_orders_data_by_order_date:
+      type: DeclarativeStream
+      name: GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last-updated-date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_sns_performance_data:
+      type: DeclarativeStream
+      name: GET_FBA_SNS_PERFORMANCE_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_SNS_PERFORMANCE_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_sns_forecast_data:
+      type: DeclarativeStream
+      name: GET_FBA_SNS_FORECAST_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_SNS_FORECAST_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_merchants_listings_fyp_report:
+      type: DeclarativeStream
+      name: GET_MERCHANTS_LISTINGS_FYP_REPORT
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_MERCHANTS_LISTINGS_FYP_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.MerchantListingsFypReportTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_merchant_cancelled_listings_data:
+      type: DeclarativeStream
+      name: GET_MERCHANT_CANCELLED_LISTINGS_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_MERCHANT_CANCELLED_LISTINGS_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_merchant_listings_data_back_compat:
+      type: DeclarativeStream
+      name: GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT
+      primary_key: ["listing-id"]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.MerchantReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_stranded_inventory_ui_data:
+      type: DeclarativeStream
+      name: GET_STRANDED_INVENTORY_UI_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_STRANDED_INVENTORY_UI_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_myi_unsuppressed_inventory_data:
+      type: DeclarativeStream
+      name: GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_fulfillment_customer_shipment_promotion_data:
+      type: DeclarativeStream
+      name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_estimated_fba_fees_txt_data:
+      type: DeclarativeStream
+      name: GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_restock_inventory_recommendations_report:
+      type: DeclarativeStream
+      name: GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_fulfillment_customer_shipment_replacement_data:
+      type: DeclarativeStream
+      name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_fba_fulfillment_removal_shipment_detail_data:
+      type: DeclarativeStream
+      name: GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_xml_browse_tree_data:
+      type: DeclarativeStream
+      name: GET_XML_BROWSE_TREE_DATA
+      primary_key: ["browseNodeId"]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_XML_BROWSE_TREE_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.GetXmlBrowseTreeDataDecoder
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_xml_all_orders_data_by_order_date_general:
+      type: DeclarativeStream
+      name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+      primary_key: ["AmazonOrderID"]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: LastUpdatedDate
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.GzipXmlDecoder
+      # This is actually not needed for this stream because cursor_value exists, but to retain backwards compatibility
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    ### MerchantReports ###
+    get_merchant_listings_all_data:
+      type: DeclarativeStream
+      name: GET_MERCHANT_LISTINGS_ALL_DATA
+      primary_key: ["listing-id"]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_MERCHANT_LISTINGS_ALL_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.MerchantReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_merchant_listings_data:
+      type: DeclarativeStream
+      name: GET_MERCHANT_LISTINGS_DATA
+      primary_key: ["listing-id"]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: "P1D"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_MERCHANT_LISTINGS_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.MerchantReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_merchant_listings_inactive_data:
+      type: DeclarativeStream
+      name: GET_MERCHANT_LISTINGS_INACTIVE_DATA
+      primary_key: ["listing-id"]
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_MERCHANT_LISTINGS_INACTIVE_DATA
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.MerchantReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_v2_settlement_report_data_flat_file:
+      type: DeclarativeStream
+      name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dataEndTime
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+        step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
+        cursor_granularity: "PT1S"
+        # The GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE report only allows for a max start of 90 days from now
+        # otherwise it will throw a 400 error
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        type: SimpleRetriever
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/flat_file_settlement_v2_helper"
+              parent_key: "reportId"
+              partition_field: "reportId"
+              incremental_dependency: true
+        requester:
+          type: HttpRequester
+          path: "reports/2021-06-30/{{ stream_slice['reportId'] }}"
+          url_base: "{{ config['endpoint'] }}"
+          http_method: GET
+          authenticator: "#/definitions/authenticator"
+          request_headers:
+            content-type: "application/json"
+        decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.GzipCsvDecoder
+        record_selector:
+          type: RecordSelector
+          schema_normalization:
+            type: CustomSchemaNormalization
+            class_name: "source_amazon_seller_partner.components.FlatFileSettlementV2ReportsTypeTransformer"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["dataEndTime"]
+              value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+    get_vendor_forecasting_fresh_report:
+      type: DeclarativeStream
+      name: GET_VENDOR_FORECASTING_FRESH_REPORT
+      primary_key: []
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_VENDOR_FORECASTING_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              sellingProgram: "FRESH"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["forecastByAsin"]
+
+    get_vendor_forecasting_retail_report:
+      type: DeclarativeStream
+      name: GET_VENDOR_FORECASTING_RETAIL_REPORT
+      primary_key: []
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_VENDOR_FORECASTING_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              sellingProgram: "RETAIL"
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_amazon_seller_partner.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["forecastByAsin"]
+
+  basic_async_retriever:
+    type: AsyncRetriever
+    status_mapping:
+      failed:
+        - FATAL
+      running:
+        - IN_PROGRESS
+        - IN_QUEUE
+      timeout:
+        - CANCELLED
+      completed:
+        - DONE
+    urls_extractor:
+      type: DpathExtractor
+      field_path:
+        - url
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+
+    status_extractor:
+      type: DpathExtractor
+      field_path:
+        - processingStatus
+    creation_requester:
+      type: HttpRequester
+      path: reports/2021-06-30/reports
+      url_base: "{{ config['endpoint'] }}"
+      authenticator: "#/definitions/authenticator"
+      http_method: POST
+      request_headers:
+        content-type: "application/json"
+      request_body_json:
+        reportType: OVERRIDDEN_REPORT_NAME # Placeholder value. Each report stream overrides the reportType value to the respective report name
+        marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+        dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+
+    polling_requester:
+      type: HttpRequester
+      path: reports/2021-06-30/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+      url_base: "{{ config['endpoint'] }}"
+      authenticator: "#/definitions/authenticator"
+      http_method: GET
+      request_headers:
+        content-type: "application/json"
+
+    url_requester:
+      type: HttpRequester
+      path: reports/2021-06-30/documents/{{stream_slice['polling_job_response'].json()['reportDocumentId']}}
+      url_base: "{{ config['endpoint'] }}"
+      authenticator: "#/definitions/authenticator"
+      http_method: GET
+      request_headers:
+        content-type: "application/json"
+
+    download_requester:
+      type: HttpRequester
+      path: "{{stream_slice.extra_fields['url'] }}"
+      url_base: "{{ config['endpoint'] }}"
+      http_method: GET
+      authenticator:
+        type: NoAuth
+    #      request_headers:
+    #        content-type: "application/json"
+    download_decoder:
+      type: CustomDecoder
+      class_name: source_amazon_seller_partner.components.GzipCsvDecoder
+    download_extractor:
+      type: DpathExtractor
+      field_path: []
+
+  flat_file_settlement_v2_helper:
+    type: DeclarativeStream
+    name: flat_file_settlement_v2_helper
+    primary_key: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: dataEndTime
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
+      step: "P10Y"
+      cursor_granularity: "PT1S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        field_name: "createdSince"
+        inject_into: "request_parameter"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        field_name: "createdUntil"
+        inject_into: "request_parameter"
+    ignore_stream_slicer_parameters_on_paginated_requests: true
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "reports/2021-06-30/reports"
+        http_method: GET
+        request_headers:
+          content-type: "application/json"
+        request_parameters:
+          reportTypes: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["reports"]
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: nextToken
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: pageSize
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.NextToken }}"
+    # Records in this stream do not contain a cursor timestamp, so we inject the upper boundary of the slice requested which serves as the checkpoint
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["dataEndTime"]
+            value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+streams:
+  # REST Streams
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/order_items"
+  - $ref: "#/definitions/streams/list_financial_event_groups"
+  - $ref: "#/definitions/streams/list_financial_events"
+  - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
+  - $ref: "#/definitions/streams/vendor_orders"
+
+    # Reports Streams
+  - $ref: "#/definitions/streams/get_flat_file_all_orders_data_by_order_date_general"
+  - $ref: "#/definitions/streams/get_flat_file_all_orders_data_by_last_update_general"
+  - $ref: "#/definitions/streams/get_fba_storage_fee_charges_data"
+  - $ref: "#/definitions/streams/get_amazon_fulfilled_shipments_data_general"
+  - $ref: "#/definitions/streams/get_flat_file_open_listings_data"
+  - $ref: "#/definitions/streams/get_fba_fulfillment_removal_order_detail_data"
+  - $ref: "#/definitions/streams/get_flat_file_actionable_order_data_shipping"
+  - $ref: "#/definitions/streams/get_order_report_data_shipping"
+  - $ref: "#/definitions/streams/get_ledger_detail_view_data"
+  - $ref: "#/definitions/streams/get_ledger_summary_view_data"
+  - $ref: "#/definitions/streams/get_fba_reimbursements_data"
+  - $ref: "#/definitions/streams/get_fba_fulfillment_customer_returns_data"
+  - $ref: "#/definitions/streams/get_seller_feedback_data"
+  - $ref: "#/definitions/streams/get_afn_inventory_data"
+  - $ref: "#/definitions/streams/get_afn_inventory_data_by_country"
+  - $ref: "#/definitions/streams/get_fba_inventory_planning_data"
+  - $ref: "#/definitions/streams/get_flat_file_returns_data_by_return_date"
+  - $ref: "#/definitions/streams/get_flat_file_archived_orders_data_by_order_date"
+  - $ref: "#/definitions/streams/get_fba_sns_performance_data"
+  - $ref: "#/definitions/streams/get_fba_sns_forecast_data"
+  - $ref: "#/definitions/streams/get_merchants_listings_fyp_report"
+  - $ref: "#/definitions/streams/get_merchant_cancelled_listings_data"
+  - $ref: "#/definitions/streams/get_merchant_listings_data_back_compat"
+  - $ref: "#/definitions/streams/get_stranded_inventory_ui_data"
+  - $ref: "#/definitions/streams/get_fba_myi_unsuppressed_inventory_data"
+  - $ref: "#/definitions/streams/get_fba_fulfillment_customer_shipment_promotion_data"
+  - $ref: "#/definitions/streams/get_fba_estimated_fba_fees_txt_data"
+  - $ref: "#/definitions/streams/get_restock_inventory_recommendations_report"
+  - $ref: "#/definitions/streams/get_fba_fulfillment_customer_shipment_replacement_data"
+  - $ref: "#/definitions/streams/get_fba_fulfillment_removal_shipment_detail_data"
+  - $ref: "#/definitions/streams/get_xml_browse_tree_data"
+  - $ref: "#/definitions/streams/get_xml_all_orders_data_by_order_date_general"
+  - $ref: "#/definitions/streams/get_merchant_listings_all_data"
+  - $ref: "#/definitions/streams/get_merchant_listings_data"
+  - $ref: "#/definitions/streams/get_merchant_listings_inactive_data"
+  - $ref: "#/definitions/streams/get_v2_settlement_report_data_flat_file"
+
+  # Analytics Streams
+  - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
+  - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2
+  max_concurrency: 2

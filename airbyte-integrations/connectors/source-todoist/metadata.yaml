@@ -4,22 +4,22 @@ data:
       - api.todoist.com/rest/v2
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-todoist
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
   connectorSubtype: api
   connectorType: source
   definitionId: 1a3d38e4-dc6b-4154-b56b-582f9e978ecd
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.3.8
   dockerRepository: airbyte/source-todoist
   githubIssueLabel: source-todoist
   icon: todoist.svg
@@ -30,9 +30,13 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/todoist
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: todoist_config_dev_null
+          id: 2fe1267b-52cf-4f76-88f0-7e99a52992fc
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-TODOIST__CREDS

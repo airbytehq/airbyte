@@ -6,11 +6,11 @@ data:
     hosts:
       - api.typeform.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: e7eff203-90bf-43e5-a240-19ea3056c474
-  dockerImageTag: 1.3.7
+  dockerImageTag: 1.3.27
   dockerRepository: airbyte/source-typeform
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   githubIssueLabel: source-typeform
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-typeform
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -39,6 +39,14 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: typeform_config_oauth_dev_null
+          id: 1522cc4d-04d2-4d44-9152-0854b38e15ee
+        - name: typeform_config_dev_null
+          id: 2b707284-7c35-46da-b1ed-1cb09779a43c
+        - name: typeform_incremental_config_dev_null
+          id: 681b2010-52af-4d44-b2e1-1b5f50581509
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

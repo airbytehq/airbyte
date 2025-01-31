@@ -17,4 +17,6 @@ data class DestinationInitialStatus<DestinationState>(
     val isSchemaMismatch: Boolean,
     val isFinalTableEmpty: Boolean,
     val destinationState: DestinationState,
+    val finalTableGenerationId: Long?,
+    val finalTempTableGenerationId: Long?,
 )

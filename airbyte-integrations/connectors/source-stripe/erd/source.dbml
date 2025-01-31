@@ -1,0 +1,1665 @@
+Table "checkout_sessions" {
+    "id" string [pk]
+    "object" string
+    "after_expiration" object
+    "allow_promotion_codes" boolean
+    "amount_subtotal" integer
+    "amount_total" integer
+    "automatic_tax" object
+    "billing_address_collection" string
+    "cancel_url" string
+    "client_reference_id" string
+    "consent" object
+    "consent_collection" object
+    "currency" string
+    "customer" string
+    "customer_details" object
+    "customer_email" string
+    "expires_at" integer
+    "livemode" boolean
+    "locale" string
+    "metadata" object
+    "mode" string
+    "payment_intent" string
+    "payment_method_options" object
+    "payment_method_types" array
+    "payment_status" string
+    "phone_number_collection" object
+    "recovered_from" string
+    "setup_intent" string
+    "shipping" object
+    "shipping_address_collection" object
+    "submit_type" string
+    "subscription" string
+    "success_url" string
+    "tax_id_collection" object
+    "total_details" object
+    "url" string
+    "updated" integer
+    "created" integer
+    "currency_conversion" object
+    "custom_fields" array
+    "custom_text" object
+    "customer_creation" string
+    "invoice" string
+    "invoice_creation" object
+    "payment_link" string
+    "payment_method_collection" string
+    "shipping_cost" object
+    "shipping_details" object
+    "shipping_options" array
+    "status" string
+    "payment_method_configuration_details" object
+    "client_secret" string
+    "ui_mode" string
+}
+
+Table "customer_balance_transactions" {
+    "id" string [pk]
+    "object" string
+    "amount" number
+    "created" integer
+    "credit_note" string
+    "currency" string
+    "customer" string
+    "description" string
+    "ending_balance" number
+    "invoice" string
+    "livemode" boolean
+    "metadata" object
+    "type" string
+}
+
+Table "events" {
+    "created" integer
+    "data" object
+    "id" string [pk]
+    "api_version" string
+    "object" string
+    "livemode" boolean
+    "pending_webhooks" integer
+    "type" string
+}
+
+Table "external_account_cards" {
+    "id" string [pk]
+    "object" string
+    "address_city" string
+    "address_country" string
+    "address_line1" string
+    "address_line1_check" string
+    "address_line2" string
+    "address_state" string
+    "address_zip" string
+    "address_zip_check" string
+    "brand" string
+    "country" string
+    "cvc_check" string
+    "dynamic_last4" string
+    "exp_month" integer
+    "exp_year" integer
+    "fingerprint" string
+    "funding" string
+    "last4" string
+    "metadata" object
+    "name" string
+    "redaction" string
+    "tokenization_method" string
+    "account" string
+    "updated" integer
+    "is_deleted" boolean
+}
+
+Table "external_account_bank_accounts" {
+    "id" string [pk]
+    "object" string
+    "account_holder_name" string
+    "account_holder_type" string
+    "account_type" string
+    "bank_name" string
+    "country" string
+    "currency" string
+    "fingerprint" string
+    "last4" string
+    "metadata" object
+    "routing_number" string
+    "status" string
+    "account" string
+    "updated" integer
+    "is_deleted" boolean
+}
+
+Table "persons" {
+    "id" string [pk]
+    "object" string
+    "phone" string
+    "email" string
+    "address_kana" string
+    "address_kanji" string
+    "first_name_kana" string
+    "gender" string
+    "full_name_aliases" string
+    "id_number_secondary_provided" string
+    "first_name_kanji" string
+    "nationality" string
+    "political_exposure" string
+    "registered_address" string
+    "account" string
+    "address" object
+    "created" integer
+    "updated" integer
+    "dob" object
+    "first_name" string
+    "future_requirements" object
+    "id_number_provided" boolean
+    "last_name" string
+    "metadata" object
+    "relationship" object
+    "requirements" object
+    "ssn_last_4_provided" boolean
+    "verification" object
+    "is_deleted" boolean
+}
+
+Table "setup_attempts" {
+    "application" string
+    "created" integer
+    "customer" string
+    "id" string [pk]
+    "livemode" boolean
+    "object" string
+    "on_behalf_of" string
+    "payment_method" string
+    "payment_method_details" object
+    "setup_error" object
+    "setup_intent" string
+    "status" string
+    "usage" string
+    "flow_directions" array
+}
+
+Table "accounts" {
+    "business_profile" object
+    "business_type" string
+    "capabilities" object
+    "charges_enabled" boolean
+    "company" object
+    "country" string
+    "created" integer
+    "updated" integer
+    "default_currency" string
+    "details_submitted" boolean
+    "email" string
+    "external_accounts" object
+    "id" string [pk]
+    "individual" object
+    "metadata" object
+    "object" string
+    "payouts_enabled" boolean
+    "requirements" object
+    "settings" object
+    "tos_acceptance" object
+    "type" string
+    "future_requirements" object
+    "controller" object
+}
+
+Table "shipping_rates" {
+    "id" string [pk]
+    "object" string
+    "active" boolean
+    "created" integer
+    "delivery_estimate" string
+    "display_name" string
+    "fixed_amount" object
+    "livemode" boolean
+    "metadata" object
+    "tax_behavior" string
+    "tax_code" string
+    "type" string
+}
+
+Table "balance_transactions" {
+    "fee" integer
+    "currency" string
+    "source" string
+    "fee_details" array
+    "available_on" integer
+    "status" string
+    "description" string
+    "net" integer
+    "exchange_rate" number
+    "type" string
+    "sourced_transfers" array
+    "id" string [pk]
+    "object" string
+    "created" integer
+    "amount" integer
+    "reporting_category" string
+}
+
+Table "payout_balance_transactions" {
+    "payout" string
+    "fee" integer
+    "currency" string
+    "source" string
+    "fee_details" array
+    "available_on" integer
+    "status" string
+    "description" string
+    "net" integer
+    "exchange_rate" number
+    "type" string
+    "id" string
+    "object" string
+    "created" integer
+    "updated" integer
+    "amount" integer
+    "reporting_category" string
+
+    indexes {
+        (payout, id) [pk]
+    }
+}
+
+Table "files" {
+    "id" string [pk]
+    "purpose" string
+    "type" string
+    "object" string
+    "created" integer
+    "expires_at" integer
+    "filename" string
+    "links" object
+    "size" integer
+    "title" string
+    "url" string
+}
+
+Table "file_links" {
+    "id" string [pk]
+    "expires_at" integer
+    "file" string
+    "metadata" object
+    "url" string
+    "object" string
+    "created" integer
+    "expired" boolean
+    "livemode" boolean
+}
+
+Table "refunds" {
+    "id" string [pk]
+    "object" string
+    "amount" integer
+    "balance_transaction" string
+    "charge" string
+    "created" integer
+    "updated" integer
+    "currency" string
+    "metadata" object
+    "payment_intent" string
+    "reason" string
+    "receipt_number" string
+    "source_transfer_reversal" string
+    "status" string
+    "transfer_reversal" string
+    "destination_details" object
+}
+
+Table "payment_methods" {
+    "afterpay_clearpay" object
+    "alipay" object
+    "au_becs_debit" object
+    "bacs_debit" object
+    "bancontact" object
+    "billing_details" object
+    "card" object
+    "card_present" object
+    "created" integer
+    "updated" integer
+    "customer" object
+    "eps" object
+    "fpx" object
+    "giropay" object
+    "grabpay" object
+    "id" string [pk]
+    "ideal" object
+    "interac_present" object
+    "livemode" boolean
+    "metadata" object
+    "object" string
+    "oxxo" object
+    "p24" object
+    "sepa_debit" object
+    "sofort" object
+    "type" string
+}
+
+Table "credit_notes" {
+    "id" string [pk]
+    "object" string
+    "amount" integer
+    "amount_shipping" integer
+    "created" integer
+    "updated" integer
+    "currency" string
+    "customer" string
+    "customer_balance_transaction" string
+    "discount_amount" string
+    "discount_amounts" array
+    "invoice" string
+    "lines" object
+    "livemode" boolean
+    "memo" string
+    "metadata" object
+    "number" string
+    "out_of_band_amount" integer
+    "pdf" string
+    "reason" string
+    "refund" string
+    "shipping_cost" object
+    "status" string
+    "subtotal" integer
+    "subtotal_excluding_tax" integer
+    "tax_amounts" array
+    "total" integer
+    "total_excluding_tax" integer
+    "type" string
+    "voided_at" integer
+    "effective_at" integer
+}
+
+Table "early_fraud_warnings" {
+    "id" string [pk]
+    "object" string
+    "actionable" boolean
+    "charge" string
+    "created" number
+    "updated" integer
+    "fraud_type" string
+    "livemode" boolean
+}
+
+Table "authorizations" {
+    "amount" integer
+    "amount_details" object
+    "approved" boolean
+    "authorization_method" string
+    "balance_transactions" array
+    "card" object
+    "cardholder" string
+    "created" integer
+    "updated" integer
+    "currency" string
+    "id" string [pk]
+    "livemode" boolean
+    "merchant_amount" integer
+    "merchant_currency" string
+    "merchant_data" object
+    "metadata" object
+    "object" string
+    "pending_request" object
+    "request_history" array
+    "status" string
+    "transactions" array
+    "verification_data" object
+    "wallet" string
+}
+
+Table "customers" {
+    "metadata" object
+    "preferred_locales" array
+    "invoice_settings" object
+    "name" string
+    "tax_exempt" string
+    "next_invoice_sequence" integer
+    "balance" integer
+    "phone" string
+    "address" object
+    "shipping" object
+    "delinquent" boolean
+    "description" string
+    "livemode" boolean
+    "default_source" string
+    "cards" array
+    "email" string
+    "default_card" string
+    "subscriptions" object
+    "discount" object
+    "account_balance" integer
+    "currency" string
+    "id" string [pk]
+    "invoice_prefix" string
+    "tax_info_verification" string
+    "object" string
+    "created" integer
+    "updated" integer
+    "tax_info" string
+    "test_clock" string
+    "is_deleted" boolean
+}
+
+Table "cardholders" {
+    "billing" object
+    "company" object
+    "created" integer
+    "updated" integer
+    "email" string
+    "id" string [pk]
+    "individual" object
+    "livemode" boolean
+    "metadata" object
+    "name" string
+    "object" string
+    "phone_number" string
+    "requirements" object
+    "spending_controls" object
+    "status" string
+    "type" string
+    "preferred_locales" array
+}
+
+Table "charges" {
+    "metadata" object
+    "fraud_details" object
+    "transfer_group" string
+    "on_behalf_of" string
+    "review" string
+    "failure_message" string
+    "receipt_email" string
+    "statement_descriptor" string
+    "source" object
+    "destination" string
+    "id" string [pk]
+    "object" string
+    "outcome" object
+    "status" string
+    "currency" string
+    "created" integer
+    "updated" integer
+    "order" string
+    "application" string
+    "refunded" boolean
+    "receipt_number" string
+    "livemode" boolean
+    "captured" boolean
+    "paid" boolean
+    "shipping" object
+    "invoice" string
+    "amount" integer
+    "customer" string
+    "payment_intent" string
+    "source_transfer" string
+    "statement_description" string
+    "refunds" object
+    "application_fee" string
+    "card" object
+    "payment_method_details" object
+    "balance_transaction" string
+    "amount_refunded" integer
+    "failure_code" string
+    "dispute" string
+    "description" string
+    "statement_descriptor_suffix" string
+    "calculated_statement_descriptor" string
+    "receipt_url" string
+    "transfer_data" object
+    "billing_details" object
+    "failure_balance_transaction" string
+    "amount_captured" integer
+    "application_fee_amount" integer
+    "amount_updates" array
+    "payment_method" string
+    "disputed" boolean
+}
+
+Table "coupons" {
+    "metadata" object
+    "times_redeemed" integer
+    "percent_off_precise" number
+    "livemode" boolean
+    "object" string
+    "redeem_by" string
+    "duration" string
+    "id" string [pk]
+    "valid" boolean
+    "currency" string
+    "duration_in_months" integer
+    "name" string
+    "max_redemptions" integer
+    "amount_off" integer
+    "created" integer
+    "updated" integer
+    "percent_off" number
+    "is_deleted" boolean
+}
+
+Table "disputes" {
+    "id" string [pk]
+    "object" string
+    "amount" integer
+    "balance_transactions" array
+    "charge" string
+    "created" integer
+    "updated" integer
+    "currency" string
+    "evidence_details" object
+    "is_charge_refundable" boolean
+    "livemode" boolean
+    "metadata" object
+    "reason" string
+    "status" string
+    "payment_intent" string
+    "balance_transaction" string
+    "payment_method_details" object
+}
+
+Table "application_fees" {
+    "id" string [pk]
+    "object" string
+    "account" string
+    "amount" number
+    "amount_refunded" number
+    "application" string
+    "balance_transaction" string
+    "charge" string
+    "created" number
+    "updated" integer
+    "currency" string
+    "livemode" boolean
+    "originating_transaction" string
+    "refunded" boolean
+    "refunds" object
+    "source" object
+}
+
+Table "invoices" {
+    "created" integer
+    "updated" integer
+    "next_payment_attempt" number
+    "tax" integer
+    "metadata" object
+    "charge" string
+    "description" string
+    "customer_tax_ids" array
+    "receipt_number" string
+    "attempt_count" integer
+    "payment" string
+    "amount_paid" integer
+    "due_date" number
+    "id" string [pk]
+    "webhooks_delivered_at" number
+    "statement_descriptor" string
+    "hosted_invoice_url" string
+    "period_end" number
+    "amount_remaining" integer
+    "tax_percent" number
+    "billing" string
+    "auto_advance" boolean
+    "paid" boolean
+    "discounts" array
+    "discount" object
+    "number" string
+    "billing_reason" string
+    "ending_balance" integer
+    "livemode" boolean
+    "period_start" number
+    "attempted" boolean
+    "closed" boolean
+    "invoice_pdf" string
+    "customer" string
+    "subtotal" integer
+    "application_fee" integer
+    "lines" object
+    "forgiven" boolean
+    "object" string
+    "starting_balance" integer
+    "amount_due" integer
+    "currency" string
+    "total" integer
+    "statement_description" string
+    "subscription" string
+    "subscription_details" object
+    "status" string
+    "status_transitions" object
+    "post_payment_credit_notes_amount" integer
+    "paid_out_of_band" boolean
+    "total_discount_amounts" array
+    "customer_name" string
+    "shipping_cost" object
+    "custom_fields" array
+    "transfer_data" object
+    "application_fee_amount" integer
+    "customer_shipping" object
+    "application" string
+    "amount_shipping" integer
+    "from_invoice" object
+    "customer_tax_exempt" string
+    "total_tax_amounts" array
+    "footer" string
+    "test_clock" string
+    "automatic_tax" object
+    "payment_settings" object
+    "default_source" string
+    "payment_intent" string
+    "default_payment_method" string
+    "shipping_details" object
+    "collection_method" string
+    "effective_at" integer
+    "default_tax_rates" array
+    "total_excluding_tax" integer
+    "subtotal_excluding_tax" integer
+    "last_finalization_error" object
+    "issuer" object
+    "latest_revision" string
+    "rendering_options" object
+    "quote" string
+    "pre_payment_credit_notes_amount" integer
+    "customer_phone" string
+    "on_behalf_of" string
+    "account_tax_ids" array
+    "customer_email" string
+    "customer_address" object
+    "account_name" string
+    "account_country" string
+    "is_deleted" boolean
+    "rendering" object
+}
+
+Table "invoice_items" {
+    "amount" integer
+    "metadata" object
+    "invoice" string
+    "period" object
+    "quantity" integer
+    "description" string
+    "date" integer
+    "updated" integer
+    "object" string
+    "subscription" string
+    "id" string [pk]
+    "livemode" boolean
+    "discountable" boolean
+    "unit_amount" integer
+    "currency" string
+    "customer" string
+    "proration" boolean
+    "subscription_item" string
+    "price" object
+    "test_clock" string
+    "discounts" array
+    "tax_rates" array
+    "unit_amount_decimal" string
+    "is_deleted" boolean
+}
+
+Table "payouts" {
+    "metadata" object
+    "failure_code" string
+    "id" string [pk]
+    "statement_description" string
+    "amount" integer
+    "balance_transaction" string
+    "created" integer
+    "updated" integer
+    "amount_reversed" integer
+    "source_type" string
+    "bank_account" object
+    "date" integer
+    "method" string
+    "livemode" boolean
+    "statement_descriptor" string
+    "failure_message" string
+    "failure_balance_transaction" string
+    "recipient" string
+    "destination" string
+    "automatic" boolean
+    "object" string
+    "status" string
+    "currency" string
+    "transfer_group" string
+    "type" string
+    "arrival_date" integer
+    "description" string
+    "source_transaction" string
+    "original_payout" string
+    "reconciliation_status" string
+    "source_balance" string
+    "reversed_by" string
+}
+
+Table "plans" {
+    "nickname" string
+    "tiers" array
+    "object" string
+    "aggregate_usage" string
+    "created" integer
+    "updated" integer
+    "statement_description" string
+    "product" string
+    "statement_descriptor" string
+    "interval_count" integer
+    "transform_usage" string
+    "name" string
+    "amount" integer
+    "interval" string
+    "id" string [pk]
+    "trial_period_days" integer
+    "usage_type" string
+    "active" boolean
+    "tiers_mode" string
+    "billing_scheme" string
+    "livemode" boolean
+    "currency" string
+    "metadata" object
+    "amount_decimal" string
+    "is_deleted" boolean
+}
+
+Table "prices" {
+    "id" string [pk]
+    "object" string
+    "active" boolean
+    "billing_scheme" string
+    "created" integer
+    "updated" integer
+    "currency" string
+    "custom_unit_amount" string
+    "livemode" boolean
+    "lookup_key" string
+    "metadata" object
+    "nickname" string
+    "product" string
+    "recurring" object
+    "tax_behavior" string
+    "tiers_mode" string
+    "transform_quantity" string
+    "type" string
+    "unit_amount" number
+    "unit_amount_decimal" string
+    "is_deleted" boolean
+}
+
+Table "products" {
+    "id" string [pk]
+    "object" string
+    "active" boolean
+    "attributes" array
+    "caption" string
+    "created" integer
+    "deactivate_on" array
+    "description" string
+    "images" array
+    "livemode" boolean
+    "metadata" object
+    "name" string
+    "package_dimensions" object
+    "shippable" boolean
+    "statement_descriptor" string
+    "type" string
+    "unit_label" string
+    "updated" integer
+    "url" string
+    "default_price" string
+    "tax_code" string
+    "features" array
+    "is_deleted" boolean
+}
+
+Table "reviews" {
+    "billing_zip" string
+    "charge" string
+    "closed_reason" string
+    "created" integer
+    "updated" integer
+    "id" string [pk]
+    "ip_address" string
+    "ip_address_location" object
+    "livemode" string
+    "object" string
+    "open" boolean
+    "opened_reason" string
+    "payment_intent" string
+    "reason" string
+    "session" object
+}
+
+Table "subscriptions" {
+    "metadata" object
+    "canceled_at" number
+    "cancel_at" number
+    "livemode" boolean
+    "start_date" integer
+    "items" object
+    "id" string [pk]
+    "trial_start" integer
+    "application_fee_percent" number
+    "billing_cycle_anchor" number
+    "billing_cycle_anchor_config" object
+    "invoice_settings" object
+    "cancel_at_period_end" boolean
+    "tax_percent" number
+    "discount" object
+    "current_period_end" number
+    "plan" object
+    "billing" string
+    "quantity" integer
+    "days_until_due" integer
+    "status" string
+    "created" integer
+    "updated" integer
+    "ended_at" number
+    "customer" string
+    "current_period_start" integer
+    "trial_end" number
+    "object" string
+    "pending_setup_intent" string
+    "currency" string
+    "transfer_data" object
+    "application" string
+    "test_clock" string
+    "automatic_tax" object
+    "payment_settings" object
+    "next_pending_invoice_item_invoice" integer
+    "default_source" string
+    "default_payment_method" string
+    "collection_method" string
+    "pending_invoice_item_interval" object
+    "default_tax_rates" array
+    "pause_collection" object
+    "cancellation_details" object
+    "latest_invoice" string
+    "pending_update" object
+    "description" string
+    "schedule" string
+    "trial_settings" object
+    "on_behalf_of" string
+    "billing_thresholds" object
+    "is_deleted" boolean
+}
+
+Table "subscription_schedule" {
+    "id" string [pk]
+    "object" string
+    "application" string
+    "canceled_at" string
+    "completed_at" string
+    "created" integer
+    "updated" integer
+    "current_phase" object
+    "customer" string
+    "default_settings" object
+    "end_behavior" string
+    "livemode" boolean
+    "metadata" object
+    "phases" array
+    "released_at" string
+    "released_subscription" string
+    "status" string
+    "subscription" string
+    "test_clock" string
+    "renewal_interval" string
+}
+
+Table "transfers" {
+    "metadata" object
+    "reversals" object
+    "id" string [pk]
+    "statement_description" string
+    "amount" integer
+    "balance_transaction" string
+    "reversed" boolean
+    "created" integer
+    "updated" integer
+    "amount_reversed" integer
+    "source_type" string
+    "source_transaction" string
+    "date" integer
+    "livemode" boolean
+    "statement_descriptor" string
+    "failure_balance_transaction" string
+    "recipient" string
+    "destination" string
+    "automatic" boolean
+    "object" string
+    "currency" string
+    "transfer_group" string
+    "arrival_date" integer
+    "description" string
+    "destination_payment" string
+}
+
+Table "payment_intents" {
+    "id" string [pk]
+    "object" string
+    "amount" integer
+    "amount_capturable" integer
+    "amount_received" integer
+    "application" string
+    "application_fee_amount" integer
+    "canceled_at" integer
+    "cancellation_reason" string
+    "capture_method" string
+    "charges" object
+    "client_secret" string
+    "confirmation_method" string
+    "created" integer
+    "updated" integer
+    "currency" string
+    "customer" string
+    "description" string
+    "invoice" string
+    "last_payment_error" object
+    "livemode" boolean
+    "metadata" object
+    "next_action" object
+    "on_behalf_of" string
+    "payment_method" string
+    "payment_method_options" object
+    "payment_method_types" array
+    "receipt_email" string
+    "review" string
+    "setup_future_usage" string
+    "shipping" object
+    "source" string
+    "statement_description" string
+    "statement_descriptor_suffix" string
+    "status" string
+    "transfer_data" object
+    "transfer_group" string
+    "latest_charge" string
+    "statement_descriptor" string
+    "amount_details" object
+    "processing" object
+    "automatic_payment_methods" object
+    "payment_method_configuration_details" object
+}
+
+Table "promotion_codes" {
+    "id" string [pk]
+    "code" string
+    "coupon" object
+    "metadata" object
+    "object" string
+    "active" boolean
+    "created" integer
+    "updated" integer
+    "customer" string
+    "expires_at" integer
+    "livemode" boolean
+    "max_redemptions" integer
+    "restrictions" object
+    "times_redeemed" integer
+}
+
+Table "setup_intents" {
+    "id" string [pk]
+    "object" string
+    "application" string
+    "cancellation_reason" string
+    "created" integer
+    "updated" integer
+    "customer" string
+    "description" string
+    "flow_directions" array
+    "last_setup_error" string
+    "latest_attempt" string
+    "livemode" boolean
+    "mandate" string
+    "metadata" object
+    "next_action" string
+    "on_behalf_of" string
+    "payment_method" string
+    "payment_method_options" object
+    "payment_method_types" array
+    "single_use_mandate" string
+    "status" string
+    "usage" string
+    "client_secret" string
+    "automatic_payment_methods" object
+    "payment_method_configuration_details" object
+}
+
+Table "cards" {
+    "brand" string
+    "cancellation_reason" string
+    "cardholder" object
+    "created" integer
+    "updated" integer
+    "currency" string
+    "cvc" string
+    "exp_month" integer
+    "exp_year" integer
+    "id" string [pk]
+    "last4" string
+    "livemode" boolean
+    "metadata" object
+    "number" string
+    "object" string
+    "replaced_by" object
+    "replacement_for" object
+    "replacement_reason" string
+    "shipping" object
+    "spending_controls" object
+    "status" string
+    "type" string
+}
+
+Table "transactions" {
+    "amount" integer
+    "amount_details" object
+    "authorization" string
+    "balance_transaction" string
+    "card" string
+    "cardholder" string
+    "created" integer
+    "updated" integer
+    "currency" string
+    "dispute" string
+    "id" string [pk]
+    "livemode" boolean
+    "merchant_amount" integer
+    "merchant_currency" string
+    "merchant_data" object
+    "metadata" object
+    "object" string
+    "purchase_details" object
+    "type" string
+}
+
+Table "top_ups" {
+    "id" string [pk]
+    "amount" integer
+    "currency" string
+    "description" string
+    "metadata" object
+    "status" string
+    "object" string
+    "balance_transaction" string
+    "created" integer
+    "updated" integer
+    "destination_balance" string
+    "expected_availability_date" integer
+    "failure_code" string
+    "failure_message" string
+    "livemode" boolean
+    "source" object
+    "statement_descriptor" string
+    "transfer_group" string
+}
+
+Table "application_fees_refunds" {
+    "id" string [pk]
+    "object" string
+    "amount" number
+    "balance_transaction" string
+    "created" number
+    "updated" integer
+    "currency" string
+    "fee" string
+    "metadata" object
+}
+
+Table "bank_accounts" {
+    "id" string [pk]
+    "object" string
+    "account_holder_name" string
+    "account_holder_type" string
+    "account_type" string
+    "bank_name" string
+    "country" string
+    "currency" string
+    "customer" string
+    "fingerprint" string
+    "last4" string
+    "metadata" object
+    "routing_number" string
+    "status" string
+    "updated" integer
+    "is_deleted" boolean
+}
+
+Table "checkout_sessions_line_items" {
+    "id" string [pk]
+    "checkout_session_id" string
+    "checkout_session_expires_at" integer
+    "checkout_session_created" integer
+    "checkout_session_updated" integer
+    "object" string
+    "amount_subtotal" integer
+    "amount_tax" integer
+    "amount_discount" integer
+    "amount_total" integer
+    "currency" string
+    "description" string
+    "discounts" array
+    "price" object
+    "quantity" integer
+    "taxes" array
+}
+
+Table "invoice_line_items" {
+    "id" string [pk]
+    "invoice" string
+    "invoice_id" string
+    "subscription_item" string
+    "metadata" object
+    "description" string
+    "object" string
+    "discountable" boolean
+    "quantity" integer
+    "amount" integer
+    "type" string
+    "livemode" boolean
+    "margins" array
+    "proration" boolean
+    "period" object
+    "subscription" string
+    "invoice_item" string
+    "currency" string
+    "amount_excluding_tax" integer
+    "unit_amount_excluding_tax" string
+    "proration_details" object
+    "price" object
+    "discount_amounts" array
+    "discounts" array
+    "tax_rates" array
+    "tax_amounts" array
+    "created" integer
+    "updated" integer
+}
+
+Table "subscription_items" {
+    "metadata" object
+    "canceled_at" string
+    "current_period_end" string
+    "subscription" string
+    "trial_start" integer
+    "created" integer
+    "cancel_at_period_end" boolean
+    "quantity" integer
+    "tax_percent" number
+    "current_period_start" integer
+    "start" integer
+    "discount" object
+    "application_fee_percent" number
+    "id" string [pk]
+    "status" string
+    "customer" string
+    "object" string
+    "livemode" boolean
+    "ended_at" number
+    "trial_end" number
+    "billing_thresholds" object
+    "tax_rates" array
+    "price" object
+    "updated" integer
+}
+
+Table "transfer_reversals" {
+    "amount" integer
+    "balance_transaction" string
+    "created" integer
+    "currency" string
+    "destination_payment_refund" string
+    "id" string [pk]
+    "metadata" object
+    "object" string
+    "source_refund" string
+    "transfer" string
+}
+
+Table "usage_records" {
+    "id" string
+    "invoice" string
+    "livemode" boolean
+    "object" string
+    "period" object
+    "subscription_item" string
+    "total_usage" integer
+}
+
+Ref {
+    "checkout_sessions"."customer" <> "customers"."id"
+}
+
+Ref {
+    "checkout_sessions"."payment_intent" <> "payment_intents"."id"
+}
+
+Ref {
+    "checkout_sessions"."setup_intent" <> "setup_intents"."id"
+}
+
+Ref {
+    "checkout_sessions"."subscription" <> "subscriptions"."id"
+}
+
+Ref {
+    "checkout_sessions"."invoice" <> "invoices"."id"
+}
+
+Ref {
+    "checkout_sessions"."payment_link" <> "payment_methods"."id"
+}
+
+Ref {
+    "checkout_sessions"."payment_method_collection" <> "payment_methods"."id"
+}
+
+Ref {
+    "customer_balance_transactions"."customer" <> "customers"."id"
+}
+
+Ref {
+    "customer_balance_transactions"."credit_note" <> "credit_notes"."id"
+}
+
+Ref {
+    "customer_balance_transactions"."invoice" <> "invoices"."id"
+}
+
+Ref {
+    "external_account_cards"."account" <> "accounts"."id"
+}
+
+Ref {
+    "external_account_bank_accounts"."account" <> "accounts"."id"
+}
+
+Ref {
+    "persons"."account" <> "accounts"."id"
+}
+
+Ref {
+    "setup_attempts"."customer" <> "customers"."id"
+}
+
+Ref {
+    "setup_attempts"."payment_method" <> "payment_methods"."id"
+}
+
+Ref {
+    "setup_attempts"."setup_intent" <> "setup_intents"."id"
+}
+
+Ref {
+    "balance_transactions"."source" <> "charges"."id"
+}
+
+Ref {
+    "file_links"."file" <> "files"."id"
+}
+
+Ref {
+    "refunds"."charge" <> "charges"."id"
+}
+
+Ref {
+    "refunds"."payment_intent" <> "payment_intents"."id"
+}
+
+Ref {
+    "credit_notes"."customer" <> "customers"."id"
+}
+
+Ref {
+    "credit_notes"."invoice" <> "invoices"."id"
+}
+
+Ref {
+    "credit_notes"."customer_balance_transaction" <> "customer_balance_transactions"."id"
+}
+
+Ref {
+    "credit_notes"."refund" <> "refunds"."id"
+}
+
+Ref {
+    "early_fraud_warnings"."charge" <> "charges"."id"
+}
+
+Ref {
+    "customers"."default_source" <> "cards"."id"
+}
+
+Ref {
+    "customers"."default_card" <> "cards"."id"
+}
+
+Ref {
+    "charges"."customer" <> "customers"."id"
+}
+
+Ref {
+    "charges"."application" <> "accounts"."id"
+}
+
+Ref {
+    "charges"."payment_intent" <> "payment_intents"."id"
+}
+
+Ref {
+    "charges"."source_transfer" <> "transfers"."id"
+}
+
+Ref {
+    "charges"."application_fee" <> "application_fees"."id"
+}
+
+Ref {
+    "charges"."balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "charges"."dispute" <> "disputes"."id"
+}
+
+Ref {
+    "charges"."failure_balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "charges"."payment_method" <> "payment_methods"."id"
+}
+
+Ref {
+    "disputes"."charge" <> "charges"."id"
+}
+
+Ref {
+    "disputes"."payment_intent" <> "payment_intents"."id"
+}
+
+Ref {
+    "disputes"."balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "application_fees"."account" <> "accounts"."id"
+}
+
+Ref {
+    "application_fees"."charge" <> "charges"."id"
+}
+
+Ref {
+    "application_fees"."balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "invoices"."customer" <> "customers"."id"
+}
+
+Ref {
+    "invoices"."charge" <> "charges"."id"
+}
+
+Ref {
+    "invoices"."payment" <> "payment_methods"."id"
+}
+
+Ref {
+    "invoices"."subscription" <> "subscriptions"."id"
+}
+
+Ref {
+    "invoices"."application" <> "accounts"."id"
+}
+
+Ref {
+    "invoices"."default_source" <> "cards"."id"
+}
+
+Ref {
+    "invoices"."default_payment_method" <> "payment_methods"."id"
+}
+
+Ref {
+    "invoice_items"."invoice" <> "invoices"."id"
+}
+
+Ref {
+    "invoice_items"."subscription" <> "subscriptions"."id"
+}
+
+Ref {
+    "invoice_items"."subscription_item" <> "subscription_items"."id"
+}
+
+Ref {
+    "invoice_items"."customer" <> "customers"."id"
+}
+
+Ref {
+    "payouts"."balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "payouts"."recipient" <> "accounts"."id"
+}
+
+Ref {
+    "payouts"."destination" <> "bank_accounts"."id"
+}
+
+Ref {
+    "payouts"."source_transaction" <> "charges"."id"
+}
+
+Ref {
+    "payouts"."original_payout" <> "payouts"."id"
+}
+
+Ref {
+    "payouts"."reversed_by" <> "payouts"."id"
+}
+
+Ref {
+    "plans"."product" <> "products"."id"
+}
+
+Ref {
+    "prices"."product" <> "products"."id"
+}
+
+Ref {
+    "products"."default_price" <> "prices"."id"
+}
+
+Ref {
+    "reviews"."charge" <> "charges"."id"
+}
+
+Ref {
+    "reviews"."payment_intent" <> "payment_intents"."id"
+}
+
+Ref {
+    "subscriptions"."customer" <> "customers"."id"
+}
+
+Ref {
+    "subscriptions"."application" <> "accounts"."id"
+}
+
+Ref {
+    "subscriptions"."pending_setup_intent" <> "setup_intents"."id"
+}
+
+Ref {
+    "subscriptions"."default_source" <> "cards"."id"
+}
+
+Ref {
+    "subscriptions"."default_payment_method" <> "payment_methods"."id"
+}
+
+Ref {
+    "subscriptions"."latest_invoice" <> "invoices"."id"
+}
+
+Ref {
+    "subscriptions"."schedule" <> "subscription_schedule"."id"
+}
+
+Ref {
+    "subscription_schedule"."application" <> "accounts"."id"
+}
+
+Ref {
+    "subscription_schedule"."customer" <> "customers"."id"
+}
+
+Ref {
+    "subscription_schedule"."released_subscription" <> "subscriptions"."id"
+}
+
+Ref {
+    "subscription_schedule"."subscription" <> "subscriptions"."id"
+}
+
+Ref {
+    "transfers"."balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "transfers"."recipient" <> "accounts"."id"
+}
+
+Ref {
+    "transfers"."destination" <> "bank_accounts"."id"
+}
+
+Ref {
+    "transfers"."source_transaction" <> "charges"."id"
+}
+
+Ref {
+    "transfers"."failure_balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "transfers"."destination_payment" <> "payment_methods"."id"
+}
+
+Ref {
+    "payment_intents"."customer" <> "customers"."id"
+}
+
+Ref {
+    "payment_intents"."invoice" <> "invoices"."id"
+}
+
+Ref {
+    "payment_intents"."payment_method" <> "payment_methods"."id"
+}
+
+Ref {
+    "payment_intents"."latest_charge" <> "charges"."id"
+}
+
+Ref {
+    "promotion_codes"."customer" <> "customers"."id"
+}
+
+Ref {
+    "setup_intents"."customer" <> "customers"."id"
+}
+
+Ref {
+    "setup_intents"."payment_method" <> "payment_methods"."id"
+}
+
+Ref {
+    "setup_intents"."latest_attempt" <> "setup_attempts"."id"
+}
+
+Ref {
+    "transactions"."card" <> "cards"."id"
+}
+
+Ref {
+    "transactions"."cardholder" <> "cardholders"."id"
+}
+
+Ref {
+    "transactions"."dispute" <> "disputes"."id"
+}
+
+Ref {
+    "transactions"."balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "top_ups"."balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "top_ups"."destination_balance" <> "balance_transactions"."id"
+}
+
+Ref {
+    "application_fees_refunds"."balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "application_fees_refunds"."fee" <> "application_fees"."id"
+}
+
+Ref {
+    "bank_accounts"."customer" <> "customers"."id"
+}
+
+Ref {
+    "checkout_sessions_line_items"."checkout_session_id" <> "checkout_sessions"."id"
+}
+
+Ref {
+    "invoice_line_items"."invoice" <> "invoices"."id"
+}
+
+Ref {
+    "invoice_line_items"."subscription" <> "subscriptions"."id"
+}
+
+Ref {
+    "invoice_line_items"."subscription_item" <> "subscription_items"."id"
+}
+
+Ref {
+    "invoice_line_items"."invoice_item" <> "invoice_items"."id"
+}
+
+Ref {
+    "subscription_items"."subscription" <> "subscriptions"."id"
+}
+
+Ref {
+    "subscription_items"."customer" <> "customers"."id"
+}
+
+Ref {
+    "transfer_reversals"."balance_transaction" <> "balance_transactions"."id"
+}
+
+Ref {
+    "transfer_reversals"."transfer" <> "transfers"."id"
+}
+
+Ref {
+    "transfer_reversals"."source_refund" <> "refunds"."id"
+}
+
+Ref {
+    "transfer_reversals"."destination_payment_refund" <> "refunds"."id"
+}
+
+Ref {
+    "usage_records"."invoice" <> "invoices"."id"
+}
+
+Ref {
+    "usage_records"."subscription_item" <> "subscription_items"."id"
+}

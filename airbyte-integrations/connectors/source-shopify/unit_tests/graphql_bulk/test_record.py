@@ -16,8 +16,8 @@ from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord
         ({"id": 123}, {"id": 123}),
     ],
 )
-def test_record_resolve_id(record, expected) -> None:
-    bulk_query = ShopifyBulkQuery(shop_id=0)
+def test_record_resolve_id(basic_config, record, expected) -> None:
+    bulk_query = ShopifyBulkQuery(basic_config)
     assert ShopifyBulkRecord(bulk_query).record_resolve_id(record) == expected
 
 
@@ -29,8 +29,8 @@ def test_record_resolve_id(record, expected) -> None:
         ({}, "Other", False),
     ],
 )
-def test_check_type(record, types, expected) -> None:
-    query = ShopifyBulkQuery(shop_id=0)
+def test_check_type(basic_config, record, types, expected) -> None:
+    query = ShopifyBulkQuery(basic_config)
     assert ShopifyBulkRecord(query).check_type(record, types) == expected
 
 
@@ -58,11 +58,11 @@ def test_check_type(record, types, expected) -> None:
                 "alias_to_id_field": "gid://shopify/Metafield/123",
                 "__parentId": "gid://shopify/Order/102030",
             },
-        )
+        ),
     ],
 )
-def test_record_resolver(record, expected) -> None:
-    query = ShopifyBulkQuery(shop_id=0)
+def test_record_resolver(basic_config, record, expected) -> None:
+    query = ShopifyBulkQuery(basic_config)
     record_instance = ShopifyBulkRecord(query)
     assert record_instance.record_resolve_id(record) == expected
 
@@ -76,8 +76,8 @@ def test_record_resolver(record, expected) -> None:
         ),
     ],
 )
-def test_record_new(record, expected) -> None:
-    query = ShopifyBulkQuery(shop_id=0)
+def test_record_new(basic_config, record, expected) -> None:
+    query = ShopifyBulkQuery(basic_config)
     record_instance = ShopifyBulkRecord(query)
     record_instance.record_new(record)
     assert record_instance.buffer == [expected]
@@ -110,8 +110,8 @@ def test_record_new(record, expected) -> None:
     ],
     ids=["add_component"],
 )
-def test_record_new_component(records_from_jsonl, record_components, expected) -> None:
-    query = ShopifyBulkQuery(shop_id=0)
+def test_record_new_component(basic_config, records_from_jsonl, record_components, expected) -> None:
+    query = ShopifyBulkQuery(basic_config)
     record_instance = ShopifyBulkRecord(query)
     record_instance.components = record_components.get("record_components")
     # register new record first
@@ -161,8 +161,8 @@ def test_record_new_component(records_from_jsonl, record_components, expected) -
         ),
     ],
 )
-def test_buffer_flush(buffered_record, expected) -> None:
-    query = ShopifyBulkQuery(shop_id=0)
+def test_buffer_flush(basic_config, buffered_record, expected) -> None:
+    query = ShopifyBulkQuery(basic_config)
     record_instance = ShopifyBulkRecord(query)
     # populate the buffer with record
     record_instance.buffer.append(buffered_record)
@@ -196,8 +196,8 @@ def test_buffer_flush(buffered_record, expected) -> None:
     ],
     ids=["test_compose"],
 )
-def test_record_compose(records_from_jsonl, record_composition, expected) -> None:
-    query = ShopifyBulkQuery(shop_id=0)
+def test_record_compose(basic_config, records_from_jsonl, record_composition, expected) -> None:
+    query = ShopifyBulkQuery(basic_config)
     # query.record_composition = record_composition
     record_instance = ShopifyBulkRecord(query)
     record_instance.composition = record_composition

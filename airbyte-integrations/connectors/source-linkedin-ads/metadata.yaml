@@ -7,11 +7,11 @@ data:
       - linkedin.com
       - api.linkedin.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 2.1.12
+  dockerImageTag: 5.1.4
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
@@ -23,13 +23,15 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-linkedin-ads
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: This upgrade brings changes in primary key to *-analytics streams.
@@ -65,6 +67,32 @@ data:
               - "ad_member_seniority_analytics"
               - "ad_member_region_analytics"
               - "ad_member_company_analytics"
+      3.0.0:
+        message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from account to account. Users will need to reset affected streams after upgrading. Please see migration guide for more details.
+        upgradeDeadline: "2024-08-20"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "account_users"
+              - "campaigns"
+              - "creatives"
+              - "campaign_groups"
+              - "conversions"
+      4.0.0:
+        message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from composite key - [account, user] to key - account. Users using 3.X.X of the connector will need to reset affected streams after upgrading. Please see migration guide for more details.
+        upgradeDeadline: "2024-08-21"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "account_users"
+              - "campaigns"
+              - "creatives"
+              - "campaign_groups"
+              - "conversions"
+      5.0.0:
+        message: We would like to inform you that the Primary Key (PK) for ad_campaign_analytics and Custom Ad Analytics Reports streams has been changed from [string_of_pivot_values, end_date] to [string_of_pivot_values, end_date, sponsoredCampaign] and Primary Key (PK) for account_users stream has been changed from [account] to [account, user]. This update is intended to improve data integrity and ensure optimal performance. Upgrade LinkedIn Ads to apply these changes immediately. Otherwise, LinkedIn Ads will be upgraded automatically on 2024-12-10.
+        upgradeDeadline: "2024-12-10"
+        deadlineAction: "auto_upgrade"
   suggestedStreams:
     streams:
       - accounts
@@ -77,8 +105,18 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: linkedin-ads_config_multiple_account_ids_dev_null
+          id: 105e4dcd-6c79-461d-8b2b-9bbf0424d5b7
+        - name: linkedin-ads_config_dev_null
+          id: 3d35a758-f9ba-4b40-9ebd-454fe21f389d
+        - name: linkedin-ads_config_oauth_dev_null
+          id: 42888b02-5f06-4ccd-b86b-2620d7f87b61
+        - name: linkedin-ads_config_token_dev_null
+          id: a9ae94ba-24e6-406a-b02d-b100e6ffacda
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

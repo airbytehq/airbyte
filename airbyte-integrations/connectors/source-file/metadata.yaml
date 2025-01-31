@@ -6,11 +6,11 @@ data:
     hosts:
       - "*"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: file
   connectorType: source
   definitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
-  dockerImageTag: 0.5.3
+  dockerImageTag: 0.5.18
   dockerRepository: airbyte/source-file
   documentationUrl: https://docs.airbyte.com/integrations/sources/file
   githubIssueLabel: source-file
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-file
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: file_config_dev_null
+          id: 91948602-3f4a-45a0-847d-9394ea8198e8
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

@@ -140,7 +140,7 @@
     },
     {
       "stream": {
-        "name": "homepage_items",
+        "name": "board_items",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
@@ -150,7 +150,7 @@
     },
     {
       "stream": {
-        "name": "homepage_sections",
+        "name": "board_sections",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
@@ -160,7 +160,7 @@
     },
     {
       "stream": {
-        "name": "homepages",
+        "name": "boards",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
@@ -191,16 +191,6 @@
     {
       "stream": {
         "name": "legacy_features",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "lookml_dashboards",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
@@ -292,8 +282,8 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["history_created_time"],
-        "source_defined_primary_key": [["query_id"], ["history_created_time"]]
+        "default_cursor_field": ["history.created_time"],
+        "source_defined_primary_key": [["query.id"], ["history.created_time"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -330,26 +320,6 @@
     },
     {
       "stream": {
-        "name": "spaces",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "space_ancestors",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "user_attributes",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
@@ -364,15 +334,6 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "user_attribute_values",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"

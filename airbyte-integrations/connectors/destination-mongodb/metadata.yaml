@@ -8,7 +8,7 @@ data:
   icon: mongodb.svg
   license: ELv2
   name: MongoDB
-  registries:
+  registryOverrides:
     cloud:
       dockerRepository: airbyte/destination-mongodb-strict-encrypt
       enabled: true

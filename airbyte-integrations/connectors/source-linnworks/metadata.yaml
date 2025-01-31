@@ -3,18 +3,18 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.39
   dockerRepository: airbyte/source-linnworks
   documentationUrl: https://docs.airbyte.com/integrations/sources/linnworks
   githubIssueLabel: source-linnworks
   icon: linnworks.svg
   license: MIT
   name: Linnworks
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

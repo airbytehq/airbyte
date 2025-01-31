@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-harness
-  registries:
+  registryOverrides:
     oss:
       enabled: false
     cloud:
@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b0e46f61-e143-47cc-a595-4bb73bfa8a15
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   dockerRepository: airbyte/source-harness
   githubIssueLabel: source-harness
   icon: harness.svg

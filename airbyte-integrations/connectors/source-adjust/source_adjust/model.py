@@ -15,6 +15,7 @@ import typing
 
 import pydantic
 
+
 BASE_METRICS = typing.Literal[
     "network_cost",
     "network_cost_diff",

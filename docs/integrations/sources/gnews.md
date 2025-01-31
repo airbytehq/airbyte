@@ -40,6 +40,28 @@ Rate Limiting is based on the API Key tier subscription, get more info [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
+| 0.2.9 | 2025-01-25 | [52320](https://github.com/airbytehq/airbyte/pull/52320) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [51622](https://github.com/airbytehq/airbyte/pull/51622) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51072](https://github.com/airbytehq/airbyte/pull/51072) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50535](https://github.com/airbytehq/airbyte/pull/50535) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50037](https://github.com/airbytehq/airbyte/pull/50037) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49521](https://github.com/airbytehq/airbyte/pull/49521) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [48214](https://github.com/airbytehq/airbyte/pull/48214) | Update dependencies |
+| 0.2.2 | 2024-10-29 | [47918](https://github.com/airbytehq/airbyte/pull/47918) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47499](https://github.com/airbytehq/airbyte/pull/47499) | Update dependencies |
+| 0.2.0 | 2024-10-17 | [46959](https://github.com/airbytehq/airbyte/pull/46959) | Refactor connector to manifest-only format |
+| 0.1.25 | 2024-10-12 | [46802](https://github.com/airbytehq/airbyte/pull/46802) | Update dependencies |
+| 0.1.24 | 2024-10-05 | [46425](https://github.com/airbytehq/airbyte/pull/46425) | Update dependencies |
+| 0.1.23 | 2024-09-28 | [46209](https://github.com/airbytehq/airbyte/pull/46209) | Update dependencies |
+| 0.1.22 | 2024-09-21 | [45808](https://github.com/airbytehq/airbyte/pull/45808) | Update dependencies |
+| 0.1.21 | 2024-09-14 | [45541](https://github.com/airbytehq/airbyte/pull/45541) | Update dependencies |
+| 0.1.20 | 2024-09-07 | [45290](https://github.com/airbytehq/airbyte/pull/45290) | Update dependencies |
+| 0.1.19 | 2024-08-31 | [45034](https://github.com/airbytehq/airbyte/pull/45034) | Update dependencies |
+| 0.1.18 | 2024-08-24 | [44631](https://github.com/airbytehq/airbyte/pull/44631) | Update dependencies |
+| 0.1.17 | 2024-08-17 | [44355](https://github.com/airbytehq/airbyte/pull/44355) | Update dependencies |
+| 0.1.16 | 2024-08-12 | [43922](https://github.com/airbytehq/airbyte/pull/43922) | Update dependencies |
+| 0.1.15 | 2024-08-10 | [43659](https://github.com/airbytehq/airbyte/pull/43659) | Update dependencies |
+| 0.1.14 | 2024-08-03 | [43263](https://github.com/airbytehq/airbyte/pull/43263) | Update dependencies |
 | 0.1.13 | 2024-07-27 | [42634](https://github.com/airbytehq/airbyte/pull/42634) | Update dependencies |
 | 0.1.12 | 2024-07-20 | [42340](https://github.com/airbytehq/airbyte/pull/42340) | Update dependencies |
 | 0.1.11 | 2024-07-13 | [41832](https://github.com/airbytehq/airbyte/pull/41832) | Update dependencies |

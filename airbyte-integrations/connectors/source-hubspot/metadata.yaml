@@ -6,13 +6,14 @@ data:
     hosts:
       - api.hubapi.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 4.2.14
+  dockerImageTag: 4.4.8
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
+  erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships
   githubIssueLabel: source-hubspot
   icon: hubspot.svg
   license: ELv2
@@ -22,13 +23,15 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-hubspot
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message: >-
@@ -68,6 +71,14 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: hubspot_config_dev_null
+          id: 52e28dc7-2245-4ebc-a591-0ef954ce4837
+        - name: hubspot_config_oauth_dev_null
+          id: 5a4058bf-0ab3-427e-92e4-9051c0abf655
+        - name: hubspot_config_oauth_no_start_date_dev_null
+          id: 67bf1886-3ae0-4fad-8c37-90eb51b2c748
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

@@ -4,7 +4,7 @@ connector_image: airbyte/source-pokeapi:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_pokeapi/spec.yaml"
+      - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
           disable_for_version: "0.1.5"
   connection:

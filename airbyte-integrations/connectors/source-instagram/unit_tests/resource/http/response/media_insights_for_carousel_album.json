@@ -47,6 +47,42 @@
       "title": "Video Views",
       "description": "The number of times videos in your carousel album were viewed.",
       "id": "66123508374641123/insights/video_views/lifetime"
+    },
+    {
+      "name": "shares",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 3
+        }
+      ],
+      "title": "Shares title",
+      "description": "Shares description.",
+      "id": "66123508374641123/insights/shares/lifetime"
+    },
+    {
+      "name": "follows",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 53
+        }
+      ],
+      "title": "Follows title",
+      "description": "Follows description.",
+      "id": "66123508374641123/insights/follows/lifetime"
+    },
+    {
+      "name": "profile_visits",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 9
+        }
+      ],
+      "title": "Profile visits title",
+      "description": "Profile visits description.",
+      "id": "66123508374641123/insights/profile_visits/lifetime"
     }
   ]
 }

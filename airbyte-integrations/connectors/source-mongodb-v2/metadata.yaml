@@ -5,10 +5,38 @@ data:
   allowedHosts:
     hosts:
       - ${connection_string}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: credentials.json
+          name: SECRET_SOURCE-MONGODB-V2_CREDENTIALS__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_SOURCE-MONGODB-V2__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+    - suite: acceptanceTests
+      testSecrets:
+        - fileName: credentials.json
+          name: SECRET_SOURCE-MONGODB-V2_CREDENTIALS__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_SOURCE-MONGODB-V2__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
-  dockerImageTag: 1.4.3
+  dockerImageTag: 1.5.14
   dockerRepository: airbyte/source-mongodb-v2
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   githubIssueLabel: source-mongodb-v2
@@ -16,45 +44,29 @@ data:
   license: ELv2
   maxSecondsBetweenMessages: 7200
   name: MongoDb
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
-  supportLevel: certified
-  tags:
-    - language:java
   releases:
     breakingChanges:
       1.0.0:
-        message: >
-          **We advise against upgrading until you have run a test upgrade as outlined [here](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).**  This version brings a host of updates to the MongoDB source connector, significantly increasing its scalability and reliability, especially for large collections. As of this version with checkpointing, [CDC incremental updates](https://docs.airbyte.com/understanding-airbyte/cdc) and improved schema discovery, this connector is also now [certified](https://docs.airbyte.com/integrations/). Selecting `Upgrade` will upgrade **all** connections using this source, require you to reconfigure the source, then run a full reset on **all** of your connections.
+        message:
+          "**We advise against upgrading until you have run a test upgrade
+          as outlined [here](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).**  This
+          version brings a host of updates to the MongoDB source connector, significantly
+          increasing its scalability and reliability, especially for large collections.
+          As of this version with checkpointing, [CDC incremental updates](https://docs.airbyte.com/understanding-airbyte/cdc)
+          and improved schema discovery, this connector is also now [certified](https://docs.airbyte.com/integrations/).
+          Selecting `Upgrade` will upgrade **all** connections using this source,
+          require you to reconfigure the source, then run a full reset on **all**
+          of your connections.
+
+          "
         upgradeDeadline: "2023-12-01"
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_SOURCE-MONGODB-V2_CREDENTIALS__CREDS
-          fileName: credentials.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-MONGODB-V2__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-MONGODB-V2_CREDENTIALS__CREDS
-          fileName: credentials.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-MONGODB-V2__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+  supportLevel: certified
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

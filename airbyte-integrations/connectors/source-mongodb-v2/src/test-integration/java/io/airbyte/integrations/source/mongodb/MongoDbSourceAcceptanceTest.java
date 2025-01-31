@@ -533,12 +533,12 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
     when(changeEventWithMetadata.isSnapshotEvent()).thenReturn(false);
-    when(changeEventWithMetadata.snapshotMetadata()).thenReturn(SnapshotMetadata.LAST);
+    when(changeEventWithMetadata.getSnapshotMetadata()).thenReturn(SnapshotMetadata.LAST);
 
     assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
-    when(changeEventWithMetadata.snapshotMetadata()).thenReturn(SnapshotMetadata.FIRST);
-    when(changeEventWithMetadata.eventValueAsJson()).thenReturn(Jsons.jsonNode(
+    when(changeEventWithMetadata.getSnapshotMetadata()).thenReturn(SnapshotMetadata.FIRST);
+    when(changeEventWithMetadata.getEventValueAsJson()).thenReturn(Jsons.jsonNode(
         Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE,
             Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE_TIMESTAMP_MS, eventTimestamp,
                 MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, order))));

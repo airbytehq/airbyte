@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.model.ListObjectsRequest
 import com.amazonaws.services.s3.model.ObjectListing
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.kotlin.eq
 
 class S3StorageOperationsTest {
 
@@ -31,7 +33,9 @@ class S3StorageOperationsTest {
         private const val FAKE_BUCKET_PATH = "fake-bucketPath"
         private const val NAMESPACE = "namespace"
         private const val STREAM_NAME = "stream_name1"
-        private const val OBJECT_TO_DELETE = "$NAMESPACE/$STREAM_NAME/2022_04_04_123456789_0.csv.gz"
+        private const val OBJECT_PREFIX = "$NAMESPACE/$STREAM_NAME/2022_04_04_123456789_"
+        private const val OBJECT_EXTENSION = ".csv.gz"
+        private const val OBJECT_TO_DELETE = "${OBJECT_PREFIX}1$OBJECT_EXTENSION"
     }
 
     private lateinit var s3Client: AmazonS3
@@ -70,6 +74,15 @@ class S3StorageOperationsTest {
                 s3Client.listObjects(
                     ArgumentMatchers.any(
                         ListObjectsRequest::class.java,
+                    ),
+                ),
+            )
+            .thenReturn(results)
+        Mockito.`when`(
+                s3Client.listObjects(
+                    eq(BUCKET_NAME),
+                    ArgumentMatchers.any(
+                        String::class.java,
                     ),
                 ),
             )
@@ -209,5 +222,23 @@ class S3StorageOperationsTest {
         assertEquals("0", s3StorageOperations.getPartId(FAKE_BUCKET_PATH))
         assertEquals("1", s3StorageOperations.getPartId(FAKE_BUCKET_PATH))
         assertEquals("0", s3StorageOperations.getPartId("other_path"))
+    }
+
+    @Test
+    fun testGetFileName() {
+        val recordsData =
+            Mockito.mock(
+                SerializableBuffer::class.java,
+            )
+        Mockito.`when`(recordsData.filename).thenReturn(".csv.gz")
+        assertEquals(
+            OBJECT_PREFIX + 0 + OBJECT_EXTENSION,
+            s3StorageOperations.getFileName(OBJECT_PREFIX, recordsData)
+        )
+        // 1 is skipped because it's already existing
+        assertEquals(
+            OBJECT_PREFIX + 2 + OBJECT_EXTENSION,
+            s3StorageOperations.getFileName(OBJECT_PREFIX, recordsData)
+        )
     }
 }

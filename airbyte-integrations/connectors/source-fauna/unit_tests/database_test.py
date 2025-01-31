@@ -11,6 +11,10 @@ import time
 from datetime import datetime
 
 import docker
+from faunadb import query as q
+from source_fauna import SourceFauna
+from test_util import CollectionConfig, DeletionsConfig, FullConfig, config, mock_logger, ref
+
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteStream,
@@ -21,9 +25,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from faunadb import query as q
-from source_fauna import SourceFauna
-from test_util import CollectionConfig, DeletionsConfig, FullConfig, config, mock_logger, ref
 
 
 def setup_database(source: SourceFauna):

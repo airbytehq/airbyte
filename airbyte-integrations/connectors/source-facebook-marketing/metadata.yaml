@@ -6,14 +6,15 @@ data:
     hosts:
       - graph.facebook.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 3.3.15
+  dockerImageTag: 3.3.28
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
+  erdUrl: https://dbdocs.io/airbyteio/source-facebook-marketing?view=relationships
   icon: facebook.svg
   license: ELv2
   maxSecondsBetweenMessages: 86400
@@ -22,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-facebook-marketing
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -71,6 +72,12 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: facebook-marketing_config_dev_null
+          id: 33d36a34-1416-4d83-968b-72cd1ede8c43
+        - name: facebook-marketing_config_no_date_dev_null
+          id: 3bfed4a5-9953-4a7f-be8e-f2ad4e70b90b
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

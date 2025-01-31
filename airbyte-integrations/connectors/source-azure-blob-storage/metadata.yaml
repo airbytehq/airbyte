@@ -12,7 +12,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
-  dockerImageTag: 0.4.4
+  dockerImageTag: 0.5.0
   dockerRepository: airbyte/source-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
   githubIssueLabel: source-azure-blob-storage
@@ -24,7 +24,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-azure-blob-storage
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -35,6 +35,36 @@ data:
     - language:python
     - cdk:python-file-based
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: azure-blob-storage_csv_custom_encoding_config_dev_null
+          id: 04c5ce62-18a9-4dc9-a0de-a2d16af346dc
+        - name: azure-blob-storage_csv_with_null_bools_config_dev_null
+          id: 0ffbb6a6-5d04-422e-b838-ea833e209f71
+        - name: azure-blob-storage_csv_with_nulls_config_dev_null
+          id: 11cce9c4-d762-4d60-a0fa-a33eb9f5b788
+        - name: azure-blob-storage_csv_no_header_config_dev_null
+          id: 15cb71af-cb23-4169-a33d-1c8e51d03203
+        - name: azure-blob-storage_jsonl_config_dev_null
+          id: 2d187c90-27ad-4fa0-9fb2-c1936b89c343
+        - name: azure-blob-storage_csv_skip_rows_config_dev_null
+          id: 344a7838-0180-42f7-a385-21cbd52ee2f6
+        - name: azure-blob-storage_avro_config_dev_null
+          id: 426a81bb-a5b8-4a74-a5a8-b3125e4afed2
+        - name: azure-blob-storage_unstructured_config_dev_null
+          id: 48c894fb-8c76-4dd0-9e33-245cced8834c
+        - name: azure-blob-storage_csv_custom_format_encoding_config_dev_null
+          id: 4b29f20c-c405-4034-aa3e-035988518462
+        - name: azure-blob-storage_config_dev_null
+          id: 5b7e136d-96ea-4d05-a422-5cee140786f9
+        - name: azure-blob-storage_jsonl_newlines_config_dev_null
+          id: 6b10651e-181f-448b-85df-b29c7e4e7030
+        - name: azure-blob-storage_csv_skip_rows_no_header_config_dev_null
+          id: 74319212-dba7-4b3c-91cc-760afa2998b5
+        - name: azure-blob-storage_parquet_config_dev_null
+          id: 778f5870-c9f8-44cb-8602-28eb16bb0d75
+        - name: azure-blob-storage_csv_user_schema_config_dev_null
+          id: c9108e3e-da3b-42c9-8c51-8a3005bd0c21
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

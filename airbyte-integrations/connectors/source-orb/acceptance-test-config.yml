@@ -3,7 +3,7 @@
 connector_image: airbyte/source-orb:dev
 tests:
   spec:
-    - spec_path: "source_orb/spec.json"
+    - spec_path: "manifest.yaml"
       backward_compatibility_tests_config:
         disable_for_version: "0.1.4"
   connection:

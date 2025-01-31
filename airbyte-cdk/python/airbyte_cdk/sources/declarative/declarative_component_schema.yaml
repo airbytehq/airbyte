@@ -1,6 +1,9 @@
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml
 title: DeclarativeSource
+# Manually mirrored copy of the DeclarativeSource schema file from the Airbyte CDK:
+# https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L9
+# TODO: Find a way to make this DRY to prevent drift.
 type: object
 description: An API source that extracts data according to its declarative components.
 version: 1.0.0
@@ -28,6 +31,8 @@ properties:
     type: object
   spec:
     "$ref": "#/definitions/Spec"
+  concurrency_level:
+    "$ref": "#/definitions/ConcurrencyLevel"
   metadata:
     type: object
     description: For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.
@@ -315,6 +320,37 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  ConcurrencyLevel:
+    title: Concurrency Level
+    description: Defines the amount of parallelization for the streams that are being synced. The factor of parallelization is how many partitions or streams are synced at the same time. For example, with a concurrency_level of 10, ten streams or partitions of data will processed at the same time.
+    type: object
+    required:
+      - default_concurrency
+    properties:
+      type:
+        type: string
+        enum: [ConcurrencyLevel]
+      default_concurrency:
+        title: Default Concurrency
+        description: The amount of concurrency that will applied during a sync. This value can be hardcoded or user-defined in the config if different users have varying volume thresholds in the target API.
+        anyOf:
+          - type: integer
+          - type: string
+        interpolation_context:
+          - config
+        examples:
+          - 10
+          - "{{ config['num_workers'] or 10 }}"
+      max_concurrency:
+        title: Max Concurrency
+        description: The maximum level of concurrency that will be used during a sync. This becomes a required field when the default_concurrency derives from the config, because it serves as a safeguard against a user-defined threshold that is too high.
+        type: integer
+        examples:
+          - 20
+          - 100
+      $parameters:
+        type: object
+        additionalProperties: true
   ConstantBackoffStrategy:
     title: Constant Backoff
     description: Backoff strategy with a constant backoff interval.
@@ -384,10 +420,6 @@ definitions:
         examples:
           - "{{ response.data.has_more is false }}"
           - "{{ 'next' not in headers['link'] }}"
-      decoder:
-        title: Decoder
-        description: Component decoding the response so records can be extracted.
-        "$ref": "#/definitions/Decoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -815,6 +847,11 @@ definitions:
         description: Set to True if the target API does not accept queries where the start time equal the end time.
         type: boolean
         default: False
+      global_substream_cursor:
+        title: Whether to store cursor as one value instead of per partition
+        description: This setting optimizes performance when the parent stream has thousands of partitions by storing the cursor as a single value rather than per partition. Notably, the substream state is updated only at the end of the sync, which helps prevent data loss in case of a sync failure. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/incremental-syncs).
+        type: boolean
+        default: false
       lookback_window:
         title: Lookback Window
         description: Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.
@@ -1151,6 +1188,7 @@ definitions:
         title: Retriever
         description: Component used to coordinate how records are extracted across stream slices and request pages.
         anyOf:
+          - "$ref": "#/definitions/AsyncRetriever"
           - "$ref": "#/definitions/CustomRetriever"
           - "$ref": "#/definitions/SimpleRetriever"
       incremental_sync:
@@ -1189,6 +1227,7 @@ definitions:
             - "$ref": "#/definitions/AddFields"
             - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
+            - "$ref": "#/definitions/KeysToLower"
       state_migrations:
         title: State Migrations
         description: Array of state migrations to be applied on the input state
@@ -1259,10 +1298,6 @@ definitions:
           - "$ref": "#/definitions/CustomPaginationStrategy"
           - "$ref": "#/definitions/OffsetIncrement"
           - "$ref": "#/definitions/PageIncrement"
-      decoder:
-        title: Decoder
-        description: Component decoding the response so records can be extracted.
-        "$ref": "#/definitions/JsonDecoder"
       page_size_option:
         "$ref": "#/definitions/RequestOption"
       page_token_option:
@@ -1296,12 +1331,6 @@ definitions:
           - ["data", "records"]
           - ["data", "{{ parameters.name }}"]
           - ["data", "*", "record"]
-      decoder:
-        title: Decoder
-        anyOf:
-          - "$ref": "#/definitions/JsonDecoder"
-          - "$ref": "#/definitions/JsonlDecoder"
-          - "$ref": "#/definitions/IterableDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -1376,6 +1405,12 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/SessionTokenRequestApiKeyAuthenticator"
           - "$ref": "#/definitions/SessionTokenRequestBearerAuthenticator"
+      decoder:
+        title: Decoder
+        description: Component used to decode the response.
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -1685,6 +1720,19 @@ definitions:
       type:
         type: string
         enum: [JsonlDecoder]
+  KeysToLower:
+    title: Keys to Lower Case
+    description: A transformation that renames all keys to lower case.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [KeysToLower]
+      $parameters:
+        type: object
+        additionalProperties: true
   IterableDecoder:
     title: Iterable Decoder
     description: Use this if the response consists of strings separated by new lines (`\n`). The Decoder will wrap each row into a JSON object with the `record` key.
@@ -1695,6 +1743,55 @@ definitions:
       type:
         type: string
         enum: [IterableDecoder]
+  XmlDecoder:
+    title: XML Decoder
+    description: Use this if the response is XML.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [XmlDecoder]
+  CustomDecoder:
+    title: Custom Decoder
+    description: Use this to implement custom decoder logic.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomDecoder]
+      class_name:
+        title: Class Name
+        description: Fully-qualified name of the class that will be implementing the custom decoding. Has to be a sub class of Decoder. The format is `source_<name>.<package>.<class_name>`.
+        type: string
+        additionalProperties: true
+        examples:
+          - "source_amazon_ads.components.GzipJsonlDecoder"
+      $parameters:
+        type: object
+        additionalProperties: true
+  GzipJsonDecoder:
+    title: GzipJson Decoder
+    description: Use this if the response is Gzip compressed Json.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [GzipJsonDecoder]
+      encoding:
+        type: string
+        default: utf-8
+      $parameters:
+        type: object
+        additionalProperties: true
   ListPartitionRouter:
     title: List Partition Router
     description: A Partition router that specifies a list of attributes where each attribute describes a portion of the complete data set for a stream. During a sync, each value is iterated over and can be used as input to outbound API requests.
@@ -2060,6 +2157,20 @@ definitions:
         description: Indicates whether the parent stream should be read incrementally based on updates in the child stream.
         type: boolean
         default: false
+      extra_fields:
+        title: Extra Fields
+        description: Array of field paths to include as additional fields in the stream slice. Each path is an array of strings representing keys to access fields in the respective parent record. Accessible via `stream_slice.extra_fields`. Missing fields are set to `None`.
+        interpolation_context:
+          - config
+        type: array
+        items:
+          type: array
+          items:
+            type: string
+          description: Defines a field path as an array of strings.
+          examples:
+            - ["field1"]
+            - ["nested", "field2"]
       $parameters:
         type: object
         additionalProperties: true
@@ -2335,9 +2446,130 @@ definitions:
         title: Decoder
         description: Component decoding the response so records can be extracted.
         anyOf:
+          - "$ref": "#/definitions/CustomDecoder"
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
+          - "$ref": "#/definitions/GzipJsonDecoder"
+      $parameters:
+        type: object
+        additionalProperties: true
+  AsyncJobStatusMap:
+    description: Matches the api job status to Async Job Status.
+    type: object
+    required:
+      - running
+      - completed
+      - failed
+      - timeout
+    properties:
+      type:
+        type: string
+        enum: [AsyncJobStatusMap]
+      running:
+        type: array
+        items:
+          type: string
+      completed:
+        type: array
+        items:
+          type: string
+      failed:
+        type: array
+        items:
+          type: string
+      timeout:
+        type: array
+        items:
+          type: string
+  AsyncRetriever:
+    description: "[Experimental - We expect the interface to change shortly and we reserve the right to not consider this a breaking change] Retrieves records by Asynchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router."
+    type: object
+    required:
+      - type
+      - record_selector
+      - status_mapping
+      - creation_requester
+      - polling_requester
+      - download_requester
+      - status_extractor
+      - urls_extractor
+    properties:
+      type:
+        type: string
+        enum: [AsyncRetriever]
+      record_selector:
+        description: Component that describes how to extract records from a HTTP response.
+        "$ref": "#/definitions/RecordSelector"
+      status_mapping:
+        description: Async Job Status to Airbyte CDK Async Job Status mapping.
+        anyOf:
+          - "$ref": "#/definitions/AsyncJobStatusMap"
+      status_extractor:
+        description: Responsible for fetching the actual status of the async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordExtractor"
+          - "$ref": "#/definitions/DpathExtractor"
+      urls_extractor:
+        description: Responsible for fetching the final result `urls` provided by the completed / finished / ready async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordExtractor"
+          - "$ref": "#/definitions/DpathExtractor"
+      creation_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to create the async server-side job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      polling_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to fetch the status of the running async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      download_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to download the data provided by the completed async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      download_paginator:
+        description: Paginator component that describes how to navigate through the API's pages during download.
+        anyOf:
+          - "$ref": "#/definitions/DefaultPaginator"
+          - "$ref": "#/definitions/NoPagination"
+      abort_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to abort a job once it is timed out from the source's perspective.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      delete_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to delete a job once the records are extracted.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      partition_router:
+        title: Partition Router
+        description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.
+        default: []
+        anyOf:
+          - "$ref": "#/definitions/CustomPartitionRouter"
+          - "$ref": "#/definitions/ListPartitionRouter"
+          - "$ref": "#/definitions/SubstreamPartitionRouter"
+          - type: array
+            items:
+              anyOf:
+                - "$ref": "#/definitions/CustomPartitionRouter"
+                - "$ref": "#/definitions/ListPartitionRouter"
+                - "$ref": "#/definitions/SubstreamPartitionRouter"
+      decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted.
+        anyOf:
+          - "$ref": "#/definitions/CustomDecoder"
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
+          - "$ref": "#/definitions/GzipJsonDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -2421,6 +2653,12 @@ definitions:
         type: string
         examples:
           - "([-+]?\\d+)"
+      max_waiting_time_in_seconds:
+        title: Max Waiting Time in Seconds
+        description: Given the value extracted from the header is greater than this value, stop the stream.
+        type: number
+        examples:
+          - 3600
       $parameters:
         type: object
         additionalProperties: true

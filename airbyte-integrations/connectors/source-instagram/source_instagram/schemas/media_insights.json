@@ -14,11 +14,11 @@
       "type": ["null", "string"]
     },
     "ig_reels_avg_watch_time": {
-      "description": "The average watch time of Instagram Reels videos in seconds.",
+      "description": "The average watch time of Instagram Reels videos in milliseconds.",
       "type": ["null", "number"]
     },
     "ig_reels_video_view_total_time": {
-      "description": "The total watch time of Instagram Reels videos in seconds.",
+      "description": "The total watch time of Instagram Reels videos in milliseconds.",
       "type": ["null", "number"]
     },
     "impressions": {
@@ -31,10 +31,6 @@
     },
     "saved": {
       "description": "The number of times users have saved the media.",
-      "type": ["null", "integer"]
-    },
-    "video_views": {
-      "description": "The total number of views on video media.",
       "type": ["null", "integer"]
     },
     "comments": {
@@ -55,6 +51,22 @@
     },
     "plays": {
       "description": "The number of times the media has been played.",
+      "type": ["null", "integer"]
+    },
+    "ig_reels_aggregated_all_plays_count": {
+      "description": "The number of times of Instagram Reels gets reproduced after an impression is counted.",
+      "type": ["null", "integer"]
+    },
+    "clips_replays_count": {
+      "description": "The number of times the reel gets reproduced again.",
+      "type": ["null", "integer"]
+    },
+    "follows": {
+      "description": "The number of accounts that started to follow the profile.",
+      "type": ["null", "integer"]
+    },
+    "profile_visits": {
+      "description": "The number of times the profile has been visited.",
       "type": ["null", "integer"]
     }
   }

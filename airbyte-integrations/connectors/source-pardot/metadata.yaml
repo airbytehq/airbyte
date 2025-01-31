@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ad15c7ba-72a7-440b-af15-b9a963dc1a8a
-  dockerImageTag: 0.1.11
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-pardot
   githubIssueLabel: source-pardot
   icon: salesforcepardot.svg
@@ -10,18 +10,23 @@ data:
   name: Pardot
   remoteRegistries:
     pypi:
-      enabled: true
-      packageName: airbyte-source-pardot
-  registries:
-    cloud:
       enabled: false
+      packageName: airbyte-source-pardot
+  registryOverrides:
+    cloud:
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: Most streams have been migrated to use Pardot API V5 in this release. The authentication flow, which was previously broken, should now work for new connections using this version.
+        upgradeDeadline: "2024-12-26"
   documentationUrl: https://docs.airbyte.com/integrations/sources/pardot
   tags:
-    - language:python
-    - cdk:python
+    - language:manifest-only
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
@@ -29,5 +34,5 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
 metadataSpecVersion: "1.0"

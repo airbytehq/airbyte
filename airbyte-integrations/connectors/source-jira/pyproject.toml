@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.0.11"
+version = "3.5.3"
 name = "source-jira"
 description = "Source implementation for Jira."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,13 +16,14 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_jira"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "0.90.0"
+python = "^3.10,<3.12"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-jira = "source_jira.run:run"
 
 [tool.poetry.group.dev.dependencies]
+freezegun = "==1.2.2"
 pytest = "==6.2.5"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"

@@ -1,6 +1,10 @@
 # Google Analytics 4 (GA4)
 
-This page contains the setup guide and reference information for the Google Analytics 4 source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Google Analytics 4 (GA4)](https://developers.google.com/analytics) source connector.
+
+</HideInUI>
 
 Google Analytics 4 (GA4) is the latest version of Google Analytics, introduced in 2020. It offers a new data model that emphasizes events and user properties, rather than pageviews and sessions. This updated model allows for more flexibility and customization in reporting, and provides more accurate measurement of user behavior across various devices and platforms.
 
@@ -10,20 +14,43 @@ The [Google Analytics Universal Analytics (UA) connector](https://docs.airbyte.c
 
 ## Prerequisites
 
-- A Google Analytics account with access to the GA4 property you want to sync
+- A Google Analytics account with access to the GA4 Property(Property Ids) you want to sync
 
 ## Setup guide
 
-### For Airbyte Cloud
+### Step 1: Set up Google Analytics 4 (GA4)
+
+<!-- env:oss -->
+
+#### Create a Service Account for authentication
+
+1. Sign in to the Google Account you are using for Google Analytics as an admin.
+2. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page in the Google Developers console.
+3. Select the project you want to use (or create a new one) and click **Continue**.
+4. Click **+ Create Service Account** at the top of the page.
+5. Enter a name for the service account, and optionally, a description. Click **Create and Continue**.
+6. Choose the role for the service account. We recommend the **Viewer** role (Read & Analyze permissions). Click **Continue**.
+7. Select your new service account from the list, and open the **Keys** tab. Click **Add Key** > **Create New Key**.
+8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
+
+#### Enable the Google Analytics APIs
+
+Before you can use the service account to access Google Analytics data, you need to enable the required APIs:
+
+1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API. You can also set quotas and check usage.
+2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
+3. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
+
+<!-- /env:oss -->
 
 <!-- env:cloud -->
 
-For **Airbyte Cloud** users, we highly recommend using OAuth for authentication, as this significantly simplifies the setup process by allowing you to authenticate your Google Analytics account directly in the Airbyte UI. Please follow the steps below to set up the connector using this method.
+### For Airbyte Cloud:
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
-4. In the **Source name** field, enter a name to help you identify this source.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Google Analytics 4 (GA4) from the Source type dropdown.
+4. Enter a name for the Google Analytics 4 (GA4) connector.
 5. Select **Authenticate via Google (Oauth)** from the dropdown menu and click **Authenticate your Google Analytics 4 (GA4) account**. This will open a pop-up window where you can log in to your Google account and grant Airbyte access to your Google Analytics account.
 6. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
    :::note
@@ -48,30 +75,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 
 <!-- env:oss -->
 
-### For Airbyte Open Source
-
-For **Airbyte Open Source** users, the recommended way to set up the Google Analytics 4 connector is to create a Service Account and set up a JSON key file for authentication. Please follow the steps below to set up the connector using this method.
-
-#### Create a Service Account for authentication
-
-1. Sign in to the Google Account you are using for Google Analytics as an admin.
-2. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page in the Google Developers console.
-3. Select the project you want to use (or create a new one) and click **Continue**.
-4. Click **+ Create Service Account** at the top of the page.
-5. Enter a name for the service account, and optionally, a description. Click **Create and Continue**.
-6. Choose the role for the service account. We recommend the **Viewer** role (Read & Analyze permissions). Click **Continue**.
-7. Select your new service account from the list, and open the **Keys** tab. Click **Add Key** > **Create New Key**.
-8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
-
-#### Enable the Google Analytics APIs
-
-Before you can use the service account to access Google Analytics data, you need to enable the required APIs:
-
-1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API. You can also set quotas and check usage.
-2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
-3. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
-
-#### Set up the Google Analytics connector in Airbyte
+### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
@@ -110,14 +114,14 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 
 ## Supported sync modes
 
-The Google Analytics source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Analytics 4 (GA4) source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported streams
+## Supported Streams
 
 This connector outputs the following incremental streams:
 
@@ -246,7 +250,7 @@ Data sampling in Google Analytics 4 refers to the process of estimating analytic
 
 By setting the interval to 1 day, users can reduce the data processed per request, minimizing the likelihood of data sampling and ensuring more accurate results. While larger time intervals (up to 364 days) can speed up the sync, we recommend choosing a smaller value to prioritize data accuracy unless there is a specific need for faster synchronization at the expense of some potential inaccuracies. Please note that this field does _not_ apply to custom Cohort reports.
 
-Refer to the [Google Analytics documentation](https://support.google.com/analytics/topic/13384306?sjid=2450288706152247916-NA) for more information on data sampling.
+Refer to the [Google Analytics documentation](https://support.google.com/analytics/answer/13331292?sjid=10678419627000327283) for more information on data sampling.
 
 ## Performance Considerations
 
@@ -268,6 +272,23 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 2.6.2 | 2024-12-14 | [48649](https://github.com/airbytehq/airbyte/pull/48649) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.6.1 | 2024-10-29 | [47899](https://github.com/airbytehq/airbyte/pull/47899) | Update dependencies |
+| 2.6.0 | 2024-10-28 | [47013](https://github.com/airbytehq/airbyte/pull/47013) | Migrate to CDK v5 |
+| 2.5.13 | 2024-10-28 | [47061](https://github.com/airbytehq/airbyte/pull/47061) | Update dependencies |
+| 2.5.12 | 2024-10-12 | [46819](https://github.com/airbytehq/airbyte/pull/46819) | Update dependencies |
+| 2.5.11 | 2024-10-05 | [46475](https://github.com/airbytehq/airbyte/pull/46475) | Update dependencies |
+| 2.5.10 | 2024-09-28 | [46158](https://github.com/airbytehq/airbyte/pull/46158) | Update dependencies |
+| 2.5.9 | 2024-09-21 | [45773](https://github.com/airbytehq/airbyte/pull/45773) | Update dependencies |
+| 2.5.8 | 2024-09-14 | [45503](https://github.com/airbytehq/airbyte/pull/45503) | Update dependencies |
+| 2.5.7 | 2024-09-07 | [45289](https://github.com/airbytehq/airbyte/pull/45289) | Update dependencies |
+| 2.5.6 | 2024-08-31 | [44980](https://github.com/airbytehq/airbyte/pull/44980) | Update dependencies |
+| 2.5.5 | 2024-08-24 | [44645](https://github.com/airbytehq/airbyte/pull/44645) | Update dependencies |
+| 2.5.4 | 2024-08-17 | [44337](https://github.com/airbytehq/airbyte/pull/44337) | Update dependencies |
+| 2.5.3 | 2024-08-13 | [43929](https://github.com/airbytehq/airbyte/pull/43929) | Increase streams max_time to backoff |
+| 2.5.2 | 2024-08-12 | [43909](https://github.com/airbytehq/airbyte/pull/43909) | Update dependencies |
+| 2.5.1 | 2024-08-10 | [43289](https://github.com/airbytehq/airbyte/pull/43289) | Update dependencies |
+| 2.5.0 | 2024-08-07 | [42841](https://github.com/airbytehq/airbyte/pull/42841) | Upgrade to CDK 3 |
 | 2.4.14 | 2024-07-27 | [42746](https://github.com/airbytehq/airbyte/pull/42746) | Update dependencies |
 | 2.4.13 | 2024-07-20 | [42347](https://github.com/airbytehq/airbyte/pull/42347) | Update dependencies |
 | 2.4.12 | 2024-07-13 | [41801](https://github.com/airbytehq/airbyte/pull/41801) | Update dependencies |

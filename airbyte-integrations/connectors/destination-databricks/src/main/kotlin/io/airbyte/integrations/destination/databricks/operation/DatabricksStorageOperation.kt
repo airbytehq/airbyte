@@ -5,26 +5,25 @@
 package io.airbyte.integrations.destination.databricks.operation
 
 import com.databricks.sdk.WorkspaceClient
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.integrations.base.destination.operation.StorageOperation
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil as tdutils
-import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import java.util.*
+import java.util.Optional
+import java.util.UUID
 
 class DatabricksStorageOperation(
-    private val sqlGenerator: SqlGenerator,
-    private val destinationHandler: DestinationHandler<MinimumDestinationState.Impl>,
+    private val sqlGenerator: DatabricksSqlGenerator,
+    private val destinationHandler: DatabricksDestinationHandler,
     private val workspaceClient: WorkspaceClient,
     private val database: String,
     private val purgeStagedFiles: Boolean = false
@@ -32,11 +31,11 @@ class DatabricksStorageOperation(
 
     private val log = KotlinLogging.logger {}
 
-    // TODO: There are 2 methods used from SqlGenerator which were spread across in old code.
-    //  Hoist them to SqlGenerator interface in CDK, until then using concrete instance.
-    private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
-
-    override fun writeToStage(streamConfig: StreamConfig, data: SerializableBuffer) {
+    override fun writeToStage(
+        streamConfig: StreamConfig,
+        suffix: String,
+        data: SerializableBuffer
+    ) {
         val streamId = streamConfig.id
         val stagedFile = "${stagingDirectory(streamId, database)}/${data.filename}"
         workspaceClient.files().upload(stagedFile, data.inputStream)
@@ -46,7 +45,7 @@ class DatabricksStorageOperation(
                 // which can't be loaded into a bigint (int64) column.
                 // So we have to explicitly cast it to a bigint.
                 """
-                COPY INTO `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}`
+                COPY INTO `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}$suffix`
                 FROM (
                   SELECT _airbyte_generation_id :: bigint, * except (_airbyte_generation_id)
                   FROM '$stagedFile'
@@ -93,18 +92,9 @@ class DatabricksStorageOperation(
         )
     }
 
-    private fun prepareStagingTable(streamId: StreamId, destinationSyncMode: DestinationSyncMode) {
-        val rawSchema = streamId.rawNamespace
-        // TODO: Optimize by running SHOW SCHEMAS; rather than CREATE SCHEMA if not exists
-        destinationHandler.execute(sqlGenerator.createSchema(rawSchema))
-
-        // TODO: Optimize by running SHOW TABLES; truncate or create based on mode
-        // Create raw tables.
-        destinationHandler.execute(databricksSqlGenerator.createRawTable(streamId))
-        // Truncate the raw table if sync in OVERWRITE.
-        if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
-            destinationHandler.execute(databricksSqlGenerator.truncateRawTable(streamId))
-        }
+    private fun prepareStagingTable(streamId: StreamId, suffix: String, replace: Boolean) {
+        // TODO: Optimize by running SHOW TABLES
+        destinationHandler.execute(sqlGenerator.createRawTable(streamId, suffix, replace))
     }
 
     private fun prepareStagingVolume(streamId: StreamId) {
@@ -116,9 +106,50 @@ class DatabricksStorageOperation(
         workspaceClient.files().createDirectory(stagingDirectory(streamId, database))
     }
 
-    override fun prepareStage(streamId: StreamId, destinationSyncMode: DestinationSyncMode) {
-        prepareStagingTable(streamId, destinationSyncMode)
+    override fun prepareStage(streamId: StreamId, suffix: String, replace: Boolean) {
+        prepareStagingTable(streamId, suffix, replace)
         prepareStagingVolume(streamId)
+    }
+
+    override fun overwriteStage(streamId: StreamId, suffix: String) {
+        // databricks recommends CREATE OR REPLACE ... AS SELECT
+        // instead of dropping the table and then doing more operations
+        // https://docs.databricks.com/en/delta/drop-table.html#when-to-replace-a-table
+        destinationHandler.execute(
+            // Databricks doesn't support transactions, so we have to do these separately
+            Sql.separately(
+                """
+                CREATE OR REPLACE TABLE `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}`
+                AS SELECT * FROM `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}$suffix`
+                """.trimIndent(),
+                "DROP TABLE `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}$suffix`",
+            )
+        )
+    }
+
+    override fun transferFromTempStage(streamId: StreamId, suffix: String) {
+        destinationHandler.execute(
+            // Databricks doesn't support transactions, so we have to do these separately
+            Sql.separately(
+                """
+                INSERT INTO `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}`
+                SELECT * FROM `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}$suffix`
+                """.trimIndent(),
+                "DROP TABLE `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}$suffix`",
+            )
+        )
+    }
+
+    override fun getStageGeneration(streamId: StreamId, suffix: String): Long? {
+        val generationIds =
+            destinationHandler.query(
+                "SELECT $COLUMN_NAME_AB_GENERATION_ID FROM `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}$suffix` LIMIT 1"
+            )
+        return if (generationIds.isEmpty()) {
+            null
+        } else {
+            generationIds.first()[COLUMN_NAME_AB_GENERATION_ID].asLong()
+        }
     }
 
     override fun cleanupStage(streamId: StreamId) {

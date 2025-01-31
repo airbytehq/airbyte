@@ -1,7 +1,6 @@
-# Convex source connector
+# Convex destination connector
 
-
-This is the repository for the Convex source connector, written in Python.
+This is the repository for the Convex destination connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/convex).
 
 ## Local development

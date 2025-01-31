@@ -25,8 +25,16 @@ on:
         required: true
       streams:
         description: Streams to include in tests
+      should_read_with_state:
+        description: Whether to run tests against the read command with state
+        default: "true"
+        type: boolean
       use_local_cdk:
         description: Use the local CDK when building the target connector
+        default: "false"
+        type: boolean
+      disable_proxy:
+        description: Disable proxy for requests
         default: "false"
         type: boolean
       connection_subset:
@@ -40,7 +48,7 @@ on:
 jobs:
   live_tests:
     name: Live Tests
-    runs-on: connector-test-large
+    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 360 # 6 hours
     steps:
       - name: Checkout Airbyte
@@ -59,6 +67,8 @@ jobs:
       - name: Install Poetry
         id: install_poetry
         uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
 
       - name: Make poetry venv in project
         id: poetry_venv
@@ -93,6 +103,24 @@ jobs:
             echo "USE_LOCAL_CDK_FLAG=" >> $GITHUB_ENV
           fi
 
+      - name: Setup State Flag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if ${{ github.event.inputs.should_read_with_state }}; then
+            echo "READ_WITH_STATE_FLAG=--connector_live_tests.should-read-with-state" >> $GITHUB_ENV
+          else
+            echo "READ_WITH_STATE_FLAG=" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Proxy Flag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if ${{ github.event.inputs.disable_proxy }}; then
+            echo "DISABLE_PROXY_FLAG=--connector_live_tests.disable-proxy" >> $GITHUB_ENV
+          else
+            echo "DISABLE_PROXY_FLAG=" >> $GITHUB_ENV
+          fi
+
       - name: Setup Connection Subset Option
         if: github.event_name == 'workflow_dispatch'
         run: |
@@ -103,7 +131,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -114,4 +142,4 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=all --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }}
+          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=live --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }}

@@ -188,7 +188,7 @@ class TestIncremental(BaseTest):
         if client_container and client_container_config.between_syncs_command:
             detailed_logger.info(
                 await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
-                .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
+                .with_exec(client_container_config.between_syncs_command)
                 .stdout()
             )
 
@@ -252,13 +252,6 @@ class TestIncremental(BaseTest):
                 state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
                     state_message, mutating_stream_name_to_per_stream_state
                 )
-
-                if client_container and client_container_config.between_syncs_command:
-                    detailed_logger.info(
-                        await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
-                        .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
-                        .stdout()
-                    )
 
                 output_N = await docker_runner.call_read_with_state(
                     connector_config, configured_catalog_for_incremental_per_stream, state=state_input

@@ -11,13 +11,13 @@ import io.airbyte.commons.resources.MoreResources.readResource
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.io.IOException
 import java.nio.charset.StandardCharsets
@@ -53,7 +53,7 @@ class RedshiftSuperLimitationTransformerTest {
         val streamConfig =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.empty(),
                 columns,

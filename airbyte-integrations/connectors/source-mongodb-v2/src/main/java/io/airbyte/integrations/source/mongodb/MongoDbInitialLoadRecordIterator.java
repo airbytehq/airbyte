@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
 import static io.airbyte.integrations.source.mongodb.state.IdType.idToStringRepresenation;
 import static io.airbyte.integrations.source.mongodb.state.IdType.parseBinaryIdString;
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
@@ -13,13 +14,18 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 import org.bson.*;
 import org.bson.conversions.Bson;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,25 +46,45 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   private final int chunkSize;
 
   private Optional<MongoDbStreamState> currentState;
+
+  // Presents when _id is in binary type. As of now (Aug 2024) we assume there can be only 1 type of
+  // _id.
   private MongoCursor<Document> currentIterator;
 
   private int numSubqueries = 0;
+
+  private final Instant startInstant;
+  private Optional<Duration> cdcInitialLoadTimeout;
 
   MongoDbInitialLoadRecordIterator(final MongoCollection<Document> collection,
                                    final Bson fields,
                                    final Optional<MongoDbStreamState> existingState,
                                    final boolean isEnforceSchema,
-                                   final int chunkSize) {
+                                   final int chunkSize,
+                                   final Instant startInstant,
+                                   final Optional<Duration> cdcInitialLoadTimeout) {
     this.collection = collection;
     this.fields = fields;
     this.currentState = existingState;
     this.isEnforceSchema = isEnforceSchema;
     this.chunkSize = chunkSize;
-    this.currentIterator = buildNewQueryIterator();
+    // lazy init mongo cursor, otherwise it will risk time out (10 minutes).
+    this.currentIterator = null;
+    this.startInstant = startInstant;
+    this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
   }
 
   @Override
   protected Document computeNext() {
+    if (cdcInitialLoadTimeout.isPresent()
+        && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
+      final String cdcInitialLoadTimeoutMessage = String.format(
+          "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+          getAirbyteStream().get(), cdcInitialLoadTimeout.get());
+      LOGGER.info(cdcInitialLoadTimeoutMessage);
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
+      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
+    }
     if (shouldBuildNextQuery()) {
       try {
         LOGGER.info("Finishing subquery number : {}, processing at id : {}", numSubqueries,
@@ -83,9 +109,18 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     final var idType = IdType.findByJavaType(currentId.getClass().getSimpleName())
         .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + currentId.getClass().getSimpleName()));
 
+    Byte binarySubType = 0;
+
+    if (idType.equals(IdType.BINARY)) {
+      final var binCurrentId = (Binary) currentId;
+      binarySubType = binCurrentId.getType();
+    }
+
     final var state = new MongoDbStreamState(idToStringRepresenation(currentId, idType),
         IN_PROGRESS,
-        idType);
+        idType,
+        binarySubType);
+
     return Optional.of(state);
   }
 
@@ -128,7 +163,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
             case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
             case INT -> new BsonInt32(Integer.parseInt(state.id()));
             case LONG -> new BsonInt64(Long.parseLong(state.id()));
-            case BINARY -> parseBinaryIdString(state.id());
+            case BINARY -> parseBinaryIdString(state.id(), state.binarySubType());
             }))
         // if nothing was found, return a new BsonDocument
         .orElseGet(BsonDocument::new);
@@ -136,6 +171,9 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   private boolean shouldBuildNextQuery() {
     // The next sub-query should be built if the previous subquery has finished.
+    if (currentIterator == null) {
+      currentIterator = buildNewQueryIterator();
+    }
     return !currentIterator.hasNext();
   }
 

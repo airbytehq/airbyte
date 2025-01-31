@@ -71,6 +71,26 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.2.6 | 2025-01-25 | [52548](https://github.com/airbytehq/airbyte/pull/52548) | Update dependencies |
+| 1.2.5 | 2025-01-18 | [51931](https://github.com/airbytehq/airbyte/pull/51931) | Update dependencies |
+| 1.2.4 | 2025-01-11 | [51467](https://github.com/airbytehq/airbyte/pull/51467) | Update dependencies |
+| 1.2.3 | 2024-12-28 | [50835](https://github.com/airbytehq/airbyte/pull/50835) | Update dependencies |
+| 1.2.2 | 2024-12-21 | [50394](https://github.com/airbytehq/airbyte/pull/50394) | Update dependencies |
+| 1.2.1 | 2024-12-14 | [49445](https://github.com/airbytehq/airbyte/pull/49445) | Update dependencies |
+| 1.2.0 | 2024-10-29 | [47299](https://github.com/airbytehq/airbyte/pull/47299) | Migrate to manifest only format |
+| 1.1.22 | 2024-10-29 | [47755](https://github.com/airbytehq/airbyte/pull/47755) | Update dependencies |
+| 1.1.21 | 2024-10-28 | [47094](https://github.com/airbytehq/airbyte/pull/47094) | Update dependencies |
+| 1.1.20 | 2024-10-12 | [46824](https://github.com/airbytehq/airbyte/pull/46824) | Update dependencies |
+| 1.1.19 | 2024-10-05 | [46412](https://github.com/airbytehq/airbyte/pull/46412) | Update dependencies |
+| 1.1.18 | 2024-09-28 | [46196](https://github.com/airbytehq/airbyte/pull/46196) | Update dependencies |
+| 1.1.17 | 2024-09-21 | [45737](https://github.com/airbytehq/airbyte/pull/45737) | Update dependencies |
+| 1.1.16 | 2024-09-14 | [45523](https://github.com/airbytehq/airbyte/pull/45523) | Update dependencies |
+| 1.1.15 | 2024-09-07 | [45220](https://github.com/airbytehq/airbyte/pull/45220) | Update dependencies |
+| 1.1.14 | 2024-08-31 | [45037](https://github.com/airbytehq/airbyte/pull/45037) | Update dependencies |
+| 1.1.13 | 2024-08-24 | [44676](https://github.com/airbytehq/airbyte/pull/44676) | Update dependencies |
+| 1.1.12 | 2024-08-17 | [44249](https://github.com/airbytehq/airbyte/pull/44249) | Update dependencies |
+| 1.1.11 | 2024-08-10 | [43578](https://github.com/airbytehq/airbyte/pull/43578) | Update dependencies |
+| 1.1.10 | 2024-08-03 | [43149](https://github.com/airbytehq/airbyte/pull/43149) | Update dependencies |
 | 1.1.9 | 2024-07-27 | [42652](https://github.com/airbytehq/airbyte/pull/42652) | Update dependencies |
 | 1.1.8 | 2024-07-20 | [42212](https://github.com/airbytehq/airbyte/pull/42212) | Update dependencies |
 | 1.1.7 | 2024-07-13 | [41813](https://github.com/airbytehq/airbyte/pull/41813) | Update dependencies |

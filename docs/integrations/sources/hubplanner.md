@@ -44,6 +44,18 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.3.8 | 2025-01-25 | [51846](https://github.com/airbytehq/airbyte/pull/51846) | Update dependencies |
+| 0.3.7 | 2025-01-11 | [51142](https://github.com/airbytehq/airbyte/pull/51142) | Update dependencies |
+| 0.3.6 | 2024-12-28 | [50623](https://github.com/airbytehq/airbyte/pull/50623) | Update dependencies |
+| 0.3.5 | 2024-12-21 | [50075](https://github.com/airbytehq/airbyte/pull/50075) | Update dependencies |
+| 0.3.4 | 2024-12-14 | [49617](https://github.com/airbytehq/airbyte/pull/49617) | Update dependencies |
+| 0.3.3 | 2024-12-12 | [48239](https://github.com/airbytehq/airbyte/pull/48239) | Update dependencies |
+| 0.3.2 | 2024-10-29 | [47738](https://github.com/airbytehq/airbyte/pull/47738) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47511](https://github.com/airbytehq/airbyte/pull/47511) | Update dependencies |
+| 0.3.0 | 2024-08-22 | [44569](https://github.com/airbytehq/airbyte/pull/44569) | Refactor connector to manifest-only format |
+| 0.2.12 | 2024-08-17 | [43903](https://github.com/airbytehq/airbyte/pull/43903) | Update dependencies |
+| 0.2.11 | 2024-08-10 | [43511](https://github.com/airbytehq/airbyte/pull/43511) | Update dependencies |
+| 0.2.10 | 2024-08-03 | [43082](https://github.com/airbytehq/airbyte/pull/43082) | Update dependencies |
 | 0.2.9 | 2024-07-27 | [42692](https://github.com/airbytehq/airbyte/pull/42692) | Update dependencies |
 | 0.2.8 | 2024-07-20 | [42256](https://github.com/airbytehq/airbyte/pull/42256) | Update dependencies |
 | 0.2.7 | 2024-07-13 | [41840](https://github.com/airbytehq/airbyte/pull/41840) | Update dependencies |

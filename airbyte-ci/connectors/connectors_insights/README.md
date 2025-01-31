@@ -25,7 +25,7 @@ connectors-insights generate --output-directory <path-to-local-output-dir> --gcs
 ### CLI Options
 
 - `generate`: The command to generate the artifacts.
-  
+
 - `-o, --output-dir`: Specifies the local directory where the generated artifacts will be saved. In this example, artifacts are saved to `/Users/augustin/Desktop/insights`.
 
 - `-g, --gcs-uri`: The Google Cloud Storage (GCS) URI prefix where the artifacts will be uploaded. In the form: `gs://<bucket>/<key-prefix>`.
@@ -55,6 +55,24 @@ This command will generate `insights.json` and `sbom.json` files, saving them to
 This CLI is currently running nightly in GitHub Actions. The workflow can be found in `.github/workflows/connector_insights.yml`.
 
 ## Changelog
+
+### 0.3.5
+Fix permissions issue when installing `pylint` in connector container.
+
+### 0.3.4
+Update `dagger` to `0.13.3`.
+
+### 0.3.3
+Use SBOM from the connector registry (SPDX format) instead of generating SBOM in the connector insights.
+
+### 0.3.2
+Bugfix: Ignore CI on master report if it's not accessible.
+
+### 0.3.1
+Skip manifest inferred insights when the connector does not have a `manifest.yaml` file.
+
+### 0.3.0
+Adding `manifest_uses_parameters`, `manifest_uses_custom_components`, and `manifest_custom_components_classes` insights.
 
 ### 0.2.4
 Do not generate insights for `*-scaffold-*` and `*-strict-encrypt` connectors.

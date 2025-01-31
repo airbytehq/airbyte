@@ -4,12 +4,15 @@
 
 import json
 import os
+import uuid
 from glob import glob
 from pathlib import Path
 from typing import List
 
 import dagger
+
 from connector_acceptance_test.utils import SecretDict
+
 
 IN_CONTAINER_CONNECTOR_PATH = Path("/connector")
 IN_CONTAINER_CONFIG_PATH = Path("/tmp/config.json")
@@ -54,7 +57,7 @@ async def _run_with_config(container: dagger.Container, command: List[str], conf
 
 
 async def _run(container: dagger.Container, command: List[str]) -> dagger.Container:
-    return await container.with_exec(command, skip_entrypoint=True)
+    return await container.with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(command)
 
 
 async def get_client_container(dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path):

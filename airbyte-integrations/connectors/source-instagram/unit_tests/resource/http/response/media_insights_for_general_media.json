@@ -83,6 +83,30 @@
       "title": "Shares",
       "description": "The number of shares of your media.",
       "id": "35076616084176123/insights/shares/lifetime"
+    },
+    {
+      "name": "follows",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 53
+        }
+      ],
+      "title": "Follows title",
+      "description": "Follows description.",
+      "id": "35076616084176123/insights/follows/lifetime"
+    },
+    {
+      "name": "profile_visits",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 9
+        }
+      ],
+      "title": "Profile visits title",
+      "description": "Profile visits description.",
+      "id": "35076616084176123/insights/profile_visits/lifetime"
     }
   ]
 }

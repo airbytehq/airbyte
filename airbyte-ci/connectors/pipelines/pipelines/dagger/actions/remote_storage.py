@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from dagger import Client, File
+
 from pipelines.helpers.utils import get_exec_result, secret_host_variable, with_exit_code
 from pipelines.models.secrets import Secret
 
@@ -36,7 +37,7 @@ async def upload_to_s3(dagger_client: Client, file_to_upload_path: Path, key: st
         .with_(secret_host_variable(dagger_client, "AWS_ACCESS_KEY_ID"))
         .with_(secret_host_variable(dagger_client, "AWS_SECRET_ACCESS_KEY"))
         .with_(secret_host_variable(dagger_client, "AWS_DEFAULT_REGION"))
-        .with_exec(["s3", "cp", str(file_to_upload_path), s3_uri])
+        .with_exec(["s3", "cp", str(file_to_upload_path), s3_uri], use_entrypoint=True)
     )
 
 
@@ -63,7 +64,7 @@ async def upload_to_gcs(
     """
     flags = [] if flags is None else flags
     gcs_uri = f"gs://{bucket}/{key}"
-    dagger_client = dagger_client.pipeline(f"Upload file to {gcs_uri}")
+    dagger_client = dagger_client
     cp_command = ["gcloud", "storage", "cp"] + flags + ["to_upload", gcs_uri]
 
     gcloud_container = (
@@ -79,9 +80,11 @@ async def upload_to_gcs(
     else:
         gcloud_container = gcloud_container.without_env_variable("CACHEBUSTER")
 
-    gcloud_auth_container = gcloud_container.with_exec(["gcloud", "auth", "login", "--cred-file=credentials.json"])
+    gcloud_auth_container = gcloud_container.with_exec(["gcloud", "auth", "login", "--cred-file=credentials.json"], use_entrypoint=True)
     if (await with_exit_code(gcloud_auth_container)) == 1:
-        gcloud_auth_container = gcloud_container.with_exec(["gcloud", "auth", "activate-service-account", "--key-file", "credentials.json"])
+        gcloud_auth_container = gcloud_container.with_exec(
+            ["gcloud", "auth", "activate-service-account", "--key-file", "credentials.json"], use_entrypoint=True
+        )
 
     gcloud_cp_container = gcloud_auth_container.with_exec(cp_command)
     return await get_exec_result(gcloud_cp_container)

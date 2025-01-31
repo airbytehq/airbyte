@@ -1,0 +1,10 @@
+[
+  {
+    "name": "EVENTS",
+    "namespace": "PUBLIC"
+  },
+  {
+    "name": "KV",
+    "namespace": "PUBLIC"
+  }
+]

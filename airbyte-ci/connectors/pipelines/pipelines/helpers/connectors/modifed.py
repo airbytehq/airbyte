@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import FrozenSet, Set, Union
 
 from connector_ops.utils import Connector  # type: ignore
+
 from pipelines import main_logger
 from pipelines.helpers.utils import IGNORED_FILE_EXTENSIONS, METADATA_FILE_NAME
 
@@ -20,24 +21,33 @@ def get_connector_modified_files(connector: Connector, all_modified_files: Set[P
     return frozenset(connector_modified_files)
 
 
-def _find_modified_connectors(
-    file_path: Union[str, Path], all_connectors: Set[Connector], dependency_scanning: bool = True
-) -> Set[Connector]:
-    """Find all connectors impacted by the file change."""
-    modified_connectors = set()
+def _is_connector_modified_directly(connector: Connector, modified_files: Set[Path]) -> bool:
+    """Test if the connector is being impacted by file changes in the connector itself."""
+    for file_path in modified_files:
+        if _is_ignored_file(file_path):
+            continue
 
-    for connector in all_connectors:
-        if Path(file_path).is_relative_to(Path(connector.code_directory)):
+        if Path(file_path).is_relative_to(Path(connector.code_directory)) or file_path == connector.documentation_file_path:
             main_logger.info(f"Adding connector '{connector}' due to connector file modification: {file_path}.")
-            modified_connectors.add(connector)
+            return True
 
-        if dependency_scanning:
-            for connector_dependency in connector.get_local_dependency_paths():
-                if Path(file_path).is_relative_to(Path(connector_dependency)):
-                    # Add the connector to the modified connectors
-                    modified_connectors.add(connector)
-                    main_logger.info(f"Adding connector '{connector}' due to dependency modification: '{file_path}'.")
-    return modified_connectors
+    return False
+
+
+def _is_connector_modified_indirectly(connector: Connector, modified_files: Set[Path]) -> bool:
+    """Test if the connector is being impacted by file changes in the connector's dependencies."""
+    connector_dependencies = connector.get_local_dependency_paths()
+
+    for file_path in modified_files:
+        if _is_ignored_file(file_path):
+            continue
+
+        for connector_dependency in connector_dependencies:
+            if Path(file_path).is_relative_to(Path(connector_dependency)):
+                main_logger.info(f"Adding connector '{connector}' due to dependency modification: '{file_path}'.")
+                return True
+
+    return False
 
 
 def _is_ignored_file(file_path: Union[str, Path]) -> bool:
@@ -53,11 +63,20 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
-    # Ignore files with certain extensions
     modified_connectors = set()
-    for modified_file in modified_files:
-        if not _is_ignored_file(modified_file):
-            modified_connectors.update(_find_modified_connectors(modified_file, all_connectors, dependency_scanning))
+    active_connectors = {conn for conn in all_connectors if conn.support_level != "archived"}
+    main_logger.info(
+        f"Checking for modified files. Skipping {len(all_connectors) - len(active_connectors)} connectors with support level 'archived'."
+    )
+    # Ignore files with certain extensions
+    active_modified_files = {f for f in modified_files if not _is_ignored_file(f)}
+
+    for connector in active_connectors:
+        if _is_connector_modified_directly(connector, active_modified_files):
+            modified_connectors.add(connector)
+        elif dependency_scanning and _is_connector_modified_indirectly(connector, active_modified_files):
+            modified_connectors.add(connector)
+
     return modified_connectors
 
 

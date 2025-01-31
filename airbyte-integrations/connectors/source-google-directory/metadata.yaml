@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d19ae824-e289-4b14-995a-0632eb46d246
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.31
   dockerRepository: airbyte/source-google-directory
   githubIssueLabel: source-google-directory
   icon: googledirectory.svg
@@ -12,9 +12,9 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-google-directory
-  registries:
+  registryOverrides:
     cloud:
-      dockerImageTag: 0.2.10
+      dockerImageTag: 0.2.31
       enabled: true
     oss:
       enabled: true
@@ -28,6 +28,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: google-directory_config_oauth_dev_null
+          id: 7059ad42-0dae-41a4-a720-256f5d439d2a
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
@@ -42,5 +46,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
 metadataSpecVersion: "1.0"

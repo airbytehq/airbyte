@@ -6,12 +6,13 @@ from typing import Any, Iterator, MutableMapping
 from unittest import mock
 from urllib.parse import urlparse, urlunparse
 
+from source_amazon_ads.config_migrations import MigrateStartDate
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
-from source_amazon_ads.config_migrations import MigrateStartDate
 
 
 def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, Any]) -> Iterator[dict]:

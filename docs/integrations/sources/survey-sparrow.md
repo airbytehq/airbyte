@@ -49,6 +49,18 @@ In order to get access token, follow these steps:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.9 | 2025-01-25 | [52442](https://github.com/airbytehq/airbyte/pull/52442) | Update dependencies |
+| 0.3.8 | 2025-01-18 | [51972](https://github.com/airbytehq/airbyte/pull/51972) | Update dependencies |
+| 0.3.7 | 2025-01-11 | [51404](https://github.com/airbytehq/airbyte/pull/51404) | Update dependencies |
+| 0.3.6 | 2024-12-28 | [50824](https://github.com/airbytehq/airbyte/pull/50824) | Update dependencies |
+| 0.3.5 | 2024-12-21 | [50355](https://github.com/airbytehq/airbyte/pull/50355) | Update dependencies |
+| 0.3.4 | 2024-12-14 | [49766](https://github.com/airbytehq/airbyte/pull/49766) | Update dependencies |
+| 0.3.3 | 2024-12-12 | [48163](https://github.com/airbytehq/airbyte/pull/48163) | Update dependencies |
+| 0.3.2 | 2024-10-28 | [47506](https://github.com/airbytehq/airbyte/pull/47506) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-14 | [44059](https://github.com/airbytehq/airbyte/pull/44059) | Refactor connector to manifest-only format |
+| 0.2.14 | 2024-08-10 | [43652](https://github.com/airbytehq/airbyte/pull/43652) | Update dependencies |
+| 0.2.13 | 2024-08-03 | [43147](https://github.com/airbytehq/airbyte/pull/43147) | Update dependencies |
 | 0.2.12 | 2024-07-27 | [42303](https://github.com/airbytehq/airbyte/pull/42303) | Update dependencies |
 | 0.2.11 | 2024-07-13 | [41924](https://github.com/airbytehq/airbyte/pull/41924) | Update dependencies |
 | 0.2.10 | 2024-07-10 | [41556](https://github.com/airbytehq/airbyte/pull/41556) | Update dependencies |

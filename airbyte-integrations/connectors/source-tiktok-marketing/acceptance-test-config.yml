@@ -15,12 +15,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/prod_config.json"
         status: "succeed"
-      - config_path: "secrets/prod_config_with_day_granularity.json"
-        status: "succeed"
-      - config_path: "secrets/prod_config_with_lifetime_granularity.json"
-        status: "succeed"
-      - config_path: "secrets/new_config_prod.json"
-        status: "succeed"
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
@@ -32,10 +26,7 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/prod_config.json"
-      - config_path: "secrets/prod_config_with_day_granularity.json"
-      - config_path: "secrets/prod_config_with_lifetime_granularity.json"
       - config_path: "secrets/config.json"
-      - config_path: "secrets/new_config_prod.json"
       - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
@@ -51,35 +42,16 @@ acceptance_tests:
             bypass_reason: "Tested with daily granularity."
           - name: advertisers_reports_hourly
             bypass_reason: "Tested with daily granularity."
+          - name: audiences
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
           - name: campaigns_reports_hourly
             bypass_reason: "Tested with daily granularity."
           - name: creative_assets_portfolios
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
           - name: creative_assets_music
             bypass_reason: "System music provided by TikTok - very volatile data."
-        # Old style streams with granularity config (for < 0.1.13)
-        # Note: not needed to be tested separately in full and incremental tests, because code of
-        # these streams is called directly in new style streams
-      - config_path: "secrets/prod_config_with_day_granularity.json"
-        expect_records:
-          path: "integration_tests/expected_records2.jsonl"
-          exact_order: no
-        timeout_seconds: 1200
-        empty_streams:
-          - name: ad_groups
-            bypass_reason: "This stream is tested on the new style config."
-          - name: ads
-            bypass_reason: "This stream is tested on the new style config."
-          - name: advertiser_ids
-            bypass_reason: "This stream is tested on the new style config."
-          - name: advertisers
-            bypass_reason: "This stream is tested on the new style config."
-          - name: campaigns
-            bypass_reason: "This stream is tested on the new style config."
-          - name: creative_assets_portfolios
+          - name: advertisers_audience_reports_lifetime
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
-          - name: creative_assets_music
-            bypass_reason: "System music provided by TikTok - very volatile data."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
@@ -106,4 +78,4 @@ acceptance_tests:
         timeout_seconds: 7200
         skip_comprehensive_incremental_tests: true
         future_state:
-          future_state_path: "integration_tests/abnormal_state.json"
+          bypass_reason: "This test does not make sense using Concurrent CDK"

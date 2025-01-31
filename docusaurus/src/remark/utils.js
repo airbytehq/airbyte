@@ -30,6 +30,17 @@ const isDocsPage = (vfile) => {
   return response;
 };
 
+const isEnterpriseConnectorDocsPage = (vfile) => {
+  if (
+    vfile.path.includes("integrations/enterprise-connectors") &&
+    !vfile.path.toLowerCase().includes("readme.md")
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
 const getRegistryEntry = async (vfile) => {
   if (
     !vfile.path.includes("integrations/sources") &&
@@ -93,5 +104,6 @@ const buildArchivedRegistryEntry = (
 
 module.exports = {
   isDocsPage,
+  isEnterpriseConnectorDocsPage,
   getRegistryEntry,
 };

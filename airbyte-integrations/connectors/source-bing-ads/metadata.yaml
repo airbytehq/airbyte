@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 400
-    sl: 200
+    sl: 300
   allowedHosts:
     hosts:
       - bingads.microsoft.com
@@ -12,13 +12,14 @@ data:
       - api.ads.microsoft.com
       - clientcenter.api.bingads.microsoft.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.6.12
+  dockerImageTag: 2.8.11
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
+  erdUrl: https://dbdocs.io/airbyteio/source-bing-ads?view=relationships
   githubIssueLabel: source-bing-ads
   icon: bingads.svg
   license: MIT
@@ -28,7 +29,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-bing-ads
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -62,6 +63,16 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: bing-ads_config_old_dev_null
+          id: 21c29326-2309-4226-97f0-5b1bad621887
+        - name: bing-ads_config_dev_null
+          id: 3434a551-958c-49e2-acae-c19b57b69500
+        - name: bing-ads_config_no_date_dev_null
+          id: 4684190a-bf8b-4b1b-8d95-4744e4c0a070
+        - name: bing-ads_config_full_refresh_dev_null
+          id: b4f2dd3d-3ae8-4341-84f9-9abd9f700e50
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

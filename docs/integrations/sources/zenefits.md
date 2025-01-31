@@ -53,6 +53,14 @@ You can replicate the following tables using the Zenefits connector:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.7 | 2025-01-25 | [52546](https://github.com/airbytehq/airbyte/pull/52546) | Update dependencies |
+| 0.3.6 | 2025-01-18 | [51941](https://github.com/airbytehq/airbyte/pull/51941) | Update dependencies |
+| 0.3.5 | 2025-01-11 | [51410](https://github.com/airbytehq/airbyte/pull/51410) | Update dependencies |
+| 0.3.4 | 2024-12-28 | [50838](https://github.com/airbytehq/airbyte/pull/50838) | Update dependencies |
+| 0.3.3 | 2024-12-21 | [50365](https://github.com/airbytehq/airbyte/pull/50365) | Update dependencies |
+| 0.3.2 | 2024-12-14 | [47648](https://github.com/airbytehq/airbyte/pull/47648) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-01 | [42950](https://github.com/airbytehq/airbyte/pull/42950) | Refactor connector to manifest-only format |
 | 0.2.13 | 2024-07-27 | [42668](https://github.com/airbytehq/airbyte/pull/42668) | Update dependencies |
 | 0.2.12 | 2024-07-20 | [42153](https://github.com/airbytehq/airbyte/pull/42153) | Update dependencies |
 | 0.2.11 | 2024-07-13 | [41810](https://github.com/airbytehq/airbyte/pull/41810) | Update dependencies |
@@ -66,5 +74,5 @@ You can replicate the following tables using the Zenefits connector:
 | 0.2.3 | 2024-04-18 | [37303](https://github.com/airbytehq/airbyte/pull/37303) | Manage dependencies with Poetry. |
 | 0.2.2 | 2024-04-15 | [37303](https://github.com/airbytehq/airbyte/pull/37303) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37303](https://github.com/airbytehq/airbyte/pull/37303) | schema descriptions |
-| `0.2.0` | 2023-10-29 | [31946](https://github.com/airbytehq/airbyte/pull/31946) | Migrate to Low Code                                                             |
-| `0.1.0` | 2022-08-24 | [14809](https://github.com/airbytehq/airbyte/pull/14809) | Initial Release                                                                 |
+| 0.2.0 | 2023-10-29 | [31946](https://github.com/airbytehq/airbyte/pull/31946) | Migrate to Low Code |
+| 0.1.0 | 2022-08-24 | [14809](https://github.com/airbytehq/airbyte/pull/14809) | Initial Release |

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.7.2"
+version = "4.12.1"
 name = "source-s3"
 description = "Source implementation for S3."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,21 +16,16 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_s3"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-pytz = "==2024.1"
-wcmatch = "==8.4"
-python-snappy = "==0.6.1"
+python = "^3.10,<3.12"
+pytz = "==2024.2"
+wcmatch = "==10.0"
 dill = "==0.3.4"
-# override transitive dependency that had a vulnerability https://nvd.nist.gov/vuln/detail/CVE-2023-6730
 transformers = "4.38.2"
 urllib3 = "<2"
+airbyte-cdk = {extras = ["file-based"], version = "^6.18.2"}
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
-
-[tool.poetry.dependencies.airbyte-cdk]
-extras = [ "file-based",]
-version = "^3"
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "s3",]
@@ -42,4 +37,4 @@ moto = "==4.2.14"
 docker = "^7.0.0"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
-pandas = "==2.0.3"
+pandas = "^2.0.3"

@@ -102,12 +102,6 @@ dependencyResolutionManagement {
             }
         }
     }
-
-    versionCatalogs {
-        libs {
-            from(files("deps.toml"))
-        }
-    }
 }
 
 gradleEnterprise {
@@ -144,24 +138,38 @@ if (isCI) {
 
 rootProject.name = 'airbyte'
 
-// Include all java CDK modules.
-def cdkPath = rootDir.toPath().resolve('airbyte-cdk/java/airbyte-cdk')
-if (cdkPath.toFile().exists()) {
-    cdkPath.eachDir { dir ->
-        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
-        if (buildFiles.length == 1) {
-            def path = ":airbyte-cdk:java:airbyte-cdk:${dir.getFileName()}"
-            include path
-            project(path).name = "airbyte-cdk-${dir.getFileName()}"
+boolean hasGradleBuildFile(java.nio.file.Path path) {
+    def buildFiles = file(path).list { file, name -> name.matches("build\\.gradle(?:\\.kts)?") }
+    return buildFiles.length == 1
+}
+
+void includeCdkProjects(String dir, String gradlePathPrefix, String projectNamePrefix) {
+    def path = rootDir.toPath().resolve(dir)
+    if (!path.toFile().exists()) {
+        path = rootDir.toPath().resolve("airbyte-submodule").resolve(dir)
+        if (!path.toFile().exists()) {
+            return
         }
     }
+    path.eachDir { subDir ->
+        if (!hasGradleBuildFile(subDir)) {
+            return
+        }
+        String gradlePath = gradlePathPrefix + subDir.getFileName()
+        include gradlePath
+        project(gradlePath).name = projectNamePrefix + subDir.getFileName()
+    }
 }
+
+// Include all java CDK modules.
+includeCdkProjects("airbyte-cdk/java/airbyte-cdk", ":airbyte-cdk:java:airbyte-cdk:", "airbyte-cdk-")
+includeCdkProjects("airbyte-cdk/bulk/core", ":airbyte-cdk:bulk:core:", "bulk-cdk-core-")
+includeCdkProjects("airbyte-cdk/bulk/toolkits", ":airbyte-cdk:bulk:toolkits:", "bulk-cdk-toolkit-")
 
 // Include all java connector projects.
 def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
 integrationsPath.eachDir { dir ->
-    def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
-    if (buildFiles.length != 1) {
+    if (!hasGradleBuildFile(dir)) {
         // Ignore python and other non-gradle connectors.
         return
     }
