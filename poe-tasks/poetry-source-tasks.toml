@@ -1,10 +1,28 @@
 [tool.poe.tasks]
-install.shell = "poetry install --all-extras"
-lock.shell = "poetry lock"
-pytest.shell = "pytest"
-pytest-fast.shell = "pytest --ff -m 'not slow and not requires_creds'"
-coverage.shell = "pytest --cov=. --cov-report=term-missing"
-coverage-html.shell = "pytest --cov=. --cov-report=html"
-check.shell = "ruff check . && mypy ."
-fix.shell = "ruff format . && ruff check --fix -s || ruff format ."
-fix-and-check.shell = "poe fix && poe check"
+
+[tool.poe.tasks.install]
+shell = "poetry install --all-extras"
+
+[tool.poe.tasks.lock]
+shell = "poetry lock"
+
+[tool.poe.tasks.pytest]
+shell = "pytest"
+
+[tool.poe.tasks.pytest-fast]
+shell = "pytest --ff -m 'not slow and not requires_creds'"
+
+[tool.poe.tasks.coverage]
+shell = "pytest --cov=. --cov-report=term-missing"
+
+[tool.poe.tasks.coverage-html]
+shell = "pytest --cov=. --cov-report=html"
+
+[tool.poe.tasks.check]
+shell = "ruff check . && mypy ."
+
+[tool.poe.tasks.fix]
+shell = "ruff format . && ruff check --fix -s || ruff format ."
+
+[tool.poe.tasks.fix-and-check]
+shell = "poe fix && poe check"
