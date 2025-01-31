@@ -20,6 +20,7 @@ python = "^3.9,<3.12"
 facebook-business = "==21.0.5"
 airbyte-cdk = "^2"
 cached-property = "==1.5.2"
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-instagram = "source_instagram.run:run"
