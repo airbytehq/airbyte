@@ -21,6 +21,7 @@ airbyte-cdk = "^0"
 PyJWT = "==2.8.0"
 requests = "==2.31.0"
 cryptography = "==41.0.4"
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-google-analytics-v4 = "source_google_analytics_v4.run:run"
