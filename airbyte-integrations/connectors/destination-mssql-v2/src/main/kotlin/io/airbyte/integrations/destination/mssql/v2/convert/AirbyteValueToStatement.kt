@@ -48,8 +48,7 @@ class AirbyteValueToStatement {
             field: MSSQLQueryBuilder.NamedField
         ) {
             if (value != null && value !is NullValue && field.type.type is UnionType) {
-                val objectValue = createUnionObject(field.type.type as UnionType, value)
-                setAsJsonString(idx, objectValue)
+                setAsJsonString(idx, value)
             } else {
                 when (value) {
                     is ArrayValue -> setAsJsonString(idx, value)
@@ -165,59 +164,5 @@ class AirbyteValueToStatement {
             setTimestamp(idx, Timestamp.valueOf(value.value))
         }
 
-        private fun createSimpleUnionObject(value: AirbyteValue): ObjectValue {
-            val unionType = value.toTypeName()
-            return ObjectValue.from(mapOf("type" to StringValue(unionType), unionType to value))
-        }
-
-        private fun createUnionObject(type: UnionType, value: AirbyteValue): AirbyteValue =
-            if (type.options.all { it is ObjectType }) {
-                val model =
-                    mutableMapOf<String, MutableSet<FieldType>>().withDefault { mutableSetOf() }
-
-                type.options.map {
-                    (it as ObjectType).properties.entries.forEach { objectEntry ->
-                        if (model.containsKey(objectEntry.key)) {
-                            model[objectEntry.key]!! += objectEntry.value
-                        } else {
-                            model[objectEntry.key] = mutableSetOf(objectEntry.value)
-                        }
-                    }
-                }
-                if (model.values.all { it.size == 1 }) {
-                    value
-                } else {
-                    val valuesWithConflicts =
-                        (value as ObjectValue)
-                            .values
-                            .entries
-                            .map { pair ->
-                                if (model[pair.key]?.let { it.size > 1 } == true)
-                                    Pair(pair.key, createSimpleUnionObject(pair.value))
-                                else Pair(pair.key, pair.value)
-                            }
-                            .toMap()
-                    ObjectValue.from(valuesWithConflicts)
-                }
-            } else {
-                createSimpleUnionObject(value)
-            }
-
-        private fun AirbyteValue.toTypeName(): String =
-            when (this) {
-                is ArrayValue -> "array"
-                is BooleanValue -> "boolean"
-                is DateValue -> "string"
-                is IntegerValue -> "integer"
-                NullValue -> "null"
-                is NumberValue -> "number"
-                is ObjectValue -> "object"
-                is StringValue -> "string"
-                is TimeWithTimezoneValue -> "string"
-                is TimeWithoutTimezoneValue -> "string"
-                is TimestampWithTimezoneValue -> "string"
-                is TimestampWithoutTimezoneValue -> "string"
-                is UnknownValue -> "oneOf"
-            }
     }
 }

@@ -47,27 +47,22 @@ class ResultSetToAirbyteValue {
         fun ResultSet.getAirbyteNamedValue(field: MSSQLQueryBuilder.NamedField): NamedValue =
             when (field.type.type) {
                 is StringType -> getStringValue(field.name)
-                is ArrayType -> getArrayValue(field.name)
-                ArrayTypeWithoutSchema -> getArrayValue(field.name)
+                is ArrayType -> getStringValue(field.name)
+                ArrayTypeWithoutSchema -> getStringValue(field.name)
                 BooleanType -> getBooleanValue(field.name)
                 DateType -> getDateValue(field.name)
                 IntegerType -> getIntegerValue(field.name)
                 NumberType -> getNumberValue(field.name)
-                is ObjectType -> getObjectValue(field.name)
-                ObjectTypeWithEmptySchema -> getObjectValue(field.name)
-                ObjectTypeWithoutSchema -> getObjectValue(field.name)
+                is ObjectType -> getStringValue(field.name)
+                ObjectTypeWithEmptySchema -> getStringValue(field.name)
+                ObjectTypeWithoutSchema -> getStringValue(field.name)
                 TimeTypeWithTimezone -> getTimeWithTimezoneValue(field.name)
                 TimeTypeWithoutTimezone -> getTimeWithoutTimezoneValue(field.name)
                 TimestampTypeWithTimezone -> getTimestampWithTimezoneValue(field.name)
                 TimestampTypeWithoutTimezone -> getTimestampWithoutTimezoneValue(field.name)
-                is UnionType -> getObjectValue(field.name)
+                is UnionType -> getStringValue(field.name)
                 is UnknownType -> getStringValue(field.name)
             }
-
-        private fun ResultSet.getArrayValue(name: String): NamedValue =
-            getNullable(name, this::getString)
-                ?.let { ArrayValue.from(deserialize<List<Any?>>(it)) }
-                .toNamedValue(name)
 
         private fun ResultSet.getBooleanValue(name: String): NamedValue =
             getNullable(name, this::getBoolean)?.let { BooleanValue(it) }.toNamedValue(name)
@@ -81,11 +76,6 @@ class ResultSetToAirbyteValue {
         private fun ResultSet.getNumberValue(name: String): NamedValue =
             getNullable(name, this::getDouble)
                 ?.let { NumberValue(it.toBigDecimal()) }
-                .toNamedValue(name)
-
-        private fun ResultSet.getObjectValue(name: String): NamedValue =
-            getNullable(name, this::getString)
-                ?.let { ObjectValue.from(deserialize<Map<String, Any?>>(it)) }
                 .toNamedValue(name)
 
         private fun ResultSet.getStringValue(name: String): NamedValue =
@@ -110,9 +100,6 @@ class ResultSetToAirbyteValue {
             val value = getter(name)
             return if (wasNull()) null else value
         }
-
-        private inline fun <reified T> deserialize(value: String): T =
-            Jsons.deserialize(value, T::class.java)
 
         internal fun String.toTimeWithTimezone(): TimeWithTimezoneValue =
             TimeWithTimezoneValue(
