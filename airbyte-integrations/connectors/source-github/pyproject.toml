@@ -17,7 +17,7 @@ include = "source_github"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^4"
+airbyte-cdk = { git = "https://github.com/airbytehq/airbyte-python-cdk.git", rev = "devin/1738344527-mitmproxy-cache" }
 sgqlc = "==16.3"
 
 [tool.poetry.scripts]
