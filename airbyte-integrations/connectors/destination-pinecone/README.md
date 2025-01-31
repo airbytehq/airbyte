@@ -66,7 +66,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     # Feel free to check the dagger documentation for more information on the Container object and its methods.
-    # https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/
+    # https://dagger-io.readthedocs.io/en/sdk-python-v0.15.3/
     from dagger import Container
 
 

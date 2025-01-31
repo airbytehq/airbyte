@@ -13,7 +13,7 @@ homepage = "https://github.com/airbytehq/airbyte"
 [tool.poetry.dependencies]
 python = "^3.10, <3.12"
 airbyte-protocol-models = "<1.0.0"
-dagger-io = "==0.13.3"
+dagger-io = "==0.15.3"
 beartype = ">=0.18.2"
 PyYAML = "~=6.0"
 icdiff = "~=1.9"

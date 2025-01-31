@@ -92,7 +92,7 @@ poetry shell
 
 This is a python light CLI framework we use to declare entrypoint. You'll interact with it if you have to deal with commands, command groups, option, arguments etc.
 
-### [Dagger](https://dagger-io.readthedocs.io/en/sdk-python-v0.9.6/)
+### [Dagger](https://dagger-io.readthedocs.io/en/sdk-python-v0.15.3/)
 
 This is an SDK to build, execute and interact with Docker containers in Python. It's basically a nice API on top of [BuildKit](https://docs.docker.com/build/buildkit/). We use containers to wrap the majority of `airbyte-ci` operations as it allows us to:
 
@@ -100,7 +100,7 @@ This is an SDK to build, execute and interact with Docker containers in Python. 
 - Benefit from caching by default. You can consider a Dagger operation a "line in a Dockerfile". Each operation is cached by BuildKit if the inputs of the operation did not change.
 - As Dagger exposes async APIs we can easily implement concurrent logic. This is great for performance.
 
-**Please note that we are currently using v0.9.6 of Dagger. The library is under active development so please refer to [this specific version documentation](https://dagger-io.readthedocs.io/en/sdk-python-v0.9.6/) if you want an accurate view of the available APIs.**
+**Please note that we are currently using v0.15.3 of Dagger. The library is under active development so please refer to [this specific version documentation](https://dagger-io.readthedocs.io/en/sdk-python-v0.15.3/) if you want an accurate view of the available APIs.**
 
 ### [anyio](https://anyio.readthedocs.io/en/stable/basics.html) / [asyncer](https://asyncer.tiangolo.com/)
 

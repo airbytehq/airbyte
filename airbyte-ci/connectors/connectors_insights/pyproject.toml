@@ -8,7 +8,7 @@ packages = [{ include = "connectors_insights", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-dagger-io = "0.13.3"
+dagger-io = "==0.15.3"
 click = "^8.1.7"
 pydantic = "^1.9"
 asyncer = "^0.0.7"

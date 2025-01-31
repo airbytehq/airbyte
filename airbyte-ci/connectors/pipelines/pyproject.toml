@@ -10,7 +10,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "~3.10"
-dagger-io = "==0.13.3"
+dagger-io = "==0.15.3"
 beartype = ">=0.18.2"
 asyncer = "^0"
 anyio = "^4"
