@@ -314,13 +314,6 @@ class UploadSpecToCache(Step):
         raise InvalidSpecOutputError("No spec found in the output of the SPEC command.")
 
     async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:
-        """
-        Get the connector spec by running the `spec` command in the connector container.
-
-        Args:
-            connector (Container): The connector container.
-            deployment_mode (str): The deployment mode to run the spec command in. Valid values are "OSS" and "CLOUD".
-        """
         spec_output = (
             await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"], use_entrypoint=True).stdout()
         )

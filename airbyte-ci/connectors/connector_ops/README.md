@@ -31,7 +31,6 @@ poetry run pytest
 ```
 
 ## Changelog
-- 0.10.2: Update Python version requirement from 3.10 to 3.11.
 - 0.10.1: Update to `ci_credentials` 1.2.0, which drops `common_utils`.
 - 0.10.0: Add `documentation_file_name` property to `Connector` class.
 - 0.9.0: Add components path attribute for manifest-only connectors.

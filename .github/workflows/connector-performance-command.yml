@@ -168,9 +168,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
+          python-version: "3.10"
       - name: Install CI scripts
         run: |
           pip install pipx

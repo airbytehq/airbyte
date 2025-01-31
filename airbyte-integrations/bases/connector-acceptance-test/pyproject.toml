@@ -11,7 +11,7 @@ license = "MIT"
 homepage = "https://github.com/airbytehq/airbyte"
 
 [tool.poetry.dependencies]
-python = "^3.11, <3.12"
+python = "^3.10, <3.12"
 airbyte-protocol-models = "<1.0.0"
 dagger-io = "==0.13.3"
 beartype = ">=0.18.2"
@@ -32,8 +32,8 @@ requests-mock = "~=1.9.3"
 pytest-mock = "~=3.6.1"
 pendulum = "*"
 pytest-cov = "~=3.0.0"
-hypothesis = "^6"
-hypothesis-jsonschema = "^0.22"
+hypothesis = "*"
+hypothesis-jsonschema = "*"
 anyio = "^3.4.1"
 docker = ">=6,<7"
 # Pinning requests and urllib3 to avoid an issue with dockerpy and requests 2.
@@ -48,6 +48,6 @@ test = "pytest unit_tests"
 ci = ["test"]
 
 [tool.airbyte_ci]
-python_versions = ["3.11"]
+python_versions = ["3.10"]
 poe_tasks = ["test"]
 mount_docker_socket = true

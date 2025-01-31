@@ -7,7 +7,7 @@ A collection of utilities for generating ERDs.
 ## Installation
 
 `erd` tools use [Poetry](https://github.com/python-poetry/poetry) to manage dependencies,
-and targets Python 3.11 and higher.
+and targets Python 3.10 and higher.
 
 Assuming you're in Airbyte repo root:
 
@@ -36,5 +36,4 @@ poetry run pytest
 ```
 
 ## Changelog
-- 0.1.1: Update Python version requirement from 3.10 to 3.11.
 - 0.1.0: Initial commit
