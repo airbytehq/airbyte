@@ -19,6 +19,7 @@ include = "source_faker"
 python = "^3.9,<4.0"
 airbyte-cdk = "^2.0"
 mimesis = "==6.1.1"
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-faker = "source_faker.run:run"
