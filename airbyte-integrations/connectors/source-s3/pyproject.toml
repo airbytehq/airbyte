@@ -23,6 +23,7 @@ dill = "==0.3.4"
 transformers = "4.38.2"
 urllib3 = "<2"
 airbyte-cdk = {extras = ["file-based"], version = "^6.18.2"}
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
