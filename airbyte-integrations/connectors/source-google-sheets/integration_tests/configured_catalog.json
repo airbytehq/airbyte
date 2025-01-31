@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "Sheet1-one-col",
+        "name": "Sheet1 one col&special name%?",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
