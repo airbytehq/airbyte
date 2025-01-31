@@ -18,6 +18,7 @@ include = "source_gridly"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "0.80.0"
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-gridly = "source_gridly.run:run"
