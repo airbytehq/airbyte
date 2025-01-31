@@ -1,5 +1,11 @@
 # MSSQL (V2)
 
+:::danger
+
+This connector is in early access, and SHOULD NOT be used for production workloads. This connector is subject to breaking changes without notice.
+
+:::
+
 ## Changelog
 
 <details>
