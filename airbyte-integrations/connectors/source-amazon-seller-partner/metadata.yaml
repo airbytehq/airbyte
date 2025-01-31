@@ -42,7 +42,7 @@ data:
       - ListFinancialEventGroups
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       2.0.0:
         message: "Deprecated FBA reports will be removed permanently from Cloud and Brand Analytics Reports will be removed temporarily. Updates on Brand Analytics Reports can be tracked here: [#32353](https://github.com/airbytehq/airbyte/issues/32353)"
