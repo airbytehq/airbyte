@@ -7,7 +7,7 @@ For information about how to configure and use this connector within Airbyte, se
 
 ## Development and Testing
 
-For information about developing, building, and testing this connector, see [Developing a Manifest-Only Connector](https://docs.airbyte.com/connector-development/config-based/connector-builder-ui).
+For information about developing, building, and testing this connector, see [Developing a Manifest-Only Connector](https://docs.airbyte.com/connector-development/connector-builder-ui/overview).
 
 ## Publishing
 
