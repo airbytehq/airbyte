@@ -16,12 +16,15 @@ import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import java.nio.file.Files
 import java.util.Base64
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -30,6 +33,7 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
 abstract class S3DataLakeWriteTest(
@@ -192,10 +196,19 @@ class GlueWriteTest :
                     makeStream("STREAM_WITH_SPÉCIAL_CHARACTER", "_FOO"),
                 )
             )
-        // TODO figure out what exception we actually throw + assert on its message
-        assertThrows<IllegalArgumentException> {
-            runSync(configContents, catalog, messages = emptyList())
-        }
+        val e =
+            assertThrows<DestinationUncleanExitException> {
+                runSync(configContents, catalog, messages = emptyList())
+            }
+        assertAll(
+            { assertEquals(1, e.traceMessages.size) },
+            {
+                assertContains(
+                    e.traceMessages[0].message,
+                    "Detected naming conflicts between streams"
+                )
+            }
+        )
     }
 }
 

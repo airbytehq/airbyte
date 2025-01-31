@@ -10,7 +10,7 @@ import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 
 class DestinationUncleanExitException(
     exitCode: Int,
-    traceMessages: List<AirbyteErrorTraceMessage>,
+    val traceMessages: List<AirbyteErrorTraceMessage>,
     /**
      * If the destination emitted any state messages before crashing, they will be stored into this
      * list.
