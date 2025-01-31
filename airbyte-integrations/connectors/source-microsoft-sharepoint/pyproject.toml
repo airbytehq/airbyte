@@ -20,6 +20,7 @@ python = "^3.10,<3.12"
 msal = "==1.25.0"
 Office365-REST-Python-Client = "==2.5.5"
 smart-open = "==6.4.0"
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-microsoft-sharepoint = "source_microsoft_sharepoint.run:run"
