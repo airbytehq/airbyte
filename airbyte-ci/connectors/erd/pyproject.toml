@@ -45,5 +45,5 @@ pre-push = []
 erd = "erd.cli:main"
 
 [tool.airbyte_ci]
-python_versions = ["3.10"]
+python_versions = ["3.11"]
 poe_tasks = ["type_check", "test"]

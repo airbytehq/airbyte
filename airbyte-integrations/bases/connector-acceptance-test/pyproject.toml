@@ -48,6 +48,6 @@ test = "pytest unit_tests"
 ci = ["test"]
 
 [tool.airbyte_ci]
-python_versions = ["3.10"]
+python_versions = ["3.11"]
 poe_tasks = ["test"]
 mount_docker_socket = true

@@ -68,7 +68,7 @@ type_check = "mypy src --disallow-untyped-defs"
 pre-push = []
 
 [tool.airbyte_ci]
-python_versions = ["3.10"]
+python_versions = ["3.11"]
 optional_poetry_groups = ["dev"]
 poe_tasks = []
 required_environment_variables = ["DOCKER_HUB_USERNAME", "DOCKER_HUB_PASSWORD"]
