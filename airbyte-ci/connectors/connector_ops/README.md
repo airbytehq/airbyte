@@ -18,13 +18,7 @@ poetry install
 
 ## Usage
 
-`connector_ops` provides a set of tools that verify connector characteristics. They're intended to
-be used in CI. They will detect the list of connectors that are modified compared to `master` branch
-of the repository, and only run checks on them. You can run them locally, too, with
-`poetry run TOOL_NAME`.
-
-- `write-review-requirements-file` writes required reviewers github action file.
-- `print-mandatory-reviewers` prints out the GitHub comment with required reviewers.
+Connector OPS package provides useful `Connector` class and helper methods. It's used in several Airbyte CI packages.
 
 ## Contributing to `connector_ops`
 
@@ -37,6 +31,8 @@ poetry run pytest
 ```
 
 ## Changelog
+- 0.10.2: Update Python version requirement from 3.10 to 3.11.
+- 0.10.1: Update to `ci_credentials` 1.2.0, which drops `common_utils`.
 - 0.10.0: Add `documentation_file_name` property to `Connector` class.
 - 0.9.0: Add components path attribute for manifest-only connectors.
 - 0.8.1: Gradle dependency discovery logic supports the Bulk CDK.

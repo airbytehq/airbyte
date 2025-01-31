@@ -23,7 +23,7 @@ from airbyte_cdk.models import ConnectorSpecification
                 "start_date": "2021-04-01",
                 "report_granularity": "LIFETIME",
             },
-            15,
+            36,
         ),
         (
             {
@@ -32,17 +32,17 @@ from airbyte_cdk.models import ConnectorSpecification
                 "start_date": "2021-04-01",
                 "report_granularity": "DAY",
             },
-            27,
+            36,
         ),
     ],
 )
 def test_source_streams(config, stream_len):
-    streams = SourceTiktokMarketing().streams(config=config)
+    streams = SourceTiktokMarketing(config=config, catalog=None, state=None).streams(config=config)
     assert len(streams) == stream_len
 
 
-def test_source_spec():
-    spec = SourceTiktokMarketing().spec(logger=None)
+def test_source_spec(config):
+    spec = SourceTiktokMarketing(config=config, catalog=None, state=None).spec(logger=None)
     assert isinstance(spec, ConnectorSpecification)
 
 
@@ -83,7 +83,7 @@ def test_source_check_connection_ok(config, requests_mock):
         },
     )
     logger_mock = MagicMock()
-    assert SourceTiktokMarketing().check_connection(logger_mock, config) == (True, None)
+    assert SourceTiktokMarketing(config=config, catalog=None, state=None).check_connection(logger_mock, config) == (True, None)
 
 
 @pytest.mark.parametrize(
@@ -94,7 +94,7 @@ def test_source_check_connection_ok(config, requests_mock):
             (False, "Access token is incorrect or has been revoked."),
             None,
         ),
-        ({"code": 40100, "message": "App reaches the QPS limit."}, None, 38),
+        ({"code": 40100, "message": "App reaches the QPS limit."}, None, 6),
     ],
 )
 @pytest.mark.usefixtures("mock_sleep")
@@ -102,7 +102,7 @@ def test_source_check_connection_failed(config, requests_mock, capsys, json_resp
     requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/", json=json_response)
 
     logger_mock = MagicMock()
-    result = SourceTiktokMarketing().check_connection(logger_mock, config)
+    result = SourceTiktokMarketing(config=config, catalog=None, state=None).check_connection(logger_mock, config)
 
     if expected_result is not None:
         assert result == expected_result

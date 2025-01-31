@@ -88,7 +88,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response.nextToken }}"
+            cursor_value: "{{ response.payload.NextToken }}"
 
     order_items:
       type: DeclarativeStream
@@ -2111,5 +2111,5 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
-  max_concurrency: 10
+  default_concurrency: 2
+  max_concurrency: 2
