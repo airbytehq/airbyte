@@ -29,3 +29,6 @@ requests-mock = "^1.11.0"
 pytest-mock = "^3.12.0"
 pytest = "^8.0.0"
 freezegun = "^1.4.0"
+
+[tool.poe]
+include = "../../../poe-tasks/poetry-source-tasks.toml"

@@ -1,0 +1,5 @@
+[tool.poe.tasks]
+install.shell = "poetry install --all-extras"
+lock.shell = "poetry lock"
+pytest.shell = "pytest"
+pytest-fast.shell = "pytest --ff -m 'not slow and not requires_creds'"

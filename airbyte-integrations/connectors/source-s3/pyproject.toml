@@ -38,3 +38,6 @@ docker = "^7.0.0"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
 pandas = "^2.0.3"
+
+[tool.poe]
+include = "../../../poe-tasks/poetry-source-tasks.toml"
