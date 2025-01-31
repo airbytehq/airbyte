@@ -198,7 +198,7 @@ def test_update_secrets(tmp_path, matchers, old_secret_value, updated_configurat
         for secret in updated_secrets:
             assert secret.connector_name == "source-test"
             assert secret.configuration_file_name == "config.json"
-            assert secret.value == updated_configurations[0]  # Use first configuration as it's the one being tested
+            assert secret.value == updated_configurations[-1]
             assert secret.enabled_version == "new_version"
         expected_add_version_payload = {"payload": {"data": base64.b64encode(updated_configurations[-1].encode()).decode("utf-8")}}
         assert add_version_adapter.last_request.json() == expected_add_version_payload

@@ -16,11 +16,6 @@ asyncer = "^0"
 exceptiongroup = ">=1.2.0"
 anyio = ">=4.2.0"  # Required by Python 3.11
 trio = ">=0.24.0"  # Required by anyio
-typing-extensions = ">=4.9.0"  # Required by Python 3.11
-importlib-metadata = ">=7.0.1"  # Required by Python 3.11
-zipp = ">=3.17.0"  # Required by importlib-metadata
-hypothesis = ">=6.98.0"  # Required for Python 3.11 compatibility
-hypothesis-jsonschema = ">=0.22.1"  # Required for Python 3.11 compatibility
 more-itertools = "^8.11.0"
 docker = "^7"
 semver = "^3"
