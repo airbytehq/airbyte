@@ -7,7 +7,7 @@ A collection of utilities for working with Airbyte connectors.
 ## Installation
 
 `connector_ops` tools use [Poetry](https://github.com/python-poetry/poetry) to manage dependencies,
-and targets Python 3.10 and higher.
+and targets Python 3.11 and higher.
 
 Assuming you're in Airbyte repo root:
 
