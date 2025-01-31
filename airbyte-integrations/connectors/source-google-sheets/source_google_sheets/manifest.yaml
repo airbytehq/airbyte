@@ -51,7 +51,7 @@ dynamic_streams:
             name: ""
           http_method: GET
           path: >-
-            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"]| urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
+            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"] | urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
           error_handler:
             type: DefaultErrorHandler
             backoff_strategies:
