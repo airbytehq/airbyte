@@ -2469,6 +2469,406 @@ definitions:
             type:
               - "null"
               - integer
+  tickets:
+    $ref: "#/definitions/stream_full_refresh"
+    primary_key: id
+    $parameters:
+      name: "tickets"
+      path: "tickets/search"
+      data_field: "tickets"
+      page_size: 150
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        http_method: "POST"
+        request_body_json:
+          query: >-
+            {"operator" : "OR", "value" : [
+            {"field" : "updated_at", "operator" : ">", "value" : {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }} },
+            {"field" : "updated_at", "operator" : "=", "value" : {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }} },
+            ]}
+          sort: >-
+            {"field": "updated_at", "order": "ascending"}
+          pagination: >-
+            {{ {"per_page": parameters['page_size']} if not next_page_token else {"per_page": parameters['page_size'],
+            "starting_after": next_page_token["next_page_token"]} }}
+          test:
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "#/definitions/requester/url_base"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') }}"
+          stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+      cursor_field: "updated_at"
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          pages:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              page:
+                type:
+                  - number
+                  - "null"
+              per_page:
+                type:
+                  - number
+                  - "null"
+              total_pages:
+                type:
+                  - number
+                  - "null"
+          tickets:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                admin_assignee_id:
+                  type:
+                    - string
+                    - "null"
+                category:
+                  type:
+                    - string
+                    - "null"
+                contacts:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    contacts:
+                      type:
+                        - array
+                        - "null"
+                created_at:
+                  type:
+                    - number
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                is_shared:
+                  type:
+                    - boolean
+                    - "null"
+                linked_objects:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    data:
+                      type:
+                        - array
+                        - "null"
+                    has_more:
+                      type:
+                        - boolean
+                        - "null"
+                    total_count:
+                      type:
+                        - number
+                        - "null"
+                open:
+                  type:
+                    - boolean
+                    - "null"
+                team_assignee_id:
+                  type:
+                    - string
+                    - "null"
+                ticket_attributes:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    _default_description_:
+                      type:
+                        - string
+                        - "null"
+                    _default_title_:
+                      type:
+                        - string
+                        - "null"
+                ticket_id:
+                  type:
+                    - string
+                    - "null"
+                ticket_parts:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    ticket_parts:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          attachments:
+                            type:
+                              - array
+                              - "null"
+                          author:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              email:
+                                type:
+                                  - string
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                          created_at:
+                            type:
+                              - number
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          part_type:
+                            type:
+                              - string
+                              - "null"
+                          previous_ticket_state:
+                            type:
+                              - string
+                              - "null"
+                          redacted:
+                            type:
+                              - boolean
+                              - "null"
+                          ticket_state:
+                            type:
+                              - string
+                              - "null"
+                          updated_at:
+                            type:
+                              - number
+                              - "null"
+                    total_count:
+                      type:
+                        - number
+                        - "null"
+                ticket_state:
+                  type:
+                    - string
+                    - "null"
+                ticket_state_external_label:
+                  type:
+                    - string
+                    - "null"
+                ticket_state_internal_label:
+                  type:
+                    - string
+                    - "null"
+                ticket_type:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    archived:
+                      type:
+                        - boolean
+                        - "null"
+                    category:
+                      type:
+                        - string
+                        - "null"
+                    created_at:
+                      type:
+                        - number
+                        - "null"
+                    icon:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    is_internal:
+                      type:
+                        - boolean
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    ticket_type_attributes:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        data:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              description:
+                                type:
+                                  - string
+                                  - "null"
+                              archived:
+                                type:
+                                  - boolean
+                                  - "null"
+                              created_at:
+                                type:
+                                  - number
+                                  - "null"
+                              data_type:
+                                type:
+                                  - string
+                                  - "null"
+                              default:
+                                type:
+                                  - boolean
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                              input_options:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  multiline:
+                                    type:
+                                      - boolean
+                                      - "null"
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                              order:
+                                type:
+                                  - number
+                                  - "null"
+                              required_to_create:
+                                type:
+                                  - boolean
+                                  - "null"
+                              required_to_create_for_contacts:
+                                type:
+                                  - boolean
+                                  - "null"
+                              ticket_type_id:
+                                type:
+                                  - number
+                                  - "null"
+                              updated_at:
+                                type:
+                                  - number
+                                  - "null"
+                              visible_on_create:
+                                type:
+                                  - boolean
+                                  - "null"
+                              visible_to_contacts:
+                                type:
+                                  - boolean
+                                  - "null"
+                              workspace_id:
+                                type:
+                                  - string
+                                  - "null"
+                    updated_at:
+                      type:
+                        - number
+                        - "null"
+                    workspace_id:
+                      type:
+                        - string
+                        - "null"
+                updated_at:
+                  type:
+                    - number
+                    - "null"
+          total_count:
+            type:
+              - number
+              - "null"
+
 streams:
   - "#/definitions/activity_logs"
   - "#/definitions/admins"
@@ -2482,6 +2882,7 @@ streams:
   - "#/definitions/conversations"
   - "#/definitions/conversation_parts"
   - "#/definitions/company_segments"
+  - "#/definitions/tickets"
 
 check:
   stream_names:
