@@ -18,6 +18,7 @@ include = "source_mixpanel"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 airbyte-cdk = "^4"
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-mixpanel = "source_mixpanel.run:run"
