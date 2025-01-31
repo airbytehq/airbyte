@@ -29,10 +29,6 @@ pytest = "^8"
 pytest-mock = "^3.10.0"
 freezegun = "^1.1.0"
 
-[tool.poetry.scripts]
-write-review-requirements-file = "connector_ops.required_reviewer_checks:write_review_requirements_file"
-print-mandatory-reviewers = "connector_ops.required_reviewer_checks:print_mandatory_reviewers"
-
 [tool.poe.tasks]
 test = "pytest tests"
 
