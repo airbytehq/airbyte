@@ -29,4 +29,4 @@ requests-mock = "^1.9.3"
 freezegun = "*"
 
 [tool.poe]
-include = "../../../poe-tasks/poetry-source-tasks.toml"
+include = ["../../../poe-tasks/poetry-source-tasks.toml"]

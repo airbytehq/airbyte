@@ -40,4 +40,4 @@ requests-mock = "^1.9.3"
 pandas = "^2.0.3"
 
 [tool.poe]
-include = "../../../poe-tasks/poetry-source-tasks.toml"
+include = ["../../../poe-tasks/poetry-source-tasks.toml"]
