@@ -11,7 +11,7 @@ readme = "README.md"
 packages = [{ include = "ci_credentials" }]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 requests = "^2.31"
 cryptography = ">=42.0"
 click = "^8.1.3"

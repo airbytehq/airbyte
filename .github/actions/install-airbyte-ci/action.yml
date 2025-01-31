@@ -61,7 +61,7 @@ runs:
       uses: actions/setup-python@v4
       # if: steps.determine-install-mode.outputs.install-mode == 'source'
       with:
-        python-version: "3.10"
+        python-version: "3.11"
         token: ${{ inputs.github_token }}
 
     - name: Install Airbyte CI from source

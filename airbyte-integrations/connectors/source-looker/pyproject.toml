@@ -15,7 +15,7 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [ { include = "source_looker" }, { include = "main.py" } ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 airbyte-cdk = "^4.0.1"
 pytz = "^2024.1"
 

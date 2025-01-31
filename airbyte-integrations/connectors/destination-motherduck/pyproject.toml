@@ -10,7 +10,7 @@ readme = "README.md"
 include = "destination_motherduck"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 
 # NOTE: You can toggle between pinned and local CDK version for testing:
 airbyte-cdk = {version = "^5.15.0", extras = ["sql"] }
