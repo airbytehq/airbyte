@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from typing import Any, Dict, Iterator, List
+from typing import Any, Dict, List
 
 from connector_ops.utils import Connector  # type: ignore
 from jinja2 import Environment, FileSystemLoader
@@ -48,30 +48,31 @@ class Content:
         self.headers = self._headers()
         self.sections = self._sections()
 
-    def _content(self) -> str:
-        raise NotImplementedError
+    def _content(self) -> str:  # type: ignore
+        pass
 
-    def _sections(self) -> List[SectionContent]:
-        raise NotImplementedError
+    def _sections(self) -> list[SectionContent]:  # type: ignore
+        pass
 
     def _node(self) -> SyntaxTreeNode:
         node = documentation_node(self.content)
         return node
 
-    def _headers(self) -> List[str]:
+    def _headers(self) -> list[str]:
         headers = []
-        for n in self.node.walk():  # type: SyntaxTreeNode
+        for n in self.node:  # type: ignore
             if n.type == self.HEADING and n.tag in self.supported_header_levels:
                 headers.append(remove_step_from_heading(header_name(n)))
+
         return headers
 
-    def _header_line_map(self) -> Dict[str, List[SectionLines]]:
-        headers: List[str] = []
-        starts: List[int] = []
-        header_line_map: Dict[str, List[SectionLines]] = {}
+    def _header_line_map(self) -> Dict[str, list[SectionLines]]:
+        headers = []
+        starts = []
+        header_line_map: Dict[str, list[SectionLines]] = {}
 
-        for n in self.node.walk():  # type: SyntaxTreeNode
-            if n.type == self.HEADING and n.map is not None:
+        for n in self.node:  # type: ignore
+            if n.type == self.HEADING:
                 headers.append(header_name(n))
                 starts.append(n.map[1])
 
@@ -79,22 +80,19 @@ class Content:
         while len(headers) > i:
             header = headers[i]
             start_index = i
-            end_index: int | None = starts[start_index + 1] - 1 if start_index + 1 < len(headers) else None
-            section_lines = SectionLines(start=starts[start_index], end=end_index if end_index is not None else -1)
-
-            if header not in header_line_map:
-                header_line_map[header] = [section_lines]
+            end_index = starts[start_index + 1] - 1 if start_index + 1 < len(headers) else None
+            if header not in header_line_map.keys():
+                header_line_map[header] = [SectionLines(start=starts[start_index], end=end_index)]  # type: ignore
             else:
-                header_line_map[header].append(section_lines)
+                header_line_map[header] = header_line_map[header] + [SectionLines(start=starts[start_index], end=end_index)]  # type: ignore
             i += 1
 
         return header_line_map
 
-    def section(self, header: str) -> List[str] | None:
+    def section(self, header) -> list[str]:  # type: ignore
         for s in self.sections:
             if s.header == header:
                 return s.content
-        return None
 
 
 class DocumentationContent(Content):

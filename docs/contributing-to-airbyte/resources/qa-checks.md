@@ -249,7 +249,7 @@ Check verifies that Changelog header section content follows standard template:
 ````
 <details>
   <summary>Expand to review</summary>
-
+</details>
 ````
 
 ### Connectors must have a changelog entry for each version
