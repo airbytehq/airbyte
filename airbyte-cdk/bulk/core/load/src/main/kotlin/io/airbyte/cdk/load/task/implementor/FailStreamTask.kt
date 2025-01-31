@@ -34,6 +34,7 @@ class DefaultFailStreamTask(
 
     override suspend fun execute() {
         val streamManager = syncManager.getStreamManager(stream)
+        syncManager.registerStartedStreamLoader(stream, Result.failure(exception))
         streamManager.markProcessingFailed(exception)
         when (val streamResult = streamManager.awaitStreamResult()) {
             is StreamProcessingSucceeded -> {
