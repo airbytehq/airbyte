@@ -26,7 +26,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poe]
 include = [
-    "../../../poe-tasks/poetry-source-tasks.toml",
+    "../../../poe-tasks/poetry-connector-tasks.toml",
 ]
 
 [tool.poetry.scripts]

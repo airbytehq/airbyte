@@ -41,5 +41,5 @@ pandas = "^2.0.3"
 
 [tool.poe]
 include = [
-    "../../../poe-tasks/poetry-source-tasks.toml",
+    "../../../poe-tasks/poetry-connector-tasks.toml",
 ]

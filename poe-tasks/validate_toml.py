@@ -6,7 +6,7 @@ import tomli
 
 
 def validate_toml_files():
-    files = ["poe-tasks/poetry-source-tasks.toml", "airbyte-integrations/connectors/destination-snowflake-cortex/pyproject.toml"]
+    files = ["poe-tasks/poetry-connector-tasks.toml", "airbyte-integrations/connectors/destination-snowflake-cortex/pyproject.toml"]
 
     for file in files:
         with open(file, "rb") as f:
