@@ -9,8 +9,8 @@ from source_github.source import SourceGithub
 def test_http_caching():
     """Test that HTTP requests are cached when using mitmproxy."""
     config = {
-        "credentials": {"access_token": "test_token"},
-        "repository": "airbytehq/airbyte",
+        "credentials": {"access_token": "{{ config['credentials']['access_token'] }}"},
+        "repository": "{{ config['repository'] }}",
     }
     source = SourceGithub()
     source.check_connection(MagicMock(), config)
