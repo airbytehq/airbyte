@@ -33,7 +33,7 @@ class Logger:
     """
 
     def __init__(self):
-        formatter = MyFormatter(fmt="[%(asctime)s] - %(levelname)s  - %(message)s", datefmt="%d/%m/%Y %H:%M:%S.%f")
+        formatter = MyFormatter(fmt="[%(asctime)s] - %(levelname)s - %(message)s", datefmt="%d/%m/%Y %H:%M:%S.%f")
 
         logger_name = __name__
         stack_items = inspect.stack()
