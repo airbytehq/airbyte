@@ -15,7 +15,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = ">=3.11,<3.14"
 airbyte-cdk = "*"
 airbyte-protocol-models = "<1.0.0"
 cachetools = "~=5.3.3"

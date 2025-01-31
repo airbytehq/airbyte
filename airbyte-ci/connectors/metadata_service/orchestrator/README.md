@@ -111,7 +111,7 @@ GitHub Actions is used to automatically deploy the orchestrator to Dagster Cloud
 
 1. Update the version of your code (`../lib`) and update the version of the package in
    `pyproject.toml`
-1. In this project (`../orchestrator`) Run `poetry lock --no-update` to bump the version of the
+1. In this project (`../orchestrator`) Run `poetry lock` to bump the version of the
    requirements you may have changed in
    `airbyte-ci/connectors/metadata_service/orchestrator/poetry.lock`
 1. Push your changes to the `master` branch and the orchestrator will be automatically deployed to

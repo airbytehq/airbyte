@@ -15,7 +15,7 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [{ include = "destination_timeplus" }, { include = "main.py" }]
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = ">=3.11,<3.13"
 timeplus = "==2.0.0b4"
 airbyte-cdk = "^0"
 

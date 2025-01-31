@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_sftp_json"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = ">=3.11,<3.13"
 paramiko = "^3.5.0"
 smart-open = "^7.0.5"
 airbyte-cdk = "^6.22"

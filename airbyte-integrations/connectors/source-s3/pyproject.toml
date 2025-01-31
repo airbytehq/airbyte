@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_s3"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = ">=3.11,<3.13"
 pytz = "==2024.2"
 wcmatch = "==10.0"
 dill = "==0.3.4"

@@ -11,7 +11,7 @@ license = "MIT"
 homepage = "https://github.com/airbytehq/airbyte"
 
 [tool.poetry.dependencies]
-python = "^3.10, <3.12"
+python = ">=3.11,<3.14"
 airbyte-protocol-models = "<1.0.0"
 dagger-io = "==0.13.3"
 beartype = ">=0.18.2"
