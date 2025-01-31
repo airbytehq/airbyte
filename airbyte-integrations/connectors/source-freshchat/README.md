@@ -3,31 +3,15 @@ This directory contains the manifest-only connector for `source-freshchat`.
 
 Freshchat is a cloud based messaging solution that allows you to effectively interact with your business users. It provides an efficient messaging service for lead generation, customer engagement, and customer support and thereby, makes your business competent.
 
-## Usage
-There are multiple ways to use this connector:
-- You can use this connector as any other connector in Airbyte Marketplace.
-- You can load this connector in `pyairbyte` using `get_source`!
-- You can open this connector in Connector Builder, edit it, and publish to your workspaces.
+## Usage and Configuration
 
-Please refer to the manifest-only connector documentation for more details.
+For information about how to configure and use this connector within Airbyte, see [the connector's documentation](https://docs.airbyte.com/integrations/sources/freshchat).
 
-## Local Development
-We recommend you use the Connector Builder to edit this connector.
+## Development and Testing
 
-But, if you want to develop this connector locally, you can use the following steps.
+For information about developing, building, and testing this connector, see [Developing a Manifest-Only Connector](https://docs.airbyte.com/connector-development/config-based/connector-builder-ui).
 
-### Environment Setup
-You will need `airbyte-ci` installed. You can find the documentation [here](airbyte-ci).
+## Publishing
 
-### Build
-This will create a dev image (`source-freshchat:dev`) that you can use to test the connector locally.
-```bash
-airbyte-ci connectors --name=source-freshchat build
-```
-
-### Test
-This will run the acceptance tests for the connector.
-```bash
-airbyte-ci connectors --name=source-freshchat test
-```
+For instructions on publishing changes to this connector, see [Publishing a Connector](https://docs.airbyte.com/contributing-to-airbyte/change-cdk-connector/#publishing-a-new-version-of-a-connector).
 
