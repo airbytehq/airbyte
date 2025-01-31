@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "connector_ops"
-version = "0.10.0"
+version = "0.10.1"
 description = "Packaged maintained by the connector operations team to perform CI for connectors"
 authors = ["Airbyte <contact@airbyte.io>"]
 
