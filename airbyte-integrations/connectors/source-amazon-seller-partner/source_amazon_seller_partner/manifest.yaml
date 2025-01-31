@@ -143,6 +143,7 @@ definitions:
               parent_key: "AmazonOrderId"
               stream: "#/definitions/streams/orders"
               partition_field: "AmazonOrderId"
+              incremental_dependency: true
               extra_fields:
                 - ["LastUpdateDate"]
         record_selector:
