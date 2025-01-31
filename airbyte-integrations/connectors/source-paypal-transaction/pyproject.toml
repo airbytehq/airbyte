@@ -18,6 +18,7 @@ include = "source_paypal_transaction"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "0.82.0"
+pendulum = ">2.0,<3.0"
 
 
 [tool.poetry.scripts]
