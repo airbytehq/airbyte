@@ -22,6 +22,7 @@ smart-open = "==6.4.0"
 msal = "==1.25.0"
 # override transitive dependency that had a vulnerability https://nvd.nist.gov/vuln/detail/CVE-2023-6730
 transformers = "4.38.2"
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-microsoft-onedrive = "source_microsoft_onedrive.run:run"
