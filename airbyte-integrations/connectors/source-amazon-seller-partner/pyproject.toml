@@ -20,6 +20,7 @@ python = "^3.10,<3.12"
 airbyte-cdk = "^6"
 xmltodict = "~=0.12"
 dateparser = "==1.2.0"
+pendulum = "<3.0.0"
 
 [tool.poetry.scripts]
 source-amazon-seller-partner = "source_amazon_seller_partner.run:run"
