@@ -18,6 +18,7 @@ include = "source_sentry"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 airbyte-cdk = "^6"
+pendulum = ">2.0,<3.0"
 
 [tool.poetry.scripts]
 source-sentry = "source_sentry.run:run"
