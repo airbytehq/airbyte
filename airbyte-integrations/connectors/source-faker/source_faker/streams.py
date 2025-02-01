@@ -6,7 +6,8 @@ import datetime
 import logging
 import os
 from multiprocessing import Pool
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any
 
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -41,7 +42,7 @@ class Products(Stream, IncrementalMixin):
         self._state: MutableMapping[str, Any] = {}
 
     @property
-    def state_checkpoint_interval(self) -> Optional[int]:
+    def state_checkpoint_interval(self) -> int | None:
         return self.records_per_slice
 
     @property
@@ -52,16 +53,16 @@ class Products(Stream, IncrementalMixin):
     def state(self, value: MutableMapping[str, Any]):
         self._state = dict(value)
 
-    def load_products(self) -> List[Dict]:
+    def load_products(self) -> list[dict]:
         dirname = os.path.dirname(os.path.realpath(__file__))
         return read_json(os.path.join(dirname, "record_data", "products.json"))
 
     def read_records(
         self,
         sync_mode: str,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
+        cursor_field: list[str] | None = None,
+        stream_slice: Mapping[str, Any] | None = None,
+        stream_state: Mapping[str, Any] | None = None,
     ) -> Iterable[StreamData]:
         if stream_state and "updated_at" in stream_state and not self.always_updated:
             return
@@ -108,7 +109,7 @@ class Users(Stream, IncrementalMixin):
         self._state: MutableMapping[str, Any] = {}
 
     @property
-    def state_checkpoint_interval(self) -> Optional[int]:
+    def state_checkpoint_interval(self) -> int | None:
         return self.records_per_slice
 
     @property
@@ -122,9 +123,9 @@ class Users(Stream, IncrementalMixin):
     def read_records(
         self,
         sync_mode: str,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
+        cursor_field: list[str] | None = None,
+        stream_slice: Mapping[str, Any] | None = None,
+        stream_state: Mapping[str, Any] | None = None,
     ) -> Iterable[StreamData]:
         """
         This is a multi-process implementation of read_records.
@@ -191,7 +192,7 @@ class Purchases(Stream, IncrementalMixin):
         self._state: MutableMapping[str, Any] = {}
 
     @property
-    def state_checkpoint_interval(self) -> Optional[int]:
+    def state_checkpoint_interval(self) -> int | None:
         return self.records_per_slice
 
     @property
@@ -205,9 +206,9 @@ class Purchases(Stream, IncrementalMixin):
     def read_records(
         self,
         sync_mode: str,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
+        cursor_field: list[str] | None = None,
+        stream_slice: Mapping[str, Any] | None = None,
+        stream_state: Mapping[str, Any] | None = None,
     ) -> Iterable[StreamData]:
         """
         This is a multi-process implementation of read_records.

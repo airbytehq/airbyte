@@ -4,8 +4,6 @@
 
 import datetime
 from multiprocessing import current_process
-from typing import Dict, List
-
 from mimesis import Datetime, Numeric
 
 from airbyte_cdk.models import AirbyteRecordMessage, Type
@@ -48,13 +46,13 @@ class PurchaseGenerator:
         random_date = start_date + datetime.timedelta(days=random_number_of_days)
         return random_date
 
-    def generate(self, user_id: int) -> List[Dict]:
+    def generate(self, user_id: int) -> list[dict]:
         """
         Because we are doing this work in parallel processes, we need a deterministic way to know what a purchase's ID should be given on the input of a user_id.
         tldr; Every 10 user_ids produce 10 purchases.  User ID x5 has no purchases, User ID mod x7 has 2, and everyone else has 1
         """
 
-        purchases: List[Dict] = []
+        purchases: list[dict] = []
         last_user_id_digit = int(repr(user_id)[-1])
         purchase_count = 1
         id_offset = 0

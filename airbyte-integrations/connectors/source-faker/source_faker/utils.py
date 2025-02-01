@@ -4,8 +4,6 @@
 
 import datetime
 import json
-from typing import Any, Dict, Optional, Union
-
 from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage, EstimateType, TraceType
 
 
@@ -14,7 +12,7 @@ def read_json(filepath):
         return json.loads(f.read())
 
 
-def format_airbyte_time(d: Union[datetime.datetime, str]):
+def format_airbyte_time(d: datetime.datetime | str):
     s = f"{d}"
     s = s.split(".")[0]
     s = s.replace(" ", "T")
