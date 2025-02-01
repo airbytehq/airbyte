@@ -211,13 +211,13 @@ ujson = ["ujson (>=5.7.0)"]
 
 [[package]]
 name = "certifi"
-version = "2024.12.14"
+version = "2025.1.31"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.12.14-py3-none-any.whl", hash = "sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56"},
-    {file = "certifi-2024.12.14.tar.gz", hash = "sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db"},
+    {file = "certifi-2025.1.31-py3-none-any.whl", hash = "sha256:ca78db4565a652026a4db2bcdf68f2fb589ea80d0be70e03929ed730746b84fe"},
+    {file = "certifi-2025.1.31.tar.gz", hash = "sha256:3d5da6925056f6f18f119200434a4780a94263f10d1c21d032a6f6b2baa20651"},
 ]
 
 [[package]]
@@ -462,13 +462,13 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "deprecated"
-version = "1.2.17"
+version = "1.2.18"
 description = "Python @deprecated decorator to deprecate old python classes, functions or methods."
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
 files = [
-    {file = "Deprecated-1.2.17-py2.py3-none-any.whl", hash = "sha256:69cdc0a751671183f569495e2efb14baee4344b0236342eec29f1fde25d61818"},
-    {file = "deprecated-1.2.17.tar.gz", hash = "sha256:0114a10f0bbb750b90b2c2296c90cf7e9eaeb0abb5cf06c80de2c60138de0a82"},
+    {file = "Deprecated-1.2.18-py2.py3-none-any.whl", hash = "sha256:bd5011788200372a32418f888e326a09ff80d0214bd961147cfed01b5c018eec"},
+    {file = "deprecated-1.2.18.tar.gz", hash = "sha256:422b6f6d859da6f2ef57857761bfb392480502a64c3028ca9bbe86085d72115d"},
 ]
 
 [package.dependencies]
@@ -504,13 +504,13 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "firebolt-sdk"
-version = "1.8.1"
+version = "1.9.0"
 description = "Python SDK for Firebolt"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "firebolt_sdk-1.8.1-py3-none-any.whl", hash = "sha256:303c0ba5986c63f26e8618e2f74db850eee31a12d2b2a5bcab20405f49dcc804"},
-    {file = "firebolt_sdk-1.8.1.tar.gz", hash = "sha256:55f3f092193d3ac031c99910183eae6cc922bf1bdcb6392ef615e13c8224bbbf"},
+    {file = "firebolt_sdk-1.9.0-py3-none-any.whl", hash = "sha256:0530a95863eb7d10c714ada1447f0ed68267f34e9fde9b1387358cc0347f54bd"},
+    {file = "firebolt_sdk-1.9.0.tar.gz", hash = "sha256:bfc508c195fbd8f63d45b875ed755da8fcfa18b4c6c8b89d76c5c8fbcacd60b9"},
 ]
 
 [package.dependencies]
@@ -557,18 +557,17 @@ files = [
 
 [[package]]
 name = "h2"
-version = "4.1.0"
-description = "HTTP/2 State-Machine based protocol implementation"
+version = "4.2.0"
+description = "Pure-Python HTTP/2 protocol implementation"
 optional = false
-python-versions = ">=3.6.1"
+python-versions = ">=3.9"
 files = [
-    {file = "h2-4.1.0-py3-none-any.whl", hash = "sha256:03a46bcf682256c95b5fd9e9a99c1323584c3eec6440d379b9903d709476bc6d"},
-    {file = "h2-4.1.0.tar.gz", hash = "sha256:a83aca08fbe7aacb79fec788c9c0bac936343560ed9ec18b82a13a12c28d2abb"},
+    {file = "h2-4.2.0-py3-none-any.whl", hash = "sha256:479a53ad425bb29af087f3458a61d30780bc818e4ebcf01f0b536ba916462ed0"},
 ]
 
 [package.dependencies]
-hpack = ">=4.0,<5"
-hyperframe = ">=6.0,<7"
+hpack = ">=4.1,<5"
+hyperframe = ">=6.1,<7"
 
 [[package]]
 name = "hpack"
