@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "destination-duckdb"
-version = "0.4.26"
+version = "0.5.0"
 description = "Destination implementation for Duckdb."
 authors = ["Simon Späti, Airbyte"]
 license = "MIT"
@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-airbyte-cdk = "^0.51.6"
+airbyte-cdk = "^6.31.1"
 duckdb = "0.10.3"
 pyarrow = "15.0.2"
 
