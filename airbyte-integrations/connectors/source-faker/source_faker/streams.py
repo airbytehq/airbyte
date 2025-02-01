@@ -112,7 +112,7 @@ class Users(Stream, IncrementalMixin):
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
                 users = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
                 for user in users:
-                    updated_at = user.record.data["updated_at"]
+                    updated_at = user["updated_at"]
                     loop_offset += 1
                     yield user
 
@@ -175,7 +175,7 @@ class Purchases(Stream, IncrementalMixin):
                 for purchases in carts:
                     loop_offset += 1
                     for purchase in purchases:
-                        updated_at = purchase.record.data["updated_at"]
+                        updated_at = purchase["updated_at"]
                         yield purchase
                 if records_remaining_this_loop == 0:
                     break
