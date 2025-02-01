@@ -57,8 +57,7 @@ class Products(Stream, IncrementalMixin):
 
         for product in products:
             if product["id"] <= self.count:
-                now = datetime.datetime.now()
-                updated_at = format_airbyte_time(now)
+                updated_at = format_airbyte_time(datetime.datetime.now().isoformat())
                 product["updated_at"] = updated_at
                 yield product
 
@@ -176,7 +175,7 @@ class Purchases(Stream, IncrementalMixin):
                 for purchases in carts:
                     loop_offset += 1
                     for purchase in purchases:
-                        updated_at = purchase.record.data["updated_at"]
+                        updated_at = purchase["updated_at"]
                         yield purchase
                 if records_remaining_this_loop == 0:
                     break
