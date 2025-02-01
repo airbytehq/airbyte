@@ -3,9 +3,9 @@ import TabItem from "@theme/TabItem";
 
 # Airbyte Overview
 
-Airbyte is an open-source data integration platform to help you consolidate data from various sources into your data warehouses, lakes, and databases.
+Airbyte is an open-source data integration platform. It helps you consolidate data from various sources into your data warehouses, lakes, and databases.
 
-Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data for a personal project, Airbyte can work for you! We offer flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise solutions.
+Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data, Airbyte works for you! Airbyte offers flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise solutions.
 
 ## Airbyte Products
 
@@ -34,7 +34,7 @@ looking to scale efficiently. Role based access control, single sign on, and mor
 
 ## Ways to work with Airbyte
 
-No matter your skill level, there's a way to use Airbyte that's appropriate for you.
+Once your Airbyte instance is up and running, there's a way to use Airbyte that's appropriate for any skill level.
 
 ### User interface
 
@@ -49,7 +49,7 @@ These are great choices for developers who want to automate the way you work wit
 
 ### Terraform
 
-You might want to think of Airbyte and its connectors as infrastructure. Our [Terraform provider](../../terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your existing infrastructure.
+Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](../../terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
 
 ### PyAirbyte
 
@@ -59,9 +59,8 @@ If you want to use Python to move data, our Python library, [PyAirbyte](../pyair
 PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).
 :::
 
-## Build your own connectors
+## Contribute
 
-Airbyte began as an open-source product. This is vital to Airbyte's vision of data movement. There are seemingly infinite data sources in the world, and only through community contribution can we address that long tail of data sources.
+Airbyte began as an open-source product. This is vital to Airbyte's vision of data movement. There are seemingly infinite data sources in the world, and only through community collaboration can we address that long tail of data sources.
 
 If you don't see the data source you need in our collection, [you can build one](../../connector-development/). Airbyte comes with no-code, low-code, and programmatic builder options. If you're interested in giving back to the community, documenting your connector and publishing it in the [Marketplace](../../integrations) will help others like you move data in the future.
-
