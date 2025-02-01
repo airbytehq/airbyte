@@ -5,7 +5,7 @@
 import datetime
 import os
 from multiprocessing import Pool
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
