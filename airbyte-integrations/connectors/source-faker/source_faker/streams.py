@@ -57,7 +57,7 @@ class Products(Stream, IncrementalMixin):
 
         for product in products:
             if product["id"] <= self.count:
-                updated_at = format_airbyte_time(datetime.datetime.now().isoformat())
+                updated_at = format_airbyte_time(datetime.datetime.now())
                 product["updated_at"] = updated_at
                 yield product
 

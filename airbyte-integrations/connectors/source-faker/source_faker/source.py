@@ -28,8 +28,10 @@ class SourceFaker(AbstractSource):
         always_updated: bool = config["always_updated"] if "always_updated" in config else True
         parallelism: int = config["parallelism"] if "parallelism" in config else 4
 
+        # Default to 0 if seed is None to maintain compatibility
+        seed_value = seed if seed is not None else 0
         return [
-            Products(count, seed, parallelism, records_per_slice, always_updated),
-            Users(count, seed, parallelism, records_per_slice, always_updated),
-            Purchases(count, seed, parallelism, records_per_slice, always_updated),
+            Products(count, seed_value, parallelism, records_per_slice, always_updated),
+            Users(count, seed_value, parallelism, records_per_slice, always_updated),
+            Purchases(count, seed_value, parallelism, records_per_slice, always_updated),
         ]
