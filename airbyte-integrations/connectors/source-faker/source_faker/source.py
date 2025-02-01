@@ -4,7 +4,7 @@
 
 # Dummy change to verify CI status
 import logging
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -17,14 +17,28 @@ DEFAULT_COUNT = 1_000
 
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        if type(config["count"]) == int or type(config["count"]) == float:
+        try:
+            if not isinstance(config.get("count"), (int, float)):
+                return False, "Count option is missing"
+
+            # First check basic config
+            if not isinstance(config.get("count"), (int, float)):
+                return False, "Count option is missing"
+
+            # Check if catalog is provided (for testing purposes)
+            if "catalog" in config:
+                catalog = config["catalog"]
+                stream_names = {stream.stream.name for stream in catalog.streams}
+                if "purchases" in stream_names and "users" not in stream_names:
+                    return False, "Cannot sync purchases without users"
+                
             return True, None
-        else:
-            return False, "Count option is missing"
+        except Exception as e:
+            return False, str(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         count: int = config["count"] if "count" in config else DEFAULT_COUNT
-        seed: int = config["seed"] if "seed" in config else None
+        seed: Optional[int] = config["seed"] if "seed" in config else None
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
         always_updated: bool = config["always_updated"] if "always_updated" in config else True
         parallelism: int = config["parallelism"] if "parallelism" in config else 4
