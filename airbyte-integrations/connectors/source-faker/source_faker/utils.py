@@ -4,6 +4,7 @@
 
 import datetime
 import json
+from typing import Union
 
 from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage, EstimateType, TraceType
 
