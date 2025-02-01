@@ -57,7 +57,8 @@ class Products(Stream, IncrementalMixin):
 
         for product in products:
             if product["id"] <= self.count:
-                updated_at = format_airbyte_time(datetime.datetime.now())
+                now = datetime.datetime.now()
+                updated_at = format_airbyte_time(now)
                 product["updated_at"] = updated_at
                 yield product
 
@@ -165,7 +166,7 @@ class Purchases(Stream, IncrementalMixin):
 
         # a fuzzy guess, some users have purchases, some don't
         median_record_byte_size = 230
-        yield generate_estimate(self.name, (self.count) * 1.3, median_record_byte_size)
+        yield generate_estimate(self.name, int(self.count * 1.3), median_record_byte_size)
 
         loop_offset = 0
         with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
