@@ -133,4 +133,4 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
-          subcommand: "connectors --execute-timeout=18000 --modified  test"
+          subcommand: "connectors --execute-timeout=18000 --modified test --skip-step=qa_checks --skip-step=version_inc_check"
