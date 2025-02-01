@@ -151,18 +151,33 @@ class Users(Stream, IncrementalMixin):
                 try:
                     users = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
                     for user in users:
-                        if isinstance(user, AirbyteMessageWithCachedJSON) and user.type == Type.RECORD:
-                            updated_at = user.record.data["updated_at"]
-                            yield user
-                            loop_offset += 1
+                        if not isinstance(user, AirbyteMessageWithCachedJSON):
+                            error_msg = f"Invalid message type received from generator: {type(user)}"
+                            raise AirbyteTracedException(
+                                message=error_msg,
+                                internal_message=error_msg,
+                                failure_type=FailureType.system_error
+                            )
+                        if user.type != Type.RECORD:
+                            error_msg = f"Invalid message type received from generator: {user.type}"
+                            raise AirbyteTracedException(
+                                message=error_msg,
+                                internal_message=error_msg,
+                                failure_type=FailureType.system_error
+                            )
+                        updated_at = user.record.data["updated_at"]
+                        yield user
+                        loop_offset += 1
 
-                            if self.state_checkpoint_interval and loop_offset % self.state_checkpoint_interval == 0:
-                                yield AirbyteMessage(
-                                    type=Type.STATE,
-                                    state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at})
-                                )
+                        if self.state_checkpoint_interval and loop_offset % self.state_checkpoint_interval == 0:
+                            yield AirbyteMessage(
+                                type=Type.STATE,
+                                state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at})
+                            )
                 except Exception as e:
                     error_msg = f"Error generating user records: {str(e)}"
+                    if isinstance(e, AirbyteTracedException):
+                        raise e
                     raise AirbyteTracedException(
                         message=error_msg,
                         internal_message=error_msg,
@@ -229,22 +244,46 @@ class Purchases(Stream, IncrementalMixin):
         with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
             while loop_offset < self.count:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
-                carts = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
-                for purchases in carts:
-                    loop_offset += 1
-                    for purchase in purchases:
-                        if isinstance(purchase, AirbyteMessageWithCachedJSON) and purchase.type == Type.RECORD:
+                try:
+                    carts = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
+                    for purchases in carts:
+                        loop_offset += 1
+                        for purchase in purchases:
+                            if not isinstance(purchase, AirbyteMessageWithCachedJSON):
+                                error_msg = f"Invalid message type received from generator: {type(purchase)}"
+                                raise AirbyteTracedException(
+                                    message=error_msg,
+                                    internal_message=error_msg,
+                                    failure_type=FailureType.system_error
+                                )
+                            if purchase.type != Type.RECORD:
+                                error_msg = f"Invalid message type received from generator: {purchase.type}"
+                                raise AirbyteTracedException(
+                                    message=error_msg,
+                                    internal_message=error_msg,
+                                    failure_type=FailureType.system_error
+                                )
                             updated_at = purchase.record.data["updated_at"]
                             yield purchase
 
-                    if updated_at and self.state_checkpoint_interval and loop_offset % self.state_checkpoint_interval == 0:
-                        state_data = {"seed": self.seed, "updated_at": updated_at}
-                        if loop_offset:
-                            state_data["loop_offset"] = loop_offset
-                        yield AirbyteMessage(
-                            type=Type.STATE,
-                            state=AirbyteStateMessage(data=state_data)
-                        )
+                        if updated_at and self.state_checkpoint_interval and loop_offset % self.state_checkpoint_interval == 0:
+                            state_data = {"seed": self.seed, "updated_at": updated_at}
+                            if loop_offset:
+                                state_data["loop_offset"] = loop_offset
+                            yield AirbyteMessage(
+                                type=Type.STATE,
+                                state=AirbyteStateMessage(data=state_data)
+                            )
+                except Exception as e:
+                    error_msg = f"Error generating purchase records: {str(e)}"
+                    if isinstance(e, AirbyteTracedException):
+                        raise e
+                    raise AirbyteTracedException(
+                        message=error_msg,
+                        internal_message=error_msg,
+                        failure_type=FailureType.system_error,
+                        exception=e
+                    ) from e
 
                 if records_remaining_this_loop == 0:
                     break

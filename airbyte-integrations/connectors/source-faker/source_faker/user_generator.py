@@ -95,8 +95,10 @@ class UserGenerator:
             record = AirbyteRecordMessage(stream=self.stream_name, data=profile, emitted_at=now_millis())
             return AirbyteMessageWithCachedJSON(type=Type.RECORD, record=record)
         except Exception as e:
+            error_msg = f"Error generating user record {user_id}: {str(e)}"
             raise AirbyteTracedException(
-                message=f"Error generating user record {user_id}: {str(e)}",
-                internal_message=str(e),
-                failure_type=FailureType.system_error
+                message=error_msg,
+                internal_message=error_msg,
+                failure_type=FailureType.system_error,
+                exception=e
             )
