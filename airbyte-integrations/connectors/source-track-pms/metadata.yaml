@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: aa0373c1-a7a6-48ff-8277-e5fe6cecff75
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-track-pms
   githubIssueLabel: source-track-pms
   icon: icon.svg

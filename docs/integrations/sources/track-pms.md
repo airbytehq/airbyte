@@ -30,7 +30,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | contacts | id | DefaultPaginator | ✅ |  ✅  |
 | contacts_pii_redacted | id | DefaultPaginator | ✅ |  ✅  |
 | contracts | id | DefaultPaginator | ✅ |  ❌  |
-| crm_company_attachment |  | DefaultPaginator | ✅ |  ❌  |
+| crm_company_attachment | company_id.id | DefaultPaginator | ✅ |  ❌  |
 | crm_tasks | id | DefaultPaginator | ✅ |  ❌  |
 | custom_fields | id | DefaultPaginator | ✅ |  ❌  |
 | date_groups | id | DefaultPaginator | ✅ |  ❌  |
@@ -67,6 +67,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | reservation_cancellation_reasons | id | DefaultPaginator | ✅ |  ❌  |
 | reservation_discount_reasons | id | DefaultPaginator | ✅ |  ❌  |
 | reservation_types | id | DefaultPaginator | ✅ |  ❌  |
+| reservations | id | DefaultPaginator | ✅ |  ✅  |
 | reservations_cancellation_policies | id | DefaultPaginator | ✅ |  ❌  |
 | reservations_guarantee_policies | id | DefaultPaginator | ✅ |  ❌  |
 | reservations_v2 | id | DefaultPaginator | ✅ |  ✅  |
@@ -102,6 +103,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
+| 0.1.1 | 2025-01-16 | Fix housekeeping_work_orders incremental field; add reservations endpoint |
+| 0.1.0 | 2025-01-16 | Move kebab case streams to snake case; alphabetize streams |
 | 0.0.1 | 2024-10-18 | Initial release by [@blakeflei](https://github.com/blakeflei) via Connector Builder|
-| 0.1.0 | 2025-01-16 | move kebab case streams to snake case; alphabetize streams |
 </details>
