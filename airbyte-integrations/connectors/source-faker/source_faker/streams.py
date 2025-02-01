@@ -149,7 +149,22 @@ class Users(Stream, IncrementalMixin):
                     break
 
                 try:
-                    users = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
+                    users = []
+                    for i in range(loop_offset, loop_offset + records_remaining_this_loop):
+                        try:
+                            user = self.generator.generate(i)
+                            users.append(user)
+                        except Exception as e:
+                            error_msg = f"Error generating user record {i}: {str(e)}"
+                            if isinstance(e, AirbyteTracedException):
+                                raise e
+                            raise AirbyteTracedException(
+                                message=error_msg,
+                                internal_message=error_msg,
+                                failure_type=FailureType.system_error,
+                                exception=e
+                            ) from e
+
                     for user in users:
                         if not isinstance(user, AirbyteMessageWithCachedJSON):
                             error_msg = f"Invalid message type received from generator: {type(user)}"
@@ -175,7 +190,7 @@ class Users(Stream, IncrementalMixin):
                                 state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at})
                             )
                 except Exception as e:
-                    error_msg = f"Error generating user records: {str(e)}"
+                    error_msg = f"Error processing user records: {str(e)}"
                     if isinstance(e, AirbyteTracedException):
                         raise e
                     raise AirbyteTracedException(
@@ -245,7 +260,22 @@ class Purchases(Stream, IncrementalMixin):
             while loop_offset < self.count:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
                 try:
-                    carts = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
+                    carts = []
+                    for i in range(loop_offset, loop_offset + records_remaining_this_loop):
+                        try:
+                            cart = self.generator.generate(i)
+                            carts.append(cart)
+                        except Exception as e:
+                            error_msg = f"Error generating purchase records for user {i}: {str(e)}"
+                            if isinstance(e, AirbyteTracedException):
+                                raise e
+                            raise AirbyteTracedException(
+                                message=error_msg,
+                                internal_message=error_msg,
+                                failure_type=FailureType.system_error,
+                                exception=e
+                            ) from e
+
                     for purchases in carts:
                         loop_offset += 1
                         for purchase in purchases:
@@ -275,7 +305,7 @@ class Purchases(Stream, IncrementalMixin):
                                 state=AirbyteStateMessage(data=state_data)
                             )
                 except Exception as e:
-                    error_msg = f"Error generating purchase records: {str(e)}"
+                    error_msg = f"Error processing purchase records: {str(e)}"
                     if isinstance(e, AirbyteTracedException):
                         raise e
                     raise AirbyteTracedException(
