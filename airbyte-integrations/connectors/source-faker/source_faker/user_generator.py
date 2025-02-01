@@ -5,6 +5,9 @@
 import datetime
 from multiprocessing import current_process
 
+# Global variables for mimesis generators
+from typing import cast
+
 from mimesis import Address, Datetime, Person
 from mimesis.locales import Locale
 
@@ -14,8 +17,6 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureTy
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis
 
-# Global variables for mimesis generators
-from typing import cast
 
 person: Person | None = None
 address: Address | None = None
@@ -48,13 +49,15 @@ class UserGenerator:
             dt = Datetime(seed=seed_with_offset)
         except Exception as e:
             error_msg = f"Error initializing generators in worker process: {str(e)}"
-            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e)
+            raise AirbyteTracedException(
+                message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e, error_code="faker-001"
+            )
 
     def generate(self, user_id: int):
         try:
             if not all([person, address, dt]):
                 self.prepare()
-            
+
             # After prepare(), these should never be None
             person_gen = cast(Person, person)
             address_gen = cast(Address, address)
@@ -99,4 +102,6 @@ class UserGenerator:
             return AirbyteMessageWithCachedJSON(type=Type.RECORD, record=record)
         except Exception as e:
             error_msg = f"Error generating user record {user_id}: {str(e)}"
-            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e)
+            raise AirbyteTracedException(
+                message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e, error_code="faker-002"
+            )

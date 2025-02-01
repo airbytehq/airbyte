@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from logging import Logger
+
 import jsonschema
 import pytest
 from source_faker import SourceFaker
@@ -9,14 +11,12 @@ from source_faker import SourceFaker
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteMessageSerializer,
+    AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
-    AirbyteStream,
     Type,
 )
 
-
-from logging import Logger
 
 class MockLogger(Logger):
     def debug(self, msg: str, *args, **kwargs) -> None:
