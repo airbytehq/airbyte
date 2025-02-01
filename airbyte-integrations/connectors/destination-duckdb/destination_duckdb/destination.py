@@ -141,7 +141,7 @@ class DestinationDuckdb(Destination):
             DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
 
     @staticmethod
-    def _safe_write(*, con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name: str, stream_name: str):
+    def _safe_write(*, con: duckdb.DuckDBPyConnection, buffer: Mapping[str, Mapping[str, List[Any]]], schema_name: str, stream_name: str):
         table_name = f"_airbyte_raw_{stream_name}"
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
@@ -176,7 +176,7 @@ class DestinationDuckdb(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            path = config.get("destination_path")
+            path = str(config.get("destination_path", ""))
             path = self._get_destination_path(path)
 
             if path.startswith("/local"):
