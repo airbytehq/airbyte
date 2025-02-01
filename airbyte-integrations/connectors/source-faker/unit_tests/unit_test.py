@@ -16,22 +16,24 @@ from airbyte_cdk.models import (
 )
 
 
-class MockLogger:
-    def debug(a, b, **kwargs):
+from logging import Logger
+
+class MockLogger(Logger):
+    def debug(self, msg: str, *args, **kwargs) -> None:
         return None
 
-    def info(a, b, **kwargs):
+    def info(self, msg: str, *args, **kwargs) -> None:
         return None
 
-    def exception(a, b, **kwargs):
-        print(b)
+    def exception(self, msg: str, *args, **kwargs) -> None:
+        print(msg)
         return None
 
-    def isEnabledFor(a, b, **kwargs):
+    def isEnabledFor(self, level: int) -> bool:
         return False
 
 
-logger = MockLogger()
+logger = MockLogger("test_logger")
 
 
 def schemas_are_valid():
@@ -93,8 +95,8 @@ def test_read_small_random_data():
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=["incremental"]),
                 sync_mode="incremental",
-                destination_sync_mode="overwrite"
-            )
+                destination_sync_mode="overwrite",
+            ),
         ]
     )
     state = {}
@@ -124,8 +126,8 @@ def test_read_always_updated():
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=["incremental"]),
                 sync_mode="incremental",
-                destination_sync_mode="overwrite"
-            )
+                destination_sync_mode="overwrite",
+            ),
         ]
     )
     state = {}
@@ -157,8 +159,8 @@ def test_read_products():
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="products", json_schema={}, supported_sync_modes=["full_refresh"]),
                 sync_mode="incremental",
-                destination_sync_mode="overwrite"
-            )
+                destination_sync_mode="overwrite",
+            ),
         ]
     )
     state = {}
@@ -188,13 +190,13 @@ def test_read_big_random_data():
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=["incremental"]),
                 sync_mode="incremental",
-                destination_sync_mode="overwrite"
+                destination_sync_mode="overwrite",
             ),
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="products", json_schema={}, supported_sync_modes=["full_refresh"]),
                 sync_mode="incremental",
-                destination_sync_mode="overwrite"
-            )
+                destination_sync_mode="overwrite",
+            ),
         ]
     )
     state = {}
@@ -220,18 +222,18 @@ def test_with_purchases():
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=["incremental"]),
                 sync_mode="incremental",
-                destination_sync_mode="overwrite"
+                destination_sync_mode="overwrite",
             ),
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="products", json_schema={}, supported_sync_modes=["full_refresh"]),
                 sync_mode="incremental",
-                destination_sync_mode="overwrite"
+                destination_sync_mode="overwrite",
             ),
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="purchases", json_schema={}, supported_sync_modes=["incremental"]),
                 sync_mode="incremental",
-                destination_sync_mode="overwrite"
-            )
+                destination_sync_mode="overwrite",
+            ),
         ]
     )
     state = {}
@@ -261,8 +263,8 @@ def test_read_with_seed():
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=["incremental"]),
                 sync_mode="incremental",
-                destination_sync_mode="overwrite"
-            )
+                destination_sync_mode="overwrite",
+            ),
         ]
     )
     state = {}
@@ -280,8 +282,8 @@ def test_ensure_no_purchases_without_users():
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(name="purchases", json_schema={}, supported_sync_modes=["incremental"]),
                 sync_mode="incremental",
-                destination_sync_mode="overwrite"
-            )
+                destination_sync_mode="overwrite",
+            ),
         ]
     )
     config = {"count": 100, "parallelism": 1, "catalog": catalog}
