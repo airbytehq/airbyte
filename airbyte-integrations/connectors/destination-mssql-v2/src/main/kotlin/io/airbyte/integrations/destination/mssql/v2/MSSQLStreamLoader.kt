@@ -20,6 +20,7 @@ class MSSQLStreamLoader(
     override val stream: DestinationStream,
     private val sqlBuilder: MSSQLQueryBuilder,
 ) : StreamLoader {
+    private val recordCommitBatchSize = 1000
 
     override suspend fun start() {
         ensureTableExists(dataSource)
@@ -38,16 +39,22 @@ class MSSQLStreamLoader(
         endOfStream: Boolean
     ): Batch {
         dataSource.connection.use { connection ->
+            connection.autoCommit = false
             sqlBuilder.getFinalTableInsertColumnHeader().executeUpdate(connection) { statement ->
-                records.forEach { record ->
-                    sqlBuilder.populateStatement(statement, record, sqlBuilder.finalTableSchema)
+                records.withIndex().forEach { r ->
+                    sqlBuilder.populateStatement(statement, r.value, sqlBuilder.finalTableSchema)
                     statement.addBatch()
+                    if (r.index % recordCommitBatchSize == 0) {
+                        statement.executeBatch()
+                        connection.commit()
+                    }
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
             if (sqlBuilder.hasCdc) {
                 sqlBuilder.deleteCdc(connection)
             }
+            connection.commit()
         }
         return SimpleBatch(Batch.State.COMPLETE)
     }
