@@ -9,7 +9,7 @@ from collections.abc import Iterable, Mapping, MutableMapping
 from multiprocessing import Pool
 from typing import Any
 
-from airbyte_cdk.models import (
+from airbyte_cdk.models.airbyte_protocol import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
@@ -19,7 +19,8 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.utils.traced_exception.failure_type import FailureType
 
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .purchase_generator import PurchaseGenerator
@@ -28,8 +29,13 @@ from .utils import format_airbyte_time, generate_estimate, now_millis, read_json
 
 
 class Products(Stream, IncrementalMixin):
-    primary_key = "id"
-    cursor_field = "updated_at"
+    @property
+    def primary_key(self) -> str:
+        return "id"
+
+    @property
+    def cursor_field(self) -> str:
+        return "updated_at"
 
     def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
         super().__init__(**kwargs)
@@ -62,32 +68,49 @@ class Products(Stream, IncrementalMixin):
         stream_slice: Mapping[str, Any] | None = None,
         stream_state: Mapping[str, Any] | None = None,
     ) -> Iterable[StreamData]:
-        if stream_state and "updated_at" in stream_state and not self.always_updated:
-            return
+        try:
+            if stream_state and "updated_at" in stream_state and not self.always_updated:
+                return
 
-        products = self.load_products()
-        updated_at = ""
+            products = self.load_products()
+            updated_at = ""
 
-        median_record_byte_size = 180
-        rows_to_emit = len(products)
-        trace_message = generate_estimate(self.name, rows_to_emit, median_record_byte_size)
-        yield AirbyteMessage(type=Type.TRACE, trace=trace_message)
+            median_record_byte_size = 180
+            rows_to_emit = len(products)
+            trace_message = generate_estimate(self.name, rows_to_emit, median_record_byte_size)
+            yield AirbyteMessage(type=Type.TRACE, trace=trace_message)
 
-        for product in products:
-            if product["id"] <= self.count:
-                now = datetime.datetime.now()
-                updated_at = format_airbyte_time(now)
-                product["updated_at"] = updated_at
-                record = AirbyteRecordMessage(stream=self.name, data=product, emitted_at=now_millis())
-                yield AirbyteMessage(type=Type.RECORD, record=record)
+            for product in products:
+                if product["id"] <= self.count:
+                    now = datetime.datetime.now()
+                    updated_at = format_airbyte_time(now)
+                    product["updated_at"] = updated_at
+                    record = AirbyteRecordMessage(stream=self.name, data=product, emitted_at=now_millis())
+                    yield AirbyteMessage(type=Type.RECORD, record=record)
 
-                if self.state_checkpoint_interval and product["id"] % self.state_checkpoint_interval == 0:
-                    yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at}))
+                    if self.state_checkpoint_interval and product["id"] % self.state_checkpoint_interval == 0:
+                        yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at}))
+        except Exception as e:
+            error_msg = f"Error processing product records: {str(e)}"
+            if isinstance(e, AirbyteTracedException):
+                raise AirbyteTracedException(
+                    message=error_msg if not getattr(e, 'message', None) else e.message,
+                    internal_message=error_msg if not getattr(e, 'internal_message', None) else e.internal_message,
+                    failure_type=getattr(e, 'failure_type', FailureType.system_error)
+                )
+            raise AirbyteTracedException(
+                message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e
+            ) from e
 
 
 class Users(Stream, IncrementalMixin):
-    primary_key = "id"
-    cursor_field = "updated_at"
+    @property
+    def primary_key(self) -> str:
+        return "id"
+
+    @property
+    def cursor_field(self) -> str:
+        return "updated_at"
 
     def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
         super().__init__(**kwargs)
@@ -147,11 +170,7 @@ class Users(Stream, IncrementalMixin):
                         user = self.generator.generate(i)
                         if not isinstance(user, AirbyteMessageWithCachedJSON):
                             error_msg = f"Invalid message type received from generator for user {i}: {type(user)}"
-                            raise AirbyteTracedException(
-                                message=error_msg, 
-                                internal_message=error_msg, 
-                                failure_type=FailureType.system_error
-                            )
+                            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error)
                         users.append(user)
                     except Exception as e:
                         error_msg = f"Error generating user record {i}: {str(e)}"
@@ -175,9 +194,10 @@ class Users(Stream, IncrementalMixin):
                         raise AirbyteTracedException(
                             message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error
                         )
-                    updated_at = user.record.data["updated_at"]
-                    yield user
-                    loop_offset += 1
+                    if user and user.record and user.record.data:
+                        updated_at = user.record.data["updated_at"]
+                        yield user
+                        loop_offset += 1
 
                     if self.state_checkpoint_interval and loop_offset % self.state_checkpoint_interval == 0:
                         yield AirbyteMessage(
@@ -186,13 +206,11 @@ class Users(Stream, IncrementalMixin):
             except Exception as e:
                 error_msg = f"Error processing user records: {str(e)}"
                 if isinstance(e, AirbyteTracedException):
-                    if e.message:
-                        raise e
-                    # Create new exception with proper message if original had None
+                    # Always ensure we have a proper error message
                     raise AirbyteTracedException(
-                        message=error_msg,
-                        internal_message=error_msg,
-                        failure_type=e.failure_type if hasattr(e, 'failure_type') else FailureType.system_error
+                        message=error_msg if not getattr(e, 'message', None) else e.message,
+                        internal_message=error_msg if not getattr(e, 'internal_message', None) else e.internal_message,
+                        failure_type=getattr(e, 'failure_type', FailureType.system_error)
                     )
                 raise AirbyteTracedException(
                     message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e
@@ -203,8 +221,13 @@ class Users(Stream, IncrementalMixin):
 
 
 class Purchases(Stream, IncrementalMixin):
-    primary_key = "id"
-    cursor_field = "updated_at"
+    @property
+    def primary_key(self) -> str:
+        return "id"
+
+    @property
+    def cursor_field(self) -> str:
+        return "updated_at"
 
     def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
         super().__init__(**kwargs)
@@ -281,8 +304,9 @@ class Purchases(Stream, IncrementalMixin):
                                 raise AirbyteTracedException(
                                     message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error
                                 )
-                            updated_at = purchase.record.data["updated_at"]
-                            yield purchase
+                            if purchase and purchase.record and purchase.record.data:
+                                updated_at = purchase.record.data["updated_at"]
+                                yield purchase
 
                         if updated_at and self.state_checkpoint_interval and loop_offset % self.state_checkpoint_interval == 0:
                             state_data = {"seed": self.seed, "updated_at": updated_at}
@@ -292,7 +316,11 @@ class Purchases(Stream, IncrementalMixin):
                 except Exception as e:
                     error_msg = f"Error processing purchase records: {str(e)}"
                     if isinstance(e, AirbyteTracedException):
-                        raise e
+                        raise AirbyteTracedException(
+                            message=error_msg if not getattr(e, 'message', None) else e.message,
+                            internal_message=error_msg if not getattr(e, 'internal_message', None) else e.internal_message,
+                            failure_type=getattr(e, 'failure_type', FailureType.system_error)
+                        )
                     raise AirbyteTracedException(
                         message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e
                     ) from e
