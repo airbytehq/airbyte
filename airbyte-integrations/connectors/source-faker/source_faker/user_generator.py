@@ -48,12 +48,7 @@ class UserGenerator:
             dt = Datetime(seed=seed_with_offset)
         except Exception as e:
             error_msg = f"Error initializing generators in worker process: {str(e)}"
-            raise AirbyteTracedException(
-                message=error_msg,
-                internal_message=error_msg,
-                failure_type=FailureType.system_error,
-                exception=e
-            )
+            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e)
 
     def generate(self, user_id: int):
         try:
@@ -104,9 +99,4 @@ class UserGenerator:
             return AirbyteMessageWithCachedJSON(type=Type.RECORD, record=record)
         except Exception as e:
             error_msg = f"Error generating user record {user_id}: {str(e)}"
-            raise AirbyteTracedException(
-                message=error_msg,
-                internal_message=error_msg,
-                failure_type=FailureType.system_error,
-                exception=e
-            )
+            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e)

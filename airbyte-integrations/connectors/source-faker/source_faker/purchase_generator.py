@@ -45,10 +45,10 @@ class PurchaseGenerator:
     ) -> datetime.datetime:
         if not all([dt, numeric]):
             self.prepare()
-            
+
         # After prepare(), these should never be None
         numeric_gen = cast(Numeric, numeric)
-            
+
         time_between_dates = end_date - start_date
         days_between_dates = time_between_dates.days
         if days_between_dates < 2:

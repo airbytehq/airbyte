@@ -5,8 +5,8 @@
 import datetime
 import logging
 import os
-from multiprocessing import Pool
 from collections.abc import Iterable, Mapping, MutableMapping
+from multiprocessing import Pool
 from typing import Any
 
 from airbyte_cdk.models import (
@@ -16,14 +16,12 @@ from airbyte_cdk.models import (
     AirbyteStream,
     Type,
 )
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
-from .utils import now_millis
-
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
 from .utils import format_airbyte_time, generate_estimate, now_millis, read_json

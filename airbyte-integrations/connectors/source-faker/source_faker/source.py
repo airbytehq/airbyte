@@ -32,7 +32,6 @@ class SourceFaker(AbstractSource):
                 stream_names = {stream.stream.name for stream in catalog.streams}
                 if "purchases" in stream_names and "users" not in stream_names:
                     return False, "Cannot sync purchases without users"
-                
             return True, None
         except Exception as e:
             return False, str(e)
