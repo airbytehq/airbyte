@@ -133,52 +133,70 @@ class Users(Stream, IncrementalMixin):
         yield AirbyteMessage(type=Type.TRACE, trace=trace_message)
 
         loop_offset = 0
-        with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
-            while loop_offset < self.count:
-                records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
-                if records_remaining_this_loop <= 0:
-                    break
+        # Initialize generator in the main process
+        self.generator.prepare()
+        while loop_offset < self.count:
+            records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
+            if records_remaining_this_loop <= 0:
+                break
 
-                try:
-                    users = []
-                    for i in range(loop_offset, loop_offset + records_remaining_this_loop):
-                        try:
-                            user = self.generator.generate(i)
-                            users.append(user)
-                        except Exception as e:
-                            error_msg = f"Error generating user record {i}: {str(e)}"
-                            if isinstance(e, AirbyteTracedException):
-                                raise e
-                            raise AirbyteTracedException(
-                                message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e
-                            ) from e
-
-                    for user in users:
+            try:
+                users = []
+                for i in range(loop_offset, loop_offset + records_remaining_this_loop):
+                    try:
+                        user = self.generator.generate(i)
                         if not isinstance(user, AirbyteMessageWithCachedJSON):
-                            error_msg = f"Invalid message type received from generator: {type(user)}"
+                            error_msg = f"Invalid message type received from generator for user {i}: {type(user)}"
                             raise AirbyteTracedException(
-                                message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error
+                                message=error_msg, 
+                                internal_message=error_msg, 
+                                failure_type=FailureType.system_error
                             )
-                        if user.type != Type.RECORD:
-                            error_msg = f"Invalid message type received from generator: {user.type}"
-                            raise AirbyteTracedException(
-                                message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error
-                            )
-                        updated_at = user.record.data["updated_at"]
-                        yield user
-                        loop_offset += 1
+                        users.append(user)
+                    except Exception as e:
+                        error_msg = f"Error generating user record {i}: {str(e)}"
+                        if isinstance(e, AirbyteTracedException):
+                            raise e
+                        raise AirbyteTracedException(
+                            message=error_msg, 
+                            internal_message=error_msg, 
+                            failure_type=FailureType.system_error, 
+                            exception=e
+                        ) from e
 
-                        if self.state_checkpoint_interval and loop_offset % self.state_checkpoint_interval == 0:
-                            yield AirbyteMessage(
-                                type=Type.STATE, state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at})
-                            )
-                except Exception as e:
-                    error_msg = f"Error processing user records: {str(e)}"
-                    if isinstance(e, AirbyteTracedException):
+                for user in users:
+                    if not isinstance(user, AirbyteMessageWithCachedJSON):
+                        error_msg = f"Invalid message type received from generator: {type(user)}"
+                        raise AirbyteTracedException(
+                            message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error
+                        )
+                    if user.type != Type.RECORD:
+                        error_msg = f"Invalid message type received from generator: {user.type}"
+                        raise AirbyteTracedException(
+                            message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error
+                        )
+                    updated_at = user.record.data["updated_at"]
+                    yield user
+                    loop_offset += 1
+
+                    if self.state_checkpoint_interval and loop_offset % self.state_checkpoint_interval == 0:
+                        yield AirbyteMessage(
+                            type=Type.STATE, state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at})
+                        )
+            except Exception as e:
+                error_msg = f"Error processing user records: {str(e)}"
+                if isinstance(e, AirbyteTracedException):
+                    if e.message:
                         raise e
+                    # Create new exception with proper message if original had None
                     raise AirbyteTracedException(
-                        message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e
-                    ) from e
+                        message=error_msg,
+                        internal_message=error_msg,
+                        failure_type=e.failure_type if hasattr(e, 'failure_type') else FailureType.system_error
+                    )
+                raise AirbyteTracedException(
+                    message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e
+                ) from e
 
             if updated_at:
                 yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at}))
