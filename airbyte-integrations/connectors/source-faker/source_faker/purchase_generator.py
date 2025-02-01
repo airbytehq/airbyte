@@ -4,13 +4,15 @@
 
 import datetime
 from multiprocessing import current_process
-from mimesis import Datetime, Numeric
 from typing import cast
+
+from mimesis import Datetime, Numeric
 
 from airbyte_cdk.models import AirbyteRecordMessage, Type
 
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis
+
 
 # Global variables for mimesis generators
 dt: Datetime | None = None

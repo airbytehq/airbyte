@@ -78,18 +78,11 @@ class Products(Stream, IncrementalMixin):
                 now = datetime.datetime.now()
                 updated_at = format_airbyte_time(now)
                 product["updated_at"] = updated_at
-                record = AirbyteRecordMessage(
-                    stream=self.name,
-                    data=product,
-                    emitted_at=now_millis()
-                )
+                record = AirbyteRecordMessage(stream=self.name, data=product, emitted_at=now_millis())
                 yield AirbyteMessage(type=Type.RECORD, record=record)
 
                 if self.state_checkpoint_interval and product["id"] % self.state_checkpoint_interval == 0:
-                    yield AirbyteMessage(
-                        type=Type.STATE,
-                        state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at})
-                    )
+                    yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at}))
 
 
 class Users(Stream, IncrementalMixin):
@@ -157,26 +150,19 @@ class Users(Stream, IncrementalMixin):
                             if isinstance(e, AirbyteTracedException):
                                 raise e
                             raise AirbyteTracedException(
-                                message=error_msg,
-                                internal_message=error_msg,
-                                failure_type=FailureType.system_error,
-                                exception=e
+                                message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e
                             ) from e
 
                     for user in users:
                         if not isinstance(user, AirbyteMessageWithCachedJSON):
                             error_msg = f"Invalid message type received from generator: {type(user)}"
                             raise AirbyteTracedException(
-                                message=error_msg,
-                                internal_message=error_msg,
-                                failure_type=FailureType.system_error
+                                message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error
                             )
                         if user.type != Type.RECORD:
                             error_msg = f"Invalid message type received from generator: {user.type}"
                             raise AirbyteTracedException(
-                                message=error_msg,
-                                internal_message=error_msg,
-                                failure_type=FailureType.system_error
+                                message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error
                             )
                         updated_at = user.record.data["updated_at"]
                         yield user
@@ -184,25 +170,18 @@ class Users(Stream, IncrementalMixin):
 
                         if self.state_checkpoint_interval and loop_offset % self.state_checkpoint_interval == 0:
                             yield AirbyteMessage(
-                                type=Type.STATE,
-                                state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at})
+                                type=Type.STATE, state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at})
                             )
                 except Exception as e:
                     error_msg = f"Error processing user records: {str(e)}"
                     if isinstance(e, AirbyteTracedException):
                         raise e
                     raise AirbyteTracedException(
-                        message=error_msg,
-                        internal_message=error_msg,
-                        failure_type=FailureType.system_error,
-                        exception=e
+                        message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e
                     ) from e
 
             if updated_at:
-                yield AirbyteMessage(
-                    type=Type.STATE,
-                    state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at})
-                )
+                yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"seed": self.seed, "updated_at": updated_at}))
 
 
 class Purchases(Stream, IncrementalMixin):
@@ -268,10 +247,7 @@ class Purchases(Stream, IncrementalMixin):
                             if isinstance(e, AirbyteTracedException):
                                 raise e
                             raise AirbyteTracedException(
-                                message=error_msg,
-                                internal_message=error_msg,
-                                failure_type=FailureType.system_error,
-                                exception=e
+                                message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e
                             ) from e
 
                     for purchases in carts:
@@ -280,16 +256,12 @@ class Purchases(Stream, IncrementalMixin):
                             if not isinstance(purchase, AirbyteMessageWithCachedJSON):
                                 error_msg = f"Invalid message type received from generator: {type(purchase)}"
                                 raise AirbyteTracedException(
-                                    message=error_msg,
-                                    internal_message=error_msg,
-                                    failure_type=FailureType.system_error
+                                    message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error
                                 )
                             if purchase.type != Type.RECORD:
                                 error_msg = f"Invalid message type received from generator: {purchase.type}"
                                 raise AirbyteTracedException(
-                                    message=error_msg,
-                                    internal_message=error_msg,
-                                    failure_type=FailureType.system_error
+                                    message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error
                                 )
                             updated_at = purchase.record.data["updated_at"]
                             yield purchase
@@ -298,19 +270,13 @@ class Purchases(Stream, IncrementalMixin):
                             state_data = {"seed": self.seed, "updated_at": updated_at}
                             if loop_offset:
                                 state_data["loop_offset"] = loop_offset
-                            yield AirbyteMessage(
-                                type=Type.STATE,
-                                state=AirbyteStateMessage(data=state_data)
-                            )
+                            yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state_data))
                 except Exception as e:
                     error_msg = f"Error processing purchase records: {str(e)}"
                     if isinstance(e, AirbyteTracedException):
                         raise e
                     raise AirbyteTracedException(
-                        message=error_msg,
-                        internal_message=error_msg,
-                        failure_type=FailureType.system_error,
-                        exception=e
+                        message=error_msg, internal_message=error_msg, failure_type=FailureType.system_error, exception=e
                     ) from e
 
                 if records_remaining_this_loop == 0:
@@ -320,7 +286,4 @@ class Purchases(Stream, IncrementalMixin):
                 state_data = {"seed": self.seed, "updated_at": updated_at}
                 if loop_offset:
                     state_data["loop_offset"] = loop_offset
-                yield AirbyteMessage(
-                    type=Type.STATE,
-                    state=AirbyteStateMessage(data=state_data)
-                )
+                yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state_data))
