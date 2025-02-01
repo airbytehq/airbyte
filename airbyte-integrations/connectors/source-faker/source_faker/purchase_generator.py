@@ -5,11 +5,16 @@
 import datetime
 from multiprocessing import current_process
 from mimesis import Datetime, Numeric
+from typing import cast
 
 from airbyte_cdk.models import AirbyteRecordMessage, Type
 
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis
+
+# Global variables for mimesis generators
+dt: Datetime | None = None
+numeric: Numeric | None = None
 
 
 class PurchaseGenerator:
@@ -51,6 +56,12 @@ class PurchaseGenerator:
         Because we are doing this work in parallel processes, we need a deterministic way to know what a purchase's ID should be given on the input of a user_id.
         tldr; Every 10 user_ids produce 10 purchases.  User ID x5 has no purchases, User ID mod x7 has 2, and everyone else has 1
         """
+        if not all([dt, numeric]):
+            self.prepare()
+
+        # After prepare(), these should never be None
+        dt_gen = cast(Datetime, dt)
+        numeric_gen = cast(Numeric, numeric)
 
         purchases: list[dict] = []
         last_user_id_digit = int(repr(user_id)[-1])
@@ -69,19 +80,19 @@ class PurchaseGenerator:
 
         while purchase_count > 0:
             id = user_id + i + 1 - id_offset
-            time_a = dt.datetime()
-            time_b = dt.datetime()
+            time_a = dt_gen.datetime()
+            time_b = dt_gen.datetime()
             updated_at = format_airbyte_time(datetime.datetime.now())
             created_at = time_a if time_a <= time_b else time_b
-            product_id = numeric.integer_number(1, total_products)
+            product_id = numeric_gen.integer_number(1, total_products)
             added_to_cart_at = self.random_date_in_range(created_at)
             purchased_at = (
                 self.random_date_in_range(added_to_cart_at)
-                if added_to_cart_at is not None and numeric.integer_number(1, 100) <= 70
+                if added_to_cart_at is not None and numeric_gen.integer_number(1, 100) <= 70
                 else None
             )  # 70% likely to purchase the item in the cart
             returned_at = (
-                self.random_date_in_range(purchased_at) if purchased_at is not None and numeric.integer_number(1, 100) <= 15 else None
+                self.random_date_in_range(purchased_at) if purchased_at is not None and numeric_gen.integer_number(1, 100) <= 15 else None
             )  # 15% likely to return the item
 
             purchase = {

@@ -15,9 +15,11 @@ from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis
 
 # Global variables for mimesis generators
-person = None
-address = None
-dt = None
+from typing import cast
+
+person: Person | None = None
+address: Address | None = None
+dt: Datetime | None = None
 
 
 class UserGenerator:
@@ -49,41 +51,46 @@ class UserGenerator:
         try:
             if not all([person, address, dt]):
                 self.prepare()
+            
+            # After prepare(), these should never be None
+            person_gen = cast(Person, person)
+            address_gen = cast(Address, address)
+            dt_gen = cast(Datetime, dt)
 
             # faker doesn't always produce unique email addresses, so to enforce uniqueness, we will append the user_id to the prefix
-            email_parts = person.email().split("@")
+            email_parts = person_gen.email().split("@")
             email = f"{email_parts[0]}+{user_id + 1}@{email_parts[1]}"
 
             profile = {
                 "id": user_id + 1,
-                "created_at": format_airbyte_time(dt.datetime()),
+                "created_at": format_airbyte_time(dt_gen.datetime()),
                 "updated_at": format_airbyte_time(datetime.datetime.now()),
-                "name": person.name(),
-                "title": person.title(),
-                "age": person.age(),
+                "name": person_gen.name(),
+                "title": person_gen.title(),
+                "age": person_gen.age(),
                 "email": email,
-                "telephone": person.telephone(),
-                "gender": person.gender(),
-                "language": person.language(),
-                "academic_degree": person.academic_degree(),
-                "nationality": person.nationality(),
-                "occupation": person.occupation(),
-                "height": person.height(),
-                "blood_type": person.blood_type(),
-                "weight": person.weight(),
+                "telephone": person_gen.telephone(),
+                "gender": person_gen.gender(),
+                "language": person_gen.language(),
+                "academic_degree": person_gen.academic_degree(),
+                "nationality": person_gen.nationality(),
+                "occupation": person_gen.occupation(),
+                "height": person_gen.height(),
+                "blood_type": person_gen.blood_type(),
+                "weight": person_gen.weight(),
                 "address": {
-                    "street_number": address.street_number(),
-                    "street_name": address.street_name(),
-                    "city": address.city(),
-                    "state": address.state(),
-                    "province": address.province(),
-                    "postal_code": address.postal_code(),
-                    "country_code": address.country_code(),
+                    "street_number": address_gen.street_number(),
+                    "street_name": address_gen.street_name(),
+                    "city": address_gen.city(),
+                    "state": address_gen.state(),
+                    "province": address_gen.province(),
+                    "postal_code": address_gen.postal_code(),
+                    "country_code": address_gen.country_code(),
                 },
             }
 
             while not profile["created_at"]:
-                profile["created_at"] = format_airbyte_time(dt.datetime())
+                profile["created_at"] = format_airbyte_time(dt_gen.datetime())
 
             record = AirbyteRecordMessage(stream=self.stream_name, data=profile, emitted_at=now_millis())
             return AirbyteMessageWithCachedJSON(type=Type.RECORD, record=record)

@@ -5,7 +5,7 @@
 # Dummy change to verify CI status
 import logging
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, cast
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
