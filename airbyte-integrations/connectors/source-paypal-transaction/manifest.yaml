@@ -294,10 +294,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config.get('dispute_start_date') if
-            config.get('dispute_start_date') else (now_utc() -
-            duration('P179D')), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z' }}
+          datetime: "{{ format_datetime(config.get('dispute_start_date') if config.get('dispute_start_date') and day_delta(-180) <= config.get('dispute_start_date') else day_delta(-180), '%Y-%m-%dT%H:%M:%S.%fZ')}}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_time_option:
           type: RequestOption
@@ -309,10 +306,7 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config.get('dispute_end_date') if
-            config.get('dispute_end_date') else (now_utc() - duration('PT30M')),
-            '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z'}}
+          datetime: "{{ format_datetime(config.get('dispute_end_date') if config.get('dispute_end_date') and day_delta(-180) <= config.get('dispute_end_date') else (now_utc() - duration('PT30M')), '%Y-%m-%dT%H:%M:%S.%fZ')}}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: P{{ config.get('time_window', 7) }}D
         cursor_granularity: PT1S
