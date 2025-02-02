@@ -6,6 +6,7 @@
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification, TState
+from airbyte_cdk.models import AuthFlowType
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from source_google_drive.spec import SourceGoogleDriveSpec
@@ -32,7 +33,7 @@ class SourceGoogleDrive(FileBasedSource):
             documentationUrl=self.spec_class.documentation_url(),
             connectionSpecification=self.spec_class.schema(),
             advanced_auth=AdvancedAuth(
-                auth_flow_type="oauth2.0",
+                auth_flow_type=AuthFlowType.oauth2_0,
                 predicate_key=["credentials", "auth_type"],
                 predicate_value="Client",
                 oauth_config_specification=OAuthConfigSpecification(

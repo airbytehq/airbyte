@@ -2,21 +2,21 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "lastModified": "2050-01-01" },
+      "stream_state": { "lastModified": "2050-01-01T00:00:00+0000" },
       "stream_descriptor": { "name": "account_users" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "lastModified": "2050-01-01" },
+      "stream_state": { "lastModified": "2050-01-02" },
       "stream_descriptor": { "name": "campaign_groups" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "lastModified": "2050-01-01" },
+      "stream_state": { "lastModified": "2050-01-03" },
       "stream_descriptor": { "name": "campaigns" }
     }
   },
@@ -30,84 +30,84 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-04" },
       "stream_descriptor": { "name": "ad_campaign_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-05" },
       "stream_descriptor": { "name": "ad_creative_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-06" },
       "stream_descriptor": { "name": "ad_impression_device_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-07" },
       "stream_descriptor": { "name": "ad_member_company_size_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-08" },
       "stream_descriptor": { "name": "ad_member_country_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-09" },
       "stream_descriptor": { "name": "ad_member_job_function_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-10" },
       "stream_descriptor": { "name": "ad_member_job_title_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-11" },
       "stream_descriptor": { "name": "ad_member_industry_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-12" },
       "stream_descriptor": { "name": "ad_member_seniority_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-13" },
       "stream_descriptor": { "name": "ad_member_region_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "end_date": "2050-01-01" },
+      "stream_state": { "end_date": "2050-01-14" },
       "stream_descriptor": { "name": "ad_member_company_analytics" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "lastModified": 2524608000000 },
+      "stream_state": { "lastModified": 2524608000001 },
       "stream_descriptor": { "name": "conversions" }
     }
   }

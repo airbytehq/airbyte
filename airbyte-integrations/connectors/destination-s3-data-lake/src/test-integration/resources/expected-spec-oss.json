@@ -86,9 +86,14 @@
               "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
               "airbyte_secret" : true,
               "order" : 2
+            },
+            "namespace" : {
+              "type" : "string",
+              "description" : "The Nessie namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
+              "title" : "Namespace"
             }
           },
-          "required" : [ "catalog_type", "server_uri" ]
+          "required" : [ "catalog_type", "server_uri", "namespace" ]
         }, {
           "title" : "Glue Catalog",
           "type" : "object",
@@ -110,11 +115,40 @@
               "type" : "string",
               "description" : "The Role ARN.",
               "title" : "Role ARN"
+            },
+            "database_name" : {
+              "type" : "string",
+              "description" : "The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`",
+              "title" : "Database Name"
             }
           },
-          "required" : [ "catalog_type", "glue_id" ]
+          "required" : [ "catalog_type", "glue_id", "database_name" ]
+        }, {
+          "title" : "Rest Catalog",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for connecting to a REST catalog.",
+          "properties" : {
+            "catalog_type" : {
+              "type" : "string",
+              "enum" : [ "REST" ],
+              "default" : "REST"
+            },
+            "server_uri" : {
+              "type" : "string",
+              "description" : "The base URL of the Rest server used to connect to the Rest catalog.",
+              "title" : "Rest Server URI",
+              "order" : 1
+            },
+            "namespace" : {
+              "type" : "string",
+              "description" : "The namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
+              "title" : "Namespace"
+            }
+          },
+          "required" : [ "catalog_type", "server_uri", "namespace" ]
         } ],
-        "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE or GLUE) and its associated configuration.",
+        "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST) and its associated configuration.",
         "title" : "Catalog Type",
         "always_show" : true,
         "order" : 7,
