@@ -2,94 +2,44 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
-from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
-from requests import HTTPError
+from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk import TState
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
-from airbyte_protocol.models import ConnectorSpecification
-from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
-from source_amazon_seller_partner.streams import (
-    BrandAnalyticsMarketBasketReports,
-    BrandAnalyticsRepeatPurchaseReports,
-    BrandAnalyticsSearchTermsReports,
-    FbaAfnInventoryByCountryReports,
-    FbaAfnInventoryReports,
-    FbaCustomerReturnsReports,
-    FbaEstimatedFbaFeesTxtReport,
-    FbaFulfillmentCustomerShipmentPromotionReport,
-    FbaInventoryPlaningReport,
-    FbaMyiUnsuppressedInventoryReport,
-    FbaOrdersReports,
-    FbaReimbursementsReports,
-    FbaReplacementsReports,
-    FbaShipmentsReports,
-    FbaSnsForecastReport,
-    FbaSnsPerformanceReport,
-    FbaStorageFeesReports,
-    FlatFileActionableOrderDataShipping,
-    FlatFileArchivedOrdersDataByOrderDate,
-    FlatFileOpenListingsReports,
-    FlatFileOrdersReports,
-    FlatFileOrdersReportsByLastUpdate,
-    FlatFileReturnsDataByReturnDate,
-    FlatFileSettlementV2Reports,
-    FulfilledShipmentsReports,
-    GetXmlBrowseTreeData,
-    LedgerDetailedViewReports,
-    LedgerSummaryViewReport,
-    ListFinancialEventGroups,
-    ListFinancialEvents,
-    MerchantCancelledListingsReport,
-    MerchantListingsFypReport,
-    MerchantListingsInactiveData,
-    MerchantListingsReport,
-    MerchantListingsReportBackCompat,
-    MerchantListingsReports,
-    NetPureProductMarginReport,
-    OrderItems,
-    OrderReportDataShipping,
-    Orders,
-    RapidRetailAnalyticsInventoryReport,
-    ReportsAmazonSPStream,
-    RestockInventoryReports,
-    SellerAnalyticsSalesAndTrafficReports,
-    SellerFeedbackReports,
-    StrandedInventoryUiReport,
-    VendorDirectFulfillmentShipping,
-    VendorForecastingFreshReport,
-    VendorForecastingRetailReport,
-    VendorInventoryReports,
-    VendorOrders,
-    VendorSalesReports,
-    VendorTrafficReport,
-    XmlAllOrdersDataByOrderDataGeneral,
-)
 from source_amazon_seller_partner.utils import AmazonConfigException
 
 
 # given the retention period: 730
 DEFAULT_RETENTION_PERIOD_IN_DAYS = 730
 
+from source_amazon_seller_partner.components.auth import AmazonSPOauthAuthenticator
 
-class SourceAmazonSellerPartner(AbstractSource):
+
+class SourceAmazonSellerPartner(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+
+    @staticmethod
+    def get_aws_config_settings(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
+        return {"endpoint": endpoint, "marketplace_id": marketplace_id}
+
     @staticmethod
     def _get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
         endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
-        auth = AWSAuthenticator(
+        auth = AmazonSPOauthAuthenticator(
+            config=config,
+            parameters={},
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
             client_id=config.get("lwa_app_id"),
             client_secret=config.get("lwa_client_secret"),
             refresh_token=config.get("refresh_token"),
             host=endpoint.replace("https://", ""),
-            refresh_access_token_headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
 
         start_date = config.get("replication_start_date")
@@ -114,145 +64,31 @@ class SourceAmazonSellerPartner(AbstractSource):
         }
         return stream_kwargs
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        """
-        Check connection to Amazon SP API by requesting the Orders endpoint
-        This endpoint is not available for vendor-only Seller accounts,
-        the Orders endpoint will then return a 403 error
-        Therefore made an exception for 403 errors (when vendor-only accounts).
-        When no access, a 401 error is given.
-        Validate if response has the expected error code and body.
-        Show error message in case of request exception or unexpected response.
-        """
-        try:
-            self.validate_replication_dates(config)
-            self.validate_stream_report_options(config)
-            stream_kwargs = self._get_stream_kwargs(config)
-
-            if config.get("account_type", "Seller") == "Seller":
-                stream_to_check = Orders(**stream_kwargs)
-                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
-            else:
-                stream_to_check = VendorOrders(**stream_kwargs)
-                stream_slices = list(stream_to_check.stream_slices(sync_mode=SyncMode.full_refresh))
-                next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
-
-            return True, None
-        except Exception as e:
-            # Validate stream without data
-            if isinstance(e, StopIteration):
-                return True, None
-
-            if isinstance(e, HTTPError):
-                return False, e.response.json().get("error_description")
-            else:
-                error_message = "Caught unexpected exception during the check"
-                raise AirbyteTracedException(internal_message=error_message, message=error_message, exception=e)
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+        config.update(self.get_aws_config_settings(config))
+        streams = super().streams(config)
         self.validate_stream_report_options(config)
-        streams = []
-        stream_kwargs = self._get_stream_kwargs(config)
-        stream_list = [
-            FbaCustomerReturnsReports,
-            FbaAfnInventoryReports,
-            FbaAfnInventoryByCountryReports,
-            FbaOrdersReports,
-            FbaShipmentsReports,
-            FbaReplacementsReports,
-            FbaStorageFeesReports,
-            RestockInventoryReports,
-            FlatFileActionableOrderDataShipping,
-            FlatFileOpenListingsReports,
-            FlatFileOrdersReports,
-            FlatFileOrdersReportsByLastUpdate,
-            FlatFileSettlementV2Reports,
-            FulfilledShipmentsReports,
-            MerchantListingsReports,
-            VendorDirectFulfillmentShipping,
-            Orders,
-            OrderItems,
-            OrderReportDataShipping,
-            SellerFeedbackReports,
-            GetXmlBrowseTreeData,
-            ListFinancialEventGroups,
-            ListFinancialEvents,
-            LedgerDetailedViewReports,
-            FbaEstimatedFbaFeesTxtReport,
-            FbaFulfillmentCustomerShipmentPromotionReport,
-            FbaMyiUnsuppressedInventoryReport,
-            MerchantCancelledListingsReport,
-            MerchantListingsReport,
-            MerchantListingsReportBackCompat,
-            MerchantListingsInactiveData,
-            StrandedInventoryUiReport,
-            XmlAllOrdersDataByOrderDataGeneral,
-            MerchantListingsFypReport,
-            FbaSnsForecastReport,
-            FbaSnsPerformanceReport,
-            FlatFileArchivedOrdersDataByOrderDate,
-            FlatFileReturnsDataByReturnDate,
-            FbaInventoryPlaningReport,
-            LedgerSummaryViewReport,
-            FbaReimbursementsReports,
-            VendorOrders,
-            VendorForecastingFreshReport,
-            VendorForecastingRetailReport,
-        ]
 
-        # TODO: Remove after Brand Analytics will be enabled in CLOUD: https://github.com/airbytehq/airbyte/issues/32353
-        if not is_cloud_environment():
-            brand_analytics_reports = [
-                BrandAnalyticsMarketBasketReports,
-                BrandAnalyticsSearchTermsReports,
-                BrandAnalyticsRepeatPurchaseReports,
-                SellerAnalyticsSalesAndTrafficReports,
-                VendorSalesReports,
-                VendorInventoryReports,
-                NetPureProductMarginReport,
-                RapidRetailAnalyticsInventoryReport,
-                VendorTrafficReport,
-            ]
-            stream_list += brand_analytics_reports
+        # todo: Analytics streams were never enabled in Cloud and don't quite work right in OSS. We've removed them during the
+        #  migration to low-code, but eventually we may need to find time to fix and add these removed streams:
+        # if not is_cloud_environment():
+        #     brand_analytics_reports = [
+        #         BrandAnalyticsMarketBasketReports,
+        #         BrandAnalyticsSearchTermsReports,
+        #         BrandAnalyticsRepeatPurchaseReports,
+        #         SellerAnalyticsSalesAndTrafficReports,
+        #         VendorSalesReports,
+        #         VendorInventoryReports,
+        #         NetPureProductMarginReport,
+        #         RapidRetailAnalyticsInventoryReport,
+        #         VendorTrafficReport,
+        #     ]
+        #     stream_list += brand_analytics_reports
 
-        for stream in stream_list:
-            if not issubclass(stream, ReportsAmazonSPStream):
-                streams.append(stream(**stream_kwargs))
-                continue
-            report_kwargs = list(self.get_stream_report_kwargs(stream.report_name, config))
-            if not report_kwargs:
-                report_kwargs.append((stream.report_name, {}))
-            for name, options in report_kwargs:
-                kwargs = {
-                    "stream_name": name,
-                    "report_options": options,
-                    "wait_to_avoid_fatal_errors": config.get("wait_to_avoid_fatal_errors", False),
-                    **stream_kwargs,
-                }
-                streams.append(stream(**kwargs))
         return streams
-
-    def spec(self, logger: Logger) -> ConnectorSpecification:
-        spec = super().spec(logger)
-        if not is_cloud_environment():
-            oss_only_streams = [
-                "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT",
-                "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT",
-                "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT",
-                "GET_SALES_AND_TRAFFIC_REPORT",
-                "GET_VENDOR_SALES_REPORT",
-                "GET_VENDOR_INVENTORY_REPORT",
-                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
-                "GET_VENDOR_TRAFFIC_REPORT",
-            ]
-            spec.connectionSpecification["properties"]["report_options_list"]["items"]["properties"]["report_name"]["enum"].extend(
-                oss_only_streams
-            )
-
-        return spec
 
     @staticmethod
     def validate_replication_dates(config: Mapping[str, Any]) -> None:

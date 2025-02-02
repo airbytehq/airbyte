@@ -5,7 +5,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_airtable/spec.json"
+      - spec_path: "integration_tests/spec.json"
   connection:
     tests:
       - config_path: "secrets/config.json"

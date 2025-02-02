@@ -30,6 +30,10 @@ Visit `https://github.com/buzzsprout/buzzsprout-api/tree/master?tab=readme-ov-fi
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.13 | 2025-02-01 | [52931](https://github.com/airbytehq/airbyte/pull/52931) | Update dependencies |
+| 0.0.12 | 2025-01-25 | [52212](https://github.com/airbytehq/airbyte/pull/52212) | Update dependencies |
+| 0.0.11 | 2025-01-18 | [51766](https://github.com/airbytehq/airbyte/pull/51766) | Update dependencies |
+| 0.0.10 | 2025-01-11 | [51284](https://github.com/airbytehq/airbyte/pull/51284) | Update dependencies |
 | 0.0.9 | 2024-12-28 | [50479](https://github.com/airbytehq/airbyte/pull/50479) | Update dependencies |
 | 0.0.8 | 2024-12-21 | [50153](https://github.com/airbytehq/airbyte/pull/50153) | Update dependencies |
 | 0.0.7 | 2024-12-14 | [49564](https://github.com/airbytehq/airbyte/pull/49564) | Update dependencies |

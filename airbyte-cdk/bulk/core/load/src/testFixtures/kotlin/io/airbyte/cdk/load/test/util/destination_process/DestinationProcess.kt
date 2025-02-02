@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.test.util.destination_process
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -58,20 +59,28 @@ abstract class DestinationProcessFactory {
      */
     lateinit var testName: String
 
+    /**
+     * If [useFileTransfer] is enabled, the process should create a file for the connector to
+     * transfer.
+     */
     abstract fun createDestinationProcess(
         command: String,
         configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         useFileTransfer: Boolean = false,
-        envVars: Map<String, String> = emptyMap(),
+        micronautProperties: Map<Property, String> = emptyMap(),
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 
     companion object {
-        fun get(): DestinationProcessFactory =
+        /**
+         * [additionalMicronautEnvs] is only passed into the non-docker connector. We assume that
+         * the dockerized connector is capable of setting its own micronaut environments.
+         */
+        fun get(additionalMicronautEnvs: List<String>): DestinationProcessFactory =
             when (val runner = System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER")) {
                 null,
-                "non-docker" -> NonDockerizedDestinationFactory()
+                "non-docker" -> NonDockerizedDestinationFactory(additionalMicronautEnvs)
                 "docker" -> {
                     val rawProperties: Map<String, Any?> =
                         YamlPropertySourceLoader()

@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
+import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -23,11 +25,12 @@ class MockBasicFunctionalityIntegrationTest :
         isStreamSchemaRetroactive = false,
         supportsDedup = true,
         stringifySchemalessObjects = false,
-        promoteUnionToObject = false,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
-        envVars = emptyMap(),
         supportFileTransfer = false,
     ) {
     @Test
