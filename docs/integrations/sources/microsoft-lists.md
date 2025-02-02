@@ -61,6 +61,15 @@ Microsoft Lists connector enables seamless data integration and synchronization 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2025-02-01 | [52753](https://github.com/airbytehq/airbyte/pull/52753) | Update dependencies |
+| 0.0.12 | 2025-01-25 | [52249](https://github.com/airbytehq/airbyte/pull/52249) | Update dependencies |
+| 0.0.11 | 2025-01-18 | [51824](https://github.com/airbytehq/airbyte/pull/51824) | Update dependencies |
+| 0.0.10 | 2025-01-11 | [51148](https://github.com/airbytehq/airbyte/pull/51148) | Update dependencies |
+| 0.0.9 | 2024-12-28 | [50613](https://github.com/airbytehq/airbyte/pull/50613) | Update dependencies |
+| 0.0.8 | 2024-12-21 | [50117](https://github.com/airbytehq/airbyte/pull/50117) | Update dependencies |
+| 0.0.7 | 2024-12-14 | [49598](https://github.com/airbytehq/airbyte/pull/49598) | Update dependencies |
+| 0.0.6 | 2024-12-12 | [49229](https://github.com/airbytehq/airbyte/pull/49229) | Update dependencies |
+| 0.0.5 | 2024-12-11 | [48952](https://github.com/airbytehq/airbyte/pull/48952) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.4 | 2024-11-04 | [48202](https://github.com/airbytehq/airbyte/pull/48202) | Update dependencies |
 | 0.0.3 | 2024-10-29 | [47925](https://github.com/airbytehq/airbyte/pull/47925) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47544](https://github.com/airbytehq/airbyte/pull/47544) | Update dependencies |

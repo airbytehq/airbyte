@@ -6,11 +6,11 @@ data:
     hosts:
       - api.iterable.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
   connectorSubtype: api
   connectorType: source
   definitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
-  dockerImageTag: 0.6.18
+  dockerImageTag: 0.6.26
   dockerRepository: airbyte/source-iterable
   documentationUrl: https://docs.airbyte.com/integrations/sources/iterable
   githubIssueLabel: source-iterable

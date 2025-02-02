@@ -5,9 +5,11 @@
 from unittest.mock import patch
 
 import pytest
-from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from source_mixpanel.config_migrations import MigrateProjectId
 from source_mixpanel.source import SourceMixpanel
+
+from airbyte_cdk.entrypoint import AirbyteEntrypoint
+
 
 # Test data for parametrized test
 test_data = [

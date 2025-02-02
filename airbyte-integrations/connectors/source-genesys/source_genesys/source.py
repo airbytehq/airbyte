@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -244,7 +245,6 @@ class UserGroups(GenesysStream):
 
 class SourceGenesys(AbstractSource):
     def build_refresh_request_body(self) -> Mapping[str, Any]:
-
         return {
             "grant_type": "client_credentials",
             "client_id": self.get_client_id(),
@@ -259,7 +259,6 @@ class SourceGenesys(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
         GENESYS_REGION_DOMAIN_MAP: Dict[str, str] = {
             "Americas (US East)": "mypurecloud.com",
             "Americas (US East 2)": "use2.us-gov-pure.cloud",

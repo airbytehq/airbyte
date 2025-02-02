@@ -14,6 +14,7 @@ const enterpriseDocsHeaderInformation = require("./src/remark/enterpriseDocsHead
 const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
+const docMetaTags = require("./src/remark/docMetaTags");
 
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
@@ -47,6 +48,13 @@ const config = {
       type: "module",
       id: "unifytag",
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
+    },
+    {
+      src: "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack.min.js",
+      async: true,
+      "data-apikey": "2094e2379643f69f7aec647a15f786",
+      "data-cookieless": "1",
+      "data-auto-identify": "1",
     },
   ],
   headTags: [
@@ -113,6 +121,7 @@ const config = {
             docsHeaderDecoration,
             enterpriseDocsHeaderInformation,
             productInformation,
+            docMetaTags,
           ],
         },
         blog: false,
@@ -187,6 +196,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ["bash", "json"],
       },
     }),
 };

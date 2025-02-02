@@ -39,6 +39,14 @@ The Breezometer connector supports full sync refresh.
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.2.11 | 2025-01-25 | [52160](https://github.com/airbytehq/airbyte/pull/52160) | Update dependencies |
+| 0.2.10 | 2025-01-18 | [51747](https://github.com/airbytehq/airbyte/pull/51747) | Update dependencies |
+| 0.2.9 | 2025-01-11 | [51250](https://github.com/airbytehq/airbyte/pull/51250) | Update dependencies |
+| 0.2.8 | 2024-12-28 | [50488](https://github.com/airbytehq/airbyte/pull/50488) | Update dependencies |
+| 0.2.7 | 2024-12-21 | [50219](https://github.com/airbytehq/airbyte/pull/50219) | Update dependencies |
+| 0.2.6 | 2024-12-14 | [49559](https://github.com/airbytehq/airbyte/pull/49559) | Update dependencies |
+| 0.2.5 | 2024-12-12 | [49280](https://github.com/airbytehq/airbyte/pull/49280) | Update dependencies |
+| 0.2.4 | 2024-12-11 | [48902](https://github.com/airbytehq/airbyte/pull/48902) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.3 | 2024-11-04 | [48260](https://github.com/airbytehq/airbyte/pull/48260) | Update dependencies |
 | 0.2.2 | 2024-10-29 | [47882](https://github.com/airbytehq/airbyte/pull/47882) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [43777](https://github.com/airbytehq/airbyte/pull/43777) | Update dependencies |

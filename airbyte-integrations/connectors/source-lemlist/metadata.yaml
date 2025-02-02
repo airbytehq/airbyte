@@ -14,9 +14,9 @@ data:
   connectorSubtype: api
   connectorType: source
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   definitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.11
   dockerRepository: airbyte/source-lemlist
   githubIssueLabel: source-lemlist
   icon: lemlist.svg

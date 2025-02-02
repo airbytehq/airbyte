@@ -236,50 +236,53 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
-| 0.8.1   | 2024-10-28 | [45923](https://github.com/airbytehq/airbyte/pull/45923) | Update logging                                                          |
-| 0.8.0   | 2024-10-28 | [45414](https://github.com/airbytehq/airbyte/pull/45414) | Add support for OAuth authentication                                    |
-| 0.7.4   | 2024-10-12 | [46858](https://github.com/airbytehq/airbyte/pull/46858) | Update dependencies                                                     |
-| 0.7.3   | 2024-10-05 | [46458](https://github.com/airbytehq/airbyte/pull/46458) | Update dependencies                                                     |
-| 0.7.2   | 2024-09-28 | [46178](https://github.com/airbytehq/airbyte/pull/46178) | Update dependencies                                                     |
-| 0.7.1   | 2024-09-24 | [45850](https://github.com/airbytehq/airbyte/pull/45850) | Add integration tests                                                   |
-| 0.7.0   | 2024-09-24 | [45671](https://github.com/airbytehq/airbyte/pull/45671) | Add .zip files support                                                  |
-| 0.6.9   | 2024-09-21 | [45798](https://github.com/airbytehq/airbyte/pull/45798) | Update dependencies                                                     |
-| 0.6.8   | 2024-09-19 | [45092](https://github.com/airbytehq/airbyte/pull/45092) | Update CDK v5; Fix OSError not raised in stream_reader.open_file        |
-| 0.6.7   | 2024-09-14 | [45492](https://github.com/airbytehq/airbyte/pull/45492) | Update dependencies                                                     |
-| 0.6.6   | 2024-09-07 | [45232](https://github.com/airbytehq/airbyte/pull/45232) | Update dependencies                                                     |
-| 0.6.5   | 2024-08-31 | [45010](https://github.com/airbytehq/airbyte/pull/45010) | Update dependencies                                                     |
-| 0.6.4   | 2024-08-27 | [44796](https://github.com/airbytehq/airbyte/pull/44796) | Fix empty list of globs when prefix empty                               |
-| 0.6.3   | 2024-08-26 | [44781](https://github.com/airbytehq/airbyte/pull/44781) | Set file signature URL expiration limit default to max                  |
-| 0.6.2   | 2024-08-24 | [44733](https://github.com/airbytehq/airbyte/pull/44733) | Update dependencies                                                     |
-| 0.6.1   | 2024-08-17 | [44285](https://github.com/airbytehq/airbyte/pull/44285) | Update dependencies                                                     |
-| 0.6.0   | 2024-08-15 | [44015](https://github.com/airbytehq/airbyte/pull/44015) | Add support for all FileBasedSpec file types                            |
-| 0.5.0   | 2024-08-14 | [44070](https://github.com/airbytehq/airbyte/pull/44070) | Update CDK v4 and Python 3.10 dependencies                              |
-| 0.4.15  | 2024-08-12 | [43733](https://github.com/airbytehq/airbyte/pull/43733) | Update dependencies                                                     |
-| 0.4.14  | 2024-08-10 | [43512](https://github.com/airbytehq/airbyte/pull/43512) | Update dependencies                                                     |
-| 0.4.13  | 2024-08-03 | [43236](https://github.com/airbytehq/airbyte/pull/43236) | Update dependencies                                                     |
-| 0.4.12  | 2024-07-27 | [42693](https://github.com/airbytehq/airbyte/pull/42693) | Update dependencies                                                     |
-| 0.4.11  | 2024-07-20 | [42312](https://github.com/airbytehq/airbyte/pull/42312) | Update dependencies                                                     |
-| 0.4.10  | 2024-07-13 | [41865](https://github.com/airbytehq/airbyte/pull/41865) | Update dependencies                                                     |
-| 0.4.9   | 2024-07-10 | [41430](https://github.com/airbytehq/airbyte/pull/41430) | Update dependencies                                                     |
-| 0.4.8   | 2024-07-09 | [41148](https://github.com/airbytehq/airbyte/pull/41148) | Update dependencies                                                     |
-| 0.4.7   | 2024-07-06 | [41015](https://github.com/airbytehq/airbyte/pull/41015) | Update dependencies                                                     |
-| 0.4.6   | 2024-06-26 | [40540](https://github.com/airbytehq/airbyte/pull/40540) | Update dependencies                                                     |
-| 0.4.5   | 2024-06-25 | [40391](https://github.com/airbytehq/airbyte/pull/40391) | Update dependencies                                                     |
-| 0.4.4   | 2024-06-24 | [40234](https://github.com/airbytehq/airbyte/pull/40234) | Update dependencies                                                     |
-| 0.4.3   | 2024-06-22 | [40089](https://github.com/airbytehq/airbyte/pull/40089) | Update dependencies                                                     |
-| 0.4.2   | 2024-06-06 | [39255](https://github.com/airbytehq/airbyte/pull/39255) | [autopull] Upgrade base image to v1.2.2                                 |
-| 0.4.1   | 2024-05-29 | [38696](https://github.com/airbytehq/airbyte/pull/38696) | Avoid error on empty stream when running discover                       |
-| 0.4.0   | 2024-03-21 | [36373](https://github.com/airbytehq/airbyte/pull/36373) | Add Gzip and Bzip compression support. Manage dependencies with Poetry. |
-| 0.3.7   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                       |
-| 0.3.6   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK            |
-| 0.3.5   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK |
-| 0.3.4   | 2024-01-11 | [34158](https://github.com/airbytehq/airbyte/pull/34158) | Fix issue in stream reader for document file type parser                |
-| 0.3.3   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                     |
-| 0.3.2   | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                                       |
-| 0.3.1   | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                     |
-| 0.3.0   | 2023-10-11 | [31212](https://github.com/airbytehq/airbyte/pull/31212) | Migrated to file based CDK                                              |
-| 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2                                                    |
-| 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS                                                         |
+| 0.8.4 | 2025-02-01 | [52379](https://github.com/airbytehq/airbyte/pull/52379) | Update dependencies |
+| 0.8.3 | 2025-01-18 | [49174](https://github.com/airbytehq/airbyte/pull/49174) | Update dependencies |
+| 0.8.2 | 2024-11-25 | [48647](https://github.com/airbytehq/airbyte/pull/48647) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.8.1 | 2024-10-28 | [45923](https://github.com/airbytehq/airbyte/pull/45923) | Update logging |
+| 0.8.0 | 2024-10-28 | [45414](https://github.com/airbytehq/airbyte/pull/45414) | Add support for OAuth authentication |
+| 0.7.4 | 2024-10-12 | [46858](https://github.com/airbytehq/airbyte/pull/46858) | Update dependencies |
+| 0.7.3 | 2024-10-05 | [46458](https://github.com/airbytehq/airbyte/pull/46458) | Update dependencies |
+| 0.7.2 | 2024-09-28 | [46178](https://github.com/airbytehq/airbyte/pull/46178) | Update dependencies |
+| 0.7.1 | 2024-09-24 | [45850](https://github.com/airbytehq/airbyte/pull/45850) | Add integration tests |
+| 0.7.0 | 2024-09-24 | [45671](https://github.com/airbytehq/airbyte/pull/45671) | Add .zip files support |
+| 0.6.9 | 2024-09-21 | [45798](https://github.com/airbytehq/airbyte/pull/45798) | Update dependencies |
+| 0.6.8 | 2024-09-19 | [45092](https://github.com/airbytehq/airbyte/pull/45092) | Update CDK v5; Fix OSError not raised in stream_reader.open_file |
+| 0.6.7 | 2024-09-14 | [45492](https://github.com/airbytehq/airbyte/pull/45492) | Update dependencies |
+| 0.6.6 | 2024-09-07 | [45232](https://github.com/airbytehq/airbyte/pull/45232) | Update dependencies |
+| 0.6.5 | 2024-08-31 | [45010](https://github.com/airbytehq/airbyte/pull/45010) | Update dependencies |
+| 0.6.4 | 2024-08-27 | [44796](https://github.com/airbytehq/airbyte/pull/44796) | Fix empty list of globs when prefix empty |
+| 0.6.3 | 2024-08-26 | [44781](https://github.com/airbytehq/airbyte/pull/44781) | Set file signature URL expiration limit default to max |
+| 0.6.2 | 2024-08-24 | [44733](https://github.com/airbytehq/airbyte/pull/44733) | Update dependencies |
+| 0.6.1 | 2024-08-17 | [44285](https://github.com/airbytehq/airbyte/pull/44285) | Update dependencies |
+| 0.6.0 | 2024-08-15 | [44015](https://github.com/airbytehq/airbyte/pull/44015) | Add support for all FileBasedSpec file types |
+| 0.5.0 | 2024-08-14 | [44070](https://github.com/airbytehq/airbyte/pull/44070) | Update CDK v4 and Python 3.10 dependencies |
+| 0.4.15 | 2024-08-12 | [43733](https://github.com/airbytehq/airbyte/pull/43733) | Update dependencies |
+| 0.4.14 | 2024-08-10 | [43512](https://github.com/airbytehq/airbyte/pull/43512) | Update dependencies |
+| 0.4.13 | 2024-08-03 | [43236](https://github.com/airbytehq/airbyte/pull/43236) | Update dependencies |
+| 0.4.12 | 2024-07-27 | [42693](https://github.com/airbytehq/airbyte/pull/42693) | Update dependencies |
+| 0.4.11 | 2024-07-20 | [42312](https://github.com/airbytehq/airbyte/pull/42312) | Update dependencies |
+| 0.4.10 | 2024-07-13 | [41865](https://github.com/airbytehq/airbyte/pull/41865) | Update dependencies |
+| 0.4.9 | 2024-07-10 | [41430](https://github.com/airbytehq/airbyte/pull/41430) | Update dependencies |
+| 0.4.8 | 2024-07-09 | [41148](https://github.com/airbytehq/airbyte/pull/41148) | Update dependencies |
+| 0.4.7 | 2024-07-06 | [41015](https://github.com/airbytehq/airbyte/pull/41015) | Update dependencies |
+| 0.4.6 | 2024-06-26 | [40540](https://github.com/airbytehq/airbyte/pull/40540) | Update dependencies |
+| 0.4.5 | 2024-06-25 | [40391](https://github.com/airbytehq/airbyte/pull/40391) | Update dependencies |
+| 0.4.4 | 2024-06-24 | [40234](https://github.com/airbytehq/airbyte/pull/40234) | Update dependencies |
+| 0.4.3 | 2024-06-22 | [40089](https://github.com/airbytehq/airbyte/pull/40089) | Update dependencies |
+| 0.4.2 | 2024-06-06 | [39255](https://github.com/airbytehq/airbyte/pull/39255) | [autopull] Upgrade base image to v1.2.2 |
+| 0.4.1 | 2024-05-29 | [38696](https://github.com/airbytehq/airbyte/pull/38696) | Avoid error on empty stream when running discover |
+| 0.4.0 | 2024-03-21 | [36373](https://github.com/airbytehq/airbyte/pull/36373) | Add Gzip and Bzip compression support. Manage dependencies with Poetry. |
+| 0.3.7 | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors |
+| 0.3.6 | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK |
+| 0.3.5 | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK |
+| 0.3.4 | 2024-01-11 | [34158](https://github.com/airbytehq/airbyte/pull/34158) | Fix issue in stream reader for document file type parser |
+| 0.3.3 | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key |
+| 0.3.2 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser |
+| 0.3.1 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
+| 0.3.0 | 2023-10-11 | [31212](https://github.com/airbytehq/airbyte/pull/31212) | Migrated to file based CDK |
+| 0.2.0 | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2 |
+| 0.1.0 | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS |
 
 
 </details>

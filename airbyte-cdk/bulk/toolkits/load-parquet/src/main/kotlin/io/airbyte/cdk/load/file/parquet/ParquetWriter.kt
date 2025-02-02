@@ -45,7 +45,7 @@ fun OutputStream.toParquetWriter(
                 }
 
             override fun createOrOverwrite(blockSizeHint: Long) = create(blockSizeHint)
-            override fun supportsBlockSize() = false
+            override fun supportsBlockSize() = true
             override fun defaultBlockSize() = 0L
         }
 
@@ -61,6 +61,7 @@ fun OutputStream.toParquetWriter(
             .withDictionaryPageSize(config.dictionaryPageSizeKb * 1024)
             .withDictionaryEncoding(config.dictionaryEncoding)
             .withMaxPaddingSize(config.maxPaddingSizeMb * 1024 * 1024)
+            .withRowGroupSize(5 * 1024L * 1024L)
             .build()
 
     return ParquetWriter(writer)

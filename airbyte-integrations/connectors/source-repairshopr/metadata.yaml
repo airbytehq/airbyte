@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-repairshopr
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.4.0@sha256:f20270ba0ac84b315467c706232f3cbfbadab1f5565174eaf4c32cd3c5a43169
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: d12ba86d-e393-4269-a6b7-4eddcba98eb4
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-repairshopr
   githubIssueLabel: source-repairshopr
   icon: icon.svg

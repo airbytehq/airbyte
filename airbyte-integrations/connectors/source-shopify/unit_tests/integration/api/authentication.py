@@ -2,11 +2,13 @@
 
 import json
 
+from source_shopify.scopes import SCOPES_MAPPING
+from source_shopify.streams.base_streams import ShopifyStream
+
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.mock_http.response_builder import find_template
-from source_shopify.scopes import SCOPES_MAPPING
-from source_shopify.streams.base_streams import ShopifyStream
+
 
 _ALL_SCOPES = [scope for stream_scopes in SCOPES_MAPPING.values() for scope in stream_scopes]
 

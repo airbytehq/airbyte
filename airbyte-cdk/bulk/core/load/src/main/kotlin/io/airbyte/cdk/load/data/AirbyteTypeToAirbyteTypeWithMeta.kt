@@ -4,17 +4,15 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.Meta
 
 class AirbyteTypeToAirbyteTypeWithMeta(private val flatten: Boolean) {
     fun convert(schema: AirbyteType): ObjectType {
         val properties =
             linkedMapOf(
-                DestinationRecord.Meta.COLUMN_NAME_AB_RAW_ID to
-                    FieldType(StringType, nullable = false),
-                DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT to
-                    FieldType(IntegerType, nullable = false),
-                DestinationRecord.Meta.COLUMN_NAME_AB_META to
+                Meta.COLUMN_NAME_AB_RAW_ID to FieldType(StringType, nullable = false),
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT to FieldType(IntegerType, nullable = false),
+                Meta.COLUMN_NAME_AB_META to
                     FieldType(
                         nullable = false,
                         type =
@@ -54,14 +52,20 @@ class AirbyteTypeToAirbyteTypeWithMeta(private val flatten: Boolean) {
                                 )
                             )
                     ),
-                DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID to
-                    FieldType(IntegerType, nullable = false)
+                Meta.COLUMN_NAME_AB_GENERATION_ID to FieldType(IntegerType, nullable = false)
             )
         if (flatten) {
-            (schema as ObjectType).properties.forEach { (name, field) -> properties[name] = field }
+            if (schema is ObjectType) {
+                schema.properties.forEach { (name, field) -> properties[name] = field }
+            } else if (schema is ObjectTypeWithEmptySchema) {
+                // Do nothing: no fields to add
+            } else {
+                throw IllegalStateException(
+                    "Cannot flatten without an object schema (schema type: $schema)"
+                )
+            }
         } else {
-            properties[DestinationRecord.Meta.COLUMN_NAME_DATA] =
-                FieldType(schema, nullable = false)
+            properties[Meta.COLUMN_NAME_DATA] = FieldType(schema, nullable = false)
         }
         return ObjectType(properties)
     }

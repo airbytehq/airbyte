@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connectors-insights"
-version = "0.3.4"
+version = "0.3.6"
 description = ""
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"

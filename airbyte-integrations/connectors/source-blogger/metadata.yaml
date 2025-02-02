@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-blogger
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.5.2@sha256:3c89340fc033aab28e7ba7402a4a7c98cd9ca8eefa1503d23d3ea336c9a6e92b
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: c6c4d8ae-60e9-49b4-9b48-e3a5857455fe
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.9
   dockerRepository: airbyte/source-blogger
   githubIssueLabel: source-blogger
   icon: icon.svg

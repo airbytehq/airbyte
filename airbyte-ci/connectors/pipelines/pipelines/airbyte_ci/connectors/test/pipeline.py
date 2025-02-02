@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import anyio
 from connector_ops.utils import ConnectorLanguage  # type: ignore
+
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
@@ -17,7 +18,6 @@ from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionI
 from pipelines.helpers.execution.run_steps import StepToRun, run_steps
 
 if TYPE_CHECKING:
-
     from pipelines.helpers.execution.run_steps import STEP_TREE
 
 LANGUAGE_MAPPING = {

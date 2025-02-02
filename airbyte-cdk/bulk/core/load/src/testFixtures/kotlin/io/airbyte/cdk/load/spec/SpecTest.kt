@@ -12,6 +12,7 @@ import com.deblock.jsondiff.matcher.StrictJsonObjectPartialMatcher
 import com.deblock.jsondiff.matcher.StrictPrimitivePartialMatcher
 import com.deblock.jsondiff.viewer.OnlyErrorDiffViewer
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
@@ -34,11 +35,16 @@ import org.junit.jupiter.api.assertAll
  * of the diff. This diff is _really messy_ for the initial migration from the old CDK to the new
  * one, but after that, it should be pretty readable.
  */
-abstract class SpecTest :
+abstract class SpecTest(
+    additionalMicronautEnvs: List<String> = emptyList(),
+    micronautProperties: Map<Property, String> = emptyMap(),
+) :
     IntegrationTest(
-        FakeDataDumper,
-        NoopDestinationCleaner,
-        NoopExpectedRecordMapper,
+        additionalMicronautEnvs = additionalMicronautEnvs,
+        dataDumper = FakeDataDumper,
+        destinationCleaner = NoopDestinationCleaner,
+        recordMangler = NoopExpectedRecordMapper,
+        micronautProperties = micronautProperties,
     ) {
     private val testResourcesPath = Path.of("src/test-integration/resources")
 
@@ -64,7 +70,11 @@ abstract class SpecTest :
         }
         val expectedSpec = Files.readString(expectedSpecPath)
         val process =
-            destinationProcessFactory.createDestinationProcess("spec", featureFlags = featureFlags)
+            destinationProcessFactory.createDestinationProcess(
+                "spec",
+                featureFlags = featureFlags,
+                micronautProperties = micronautProperties,
+            )
         runBlocking { process.run() }
         val messages = process.readMessages()
         val specMessages = messages.filter { it.type == AirbyteMessage.Type.SPEC }

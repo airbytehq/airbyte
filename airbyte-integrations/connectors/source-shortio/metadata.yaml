@@ -4,7 +4,7 @@ data:
       - https://api.short.io
       - https://api-v2.short.cm
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   remoteRegistries:
     pypi:
       enabled: false
@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2fed2292-5586-480c-af92-9944e39fe12d
-  dockerImageTag: 0.3.3
+  dockerImageTag: 0.3.12
   dockerRepository: airbyte/source-shortio
   githubIssueLabel: source-shortio
   icon: shortio.svg

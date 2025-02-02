@@ -18,9 +18,12 @@ import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toInputStream
+import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
+import aws.smithy.kotlin.runtime.net.url.Url
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
+import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
@@ -29,6 +32,7 @@ import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
@@ -37,8 +41,6 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
     RemoteObject<S3BucketConfiguration> {
@@ -53,7 +55,6 @@ class S3Client(
     private val uploadConfig: ObjectStorageUploadConfiguration?,
 ) : ObjectStorageClient<S3Object> {
     private val log = KotlinLogging.logger {}
-    private val uploadPermits = uploadConfig?.maxNumConcurrentUploads?.let { Semaphore(it) }
 
     override suspend fun list(prefix: String) = flow {
         var request = ListObjectsRequest {
@@ -140,16 +141,7 @@ class S3Client(
         streamProcessor: StreamProcessor<U>?,
         block: suspend (OutputStream) -> Unit
     ): S3Object {
-        if (uploadPermits != null) {
-            uploadPermits.withPermit {
-                log.info {
-                    "Attempting to acquire upload permit for $key (${uploadPermits.availablePermits} available)"
-                }
-                return streamingUploadInner(key, metadata, streamProcessor, block)
-            }
-        } else {
-            return streamingUploadInner(key, metadata, streamProcessor, block)
-        }
+        return streamingUploadInner(key, metadata, streamProcessor, block)
     }
 
     private suspend fun <U : OutputStream> streamingUploadInner(
@@ -175,33 +167,50 @@ class S3Client(
         upload.runUsing(block)
         return S3Object(key, bucketConfig)
     }
+
+    override suspend fun startStreamingUpload(
+        key: String,
+        metadata: Map<String, String>
+    ): StreamingUpload<S3Object> {
+        val request = CreateMultipartUploadRequest {
+            this.bucket = bucketConfig.s3BucketName
+            this.key = key
+            this.metadata = metadata
+        }
+        val response = client.createMultipartUpload(request)
+
+        log.info { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
+
+        return S3StreamingUpload(client, bucketConfig, response)
+    }
 }
 
+/**
+ * [assumeRoleCredentials] is required if [keyConfig] does not have an access key, _and_ [arnRole]
+ * includes a nonnull role ARN. Otherwise it is ignored.
+ */
 @Factory
 class S3ClientFactory(
     private val arnRole: AWSArnRoleConfigurationProvider,
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
     private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
+    private val assumeRoleCredentials: AwsAssumeRoleCredentials?,
 ) {
     companion object {
-        fun <T> make(config: T) where
+        const val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
+
+        fun <T> make(config: T, assumeRoleCredentials: AwsAssumeRoleCredentials?) where
         T : S3BucketConfigurationProvider,
         T : AWSAccessKeyConfigurationProvider,
         T : AWSArnRoleConfigurationProvider,
         T : ObjectStorageUploadConfigurationProvider =
-            S3ClientFactory(config, config, config, config).make()
+            S3ClientFactory(config, config, config, config, assumeRoleCredentials).make()
     }
-
-    private val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
-    private val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
-    private val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
-    private val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
 
     @Singleton
     @Secondary
     fun make(): S3Client {
-
         val credsProvider: CredentialsProvider =
             if (keyConfig.awsAccessKeyConfiguration.accessKeyId != null) {
                 StaticCredentialsProvider {
@@ -210,23 +219,21 @@ class S3ClientFactory(
                 }
             } else if (arnRole.awsArnRoleConfiguration.roleArn != null) {
                 // The Platform is expected to inject via credentials if ROLE_ARN is present.
-                val externalId = System.getenv(EXTERNAL_ID) // Consider injecting this dependency
                 val assumeRoleParams =
                     AssumeRoleParameters(
                         roleArn = arnRole.awsArnRoleConfiguration.roleArn!!,
                         roleSessionName = AIRBYTE_STS_SESSION_NAME,
-                        externalId = externalId
+                        externalId = assumeRoleCredentials!!.externalId,
                     )
                 val creds = StaticCredentialsProvider {
-                    accessKeyId = System.getenv(AWS_ACCESS_KEY_ID)
-                    secretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY)
+                    accessKeyId = assumeRoleCredentials.accessKey
+                    secretAccessKey = assumeRoleCredentials.secretKey
                 }
                 StsAssumeRoleCredentialsProvider(
                     bootstrapCredentialsProvider = creds,
                     assumeRoleParameters = assumeRoleParams
                 )
             } else {
-                // Todo: fill in with a stubbed out credentials provider.
                 DefaultChainCredentialsProvider()
             }
 
@@ -234,6 +241,16 @@ class S3ClientFactory(
             aws.sdk.kotlin.services.s3.S3Client {
                 region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
                 credentialsProvider = credsProvider
+                endpointUrl =
+                    bucketConfig.s3BucketConfiguration.s3Endpoint?.let {
+                        if (it.isNotBlank()) {
+                            Url.parse(it)
+                        } else null
+                    }
+
+                // Fix for connection reset issue:
+                // https://github.com/awslabs/aws-sdk-kotlin/issues/1214#issuecomment-2464831817
+                httpClient(CrtHttpEngine)
             }
 
         return S3Client(
