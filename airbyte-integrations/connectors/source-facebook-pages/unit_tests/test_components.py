@@ -53,7 +53,7 @@ def test_facebook_url_params(components_module, req_mock):
 #     SourceFacebookPages = components_module.SourceFacebookPages
 #     mocker.patch("time.sleep")
 #     requests_mock.get("https://graph.facebook.com/1?fields=access_token&access_token=token", json={"access_token": "access"})
-#     requests_mock.get("https://graph.facebook.com/v19.0/1", [{"status_code": error_code}, {"json": {"data": {}}}])
+#     requests_mock.get("https://graph.facebook.com/v21.0/1", [{"status_code": error_code}, {"json": {"data": {}}}])
 #     source = SourceFacebookPages()
 #     stream = source.streams({"page_id": 1, "access_token": "token"})[0]
 #     for slice_ in stream.stream_slices(sync_mode="full_refresh"):

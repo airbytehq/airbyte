@@ -502,7 +502,7 @@ definitions:
           $ref: "#/schemas/page_insights"
   base_requester:
     type: HttpRequester
-    url_base: https://graph.facebook.com/v19.0
+    url_base: https://graph.facebook.com/v21.0
     authenticator:
       type: CustomAuthenticator
       class_name: >-
