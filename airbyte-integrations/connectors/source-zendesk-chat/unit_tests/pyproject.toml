@@ -1,0 +1,19 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-zendesk-chat-tests"
+version = "1.1.0"
+description = "Unit tests for source-zendesk-chat"
+authors = ["Airbyte <contact@airbyte.io>"]
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+airbyte-cdk = "^6.10.0"
+pytest = "^8"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*"
+]
