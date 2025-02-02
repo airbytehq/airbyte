@@ -10,6 +10,14 @@ The Airbyte Source for [Qonto](https://qonto.com)
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.3.11 | 2025-02-01 | [52989](https://github.com/airbytehq/airbyte/pull/52989) | Update dependencies |
+| 0.3.10 | 2025-01-25 | [52495](https://github.com/airbytehq/airbyte/pull/52495) | Update dependencies |
+| 0.3.9 | 2025-01-18 | [51314](https://github.com/airbytehq/airbyte/pull/51314) | Update dependencies |
+| 0.3.8 | 2024-12-28 | [50693](https://github.com/airbytehq/airbyte/pull/50693) | Update dependencies |
+| 0.3.7 | 2024-12-21 | [50267](https://github.com/airbytehq/airbyte/pull/50267) | Update dependencies |
+| 0.3.6 | 2024-12-14 | [49710](https://github.com/airbytehq/airbyte/pull/49710) | Update dependencies |
+| 0.3.5 | 2024-12-12 | [49339](https://github.com/airbytehq/airbyte/pull/49339) | Update dependencies |
+| 0.3.4 | 2024-12-11 | [49071](https://github.com/airbytehq/airbyte/pull/49071) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.3 | 2024-11-04 | [48265](https://github.com/airbytehq/airbyte/pull/48265) | Update dependencies |
 | 0.3.2 | 2024-10-29 | [47854](https://github.com/airbytehq/airbyte/pull/47854) | Update dependencies |
 | 0.3.1 | 2024-10-28 | [47490](https://github.com/airbytehq/airbyte/pull/47490) | Update dependencies |

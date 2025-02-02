@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.25"
+version = "0.1.31"
 name = "destination-cumulio"
 description = "Airbyte destination connector implementation for Cumul.io."
 authors = [ "Cumul.io <support@cumul.io>",]

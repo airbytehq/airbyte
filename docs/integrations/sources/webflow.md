@@ -41,7 +41,15 @@ If you are interested in learning more about the Webflow API and implementation 
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
-| 0.1.27 | 2024-11-25 | [48643](https://github.com/airbytehq/airbyte/pull/48643) | Update dependencies |
+| 0.1.35 | 2025-02-01 | [53089](https://github.com/airbytehq/airbyte/pull/53089) | Update dependencies |
+| 0.1.34 | 2025-01-25 | [52435](https://github.com/airbytehq/airbyte/pull/52435) | Update dependencies |
+| 0.1.33 | 2025-01-18 | [52027](https://github.com/airbytehq/airbyte/pull/52027) | Update dependencies |
+| 0.1.32 | 2025-01-11 | [51437](https://github.com/airbytehq/airbyte/pull/51437) | Update dependencies |
+| 0.1.31 | 2024-12-28 | [50811](https://github.com/airbytehq/airbyte/pull/50811) | Update dependencies |
+| 0.1.30 | 2024-12-21 | [50367](https://github.com/airbytehq/airbyte/pull/50367) | Update dependencies |
+| 0.1.29 | 2024-12-14 | [49759](https://github.com/airbytehq/airbyte/pull/49759) | Update dependencies |
+| 0.1.28 | 2024-12-12 | [49391](https://github.com/airbytehq/airbyte/pull/49391) | Update dependencies |
+| 0.1.27 | 2024-11-25 | [48643](https://github.com/airbytehq/airbyte/pull/48643) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.1.26 | 2024-10-29 | [47871](https://github.com/airbytehq/airbyte/pull/47871) | Update dependencies |
 | 0.1.25 | 2024-10-28 | [47102](https://github.com/airbytehq/airbyte/pull/47102) | Update dependencies |
 | 0.1.24 | 2024-10-12 | [46854](https://github.com/airbytehq/airbyte/pull/46854) | Update dependencies |

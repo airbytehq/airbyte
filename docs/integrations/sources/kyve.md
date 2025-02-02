@@ -29,7 +29,13 @@ You can fetch with one source configuration more than one pool simultaneously. Y
 
 | Version | Date       | Pull Request | Subject                                              |
 | :------ | :--------- | :----------- | :--------------------------------------------------- |
-| 0.2.22 | 2024-11-25 | [48651](https://github.com/airbytehq/airbyte/pull/48651) | Update dependencies |
+| 0.2.28 | 2025-02-01 | [52712](https://github.com/airbytehq/airbyte/pull/52712) | Update dependencies |
+| 0.2.27 | 2025-01-25 | [51779](https://github.com/airbytehq/airbyte/pull/51779) | Update dependencies |
+| 0.2.26 | 2025-01-11 | [51140](https://github.com/airbytehq/airbyte/pull/51140) | Update dependencies |
+| 0.2.25 | 2024-12-28 | [50668](https://github.com/airbytehq/airbyte/pull/50668) | Update dependencies |
+| 0.2.24 | 2024-12-21 | [50149](https://github.com/airbytehq/airbyte/pull/50149) | Update dependencies |
+| 0.2.23 | 2024-12-14 | [48985](https://github.com/airbytehq/airbyte/pull/48985) | Update dependencies |
+| 0.2.22 | 2024-11-25 | [48651](https://github.com/airbytehq/airbyte/pull/48651) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.21 | 2024-11-04 | [48190](https://github.com/airbytehq/airbyte/pull/48190) | Update dependencies |
 | 0.2.20 | 2024-10-28 | [47078](https://github.com/airbytehq/airbyte/pull/47078) | Update dependencies |
 | 0.2.19 | 2024-10-12 | [46477](https://github.com/airbytehq/airbyte/pull/46477) | Update dependencies |

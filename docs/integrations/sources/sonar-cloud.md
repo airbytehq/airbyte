@@ -30,6 +30,13 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 | Version | Date                                                                  | Pull Request                                              | Subject                                                                         |
 | :------ | :-------------------------------------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.9 | 2025-02-01 | [53052](https://github.com/airbytehq/airbyte/pull/53052) | Update dependencies |
+| 0.2.8 | 2025-01-25 | [52437](https://github.com/airbytehq/airbyte/pull/52437) | Update dependencies |
+| 0.2.7 | 2025-01-18 | [52004](https://github.com/airbytehq/airbyte/pull/52004) | Update dependencies |
+| 0.2.6 | 2025-01-11 | [51448](https://github.com/airbytehq/airbyte/pull/51448) | Update dependencies |
+| 0.2.5 | 2024-12-28 | [50381](https://github.com/airbytehq/airbyte/pull/50381) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49746](https://github.com/airbytehq/airbyte/pull/49746) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [48338](https://github.com/airbytehq/airbyte/pull/48338) | Update dependencies |
 | 0.2.2 | 2024-10-28 | [47673](https://github.com/airbytehq/airbyte/pull/47673) | Update dependencies |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44063](https://github.com/airbytehq/airbyte/pull/44063) | Refactor connector to manifest-only format |

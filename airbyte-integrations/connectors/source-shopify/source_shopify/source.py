@@ -6,11 +6,12 @@
 import logging
 from typing import Any, List, Mapping, Tuple
 
+from requests.exceptions import ConnectionError, RequestException, SSLError
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from requests.exceptions import ConnectionError, RequestException, SSLError
 
 from .auth import MissingAccessTokenError, ShopifyAuthenticator
 from .scopes import ShopifyScopes
@@ -26,7 +27,6 @@ from .streams.streams import (
     CustomerAddress,
     CustomerJourneySummary,
     Customers,
-    CustomerSavedSearch,
     DiscountCodes,
     Disputes,
     DraftOrders,
@@ -56,7 +56,6 @@ from .streams.streams import (
     PriceRules,
     ProductImages,
     Products,
-    ProductsGraphQl,
     ProductVariants,
     Shop,
     SmartCollections,
@@ -211,13 +210,11 @@ class SourceShopify(AbstractSource):
             PriceRules(config),
             ProductImages(config),
             Products(config),
-            ProductsGraphQl(config),
             ProductVariants(config),
             Shop(config),
             SmartCollections(config),
             TenderTransactions(config),
             self.select_transactions_stream(config),
-            CustomerSavedSearch(config),
             CustomerAddress(config),
             Countries(config),
         ]

@@ -31,6 +31,14 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.10 | 2025-02-01 | [53048](https://github.com/airbytehq/airbyte/pull/53048) | Update dependencies |
+| 0.2.9 | 2025-01-25 | [52402](https://github.com/airbytehq/airbyte/pull/52402) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [51950](https://github.com/airbytehq/airbyte/pull/51950) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51382](https://github.com/airbytehq/airbyte/pull/51382) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50790](https://github.com/airbytehq/airbyte/pull/50790) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50311](https://github.com/airbytehq/airbyte/pull/50311) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49739](https://github.com/airbytehq/airbyte/pull/49739) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [47929](https://github.com/airbytehq/airbyte/pull/47929) | Update dependencies |
 | 0.2.2 | 2024-10-28 | [47507](https://github.com/airbytehq/airbyte/pull/47507) | Update dependencies |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44064](https://github.com/airbytehq/airbyte/pull/44064) | Refactor connector to manifest-only format |

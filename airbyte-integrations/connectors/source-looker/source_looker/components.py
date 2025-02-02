@@ -7,14 +7,15 @@ from typing import Any, Mapping, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+
 
 API_VERSION = "4.0"
 
 
 @dataclass
 class LookerAuthenticator(NoAuth):
-
     """
     Authenticator that sets the Authorization header on the HTTP requests sent using access token which is updated upon expiration.
 

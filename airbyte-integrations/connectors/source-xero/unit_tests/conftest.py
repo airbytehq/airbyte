@@ -4,9 +4,10 @@
 
 from typing import Any, Mapping
 
-from airbyte_cdk.sources.streams import Stream
 from pytest import fixture
 from source_xero.source import SourceXero
+
+from airbyte_cdk.sources.streams import Stream
 
 
 @fixture(name="config_pass")

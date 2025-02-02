@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: da9fc6b9-8059-4be0-b204-f56e22e4d52d
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.14
   dockerRepository: airbyte/source-secoda
   githubIssueLabel: source-secoda
   icon: secoda.svg
@@ -42,5 +42,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
 metadataSpecVersion: "1.0"

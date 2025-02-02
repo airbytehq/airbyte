@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.30"
+version = "0.1.37"
 name = "destination-typesense"
 description = "Destination Implementation for Typesense."
 authors = [ "Airbyte <contact@airbyte.io>",]

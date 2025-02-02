@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.dev_null
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
@@ -39,6 +40,7 @@ data class DevNullConfiguration(
 @Singleton
 class DevNullConfigurationFactory :
     DestinationConfigurationFactory<DevNullSpecification, DevNullConfiguration> {
+    private val log = KotlinLogging.logger {}
 
     override fun makeWithoutExceptionHandling(pojo: DevNullSpecification): DevNullConfiguration {
         return when (pojo) {
@@ -53,7 +55,7 @@ class DevNullConfigurationFactory :
                                             maxEntryCount =
                                                 pojo.testDestination.loggingConfig.maxEntryCount
                                                     .toInt(),
-                                        )
+                                        ),
                                 )
                             }
                             is EveryNthEntryConfig -> {

@@ -9,7 +9,6 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 
 
 class ChargebeeRequestBuilder:
-
     @classmethod
     def addon_endpoint(cls, site: str, site_api_key: str) -> "ChargebeeRequestBuilder":
         return cls("addons", site, site_api_key)
@@ -69,7 +68,7 @@ class ChargebeeRequestBuilder:
         return self
 
     def with_created_at_btw(self, created_at_btw: List[int]) -> "ChargebeeRequestBuilder":
-        self._created_at_btw = f'{created_at_btw}'
+        self._created_at_btw = f"{created_at_btw}"
         return self
 
     def with_updated_at_btw(self, updated_at_btw: List[int]) -> "ChargebeeRequestBuilder":
@@ -97,7 +96,7 @@ class ChargebeeRequestBuilder:
         return self
 
     def build(self) -> HttpRequest:
-        query_params= {}
+        query_params = {}
         if self._sort_by_asc:
             query_params["sort_by[asc]"] = self._sort_by_asc
         if self._sort_by_desc:
@@ -117,7 +116,9 @@ class ChargebeeRequestBuilder:
 
         if self._any_query_params:
             if query_params:
-                raise ValueError(f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both.")
+                raise ValueError(
+                    f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both."
+                )
             query_params = ANY_QUERY_PARAMS
 
         return HttpRequest(
@@ -126,8 +127,8 @@ class ChargebeeRequestBuilder:
             headers={"Authorization": f"Basic {base64.b64encode((str(self._site_api_key) + ':').encode('utf-8')).decode('utf-8')}"},
         )
 
-class ChargebeeSubstreamRequestBuilder(ChargebeeRequestBuilder):
 
+class ChargebeeSubstreamRequestBuilder(ChargebeeRequestBuilder):
     @classmethod
     def subscription_with_scheduled_changes_endpoint(cls, site: str, site_api_key: str) -> "ChargebeeRequestBuilder":
         return cls("subscriptions", site, site_api_key)
@@ -141,7 +142,7 @@ class ChargebeeSubstreamRequestBuilder(ChargebeeRequestBuilder):
         return self
 
     def build(self) -> HttpRequest:
-        query_params= {}
+        query_params = {}
         if self._sort_by_asc:
             query_params["sort_by[asc]"] = self._sort_by_asc
         if self._sort_by_desc:
@@ -161,7 +162,9 @@ class ChargebeeSubstreamRequestBuilder(ChargebeeRequestBuilder):
 
         if self._any_query_params:
             if query_params:
-                raise ValueError(f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both.")
+                raise ValueError(
+                    f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both."
+                )
             query_params = ANY_QUERY_PARAMS
 
         return HttpRequest(
