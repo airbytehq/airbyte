@@ -2,7 +2,7 @@
 
 [[package]]
 name = "airbyte-connectors-base-images"
-version = "1.5.1"
+version = "1.5.2"
 description = "This package is used to generate and publish the base images for Airbyte Connectors."
 optional = false
 python-versions = "^3.10"
@@ -422,7 +422,7 @@ files = [
 
 [[package]]
 name = "ci-credentials"
-version = "1.1.0"
+version = "1.2.0"
 description = "CLI tooling to read and manage GSM secrets"
 optional = false
 python-versions = "^3.10"
@@ -431,8 +431,8 @@ develop = false
 
 [package.dependencies]
 click = "^8.1.3"
-common_utils = {path = "../common_utils", develop = true}
 cryptography = ">=42.0"
+pyjwt = "2.8.0"
 pyyaml = "^6.0"
 requests = "^2.31"
 
@@ -464,23 +464,6 @@ files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
-
-[[package]]
-name = "common-utils"
-version = "0.0.0"
-description = "Suite of all often used classes and common functions"
-optional = false
-python-versions = "^3.10"
-files = []
-develop = true
-
-[package.dependencies]
-pyjwt = "^2.8.0"
-requests = "^2.31.0"
-
-[package.source]
-type = "directory"
-url = "../common_utils"
 
 [[package]]
 name = "connector-ops"
@@ -2286,13 +2269,13 @@ setuptools = ">=42.0.0"
 
 [[package]]
 name = "pyjwt"
-version = "2.10.1"
+version = "2.8.0"
 description = "JSON Web Token implementation in Python"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.7"
 files = [
-    {file = "PyJWT-2.10.1-py3-none-any.whl", hash = "sha256:dcdd193e30abefd5debf142f9adfcdd2b58004e644f25406ffaebd50bd98dacb"},
-    {file = "pyjwt-2.10.1.tar.gz", hash = "sha256:3cc5772eb20009233caf06e9d8a0577824723b44e6648ee0a2aedb6cf9381953"},
+    {file = "PyJWT-2.8.0-py3-none-any.whl", hash = "sha256:59127c392cc44c2da5bb3192169a91f429924e17aff6534d70fdc02ab3e04320"},
+    {file = "PyJWT-2.8.0.tar.gz", hash = "sha256:57e28d156e3d5c10088e0c68abb90bfac3df82b40a71bd0daa20c65ccd5c23de"},
 ]
 
 [package.dependencies]
@@ -2300,8 +2283,8 @@ cryptography = {version = ">=3.4.0", optional = true, markers = "extra == \"cryp
 
 [package.extras]
 crypto = ["cryptography (>=3.4.0)"]
-dev = ["coverage[toml] (==5.0.4)", "cryptography (>=3.4.0)", "pre-commit", "pytest (>=6.0.0,<7.0.0)", "sphinx", "sphinx-rtd-theme", "zope.interface"]
-docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
+dev = ["coverage[toml] (==5.0.4)", "cryptography (>=3.4.0)", "pre-commit", "pytest (>=6.0.0,<7.0.0)", "sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme", "zope.interface"]
+docs = ["sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme", "zope.interface"]
 tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]

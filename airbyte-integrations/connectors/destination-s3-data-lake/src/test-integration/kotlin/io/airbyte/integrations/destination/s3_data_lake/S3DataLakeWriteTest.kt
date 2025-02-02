@@ -96,7 +96,7 @@ abstract class S3DataLakeWriteTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(
                 syncId = 42,
                 linkedMapOf("id" to intType, "to_drop" to stringType, "same" to intType)
@@ -116,7 +116,7 @@ abstract class S3DataLakeWriteTest(
                 linkedMapOf("id" to intType, "same" to intType, "to_add" to stringType)
             )
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(

@@ -51,7 +51,7 @@ dynamic_streams:
             name: ""
           http_method: GET
           path: >-
-            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"]}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
+            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"] | urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
           error_handler:
             type: DefaultErrorHandler
             backoff_strategies:
@@ -85,7 +85,7 @@ dynamic_streams:
               sheet_id: ""
             http_method: GET
             path: >-
-              {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"]}}!1:1&alt=json
+              {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"] | urlencode}}!1:1&alt=json
             error_handler:
               type: CompositeErrorHandler
               error_handlers:
@@ -106,6 +106,7 @@ dynamic_streams:
             - name
           type: ComponentMappingDefinition
           value: "{{components_values['properties']['title']}}"
+          value_type: string
           description: name for dynamic stream.
         - field_path:
             - schema_loader
@@ -221,7 +222,7 @@ definitions:
         description: spreadsheet_id can be either the full url to spreadsheet or the spreadsheet id.
         http_method: GET
         path: >-
-          {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{stream_partition.sheet_id}}!1:1&alt=json
+          {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{stream_partition.sheet_id | urlencode}}!1:1&alt=json
         error_handler:
           type: CompositeErrorHandler
           error_handlers:

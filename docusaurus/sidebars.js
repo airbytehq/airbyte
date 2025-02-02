@@ -547,6 +547,10 @@ module.exports = {
     connectorCatalog,
     buildAConnector,
     "integrations/connector-support-levels",
+    {
+      type: "doc",
+      id: "using-airbyte/oauth",
+    },
     sectionHeader("Using Airbyte"),
     connectionConfigurations,
     {
