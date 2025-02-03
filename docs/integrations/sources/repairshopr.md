@@ -35,6 +35,7 @@ With this connector we can extract data from various streams such as customers ,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-02-01 | [53022](https://github.com/airbytehq/airbyte/pull/53022) | Update dependencies |
 | 0.0.9 | 2025-01-25 | [52531](https://github.com/airbytehq/airbyte/pull/52531) | Update dependencies |
 | 0.0.8 | 2025-01-18 | [51909](https://github.com/airbytehq/airbyte/pull/51909) | Update dependencies |
 | 0.0.7 | 2025-01-11 | [51367](https://github.com/airbytehq/airbyte/pull/51367) | Update dependencies |
