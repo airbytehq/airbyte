@@ -278,7 +278,7 @@ definitions:
             - type: TypesMap
               target_type:
                 field_type: array
-                items: datetime
+                items: timestamp_with_timezone
               current_type: lookup
               condition: "{{ raw_schema['options']['result']['type'] in ['lastModifiedTime', 'dateTime', 'createdTime'] }}"
             - type: TypesMap
@@ -316,7 +316,7 @@ definitions:
             - type: TypesMap
               target_type:
                 field_type: array
-                items: datetime
+                items: timestamp_with_timezone
               current_type: rollup
               condition: "{{ raw_schema['options']['result']['type'] in ['lastModifiedTime', 'dateTime', 'createdTime'] }}"
             - type: TypesMap
@@ -336,7 +336,7 @@ definitions:
                 field_type: array
                 items: string
               current_type: multipleLookupValues
-              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] }}"
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] or not raw_schema['options']['result']  }}"
             - type: TypesMap
               target_type:
                 field_type: array
@@ -354,7 +354,7 @@ definitions:
             - type: TypesMap
               target_type:
                 field_type: array
-                items: datetime
+                items: timestamp_with_timezone
               current_type: multipleLookupValues
               condition: "{{ raw_schema['options']['result']['type'] in ['lastModifiedTime', 'dateTime', 'createdTime'] }}"
             - type: TypesMap

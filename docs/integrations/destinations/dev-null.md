@@ -49,6 +49,7 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.7.17      | 2025-01-24 | [51600](https://github.com/airbytehq/airbyte/pull/51600) | Internal refactor                                                                            |
 | 0.7.16      | 2024-12-19 | [52076](https://github.com/airbytehq/airbyte/pull/52076) | Test improvements                                                                            |
 | 0.7.15      | 2024-12-19 | [49899](https://github.com/airbytehq/airbyte/pull/49931) | Non-functional CDK changes                                                                   |
 | 0.7.14      | 2024-12-20 | [49974](https://github.com/airbytehq/airbyte/pull/49974) | Non-functional CDK changes                                                                   |

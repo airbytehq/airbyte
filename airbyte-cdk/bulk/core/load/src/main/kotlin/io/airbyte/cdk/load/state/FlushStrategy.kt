@@ -8,12 +8,9 @@ import com.google.common.collect.Range
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.QueueReader
-import io.airbyte.cdk.load.task.internal.ForceFlushEvent
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
-import java.util.concurrent.ConcurrentHashMap
 
 interface FlushStrategy {
     suspend fun shouldFlush(
@@ -26,7 +23,6 @@ interface FlushStrategy {
 /**
  * Flush whenever
  * - bytes consumed >= the configured batch size
- * - the current range of indexes being consumed encloses a force flush index
  */
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
@@ -36,30 +32,12 @@ interface FlushStrategy {
 @Secondary
 class DefaultFlushStrategy(
     private val config: DestinationConfiguration,
-    private val eventQueue: QueueReader<ForceFlushEvent>,
-    @Value("\${airbyte.destination.record-batch-size-override}")
+    @Value("\${airbyte.destination.core.record-batch-size-override}")
     private val recordBatchSizeOverride: Long? = null
 ) : FlushStrategy {
-    private val forceFlushIndexes = ConcurrentHashMap<DestinationStream.Descriptor, Long>()
-
     override suspend fun shouldFlush(
         stream: DestinationStream.Descriptor,
         rangeRead: Range<Long>,
         bytesProcessed: Long
-    ): Boolean {
-        if (bytesProcessed >= (recordBatchSizeOverride ?: config.recordBatchSizeBytes)) {
-            return true
-        }
-
-        // Listen to the event stream for a new force flush index
-        val nextFlushIndex = eventQueue.poll()?.indexes?.get(stream)
-
-        // Always update the index if the new one is not null
-        return when (
-            val testIndex = forceFlushIndexes.compute(stream) { _, v -> nextFlushIndex ?: v }
-        ) {
-            null -> false
-            else -> rangeRead.contains(testIndex)
-        }
-    }
+    ): Boolean = bytesProcessed >= (recordBatchSizeOverride ?: config.recordBatchSizeBytes)
 }

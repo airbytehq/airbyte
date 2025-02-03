@@ -58,7 +58,7 @@ internal class S3DataLakeUtilTest {
 
     @BeforeEach
     fun setup() {
-        s3DataLakeUtil = S3DataLakeUtil(tableIdGenerator)
+        s3DataLakeUtil = S3DataLakeUtil(tableIdGenerator, assumeRoleCredentials = null)
     }
 
     @Test
@@ -357,6 +357,8 @@ internal class S3DataLakeUtilTest {
                 awsAccessKeyConfiguration = awsAccessKeyConfiguration,
                 icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,
+                numProcessRecordsWorkers = 1,
+                numProcessBatchWorkers = 1,
             )
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config = configuration)
         assertEquals(ICEBERG_CATALOG_TYPE_NESSIE, catalogProperties[ICEBERG_CATALOG_TYPE])

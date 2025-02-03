@@ -10,7 +10,10 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
+import io.github.oshai.kotlinlogging.KotlinLogging
 import javax.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 @Singleton
 class S3DataLakeWriter(
@@ -34,6 +37,17 @@ class S3DataLakeWriter(
             )
 
         s3DataLakeTableSynchronizer.applySchemaChanges(table, incomingSchema)
+
+        try {
+            logger.info {
+                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.descriptor}"
+            }
+            table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
+        } catch (e: IllegalArgumentException) {
+            logger.info {
+                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.descriptor}"
+            }
+        }
 
         return S3DataLakeStreamLoader(
             stream = stream,
