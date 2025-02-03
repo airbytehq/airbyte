@@ -3,8 +3,7 @@ version: 6.30.0
 type: DeclarativeSource
 
 description: >-
-  Update manifest file. Main issue was we needed "/" at the end of the url_path
-  to ensure pagination works correctly. Not entirely sure why but it works now.
+  Omnisend is a marketing automation platform for ecommerce businesses, focusing on email and SMS marketing.
 
 check:
   type: CheckStream
@@ -188,7 +187,7 @@ definitions:
     url_base: https://api.omnisend.com/v3/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
       inject_into:
         type: RequestOption
         field_name: X-API-KEY
