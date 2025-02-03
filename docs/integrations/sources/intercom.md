@@ -96,9 +96,11 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.1 | 2025-02-01 | [49212](https://github.com/airbytehq/airbyte/pull/49212) | Update dependencies |
-| 0.10.0 | 2025-01-24 | [52132](https://github.com/airbytehq/airbyte/pull/52132) | Fix incremental sync |
-| 0.9.0 | 2025-01-15 | [51570](https://github.com/airbytehq/airbyte/pull/51570) | Promoting release candidate 0.9.0-rc.2 to a main version. |
+| 0.12.0     | 2025-02-03 | [52687](https://github.com/airbytehq/airbyte/pull/52687) | New stream Tickets                                                                                                               |
+| 0.11.0     | 2025-02-03 | [51619](https://github.com/airbytehq/airbyte/pull/51619) | Upgrade API version to 2.11, add ai_agent_participated and ai_agent fields conversations stream schema                           |
+| 0.10.1     | 2025-02-01 | [49212](https://github.com/airbytehq/airbyte/pull/49212) | Update dependencies                                                                                                              |
+| 0.10.0     | 2025-01-24 | [52132](https://github.com/airbytehq/airbyte/pull/52132) | Fix incremental sync                                                                                                             |
+| 0.9.0      | 2025-01-15 | [51570](https://github.com/airbytehq/airbyte/pull/51570) | Promoting release candidate 0.9.0-rc.2 to a main version.                                                                        |
 | 0.9.0-rc.2 | 2025-01-13 | [49936](https://github.com/airbytehq/airbyte/pull/49936) | Incremental substream fixes                                                                                                      |
 | 0.9.0-rc.1 | 2024-12-17 | [47240](https://github.com/airbytehq/airbyte/pull/47240) | Migrate to manifest-only format                                                                                                  |
 | 0.8.3      | 2024-12-12 | [48979](https://github.com/airbytehq/airbyte/pull/48979) | Update dependencies                                                                                                              |
