@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1a807325-5a1c-4e0f-a574-841034b1765d
-  dockerImageTag: 0.0.8
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-greythr
   githubIssueLabel: source-greythr
   icon: icon.svg
