@@ -137,73 +137,6 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
         return self._drive_service
 
-    def _get_looping_google_api_list_response(
-        self, service: Any, key: str, args: dict[str, Any], logger: logging.Logger
-    ) -> Iterator[dict[str, Any]]:
-        try:
-            looping = True
-            next_page_token: str | None = None
-            while looping:
-                rsp = service.list(pageToken=next_page_token, **args).execute()
-                next_page_token = rsp.get("nextPageToken")
-                items: list[dict[str, Any]] = rsp.get(key)
-
-                if items is None or len(items) == 0:
-                    looping = False
-                    break
-
-                if rsp.get("nextPageToken") is None:
-                    looping = False
-                else:
-                    next_page_token = rsp.get("nextPageToken")
-
-                for item in items:
-                    yield item
-        except Exception as e:
-            logger.error(f"There was an error listing {key} with {args}: {str(e)}")
-            raise e
-
-    def load_identity_groups(self, logger: logging.Logger) -> Dict[str, Any]:
-        domain = self.config.delivery_method.domain
-        if not domain:
-            raise Exception("No domain was provided")
-        if self.google_drive_service is None or self.google_drive_service._http.credentials is None:
-            raise Exception("No auth found")
-
-        directory_service = build("admin", "directory_v1", credentials=self.google_drive_service._http.credentials)
-        users_api = directory_service.users()
-        groups_api = directory_service.groups()
-        members_api = directory_service.members()
-
-        # here is failing
-        for user in self._get_looping_google_api_list_response(users_api, "users", {"domain": domain}, logger):
-            rfp = RemoteFileIdentity(
-                id=uuid.uuid4(),
-                remote_id=user["primaryEmail"],
-                name=user["name"]["fullName"] if user["name"] is not None else None,
-                email_address=user["primaryEmail"],
-                member_email_addresses=[x["address"] for x in user["emails"]],
-                type=RemoteFileIdentityType.USER,
-                modified_at=datetime_now(),
-            )
-            yield rfp.dict()
-
-        for group in self._get_looping_google_api_list_response(groups_api, "groups", {"domain": domain}, logger):
-            rfp = RemoteFileIdentity(
-                id=uuid.uuid4(),
-                remote_id=group["email"],
-                name=group["name"],
-                email_address=group["email"],
-                type=RemoteFileIdentityType.GROUP,
-                modified_at=datetime_now(),
-            )
-
-            for member in self._get_looping_google_api_list_response(members_api, "members", {"groupKey": group["id"]}, logger):
-                rfp.member_email_addresses = rfp.member_email_addresses or []
-                rfp.member_email_addresses.append(member["email"])
-
-            yield rfp.dict()
-
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Get all files matching the specified glob patterns.
@@ -437,3 +370,69 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             allowed_identity_remote_ids=[p.remote_id for p in remote_identities],
             publicly_accessible=is_public,
         ).dict(exclude_none=True)
+
+    def _get_looping_google_api_list_response(
+        self, service: Any, key: str, args: dict[str, Any], logger: logging.Logger
+    ) -> Iterator[dict[str, Any]]:
+        try:
+            looping = True
+            next_page_token: str | None = None
+            while looping:
+                rsp = service.list(pageToken=next_page_token, **args).execute()
+                next_page_token = rsp.get("nextPageToken")
+                items: list[dict[str, Any]] = rsp.get(key)
+
+                if items is None or len(items) == 0:
+                    looping = False
+                    break
+
+                if rsp.get("nextPageToken") is None:
+                    looping = False
+                else:
+                    next_page_token = rsp.get("nextPageToken")
+
+                for item in items:
+                    yield item
+        except Exception as e:
+            logger.error(f"There was an error listing {key} with {args}: {str(e)}")
+            raise e
+
+    def load_identity_groups(self, logger: logging.Logger) -> Dict[str, Any]:
+        domain = self.config.delivery_method.domain
+        if not domain:
+            raise Exception("No domain was provided")
+        if self.google_drive_service is None or self.google_drive_service._http.credentials is None:
+            raise Exception("No auth found")
+
+        directory_service = build("admin", "directory_v1", credentials=self.google_drive_service._http.credentials)
+        users_api = directory_service.users()
+        groups_api = directory_service.groups()
+        members_api = directory_service.members()
+
+        for user in self._get_looping_google_api_list_response(users_api, "users", {"domain": domain}, logger):
+            rfp = RemoteFileIdentity(
+                id=uuid.uuid4(),
+                remote_id=user["primaryEmail"],
+                name=user["name"]["fullName"] if user["name"] is not None else None,
+                email_address=user["primaryEmail"],
+                member_email_addresses=[x["address"] for x in user["emails"]],
+                type=RemoteFileIdentityType.USER,
+                modified_at=datetime_now(),
+            )
+            yield rfp.dict()
+
+        for group in self._get_looping_google_api_list_response(groups_api, "groups", {"domain": domain}, logger):
+            rfp = RemoteFileIdentity(
+                id=uuid.uuid4(),
+                remote_id=group["email"],
+                name=group["name"],
+                email_address=group["email"],
+                type=RemoteFileIdentityType.GROUP,
+                modified_at=datetime_now(),
+            )
+
+            for member in self._get_looping_google_api_list_response(members_api, "members", {"groupKey": group["id"]}, logger):
+                rfp.member_email_addresses = rfp.member_email_addresses or []
+                rfp.member_email_addresses.append(member["email"])
+
+            yield rfp.dict()
