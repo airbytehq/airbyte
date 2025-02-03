@@ -93,7 +93,7 @@
               "title" : "Namespace"
             }
           },
-          "required" : [ "catalog_type", "server_uri" ]
+          "required" : [ "catalog_type", "server_uri", "namespace" ]
         }, {
           "title" : "Glue Catalog",
           "type" : "object",
@@ -122,7 +122,7 @@
               "title" : "Database Name"
             }
           },
-          "required" : [ "catalog_type", "glue_id" ]
+          "required" : [ "catalog_type", "glue_id", "database_name" ]
         }, {
           "title" : "Rest Catalog",
           "type" : "object",
@@ -146,7 +146,7 @@
               "title" : "Namespace"
             }
           },
-          "required" : [ "catalog_type", "server_uri" ]
+          "required" : [ "catalog_type", "server_uri", "namespace" ]
         } ],
         "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST) and its associated configuration.",
         "title" : "Catalog Type",

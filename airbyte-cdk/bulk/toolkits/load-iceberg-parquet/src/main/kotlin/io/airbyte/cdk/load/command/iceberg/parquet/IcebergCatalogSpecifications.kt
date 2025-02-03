@@ -188,7 +188,7 @@ class NessieCatalogSpecification(
            `Destination-defined` or `Source-defined`"""
     )
     @get:JsonProperty("namespace")
-    val namespace: String?
+    val namespace: String
 ) : CatalogType(catalogType)
 
 /**
@@ -231,7 +231,7 @@ class GlueCatalogSpecification(
         """The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`"""
     )
     @get:JsonProperty("database_name")
-    val databaseName: String?
+    val databaseName: String
 ) : CatalogType(catalogType), AWSArnRoleSpecification
 
 /**
@@ -266,7 +266,7 @@ class RestCatalogSpecification(
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
            `Destination-defined` or `Source-defined`"""
     )
-    val namespace: String?
+    val namespace: String
 ) : CatalogType(catalogType)
 
 /**
@@ -317,7 +317,7 @@ data class GlueCatalogConfiguration(
     @get:JsonPropertyDescription(
         """The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`"""
     )
-    val databaseName: String?
+    val databaseName: String
 ) : CatalogConfiguration, AWSArnRoleConfigurationProvider
 
 /**
@@ -340,7 +340,7 @@ data class NessieCatalogConfiguration(
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
            `Destination-defined` or `Source-defined`"""
     )
-    val namespace: String?
+    val namespace: String
 ) : CatalogConfiguration
 
 /**
@@ -360,7 +360,7 @@ data class RestCatalogConfiguration(
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
            `Destination-defined` or `Source-defined`"""
     )
-    val namespace: String?
+    val namespace: String
 ) : CatalogConfiguration
 
 /**

@@ -60,14 +60,6 @@ abstract class S3DataLakeWriteTest(
         nullUnknownTypes = true,
         nullEqualsUnset = true,
     ) {
-    @Test
-    @Disabled(
-        "failing because we have an extra _pos column - that's probably fine, but problem for a different day"
-    )
-    override fun testDedup() {
-        super.testDedup()
-    }
-
     /**
      * This test differs from the base test in two critical aspects:
      *
@@ -96,7 +88,7 @@ abstract class S3DataLakeWriteTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(
                 syncId = 42,
                 linkedMapOf("id" to intType, "to_drop" to stringType, "same" to intType)
@@ -116,7 +108,7 @@ abstract class S3DataLakeWriteTest(
                 linkedMapOf("id" to intType, "same" to intType, "to_add" to stringType)
             )
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -165,7 +157,6 @@ class GlueWriteTest :
             )
         )
     ) {
-
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
     override fun testFunkyCharacters() {

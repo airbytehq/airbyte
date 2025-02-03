@@ -27,6 +27,7 @@ Rocketlane connector  enables seamless data integration by syncing project, task
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2025-02-01 | [52964](https://github.com/airbytehq/airbyte/pull/52964) | Update dependencies |
 | 0.0.8 | 2025-01-25 | [52506](https://github.com/airbytehq/airbyte/pull/52506) | Update dependencies |
 | 0.0.7 | 2025-01-18 | [51908](https://github.com/airbytehq/airbyte/pull/51908) | Update dependencies |
 | 0.0.6 | 2025-01-11 | [51330](https://github.com/airbytehq/airbyte/pull/51330) | Update dependencies |

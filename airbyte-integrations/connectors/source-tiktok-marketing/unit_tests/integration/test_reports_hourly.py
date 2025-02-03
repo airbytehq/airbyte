@@ -150,7 +150,7 @@ class TestAdsReportHourly(TestCase):
         mock_advertisers_slices(http_mocker, self.config())
         self.mock_response(http_mocker)
 
-        output = read(SourceTiktokMarketing(), self.config(), self.catalog())
+        output = read(SourceTiktokMarketing(config=self.config(), catalog=None, state=None), self.config(), self.catalog())
         assert len(output.records) == 2
         assert output.records[0].record.data.get("ad_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
@@ -161,7 +161,10 @@ class TestAdsReportHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(
-            source=SourceTiktokMarketing(), config=self.config(), catalog=self.catalog(sync_mode=SyncMode.incremental), state=self.state()
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            config=self.config(),
+            catalog=self.catalog(sync_mode=SyncMode.incremental),
+            state=self.state(),
         )
 
         assert len(output.records) == 1
@@ -174,7 +177,11 @@ class TestAdsReportHourly(TestCase):
         mock_advertisers_slices(http_mocker, self.config())
         self.mock_response(http_mocker, include_deleted=True)
 
-        output = read(SourceTiktokMarketing(), self.config(include_deleted=True), self.catalog())
+        output = read(
+            SourceTiktokMarketing(config=self.config(include_deleted=True), catalog=None, state=None),
+            self.config(include_deleted=True),
+            self.catalog(),
+        )
         assert len(output.records) == 2
         assert output.records[0].record.data.get("ad_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
@@ -292,7 +299,7 @@ class TestAdGroupsReportsHourly(TestCase):
             HttpResponse(body=json.dumps(EMPTY_LIST_RESPONSE), status_code=200),
         )
 
-        output = read(SourceTiktokMarketing(), self.config(), self.catalog())
+        output = read(SourceTiktokMarketing(config=self.config(), catalog=None, state=None), self.config(), self.catalog())
         assert len(output.records) == 2
         assert output.records[0].record.data.get("adgroup_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
@@ -338,7 +345,10 @@ class TestAdGroupsReportsHourly(TestCase):
         )
 
         output = read(
-            source=SourceTiktokMarketing(), config=self.config(), catalog=self.catalog(sync_mode=SyncMode.incremental), state=self.state()
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            config=self.config(),
+            catalog=self.catalog(sync_mode=SyncMode.incremental),
+            state=self.state(),
         )
 
         assert len(output.records) == 1
@@ -378,7 +388,11 @@ class TestAdGroupsReportsHourly(TestCase):
             HttpResponse(body=json.dumps(EMPTY_LIST_RESPONSE), status_code=200),
         )
 
-        output = read(SourceTiktokMarketing(), self.config(include_deleted=True), self.catalog())
+        output = read(
+            SourceTiktokMarketing(config=self.config(include_deleted=True), catalog=None, state=None),
+            self.config(include_deleted=True),
+            self.catalog(),
+        )
         assert len(output.records) == 2
         assert output.records[0].record.data.get("adgroup_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
@@ -481,7 +495,7 @@ class TestAdvertisersReportsHourly(TestCase):
         mock_advertisers_slices(http_mocker, self.config())
         self.mock_response(http_mocker)
 
-        output = read(SourceTiktokMarketing(), self.config(), self.catalog())
+        output = read(SourceTiktokMarketing(config=self.config(), catalog=None, state=None), self.config(), self.catalog())
         assert len(output.records) == 2
         assert output.records[0].record.data.get("advertiser_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
@@ -492,7 +506,10 @@ class TestAdvertisersReportsHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(
-            source=SourceTiktokMarketing(), config=self.config(), catalog=self.catalog(sync_mode=SyncMode.incremental), state=self.state()
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            config=self.config(),
+            catalog=self.catalog(sync_mode=SyncMode.incremental),
+            state=self.state(),
         )
 
         assert len(output.records) == 1
@@ -596,7 +613,7 @@ class TestCampaignsReportsHourly(TestCase):
         mock_advertisers_slices(http_mocker, self.config())
         self.mock_response(http_mocker)
 
-        output = read(SourceTiktokMarketing(), self.config(), self.catalog())
+        output = read(SourceTiktokMarketing(config=self.config(), catalog=None, state=None), self.config(), self.catalog())
         assert len(output.records) == 2
         assert output.records[0].record.data.get("campaign_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
@@ -607,7 +624,10 @@ class TestCampaignsReportsHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(
-            source=SourceTiktokMarketing(), config=self.config(), catalog=self.catalog(sync_mode=SyncMode.incremental), state=self.state()
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            config=self.config(),
+            catalog=self.catalog(sync_mode=SyncMode.incremental),
+            state=self.state(),
         )
 
         assert len(output.records) == 1
@@ -620,7 +640,11 @@ class TestCampaignsReportsHourly(TestCase):
         mock_advertisers_slices(http_mocker, self.config())
         self.mock_response(http_mocker, include_deleted=True)
 
-        output = read(SourceTiktokMarketing(), self.config(include_deleted=True), self.catalog())
+        output = read(
+            SourceTiktokMarketing(config=self.config(include_deleted=True), catalog=None, state=None),
+            self.config(include_deleted=True),
+            self.catalog(),
+        )
         assert len(output.records) == 2
         assert output.records[0].record.data.get("campaign_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
