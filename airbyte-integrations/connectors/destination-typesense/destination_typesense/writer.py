@@ -22,7 +22,15 @@ class TypesenseWriter:
 
     def queue_write_operation(self, stream_name: str, data: Mapping):
         random_key = str(uuid4())
-        self.write_buffer.append((stream_name, {"id": random_key, **data,}))
+        self.write_buffer.append(
+            (
+                stream_name,
+                {
+                    "id": random_key,
+                    **data,
+                },
+            )
+        )
         if len(self.write_buffer) == self.batch_size:
             self.flush()
 
