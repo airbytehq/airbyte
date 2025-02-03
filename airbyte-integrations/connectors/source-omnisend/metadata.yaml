@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7f0c5e2-4815-48c4-90cf-f47124209835
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.10
   dockerRepository: airbyte/source-omnisend
   githubIssueLabel: source-omnisend
   icon: icon.svg
