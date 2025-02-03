@@ -2,7 +2,7 @@
 title: OAuth 2.0
 ---
 # OAuth Authentication Methods
-## Declarative OAuth 2.0 (beta)
+## Declarative OAuth 2.0
 
 Declarative OAuth is a powerful feature that allows connector developers to implement OAuth authentication flows without writing any code. Instead of implementing custom OAuth logic, developers can describe their OAuth flow through configuration in their connector's spec file.
 
@@ -1017,7 +1017,9 @@ The `path_in_oauth_response` looks like:
 
 ## Partial OAuth (legacy)
 
-The legacy OAuth flow is a simpler flow that allows you to use an existing access (or refresh) token to authenticate with the API.
+The partial OAuth flow is a simpler flow that allows you to use an existing access (or refresh) token to authenticate with the API.
+
+The catch is that the user needs to implement the start of the OAuth flow manually to obtain the `access_token` and the `refresh_token` and pass them to the connector as a part of the `config` object.
 
 This method is supported through the `OAuthAuthenticator`, which requires the following parameters:
 
