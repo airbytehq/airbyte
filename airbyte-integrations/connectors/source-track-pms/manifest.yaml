@@ -1281,78 +1281,6 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - params
-    group_tags:
-      type: DeclarativeStream
-      name: group_tags
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: pms/groups/{{ stream_partition.group_id }}/tags
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _embedded
-              - tags
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/groups"
-              parent_key: id
-              partition_field: group_id
-      primary_key:
-        - group_id
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/group_tags"
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - group_id
-              value: "{{ stream_partition.group_id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - _links
     rate_types:
       type: DeclarativeStream
       name: rate_types
@@ -1415,142 +1343,6 @@ definitions:
           field_pointers:
             - - _embedded
               - parentRate
-    unit_taxes:
-      type: DeclarativeStream
-      name: unit_taxes
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: pms/units/{{ stream_partition.unit_id }}/taxes
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _embedded
-              - unitTaxes
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/unit_taxes_parent"
-              parent_key: id
-              partition_field: unit_id
-              incremental_dependency: true
-      primary_key:
-        - unit_id
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/unit_taxes"
-      transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _links
-        - type: AddFields
-          fields:
-            - path:
-                - unit_id
-              value: "{{ stream_interval.unit_id }}"
-    unit_types:
-      type: DeclarativeStream
-      name: unit_types
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: pms/units/types
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _embedded
-              - unitTypes
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/unit_types"
-      transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _links
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - lodgingType
     date_groups:
       type: DeclarativeStream
       name: date_groups
@@ -1671,6 +1463,78 @@ definitions:
           field_pointers:
             - - _embedded
               - unit
+    groups_tags:
+      type: DeclarativeStream
+      name: groups_tags
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/groups/{{ stream_partition.group_id }}/tags
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - tags
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/groups"
+              parent_key: id
+              partition_field: group_id
+      primary_key:
+        - group_id
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups_tags"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - group_id
+              value: "{{ stream_partition.group_id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - _links
     nodes_types:
       type: DeclarativeStream
       name: nodes_types
@@ -1787,9 +1651,9 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
-    unit_blocks:
+    units_taxes:
       type: DeclarativeStream
-      name: unit_blocks
+      name: units_taxes
       retriever:
         type: SimpleRetriever
         paginator:
@@ -1808,7 +1672,7 @@ definitions:
             start_from_page: 1
         requester:
           $ref: "#/definitions/base_requester"
-          path: pms/unit-blocks
+          path: pms/units/{{ stream_partition.unit_id }}/taxes
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -1834,26 +1698,95 @@ definitions:
             type: DpathExtractor
             field_path:
               - _embedded
-              - unitBlocks
+              - unitTaxes
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/units_taxes_parent"
+              parent_key: id
+              partition_field: unit_id
+              incremental_dependency: true
+      primary_key:
+        - unit_id
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/units_taxes"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+        - type: AddFields
+          fields:
+            - path:
+                - unit_id
+              value: "{{ stream_interval.unit_id }}"
+    units_types:
+      type: DeclarativeStream
+      name: units_types
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/units/types
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - unitTypes
       primary_key:
         - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/unit_blocks"
+          $ref: "#/schemas/units_types"
       transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - unit
         - type: RemoveFields
           field_pointers:
             - - _links
         - type: RemoveFields
           field_pointers:
             - - _embedded
-              - reason
-              - _links
+              - lodgingType
     folios_rules:
       type: DeclarativeStream
       name: folios_rules
@@ -1909,90 +1842,6 @@ definitions:
         schema:
           $ref: "#/schemas/folios_rules"
       transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _links
-    group_blocks:
-      type: DeclarativeStream
-      name: group_blocks
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: pms/groups/{{ stream_partition.group_id }}/blocks
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _embedded
-              - blocks
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/groups"
-              parent_key: id
-              partition_field: group_id
-      primary_key:
-        - group_id
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/group_blocks"
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - group_id
-              value: "{{ stream_partition.group_id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - unit
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - reservation
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - folioBreakdown
         - type: RemoveFields
           field_pointers:
             - - _links
@@ -2262,6 +2111,73 @@ definitions:
           field_pointers:
             - - _embedded
               - taxes
+    units_blocks:
+      type: DeclarativeStream
+      name: units_blocks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/unit-blocks
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - unitBlocks
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/units_blocks"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - unit
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - reason
+              - _links
     custom_fields:
       type: DeclarativeStream
       name: custom_fields
@@ -2317,6 +2233,90 @@ definitions:
         schema:
           $ref: "#/schemas/custom_fields"
       transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+    groups_blocks:
+      type: DeclarativeStream
+      name: groups_blocks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/groups/{{ stream_partition.group_id }}/blocks
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - blocks
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/groups"
+              parent_key: id
+              partition_field: group_id
+      primary_key:
+        - group_id
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups_blocks"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - group_id
+              value: "{{ stream_partition.group_id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - unit
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - reservation
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - folioBreakdown
         - type: RemoveFields
           field_pointers:
             - - _links
@@ -2529,76 +2529,6 @@ definitions:
             - path:
                 - unit_id
               value: "{{ stream_interval.unit_id }}"
-    group_breakdown:
-      type: DeclarativeStream
-      name: group_breakdown
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: pms/groups/{{ stream_partition.group_id }}/breakdown
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - breakdown
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/groups"
-              parent_key: id
-              partition_field: group_id
-      primary_key:
-        - group_id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/group_breakdown"
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - group_id
-              value: "{{ stream_partition.group_id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - _links
     reservations_v2:
       type: DeclarativeStream
       name: reservations_v2
@@ -2995,9 +2925,9 @@ definitions:
           field_pointers:
             - - _embedded
               - taxPolicy
-    owner_statements:
+    groups_breakdown:
       type: DeclarativeStream
-      name: owner_statements
+      name: groups_breakdown
       retriever:
         type: SimpleRetriever
         paginator:
@@ -3016,7 +2946,7 @@ definitions:
             start_from_page: 1
         requester:
           $ref: "#/definitions/base_requester"
-          path: pms/owners/statements
+          path: pms/groups/{{ stream_partition.group_id }}/breakdown
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -3041,19 +2971,27 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - _embedded
-              - statements
+              - breakdown
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/groups"
+              parent_key: id
+              partition_field: group_id
       primary_key:
-        - id
+        - group_id
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/owner_statements"
+          $ref: "#/schemas/groups_breakdown"
       transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - owner
+        - type: AddFields
+          fields:
+            - path:
+                - group_id
+              value: "{{ stream_partition.group_id }}"
         - type: RemoveFields
           field_pointers:
             - - _links
@@ -3191,9 +3129,9 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
-    reservation_types:
+    owners_statements:
       type: DeclarativeStream
-      name: reservation_types
+      name: owners_statements
       retriever:
         type: SimpleRetriever
         paginator:
@@ -3212,7 +3150,7 @@ definitions:
             start_from_page: 1
         requester:
           $ref: "#/definitions/base_requester"
-          path: pms/reservations/types
+          path: pms/owners/statements
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -3238,124 +3176,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - _embedded
-              - reservationTypes
+              - statements
       primary_key:
         - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/reservation_types"
+          $ref: "#/schemas/owners_statements"
       transformations:
         - type: RemoveFields
           field_pointers:
-            - - _links
-    unit_taxes_parent:
-      type: DeclarativeStream
-      name: unit_taxes_parent
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: pms/units
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _embedded
-              - units
-          record_filter:
-            type: RecordFilter
-            condition: "{{ record['taxId'] not in [None] }}"
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/unit_taxes_parent"
-      transformations:
+            - - _embedded
+              - owner
         - type: RemoveFields
           field_pointers:
             - - _links
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - node
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - parent
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - type
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - lodgingType
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - taxDistrict
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - localOffice
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - travelInsuranceProduct
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - cleanStatus
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updatedAt
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00Z"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_time_option:
-          type: RequestOption
-          field_name: contentUpdatedSince
-          inject_into: request_parameter
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
     accounting_charges:
       type: DeclarativeStream
       name: accounting_charges
@@ -3503,6 +3338,171 @@ definitions:
             - path:
                 - fraction_id
               value: "{{ stream_partition.fraction_id }}"
+    reservations_types:
+      type: DeclarativeStream
+      name: reservations_types
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/reservations/types
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - reservationTypes
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reservations_types"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+    units_taxes_parent:
+      type: DeclarativeStream
+      name: units_taxes_parent
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/units
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - units
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['taxId'] not in [None] }}"
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/units_taxes_parent"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - node
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - parent
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - type
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - lodgingType
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - taxDistrict
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - localOffice
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - travelInsuranceProduct
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - cleanStatus
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1900-01-01T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_time_option:
+          type: RequestOption
+          field_name: contentUpdatedSince
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
     users_pii_redacted:
       type: DeclarativeStream
       name: users_pii_redacted
@@ -4317,74 +4317,6 @@ definitions:
             - path:
                 - fraction_id
               value: "{{ stream_partition.fraction_id }}"
-    unit_daily_pricing_v2:
-      type: DeclarativeStream
-      name: unit_daily_pricing_v2
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: v2/pms/units/{{ stream_partition.unit_id }}/daily-pricing
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/units_pricing_parent"
-              parent_key: id
-              partition_field: unit_id
-              incremental_dependency: true
-      primary_key:
-        - unit_id
-        - rateTypeId
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/unit_daily_pricing_v2"
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - unit_id
-              value: "{{ stream_partition.unit_id }}"
     crm_company_attachment:
       type: DeclarativeStream
       name: crm_company_attachment
@@ -4522,6 +4454,74 @@ definitions:
               - tasks
               - "*"
               - _links
+    units_daily_pricing_v2:
+      type: DeclarativeStream
+      name: units_daily_pricing_v2
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/pms/units/{{ stream_partition.unit_id }}/daily-pricing
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/units_pricing_parent"
+              parent_key: id
+              partition_field: unit_id
+              incremental_dependency: true
+      primary_key:
+        - unit_id
+        - rateTypeId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/units_daily_pricing_v2"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - unit_id
+              value: "{{ stream_partition.unit_id }}"
     accounting_transactions:
       type: DeclarativeStream
       name: accounting_transactions
@@ -4924,9 +4924,9 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
-    unit_types_pricing_parent:
+    units_types_pricing_parent:
       type: DeclarativeStream
-      name: unit_types_pricing_parent
+      name: units_types_pricing_parent
       retriever:
         type: SimpleRetriever
         paginator:
@@ -4981,7 +4981,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/unit_types_pricing_parent"
+          $ref: "#/schemas/units_types_pricing_parent"
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -4990,9 +4990,9 @@ definitions:
           field_pointers:
             - - _embedded
               - lodgingType
-    unit_charge_pricing_parent:
+    units_charge_pricing_parent:
       type: DeclarativeStream
-      name: unit_charge_pricing_parent
+      name: units_charge_pricing_parent
       retriever:
         type: SimpleRetriever
         paginator:
@@ -5046,7 +5046,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/unit_charge_pricing_parent"
+          $ref: "#/schemas/units_charge_pricing_parent"
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -5073,9 +5073,9 @@ definitions:
               - item
               - _embedded
               - taxPolicy
-    unit_type_daily_pricing_v2:
+    units_type_daily_pricing_v2:
       type: DeclarativeStream
-      name: unit_type_daily_pricing_v2
+      name: units_type_daily_pricing_v2
       retriever:
         type: SimpleRetriever
         paginator:
@@ -5124,7 +5124,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               stream:
-                $ref: "#/definitions/streams/unit_types_pricing_parent"
+                $ref: "#/definitions/streams/units_types_pricing_parent"
               parent_key: id
               partition_field: unit_type_id
       primary_key:
@@ -5133,7 +5133,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/unit_type_daily_pricing_v2"
+          $ref: "#/schemas/units_type_daily_pricing_v2"
       transformations:
         - type: AddFields
           fields:
@@ -5183,9 +5183,67 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
-    owner_statement_transactions:
+    reservations_discount_reasons:
       type: DeclarativeStream
-      name: owner_statement_transactions
+      name: reservations_discount_reasons
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/reservations/discount-reasons
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - discountReasons
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reservations_discount_reasons"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+    owners_statements_transactions:
+      type: DeclarativeStream
+      name: owners_statements_transactions
       retriever:
         type: SimpleRetriever
         paginator:
@@ -5238,7 +5296,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               stream:
-                $ref: "#/definitions/streams/owner_statements"
+                $ref: "#/definitions/streams/owners_statements"
               parent_key: id
               partition_field: statement_id
       primary_key:
@@ -5247,7 +5305,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/owner_statement_transactions"
+          $ref: "#/schemas/owners_statements_transactions"
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -5265,64 +5323,6 @@ definitions:
           field_pointers:
             - - _embedded
               - unit
-    reservation_discount_reasons:
-      type: DeclarativeStream
-      name: reservation_discount_reasons
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: pms/reservations/discount-reasons
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _embedded
-              - discountReasons
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/reservation_discount_reasons"
-      transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _links
     reservations_guarantee_policies:
       type: DeclarativeStream
       name: reservations_guarantee_policies
@@ -5385,9 +5385,9 @@ definitions:
           field_pointers:
             - - _embedded
               - dateGroup
-    reservation_cancellation_reasons:
+    reservations_cancellation_reasons:
       type: DeclarativeStream
-      name: reservation_cancellation_reasons
+      name: reservations_cancellation_reasons
       retriever:
         type: SimpleRetriever
         paginator:
@@ -5438,7 +5438,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/reservation_cancellation_reasons"
+          $ref: "#/schemas/reservations_cancellation_reasons"
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -5501,9 +5501,9 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
-    owner_statement_transactions_pii_redacted:
+    owners_statements_transactions_pii_redacted:
       type: DeclarativeStream
-      name: owner_statement_transactions_pii_redacted
+      name: owners_statements_transactions_pii_redacted
       retriever:
         type: SimpleRetriever
         paginator:
@@ -5556,7 +5556,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               stream:
-                $ref: "#/definitions/streams/owner_statements"
+                $ref: "#/definitions/streams/owners_statements"
               parent_key: id
               partition_field: statement_id
       primary_key:
@@ -5565,7 +5565,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/owner_statement_transactions_pii_redacted"
+          $ref: "#/schemas/owners_statements_transactions_pii_redacted"
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -5622,10 +5622,10 @@ streams:
   - $ref: "#/definitions/streams/fractionals"
   - $ref: "#/definitions/streams/fractionals_inventory"
   - $ref: "#/definitions/streams/fractionals_owners"
-  - $ref: "#/definitions/streams/group_blocks"
-  - $ref: "#/definitions/streams/group_breakdown"
-  - $ref: "#/definitions/streams/group_tags"
   - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/groups_blocks"
+  - $ref: "#/definitions/streams/groups_breakdown"
+  - $ref: "#/definitions/streams/groups_tags"
   - $ref: "#/definitions/streams/housekeeping_clean_types"
   - $ref: "#/definitions/streams/housekeeping_task_list"
   - $ref: "#/definitions/streams/housekeeping_work_orders"
@@ -5634,22 +5634,22 @@ streams:
   - $ref: "#/definitions/streams/maintenance_work_orders"
   - $ref: "#/definitions/streams/nodes"
   - $ref: "#/definitions/streams/nodes_types"
-  - $ref: "#/definitions/streams/owner_statement_transactions"
-  - $ref: "#/definitions/streams/owner_statement_transactions_pii_redacted"
-  - $ref: "#/definitions/streams/owner_statements"
   - $ref: "#/definitions/streams/owners"
   - $ref: "#/definitions/streams/owners_contracts"
   - $ref: "#/definitions/streams/owners_pii_redacted"
+  - $ref: "#/definitions/streams/owners_statements"
+  - $ref: "#/definitions/streams/owners_statements_transactions"
+  - $ref: "#/definitions/streams/owners_statements_transactions_pii_redacted"
   - $ref: "#/definitions/streams/owners_units"
   - $ref: "#/definitions/streams/promo_codes"
   - $ref: "#/definitions/streams/quotes"
   - $ref: "#/definitions/streams/rate_types"
-  - $ref: "#/definitions/streams/reservation_cancellation_reasons"
-  - $ref: "#/definitions/streams/reservation_discount_reasons"
-  - $ref: "#/definitions/streams/reservation_types"
   - $ref: "#/definitions/streams/reservations"
   - $ref: "#/definitions/streams/reservations_cancellation_policies"
+  - $ref: "#/definitions/streams/reservations_cancellation_reasons"
+  - $ref: "#/definitions/streams/reservations_discount_reasons"
   - $ref: "#/definitions/streams/reservations_guarantee_policies"
+  - $ref: "#/definitions/streams/reservations_types"
   - $ref: "#/definitions/streams/reservations_v2"
   - $ref: "#/definitions/streams/reviews"
   - $ref: "#/definitions/streams/roles"
@@ -5659,20 +5659,20 @@ streams:
   - $ref: "#/definitions/streams/tax_policies"
   - $ref: "#/definitions/streams/taxes"
   - $ref: "#/definitions/streams/travel_insurance_products"
-  - $ref: "#/definitions/streams/unit_blocks"
-  - $ref: "#/definitions/streams/unit_charge_pricing_parent"
-  - $ref: "#/definitions/streams/unit_daily_pricing_v2"
-  - $ref: "#/definitions/streams/unit_taxes"
-  - $ref: "#/definitions/streams/unit_taxes_parent"
-  - $ref: "#/definitions/streams/unit_type_daily_pricing_v2"
-  - $ref: "#/definitions/streams/unit_types"
-  - $ref: "#/definitions/streams/unit_types_pricing_parent"
   - $ref: "#/definitions/streams/units"
   - $ref: "#/definitions/streams/units_amenities"
   - $ref: "#/definitions/streams/units_amenity_groups"
   - $ref: "#/definitions/streams/units_bed_types"
+  - $ref: "#/definitions/streams/units_blocks"
   - $ref: "#/definitions/streams/units_channel"
+  - $ref: "#/definitions/streams/units_charge_pricing_parent"
+  - $ref: "#/definitions/streams/units_daily_pricing_v2"
   - $ref: "#/definitions/streams/units_pricing_parent"
+  - $ref: "#/definitions/streams/units_taxes"
+  - $ref: "#/definitions/streams/units_taxes_parent"
+  - $ref: "#/definitions/streams/units_type_daily_pricing_v2"
+  - $ref: "#/definitions/streams/units_types"
+  - $ref: "#/definitions/streams/units_types_pricing_parent"
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/users_pii_redacted"
 
@@ -5830,30 +5830,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    group_tags:
-      hasRecords: true
-      streamHash: 9e305ff914be6f7fb15538657dcd2d87d64587b9
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     rate_types:
       hasRecords: true
       streamHash: 55b038aa873a42257ad4aeece2d430645c609eb1
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    unit_taxes:
-      hasRecords: true
-      streamHash: 32e9f83fb9286b01f138ee724cec68f2fddc54c1
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    unit_types:
-      hasRecords: true
-      streamHash: beaaf1f181476370ca2df13dbc1fff5a58c10710
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -5872,6 +5851,13 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    groups_tags:
+      hasRecords: true
+      streamHash: f1b3713e93ceeb57b53fd5f66ec04f071c25d5f9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     nodes_types:
       hasRecords: true
       streamHash: 74869a75374239be00123ab909af4cb45af12843
@@ -5886,9 +5872,16 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    unit_blocks:
+    units_taxes:
       hasRecords: true
-      streamHash: 0e70a4ba976d6aa55204f236f89047f3b18b2023
+      streamHash: c87c2304d61533a60db866b1023afa96506665fb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    units_types:
+      hasRecords: true
+      streamHash: 8eae37028eb1dea0620772d13cc295ea52274e20
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -5896,13 +5889,6 @@ metadata:
     folios_rules:
       hasRecords: true
       streamHash: 638510fcadd093fce72c8e67dc1e1d589146aefb
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    group_blocks:
-      hasRecords: true
-      streamHash: 46919113a5d12448ac320320a6e71d3e2dcbb303
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -5928,9 +5914,23 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    units_blocks:
+      hasRecords: true
+      streamHash: 36f52da245b14e904ac801c4f8c5d926af2b87fc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     custom_fields:
       hasRecords: true
       streamHash: 554ebd43a2cf7473a372cd8418b0700442461e13
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups_blocks:
+      hasRecords: true
+      streamHash: 4ceee2b6477dce331f1721c58fc52946b02e0444
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -5952,13 +5952,6 @@ metadata:
     units_channel:
       hasRecords: true
       streamHash: 1a88b86abd249d89b04113991d13e00e679674ec
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    group_breakdown:
-      hasRecords: true
-      streamHash: c95b5ca8bac8461a52d1dd45de021baeb8f2e55b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -5998,9 +5991,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    owner_statements:
+    groups_breakdown:
       hasRecords: true
-      streamHash: 68943276ccdc44e875359f68c46d4b70ee64c1dd
+      streamHash: a7583ba3d91003751a21a2a567f26b438d2fe780
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6019,16 +6012,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    reservation_types:
+    owners_statements:
       hasRecords: true
-      streamHash: c23f26c9a9b07d1d9d9c3f5766900387106a952b
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    unit_taxes_parent:
-      hasRecords: true
-      streamHash: 9711661e8742f4727e60c7cacd7fc4f8b8d4846c
+      streamHash: fa386c3f9f894c273888363fcf3e43872ce274d3
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6047,6 +6033,20 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    reservations_types:
+      hasRecords: true
+      streamHash: ca12f786d45d4750187dda5f35308442432d829e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    units_taxes_parent:
+      hasRecords: true
+      streamHash: b29a1ba4a65588261c94f2731c7d9790be188c75
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     users_pii_redacted:
       hasRecords: true
       streamHash: c5c232f2fe4d894ff54b9238f584cd4a04e0ab98
@@ -6055,12 +6055,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     accounting_accounts:
-      hasRecords: false
+      hasRecords: true
       streamHash: eb858819b5222b4a173c568cba879a4bc2323525
-      hasResponse: false
-      primaryKeysAreUnique: false
-      primaryKeysArePresent: false
-      responsesAreSuccessful: false
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     accounting_deposits:
       hasRecords: true
       streamHash: f0203934aca86157d86cf7238dd854a7683dc51f
@@ -6124,13 +6124,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    unit_daily_pricing_v2:
-      hasRecords: true
-      streamHash: cfb60d7c675332c55ca330c776fde96c2c06b883
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     crm_company_attachment:
       hasRecords: true
       streamHash: ddb36f29db1e526bff3fcf2299523113efc6232f
@@ -6141,6 +6134,13 @@ metadata:
     housekeeping_task_list:
       hasRecords: true
       streamHash: 65dd04c8fb51ff7baf0c742ae464201e1ab31a65
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    units_daily_pricing_v2:
+      hasRecords: true
+      streamHash: d17dd3156baf20e88b80f4cba8213f845a0096ae
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6180,23 +6180,23 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    unit_types_pricing_parent:
+    units_types_pricing_parent:
       hasRecords: true
-      streamHash: dac7e67b1573742d362dfb7ef5edcaf789146acd
+      streamHash: 4a9eb897a45762bfd9c22d918dec907879595876
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    unit_charge_pricing_parent:
+    units_charge_pricing_parent:
       hasRecords: true
-      streamHash: 3053bfae606a2b31bb48297018679ebdd793c603
+      streamHash: 99cf54d1f3e601ba3cc28e733b8c0919f07a1f73
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    unit_type_daily_pricing_v2:
+    units_type_daily_pricing_v2:
       hasRecords: true
-      streamHash: f3808c4df1d73fc066d144b00159e78d1f106465
+      streamHash: 51745798e62c5d179eb58a05971e2569d1c0044f
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6208,16 +6208,16 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    owner_statement_transactions:
+    reservations_discount_reasons:
       hasRecords: true
-      streamHash: d396a340cbc69c6a29a7408e3bd0c1bbddb98d02
+      streamHash: 7cc2661b75978286208757d136e16074af764af6
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    reservation_discount_reasons:
+    owners_statements_transactions:
       hasRecords: true
-      streamHash: 0b83860f5ae88a7f654cf97606842cbca3f9e829
+      streamHash: fb1a92e6942c7f5eed95db79cb230dac52a171d6
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6229,9 +6229,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    reservation_cancellation_reasons:
+    reservations_cancellation_reasons:
       hasRecords: true
-      streamHash: e47f3ec5a2b96ce12247c333df75b634b67720b9
+      streamHash: 1fef66aeb7047147574685dde03ef10b35fc503e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6243,9 +6243,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    owner_statement_transactions_pii_redacted:
+    owners_statements_transactions_pii_redacted:
       hasRecords: true
-      streamHash: 4c2059ecb3fa1df43b1c586e3a31f396c9f7bc71
+      streamHash: 6ad639c7f0874be1ee3286d660d749a8ddc76e09
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6272,37 +6272,37 @@ metadata:
     crm_tasks: true
     documents: true
     folio_logs: true
-    group_tags: true
     rate_types: true
-    unit_taxes: true
-    unit_types: true
     date_groups: true
     fractionals: true
+    groups_tags: true
     nodes_types: true
     promo_codes: true
-    unit_blocks: true
+    units_taxes: true
+    units_types: true
     folios_rules: true
-    group_blocks: true
     owners_units: true
     reservations: true
     tax_policies: true
+    units_blocks: true
     custom_fields: true
+    groups_blocks: true
     lodging_types: true
     tax_districts: true
     units_channel: true
-    group_breakdown: true
     reservations_v2: true
     units_amenities: true
     units_bed_types: true
     accounting_bills: true
     accounting_items: true
-    owner_statements: true
+    groups_breakdown: true
     owners_contracts: true
     contact_companies: true
-    reservation_types: true
-    unit_taxes_parent: true
+    owners_statements: true
     accounting_charges: true
     fractionals_owners: true
+    reservations_types: true
+    units_taxes_parent: true
     users_pii_redacted: true
     accounting_accounts: true
     accounting_deposits: true
@@ -6314,24 +6314,24 @@ metadata:
     units_pricing_parent: true
     contacts_pii_redacted: true
     fractionals_inventory: true
-    unit_daily_pricing_v2: true
     crm_company_attachment: true
     housekeeping_task_list: true
+    units_daily_pricing_v2: true
     accounting_transactions: true
     maintenance_work_orders: true
     housekeeping_clean_types: true
     housekeeping_work_orders: true
     travel_insurance_products: true
-    unit_types_pricing_parent: true
-    unit_charge_pricing_parent: true
-    unit_type_daily_pricing_v2: true
+    units_types_pricing_parent: true
+    units_charge_pricing_parent: true
+    units_type_daily_pricing_v2: true
     accounting_deposits_payments: true
-    owner_statement_transactions: true
-    reservation_discount_reasons: true
+    reservations_discount_reasons: true
+    owners_statements_transactions: true
     reservations_guarantee_policies: true
-    reservation_cancellation_reasons: true
+    reservations_cancellation_reasons: true
     reservations_cancellation_policies: true
-    owner_statement_transactions_pii_redacted: true
+    owners_statements_transactions_pii_redacted: true
 
 schemas:
   tags:
@@ -11709,50 +11709,6 @@ schemas:
           - string
           - "null"
     additionalProperties: true
-  group_tags:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - group_id
-      - id
-    properties:
-      description:
-        type:
-          - string
-          - "null"
-      id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-      color:
-        type:
-          - string
-          - "null"
-      group_id:
-        type: number
-      createdAt:
-        type:
-          - string
-          - "null"
-      createdBy:
-        type:
-          - string
-          - "null"
-      relatedTo:
-        type:
-          - string
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      updatedBy:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
   rate_types:
     type: object
     $schema: http://json-schema.org/schema#
@@ -11999,257 +11955,6 @@ schemas:
           - boolean
           - "null"
     additionalProperties: true
-  unit_taxes:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - unit_id
-      - id
-    properties:
-      id:
-        type: number
-      taxId:
-        type:
-          - number
-          - "null"
-      unitId:
-        type:
-          - number
-          - "null"
-      unit_id:
-        type: number
-      businessTaxId:
-        type:
-          - string
-          - "null"
-      totRegistrationId:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  unit_types:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-      roles:
-        type:
-          - array
-          - "null"
-      custom:
-        type:
-          - object
-          - "null"
-        properties:
-          pms_unit_types_pre_arrival_info:
-            type:
-              - string
-              - "null"
-      updated:
-        type:
-          - object
-          - "null"
-        properties:
-          content:
-            type:
-              - string
-              - "null"
-          pricing:
-            type:
-              - string
-              - "null"
-          availability:
-            type:
-              - string
-              - "null"
-      bedTypes:
-        type:
-          - array
-          - "null"
-      isActive:
-        type:
-          - boolean
-          - "null"
-      typeCode:
-        type:
-          - string
-          - "null"
-      _embedded:
-        type:
-          - object
-          - "null"
-        properties:
-          calendarGroup:
-            type:
-              - object
-              - "null"
-            properties:
-              id:
-                type:
-                  - number
-                  - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-              _links:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  self:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      href:
-                        type:
-                          - string
-                          - "null"
-              createdAt:
-                type:
-                  - string
-                  - "null"
-              createdBy:
-                type:
-                  - string
-                  - "null"
-              updatedAt:
-                type:
-                  - string
-                  - "null"
-              updatedBy:
-                type:
-                  - string
-                  - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      createdBy:
-        type:
-          - string
-          - "null"
-      shortName:
-        type:
-          - string
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      updatedBy:
-        type:
-          - string
-          - "null"
-      isBookable:
-        type:
-          - boolean
-          - "null"
-      gatewaysIds:
-        type:
-          - array
-          - "null"
-      petFriendly:
-        type:
-          - boolean
-          - "null"
-      useBedTypes:
-        type:
-          - boolean
-          - "null"
-      amenitiesIds:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - number
-            - "null"
-      documentsIds:
-        type:
-          - array
-          - "null"
-      isAccessible:
-        type:
-          - boolean
-          - "null"
-      quickCheckin:
-        type:
-          - boolean
-          - "null"
-      allowOversell:
-        type:
-          - boolean
-          - "null"
-      eventsAllowed:
-        type:
-          - boolean
-          - "null"
-      lodgingTypeId:
-        type:
-          - number
-          - "null"
-      oversellLimit:
-        type:
-          - number
-          - "null"
-      quickCheckout:
-        type:
-          - boolean
-          - "null"
-      allowUnitRates:
-        type:
-          - boolean
-          - "null"
-      folioException:
-        type:
-          - boolean
-          - "null"
-      smokingAllowed:
-        type:
-          - boolean
-          - "null"
-      calendarGroupId:
-        type:
-          - number
-          - "null"
-      childrenAllowed:
-        type:
-          - boolean
-          - "null"
-      hasEarlyCheckin:
-        type:
-          - boolean
-          - "null"
-      hasLateCheckout:
-        type:
-          - boolean
-          - "null"
-      securityDeposit:
-        type:
-          - string
-          - "null"
-      guaranteePoliciesIds:
-        type:
-          - array
-          - "null"
-      useRoomConfiguration:
-        type:
-          - boolean
-          - "null"
-      cancellationPoliciesIds:
-        type:
-          - array
-          - "null"
-    additionalProperties: true
   date_groups:
     type: object
     $schema: http://json-schema.org/schema#
@@ -12371,6 +12076,50 @@ schemas:
       futureInventoryTimePeriods:
         type:
           - number
+          - "null"
+    additionalProperties: true
+  groups_tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - group_id
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      group_id:
+        type: number
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      relatedTo:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
           - "null"
     additionalProperties: true
   nodes_types:
@@ -12667,7 +12416,35 @@ schemas:
                 - string
                 - "null"
     additionalProperties: true
-  unit_blocks:
+  units_taxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - unit_id
+      - id
+    properties:
+      id:
+        type: number
+      taxId:
+        type:
+          - number
+          - "null"
+      unitId:
+        type:
+          - number
+          - "null"
+      unit_id:
+        type: number
+      businessTaxId:
+        type:
+          - string
+          - "null"
+      totRegistrationId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  units_types:
     type: object
     $schema: http://json-schema.org/schema#
     required:
@@ -12675,80 +12452,65 @@ schemas:
     properties:
       id:
         type: number
-      notes:
+      name:
         type:
           - string
           - "null"
-      unitId:
+      roles:
         type:
-          - number
+          - array
           - "null"
-      endDate:
+      custom:
+        type:
+          - object
+          - "null"
+        properties:
+          pms_unit_types_pre_arrival_info:
+            type:
+              - string
+              - "null"
+      updated:
+        type:
+          - object
+          - "null"
+        properties:
+          content:
+            type:
+              - string
+              - "null"
+          pricing:
+            type:
+              - string
+              - "null"
+          availability:
+            type:
+              - string
+              - "null"
+      bedTypes:
+        type:
+          - array
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      typeCode:
         type:
           - string
-          - "null"
-      reasonId:
-        type:
-          - number
           - "null"
       _embedded:
         type:
           - object
           - "null"
         properties:
-          reason:
+          calendarGroup:
             type:
               - object
               - "null"
             properties:
-              description:
-                type:
-                  - string
-                  - "null"
               id:
                 type:
                   - number
-                  - "null"
-              code:
-                type:
-                  - string
-                  - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-              createdAt:
-                type:
-                  - string
-                  - "null"
-              createdBy:
-                type:
-                  - string
-                  - "null"
-              updatedAt:
-                type:
-                  - string
-                  - "null"
-              updatedBy:
-                type:
-                  - string
-                  - "null"
-          cleanType:
-            type:
-              - object
-              - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              code:
-                type:
-                  - string
                   - "null"
               name:
                 type:
@@ -12768,53 +12530,6 @@ schemas:
                         type:
                           - string
                           - "null"
-              isActive:
-                type:
-                  - boolean
-                  - "null"
-              _embedded:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  taskList:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      _links:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          self:
-                            type:
-                              - object
-                              - "null"
-                            properties:
-                              href:
-                                type:
-                                  - string
-                                  - "null"
-                  expenseAccount:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      _links:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          self:
-                            type:
-                              - object
-                              - "null"
-                            properties:
-                              href:
-                                type:
-                                  - string
-                                  - "null"
               createdAt:
                 type:
                   - string
@@ -12831,30 +12546,6 @@ schemas:
                 type:
                   - string
                   - "null"
-              taskListId:
-                type:
-                  - number
-                  - "null"
-              chargeOwner:
-                type:
-                  - boolean
-                  - "null"
-              timeEstimate:
-                type:
-                  - number
-                  - "null"
-              expenseAccountId:
-                type:
-                  - number
-                  - "null"
-              generateLinenTicket:
-                type:
-                  - boolean
-                  - "null"
-              chargeOwnerDefaultAmount:
-                type:
-                  - string
-                  - "null"
       createdAt:
         type:
           - string
@@ -12863,7 +12554,7 @@ schemas:
         type:
           - string
           - "null"
-      startDate:
+      shortName:
         type:
           - string
           - "null"
@@ -12875,39 +12566,106 @@ schemas:
         type:
           - string
           - "null"
-      blockNotes:
+      isBookable:
+        type:
+          - boolean
+          - "null"
+      gatewaysIds:
+        type:
+          - array
+          - "null"
+      petFriendly:
+        type:
+          - boolean
+          - "null"
+      useBedTypes:
+        type:
+          - boolean
+          - "null"
+      amenitiesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      documentsIds:
+        type:
+          - array
+          - "null"
+      isAccessible:
+        type:
+          - boolean
+          - "null"
+      quickCheckin:
+        type:
+          - boolean
+          - "null"
+      allowOversell:
+        type:
+          - boolean
+          - "null"
+      eventsAllowed:
+        type:
+          - boolean
+          - "null"
+      lodgingTypeId:
+        type:
+          - number
+          - "null"
+      oversellLimit:
+        type:
+          - number
+          - "null"
+      quickCheckout:
+        type:
+          - boolean
+          - "null"
+      allowUnitRates:
+        type:
+          - boolean
+          - "null"
+      folioException:
+        type:
+          - boolean
+          - "null"
+      smokingAllowed:
+        type:
+          - boolean
+          - "null"
+      calendarGroupId:
+        type:
+          - number
+          - "null"
+      childrenAllowed:
+        type:
+          - boolean
+          - "null"
+      hasEarlyCheckin:
+        type:
+          - boolean
+          - "null"
+      hasLateCheckout:
+        type:
+          - boolean
+          - "null"
+      securityDeposit:
         type:
           - string
           - "null"
-      isArchived:
+      guaranteePoliciesIds:
+        type:
+          - array
+          - "null"
+      useRoomConfiguration:
         type:
           - boolean
           - "null"
-      chargeOwner:
+      cancellationPoliciesIds:
         type:
-          - boolean
+          - array
           - "null"
-      cleanTypeId:
-        type:
-          - number
-          - "null"
-      blockReasonId:
-        type:
-          - number
-          - "null"
-      blockReasonInline:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
     additionalProperties: true
   folios_rules:
     type: object
@@ -12988,42 +12746,6 @@ schemas:
       breakdownChargesIncludeTax:
         type:
           - boolean
-          - "null"
-    additionalProperties: true
-  group_blocks:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - group_id
-      - id
-    properties:
-      id:
-        type: number
-      unitId:
-        type:
-          - number
-          - "null"
-      endDate:
-        type:
-          - string
-          - "null"
-      estimate:
-        type:
-          - string
-          - "null"
-      group_id:
-        type: number
-      _embedded:
-        type:
-          - object
-          - "null"
-      startDate:
-        type:
-          - string
-          - "null"
-      reservationId:
-        type:
-          - number
           - "null"
     additionalProperties: true
   owners_units:
@@ -14701,6 +14423,248 @@ schemas:
           - string
           - "null"
     additionalProperties: true
+  units_blocks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      notes:
+        type:
+          - string
+          - "null"
+      unitId:
+        type:
+          - number
+          - "null"
+      endDate:
+        type:
+          - string
+          - "null"
+      reasonId:
+        type:
+          - number
+          - "null"
+      _embedded:
+        type:
+          - object
+          - "null"
+        properties:
+          reason:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              code:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              createdBy:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              updatedBy:
+                type:
+                  - string
+                  - "null"
+          cleanType:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              code:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - string
+                          - "null"
+              isActive:
+                type:
+                  - boolean
+                  - "null"
+              _embedded:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  taskList:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      _links:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          self:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              href:
+                                type:
+                                  - string
+                                  - "null"
+                  expenseAccount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      _links:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          self:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              href:
+                                type:
+                                  - string
+                                  - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              createdBy:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              updatedBy:
+                type:
+                  - string
+                  - "null"
+              taskListId:
+                type:
+                  - number
+                  - "null"
+              chargeOwner:
+                type:
+                  - boolean
+                  - "null"
+              timeEstimate:
+                type:
+                  - number
+                  - "null"
+              expenseAccountId:
+                type:
+                  - number
+                  - "null"
+              generateLinenTicket:
+                type:
+                  - boolean
+                  - "null"
+              chargeOwnerDefaultAmount:
+                type:
+                  - string
+                  - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      blockNotes:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      chargeOwner:
+        type:
+          - boolean
+          - "null"
+      cleanTypeId:
+        type:
+          - number
+          - "null"
+      blockReasonId:
+        type:
+          - number
+          - "null"
+      blockReasonInline:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
   custom_fields:
     type: object
     $schema: http://json-schema.org/schema#
@@ -14788,6 +14752,42 @@ schemas:
             properties:
               allowRichText:
                 type: boolean
+    additionalProperties: true
+  groups_blocks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - group_id
+      - id
+    properties:
+      id:
+        type: number
+      unitId:
+        type:
+          - number
+          - "null"
+      endDate:
+        type:
+          - string
+          - "null"
+      estimate:
+        type:
+          - string
+          - "null"
+      group_id:
+        type: number
+      _embedded:
+        type:
+          - object
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      reservationId:
+        type:
+          - number
+          - "null"
     additionalProperties: true
   lodging_types:
     type: object
@@ -15743,56 +15743,6 @@ schemas:
           - boolean
           - "null"
       airbnbPassThroughTaxesCollectionType:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  group_breakdown:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - group_id
-    properties:
-      fee:
-        type:
-          - string
-          - "null"
-      tax:
-        type:
-          - string
-          - "null"
-      rent:
-        type:
-          - string
-          - "null"
-      total:
-        type:
-          - string
-          - "null"
-      currency:
-        type:
-          - string
-          - "null"
-      estimate:
-        type:
-          - string
-          - "null"
-      group_id:
-        type: number
-      unitTypes:
-        anyOf:
-          - type: array
-          - type: object
-            properties:
-              Village 1 Bedroom:
-                type: number
-              Village 3 Bedroom:
-                type: number
-              Village 3 Bedroom Platinum:
-                type: number
-              Great Bear 4 Bedroom Platinum:
-                type: number
-      folioBalance:
         type:
           - string
           - "null"
@@ -17411,140 +17361,52 @@ schemas:
           - number
           - "null"
     additionalProperties: true
-  owner_statements:
+  groups_breakdown:
     type: object
     $schema: http://json-schema.org/schema#
     required:
-      - id
+      - group_id
     properties:
-      id:
+      fee:
+        type:
+          - string
+          - "null"
+      tax:
+        type:
+          - string
+          - "null"
+      rent:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      estimate:
+        type:
+          - string
+          - "null"
+      group_id:
         type: number
-      net:
-        type:
-          - string
-          - "null"
-      year:
-        type:
-          - number
-          - "null"
-      paidIn:
-        type:
-          - string
-          - "null"
-      period:
-        type:
-          - number
-          - "null"
-      splits:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            split:
-              type:
-                - string
-                - "null"
-            paidIn:
-              type:
-                - string
-                - "null"
-            charges:
-              type:
-                - string
-                - "null"
-            paidOut:
-              type:
-                - string
-                - "null"
-            revenue:
-              type:
-                - string
-                - "null"
-            journalId:
-              type:
-                - number
-                - "null"
-            dueByOwner:
-              type:
-                - string
-                - "null"
-            dueToOwner:
-              type:
-                - string
-                - "null"
-      charges:
-        type:
-          - string
-          - "null"
-      ownerId:
-        type:
-          - number
-          - "null"
-      paidOut:
-        type:
-          - string
-          - "null"
-      revenue:
-        type:
-          - string
-          - "null"
-      isAnnual:
-        type:
-          - boolean
-          - "null"
-      _embedded:
-        type:
-          - object
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      createdBy:
-        type:
-          - string
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      updatedBy:
-        type:
-          - string
-          - "null"
-      dueByOwner:
-        type:
-          - string
-          - "null"
-      dueToOwner:
-        type:
-          - string
-          - "null"
-      minBalance:
-        type:
-          - string
-          - "null"
-      isPublished:
-        type:
-          - boolean
-          - "null"
-      statementDate:
-        type:
-          - string
-          - "null"
-      balanceForward:
-        type:
-          - string
-          - "null"
-      endingBalances:
-        type:
-          - string
-          - "null"
-      trustAccountBalance:
+      unitTypes:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              Village 1 Bedroom:
+                type: number
+              Village 3 Bedroom:
+                type: number
+              Village 3 Bedroom Platinum:
+                type: number
+              Great Bear 4 Bedroom Platinum:
+                type: number
+      folioBalance:
         type:
           - string
           - "null"
@@ -17683,169 +17545,31 @@ schemas:
           - boolean
           - "null"
     additionalProperties: true
-  reservation_types:
+  owners_statements:
     type: object
     $schema: http://json-schema.org/schema#
     required:
       - id
     properties:
-      description:
-        type:
-          - string
-          - "null"
       id:
         type: number
-      code:
+      net:
         type:
           - string
           - "null"
-      name:
-        type:
-          - string
-          - "null"
-      isOwner:
-        type:
-          - boolean
-          - "null"
-      isActive:
-        type:
-          - boolean
-          - "null"
-      isLocked:
-        type:
-          - boolean
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      createdBy:
-        type:
-          - string
-          - "null"
-      isDefault:
-        type:
-          - boolean
-          - "null"
-      ownerStay:
-        type:
-          - boolean
-          - "null"
-      typeColor:
-        type:
-          - string
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      updatedBy:
-        type:
-          - string
-          - "null"
-      autoSelect:
-        type:
-          - boolean
-          - "null"
-      chargeRent:
-        type:
-          - string
-          - "null"
-      publicName:
-        type:
-          - string
-          - "null"
-      rentEarned:
-        type:
-          - string
-          - "null"
-      chargeRates:
-        type:
-          - boolean
-          - "null"
-      personalUse:
-        type:
-          - boolean
-          - "null"
-      realizeRates:
-        type:
-          - string
-          - "null"
-      requirePayment:
-        type:
-          - boolean
-          - "null"
-      posDefaultAllow:
-        type:
-          - boolean
-          - "null"
-      posDefaultLimit:
-        type:
-          - string
-          - "null"
-      isCommissionable:
-        type:
-          - boolean
-          - "null"
-      cleaningOptionsId:
+      year:
         type:
           - number
           - "null"
-      deferDisbursement:
-        type:
-          - boolean
-          - "null"
-      requiresAgreement:
-        type:
-          - boolean
-          - "null"
-      sendPortalInvites:
-        type:
-          - boolean
-          - "null"
-      schedulePercentage1:
-        type:
-          - number
-          - "null"
-      schedulePercentage2:
-        type:
-          - number
-          - "null"
-      showFolioTransactions:
-        type:
-          - boolean
-          - "null"
-      midStayServiceScheduleId:
-        type:
-          - number
-          - "null"
-      portalReservationBreakdown:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
-  unit_taxes_parent:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-      - updatedAt
-    properties:
-      id:
-        type: number
-      area:
-        type:
-          - number
-          - "null"
-      name:
+      paidIn:
         type:
           - string
           - "null"
-      phone:
+      period:
         type:
-          - string
+          - number
           - "null"
-      roles:
+      splits:
         type:
           - array
           - "null"
@@ -17854,86 +17578,57 @@ schemas:
             - object
             - "null"
           properties:
-            roleId:
+            split:
+              type:
+                - string
+                - "null"
+            paidIn:
+              type:
+                - string
+                - "null"
+            charges:
+              type:
+                - string
+                - "null"
+            paidOut:
+              type:
+                - string
+                - "null"
+            revenue:
+              type:
+                - string
+                - "null"
+            journalId:
               type:
                 - number
                 - "null"
-            userId:
+            dueByOwner:
               type:
-                - number
+                - string
                 - "null"
-      taxId:
+            dueToOwner:
+              type:
+                - string
+                - "null"
+      charges:
         type:
           - string
           - "null"
-      custom:
-        type:
-          - object
-          - "null"
-        properties:
-          pms_units_owner_notes:
-            type:
-              - string
-              - "null"
-          pms_units_source_unit_id:
-            type:
-              - string
-              - "null"
-          pms_units_wifi_information:
-            type:
-              - string
-              - "null"
-      floors:
+      ownerId:
         type:
           - number
           - "null"
-      nodeId:
-        type:
-          - number
-          - "null"
-      postal:
+      paidOut:
         type:
           - string
           - "null"
-      region:
+      revenue:
         type:
           - string
           - "null"
-      typeId:
-        type:
-          - number
-          - "null"
-      country:
-        type:
-          - string
-          - "null"
-      bedTypes:
-        type:
-          - array
-          - "null"
-      bedrooms:
-        type:
-          - number
-          - "null"
-      isActive:
+      isAnnual:
         type:
           - boolean
-          - "null"
-      latitude:
-        type:
-          - string
-          - "null"
-      locality:
-        type:
-          - string
-          - "null"
-      timezone:
-        type:
-          - string
-          - "null"
-      unitCode:
-        type:
-          - string
           - "null"
       _embedded:
         type:
@@ -17947,228 +17642,45 @@ schemas:
         type:
           - string
           - "null"
-      isLimited:
-        type:
-          - boolean
-          - "null"
-      longitude:
-        type:
-          - string
-          - "null"
-      shortName:
-        type:
-          - string
-          - "null"
       updatedAt:
-        type: string
+        type:
+          - string
+          - "null"
       updatedBy:
         type:
           - string
           - "null"
-      composites:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            unitId:
-              type:
-                - number
-                - "null"
-      isBookable:
-        type:
-          - boolean
-          - "null"
-      isOccupied:
-        type:
-          - boolean
-          - "null"
-      websiteUrl:
+      dueByOwner:
         type:
           - string
           - "null"
-      checkinTime:
+      dueToOwner:
         type:
           - string
           - "null"
-      gatewaysIds:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - number
-            - "null"
-      petFriendly:
-        type:
-          - boolean
-          - "null"
-      useBedTypes:
-        type:
-          - boolean
-          - "null"
-      amenitiesIds:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - number
-            - "null"
-      checkoutTime:
+      minBalance:
         type:
           - string
           - "null"
-      documentsIds:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - number
-            - "null"
-      isAccessible:
+      isPublished:
         type:
           - boolean
           - "null"
-      maxOccupancy:
-        type:
-          - number
-          - "null"
-      quickCheckin:
-        type:
-          - boolean
-          - "null"
-      cleanStatusId:
-        type:
-          - number
-          - "null"
-      eventsAllowed:
-        type:
-          - boolean
-          - "null"
-      fullBathrooms:
-        type:
-          - number
-          - "null"
-      halfBathrooms:
-        type:
-          - number
-          - "null"
-      localOfficeId:
-        type:
-          - number
-          - "null"
-      lodgingTypeId:
-        type:
-          - number
-          - "null"
-      quickCheckout:
-        type:
-          - boolean
-          - "null"
-      streetAddress:
+      statementDate:
         type:
           - string
           - "null"
-      taxDistrictId:
-        type:
-          - number
-          - "null"
-      folioException:
-        type:
-          - boolean
-          - "null"
-      smokingAllowed:
-        type:
-          - boolean
-          - "null"
-      childrenAllowed:
-        type:
-          - boolean
-          - "null"
-      cleanStatusType:
+      balanceForward:
         type:
           - string
           - "null"
-      extendedAddress:
+      endingBalances:
         type:
           - string
           - "null"
-      hasEarlyCheckin:
-        type:
-          - boolean
-          - "null"
-      hasLateCheckout:
-        type:
-          - boolean
-          - "null"
-      minimumAgeLimit:
-        type:
-          - number
-          - "null"
-      securityDeposit:
+      trustAccountBalance:
         type:
           - string
-          - "null"
-      earlyCheckinTime:
-        type:
-          - string
-          - "null"
-      lateCheckoutTime:
-        type:
-          - string
-          - "null"
-      availabilityOrder:
-        type:
-          - number
-          - "null"
-      housekeepingNotes:
-        type:
-          - string
-          - "null"
-      maintenanceMessage:
-        type:
-          - string
-          - "null"
-      housekeepingMessage:
-        type:
-          - string
-          - "null"
-      guaranteePoliciesIds:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - number
-            - "null"
-      useRoomConfiguration:
-        type:
-          - boolean
-          - "null"
-      threeQuarterBathrooms:
-        type:
-          - number
-          - "null"
-      cancellationPoliciesIds:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - number
-            - "null"
-      travelInsuranceProductId:
-        type:
-          - number
           - "null"
     additionalProperties: true
   accounting_charges:
@@ -24360,6 +23872,494 @@ schemas:
           - boolean
           - "null"
     additionalProperties: true
+  reservations_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      isOwner:
+        type:
+          - boolean
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isLocked:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      ownerStay:
+        type:
+          - boolean
+          - "null"
+      typeColor:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      autoSelect:
+        type:
+          - boolean
+          - "null"
+      chargeRent:
+        type:
+          - string
+          - "null"
+      publicName:
+        type:
+          - string
+          - "null"
+      rentEarned:
+        type:
+          - string
+          - "null"
+      chargeRates:
+        type:
+          - boolean
+          - "null"
+      personalUse:
+        type:
+          - boolean
+          - "null"
+      realizeRates:
+        type:
+          - string
+          - "null"
+      requirePayment:
+        type:
+          - boolean
+          - "null"
+      posDefaultAllow:
+        type:
+          - boolean
+          - "null"
+      posDefaultLimit:
+        type:
+          - string
+          - "null"
+      isCommissionable:
+        type:
+          - boolean
+          - "null"
+      cleaningOptionsId:
+        type:
+          - number
+          - "null"
+      deferDisbursement:
+        type:
+          - boolean
+          - "null"
+      requiresAgreement:
+        type:
+          - boolean
+          - "null"
+      sendPortalInvites:
+        type:
+          - boolean
+          - "null"
+      schedulePercentage1:
+        type:
+          - number
+          - "null"
+      schedulePercentage2:
+        type:
+          - number
+          - "null"
+      showFolioTransactions:
+        type:
+          - boolean
+          - "null"
+      midStayServiceScheduleId:
+        type:
+          - number
+          - "null"
+      portalReservationBreakdown:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  units_taxes_parent:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updatedAt
+    properties:
+      id:
+        type: number
+      area:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      roles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            roleId:
+              type:
+                - number
+                - "null"
+            userId:
+              type:
+                - number
+                - "null"
+      taxId:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+        properties:
+          pms_units_owner_notes:
+            type:
+              - string
+              - "null"
+          pms_units_source_unit_id:
+            type:
+              - string
+              - "null"
+          pms_units_wifi_information:
+            type:
+              - string
+              - "null"
+      floors:
+        type:
+          - number
+          - "null"
+      nodeId:
+        type:
+          - number
+          - "null"
+      postal:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      typeId:
+        type:
+          - number
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      bedTypes:
+        type:
+          - array
+          - "null"
+      bedrooms:
+        type:
+          - number
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      latitude:
+        type:
+          - string
+          - "null"
+      locality:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      unitCode:
+        type:
+          - string
+          - "null"
+      _embedded:
+        type:
+          - object
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      isLimited:
+        type:
+          - boolean
+          - "null"
+      longitude:
+        type:
+          - string
+          - "null"
+      shortName:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type: string
+      updatedBy:
+        type:
+          - string
+          - "null"
+      composites:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            unitId:
+              type:
+                - number
+                - "null"
+      isBookable:
+        type:
+          - boolean
+          - "null"
+      isOccupied:
+        type:
+          - boolean
+          - "null"
+      websiteUrl:
+        type:
+          - string
+          - "null"
+      checkinTime:
+        type:
+          - string
+          - "null"
+      gatewaysIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      petFriendly:
+        type:
+          - boolean
+          - "null"
+      useBedTypes:
+        type:
+          - boolean
+          - "null"
+      amenitiesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      checkoutTime:
+        type:
+          - string
+          - "null"
+      documentsIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      isAccessible:
+        type:
+          - boolean
+          - "null"
+      maxOccupancy:
+        type:
+          - number
+          - "null"
+      quickCheckin:
+        type:
+          - boolean
+          - "null"
+      cleanStatusId:
+        type:
+          - number
+          - "null"
+      eventsAllowed:
+        type:
+          - boolean
+          - "null"
+      fullBathrooms:
+        type:
+          - number
+          - "null"
+      halfBathrooms:
+        type:
+          - number
+          - "null"
+      localOfficeId:
+        type:
+          - number
+          - "null"
+      lodgingTypeId:
+        type:
+          - number
+          - "null"
+      quickCheckout:
+        type:
+          - boolean
+          - "null"
+      streetAddress:
+        type:
+          - string
+          - "null"
+      taxDistrictId:
+        type:
+          - number
+          - "null"
+      folioException:
+        type:
+          - boolean
+          - "null"
+      smokingAllowed:
+        type:
+          - boolean
+          - "null"
+      childrenAllowed:
+        type:
+          - boolean
+          - "null"
+      cleanStatusType:
+        type:
+          - string
+          - "null"
+      extendedAddress:
+        type:
+          - string
+          - "null"
+      hasEarlyCheckin:
+        type:
+          - boolean
+          - "null"
+      hasLateCheckout:
+        type:
+          - boolean
+          - "null"
+      minimumAgeLimit:
+        type:
+          - number
+          - "null"
+      securityDeposit:
+        type:
+          - string
+          - "null"
+      earlyCheckinTime:
+        type:
+          - string
+          - "null"
+      lateCheckoutTime:
+        type:
+          - string
+          - "null"
+      availabilityOrder:
+        type:
+          - number
+          - "null"
+      housekeepingNotes:
+        type:
+          - string
+          - "null"
+      maintenanceMessage:
+        type:
+          - string
+          - "null"
+      housekeepingMessage:
+        type:
+          - string
+          - "null"
+      guaranteePoliciesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      useRoomConfiguration:
+        type:
+          - boolean
+          - "null"
+      threeQuarterBathrooms:
+        type:
+          - number
+          - "null"
+      cancellationPoliciesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      travelInsuranceProductId:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
   users_pii_redacted:
     type: object
     $schema: http://json-schema.org/schema#
@@ -25641,22 +25641,6 @@ schemas:
       fraction_id:
         type: number
     additionalProperties: true
-  unit_daily_pricing_v2:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - unit_id
-      - rateTypeId
-    properties:
-      rates:
-        type:
-          - array
-          - "null"
-      unit_id:
-        type: number
-      rateTypeId:
-        type: number
-    additionalProperties: true
   crm_company_attachment:
     type: object
     $schema: http://json-schema.org/schema#
@@ -25787,6 +25771,22 @@ schemas:
         type:
           - string
           - "null"
+    additionalProperties: true
+  units_daily_pricing_v2:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - unit_id
+      - rateTypeId
+    properties:
+      rates:
+        type:
+          - array
+          - "null"
+      unit_id:
+        type: number
+      rateTypeId:
+        type: number
     additionalProperties: true
   accounting_transactions:
     type: object
@@ -27216,7 +27216,7 @@ schemas:
           - boolean
           - "null"
     additionalProperties: true
-  unit_types_pricing_parent:
+  units_types_pricing_parent:
     type: object
     $schema: http://json-schema.org/schema#
     required:
@@ -27439,7 +27439,7 @@ schemas:
           - array
           - "null"
     additionalProperties: true
-  unit_charge_pricing_parent:
+  units_charge_pricing_parent:
     type: object
     $schema: http://json-schema.org/schema#
     required:
@@ -27694,7 +27694,7 @@ schemas:
           - string
           - "null"
     additionalProperties: true
-  unit_type_daily_pricing_v2:
+  units_type_daily_pricing_v2:
     type: object
     $schema: http://json-schema.org/schema#
     required:
@@ -27794,7 +27794,44 @@ schemas:
           - string
           - "null"
     additionalProperties: true
-  owner_statement_transactions:
+  reservations_discount_reasons:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      handle:
+        type:
+          - string
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  owners_statements_transactions:
     type: object
     $schema: http://json-schema.org/schema#
     required:
@@ -27939,43 +27976,6 @@ schemas:
             type:
               - number
               - "null"
-    additionalProperties: true
-  reservation_discount_reasons:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-      handle:
-        type:
-          - string
-          - "null"
-      isActive:
-        type:
-          - boolean
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      createdBy:
-        type:
-          - string
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      updatedBy:
-        type:
-          - string
-          - "null"
     additionalProperties: true
   reservations_guarantee_policies:
     type: object
@@ -28127,7 +28127,7 @@ schemas:
           - boolean
           - "null"
     additionalProperties: true
-  reservation_cancellation_reasons:
+  reservations_cancellation_reasons:
     type: object
     $schema: http://json-schema.org/schema#
     required:
@@ -28387,7 +28387,7 @@ schemas:
           - number
           - "null"
     additionalProperties: true
-  owner_statement_transactions_pii_redacted:
+  owners_statements_transactions_pii_redacted:
     type: object
     $schema: http://json-schema.org/schema#
     required:
