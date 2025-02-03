@@ -4,6 +4,7 @@
 
 
 import logging
+import requests
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -47,6 +48,29 @@ from .streams import (
     UserLocationView,
 )
 from .utils import GAQL, logger, traced_exception
+from .lookup import LookupConfig, AccountLookupFailed
+
+def fetch(lookup: LookupConfig):
+    try:
+        res = (
+            requests
+            .request(
+                method=lookup['method'],
+                url=lookup['url'],
+                headers={
+                    "Authorization": f"Bearer {lookup['bearer_token']}",
+                    **lookup['headers']
+                },
+                json=lookup['payload'],
+            )
+        )
+    except requests.exceptions.RequestException as err:
+        raise AccountLookupFailed() from err
+    try:
+        res.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        raise AccountLookupFailed(res.text) from err
+    return list(set(res.json()[lookup['path']]))
 
 
 class SourceGoogleAds(AbstractSource):
@@ -67,6 +91,8 @@ class SourceGoogleAds(AbstractSource):
                 )
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
+        if "customer_id_lookup" in config:
+            config["customer_ids"] = fetch(config['customer_id_lookup'])
         if "customer_id" in config:
             config["customer_ids"] = config["customer_id"].split(",")
             config.pop("customer_id")

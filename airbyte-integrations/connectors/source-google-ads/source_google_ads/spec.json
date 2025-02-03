@@ -55,6 +55,61 @@
           }
         }
       },
+      "customer_id_lookup": {
+        "type": "object",
+        "description": "Get dynamically the customer ids",
+        "title": "Lookup Customer ID",
+        "order": 0,
+        "required": [
+          "url",
+          "method",
+          "bearer_token",
+          "headers",
+          "payload",
+          "path"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Endoint URL",
+            "order": 0,
+            "description": "The URL to fetch the list"
+          },
+          "method": {
+            "type": "string",
+            "title": "HTTP method to use",
+            "order": 1,
+            "description": "e.g. GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE"
+          },
+          "bearer_token": {
+            "type": "string",
+            "title": "Bearer token",
+            "order": 2,
+            "description": "Token to authenticate against the API",
+            "airbyte_secret": true
+          },
+          "headers": {
+            "type": "object",
+            "title": "Additional HTTP headers",
+            "order": 3,
+            "additionalProperties": true,
+            "description": "HTTP headers to add to the request"
+          },
+          "payload": {
+            "type": "object",
+            "title": "HTTP payload",
+            "order": 4,
+            "additionalProperties": true,
+            "description": "Map of the json payload to submit to the endpoint"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path",
+            "order": 5,
+            "description": "Path to extract the relevant list from the response JSON"
+          }
+        }
+      },
       "customer_id": {
         "title": "Customer ID(s)",
         "type": "string",
