@@ -19,7 +19,7 @@ some_object:
 ```
 
 Some components also pass in additional arguments to the context.
-This is the case for the [record selector](./understanding-the-yaml-file/record-selector.md), which passes in an additional `response` argument.
+This is the case for the [record selector](../understanding-the-yaml-file/record-selector.md), which passes in an additional `response` argument.
 
 Both dot notation and bracket notations (with single quotes ( `'`)) are interchangeable.
 This means that both these string templates will evaluate to the same string:
@@ -31,6 +31,6 @@ In addition to passing additional values through the $parameters argument, macro
 For example,
 `"{{ max(2, 3) }}" -> 3`
 
-The macros and variables available in all possible contexts are documented in the [YAML Reference](./understanding-the-yaml-file/reference.md#variables).
+The macros and variables available in all possible contexts are documented in the [YAML Reference](../understanding-the-yaml-file/reference.md#variables).
 
 Additional information on jinja templating can be found at [https://jinja.palletsprojects.com/en/3.1.x/templates/#](https://jinja.palletsprojects.com/en/3.1.x/templates/#)

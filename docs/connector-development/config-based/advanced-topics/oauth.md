@@ -1,8 +1,8 @@
 ---
-title: Declarative OAuth (beta)
+title: OAuth 2.0
 ---
-
-# Declarative OAuth
+# OAuth Authentication Methods
+## Declarative OAuth 2.0 (beta)
 
 Declarative OAuth is a powerful feature that allows connector developers to implement OAuth authentication flows without writing any code. Instead of implementing custom OAuth logic, developers can describe their OAuth flow through configuration in their connector's spec file.
 
@@ -31,7 +31,7 @@ Declarative OAuth is a powerful feature that allows connector developers to impl
 
 The feature is configured through the `advanced_auth.oauth_config_specification` field in your connector's spec file, with most of the OAuth-specific configuration happening in the `oauth_connector_input_specification` subfield.
 
-## Overview
+### Overview
 
 In an ideal world, implementing OAuth 2.0 authentication for each data provider would be straightforward. The main pattern involves: `Consent Screen` > `Permission/Scopes Validation` > `Access Granted`. At Airbyte, we've refined various techniques to provide the best OAuth 2.0 experience for community developers.
 
@@ -44,7 +44,7 @@ Once the configuration is set, the `DeclarativeOAuthFlow` handles the following 
 - Displays the `Consent Screen` for permission/scope verification (depending on the data provider)
 - Completes the flow by granting the `access_token`/`refresh_token` for authenticated API calls
 
-## Implementation Examples
+### Implementation Examples
 
 Let's walk through implementing OAuth flows of increasing complexity. Each example builds on the previous one.
 
@@ -147,7 +147,7 @@ schemas:
 
 ```
 
-### Basic OAuth Flow
+#### Basic OAuth Flow
 Lets update the spec to add a very basic OAuth flow with
 1. No custom parameters
 2. No custom headers
@@ -176,7 +176,7 @@ Example Response:
 }
 ```
 
-#### Example Declarative OAuth Spec
+##### Example Declarative OAuth Spec
 ```diff
 --- manifest.yml
 +++ simple_oauth_manifest.yml
@@ -254,10 +254,10 @@ spec:
 
 ```
 
-### Advanced Case: client secret is a request header not a query parameter
+#### Advanced Case: client secret is a request header not a query parameter
 Imagine that the OAuth flow is updated so that the client secret is a request header instead of a query parameter.
 
-#### Example Declarative OAuth Change
+##### Example Declarative OAuth Change
 Here is the change you would make to the spec to support this:
 ```diff
 --- simple_oauth_manifest.yml
@@ -275,7 +275,7 @@ Here is the change you would make to the spec to support this:
 
 ```
 
-#### Example with the header value encoded into `base64-string`
+##### Example with the header value encoded into `base64-string`
 In this case, the header value would be encoded into `base64-encoded` string before being added to the headers.
 
 Here is the change you would make to the spec to support this:
@@ -296,10 +296,10 @@ Here is the change you would make to the spec to support this:
 
 ```
 
-### Advanced Case: access token url query parameters should be `JSON-encoded`
+#### Advanced Case: access token url query parameters should be `JSON-encoded`
 Imagine that the OAuth flow is updated so that the query parameters should be `JSON-encoded` to obtain the `access_token/refresh_token`, during the `code` to `access_token/refresh_token` exchange. In this case the `access_token_url` should not include the variables as a part of the `url` itself. Use the `access_token_params` property to include the `JSON-encoded` params in the `body` of the request.
 
-#### Example Declarative OAuth Change
+##### Example Declarative OAuth Change
 Here is the change you would make to the spec to support this:
 ```diff
 --- simple_oauth_manifest.yml
@@ -329,7 +329,7 @@ The underlying `JSON-encoded` parameters will be included in the `body` of the o
 
 ```
 
-### Advanced Case: access token is returned in a non standard / nested field
+#### Advanced Case: access token is returned in a non standard / nested field
 Now imagine that the OAuth flow is updated so that the access token returned by `/oauth/token` is in a nested non standard field. Specifically, the response is now:
 ```json
 {
@@ -339,7 +339,7 @@ Now imagine that the OAuth flow is updated so that the access token returned by 
 }
 ```
 
-#### Example Declarative OAuth Change
+##### Example Declarative OAuth Change
 ```diff
 --- base_oauth.yml
 +++ different_access_token_field.yml
@@ -361,7 +361,7 @@ Now imagine that the OAuth flow is updated so that the access token returned by 
        complete_oauth_server_input_specification:
 ```
 
-### Advanced Case: refresh token / single-use refresh token support 
+#### Advanced Case: refresh token / single-use refresh token support
 Imagine that the OAuth flow is updated so that the OAuth flow now supports refresh tokens.
 
 Meaning that the OAuth flow now has an additional endpoint:
@@ -378,7 +378,7 @@ and the response of `/oauth/token` now includes a refresh token field.
 }
 ```
 
-#### Example Declarative OAuth Change
+##### Example Declarative OAuth Change
 ```diff
 --- base_oauth.yml
 +++ refresh_token.yml
@@ -417,7 +417,7 @@ and the response of `/oauth/token` now includes a refresh token field.
 -        title: Access token
 +        title: Refresh token
 @@ -86,16 +95,22 @@ spec:
-           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}           
+           https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
        complete_oauth_output_specification:
          required:
            - access_token
@@ -448,10 +448,10 @@ and the response of `/oauth/token` now includes a refresh token field.
 
 ```
 
-### Advanced Case: scopes should be provided as a query parameter 
+#### Advanced Case: scopes should be provided as a query parameter
 Imagine that the OAuth flow is updated so that you need to mention the `scope` query parameter to get to the `consent screen` and verify / grant the access to the neccessary onces, before moving forward.
 
-#### Example Declarative OAuth Change
+##### Example Declarative OAuth Change
 ```diff
 --- base_oauth.yml
 +++ scopes.yml
@@ -471,10 +471,10 @@ Imagine that the OAuth flow is updated so that you need to mention the `scope` q
 
 ```
 
-### Advanced Case: generate the complex `state` value and make it a part of the query parameter 
+#### Advanced Case: generate the complex `state` value and make it a part of the query parameter
 Imagine that the OAuth flow is updated so that you need to mention the `state` query parameter being generated with the minimum `10` and maximum `27` symbols.
 
-#### Example Declarative OAuth Change
+##### Example Declarative OAuth Change
 ```diff
 --- base_oauth.yml
 +++ base_oauth_with_custom_state.yml
@@ -499,9 +499,9 @@ Imagine that the OAuth flow is updated so that you need to mention the `state` q
 Example URL:
 `https://yourconnectorservice.com/oauth/consent?client_id=YOUR_CLIENT_ID_123&redirect_uri=https://cloud.airbyte.com&state=2LtdNpN8pmkYOBDqoVR3NzYQ`
 
-#### Example using an url-encoded / url-decoded `scope` parameter
+##### Example using an url-encoded / url-decoded `scope` parameter
 You can make the `scope` paramter `url-encoded` by specifying the `pipe` ( | ) + `urlEncoder` or `urlDecoder` in the target url.
-It would be pre-formatted and resolved into the `url-encoded` string before being replaced for the final resolved URL. 
+It would be pre-formatted and resolved into the `url-encoded` string before being replaced for the final resolved URL.
 
 ```diff
 --- scopes.yml
@@ -527,10 +527,10 @@ Example URL:
 `https://yourconnectorservice.com/oauth/consent?client_id=YOUR_CLIENT_ID_123&redirect_uri=https://cloud.airbyte.com&state=some_random_state_string&scope=my_scope_A%3Aread%20my_scope_B%3Aread`
 
 
-### Advanced Case: get code challenge from the `state_value` and set as a part of the `consent_url` 
+#### Advanced Case: get code challenge from the `state_value` and set as a part of the `consent_url`
 Imagine that the OAuth flow is updated so that you need to generate the `code challenge`, using `SHA-256` hash and include this as a query parameter in the `consent_url` to get to the `Consent Screen`, before moving forward with authentication.
 
-#### Example Declarative OAuth Change
+##### Example Declarative OAuth Change
 ```diff
 --- base_oauth.yml
 +++ base_oauth.yml
@@ -551,7 +551,7 @@ Imagine that the OAuth flow is updated so that you need to generate the `code ch
 ```
 
 
-### Advanced Case: The Connector is already using Legacy OAuth and the credentials are stored in a strange place
+#### Advanced Case: The Connector is already using Legacy OAuth and the credentials are stored in a strange place
 Imagine that the connector is already using Legacy OAuth and the credentials are stored in a strange place.
 
 Specifically:
@@ -561,7 +561,7 @@ Specifically:
 
 and we need to make sure that updating the spec to use Declarative OAuth doesn't break existing syncs.
 
-#### Example Declarative OAuth Change
+##### Example Declarative OAuth Change
 ```diff
 --- base_oauth.yml
 +++ legacy_to_declarative_oauth.yml
@@ -575,7 +575,7 @@ and we need to make sure that updating the spec to use Declarative OAuth doesn't
 +      client_id: '{{ config["super_secret_credentials"]["pokemon_client_id"] }}'
 +      client_secret: '{{ config["super_secret_credentials"]["pokemon_client_secret"] }}'
 +      access_token_value: '{{ config["super_secret_credentials"]["pokemon_access_token"] }}'
- 
+
  streams:
    - $ref: "#/definitions/streams/moves"
  spec:
@@ -690,9 +690,9 @@ code_value}}
 ```
 
 
-## Configuration Fields
+### Configuration Fields
 
-### Required Fields
+#### Required Fields
 
 | Field | Description | Default Value |
 |-------|-------------|---------------|
@@ -700,7 +700,7 @@ code_value}}
 | `access_token_url` | The URL where the connector will exchange the authorization code for an access token | NA |
 
 
-### Optional Fields
+#### Optional Fields
 
 | Field | Description | Default Value |
 |-------|-------------|---------------|
@@ -716,7 +716,7 @@ code_value}}
 | `state_key` | The optional override to provide the custom `state` key name, if required by data-provider  | "state" |
 | `token_expiry_key` | The optional override to provide the custom key name to something like `expires_at`, if required by data-provider  | "expires_in" |
 
-## Available Template Variables
+### Available Template Variables
 | Variable | Description | Default Value |
 |----------|-------------|---------------|
 | `{{ client_id_key }}` | The key used to identify the client ID in request bodies | "client_id" |
@@ -738,9 +738,9 @@ code_value}}
 | `{{ auth_code_value }}` | The authorization code received from the OAuth provider | Value from OAuth callback |
 | `{{ auth_code_param }}` | The parameter name and value pair used for the auth code in URLs | "code=auth code value here" |
 
-## Available Template Variables PIPE methods
+### Available Template Variables PIPE methods
 
-You can apply the 
+You can apply the
 
 | Method | Description | Input Value | Output Value |
 |----------|-------------|------|------|
@@ -751,7 +751,7 @@ You can apply the
 | `urlDecoder` | The variable method to decode the input `URL-string` into decoded string | "my%20string%20input" | "my string input" |
 
 
-## More common use-cases examples:
+### Common Use-Cases and Examples:
 The following section stands to describe common use-cases. Assuming that there are no overides provided over the `default` keys, the common specification parts (properties) like: `complete_oauth_server_input_specification` and `complete_oauth_server_output_specification` remain unchanged
 
 ```yaml
@@ -779,7 +779,7 @@ complete_oauth_server_output_specification:
         - client_secret
 ```
 
-### Case A: OAuth Flow returns the `access_token` only
+#### Case A: OAuth Flow returns the `access_token` only
 When the `access_token` is the only key expected after the successfull `OAuth2.0` authentication
 
 ```yaml
@@ -801,7 +801,7 @@ oauth_config_specification:
           - access_token
         path_in_oauth_response:
           - access_token
-  
+
   # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
@@ -811,7 +811,7 @@ The `path_in_oauth_response` looks like:
 }
 ```
 
-#### Case A-1: OAuth Flow returns the nested `access_token` only, under the `data` property
+##### Case A-1: OAuth Flow returns the nested `access_token` only, under the `data` property
 
 ```yaml
 # advanced_auth
@@ -833,7 +833,7 @@ oauth_config_specification:
         path_in_oauth_response:
           - data
           - access_token
-  
+
   # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
@@ -845,7 +845,7 @@ The `path_in_oauth_response` looks like:
 }
 ```
 
-### Case B: OAuth Flow returns the `refresh_token` only
+#### Case B: OAuth Flow returns the `refresh_token` only
 When the `refresh_token` is the only key expected after the successfull `OAuth2.0` authentication
 
 ```yaml
@@ -867,7 +867,7 @@ oauth_config_specification:
           - refresh_token
         path_in_oauth_response:
           - refresh_token
-  
+
   # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
@@ -877,7 +877,7 @@ The `path_in_oauth_response` looks like:
 }
 ```
 
-### Case C: OAuth Flow returns the `access_token` and the `refresh_token`
+#### Case C: OAuth Flow returns the `access_token` and the `refresh_token`
 When the the `access_token` and the `refresh_token` are the only keys expected after the successfull `OAuth2.0` authentication
 
 ```yaml
@@ -906,7 +906,7 @@ oauth_config_specification:
           - refresh_token
         path_in_oauth_response:
           - refresh_token
-  
+
   # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
@@ -917,7 +917,7 @@ The `path_in_oauth_response` looks like:
 }
 ```
 
-#### Case C-1: OAuth Flow returns the `access_token` and the `refresh_token` nested under the `data` property and each key is nested inside the dedicated placeholder
+##### Case C-1: OAuth Flow returns the `access_token` and the `refresh_token` nested under the `data` property and each key is nested inside the dedicated placeholder
 
 ```yaml
 # advanced_auth
@@ -949,7 +949,7 @@ oauth_config_specification:
           - data
           - refresh_token_placeholder
           - refresh_token
-  
+
   # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
@@ -966,11 +966,11 @@ The `path_in_oauth_response` looks like:
 }
 ```
 
-### Case D: OAuth Flow returns the `access_token` and the `refresh_token` is a `one-time-usage` key 
+#### Case D: OAuth Flow returns the `access_token` and the `refresh_token` is a `one-time-usage` key
 In this example we expect the `refresh_token` key expires alongside with the `access_token` and should be exhanged alltogher, having the new pair of keys in response. The `token_expiry_date` is the property that holds the `date-time` value of when the `access_token` should be expired
 
 ```yaml
-# advanced_auth 
+# advanced_auth
 
 oauth_config_specification:
   oauth_connector_input_specification:
@@ -1002,7 +1002,7 @@ oauth_config_specification:
           - token_expiry_date
         path_in_oauth_response:
           - expires_in
-  
+
   # Other common properties are omitted, see the `More common use-cases` description
 ```
 The `path_in_oauth_response` looks like:
@@ -1013,3 +1013,101 @@ The `path_in_oauth_response` looks like:
   "expires_in": 7200
 }
 ```
+
+
+## Partial OAuth (legacy)
+
+The legacy OAuth flow is a simpler flow that allows you to use an existing access (or refresh) token to authenticate with the API.
+
+This method is supported through the `OAuthAuthenticator`, which requires the following parameters:
+
+- token_refresh_endpoint: The endpoint to refresh the access token
+- client_id: The client id
+- client_secret: The client secret
+- refresh_token: The token used to refresh the access token
+- scopes (Optional): The scopes to request. Default: Empty list
+- token_expiry_date (Optional): The access token expiration date formatted as RFC-3339 ("%Y-%m-%dT%H:%M:%S.%f%z")
+- access_token_name (Optional): The field to extract access token from in the response. Default: "access_token".
+- expires_in_name (Optional): The field to extract expires_in from in the response. Default: "expires_in"
+- refresh_request_body (Optional): The request body to send in the refresh request. Default: None
+- grant_type (Optional): The parameter specified grant_type to request access_token. Default: "refresh_token"
+
+Schema:
+
+```yaml
+OAuth:
+  type: object
+  additionalProperties: true
+  required:
+    - token_refresh_endpoint
+    - client_id
+    - client_secret
+    - refresh_token
+    - access_token_name
+    - expires_in_name
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    token_refresh_endpoint:
+      type: string
+    client_id:
+      type: string
+    client_secret:
+      type: string
+    refresh_token:
+      type: string
+    scopes:
+      type: array
+      items:
+        type: string
+      default: []
+    token_expiry_date:
+      type: string
+    access_token_name:
+      type: string
+      default: "access_token"
+    expires_in_name:
+      type: string
+      default: "expires_in"
+    refresh_request_body:
+      type: object
+    grant_type:
+      type: string
+      default: "refresh_token"
+    refresh_token_updater:
+        title: Token Updater
+        description: When the token updater is defined, new refresh tokens, access tokens and the access token expiry date are written back from the authentication response to the config object. This is important if the refresh token can only used once.
+        properties:
+          refresh_token_name:
+            title: Refresh Token Property Name
+            description: The name of the property which contains the updated refresh token in the response from the token refresh endpoint.
+            type: string
+            default: "refresh_token"
+          access_token_config_path:
+            title: Config Path To Access Token
+            description: Config path to the access token. Make sure the field actually exists in the config.
+            type: array
+            items:
+              type: string
+            default: ["credentials", "access_token"]
+          refresh_token_config_path:
+            title: Config Path To Refresh Token
+            description: Config path to the access token. Make sure the field actually exists in the config.
+            type: array
+            items:
+              type: string
+            default: ["credentials", "refresh_token"]
+```
+
+Example:
+
+```yaml
+authenticator:
+  type: "OAuthAuthenticator"
+  token_refresh_endpoint: "https://api.searchmetrics.com/v4/token"
+  client_id: "{{ config['api_key'] }}"
+  client_secret: "{{ config['client_secret'] }}"
+  refresh_token: ""
+```
+
+For more information see [OAuthAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/OAuthAuthenticator)

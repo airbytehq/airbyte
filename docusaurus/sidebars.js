@@ -284,8 +284,6 @@ const buildAConnector = {
             "connector-development/config-based/understanding-the-yaml-file/partition-router",
             "connector-development/config-based/understanding-the-yaml-file/record-selector",
             "connector-development/config-based/understanding-the-yaml-file/reference",
-            "connector-development/connector-builder-ui/declarative-oauth",
-
           ],
         },
         {
@@ -294,7 +292,7 @@ const buildAConnector = {
           items: [
             "connector-development/config-based/advanced-topics/component-schema-reference",
             "connector-development/config-based/advanced-topics/custom-components",
-            "connector-development/config-based/advanced-topics/declarative-oauth",
+            "connector-development/config-based/advanced-topics/oauth",
             "connector-development/config-based/advanced-topics/how-framework-works",
             "connector-development/config-based/advanced-topics/object-instantiation",
             "connector-development/config-based/advanced-topics/parameters",
