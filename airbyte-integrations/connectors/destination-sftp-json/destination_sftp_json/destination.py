@@ -3,11 +3,11 @@
 #
 
 
+import logging
 import traceback
 import uuid
 from typing import Any, Iterable, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_sftp_json.client import SftpClient
@@ -47,12 +47,13 @@ class DestinationSftpJson(Destination):
                     yield message
                 elif message.type == Type.RECORD:
                     record = message.record
-                    writer.write(record.stream, record.data)
+                    if record is not None:
+                        writer.write(record.stream, record.data)
                 else:
                     # ignore other message types for now
                     continue
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
