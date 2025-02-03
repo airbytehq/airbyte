@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.util.setOnce
@@ -6,7 +10,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.testcontainers.containers.ComposeContainer
 
 /**
- * Shared test containers for all Rest catalog tests, so that we don't launch redundant docker containers
+ * Shared test containers for all Rest catalog tests, so that we don't launch redundant docker
+ * containers
  */
 object RestTestContainers {
     val composeFile = File("src/test-integration/resources/rest/docker-compose.yml")

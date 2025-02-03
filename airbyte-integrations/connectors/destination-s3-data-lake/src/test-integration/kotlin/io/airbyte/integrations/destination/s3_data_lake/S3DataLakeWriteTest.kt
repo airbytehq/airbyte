@@ -253,11 +253,7 @@ class NessieMinioWriteTest :
 }
 
 @Execution(ExecutionMode.SAME_THREAD)
-class RestWriteTest :
-    S3DataLakeWriteTest(
-        getConfig(),
-        NoopDestinationCleaner
-    ) {
+class RestWriteTest : S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner) {
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
     override fun testFunkyCharacters() {
@@ -266,7 +262,9 @@ class RestWriteTest :
 
     override val manyStreamCount = 5
 
-    @Disabled("This just does not seem to work with the rest catalog provided by apache as a quick start. Seems to not like any sort of concurrency")
+    @Disabled(
+        "This just does not seem to work with the rest catalog provided by apache as a quick start. Seems to not like any sort of concurrency"
+    )
     @Test
     override fun testManyStreamsCompletion() {
         super.testManyStreamsCompletion()
