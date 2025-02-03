@@ -35,7 +35,7 @@ data:
         message: This release introduces changes to columns with formula to parse values directly from `array` to `string` or `number` (where it is possible). Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2023-10-23"
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   supportLevel: certified
   tags:
     - language:python
