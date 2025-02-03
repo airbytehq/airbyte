@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
+
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -24,10 +25,9 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
-    CustomerBalanceTransactions,
     Events,
     IncrementalStripeStream,
-    ParentIncrementalStipeSubStream,
+    ParentIncrementalStripeSubStream,
     SetupAttempts,
     StripeLazySubStream,
     StripeStream,
@@ -36,6 +36,7 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeStream,
     UpdatedCursorIncrementalStripeSubStream,
 )
+
 
 logger = logging.getLogger("airbyte")
 
@@ -47,7 +48,6 @@ STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
 class SourceStripe(ConcurrentSourceAdapter):
-
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
         Events: ("created[gte]", "created[lte]"),
@@ -275,9 +275,22 @@ class SourceStripe(ConcurrentSourceAdapter):
             **args,
         )
 
+        payouts = IncrementalStripeStream(
+            name="payouts",
+            path="payouts",
+            event_types=[
+                "payout.canceled",
+                "payout.created",
+                "payout.failed",
+                "payout.paid",
+                "payout.reconciliation_completed",
+                "payout.updated",
+            ],
+            **args,
+        )
+
         streams = [
             checkout_sessions,
-            CustomerBalanceTransactions(**args),
             Events(**incremental_args),
             UpdatedCursorIncrementalStripeStream(
                 name="external_account_cards",
@@ -305,7 +318,19 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             SetupAttempts(**incremental_args),
-            StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
+            UpdatedCursorIncrementalStripeStream(
+                name="accounts",
+                path="accounts",
+                legacy_cursor_field="created",
+                event_types=[
+                    "account.updated",
+                    "account.external_account.created",
+                    "account.external_account.updated",
+                    "account.external_account.deleted",
+                ],
+                use_cache=USE_CACHE,
+                **args,
+            ),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
@@ -390,17 +415,18 @@ class SourceStripe(ConcurrentSourceAdapter):
                 ],
                 **args,
             ),
-            IncrementalStripeStream(
-                name="payouts",
-                path="payouts",
-                event_types=[
-                    "payout.canceled",
-                    "payout.created",
-                    "payout.failed",
-                    "payout.paid",
-                    "payout.reconciliation_completed",
-                    "payout.updated",
-                ],
+            payouts,
+            ParentIncrementalStripeSubStream(
+                name="payout_balance_transactions",
+                path=lambda self, stream_slice, *args, **kwargs: "balance_transactions",
+                parent=payouts,
+                cursor_field="updated",
+                slice_data_retriever=lambda record, stream_slice: {
+                    "payout": stream_slice["parent"]["id"],
+                    "updated": stream_slice["parent"]["updated"],
+                    **record,
+                },
+                extra_request_params=lambda self, stream_slice, *args, **kwargs: {"payout": f"{stream_slice['parent']['id']}"},
                 **args,
             ),
             IncrementalStripeStream(
@@ -479,6 +505,13 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
                 **args,
             ),
+            ParentIncrementalStripeSubStream(
+                name="customer_balance_transactions",
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
+                parent=self.customers(**args),
+                cursor_field="created",
+                **args,
+            ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="application_fees_refunds",
                 path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice['parent']['id']}/refunds",
@@ -504,7 +537,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
-            ParentIncrementalStipeSubStream(
+            ParentIncrementalStripeSubStream(
                 name="checkout_sessions_line_items",
                 path=lambda self, stream_slice, *args, **kwargs: f"checkout/sessions/{stream_slice['parent']['id']}/line_items",
                 parent=checkout_sessions,
@@ -542,15 +575,19 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             subscription_items,
-            StripeSubStream(
+            ParentIncrementalStripeSubStream(
                 name="transfer_reversals",
                 path=lambda self, stream_slice, *args, **kwargs: f"transfers/{stream_slice['parent']['id']}/reversals",
                 parent=transfers,
+                cursor_field="created",
                 **args,
             ),
             StripeSubStream(
                 name="usage_records",
-                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
+                path=lambda self,
+                stream_slice,
+                *args,
+                **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,

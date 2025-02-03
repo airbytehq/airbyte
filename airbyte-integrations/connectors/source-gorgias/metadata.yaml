@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-gorgias
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.28.0@sha256:6935048f02debe2cd6e33707b1f6885fc620914ef49ac00af75220ee7a596adf
   connectorSubtype: api
   connectorType: source
   definitionId: 9fdc3733-c51a-4129-9be5-7e9ad6eab6ac
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-gorgias
   githubIssueLabel: source-gorgias
   icon: icon.svg

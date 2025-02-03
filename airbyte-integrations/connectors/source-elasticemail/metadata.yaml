@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-elasticemail
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.5.0@sha256:2e0e1ffb8df7da6e7b0f94404927bbec101a391a8e2bb68c0172ca712c29cbdb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: ed2c12aa-375c-4d18-9d3b-7e1f8a23245d
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.9
   dockerRepository: airbyte/source-elasticemail
   githubIssueLabel: source-elasticemail
   icon: icon.svg

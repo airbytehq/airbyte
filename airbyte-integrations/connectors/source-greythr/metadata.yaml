@@ -2,6 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
+      - "*"
   registryOverrides:
     oss:
       enabled: true
@@ -12,17 +13,17 @@ data:
       enabled: false
       packageName: airbyte-source-greythr
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.28.0@sha256:6935048f02debe2cd6e33707b1f6885fc620914ef49ac00af75220ee7a596adf
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
   connectorSubtype: api
   connectorType: source
   definitionId: 1a807325-5a1c-4e0f-a574-841034b1765d
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/source-greythr
   githubIssueLabel: source-greythr
   icon: icon.svg
   license: MIT
   name: GreytHr
-  releaseDate: 2025-01-29
+  releaseDate: 2024-11-29
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/greythr

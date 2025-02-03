@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "live-tests"
-version = "0.19.8"
+version = "0.21.1"
 description = "Contains utilities for testing connectors against live data."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -15,7 +15,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = "^3.11,<3.12"
 airbyte-cdk = "*"
 airbyte-protocol-models = "<1.0.0"
 cachetools = "~=5.3.3"
@@ -29,7 +29,6 @@ pytest = "^8.1.1"
 pydash = "~=7.0.7"
 docker = ">=6,<7"
 asyncclick = "^8.1.7.1"
-# TODO: when this is open-sourced, don't require connection-retriever
 connection-retriever = {git = "git@github.com:airbytehq/airbyte-platform-internal", subdirectory = "tools/connection-retriever"}
 duckdb = "<=0.10.1"  # Pinned due to this issue https://github.com/duckdb/duckdb/issues/11152
 pandas = "^2.2.1"
@@ -53,10 +52,12 @@ pandas-stubs = "^2.2.0.240218"
 types-requests = "^2.31.0.20240311"
 types-pyyaml = "^6.0.12.20240311"
 
+[tool.ruff]
+target-version = "py311"
+line-length = 140
+
 [tool.ruff.lint]
 select = ["I", "F"]
-target-version = "py310"
-line-length = 140
 
 [tool.ruff.lint.isort]
 known-first-party = ["connection-retriever"]
@@ -67,7 +68,7 @@ type_check = "mypy src --disallow-untyped-defs"
 pre-push = []
 
 [tool.airbyte_ci]
-python_versions = ["3.10"]
+python_versions = ["3.11"]
 optional_poetry_groups = ["dev"]
 poe_tasks = []
 required_environment_variables = ["DOCKER_HUB_USERNAME", "DOCKER_HUB_PASSWORD"]

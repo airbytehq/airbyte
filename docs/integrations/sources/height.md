@@ -37,6 +37,15 @@ API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ---- | ---------------- |
+| 0.0.13 | 2025-02-01 | [52741](https://github.com/airbytehq/airbyte/pull/52741) | Update dependencies |
+| 0.0.12 | 2025-01-25 | [52264](https://github.com/airbytehq/airbyte/pull/52264) | Update dependencies |
+| 0.0.11 | 2025-01-18 | [51836](https://github.com/airbytehq/airbyte/pull/51836) | Update dependencies |
+| 0.0.10 | 2025-01-11 | [51154](https://github.com/airbytehq/airbyte/pull/51154) | Update dependencies |
+| 0.0.9 | 2024-12-28 | [50610](https://github.com/airbytehq/airbyte/pull/50610) | Update dependencies |
+| 0.0.8 | 2024-12-21 | [50094](https://github.com/airbytehq/airbyte/pull/50094) | Update dependencies |
+| 0.0.7 | 2024-12-14 | [49597](https://github.com/airbytehq/airbyte/pull/49597) | Update dependencies |
+| 0.0.6 | 2024-12-12 | [49225](https://github.com/airbytehq/airbyte/pull/49225) | Update dependencies |
+| 0.0.5 | 2024-12-11 | [48977](https://github.com/airbytehq/airbyte/pull/48977) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.4 | 2024-11-04 | [48158](https://github.com/airbytehq/airbyte/pull/48158) | Update dependencies |
 | 0.0.3 | 2024-10-29 | [47790](https://github.com/airbytehq/airbyte/pull/47790) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47615](https://github.com/airbytehq/airbyte/pull/47615) | Update dependencies |

@@ -70,5 +70,16 @@
         "updated_at": 1676462031
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tickets"
+      },
+      "stream_state": {
+        "updated_at": 1676462031
+      }
+    }
   }
 ]

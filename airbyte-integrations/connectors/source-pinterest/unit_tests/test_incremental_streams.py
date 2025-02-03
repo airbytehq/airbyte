@@ -7,10 +7,11 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from pytest import fixture
 from source_pinterest.streams import IncrementalPinterestSubStream
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 from .conftest import get_stream_by_name
 from .utils import create_requests_response
@@ -135,7 +136,8 @@ def test_semi_incremental_read(requests_mock, test_config, start_date, stream_st
 
     stream.state = stream_state
     actual_records = [
-        dict(record) for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental)
+        dict(record)
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental)
         for record in stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
     ]
     assert actual_records == expected_records

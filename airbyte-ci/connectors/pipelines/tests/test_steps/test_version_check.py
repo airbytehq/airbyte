@@ -2,8 +2,9 @@
 
 import pytest
 from connector_ops.utils import METADATA_FILE_NAME
-from pipelines.airbyte_ci.connectors.test.steps.common import VersionIncrementCheck
 from semver import VersionInfo
+
+from pipelines.airbyte_ci.connectors.test.steps.common import VersionIncrementCheck
 
 
 class TestVersionIncrementCheck:
@@ -16,7 +17,6 @@ class TestVersionIncrementCheck:
         return context
 
     def _get_version_increment_check(self, mocker, context, master_version="1.0.0", current_version="1.0.1"):
-
         mocker.patch(
             "pipelines.airbyte_ci.connectors.test.steps.common.VersionIncrementCheck.master_connector_version",
             new_callable=mocker.PropertyMock,

@@ -5,10 +5,12 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_intercom/spec.json"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/config_sandbox.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
@@ -17,9 +19,10 @@ acceptance_tests:
       - config_path: "secrets/config.json"
   basic_read:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_sandbox.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+        empty_streams: []
   incremental:
     tests:
       - config_path: "secrets/config.json"

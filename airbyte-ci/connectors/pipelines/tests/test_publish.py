@@ -8,6 +8,7 @@ from typing import List
 
 import anyio
 import pytest
+
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.airbyte_ci.connectors.publish.context import RolloutMode
 from pipelines.models.steps import StepStatus
@@ -95,7 +96,8 @@ class TestUploadSpecToCache:
         step = publish_pipeline.UploadSpecToCache(publish_context)
         step_result = await step.run(connector_container)
         if valid_spec:
-            publish_pipeline.upload_to_gcs.assert_called_once_with(
+            # First call should be for OSS spec
+            publish_pipeline.upload_to_gcs.assert_any_call(
                 publish_context.dagger_client,
                 mocker.ANY,
                 f"specs/{image_name.replace(':', '/')}/spec.json",
@@ -103,6 +105,19 @@ class TestUploadSpecToCache:
                 publish_context.spec_cache_gcs_credentials,
                 flags=['--cache-control="no-cache"'],
             )
+
+            # Second call should be for Cloud spec if different from OSS
+            cloud_spec = await step._get_connector_spec(connector_container, "CLOUD")
+            oss_spec = await step._get_connector_spec(connector_container, "OSS")
+            if cloud_spec != oss_spec:
+                publish_pipeline.upload_to_gcs.assert_any_call(
+                    publish_context.dagger_client,
+                    mocker.ANY,
+                    f"specs/{image_name.replace(':', '/')}/spec.cloud.json",
+                    publish_context.spec_cache_bucket_name,
+                    publish_context.spec_cache_gcs_credentials,
+                    flags=['--cache-control="no-cache"'],
+                )
 
             spec_file = publish_pipeline.upload_to_gcs.call_args.args[1]
             uploaded_content = await spec_file.contents()
@@ -361,7 +376,6 @@ async def test_run_connector_python_registry_publish_pipeline(
     expect_build_connector_called,
     api_token,
 ):
-
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 

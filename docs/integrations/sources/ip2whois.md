@@ -32,6 +32,14 @@ Ip2whois APIs allows you to query up to 500 WHOIS domain name per month.
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.10 | 2025-02-01 | [52773](https://github.com/airbytehq/airbyte/pull/52773) | Update dependencies |
+| 0.2.9 | 2025-01-25 | [52233](https://github.com/airbytehq/airbyte/pull/52233) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [51830](https://github.com/airbytehq/airbyte/pull/51830) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51152](https://github.com/airbytehq/airbyte/pull/51152) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50644](https://github.com/airbytehq/airbyte/pull/50644) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50069](https://github.com/airbytehq/airbyte/pull/50069) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49644](https://github.com/airbytehq/airbyte/pull/49644) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [47893](https://github.com/airbytehq/airbyte/pull/47893) | Update dependencies |
 | 0.2.2 | 2024-10-28 | [47471](https://github.com/airbytehq/airbyte/pull/47471) | Update dependencies |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-15 | [44138](https://github.com/airbytehq/airbyte/pull/44138) | Refactor connector to manifest-only format |

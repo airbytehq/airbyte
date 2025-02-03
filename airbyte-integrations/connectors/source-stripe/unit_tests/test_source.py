@@ -6,12 +6,14 @@ import logging
 from contextlib import nullcontext as does_not_raise
 
 import pytest
+from source_stripe import SourceStripe
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.sources.streams.call_rate import CachedLimiterSession, LimiterSession, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
-from source_stripe import SourceStripe
+
 
 logger = logging.getLogger("airbyte")
 _ANY_CATALOG = ConfiguredAirbyteCatalogSerializer.load({"streams": []})
@@ -49,7 +51,7 @@ def _a_valid_config():
 
 def test_streams_are_unique(config):
     stream_names = [s.name for s in SourceStripe(_ANY_CATALOG, _ANY_CONFIG, _NO_STATE).streams(config=config)]
-    assert len(stream_names) == len(set(stream_names)) == 46
+    assert len(stream_names) == len(set(stream_names)) == 47
 
 
 @pytest.mark.parametrize(

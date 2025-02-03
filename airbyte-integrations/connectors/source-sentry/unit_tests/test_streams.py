@@ -5,8 +5,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_sentry import SourceSentry
+
+from airbyte_cdk.models import SyncMode
+
 
 INIT_ARGS = {"hostname": "sentry.io", "organization": "test-org", "project": "test-project"}
 
@@ -24,7 +26,10 @@ def test_next_page_token():
     response_mock = MagicMock()
     response_mock.headers = {}
     response_mock.links = {"next": {"cursor": "next-page"}}
-    assert stream.retriever.paginator.pagination_strategy.next_page_token(response=response_mock, last_page_size=0, last_record=None) == "next-page"
+    assert (
+        stream.retriever.paginator.pagination_strategy.next_page_token(response=response_mock, last_page_size=0, last_record=None)
+        == "next-page"
+    )
 
 
 def test_next_page_token_is_none():
@@ -33,7 +38,9 @@ def test_next_page_token_is_none():
     response_mock.headers = {}
     # stop condition: "results": "false"
     response_mock.links = {"next": {"cursor": "", "results": "false"}}
-    assert stream.retriever.paginator.pagination_strategy.next_page_token(response=response_mock, last_page_size=0, last_record=None) is None
+    assert (
+        stream.retriever.paginator.pagination_strategy.next_page_token(response=response_mock, last_page_size=0, last_record=None) is None
+    )
 
 
 def test_events_path():
@@ -77,7 +84,10 @@ def test_projects_request_params():
     response_mock = MagicMock()
     response_mock.headers = {}
     response_mock.links = {"next": {"cursor": expected}}
-    assert stream.retriever.paginator.pagination_strategy.next_page_token(response=response_mock, last_page_size=0, last_record=None) == expected
+    assert (
+        stream.retriever.paginator.pagination_strategy.next_page_token(response=response_mock, last_page_size=0, last_record=None)
+        == expected
+    )
 
 
 def test_project_detail_request_params():
@@ -89,10 +99,7 @@ def test_project_detail_request_params():
 def test_project_detail_parse_response(requests_mock):
     expected = {"id": "1", "name": "test project"}
     stream = get_stream_by_name("project_detail")
-    requests_mock.get(
-        "https://sentry.io/api/0/projects/test-org/test-project/",
-        json=expected
-    )
+    requests_mock.get("https://sentry.io/api/0/projects/test-org/test-project/", json=expected)
     result = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
     assert expected == result.data
 
@@ -137,4 +144,3 @@ def test_issues_validate_state_value(state, expected):
     stream = get_stream_by_name("issues")
     stream.retriever.state = state
     assert stream.state.get(stream.cursor_field) == expected
-

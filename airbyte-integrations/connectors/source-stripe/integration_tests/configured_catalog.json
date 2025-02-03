@@ -4,10 +4,12 @@
       "stream": {
         "name": "accounts",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "source_defined_primary_key": [["id"]]
       },
       "primary_key": [["id"]],
+      "cursor_field": ["updated"],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
@@ -183,7 +185,9 @@
       "stream": {
         "name": "customer_balance_transactions",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"],
         "source_defined_primary_key": [["id"]]
       },
       "primary_key": [["id"]],
@@ -361,6 +365,20 @@
     {
       "stream": {
         "name": "payment_methods",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "payout_balance_transactions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -600,10 +618,13 @@
       "stream": {
         "name": "transfer_reversals",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"],
         "source_defined_primary_key": [["id"]]
       },
       "primary_key": [["id"]],
+      "cursor_field": ["created"],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },

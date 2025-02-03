@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-finnworlds
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: b8a9a60f-7178-468a-a333-23b431e355b7
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.9
   dockerRepository: airbyte/source-finnworlds
   githubIssueLabel: source-finnworlds
   icon: icon.svg
