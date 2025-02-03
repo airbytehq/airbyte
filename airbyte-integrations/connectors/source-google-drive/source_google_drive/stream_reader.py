@@ -24,7 +24,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .spec import SourceGoogleDriveSpec, RemoteIdentity, RemoteIdentityType, RemotePermissions
+from .spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceGoogleDriveSpec
 
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"

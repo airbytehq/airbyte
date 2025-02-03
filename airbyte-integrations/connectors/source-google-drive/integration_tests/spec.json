@@ -402,37 +402,33 @@
             "required": ["delivery_type"]
           },
           {
-              "title": "Replicate Permissions ACL",
-              "type": "object",
-              "properties": {
-                "delivery_type": {
-                  "title": "Delivery Type",
-                  "default": "use_permissions_transfer",
-                  "const": "use_permissions_transfer",
-                  "enum": [
-                    "use_permissions_transfer"
-                  ],
-                  "type": "string"
-                },
-                "include_identities_stream": {
-                  "title": "Include Identity Stream",
-                  "description": "This data can be used in downstream systems to recreate permission restrictions mirroring the original source",
-                  "default": true,
-                  "type": "boolean"
-                },
-                "domain": {
-                  "title": "Domain",
-                  "description": "The Google domain of the identities.",
-                  "airbyte_hidden": false,
-                  "order": 1,
-                  "type": "string"
-                }
+            "title": "Replicate Permissions ACL",
+            "type": "object",
+            "properties": {
+              "delivery_type": {
+                "title": "Delivery Type",
+                "default": "use_permissions_transfer",
+                "const": "use_permissions_transfer",
+                "enum": ["use_permissions_transfer"],
+                "type": "string"
               },
-              "description": "Sends one identity stream and one for more permissions (ACL) streams to the destination. This data can be used in downstream systems to recreate permission restrictions mirroring the original source.",
-              "required": [
-                "delivery_type"
-              ]
-            }
+              "include_identities_stream": {
+                "title": "Include Identity Stream",
+                "description": "This data can be used in downstream systems to recreate permission restrictions mirroring the original source",
+                "default": true,
+                "type": "boolean"
+              },
+              "domain": {
+                "title": "Domain",
+                "description": "The Google domain of the identities.",
+                "airbyte_hidden": false,
+                "order": 1,
+                "type": "string"
+              }
+            },
+            "description": "Sends one identity stream and one for more permissions (ACL) streams to the destination. This data can be used in downstream systems to recreate permission restrictions mirroring the original source.",
+            "required": ["delivery_type"]
+          }
         ]
       },
       "folder_url": {

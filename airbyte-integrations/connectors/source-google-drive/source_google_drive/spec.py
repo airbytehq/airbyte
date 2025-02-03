@@ -3,8 +3,8 @@
 #
 import uuid
 from datetime import datetime
-from typing import Any, Dict, Literal, Optional, Union
 from enum import Enum
+from typing import Any, Dict, Literal, Optional, Union
 
 import dpath.util
 from pydantic.v1 import BaseModel, Field
@@ -14,6 +14,8 @@ from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
     AbstractFileBasedSpec,
     DeliverRawFiles,
     DeliverRecords,
+)
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
     DeliverPermissions as DeliverPermissionsBase,
 )
 
