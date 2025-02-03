@@ -17,7 +17,7 @@ from pipelines.consts import (
 from pipelines.helpers.utils import sh_dash_c
 
 
-def with_python_base(context: PipelineContext, python_version: str = "3.10") -> Container:
+def with_python_base(context: PipelineContext, python_version: str = "3.11") -> Container:
     """Build a Python container with a cache volume for pip cache.
 
     Args:

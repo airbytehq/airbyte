@@ -22,7 +22,7 @@ application {
     //applicationDefaultJvmArgs = listOf("-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0", "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "java.base/sun.security.action=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
-val junitVersion = "5.11.3"
+val junitVersion = "5.11.4"
 
 configurations.configureEach {
     // Exclude additional SLF4J providers from all classpaths
@@ -38,13 +38,16 @@ dependencies {
     implementation("com.microsoft.sqlserver:mssql-jdbc:12.8.1.jre11")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")
-    implementation("com.github.spotbugs:spotbugs-annotations:4.8.6")
-    implementation("io.micronaut:micronaut-inject:4.6.1")
+    implementation("com.github.spotbugs:spotbugs-annotations:4.9.0")
+    implementation("io.micronaut:micronaut-inject:4.7.12")
+    implementation("com.zaxxer:HikariCP:6.2.1")
 
-    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("io.mockk:mockk:1.13.16")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+
+    integrationTestImplementation("org.testcontainers:mssqlserver:1.20.4")
 }
 
 tasks.named<Test>("test") {

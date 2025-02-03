@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 6.28.0
 
 definitions:
   ## bases
@@ -16,9 +16,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
     request_headers:
-      # There is a bug in interpolation, causing the `2.10` string to be evaluated to `2.1`, cutting off the `0`.
-      # the workaround is to put the `string` inside the `string`, then it's evaluated properly to `2.10`
-      Intercom-Version: "'2.10'"
+      Intercom-Version: "2.11"
       Accept: "application/json"
     error_handler:
       type: CustomErrorHandler
@@ -1605,16 +1603,6 @@ definitions:
               - string
   conversations:
     $ref: "#/definitions/stream_incremental_search"
-    retriever:
-      $ref: "#/definitions/stream_incremental_search/retriever"
-      requester:
-        $ref: "#/definitions/requester_incremental_search"
-        request_headers:
-          # API version header
-          # There are 404 - User Not Found issue, when `2.10` is used, for certain users:
-          # https://github.com/airbytehq/oncall/issues/4514
-          Intercom-Version: "2.9"
-          Accept: "application/json"
     $parameters:
       name: "conversations"
       path: "conversations/search"
@@ -1748,6 +1736,11 @@ definitions:
                     - string
                 id:
                   description: The ID of the contact
+                  type:
+                    - "null"
+                    - string
+                external_id:
+                  description: The unique identifier for the contact which is provided by the Client.
                   type:
                     - "null"
                     - string
@@ -2293,6 +2286,93 @@ definitions:
                 type:
                   - "null"
                   - integer
+          ai_agent_participated:
+            description: Indicates whether the AI Agent participated in the conversation.
+            type:
+              - "null"
+              - boolean
+          ai_agent:
+            description: Data related to AI Agent involvement in the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              source_type:
+                description: The type of the source that triggered AI Agent involvement in the conversation.
+                type:
+                  - "null"
+                  - string
+              source_title:
+                description: The title of the source that triggered AI Agent involvement in the conversation.
+                type:
+                  - "null"
+                  - string
+              last_answer_type:
+                description: The type of the last answer delivered by AI Agent.
+                type:
+                  - "null"
+                  - string
+              resolution_state:
+                description: The resolution state of AI Agent.
+                type:
+                  - "null"
+                  - string
+              rating:
+                description: The customer satisfaction rating given to AI Agent, from 1-5.
+                type:
+                  - "null"
+                  - integer
+              rating_remark:
+                description: The customer satisfaction rating remark given to AI Agent.
+                type:
+                  - "null"
+                  - string
+              content_sources:
+                description: The content sources used by AI Agent in the conversation.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    description: The type of the content source.
+                    type:
+                      - "null"
+                      - string
+                  total_count:
+                    description: The total number of content sources used by AI Agent in the conversation.
+                    type:
+                      - "null"
+                      - integer
+                  content_sources:
+                    description: The content sources used by AI Agent in the conversation.
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        content_type:
+                          description: The type of the content source.
+                          type:
+                            - "null"
+                            - string
+                        url:
+                          description: The internal URL linking to the content source for teammates.
+                          type:
+                            - "null"
+                            - string
+                        title:
+                          description: The title of the content source.
+                          type:
+                            - "null"
+                            - string
+                        locale:
+                          description: The ISO 639 language code of the content source.
+                          type:
+                            - "null"
+                            - string
   activity_logs:
     $ref: "#/definitions/stream_full_refresh"
     primary_key: id
@@ -2389,6 +2469,544 @@ definitions:
             type:
               - "null"
               - integer
+  tickets:
+    $ref: "#/definitions/stream_full_refresh"
+    primary_key: id
+    $parameters:
+      name: "tickets"
+      path: "tickets/search"
+      data_field: "tickets"
+      page_size: 150
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        http_method: "POST"
+        request_body_json:
+          query: >-
+            {"operator" : "AND", "value" : [
+            {"operator" : "OR", "value" : [
+            {"field" : "updated_at", "operator" : ">", "value" : {{ stream_interval['start_time'] }} },
+            {"field" : "updated_at", "operator" : "=", "value" : {{ stream_interval['start_time'] }} }]}, 
+            {"field" : "updated_at", "operator" : "<", "value" :  {{ stream_interval['end_time'] }} }
+            ]}
+          sort: >-
+            {"field": "updated_at", "order": "ascending"}
+          pagination: >-
+            {{ {"per_page": parameters['page_size']} if not next_page_token else {"per_page": parameters['page_size'],
+            "starting_after": next_page_token["next_page_token"]} }}
+          test:
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "#/definitions/requester/url_base"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') }}"
+          stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          type:
+            description: Always ticket.
+            type:
+              - string
+              - "null"
+          id:
+            description: The unique identifier for the ticket which is given by Intercom.
+            type:
+              - string
+              - "null"
+          ticket_id:
+            description: The ID of the Ticket used in the Intercom Inbox and Messenger. Do not use ticket_id for API queries.
+            type:
+              - string
+              - "null"
+          category:
+            description: Category of the Ticket.
+            type:
+              - string
+              - "null"
+          ticket_attributes:
+            description: An object containing the different attributes associated to the ticket as key-value pairs.
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          ticket_state:
+            description: The state the ticket is currently in.
+            type:
+              - string
+              - "null"
+          ticket_type:
+            description: he state the ticket is currently in.
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                description: String representing the object's type. Always has the value ticket_type.
+                type:
+                  - string
+                  - "null"
+              id:
+                description: The id representing the ticket type.
+                type:
+                  - string
+                  - "null"
+              category:
+                description: Category of the Ticket Type.
+                type:
+                  - string
+                  - "null"
+              name:
+                description: The name of the ticket type.
+                type:
+                  - string
+                  - "null"
+              description:
+                description: The description of the ticket type.
+                type:
+                  - string
+                  - "null"
+              icon:
+                description: The icon of the ticket type.
+                type:
+                  - string
+                  - "null"
+              workspace_id:
+                description: The id of the workspace that the ticket type belongs to.
+                type:
+                  - string
+                  - "null"
+              ticket_type_attributes:
+                description: A list of attributes associated with a given ticket type.
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    description: String representing the object's type. Always has the value ticket_type_attributes.list.
+                    type:
+                      - string
+                      - "null"
+                    ticket_type_attributes:
+                      description: A list of ticket type attributes associated with a given ticket type.
+                      type:
+                        - array
+                        - "null"
+                      properties:
+                        type:
+                          description: String representing the object's type. Always has the value ticket_type_attribute.
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          description: The id representing the ticket type attribute.
+                          type:
+                            - string
+                            - "null"
+                        workspace_id:
+                          description: The id of the workspace that the ticket type attribute belongs to.
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          description: The name of the ticket type attribute.
+                          type:
+                            - string
+                            - "null"
+                        description:
+                          description: The description of the ticket type attribute.
+                          type:
+                            - string
+                            - "null"
+                        data_type:
+                          description: The type of the data attribute.
+                          type:
+                            - string
+                            - "null"
+                        input_options:
+                          description: Input options for the attribute.
+                          type:
+                            - object
+                            - "null"
+                          additionalProperties: true
+                        order:
+                          description: The order of the attribute against other attributes.
+                          type:
+                            - integer
+                            - "null"
+                        required_to_create:
+                          description: Whether the attribute is required or not for teammates.
+                          type:
+                            - boolean
+                            - "null"
+                        required_to_create_for_contacts:
+                          description: Whether the attribute is required or not for contacts.
+                          type:
+                            - boolean
+                            - "null"
+                        visible_on_create:
+                          description: Whether the attribute is visible or not to teammates.
+                          type:
+                            - boolean
+                            - "null"
+                        visible_to_contacts:
+                          description: Whether the attribute is visible or not to contacts.
+                          type:
+                            - boolean
+                            - "null"
+                        default:
+                          description: Whether the attribute is built in or not.
+                          type:
+                            - boolean
+                            - "null"
+                        ticket_type_id:
+                          description: The id of the ticket type that the attribute belongs to.
+                          type:
+                            - integer
+                            - "null"
+                        archived:
+                          description: Whether the ticket type attribute is archived or not.
+                          type:
+                            - boolean
+                            - "null"
+                        created_at:
+                          description: The date and time the ticket type attribute was created.
+                          type:
+                            - integer
+                            - "null"
+                        updated_at:
+                          description: The date and time the ticket type attribute was last updated.
+                          type:
+                            - integer
+                            - "null"
+              archived:
+                description: Whether the ticket type is archived or not.
+                type:
+                  - boolean
+                  - "null"
+              created_at:
+                description: The date and time the ticket type was created.
+                type:
+                  - integer
+                  - "null"
+              updated_at:
+                description: The date and time the ticket type was last updated.
+                type:
+                  - integer
+                  - "null"
+          contacts:
+            description: The list of contacts affected by a ticket.
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                description: Always contact.list.
+                type:
+                  - string
+                  - "null"
+              contacts:
+                description: The list of contacts affected by this ticket.
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      description: Always contact.
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      description: The unique identifier for the contact which is given by Intercom.
+                      type:
+                        - string
+                        - "null"
+                    external_id:
+                      description: The unique identifier for the contact which is provided by the Client.
+                      type:
+                        - string
+                        - "null"
+          admin_assignee_id:
+            description: The id representing the admin assigned to the ticket.
+            type:
+              - string
+              - "null"
+          team_assignee_id:
+            description: The id representing the team assigned to the ticket.
+            type:
+              - string
+              - "null"
+          created_at:
+            description: The time the ticket was created as a UTC Unix timestamp.
+            type:
+              - integer
+              - "null"
+          updated_at:
+            description: The last time the ticket was updated as a UTC Unix timestamp.
+            type:
+              - integer
+              - "null"
+          open:
+            description: Whether or not the ticket is open. If false, the ticket is closed.
+            type:
+              - boolean
+              - "null"
+          snoozed_until:
+            description: The time the ticket will be snoozed until as a UTC Unix timestamp. If null, the ticket is not currently snoozed.
+            type:
+              - integer
+              - "null"
+          linked_objects:
+            description: An object containing metadata about linked conversations and linked tickets.
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                description: Always list.
+                type:
+                  - string
+                  - "null"
+              total_count:
+                description: The total number of linked objects.
+                type:
+                  - integer
+                  - "null"
+              has_more:
+                description: Whether or not there are more linked objects than returned.
+                type:
+                  - boolean
+                  - "null"
+              data:
+                description: An array containing the linked conversations and linked tickets.
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      description: Ticket or conversation.
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      description: The ID of the linked object.
+                      type:
+                        - string
+                        - "null"
+                    category:
+                      description: Category of the Linked Ticket Object..
+                      type:
+                        - string
+                        - "null"
+          ticket_parts:
+            description: A list of Ticket Part objects for each note and event in the ticket.
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                description: Value ticket_part.list.
+                type:
+                  - string
+                  - "null"
+              ticket_parts:
+                description: A list of Ticket Part objects for each ticket.
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      description: Always ticket_part.
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      description: The id representing the ticket part.
+                      type:
+                        - string
+                        - "null"
+                    part_type:
+                      description: The type of ticket part.
+                      type:
+                        - string
+                        - "null"
+                    body:
+                      description: The message body, which may contain HTML.
+                      type:
+                        - string
+                        - "null"
+                    previous_ticket_state:
+                      description: The previous state of the ticket.
+                      type:
+                        - string
+                        - "null"
+                    ticket_state:
+                      description: The state of the ticket.
+                      type:
+                        - string
+                        - "null"
+                    created_at:
+                      description: The time the ticket part was created.
+                      type:
+                        - integer
+                        - "null"
+                    updated_at:
+                      description: The last time the ticket part was updated.
+                      type:
+                        - integer
+                        - "null"
+                    assigned_to:
+                      description: Teference to another object.
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          description: Example - contact.
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          description: Example - 1a2b3c.
+                          type:
+                            - string
+                            - "null"
+                    author:
+                      description: The author that wrote or triggered the part. Can be a bot, admin, team or user.
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          description: The type of the author.
+                          type:
+                            - string
+                            - "null"
+                        id:
+                          description: The id of the author.
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          description: The name of the author.
+                          type:
+                            - string
+                            - "null"
+                        email:
+                          description: The email of the author.
+                          type:
+                            - string
+                            - "null"
+                    attachments:
+                      description: A list of attachments for the part.
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            description: The type of attachment
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            description: The name of attachment
+                            type:
+                              - string
+                              - "null"
+                          url:
+                            description: The url of attachment
+                            type:
+                              - string
+                              - "null"
+                          content_type:
+                            description: The content type of attachment
+                            type:
+                              - string
+                              - "null"
+                          filesize:
+                            description: The file size of attachment
+                            type:
+                              - integer
+                              - "null"
+                          width:
+                            description: The width of attachment
+                            type:
+                              - integer
+                              - "null"
+                          height:
+                            description: The height of attachment
+                            type:
+                              - integer
+                              - "null"
+                    external_id:
+                      description: The external id of the ticket part.
+                      type:
+                        - string
+                        - "null"
+                    redacted:
+                      description: Whether or not the ticket part has been redacted.
+                      type:
+                        - boolean
+                        - "null"
+              total_count:
+                description: Total count of ticket parts.
+                type:
+                  - integer
+                  - "null"
+          is_shared:
+            description: Whether or not the ticket is shared with the customer.
+            type:
+              - boolean
+              - "null"
+          ticket_state_internal_label:
+            description: The state the ticket is currently in, in a human readable form - visible in Intercom.
+            type:
+              - string
+              - "null"
+          ticket_state_external_label:
+            description: The state the ticket is currently in, in a human readable form - visible to customers, in the messenger, email and tickets portal.
+            type:
+              - string
+              - "null"
+
+
+
 streams:
   - "#/definitions/activity_logs"
   - "#/definitions/admins"
@@ -2402,6 +3020,7 @@ streams:
   - "#/definitions/conversations"
   - "#/definitions/conversation_parts"
   - "#/definitions/company_segments"
+  - "#/definitions/tickets"
 
 check:
   stream_names:
