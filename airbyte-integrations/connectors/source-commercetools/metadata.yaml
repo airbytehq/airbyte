@@ -15,7 +15,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 008b2e26-11a3-11ec-82a8-0242ac130003
-  dockerImageTag: 0.2.30
+  dockerImageTag: 0.2.31
   dockerRepository: airbyte/source-commercetools
   githubIssueLabel: source-commercetools
   icon: commercetools.svg
@@ -42,5 +42,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
 metadataSpecVersion: "1.0"

@@ -22,6 +22,7 @@ An Airbyte source for Breezy applicant tracking system.
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.12 | 2025-02-01 | [52885](https://github.com/airbytehq/airbyte/pull/52885) | Update dependencies |
 | 0.0.11 | 2025-01-25 | [52168](https://github.com/airbytehq/airbyte/pull/52168) | Update dependencies |
 | 0.0.10 | 2025-01-18 | [51736](https://github.com/airbytehq/airbyte/pull/51736) | Update dependencies |
 | 0.0.9 | 2025-01-11 | [51248](https://github.com/airbytehq/airbyte/pull/51248) | Update dependencies |
