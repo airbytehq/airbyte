@@ -8,16 +8,17 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
+from source_pinterest.components.components import AdAccountRecordExtractor
 from source_pinterest.streams import (
+    AdAccountValidationStream,
     AnalyticsApiBackoffStrategyDecorator,
     NonJSONResponse,
     PinterestAnalyticsStream,
     PinterestErrorHandler,
     PinterestStream,
-    PinterestSubStream,
-    AdAccountValidationStream,
+    PinterestSubStream
 )
-from source_pinterest.components.components import AdAccountRecordExtractor
+
 from source_pinterest.utils import get_analytics_columns
 
 from airbyte_cdk import AirbyteTracedException
@@ -239,4 +240,4 @@ def test_extract_records_with_items(test_response):
 def test_extract_records_single_account(test_response_single_account):
     extractor = AdAccountRecordExtractor()
     result = extractor.extract_records(test_response_single_account)
-    assert result == [{"id": "1234"}] 
+    assert result == [{"id": "1234"}]

@@ -32,5 +32,4 @@ class AdAccountRecordExtractor(RecordExtractor):
         # If the response is a single object, wrap it in a list
         if isinstance(data, dict):
             return [data]
-
         return []

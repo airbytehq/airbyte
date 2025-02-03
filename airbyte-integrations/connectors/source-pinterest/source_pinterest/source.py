@@ -31,7 +31,7 @@ from .reports.reports import (
     ProductGroupTargetingReport,
     ProductItemReport,
 )
-from .streams import PinterestStream, AdAccountValidationStream
+from .streams import AdAccountValidationStream, PinterestStream
 
 
 logger = logging.getLogger("airbyte")

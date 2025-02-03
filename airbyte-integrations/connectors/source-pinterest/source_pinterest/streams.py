@@ -15,14 +15,13 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_protocol.models import FailureType
 
-from .utils import get_analytics_columns, to_datetime_str
-
 from source_pinterest.components.error_mapping import get_pinterest_ad_account_error_mapping
 
+from .utils import get_analytics_columns, to_datetime_str
 
 
 # For Pinterest analytics streams rate limit is 300 calls per day / per user.

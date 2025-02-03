@@ -38,7 +38,7 @@ def wrong_account_id_config() -> Mapping[str, str]:
         "client_secret": "test_client_secret",
         "refresh_token": "test_refresh_token",
         "start_date": "2024-01-01",
-        "account_id": "invalid_account"
+        "account_id": "invalid_account",
     }
 
 
