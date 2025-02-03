@@ -47,7 +47,6 @@ import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
-import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Replaces
@@ -88,7 +87,6 @@ class DestinationTaskLauncherTest {
     @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
     @Inject lateinit var teardownTaskFactory: MockTeardownTaskFactory
     @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
-    @Inject lateinit var mockForceFlushTask: MockForceFlushTask
     @Inject lateinit var updateCheckpointsTask: MockUpdateCheckpointsTask
     @Inject lateinit var inputFlow: ReservingDeserializingInputFlow
     @Inject lateinit var queueWriter: MockQueueWriter
@@ -282,19 +280,6 @@ class DestinationTaskLauncherTest {
     @Singleton
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockForceFlushTask : TimedForcedCheckpointFlushTask {
-        override val terminalCondition: TerminalCondition = SelfTerminating
-
-        val didRun = Channel<Boolean>(Channel.UNLIMITED)
-
-        override suspend fun execute() {
-            didRun.send(true)
-        }
-    }
-
-    @Singleton
-    @Primary
-    @Requires(env = ["DestinationTaskLauncherTest"])
     class MockUpdateCheckpointsTask : UpdateCheckpointsTask {
         override val terminalCondition: TerminalCondition = SelfTerminating
 
@@ -365,9 +350,6 @@ class DestinationTaskLauncherTest {
         }
 
         coVerify(exactly = config.numProcessBatchWorkers) { processBatchTaskFactory.make(any()) }
-
-        // Verify that we kicked off the timed force flush w/o a specific delay
-        Assertions.assertTrue(mockForceFlushTask.didRun.receive())
 
         Assertions.assertTrue(
             updateCheckpointsTask.didRun.receive(),

@@ -35,5 +35,5 @@ class TestCreativeAssetsMusic(TestCase):
             HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
         )
 
-        output = read(SourceTiktokMarketing(), self.config(), self.catalog())
+        output = read(SourceTiktokMarketing(config=self.config(), catalog=None, state=None), self.config(), self.catalog())
         assert len(output.records) == 2

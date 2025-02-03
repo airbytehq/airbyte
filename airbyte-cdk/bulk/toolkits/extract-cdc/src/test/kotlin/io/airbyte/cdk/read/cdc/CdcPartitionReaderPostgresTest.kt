@@ -6,7 +6,6 @@ package io.airbyte.cdk.read.cdc
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.airbyte.cdk.util.Jsons
@@ -74,81 +73,72 @@ class CdcPartitionReaderPostgresTest :
             connection.createStatement().use { fn(it) }
         }
 
-    override fun createDebeziumOperations(): DebeziumOperations<LogSequenceNumber> {
-        return object :
-            AbstractCdcPartitionReaderDebeziumOperationsForTest<LogSequenceNumber>(stream) {
-            override fun position(offset: DebeziumOffset): LogSequenceNumber {
-                val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
-                return LogSequenceNumber.valueOf(offsetValue["lsn"].asLong())
-            }
+    override fun createDebeziumOperations(): DebeziumOperations<LogSequenceNumber> =
+        PostgresTestDebeziumOperations()
 
-            override fun position(recordValue: DebeziumRecordValue): LogSequenceNumber? {
-                val lsn: Long =
-                    recordValue.source["lsn"]?.takeIf { it.isIntegralNumber }?.asLong()
-                        ?: return null
-                return LogSequenceNumber.valueOf(lsn)
-            }
+    inner class PostgresTestDebeziumOperations :
+        AbstractDebeziumOperationsForTest<LogSequenceNumber>() {
+        override fun position(offset: DebeziumOffset): LogSequenceNumber {
+            val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
+            return LogSequenceNumber.valueOf(offsetValue["lsn"].asLong())
+        }
 
-            override fun position(sourceRecord: SourceRecord): LogSequenceNumber? {
-                val offset: Map<String, *> = sourceRecord.sourceOffset()
-                val lsn: Long = offset["lsn"] as? Long ?: return null
-                return LogSequenceNumber.valueOf(lsn)
-            }
+        override fun position(recordValue: DebeziumRecordValue): LogSequenceNumber? {
+            val lsn: Long =
+                recordValue.source["lsn"]?.takeIf { it.isIntegralNumber }?.asLong() ?: return null
+            return LogSequenceNumber.valueOf(lsn)
+        }
 
-            override fun deserialize(
-                opaqueStateValue: OpaqueStateValue,
-                streams: List<Stream>
-            ): DebeziumInput {
-                return super.deserialize(opaqueStateValue, streams).let {
-                    DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
+        override fun position(sourceRecord: SourceRecord): LogSequenceNumber? {
+            val offset: Map<String, *> = sourceRecord.sourceOffset()
+            val lsn: Long = offset["lsn"] as? Long ?: return null
+            return LogSequenceNumber.valueOf(lsn)
+        }
+
+        override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
+            DebeziumPropertiesBuilder()
+                .withDefault()
+                .withConnector(PostgresConnector::class.java)
+                .withDebeziumName(container.databaseName)
+                .withHeartbeats(heartbeat)
+                .with("plugin.name", "pgoutput")
+                .with("slot.name", SLOT_NAME)
+                .with("publication.name", PUBLICATION_NAME)
+                .with("publication.autocreate.mode", "disabled")
+                .with("flush.lsn.source", "false")
+                .withDatabase("hostname", container.host)
+                .withDatabase("port", container.firstMappedPort.toString())
+                .withDatabase("user", container.username)
+                .withDatabase("password", container.password)
+                .withDatabase("dbname", container.databaseName)
+                .withOffset()
+                .withStreams(streams)
+                .buildMap()
+
+        override fun generateColdStartProperties(): Map<String, String> =
+            generateWarmStartProperties(emptyList())
+
+        override fun generateColdStartOffset(): DebeziumOffset {
+            val (position: LogSequenceNumber, txID: Long) =
+                container.withStatement { statement: Statement ->
+                    statement.executeQuery("SELECT pg_current_wal_lsn(), txid_current()").use {
+                        it.next()
+                        LogSequenceNumber.valueOf(it.getString(1)) to it.getLong(2)
+                    }
                 }
-            }
-
-            override fun synthesize(): DebeziumInput {
-                val (position: LogSequenceNumber, txID: Long) =
-                    container.withStatement { statement: Statement ->
-                        statement.executeQuery("SELECT pg_current_wal_lsn(), txid_current()").use {
-                            it.next()
-                            LogSequenceNumber.valueOf(it.getString(1)) to it.getLong(2)
-                        }
-                    }
-                val timestamp: Instant = Instant.now()
-                val key: ArrayNode =
-                    Jsons.arrayNode().apply {
-                        add(container.databaseName)
-                        add(Jsons.objectNode().apply { put("server", container.databaseName) })
-                    }
-                val value: ObjectNode =
-                    Jsons.objectNode().apply {
-                        put("ts_usec", timestamp.toEpochMilli() * 1000L)
-                        put("lsn", position.asLong())
-                        put("txId", txID)
-                    }
-                val offset = DebeziumOffset(mapOf(key to value))
-                val state = DebeziumState(offset, schemaHistory = null)
-                val syntheticProperties: Map<String, String> = debeziumProperties()
-                return DebeziumInput(syntheticProperties, state, isSynthetic = true)
-            }
-
-            fun debeziumProperties(): Map<String, String> =
-                DebeziumPropertiesBuilder()
-                    .withDefault()
-                    .withConnector(PostgresConnector::class.java)
-                    .withDebeziumName(container.databaseName)
-                    .withHeartbeats(heartbeat)
-                    .with("plugin.name", "pgoutput")
-                    .with("slot.name", SLOT_NAME)
-                    .with("publication.name", PUBLICATION_NAME)
-                    .with("publication.autocreate.mode", "disabled")
-                    .with("flush.lsn.source", "false")
-                    .withDatabase("hostname", container.host)
-                    .withDatabase("port", container.firstMappedPort.toString())
-                    .withDatabase("user", container.username)
-                    .withDatabase("password", container.password)
-                    .withDatabase("dbname", container.databaseName)
-                    .withOffset()
-                    .withStreams(listOf(stream))
-                    .buildMap()
+            val timestamp: Instant = Instant.now()
+            val key: ArrayNode =
+                Jsons.arrayNode().apply {
+                    add(container.databaseName)
+                    add(Jsons.objectNode().apply { put("server", container.databaseName) })
+                }
+            val value: ObjectNode =
+                Jsons.objectNode().apply {
+                    put("ts_usec", timestamp.toEpochMilli() * 1000L)
+                    put("lsn", position.asLong())
+                    put("txId", txID)
+                }
+            return DebeziumOffset(mapOf(key to value))
         }
     }
 }

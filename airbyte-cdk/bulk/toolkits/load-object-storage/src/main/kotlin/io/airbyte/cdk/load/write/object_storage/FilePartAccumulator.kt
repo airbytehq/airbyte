@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.object_storage.LoadablePart
 import io.airbyte.cdk.load.write.FileBatchAccumulator
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Path
 
@@ -28,6 +29,8 @@ class FilePartAccumulator(
     private val stream: DestinationStream,
     private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
 ) : FileBatchAccumulator {
+    val log = KotlinLogging.logger {}
+
     override suspend fun processFilePart(file: DestinationFile, index: Long) {
         val key =
             Path.of(pathFactory.getFinalDirectory(stream), "${file.fileMessage.fileRelativePath}")
@@ -44,8 +47,9 @@ class FilePartAccumulator(
 
         while (true) {
             val bytePart =
-                ByteArray(ObjectStorageUploadConfiguration.DEFAULT_FILE_SIZE_BYTES.toInt())
+                ByteArray(ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES.toInt())
             val read = fileInputStream.read(bytePart)
+            log.info { "Read $read bytes from file" }
 
             if (read == -1) {
                 val filePart: ByteArray? = null
@@ -62,6 +66,7 @@ class FilePartAccumulator(
                 handleFilePart(batch, stream.descriptor, index)
             }
         }
+        fileInputStream.close()
         localFile.delete()
     }
 

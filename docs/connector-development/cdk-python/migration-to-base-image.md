@@ -18,20 +18,13 @@ N.B: This guide currently only applies to Python CDK connectors.
 5. The connector is successfully built and tested by our CI
 6. If you add `build_customization.py` to your connector, the Connector Operations team has reviewed and approved your changes.
 
-## Semi automated migration
-
-- Run `airbyte-ci connectors --name=<my-connector> migrate_to_base_image <PR_NUMBER>`
-- Commit and push the changes on your PR
-
-## Manual migration
-
 In order for a connector to use our base image it has to declare it in its `metadata.yaml` file under the `data.connectorBuildOptions.baseImage` key:
 
 Example:
 
 ```yaml
 connectorBuildOptions:
-  baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
 ```
 
 ### Why are we using long addresses instead of tags?
