@@ -1,8 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import uuid
+from datetime import datetime
 from typing import Any, Dict, Literal, Optional, Union
+from enum import Enum
 
 import dpath.util
 from pydantic.v1 import BaseModel, Field
@@ -11,22 +13,38 @@ from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
     AbstractFileBasedSpec,
     DeliverRawFiles,
-)
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
-    DeliverRecords as DeliverRecordsBase,
+    DeliverRecords,
+    DeliverPermissions as DeliverPermissionsBase,
 )
 
 
-class DeliverRecords(DeliverRecordsBase):
-    # Overriding to make visible with airbyte_hidden=False
-    sync_acl_permissions: bool = Field(
-        title="Include ACL Permissions",
-        description="Joins Document allowlists to each stream.",
-        default=False,
-        airbyte_hidden=False,
-        order=0,
-    )
-    domain: Optional[str] = Field(title="Domain", description="The domain of the identities.", airbyte_hidden=False, order=1)
+class RemoteIdentityType(Enum):
+    USER = "user"
+    GROUP = "group"
+
+
+class RemoteIdentity(BaseModel):
+    id: uuid.UUID
+    remote_id: str
+    parent_id: str | None = None
+    name: str | None = None
+    description: str | None = None
+    email_address: str | None = None
+    member_email_addresses: list[str] | None = None
+    type: RemoteIdentityType
+    modified_at: datetime
+
+
+class RemotePermissions(BaseModel):
+    id: str
+    file_path: str
+    allowed_identity_remote_ids: list[str] | None = None
+    denied_identity_remote_ids: list[str] | None = None
+    publicly_accessible: bool = False
+
+
+class DeliverPermissions(DeliverPermissionsBase):
+    domain: Optional[str] = Field(title="Domain", description="The Google domain of the identities.", airbyte_hidden=False, order=1)
 
 
 class OAuthCredentials(BaseModel):
@@ -77,7 +95,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         pattern_descriptor="https://drive.google.com/drive/folders/MY-FOLDER-ID",
     )
 
-    delivery_method: DeliverRecords | DeliverRawFiles = Field(
+    delivery_method: DeliverRecords | DeliverRawFiles | DeliverPermissions = Field(
         title="Delivery Method",
         discriminator="delivery_type",
         type="object",

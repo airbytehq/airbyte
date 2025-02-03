@@ -375,21 +375,6 @@
                 "const": "use_records_transfer",
                 "enum": ["use_records_transfer"],
                 "type": "string"
-              },
-              "sync_acl_permissions": {
-                "title": "Include ACL Permissions",
-                "description": "Joins Document allowlists to each stream.",
-                "default": false,
-                "airbyte_hidden": false,
-                "order": 0,
-                "type": "boolean"
-              },
-              "domain": {
-                "title": "Domain",
-                "description": "The domain of the identities.",
-                "airbyte_hidden": false,
-                "order": 1,
-                "type": "string"
               }
             },
             "description": "Recommended - Extract and load structured records into your destination of choice. This is the classic method of moving data in Airbyte. It allows for blocking and hashing individual fields or files from a structured schema. Data can be flattened, typed and deduped depending on the destination.",
@@ -415,7 +400,39 @@
             },
             "description": "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.",
             "required": ["delivery_type"]
-          }
+          },
+          {
+              "title": "Replicate Permissions ACL",
+              "type": "object",
+              "properties": {
+                "delivery_type": {
+                  "title": "Delivery Type",
+                  "default": "use_permissions_transfer",
+                  "const": "use_permissions_transfer",
+                  "enum": [
+                    "use_permissions_transfer"
+                  ],
+                  "type": "string"
+                },
+                "include_identities_stream": {
+                  "title": "Include Identity Stream",
+                  "description": "This data can be used in downstream systems to recreate permission restrictions mirroring the original source",
+                  "default": true,
+                  "type": "boolean"
+                },
+                "domain": {
+                  "title": "Domain",
+                  "description": "The Google domain of the identities.",
+                  "airbyte_hidden": false,
+                  "order": 1,
+                  "type": "string"
+                }
+              },
+              "description": "Sends one identity stream and one for more permissions (ACL) streams to the destination. This data can be used in downstream systems to recreate permission restrictions mirroring the original source.",
+              "required": [
+                "delivery_type"
+              ]
+            }
         ]
       },
       "folder_url": {

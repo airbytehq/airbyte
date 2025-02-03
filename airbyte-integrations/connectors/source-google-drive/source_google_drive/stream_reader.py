@@ -18,14 +18,13 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
 from airbyte_cdk import AirbyteTracedException, FailureType
-from airbyte_cdk.sources.file_based.config.permissions import RemoteFileIdentity, RemoteFileIdentityType, RemoteFilePermissions
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .spec import SourceGoogleDriveSpec
+from .spec import SourceGoogleDriveSpec, RemoteIdentity, RemoteIdentityType, RemotePermissions
 
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
@@ -122,7 +121,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 if self.config.credentials.auth_type == "Client":
                     creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
                 else:
-                    scopes = PERMISSIONS_API_SCOPES if self.sync_acl_permissions() else None
+                    scopes = PERMISSIONS_API_SCOPES if self.include_identities_stream() else None
                     creds = service_account.Credentials.from_service_account_info(
                         json.loads(self.config.credentials.service_account_info), scopes=scopes
                     )
@@ -310,7 +309,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         except Exception as e:
             raise ErrorDownloadingFile(f"There was an error while trying to download the file {file.uri}: {str(e)}")
 
-    def get_file_permissions(self, file_id: str, file_name: str, logger: logging.Logger) -> Tuple[List[RemoteFileIdentity], bool]:
+    def get_file_permissions(self, file_id: str, file_name: str, logger: logging.Logger) -> Tuple[List[RemoteIdentity], bool]:
         """
         Retrieves the permissions of a file in Google Drive and checks for public access.
 
@@ -346,13 +345,13 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         except Exception as e:
             raise ErrorFetchingMetadata(f"An error occurred while retrieving file permissions: {str(e)}")
 
-    def _to_remote_file_identity(self, identity: dict[str, Any]) -> RemoteFileIdentity | None:
+    def _to_remote_file_identity(self, identity: dict[str, Any]) -> RemoteIdentity | None:
         if identity.get("id") in PUBLIC_PERMISSION_IDS:
             return None
         if identity.get("deleted") is True:
             return None
 
-        return RemoteFileIdentity(
+        return RemoteIdentity(
             modified_at=datetime.now(),
             id=uuid.uuid4(),
             remote_id=identity.get("emailAddress"),
@@ -364,7 +363,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
     def get_file_acl_permissions(self, file: GoogleDriveRemoteFile, logger: logging.Logger) -> Dict[str, Any]:
         remote_identities, is_public = self.get_file_permissions(file.id, file_name=file.uri, logger=logger)
-        return RemoteFilePermissions(
+        return RemotePermissions(
             id=file.id,
             file_path=file.uri,
             allowed_identity_remote_ids=[p.remote_id for p in remote_identities],
@@ -410,24 +409,24 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         members_api = directory_service.members()
 
         for user in self._get_looping_google_api_list_response(users_api, "users", {"domain": domain}, logger):
-            rfp = RemoteFileIdentity(
+            rfp = RemoteIdentity(
                 id=uuid.uuid4(),
                 remote_id=user["primaryEmail"],
                 name=user["name"]["fullName"] if user["name"] is not None else None,
                 email_address=user["primaryEmail"],
                 member_email_addresses=[x["address"] for x in user["emails"]],
-                type=RemoteFileIdentityType.USER,
+                type=RemoteIdentityType.USER,
                 modified_at=datetime_now(),
             )
             yield rfp.dict()
 
         for group in self._get_looping_google_api_list_response(groups_api, "groups", {"domain": domain}, logger):
-            rfp = RemoteFileIdentity(
+            rfp = RemoteIdentity(
                 id=uuid.uuid4(),
                 remote_id=group["email"],
                 name=group["name"],
                 email_address=group["email"],
-                type=RemoteFileIdentityType.GROUP,
+                type=RemoteIdentityType.GROUP,
                 modified_at=datetime_now(),
             )
 
