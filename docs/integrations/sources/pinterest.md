@@ -55,7 +55,8 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
    either ACTIVE or PAUSED.
 9. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
-10. Click **Set up source**.
+10. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+11. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -83,7 +84,8 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
    either ACTIVE or PAUSED.
 9. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
-10. Click **Set up source**.
+10. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+11. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -203,6 +205,7 @@ The connector is restricted by the Pinterest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.30 | 2025-02-03 | [53135](https://github.com/airbytehq/airbyte/pull/53135) |Added Account Id filter to allow retrieving data for a specific ad account |
 | 2.0.29 | 2025-02-01 | [53001](https://github.com/airbytehq/airbyte/pull/53001) | Update dependencies |
 | 2.0.28 | 2025-01-25 | [52502](https://github.com/airbytehq/airbyte/pull/52502) | Update dependencies |
 | 2.0.27 | 2025-01-11 | [51377](https://github.com/airbytehq/airbyte/pull/51377) | Update dependencies |
