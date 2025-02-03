@@ -24,6 +24,11 @@ Replicates the budgets, accounts, categories, payees, transactions, and category
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.11 | 2025-02-01 | [53077](https://github.com/airbytehq/airbyte/pull/53077) | Update dependencies |
+| 0.0.10 | 2025-01-25 | [52434](https://github.com/airbytehq/airbyte/pull/52434) | Update dependencies |
+| 0.0.9 | 2025-01-18 | [51953](https://github.com/airbytehq/airbyte/pull/51953) | Update dependencies |
+| 0.0.8 | 2025-01-11 | [51418](https://github.com/airbytehq/airbyte/pull/51418) | Update dependencies |
+| 0.0.7 | 2024-12-28 | [50377](https://github.com/airbytehq/airbyte/pull/50377) | Update dependencies |
 | 0.0.6 | 2024-12-14 | [49736](https://github.com/airbytehq/airbyte/pull/49736) | Update dependencies |
 | 0.0.5 | 2024-12-12 | [49376](https://github.com/airbytehq/airbyte/pull/49376) | Update dependencies |
 | 0.0.4 | 2024-12-11 | [49130](https://github.com/airbytehq/airbyte/pull/49130) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

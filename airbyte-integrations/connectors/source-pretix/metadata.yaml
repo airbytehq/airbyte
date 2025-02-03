@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-pretix
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.11.1@sha256:0d0f562a70c0ed19ab605f0c83802a2e052712587692e2f3a1cc794fe7cd7007
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: c32e6012-96cf-45f7-8c09-ac9a32484d96
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-pretix
   githubIssueLabel: source-pretix
   icon: icon.svg

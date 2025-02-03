@@ -67,6 +67,13 @@ The Instatus source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 0.2.2 | 2025-02-01 | [52783](https://github.com/airbytehq/airbyte/pull/52783) | Update dependencies |
+| 0.2.1 | 2025-01-25 | [52230](https://github.com/airbytehq/airbyte/pull/52230) | Update dependencies |
+| 0.2.0 | 2025-01-14 | [47242](https://github.com/airbytehq/airbyte/pull/47242) | Migrate to manifest-only format |
+| 0.1.29 | 2025-01-11 | [51197](https://github.com/airbytehq/airbyte/pull/51197) | Update dependencies |
+| 0.1.28 | 2025-01-04 | [50887](https://github.com/airbytehq/airbyte/pull/50887) | Update dependencies |
+| 0.1.27 | 2024-12-28 | [50609](https://github.com/airbytehq/airbyte/pull/50609) | Update dependencies |
+| 0.1.26 | 2024-12-21 | [50076](https://github.com/airbytehq/airbyte/pull/50076) | Update dependencies |
 | 0.1.25 | 2024-12-14 | [49268](https://github.com/airbytehq/airbyte/pull/49268) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.1.24 | 2024-12-12 | [49147](https://github.com/airbytehq/airbyte/pull/49147) | Update dependencies |
 | 0.1.23 | 2024-10-28 | [47027](https://github.com/airbytehq/airbyte/pull/47027) | Update dependencies |

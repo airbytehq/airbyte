@@ -12,26 +12,15 @@ description: >
   Visit https://www.shipstation.com/docs/api/ for API documentation
 
 
-  Authentication setup
-
-
-  To get your API key and secret in ShipStation:
-
-
-  ↳ Go to Account Settings.
-
-
-  ↳ Select Account from the side navigation, then choose API Settings.
-
-
-  ↳ Click "Generate New API Keys" if no key and secret are listed yet.
+  Authentication setup to get your API key and secret in ShipStation:
+  1. Go to Account Settings.
+  2. Select Account from the side navigation, then choose API Settings.
+  3. Click "Generate New API Keys" if no key and secret are listed yet.
 
 
   ** IMPORTANT **
-
-  ↳If you've already generated your API keys, the existing API keys will be
+  If you've already generated your API keys, the existing API keys will be
   displayed here and the button will read Regenerate API Keys.
-
 
   If you already have API keys, do NOT generate new ones. Instead, copy your
   existing key and secret.

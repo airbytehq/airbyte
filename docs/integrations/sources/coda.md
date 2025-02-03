@@ -67,6 +67,12 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
+| 1.3.12 | 2025-02-01 | [52841](https://github.com/airbytehq/airbyte/pull/52841) | Update dependencies |
+| 1.3.11 | 2025-01-25 | [52307](https://github.com/airbytehq/airbyte/pull/52307) | Update dependencies |
+| 1.3.10 | 2025-01-18 | [51692](https://github.com/airbytehq/airbyte/pull/51692) | Update dependencies |
+| 1.3.9 | 2025-01-11 | [51073](https://github.com/airbytehq/airbyte/pull/51073) | Update dependencies |
+| 1.3.8 | 2024-12-28 | [50550](https://github.com/airbytehq/airbyte/pull/50550) | Update dependencies |
+| 1.3.7 | 2024-12-21 | [50045](https://github.com/airbytehq/airbyte/pull/50045) | Update dependencies |
 | 1.3.6 | 2024-12-14 | [49485](https://github.com/airbytehq/airbyte/pull/49485) | Update dependencies |
 | 1.3.5 | 2024-12-12 | [49193](https://github.com/airbytehq/airbyte/pull/49193) | Update dependencies |
 | 1.3.4 | 2024-12-11 | [48304](https://github.com/airbytehq/airbyte/pull/48304) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

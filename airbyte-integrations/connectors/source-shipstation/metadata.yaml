@@ -23,7 +23,7 @@ data:
   icon: icon.svg
   license: MIT
   name: Shipstation
-  releaseDate: 2025-02-01
+  releaseDate: 2024-12-21
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/shipstation

@@ -26,6 +26,7 @@ CONNECTORS_WITH_STRICT_ENCRYPT_VARIANTS = {
 
 
 def log_selected_connectors(selected_connectors_with_modified_files: List[ConnectorWithModifiedFiles]) -> None:
+    """Logs selected connector names into main logger, or says no connectors to run."""
     if selected_connectors_with_modified_files:
         selected_connectors_names = [c.technical_name for c in selected_connectors_with_modified_files]
         main_logger.info(f"Will run on the following {len(selected_connectors_names)} connectors: {', '.join(selected_connectors_names)}.")
@@ -34,6 +35,7 @@ def log_selected_connectors(selected_connectors_with_modified_files: List[Connec
 
 
 def get_base_connector_and_variants(connector: Connector) -> Set[Connector]:
+    """Returns the connector's name and it's strict-encrypt variant."""
     base_connector_path = connector.relative_connector_path.replace("-strict-encrypt", "")
     base_connector = Connector(base_connector_path)
     strict_encrypt_connector_path = f"{base_connector.relative_connector_path}-strict-encrypt"
@@ -44,6 +46,7 @@ def get_base_connector_and_variants(connector: Connector) -> Set[Connector]:
 
 
 def update_selected_connectors_with_variants(selected_connectors: Set[Connector]) -> Set[Connector]:
+    """Returns the connectors and their variants."""
     updated_selected_connectors = set()
     for selected_connector in selected_connectors:
         updated_selected_connectors.update(get_base_connector_and_variants(selected_connector))
@@ -145,11 +148,7 @@ def validate_environment(is_local: bool) -> None:
         "list": "pipelines.airbyte_ci.connectors.list.commands.list_connectors",
         "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
         "bump-version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
-        "migrate-to-base-image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
         "migrate-to-manifest-only": "pipelines.airbyte_ci.connectors.migrate_to_manifest_only.commands.migrate_to_manifest_only",
-        "migrate-to-poetry": "pipelines.airbyte_ci.connectors.migrate_to_poetry.commands.migrate_to_poetry",
-        "migrate-to-inline_schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
-        "migrate-to-logging-logger": "pipelines.airbyte_ci.connectors.migrate_to_logging_logger.commands.migrate_to_logging_logger",
         "generate-erd": "pipelines.airbyte_ci.connectors.generate_erd.commands.generate_erd",
         "upgrade-cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
         "up-to-date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",

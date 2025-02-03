@@ -25,6 +25,10 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.8 | 2025-01-25 | [52186](https://github.com/airbytehq/airbyte/pull/52186) | Update dependencies |
+| 0.0.7 | 2025-01-18 | [51712](https://github.com/airbytehq/airbyte/pull/51712) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51247](https://github.com/airbytehq/airbyte/pull/51247) | Update dependencies |
+| 0.0.5 | 2024-12-28 | [50216](https://github.com/airbytehq/airbyte/pull/50216) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49584](https://github.com/airbytehq/airbyte/pull/49584) | Update dependencies |
 | 0.0.3 | 2024-12-12 | [49285](https://github.com/airbytehq/airbyte/pull/49285) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [49023](https://github.com/airbytehq/airbyte/pull/49023) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

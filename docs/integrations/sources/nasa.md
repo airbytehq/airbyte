@@ -43,6 +43,12 @@ The NASA connector should not run into NASA API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                             | Subject                                    |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------- |
+| 0.3.12 | 2025-02-01 | [52778](https://github.com/airbytehq/airbyte/pull/52778) | Update dependencies |
+| 0.3.11 | 2025-01-25 | [52275](https://github.com/airbytehq/airbyte/pull/52275) | Update dependencies |
+| 0.3.10 | 2025-01-18 | [51793](https://github.com/airbytehq/airbyte/pull/51793) | Update dependencies |
+| 0.3.9 | 2025-01-11 | [51178](https://github.com/airbytehq/airbyte/pull/51178) | Update dependencies |
+| 0.3.8 | 2024-12-28 | [50595](https://github.com/airbytehq/airbyte/pull/50595) | Update dependencies |
+| 0.3.7 | 2024-12-21 | [50083](https://github.com/airbytehq/airbyte/pull/50083) | Update dependencies |
 | 0.3.6 | 2024-12-14 | [49637](https://github.com/airbytehq/airbyte/pull/49637) | Update dependencies |
 | 0.3.5 | 2024-12-12 | [49231](https://github.com/airbytehq/airbyte/pull/49231) | Update dependencies |
 | 0.3.4 | 2024-12-11 | [48990](https://github.com/airbytehq/airbyte/pull/48990) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

@@ -81,12 +81,15 @@ abstract class DestinationConfiguration : Configuration {
 
     /**
      * The amount of time given to implementor tasks (e.g. open, processBatch) to complete their
-     * current work after a failure.
+     * current work after a failure. Input consuming will stop right away, so this will give the
+     * tasks time to persist the messages already read.
      */
-    open val gracefulCancellationTimeoutMs: Long = 60 * 1000L // 1 minutes
+    open val gracefulCancellationTimeoutMs: Long = 10 * 60 * 1000L // 10 minutes
 
+    open val numOpenStreamWorkers: Int = 1
     open val numProcessRecordsWorkers: Int = 2
     open val numProcessBatchWorkers: Int = 5
+    open val numProcessBatchWorkersForFileTransfer: Int = 3
     open val batchQueueDepth: Int = 10
 
     companion object {

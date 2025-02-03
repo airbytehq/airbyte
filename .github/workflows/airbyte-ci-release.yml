@@ -38,11 +38,15 @@ jobs:
         id: install_python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
 
       - name: Install Poetry
         id: install_poetry
         uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
 
       - name: Install Dependencies
         id: install_dependencies
@@ -54,7 +58,7 @@ jobs:
         working-directory: airbyte-ci/connectors/pipelines/
         run: poetry run poe build-release-binary ${{ env.BINARY_FILE_NAME }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: airbyte-ci-${{ matrix.os }}-${{ steps.get_short_sha.outputs.sha }}
           path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
