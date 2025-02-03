@@ -191,6 +191,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 5.1.6 | 2025-01-29 | [49458](https://github.com/airbytehq/airbyte/pull/49458) | Update Linkedin Ads API version to 202410 for creatives stream            |
 | 5.1.5 | 2025-02-01 | [52791](https://github.com/airbytehq/airbyte/pull/52791) | Update dependencies |
 | 5.1.4 | 2025-01-30 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Fix state error |
 | 5.1.3 | 2025-01-22 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Update CDK to production ^6 |

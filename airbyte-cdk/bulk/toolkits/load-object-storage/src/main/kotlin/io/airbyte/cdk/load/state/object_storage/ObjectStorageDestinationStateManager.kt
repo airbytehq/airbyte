@@ -56,6 +56,7 @@ class ObjectStorageDestinationState(
         return client
             .list(pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false))
             .filter { matcher.match(it.key) != null }
+            .toList() // Force the list call to complete before initiating metadata calls
             .mapNotNull { obj ->
                 val generationId =
                     client.getMetadata(obj.key)[METADATA_GENERATION_ID_KEY]?.toLongOrNull() ?: 0L
@@ -65,7 +66,6 @@ class ObjectStorageDestinationState(
                     null
                 }
             }
-            .toList()
     }
 
     /**
