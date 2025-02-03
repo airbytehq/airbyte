@@ -1187,14 +1187,13 @@ definitions:
       type: DeclarativeStream
       name: sponsored_brands_v3_report_stream
       primary_key: ["profileId", "recordType", "reportDate", "recordId"]
-      # TODO: ADD SUPPORT FOR INCREMENTAL
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: reportDate
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        lookback_window: P{{ config.get('look_back_window', 0) }}D
+        lookback_window: P{{ config.get('look_back_window', 3) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
