@@ -15,7 +15,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
-  dockerImageTag: 4.5.0-rc.1
+  dockerImageTag: 4.5.0-rc.5
   dockerRepository: airbyte/source-amazon-seller-partner
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   erdUrl: https://dbdocs.io/airbyteio/source-amazon-seller-partner?view=relationships

@@ -58,7 +58,7 @@ internal class S3DataLakeUtilTest {
 
     @BeforeEach
     fun setup() {
-        s3DataLakeUtil = S3DataLakeUtil(tableIdGenerator)
+        s3DataLakeUtil = S3DataLakeUtil(tableIdGenerator, assumeRoleCredentials = null)
     }
 
     @Test

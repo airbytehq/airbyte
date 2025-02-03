@@ -43,7 +43,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', (now_utc() - duration('PT2M')).strftime('%Y-%m-%dT%H:%M:%SZ') ), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           field_name: LastUpdatedAfter
@@ -88,7 +88,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response.nextToken }}"
+            cursor_value: "{{ response.payload.NextToken }}"
 
     order_items:
       type: DeclarativeStream
@@ -143,6 +143,7 @@ definitions:
               parent_key: "AmazonOrderId"
               stream: "#/definitions/streams/orders"
               partition_field: "AmazonOrderId"
+              incremental_dependency: true
               extra_fields:
                 - ["LastUpdateDate"]
         record_selector:
@@ -2111,5 +2112,5 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
-  max_concurrency: 10
+  default_concurrency: 2
+  max_concurrency: 2
