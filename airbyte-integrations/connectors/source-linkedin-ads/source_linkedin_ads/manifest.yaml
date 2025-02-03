@@ -278,7 +278,7 @@ definitions:
           request_parameters:
             q: criteria
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202410"
             X-RestLi-Method: FINDER
           error_handlers:
             type: CompositeErrorHandler
@@ -2255,6 +2255,11 @@ schemas:
             type:
               - "null"
               - array
+      name:
+        description: The name of the creative.
+        type:
+          - "null"
+          - string
       isServing:
         description: Boolean indicating if the creative is currently serving.
         type:
