@@ -44,6 +44,7 @@ class ConnectorRunner:
         self.state = execution_inputs.state
         self.duckdb_path = execution_inputs.duckdb_path
         self.actor_id = execution_inputs.actor_id
+        self.hashed_connection_id = execution_inputs.hashed_connection_id
         self.environment_variables = execution_inputs.environment_variables if execution_inputs.environment_variables else {}
 
         self.full_command: list[str] = self._get_full_command(execution_inputs.command)
@@ -187,11 +188,14 @@ class ConnectorRunner:
             command=self.command,
             connector_under_test=self.connector_under_test,
             actor_id=self.actor_id,
+            hashed_connection_id=self.hashed_connection_id,
+            configured_catalog=self.configured_catalog,
             stdout_file_path=self.stdout_file_path,
             stderr_file_path=self.stderr_file_path,
             success=success,
             http_dump=await self.http_proxy.retrieve_http_dump() if self.http_proxy else None,
             executed_container=executed_container,
+            config=self.config,
         )
         await execution_result.save_artifacts(self.output_dir, self.duckdb_path)
         return execution_result

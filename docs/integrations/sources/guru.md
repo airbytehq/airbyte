@@ -50,6 +50,12 @@ To set up the Guru source connector, you'll need the [Guru Auth keys](https://de
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.13 | 2025-02-01 | [52731](https://github.com/airbytehq/airbyte/pull/52731) | Update dependencies |
+| 0.0.12 | 2025-01-25 | [52283](https://github.com/airbytehq/airbyte/pull/52283) | Update dependencies |
+| 0.0.11 | 2025-01-18 | [51835](https://github.com/airbytehq/airbyte/pull/51835) | Update dependencies |
+| 0.0.10 | 2025-01-11 | [51188](https://github.com/airbytehq/airbyte/pull/51188) | Update dependencies |
+| 0.0.9 | 2024-12-28 | [50622](https://github.com/airbytehq/airbyte/pull/50622) | Update dependencies |
+| 0.0.8 | 2024-12-21 | [50118](https://github.com/airbytehq/airbyte/pull/50118) | Update dependencies |
 | 0.0.7 | 2024-12-14 | [49622](https://github.com/airbytehq/airbyte/pull/49622) | Update dependencies |
 | 0.0.6 | 2024-12-12 | [49271](https://github.com/airbytehq/airbyte/pull/49271) | Update dependencies |
 | 0.0.5 | 2024-12-11 | [48903](https://github.com/airbytehq/airbyte/pull/48903) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

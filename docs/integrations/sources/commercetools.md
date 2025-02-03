@@ -52,6 +52,13 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 
 | Version | Date       | Pull Request                                             | Subject                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------ |
+| 0.2.31 | 2025-02-01 | [52792](https://github.com/airbytehq/airbyte/pull/52792) | Update dependencies |
+| 0.2.30 | 2025-01-25 | [52354](https://github.com/airbytehq/airbyte/pull/52354) | Update dependencies |
+| 0.2.29 | 2025-01-18 | [51665](https://github.com/airbytehq/airbyte/pull/51665) | Update dependencies |
+| 0.2.28 | 2025-01-11 | [51079](https://github.com/airbytehq/airbyte/pull/51079) | Update dependencies |
+| 0.2.27 | 2025-01-04 | [50918](https://github.com/airbytehq/airbyte/pull/50918) | Update dependencies |
+| 0.2.26 | 2024-12-28 | [50516](https://github.com/airbytehq/airbyte/pull/50516) | Update dependencies |
+| 0.2.25 | 2024-12-21 | [50032](https://github.com/airbytehq/airbyte/pull/50032) | Update dependencies |
 | 0.2.24 | 2024-12-12 | [49171](https://github.com/airbytehq/airbyte/pull/49171) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.23 | 2024-11-04 | [48186](https://github.com/airbytehq/airbyte/pull/48186) | Update dependencies |
 | 0.2.22 | 2024-10-29 | [47859](https://github.com/airbytehq/airbyte/pull/47859) | Update dependencies |

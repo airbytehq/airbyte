@@ -37,6 +37,11 @@ A manifest only source for EZOfficeInventory. https://ezo.io/ezofficeinventory/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.12 | 2025-02-01 | [52805](https://github.com/airbytehq/airbyte/pull/52805) | Update dependencies |
+| 0.0.11 | 2025-01-25 | [51698](https://github.com/airbytehq/airbyte/pull/51698) | Update dependencies |
+| 0.0.10 | 2025-01-11 | [51095](https://github.com/airbytehq/airbyte/pull/51095) | Update dependencies |
+| 0.0.9 | 2024-12-28 | [50580](https://github.com/airbytehq/airbyte/pull/50580) | Update dependencies |
+| 0.0.8 | 2024-12-21 | [50054](https://github.com/airbytehq/airbyte/pull/50054) | Update dependencies |
 | 0.0.7 | 2024-12-14 | [49506](https://github.com/airbytehq/airbyte/pull/49506) | Update dependencies |
 | 0.0.6 | 2024-12-12 | [49164](https://github.com/airbytehq/airbyte/pull/49164) | Update dependencies |
 | 0.0.5 | 2024-12-11 | [48932](https://github.com/airbytehq/airbyte/pull/48932) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

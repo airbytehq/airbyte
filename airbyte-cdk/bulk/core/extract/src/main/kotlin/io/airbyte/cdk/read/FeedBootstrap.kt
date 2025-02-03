@@ -21,7 +21,7 @@ import java.time.ZoneOffset
 /**
  * [FeedBootstrap] is the input to a [PartitionsCreatorFactory].
  *
- * This object conveniently packages the [StateQuerier] singleton with the [feed] for which the
+ * This object conveniently packages the [StateManager] singleton with the [feed] for which the
  * [PartitionsCreatorFactory] is to operate on, eventually causing the emission of Airbyte RECORD
  * messages for the [Stream]s in the [feed]. For this purpose, [FeedBootstrap] provides
  * [StreamRecordConsumer] instances which essentially provide a layer of caching over
@@ -34,15 +34,30 @@ sealed class FeedBootstrap<T : Feed>(
      * The [MetaFieldDecorator] instance which [StreamRecordConsumer] will use to decorate records.
      */
     val metaFieldDecorator: MetaFieldDecorator,
-    /** [StateQuerier] singleton for use by [PartitionsCreatorFactory]. */
-    val stateQuerier: StateQuerier,
+    /** [StateManager] singleton which is encapsulated by this [FeedBootstrap]. */
+    private val stateManager: StateManager,
     /** [Feed] to emit records for. */
     val feed: T
 ) {
 
-    /** Convenience getter for the current state value for the [feed]. */
+    /** Delegates to [StateManager.feeds]. */
+    val feeds: List<Feed>
+        get() = stateManager.feeds
+
+    /** Deletages to [StateManager] to return the current state value for any [Feed]. */
+    fun currentState(feed: Feed): OpaqueStateValue? = stateManager.scoped(feed).current()
+
+    /** Convenience getter for the current state value for this [feed]. */
     val currentState: OpaqueStateValue?
-        get() = stateQuerier.current(feed)
+        get() = currentState(feed)
+
+    /** Resets the state value of this feed and the streams in it to zero. */
+    fun resetAll() {
+        stateManager.scoped(feed).reset()
+        for (stream in feed.streams) {
+            stateManager.scoped(stream).reset()
+        }
+    }
 
     /** A map of all [StreamRecordConsumer] for this [feed]. */
     fun streamRecordConsumers(): Map<StreamIdentifier, StreamRecordConsumer> =
@@ -98,7 +113,7 @@ sealed class FeedBootstrap<T : Feed>(
         }
 
         private val precedingGlobalFeed: Global? =
-            stateQuerier.feeds
+            stateManager.feeds
                 .filterIsInstance<Global>()
                 .filter { it.streams.contains(stream) }
                 .firstOrNull()
@@ -108,8 +123,8 @@ sealed class FeedBootstrap<T : Feed>(
                 stream.schema.forEach { recordData.putNull(it.id) }
                 if (feed is Stream && precedingGlobalFeed != null) {
                     metaFieldDecorator.decorateRecordData(
-                        timestamp = outputConsumer.emittedAt.atOffset(ZoneOffset.UTC),
-                        globalStateValue = stateQuerier.current(precedingGlobalFeed),
+                        timestamp = outputConsumer.recordEmittedAt.atOffset(ZoneOffset.UTC),
+                        globalStateValue = stateManager.scoped(precedingGlobalFeed).current(),
                         stream,
                         recordData,
                     )
@@ -125,7 +140,7 @@ sealed class FeedBootstrap<T : Feed>(
                     AirbyteRecordMessage()
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
-                        .withEmittedAt(outputConsumer.emittedAt.toEpochMilli())
+                        .withEmittedAt(outputConsumer.recordEmittedAt.toEpochMilli())
                         .withData(reusedRecordData)
                 )
 
@@ -138,7 +153,7 @@ sealed class FeedBootstrap<T : Feed>(
                     AirbyteRecordMessage()
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
-                        .withEmittedAt(outputConsumer.emittedAt.toEpochMilli())
+                        .withEmittedAt(outputConsumer.recordEmittedAt.toEpochMilli())
                         .withData(reusedRecordData)
                         .withMeta(reusedRecordMeta)
                 )
@@ -192,14 +207,14 @@ sealed class FeedBootstrap<T : Feed>(
         fun create(
             outputConsumer: OutputConsumer,
             metaFieldDecorator: MetaFieldDecorator,
-            stateQuerier: StateQuerier,
+            stateManager: StateManager,
             feed: Feed,
         ): FeedBootstrap<*> =
             when (feed) {
                 is Global ->
-                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateQuerier, feed)
+                    GlobalFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed)
                 is Stream ->
-                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateQuerier, feed)
+                    StreamFeedBootstrap(outputConsumer, metaFieldDecorator, stateManager, feed)
             }
     }
 }
@@ -241,17 +256,17 @@ enum class FieldValueChange {
 class GlobalFeedBootstrap(
     outputConsumer: OutputConsumer,
     metaFieldDecorator: MetaFieldDecorator,
-    stateQuerier: StateQuerier,
+    stateManager: StateManager,
     global: Global,
-) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateQuerier, global)
+) : FeedBootstrap<Global>(outputConsumer, metaFieldDecorator, stateManager, global)
 
 /** [FeedBootstrap] implementation for [Stream] feeds. */
 class StreamFeedBootstrap(
     outputConsumer: OutputConsumer,
     metaFieldDecorator: MetaFieldDecorator,
-    stateQuerier: StateQuerier,
+    stateManager: StateManager,
     stream: Stream,
-) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateQuerier, stream) {
+) : FeedBootstrap<Stream>(outputConsumer, metaFieldDecorator, stateManager, stream) {
 
     /** A [StreamRecordConsumer] instance for this [Stream]. */
     fun streamRecordConsumer(): StreamRecordConsumer = streamRecordConsumers()[feed.id]!!

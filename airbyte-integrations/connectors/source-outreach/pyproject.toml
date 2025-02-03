@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.24"
+version = "1.0.30"
 name = "source-outreach"
 description = "Source implementation for outreach."
 authors = [ "Airbyte <contact@airbyte.io>",]

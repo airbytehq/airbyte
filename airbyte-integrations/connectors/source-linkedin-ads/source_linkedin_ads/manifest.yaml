@@ -24,6 +24,12 @@ definitions:
             q: search
           request_headers:
             Linkedin-Version: "202404"
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -68,6 +74,12 @@ definitions:
             accounts: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
           request_headers:
             Linkedin-Version: "202404"
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -128,6 +140,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -194,6 +212,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -256,7 +280,7 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-RestLi-Method: FINDER
-          error_handler:
+          error_handlers:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
@@ -279,6 +303,11 @@ definitions:
                     http_codes:
                       - 500
                       - 503
+              - type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -342,6 +371,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -391,6 +426,8 @@ definitions:
         - sponsoredCampaign
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_campaign_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -398,8 +435,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_campaign_analytics
           request_parameters:
             q: analytics
             pivot: "(value:CAMPAIGN)"
@@ -410,6 +445,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -466,6 +507,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_creative_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -473,8 +516,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_creative_analytics
           request_parameters:
             q: analytics
             pivot: "(value:CREATIVE)"
@@ -485,6 +526,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -541,6 +588,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_impression_device_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -548,8 +597,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_impression_device_analytics
           request_parameters:
             q: analytics
             pivot: "(value:IMPRESSION_DEVICE_TYPE)"
@@ -560,6 +607,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -616,6 +669,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_company_size_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -623,8 +678,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_company_size_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_COMPANY_SIZE)"
@@ -635,6 +688,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -691,6 +750,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_country_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -698,8 +759,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_country_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_COUNTRY_V2)"
@@ -710,6 +769,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -766,6 +831,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_job_function_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -773,8 +840,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_job_function_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_JOB_FUNCTION)"
@@ -785,6 +850,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -841,6 +912,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_job_title_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -848,8 +921,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_job_title_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_JOB_TITLE)"
@@ -860,6 +931,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -916,6 +993,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_industry_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -923,8 +1002,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_industry_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_INDUSTRY)"
@@ -935,6 +1012,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -991,6 +1074,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_seniority_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -998,8 +1083,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_seniority_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_SENIORITY)"
@@ -1010,6 +1093,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1066,6 +1155,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_region_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1073,8 +1164,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_region_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_REGION_V2)"
@@ -1085,6 +1174,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1141,6 +1236,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_company_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1148,8 +1245,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_company_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_COMPANY)"
@@ -1160,6 +1255,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1208,6 +1309,88 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ad_member_company_analytics"
+    custom_analytics_report:
+      type: DeclarativeStream
+      name: custom_analytics_report
+      primary_key:
+        - string_of_pivot_values
+        - end_date
+        - sponsoredCampaign
+      retriever:
+        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: custom_analytics_report
+        requester:
+          type: CustomRequester
+          class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
+          url_base: https://api.linkedin.com/rest/
+          authenticator: "#/definitions/authenticator"
+          path: adAnalytics
+          http_method: GET
+          request_parameters:
+            q: analytics
+            pivot: "DYNAMIC_FIELD"
+            timeGranularity: "DYNAMIC_FIELD"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
+            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            fields: "{{stream_slice['fields']}}"
+          request_headers:
+            Linkedin-Version: "202404"
+            X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+        record_selector:
+          type: RecordSelector
+          $parameters:
+            transformations:
+              - type: AddFields
+                fields:
+                  - path:
+                      - sponsoredCampaign
+                    value: "{{stream_slice.get('campaign_id')}}"
+                    value_type: string
+              - type: AddFields
+                fields:
+                  - path:
+                      - pivot
+                    value: "DYNAMIC_FIELD"
+                    value_type: string
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
+          schema_normalization: Default
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        cursor_field: end_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        cursor_granularity: P0D
+        step: P30D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_campaign_analytics"
   base_requester:
     type: HttpRequester
     url_base: https://api.linkedin.com/rest/
@@ -1249,6 +1432,40 @@ streams:
   - $ref: "#/definitions/streams/ad_member_region_analytics"
   - $ref: "#/definitions/streams/ad_member_company_analytics"
 
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/streams/custom_analytics_report"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - ad_analytics_reports
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path: ["**", "name"]
+          value: "custom_{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "requester", "request_parameters", "pivot"]
+          value: "(value:{{components_values['pivot_by']}})"
+        - type: ComponentMappingDefinition
+          field_path:
+            ["retriever", "requester", "request_parameters", "timeGranularity"]
+          value: "(value:{{components_values['time_granularity']}})"
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              "retriever",
+              "record_selector",
+              "**",
+              "transformations",
+              1,
+              "fields",
+              0,
+              "value",
+            ]
+          value: "{{components_values['pivot_by']}}"
 spec:
   type: Spec
   connection_specification:

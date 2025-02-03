@@ -34,6 +34,12 @@ You can find more about the API here https://developer.revolut.com/docs/merchant
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-02-01 | [52956](https://github.com/airbytehq/airbyte/pull/52956) | Update dependencies |
+| 0.0.9 | 2025-01-25 | [52474](https://github.com/airbytehq/airbyte/pull/52474) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51894](https://github.com/airbytehq/airbyte/pull/51894) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51304](https://github.com/airbytehq/airbyte/pull/51304) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50679](https://github.com/airbytehq/airbyte/pull/50679) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50256](https://github.com/airbytehq/airbyte/pull/50256) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49704](https://github.com/airbytehq/airbyte/pull/49704) | Update dependencies |
 | 0.0.3 | 2024-12-12 | [49326](https://github.com/airbytehq/airbyte/pull/49326) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [49052](https://github.com/airbytehq/airbyte/pull/49052) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

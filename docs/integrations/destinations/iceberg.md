@@ -75,6 +75,7 @@ specify the target size of compacted Iceberg data file.
 
 | Version | Date       | Pull Request                                              | Subject                                                        |
 |:--------|:-----------|:----------------------------------------------------------|:---------------------------------------------------------------|
+| 0.2.4 | 2025-01-10 | [51492](https://github.com/airbytehq/airbyte/pull/51492) | Use a non root base image |
 | 0.2.3 | 2024-12-17 | [49841](https://github.com/airbytehq/airbyte/pull/49841) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.2 | 2024-09-23 | [45861](https://github.com/airbytehq/airbyte/pull/45861) | Keeping only S3 with Glue Catalog as config option |
 | 0.2.1 | 2024-09-20 | [45711](https://github.com/airbytehq/airbyte/pull/45711) | Initial Cloud version for registry purpose [UNTESTED ON CLOUD] |
