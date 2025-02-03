@@ -208,7 +208,7 @@ For more troubleshooting information review the troubleshooting section in [Uplo
 
 > The host has a changing IP address, or none if you have no network access. We recommend that you connect to the special DNS name host.docker.internal, which resolves to the internal IP address used by the host.
 
-https://docs.docker.com/desktop/faqs/general/#how-do-i-connect-from-a-container-to-a-service-on-the-host
+[Explore networking features on Docker Desktop](https://docs.docker.com/desktop/features/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host)
 
 ## Additional Resources
 

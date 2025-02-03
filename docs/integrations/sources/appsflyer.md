@@ -23,6 +23,7 @@ The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
 
 | Version | Date       | Pull Request                                           | Subject                                     |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------ |
+| 0.2.27 | 2025-02-01 | [52901](https://github.com/airbytehq/airbyte/pull/52901) | Update dependencies |
 | 0.2.26 | 2025-01-25 | [51286](https://github.com/airbytehq/airbyte/pull/51286) | Update dependencies |
 | 0.2.25 | 2024-12-28 | [50438](https://github.com/airbytehq/airbyte/pull/50438) | Update dependencies |
 | 0.2.24 | 2024-12-21 | [50173](https://github.com/airbytehq/airbyte/pull/50173) | Update dependencies |
