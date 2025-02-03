@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 36be8dc6-9851-49af-b776-9d4c30e4ab6a
-  dockerImageTag: 0.1.37
+  dockerImageTag: 0.1.38
   dockerRepository: airbyte/destination-typesense
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
