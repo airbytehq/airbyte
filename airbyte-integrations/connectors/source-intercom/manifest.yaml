@@ -2484,9 +2484,11 @@ definitions:
         http_method: "POST"
         request_body_json:
           query: >-
+            {"operator" : "AND", "value" : [
             {"operator" : "OR", "value" : [
-            {"field" : "updated_at", "operator" : ">", "value" : {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }} },
-            {"field" : "updated_at", "operator" : "=", "value" : {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }} },
+            {"field" : "updated_at", "operator" : ">", "value" : {{ stream_interval['start_time'] }} },
+            {"field" : "updated_at", "operator" : "=", "value" : {{ stream_interval['start_time'] }} }]}, 
+            {"field" : "updated_at", "operator" : "<", "value" :  {{ stream_interval['end_time'] }} }
             ]}
           sort: >-
             {"field": "updated_at", "order": "ascending"}
@@ -2502,9 +2504,19 @@ definitions:
           cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') }}"
           stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
-      cursor_field: "updated_at"
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
     schema_loader:
       type: InlineSchemaLoader
