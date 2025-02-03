@@ -60,10 +60,15 @@ class DestinationTypesense(Destination):
         try:
             client = get_client(config=config)
             client.collections.create({"name": "_airbyte", "fields": [{"name": "title", "type": "string"}]})
-            client.collections["_airbyte"].documents.create({"id": "1", "title": "The Hunger Games"})
+
+            writer = TypesenseWriter(client, config.get("batch_size"))
+            writer.queue_write_operation("_airbyte", {"id": "1", "title": "The Hunger Games"})
+            writer.flush()
+
             time.sleep(3)
             client.collections["_airbyte"].documents["1"].retrieve()
             client.collections["_airbyte"].delete()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
+            client.collections["_airbyte"].delete()
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
