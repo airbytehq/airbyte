@@ -16,9 +16,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
     request_headers:
-      # There is a bug in interpolation, causing the `2.10` string to be evaluated to `2.1`, cutting off the `0`.
-      # the workaround is to put the `string` inside the `string`, then it's evaluated properly to `2.10`
-      Intercom-Version: "'2.10'"
+      Intercom-Version: "2.11"
       Accept: "application/json"
     error_handler:
       type: CustomErrorHandler
@@ -1605,16 +1603,6 @@ definitions:
               - string
   conversations:
     $ref: "#/definitions/stream_incremental_search"
-    retriever:
-      $ref: "#/definitions/stream_incremental_search/retriever"
-      requester:
-        $ref: "#/definitions/requester_incremental_search"
-        request_headers:
-          # API version header
-          # There are 404 - User Not Found issue, when `2.10` is used, for certain users:
-          # https://github.com/airbytehq/oncall/issues/4514
-          Intercom-Version: "2.9"
-          Accept: "application/json"
     $parameters:
       name: "conversations"
       path: "conversations/search"
@@ -1748,6 +1736,11 @@ definitions:
                     - string
                 id:
                   description: The ID of the contact
+                  type:
+                    - "null"
+                    - string
+                external_id:
+                  description: The unique identifier for the contact which is provided by the Client.
                   type:
                     - "null"
                     - string
@@ -2293,6 +2286,93 @@ definitions:
                 type:
                   - "null"
                   - integer
+          ai_agent_participated:
+            description: Indicates whether the AI Agent participated in the conversation.
+            type:
+              - "null"
+              - boolean
+          ai_agent:
+            description: Data related to AI Agent involvement in the conversation.
+            type:
+              - "null"
+              - object
+            properties:
+              source_type:
+                description: The type of the source that triggered AI Agent involvement in the conversation.
+                type:
+                  - "null"
+                  - string
+              source_title:
+                description: The title of the source that triggered AI Agent involvement in the conversation.
+                type:
+                  - "null"
+                  - string
+              last_answer_type:
+                description: The type of the last answer delivered by AI Agent.
+                type:
+                  - "null"
+                  - string
+              resolution_state:
+                description: The resolution state of AI Agent.
+                type:
+                  - "null"
+                  - string
+              rating:
+                description: The customer satisfaction rating given to AI Agent, from 1-5.
+                type:
+                  - "null"
+                  - integer
+              rating_remark:
+                description: The customer satisfaction rating remark given to AI Agent.
+                type:
+                  - "null"
+                  - string
+              content_sources:
+                description: The content sources used by AI Agent in the conversation.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    description: The type of the content source.
+                    type:
+                      - "null"
+                      - string
+                  total_count:
+                    description: The total number of content sources used by AI Agent in the conversation.
+                    type:
+                      - "null"
+                      - integer
+                  content_sources:
+                    description: The content sources used by AI Agent in the conversation.
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        content_type:
+                          description: The type of the content source.
+                          type:
+                            - "null"
+                            - string
+                        url:
+                          description: The internal URL linking to the content source for teammates.
+                          type:
+                            - "null"
+                            - string
+                        title:
+                          description: The title of the content source.
+                          type:
+                            - "null"
+                            - string
+                        locale:
+                          description: The ISO 639 language code of the content source.
+                          type:
+                            - "null"
+                            - string
   activity_logs:
     $ref: "#/definitions/stream_full_refresh"
     primary_key: id
