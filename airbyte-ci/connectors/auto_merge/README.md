@@ -50,6 +50,9 @@ have been merged.
 
 ## Changelog
 
+### 0.1.5
+Update Python version requirement from 3.10 to 3.11.
+
 ### 0.1.3
 Adds `auto-merge/bypass-ci-checks` label which does not require CI checks to pass to auto-merge PR.
 
