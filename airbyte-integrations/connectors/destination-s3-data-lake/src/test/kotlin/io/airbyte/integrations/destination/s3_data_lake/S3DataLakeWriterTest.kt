@@ -113,7 +113,7 @@ internal class S3DataLakeWriterTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -122,6 +122,7 @@ internal class S3DataLakeWriterTest {
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
+        every { table.manageSnapshots().createBranch(any()).commit() } just runs
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
@@ -148,7 +149,7 @@ internal class S3DataLakeWriterTest {
     }
 
     @Test
-    fun testCreateStreamLoaderWithMismatchedSchemas() {
+    fun testCreateStreamLoaderWithMismatchedSchemasAndAlreadyExistingStagingBranch() {
         val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val stream =
             DestinationStream(
@@ -183,7 +184,7 @@ internal class S3DataLakeWriterTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -210,6 +211,8 @@ internal class S3DataLakeWriterTest {
         every { updateSchema.setIdentifierFields(any<Collection<String>>()) } returns updateSchema
         every { updateSchema.commit() } just runs
         every { table.refresh() } just runs
+        every { table.manageSnapshots().createBranch(any()).commit() } throws
+            IllegalArgumentException("branch already exists")
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
@@ -320,7 +323,7 @@ internal class S3DataLakeWriterTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -348,6 +351,7 @@ internal class S3DataLakeWriterTest {
         every { updateSchema.setIdentifierFields(primaryKeys) } returns updateSchema
         every { updateSchema.commit() } just runs
         every { table.refresh() } just runs
+        every { table.manageSnapshots().createBranch(any()).commit() } just runs
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table

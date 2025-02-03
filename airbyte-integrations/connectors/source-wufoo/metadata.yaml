@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-wufoo
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: 2e5fb207-5215-43ee-8b4f-88f6490e204e
-  dockerImageTag: 0.0.8
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-wufoo
   githubIssueLabel: source-wufoo
   icon: icon.svg

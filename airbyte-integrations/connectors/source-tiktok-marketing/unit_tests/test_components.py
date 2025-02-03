@@ -64,7 +64,9 @@ def test_get_partition_value_from_config(config, expected):
     ],
 )
 def test_stream_slices_multiple(config, expected, requests_mock, json_data):
-    advertiser_ids_stream = [s for s in SourceTiktokMarketing().streams(config=config) if s.name == "advertiser_ids"]
+    advertiser_ids_stream = [
+        s for s in SourceTiktokMarketing(config=config, catalog=None, state=None).streams(config=config) if s.name == "advertiser_ids"
+    ]
     advertiser_ids_stream = advertiser_ids_stream[0] if advertiser_ids_stream else MagicMock()
 
     router = MultipleAdvertiserIdsPerPartition(
@@ -111,7 +113,9 @@ def test_stream_slices_multiple(config, expected, requests_mock, json_data):
     ],
 )
 def test_stream_slices_single(config, expected, requests_mock, json_data):
-    advertiser_ids_stream = [s for s in SourceTiktokMarketing().streams(config=config) if s.name == "advertiser_ids"]
+    advertiser_ids_stream = [
+        s for s in SourceTiktokMarketing(config=config, catalog=None, state=None).streams(config=config) if s.name == "advertiser_ids"
+    ]
     advertiser_ids_stream = advertiser_ids_stream[0] if advertiser_ids_stream else MagicMock()
 
     router = SingleAdvertiserIdPerPartition(
