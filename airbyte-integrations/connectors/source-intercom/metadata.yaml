@@ -74,4 +74,9 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-INTERCOM_TICKETS__CREDS
+          fileName: config_tickets.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

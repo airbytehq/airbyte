@@ -23,6 +23,36 @@ acceptance_tests:
         empty_streams:
           - name: tickets
             bypass_reason: access token in secrets/config.json doesn't have permissions to read tickets
+      # TODO: remove this split once we have all streams available in one secret
+      # https://github.com/airbytehq/airbyte-internal-issues/issues/11536
+      - config_path: "secrets/config_tickets.json"
+        expect_records:
+          path: "integration_tests/tickets_expected_records.jsonl"
+        empty_streams:
+          - name: activity_logs
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: admins
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: tags
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: teams
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: segments
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: companies
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: company_attributes
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: contact_attributes
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: contacts
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: conversations
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: company_segments
+            bypass_reason: tested with secrets/config_tickets.json
+          - name: conversation_parts
+            bypass_reason: tested with secrets/config_tickets.json
   incremental:
     tests:
       - config_path: "secrets/config.json"
