@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c5a0d24d-5587-4425-ab28-b8b3fe741c78
-  dockerImageTag: 0.0.6
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-shipstation
   githubIssueLabel: source-shipstation
   icon: icon.svg
