@@ -20,7 +20,9 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        empty_streams: []
+        empty_streams:
+          - name: tickets
+            bypass_reason: access token in secrets/config.json doesn't have permissions to read tickets
   incremental:
     tests:
       - config_path: "secrets/config.json"
