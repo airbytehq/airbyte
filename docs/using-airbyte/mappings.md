@@ -29,7 +29,7 @@ There are many reasons you might want to hash data.
 
 ### Encrypt
 
-Encryption is a **reversible** process that protects sensitive data by obscuring it. Airbyte supports RSA and AES encryption using an encryption key you generate yourself.
+Encryption is a **reversible** process that protects sensitive data by obscuring it. Airbyte supports RSA encryption using an encryption key you generate yourself.
 
 ![](images/mapping-encrypt.png)
 
@@ -39,8 +39,6 @@ There are many reasons you might want to encrypt data.
 - **Data integrity**: You can compare hashed values to ensure nobody has tampered with the data.
 - **Efficient retrieval**: Hashing can enable faster lookups in databases.
 - **Anonymity and compliance**: Source datasets can contain personally identifiable information (PII). Anonymizing PII can help you meet data privacy regulations like GDPR and HIPAA.
-
-#### RSA keys
 
 Airbyte expects RSA keys in hex-encoded DER format. PEM isn't currently supported.
 
@@ -57,10 +55,6 @@ This is an example of the public key format Airbyte expects, but make sure you g
 ```bash
 30820122300d06092a864886f70d01010105000382010f003082010a0282010100ce01c1000b6712bd5f694402c82ffb7b60867130b6e3284eac39577ff0f9b12a69920af4e53f4d83843ce86ba4975bb0298e6cf0ffbb8696540426bbf2146075ac6779801cf3dac54aa21ec69b14ab78217b5be70d083d075f06443a6f84ed6a61c924a4467b76eb35b41cf0d9e88be8c98734aec87ba7e9a6e8b9bec45627edbba2ea285f4907811ff94a01b6b1a90d88d303fbb60f62c094a65f5739fc6e46e06924040cd54c2a990483aa25eb4a7a35c0b77ef42f0c06fe1b00a8ca038939d22cc136de862a3bb5ba4a14f211e31d1380cf26fa3d6b268f6a4be47e3926a5d83ca20ae0108379b0d940c0e8a5a9cf7d24a6222305520ce6b507e3f7515e2d0203010001
 ```
-
-#### AES keys
-
-You can only use AES keys if Airbyte is configured to use an [external secrets manager](../deploying-airbyte/integrations/secrets).
 
 ### Rename field
 
