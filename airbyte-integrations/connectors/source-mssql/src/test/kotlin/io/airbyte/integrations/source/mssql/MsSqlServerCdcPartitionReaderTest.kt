@@ -76,7 +76,6 @@ class MsSqlServerCdcPartitionReaderTest :
                 connection.createStatement().use {
                     val rs = it.executeQuery("select DB_NAME()")
                     rs.next()
-                    log.info{"SGX dbName=${rs.getString(1)}"}
                 }
                 connection.createStatement().use { return fn(it) }
             }
@@ -90,7 +89,6 @@ class MsSqlServerCdcPartitionReaderTest :
                 connection.createStatement().use {
                     do {
                         Thread.sleep(1000)
-                        log.info{"SGX waiting to see ${lastRecordCount + numNewRecords} CDC records. Currently seeing only $currentRecordCount on retry $retries"}
                         val rs = it.executeQuery("SELECT count(*) FROM cdc.cdc_test_tbl_ct")
                         rs.next()
                         currentRecordCount = rs.getInt(1)

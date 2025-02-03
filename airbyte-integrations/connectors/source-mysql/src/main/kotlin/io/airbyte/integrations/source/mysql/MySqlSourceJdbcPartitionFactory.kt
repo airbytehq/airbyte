@@ -349,12 +349,10 @@ class MySqlSourceJdbcPartitionFactory(
                                     .toFormatter()
                             val parsedDate =  LocalDateTime.parse(stateValue, formatter)
                             val dateAsString = parsedDate.format(LocalDateTimeCodec.formatter)
-                            log.info{"SGX stateValue=$stateValue, parsedDate=$parsedDate, dateAsString=$dateAsString"}
                             Jsons.textNode(
                                 dateAsString
                             )
                         } catch (e: RuntimeException) {
-                            log.info{"SGX cought exception $e"}
                             // Resolve to use the new format.
                             Jsons.valueToTree<JsonNode>(stateValue)
                         }

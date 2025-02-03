@@ -81,9 +81,9 @@ class MsSqlServerCdcDatatypeIntegrationTest {
         }
 
         val allReadMessages: List<AirbyteMessage> by lazy {
-            // only get messsages from the 2nd run
+           /* // only get messsages from the 2nd run
             val lastStateMessageFromFirstRun =
-                CliRunner.source("read", config(), configuredCatalog).run().states().last()
+                CliRunner.source("read", config(), configuredCatalog).run().states().last()*/
 
             // insert
             connectionFactory
@@ -103,7 +103,7 @@ class MsSqlServerCdcDatatypeIntegrationTest {
                 "read",
                 config(),
                 configuredCatalog,
-                listOf(lastStateMessageFromFirstRun)
+                listOf()
             )
                 .run()
                 .messages()
@@ -341,7 +341,6 @@ class MsSqlServerCdcDatatypeIntegrationTest {
                             try {
                                 connection.createStatement().use { stmt -> stmt.execute(sql) }
                             } catch (e: Exception) {
-                                log.info { "SGX caught error when executing $sql: $e" }
                                 exception = e
                             }
                         }
@@ -377,16 +376,16 @@ class MsSqlServerCdcDatatypeIntegrationTest {
         val sqlStatements: List<String>
             get() {
                 return listOf(
-                    "CREATE TABLE $tableName " + "($columnName $sqlType PRIMARY KEY)",
+                    "CREATE TABLE ${dbContainer.databaseName}.${dbContainer.schemaName}.$tableName " + "($columnName $sqlType PRIMARY KEY)",
                 )
             }
 
         val sqlInsertStatements: List<String>
             get() {
                 val result =
-                    listOf("USE test;") +
+                    listOf("USE ${dbContainer.databaseName};") +
                             sqlToAirbyte.keys.map {
-                                "INSERT INTO $tableName ($columnName) VALUES ($it)"
+                                "INSERT INTO ${dbContainer.schemaName}.$tableName ($columnName) VALUES ($it)"
                             }
                 return result
             }

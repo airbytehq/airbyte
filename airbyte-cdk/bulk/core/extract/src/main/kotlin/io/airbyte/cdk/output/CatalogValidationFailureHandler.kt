@@ -72,7 +72,6 @@ private val log = KotlinLogging.logger {}
 @Singleton
 private class LoggingCatalogValidationFailureHandler : CatalogValidationFailureHandler {
     override fun accept(f: CatalogValidationFailure) {
-        log.info{"SGX stack=${Thread.currentThread().stackTrace.toList()}"}
         when (f) {
             is FieldNotFound ->
                 log.warn { "In stream ${f.prettyName()}: field '${f.fieldName}' not found." }

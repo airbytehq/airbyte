@@ -330,10 +330,6 @@ class MySqlSourceJdbcCursorIncrementalPartition(
         cursor,
         cursorUpperBound
     ) {
-
-    init {
-        log.info { "SGX cursorLowerBound=$cursorLowerBound, cursorUpperBound=$cursorUpperBound, ${Thread.currentThread().stackTrace.toList()}" }
-    }
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
     override val upperBound: List<JsonNode>
         get() = listOf(cursorUpperBound)

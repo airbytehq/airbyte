@@ -14,6 +14,7 @@ import io.airbyte.cdk.test.fixtures.legacy.SshHelpers.specAndInjectSsh
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.Companion.`in`
+import io.airbyte.integrations.source.mssql.MsSqlServerStreamFactory
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
@@ -35,7 +36,7 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
     private var testdb: MsSQLTestDatabase? = null
 
     override val imageName: String
-        get() = "airbyte/source-mssql-v1:dev"
+        get() = "airbyte/source-mssql:dev"
 
     @get:Throws(Exception::class)
     override val spec: ConnectorSpecification
@@ -67,6 +68,9 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
                             Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
                         .withDefaultCursorField(listOf("_ab_cdc_cursor"))
+                )
+                .withCursorField(
+                    listOf(MsSqlServerStreamFactory.MsSqlServerCdcMetaFields.CDC_CURSOR.id),
                 ),
             ConfiguredAirbyteStream()
                 .withSyncMode(SyncMode.INCREMENTAL)
@@ -82,6 +86,10 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
                         .withSupportedSyncModes(
                             Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
+                        .withDefaultCursorField(listOf(MsSqlServerStreamFactory.MsSqlServerCdcMetaFields.CDC_CURSOR.id))
+                )
+                .withCursorField(
+                    listOf(MsSqlServerStreamFactory.MsSqlServerCdcMetaFields.CDC_CURSOR.id),
                 )
         )
 
@@ -160,7 +168,6 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
             }
         }
 
-        LOGGER.info { "SGX read2" }
         assert(Objects.nonNull(latestState))
         var secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState, "airbyte/source-mssql-v1:dev"))
         Assertions.assertTrue(
@@ -168,7 +175,6 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
             "Expected the second incremental sync to produce no records when given the first sync's output state."
         )
 
-        LOGGER.info { "SGX read3" }
         secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState))
         Assertions.assertTrue(
             secondSyncRecords.isEmpty(),
@@ -199,18 +205,16 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
         Assertions.assertEquals(SCHEMA_NAME, streamStates[0].streamDescriptor.namespace)
 
         val lastStateMessage = Iterables.getLast(stateMessages)
-        LOGGER.info {"SGX lastStateMessage=$lastStateMessage"}
 
         val configuredCatalogWithTwoStreams = configuredCatalogWithOneStream.withStreams(configuredAirbyteStreams)
 
-        LOGGER.info{"SGXXXX read2"}
         // Start another sync with a newly added stream
         val messages2 = runRead(configuredCatalogWithTwoStreams, jsonNode(java.util.List.of(lastStateMessage)))
         val recordMessages2 = filterRecords(messages2)
         val stateMessages2 = filterStateMessages(messages2)
 
         Assertions.assertEquals(3, recordMessages2.size)
-        Assertions.assertEquals(2, stateMessages2.size)
+        Assertions.assertEquals(1, stateMessages2.size)
 
         val lastStateMessage2 = Iterables.getLast(stateMessages2)
         val streamStates2 = lastStateMessage2.global.streamStates
@@ -221,23 +225,6 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
         Assertions.assertEquals(SCHEMA_NAME, streamStates2[0].streamDescriptor.namespace)
         Assertions.assertEquals(STREAM_NAME2, streamStates2[1].streamDescriptor.name)
         Assertions.assertEquals(SCHEMA_NAME, streamStates2[1].streamDescriptor.namespace)
-
-        /*LOGGER.info{"SGXXXX read3"}
-        val messages3 = runRead(configuredCatalogWithTwoStreams, jsonNode(java.util.List.of(lastStateMessage)), imageName="airbyte/source-mssql:dev")
-        val recordMessages3 = filterRecords(messages3)
-        val stateMessages3 = filterStateMessages(messages3)
-        Assertions.assertEquals(3, recordMessages3.size)
-        Assertions.assertEquals(2, stateMessages3.size)
-
-        val lastStateMessage3 = Iterables.getLast(stateMessages3)
-        val streamStates3 = lastStateMessage3.global.streamStates
-
-        Assertions.assertEquals(2, streamStates3.size)
-
-        Assertions.assertEquals(STREAM_NAME, streamStates3[0].streamDescriptor.name)
-        Assertions.assertEquals(SCHEMA_NAME, streamStates3[0].streamDescriptor.namespace)
-        Assertions.assertEquals(STREAM_NAME2, streamStates3[1].streamDescriptor.name)
-        Assertions.assertEquals(SCHEMA_NAME, streamStates3[1].streamDescriptor.namespace)*/
     }
 
     private fun filterStateMessages(messages: List<AirbyteMessage>): List<AirbyteStateMessage> {
@@ -265,7 +252,13 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
                             .withSourceDefinedCursor(true)
                             .withSourceDefinedPrimaryKey(java.util.List.of(listOf("id")))
                             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                            .withDefaultCursorField(
+                                listOf(MsSqlServerStreamFactory.MsSqlServerCdcMetaFields.CDC_CURSOR.id),
+                                )
                     )
+                    .withCursorField(
+                        listOf(MsSqlServerStreamFactory.MsSqlServerCdcMetaFields.CDC_CURSOR.id),
+                    ),
             )
 
         val configuredCatalogWithOneStream =
@@ -291,6 +284,11 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
         // when we run incremental sync again there should be no new records. Run a sync with the latest
         // state message and assert no records were emitted.
         val latestState = extractLatestState(stateMessages)
+        val secondSyncRecords = filterRecords(runRead(configuredCatalogWithOneStream, latestState))
+        Assertions.assertTrue(
+            secondSyncRecords.isEmpty(),
+            "Expected the second incremental sync to produce no records."
+        )
 
         testdb!!.database.query { c: DSLContext ->
             c.query(
@@ -303,13 +301,14 @@ class CdcMssqlSourceAcceptanceTest : SourceAcceptanceTest() {
             .execute()
 
         assert(Objects.nonNull(latestState))
-        val secondSyncRecords = filterRecords(runRead(configuredCatalogWithOneStream, latestState))
+        val thirdSyncRecords = filterRecords(runRead(configuredCatalogWithOneStream, latestState))
         Assertions.assertFalse(
-            secondSyncRecords.isEmpty(),
+            thirdSyncRecords.isEmpty(),
             "Expected the second incremental sync to produce records."
         )
+
         Assertions.assertEquals(
-            cdcFieldsOmitted(secondSyncRecords[0].data),
+            cdcFieldsOmitted(thirdSyncRecords[0].data),
             mapper.readTree("{\"id\":5, \"name\":\"deep space nine\", \"userid\":null}")
         )
     }

@@ -120,7 +120,6 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
     fun withStreams(streams: List<Stream>): DebeziumPropertiesBuilder {
         val tableIncludeList: List<String> =
             streams.map {
-                log.info{"SGX stream namespace=${it.namespace}, name=${it.name}"}
                 Pattern.quote("${it.namespace}.${it.name}")
             }
         val columnIncludeList: List<String> =
@@ -128,8 +127,6 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
                 val suffix: String = stream.fields.joinToString("|") { Pattern.quote(it.id) }
                 "$prefix\\.($suffix)"
             }
-        log.info {"SGX tableIncludeList=$tableIncludeList, table.include.list=${joinIncludeList(tableIncludeList)}"}
-        log.info{"SGX columnIncludeList=${columnIncludeList}, joinIncludeList(columnIncludeList)=${joinIncludeList(columnIncludeList)}"}
         return apply {
             with("table.include.list", joinIncludeList(tableIncludeList))
             with("column.include.list", joinIncludeList(columnIncludeList))

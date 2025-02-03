@@ -77,11 +77,11 @@ class DebeziumRecordIterator<T>(
                 throw RuntimeException(e)
             }
             val instantAfterPoll: Instant = Instant.now()
-            val isEventLogged: Boolean =
-                numUnloggedPolls >= POLL_LOG_MAX_CALLS_INTERVAL - 1 ||
+            val isEventLogged: Boolean = true
+                /*numUnloggedPolls >= POLL_LOG_MAX_CALLS_INTERVAL - 1 ||
                     Duration.between(lastLoggedPoll, instantAfterPoll) > pollLogMaxTimeInterval ||
                     next == null ||
-                    isHeartbeatEvent(next)
+                    isHeartbeatEvent(next)*/
             if (isEventLogged) {
                 val pollDuration: Duration = Duration.between(instantBeforePoll, Instant.now())
                 LOGGER.info {
@@ -294,8 +294,6 @@ class DebeziumRecordIterator<T>(
     internal fun getHeartbeatPosition(heartbeatEvent: ChangeEvent<String?, String?>): T {
         try {
             val eventClass: Class<out ChangeEvent<*, *>?> = heartbeatEvent.javaClass
-            LOGGER.info{"SGX getting heartbeat for $heartbeatEvent"}
-            LOGGER.info { "SGX eventClass=$eventClass" }
             val f: Field?
             if (heartbeatEventSourceField.containsKey(eventClass)) {
                 f = heartbeatEventSourceField[eventClass]

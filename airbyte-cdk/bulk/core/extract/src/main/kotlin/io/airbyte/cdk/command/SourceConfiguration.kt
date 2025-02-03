@@ -34,7 +34,6 @@ interface SourceConfiguration : Configuration, SshTunnelConfiguration {
             pojoSupplier: ConfigurationSpecificationSupplier<I>,
             factory: SourceConfigurationFactory<I, out SourceConfiguration>,
         ): SourceConfiguration {
-            logger.info{"SGX pojoSupplier=$pojoSupplier"}
           return factory.make(pojoSupplier.get())
         }
     }

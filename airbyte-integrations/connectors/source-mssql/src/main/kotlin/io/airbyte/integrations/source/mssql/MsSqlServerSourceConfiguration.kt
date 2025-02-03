@@ -58,7 +58,6 @@ constructor(val featureFlags: Set<FeatureFlag>) :
         pojo: MsSqlServerSourceConfigurationSpecification,
     ): MsSqlServerSourceConfiguration {
         val replicationMethodPojo = pojo.replicationMethodJson
-        LOGGER.info { "SGX replicationMethodPojo=$replicationMethodPojo" }
         val incrementalReplicationConfiguration =
             when (replicationMethodPojo) {
                 is MsSqlServerCdcReplicationConfigurationSpecification ->
@@ -121,7 +120,6 @@ constructor(val featureFlags: Set<FeatureFlag>) :
             }
 
         val global = incrementalReplicationConfiguration is MsSqlServerCdcIncrementalReplicationConfiguration
-        LOGGER.info { "SGX global=$global" }
         return MsSqlServerSourceConfiguration(
             realHost = pojo.host,
             realPort = pojo.port,

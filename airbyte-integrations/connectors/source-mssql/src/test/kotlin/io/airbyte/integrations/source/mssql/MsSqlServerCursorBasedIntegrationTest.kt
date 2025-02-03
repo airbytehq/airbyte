@@ -40,7 +40,6 @@ class MsSqlServerCursorBasedIntegrationTest {
 
         val lastStateMessageFromRun1 = run1.states().last()
         val lastStreamStateFromRun1 = lastStateMessageFromRun1.stream.streamState
-        println("SGX lastStreamStateFromRun1=$lastStreamStateFromRun1")
 
         assertEquals("20", lastStreamStateFromRun1.get("cursor").textValue())
         assertEquals(2, lastStreamStateFromRun1.get("version").intValue())
@@ -92,14 +91,12 @@ class MsSqlServerCursorBasedIntegrationTest {
     fun testWithFullRefresh() {
         val fullRefreshCatalog =
             getConfiguredCatalog().apply { streams[0].syncMode = SyncMode.FULL_REFRESH }
-        log.info { "SGX running connector. Run1" }
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config, fullRefreshCatalog).run()
         val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
         assertEquals(3, recordMessageFromRun1.size, recordMessageFromRun1.toString())
         val lastStateMessageFromRun1 = run1.states().last()
 
-        log.info { "SGX running connector. Run2" }
         val run2: BufferingOutputConsumer =
             CliRunner.source("read", config, fullRefreshCatalog, listOf(lastStateMessageFromRun1))
                 .run()

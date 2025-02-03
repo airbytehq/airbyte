@@ -85,48 +85,16 @@ class CdcPartitionReaderMongoTest :
 
     inner class MongoTestDebeziumOperations : AbstractDebeziumOperationsForTest<BsonTimestamp>() {
 
-            override fun deserialize(
-                opaqueStateValue: OpaqueStateValue,
-                streams: List<Stream>
-            ): DebeziumInput {
-                return super.deserialize(opaqueStateValue, streams).let {
-                    DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
-                }
-            }
+        override fun position(offset: DebeziumOffset): BsonTimestamp {
+            val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
+            return BsonTimestamp(offsetValue["sec"].asInt(), offsetValue["ord"].asInt())
+        }
 
-            override fun deserialize(
-                key: DebeziumRecordKey,
-                value: DebeziumRecordValue,
-                stream: Stream,
-            ): DeserializedRecord {
-                val id: Int = key.element("id").asInt()
-                val record: Record =
-                    if (value.operation == "d") {
-                        Delete(id)
-                    } else {
-                        val v: Int? =
-                            value.after
-                                .takeIf { it.isTextual }
-                                ?.asText()
-                                ?.let { Jsons.readTree(it)["v"] }
-                                ?.asInt()
-                        if (v == null) {
-                            // In case a mongodb document was updated and then deleted, the update
-                            // change
-                            // event will not have any information ({after: null})
-                            // We are going to treat it as a Delete.
-                            Delete(id)
-                        } else if (value.operation == "u") {
-                            Update(id, v)
-                        } else {
-                            Insert(id, v)
-                        }
-                    }
-                return DeserializedRecord(
-                    data = Jsons.valueToTree(record),
-                    changes = emptyMap(),
-                )
-            }
+        override fun position(recordValue: DebeziumRecordValue): BsonTimestamp? {
+            val resumeToken: String =
+                recordValue.source["resume_token"]?.takeIf { it.isTextual }?.asText() ?: return null
+            return ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeToken))
+        }
 
         override fun position(sourceRecord: SourceRecord): BsonTimestamp? {
             val offset: Map<String, *> = sourceRecord.sourceOffset()

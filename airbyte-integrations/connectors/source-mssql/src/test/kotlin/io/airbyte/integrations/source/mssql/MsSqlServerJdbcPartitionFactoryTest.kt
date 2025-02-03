@@ -18,14 +18,7 @@ import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.read.ConcurrencyResource
-import io.airbyte.cdk.read.ConfiguredSyncMode
-import io.airbyte.cdk.read.DefaultJdbcSharedState
-import io.airbyte.cdk.read.Feed
-import io.airbyte.cdk.read.SelectQuerier
-import io.airbyte.cdk.read.StateQuerier
-import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.read.StreamFeedBootstrap
+import io.airbyte.cdk.read.*
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mssql.*
 import io.airbyte.integrations.source.mssql.config_spec.MsSqlServerCdcReplicationConfigurationSpecification
@@ -155,15 +148,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                         recordData: ObjectNode
                     ) {}
                 },
-                stateQuerier =
-                object : StateQuerier {
-                    override val feeds: List<Feed> = listOf(stream)
-                    override fun current(feed: Feed): OpaqueStateValue? =
-                        if (feed == stream) incumbentStateValue else null
-                    override fun resetFeedStates() {
-                        /* no-op */
-                    }
-                },
+                stateManager = StateManager(initialStreamStates = mapOf(stream to incumbentStateValue)),
                 stream,
             )
     }

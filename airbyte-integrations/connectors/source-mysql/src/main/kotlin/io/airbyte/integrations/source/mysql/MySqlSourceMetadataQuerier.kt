@@ -41,9 +41,7 @@ class MySqlSourceMetadataQuerier(
                 )
 
             cdcVariableCheckQueries.forEach {
-                println("SGX MysqlSourceMetadataQuerier.extraChecks 1, expectedValue=${it.second}, sql=${it.first}")
                 runVariableCheckSql(it.first, it.second, base.conn)
-                println("SGX MysqlSourceMetadataQuerier.extraChecks 2")
             }
 
             // Note: SHOW MASTER STATUS has been deprecated in latest mysql (8.4) and going forward
@@ -54,13 +52,11 @@ class MySqlSourceMetadataQuerier(
                     stmt.execute("SHOW MASTER STATUS")
                 }
             } catch (e: SQLException) {
-                println("SGX catch1: $e")
                 try {
                     base.conn.createStatement().use { stmt: Statement ->
                         stmt.execute("SHOW BINARY LOG STATUS")
                     }
                 } catch (ex: SQLException) {
-                    println("SGX catch2: $ex")
                     throw ConfigErrorException(
                         "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode."
                     )
@@ -78,7 +74,6 @@ class MySqlSourceMetadataQuerier(
                     }
                     val resultValue: String = rs.getString("Value")
                     if (!resultValue.equals(expectedValue, ignoreCase = true)) {
-                        println("SGX configError, expectedValue=$expectedValue, actualValue=$resultValue, sql=$sql")
                         throw ConfigErrorException(
                             String.format(
                                 "The variable should be set to \"%s\", but it is \"%s\"",

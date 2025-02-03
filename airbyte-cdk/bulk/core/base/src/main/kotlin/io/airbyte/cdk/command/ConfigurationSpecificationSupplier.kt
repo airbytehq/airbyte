@@ -46,10 +46,7 @@ class ConfigurationSpecificationSupplier<T : ConfigurationSpecification>(
             }
         }
         val json: String = jsonPropertyValue ?: jsonMicronautFallback
-        logger.info{"SGX jsonPropertyValue=$jsonPropertyValue micronautPropertiesFallback=$micronautPropertiesFallback"}
-        logger.info{"SGX jsonMicronautFallback=$jsonMicronautFallback"}
         val retVal = ValidatedJsonUtils.parseOne(javaClass, json)
-        logger.info{"SGX retVal=$retVal"}
         return retVal
     }
 }

@@ -12,6 +12,7 @@ class MsSqlServerCdcPartitionCreator<T : Comparable<T>>(
     readerOps: CdcPartitionReaderDebeziumOperations<T>,
     lowerBoundReference: AtomicReference<T>,
     upperBoundReference: AtomicReference<T>,
+    resetReason: AtomicReference<String?>,
 ): CdcPartitionsCreator<T>(
     concurrencyResource,
     feedBootstrap,
@@ -19,13 +20,20 @@ class MsSqlServerCdcPartitionCreator<T : Comparable<T>>(
     readerOps,
     lowerBoundReference,
     upperBoundReference,
+    resetReason,
 ) {
-    override fun createCdcPartitionReader(upperBound: T, input: DebeziumInput): CdcPartitionReader<T> =
+    override fun createCdcPartitionReader(upperBound: T, debeziumProperties: Map<String, String>,
+                                          startingOffset: DebeziumOffset,
+                                          startingSchemaHistory: DebeziumSchemaHistory?,
+                                          isInputStateSynthetic: Boolean) =
         MsSqlServerCdcPartitionReader(
             concurrencyResource,
             feedBootstrap.streamRecordConsumers(),
             readerOps,
             upperBound,
-            input
+            debeziumProperties,
+            startingOffset,
+            startingSchemaHistory,
+            isInputStateSynthetic
         )
 }

@@ -39,7 +39,6 @@ class FeedReader(
 
     /** Reads records from this [feed]. */
     suspend fun read() {
-        log.info { "SGX reading stream${feed.label}" }
         var partitionsCreatorID = 1L
         val timeSource = TimeSource.Monotonic
         var runsWithNoRecords = 0

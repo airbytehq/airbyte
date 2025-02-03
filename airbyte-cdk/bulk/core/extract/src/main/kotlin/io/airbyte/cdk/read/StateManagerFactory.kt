@@ -56,7 +56,6 @@ open class StateManagerFactory(
         configuredCatalog: ConfiguredAirbyteCatalog,
         inputState: InputState,
     ): StateManager {
-        LOGGER.info{"SGX configuredCatalog=$configuredCatalog"}
         val allStreams: List<Stream> =
             metadataQuerierFactory.session(config).use { mq ->
                 configuredCatalog.streams.mapNotNull { toStream(mq, it) }
@@ -92,10 +91,8 @@ open class StateManagerFactory(
             }
         val globalStreams: List<Stream> =
             decoratedStreams.filter {
-                LOGGER.info { "SGX configuresyncMode=${it.configuredSyncMode} for ${it.name}" }
                 it.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
             }
-        LOGGER.info{"SGX decoratedStreams=$decoratedStreams, undecoratedStreams=$undecoratedStreams, globalStreams=$globalStreams"}
         val initialStreamStates: Map<Stream, OpaqueStateValue?> =
             decoratedStreams.associateWith { stream: Stream ->
                 when (stream.configuredSyncMode) {
@@ -114,7 +111,6 @@ open class StateManagerFactory(
         streams: List<Stream>,
         inputState: StreamInputState? = null,
     ): StateManager {
-        LOGGER.info { "SGX streams=$streams" }
         return StateManager(
             initialStreamStates =
             streams.associateWith { stream: Stream -> inputState?.streams?.get(stream.id) },
@@ -192,7 +188,6 @@ open class StateManagerFactory(
         val streamFields: List<Field> =
             expectedSchema.keys.toList().filterNot(MetaField::isMetaFieldID).map {
                 dataColumnOrNull(it) ?: run {
-                    logger.info{"SGX returning null for $stream because column $it is null"}
                     return@toStream null
                 }
             }
@@ -235,7 +230,6 @@ open class StateManagerFactory(
             configuredStream.primaryKey?.asSequence()?.let { pkOrNull(it.toList()) }
         val configuredCursor: FieldOrMetaField? =
             configuredStream.cursorField?.asSequence()?.let { cursorOrNull(it.toList()) }
-        logger.info { "SGX configuredStream.syncMode=${configuredStream.syncMode}, configuredCursor=$configuredCursor" }
         val configuredSyncMode: ConfiguredSyncMode =
             when (configuredStream.syncMode) {
                 SyncMode.INCREMENTAL ->
@@ -247,7 +241,6 @@ open class StateManagerFactory(
                     }
                 else -> ConfiguredSyncMode.FULL_REFRESH
             }
-        logger.info{"SGX returning ${streamFields.toSet()} for stream $stream"}
         return Stream(
             streamID,
             streamFields.toSet(),

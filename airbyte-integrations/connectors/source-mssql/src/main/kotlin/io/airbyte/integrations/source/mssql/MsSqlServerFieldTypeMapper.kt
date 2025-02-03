@@ -47,7 +47,6 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             colIdx: Int,
         ): Float?  {
             val retVal = rs.getFloat(colIdx).takeUnless { rs.wasNull() }
-            log.info { "SGX value for column $colIdx is $retVal (stringVal = ${rs.getString(colIdx)}" }
             return retVal
         }
 
@@ -82,7 +81,6 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             colIdx: Int,
         ): String? {
             val retVal = Geography.deserialize(rs.getBytes(colIdx)).toString();
-            log.info { "SGX value for column $colIdx is $retVal (stringVal = ${rs.getString(colIdx)}" }
             return retVal
         }
 
@@ -108,7 +106,6 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             colIdx: Int,
         ): String? {
             val retVal = Geometry.deserialize(rs.getBytes(colIdx)).toString();
-            log.info { "SGX value for column $colIdx is $retVal (stringVal = ${rs.getString(colIdx)}" }
             return retVal
         }
 
@@ -139,7 +136,6 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 // TODO: This really should be an IntFieldType
                 // But this breaks on discover integrationt tests,
                 JDBCType.INTEGER -> {
-                    log.info { "SGXXX" }
                     IntFieldType
                 }
                 JDBCType.BIGINT -> BigIntegerFieldType
@@ -188,7 +184,6 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 JDBCType.TIMESTAMP_WITH_TIMEZONE -> OffsetDateTimeFieldType
                 null -> PokemonFieldType
             }
-        log.info { "SGX getting leafType for ${type}, ${type.jdbcType}: $retVal" }
         return retVal
     }
 
@@ -217,7 +212,6 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                     .toMap()
 
             fun fromName(name: String?): MsSqlServerSqlType? {
-                log.info {"SGX nameToVallue = $nameToValue"}
                 val retVal = nameToValue[name?.uppercase()]
                 return retVal
             }

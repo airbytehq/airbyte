@@ -146,7 +146,6 @@ open class CdcPartitionReader<T : Comparable<T>>(
             // At this point, if we haven't returned already, we want to close down the engine.
             if (!closeReasonReference.compareAndSet(null, closeReason)) {
                 // An earlier event has already triggered closing down the engine, do nothing.
-                log.info{"SGX ignoring closeReason=$closeReason. previous version was ${closeReasonReference.get()}"}
                 return
             }
             // At this point, if we haven't returned already, we need to close down the engine.
@@ -213,9 +212,6 @@ open class CdcPartitionReader<T : Comparable<T>>(
                 EventType.RECORD_DISCARDED_BY_STREAM_ID -> numDiscardedRecords
                 EventType.RECORD_EMITTED -> numEmittedRecords
             }
-            if (counterToIncrement === numDiscardedRecords) {
-                log.info{"SGX discarding record eventType=$eventType, event=$event"}
-            }
             counterToIncrement.incrementAndGet()
         }
 
@@ -228,13 +224,8 @@ open class CdcPartitionReader<T : Comparable<T>>(
                 // in interrupting it until the snapshot is done.
                 return null
             }
-            if (!coroutineContext.isActive) {
-                return CloseReason.TIMEOUT
-            }
             val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
-            log.info{"SGX currentPosition=$currentPosition, upperBound=$upperBound."}
             if (currentPosition == null || currentPosition < upperBound) {
-                log.info{"SGX returning null"}
                 return null
             }
 
@@ -250,7 +241,6 @@ open class CdcPartitionReader<T : Comparable<T>>(
                     CloseReason.RECORD_REACHED_TARGET_POSITION
             }
 
-            log.info{"SGX returning $retVal. eventType=$eventType, event=$event"}
             return retVal
         }
 

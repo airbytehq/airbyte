@@ -39,13 +39,20 @@ open class CdcPartitionsCreator<T : Comparable<T>>(
         acquiredThread.getAndSet(null)?.close()
     }
 
-    open fun createCdcPartitionReader(upperBound: T, input: DebeziumInput) =
+    open fun createCdcPartitionReader(upperBound: T,
+                                      debeziumProperties: Map<String, String>,
+                                      startingOffset: DebeziumOffset,
+                                      startingSchemaHistory: DebeziumSchemaHistory?,
+                                      isInputStateSynthetic: Boolean) =
         CdcPartitionReader(
             concurrencyResource,
             feedBootstrap.streamRecordConsumers(),
             readerOps,
             upperBound,
-            input
+            debeziumProperties,
+            startingOffset,
+            startingSchemaHistory,
+            isInputStateSynthetic
         )
 
     override suspend fun run(): List<PartitionReader> {
@@ -112,9 +119,15 @@ open class CdcPartitionsCreator<T : Comparable<T>>(
             }
         }
         // Build and return PartitionReader instance, if applicable.
-        val partitionReader = createCdcPartitionReader(upperBound, input)
+        val partitionReader = createCdcPartitionReader(
+            upperBound,
+            debeziumProperties,
+            startingOffset,
+            startingSchemaHistory,
+            warmStartState !is ValidDebeziumWarmStartState,
+        )
 
-        val lowerBound: T = creatorOps.position(input.state.offset)
+        val lowerBound: T = creatorOps.position(startingOffset)
         val lowerBoundInPreviousRound: T? = lowerBoundReference.getAndSet(lowerBound)
         if (partitionReader.isInputStateSynthetic) {
             // Handle synthetic offset edge-case, which always needs to run.

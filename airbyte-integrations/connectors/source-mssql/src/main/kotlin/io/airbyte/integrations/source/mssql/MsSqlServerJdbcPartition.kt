@@ -214,10 +214,6 @@ class MsSqlServerJdbcCdcRfrSnapshotPartition(
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
-    init {
-        log.info { "SGX lowerBound=$lowerBound, upperBound=$upperBound" }
-    }
-
     override val completeState: OpaqueStateValue
         get() =
             MsSqlServerCdcInitialSnapshotStateValue.snapshotCheckpoint(
@@ -334,11 +330,6 @@ class MsSqlServerJdbcCursorIncrementalPartition(
         cursor,
         cursorUpperBound
     ) {
-
-    init {
-        log.info { "SGX cursorLowerBound=$cursorLowerBound, cursorUpperBound=$cursorUpperBound" }
-    }
-
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
     override val upperBound: List<JsonNode>
         get() = listOf(cursorUpperBound)

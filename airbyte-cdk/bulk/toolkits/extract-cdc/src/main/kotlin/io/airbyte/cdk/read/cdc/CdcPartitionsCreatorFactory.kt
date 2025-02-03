@@ -36,7 +36,7 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
     protected val upperBoundReference = AtomicReference<T>()
 
     /** [AtomicReference] used to trigger resetting a sync when not null. */
-    private val resetReason = AtomicReference<String?>(null)
+    protected val resetReason = AtomicReference<String?>(null)
 
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
         if (feedBootstrap !is GlobalFeedBootstrap) {

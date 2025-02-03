@@ -30,6 +30,7 @@ class MsSqlServerCdcPartitionCreatorFactory<T : Comparable<T>>(
             debeziumOps,
             lowerBoundReference,
             upperBoundReference,
+            resetReason,
         )
     }
 }

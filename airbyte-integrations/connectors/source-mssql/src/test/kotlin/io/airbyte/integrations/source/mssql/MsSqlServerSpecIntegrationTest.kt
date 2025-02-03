@@ -37,7 +37,6 @@ class MsSqlServerSpecIntegrationTest {
         val container = MsSqlServerContainerFactory.shared(MsSqlServerImage.SQLSERVER_2022)
         val config = container.config
         val discoverOutput: BufferingOutputConsumer = CliRunner.source("discover", config).run()
-        log.info{"SGX discoverOutput.catalogs()=${discoverOutput.catalogs()}"}
         Assertions.assertEquals(
             listOf(
                 AirbyteCatalog()
@@ -119,28 +118,6 @@ class MsSqlServerSpecIntegrationTest {
 
         val readOutput: BufferingOutputConsumer =
             CliRunner.source("read", config, configuredCatalog, listOf()).run()
-        // println("SGXX
-        // records=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.records())}")
-        println(
-            "SGXX: specs=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.specs())}"
-        )
-        println(
-            "SGXX logs=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.logs())}"
-        )
-        println(
-            "SGXX states=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.states())}"
-        )
-        println(
-            "SGXX statuses=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.statuses())}"
-        )
-        // println("SGXX
-        // messages=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.messages())}")
-        println(
-            "SGXX traces=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.traces())}"
-        )
-        // println("SGXX
-        // readOutput=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput)}")
-
     }
 
     @Test
@@ -153,34 +130,9 @@ class MsSqlServerSpecIntegrationTest {
         val catalog =
             SyncsTestFixture.configuredCatalogFromResource("catalog-cdc-single-stream.json")
         CliRunner.source("discover", config).run()
-        println(
-            "SGX catalogString=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(catalog)}"
-        )
 
         val readOutput: BufferingOutputConsumer =
             CliRunner.source("read", config, catalog, listOf()).run()
-        // println("SGXX
-        // records=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.records())}")
-        println(
-            "SGXX: specs=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.specs())}"
-        )
-        println(
-            "SGXX logs=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.logs())}"
-        )
-        println(
-            "SGXX states=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.states())}"
-        )
-        println(
-            "SGXX statuses=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.statuses())}"
-        )
-        // println("SGXX
-        // messages=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.messages())}")
-        println(
-            "SGXX traces=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.traces())}"
-        )
-        // println("SGXX
-        // readOutput=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput)}")
-
     }
 
     @Test
@@ -192,34 +144,9 @@ class MsSqlServerSpecIntegrationTest {
 
         val catalog = SyncsTestFixture.configuredCatalogFromResource("catalog-cdc-dbo-users.json")
         CliRunner.source("discover", config).run()
-        println(
-            "SGX catalogString=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(catalog)}"
-        )
 
         val readOutput: BufferingOutputConsumer =
             CliRunner.source("read", config, catalog, listOf()).run()
-        // println("SGXX
-        // records=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.records())}")
-        println(
-            "SGXX: specs=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.specs())}"
-        )
-        println(
-            "SGXX logs=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.logs())}"
-        )
-        println(
-            "SGXX states=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.states())}"
-        )
-        println(
-            "SGXX statuses=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.statuses())}"
-        )
-        // println("SGXX
-        // messages=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.messages())}")
-        println(
-            "SGXX traces=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.traces())}"
-        )
-        // println("SGXX
-        // readOutput=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput)}")
-
     }
 
     @Test
@@ -249,14 +176,8 @@ class MsSqlServerSpecIntegrationTest {
                     )
                 )
         CliRunner.source("discover", config).run()
-        println(
-            "SGX catalogString=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(configuredCatalog)}"
-        )
 
         val readOutput: BufferingOutputConsumer =
             CliRunner.source("read", config, configuredCatalog, listOf()).run()
-        println(
-            "SGXX messages=${ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(readOutput.messages())}"
-        )
     }
 }

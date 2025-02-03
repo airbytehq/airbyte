@@ -54,7 +54,6 @@ private fun resolveValues(
             continue
         }
         val fileContent  = jsonFile.readText().replace("$", "\${:$}")
-        log.info{"SGX fileContent for $prefix: $fileContent"}
         values["$prefix.json"] = fileContent
     }
     return values

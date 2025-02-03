@@ -61,10 +61,7 @@ class MsSqlServerDebeziumOperations(
         val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
         val commitLsn: String = offsetValue["commit_lsn"].asText()
         val changeLsn: String? = null//offsetValue["change_lsn"].asText()
-        val commitLsn2: String = offsetValue["commit_lsn"].asText()
-        val changeLsn2: String? = null//offsetValue["change_lsn"].asText()
         val retVal = TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
-        log.info { "SGX offsetValue = $offsetValue, commitLsn=$commitLsn, changeLsn=$changeLsn, commitLsn2=$commitLsn2, changeLsn2=$changeLsn2, retVal=$retVal" }
         return retVal
     }
 
@@ -73,18 +70,16 @@ class MsSqlServerDebeziumOperations(
             recordValue.source["commit_lsn"]?.takeIf { it.isTextual }?.asText() ?: return null
         val changeLsn: String? = null
             //recordValue.source["change_lsn"]?.takeIf { it.isTextual }?.asText()
-        log.info { "SGX recordValue.source = ${recordValue.source}" }
         return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
     }
 
     override fun position(sourceRecord: SourceRecord): TxLogPosition? {
         val commitLsn: String = sourceRecord.sourceOffset()[("commit_lsn")]?.toString() ?: return null
         val changeLsn: String? = null//sourceRecord.sourceOffset()[("change_lsn")]?.toString()
-        log.info { "SGX sourceRecord.sourceOffset() = ${sourceRecord.sourceOffset()}" }
         return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
     }
 
-    override fun synthesize(): DebeziumInput {
+    override fun generateColdStartOffset(): DebeziumOffset {
         val lsn = queryMaxLsn()
         val key: ArrayNode =
             Jsons.arrayNode().apply {
@@ -101,22 +96,15 @@ class MsSqlServerDebeziumOperations(
                 put("snapshot", true)
                 put("snapshot_completed", true)
             }
-        val offset = DebeziumOffset(mapOf(key to value))
-        log.info { "Constructed synthetic $offset." }
-        val state = DebeziumState(offset, schemaHistory = DebeziumSchemaHistory(emptyList()))
-
-        log.info { "SGX returning real state: $state" }
-        return DebeziumInput(
-            commonProperties() + ("snapshot.mode" to "recovery"),
-            state,
-            isSynthetic = true
-        )
+        return DebeziumOffset(mapOf(key to value))
     }
 
-    override fun deserialize(
+    override fun generateColdStartProperties(): Map<String, String> =
+            commonProperties() + ("snapshot.mode" to "recovery")
+
+    override fun deserializeState(
         opaqueStateValue: OpaqueStateValue,
-        streams: List<Stream>
-    ): DebeziumInput {
+    ): DebeziumWarmStartState {
         val stateNode = opaqueStateValue[MSSQL_STATE]
         val offsetNode = stateNode[MSSQL_CDC_OFFSET] as JsonNode
         val offsetMap: Map<JsonNode, JsonNode> =
@@ -152,20 +140,17 @@ class MsSqlServerDebeziumOperations(
             DebeziumSchemaHistory(schemaHistoryList)
         }
 
-        return DebeziumInput(
-            isSynthetic = false,
-            state = DebeziumState(offset, schemaHistory),
-            // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
-            properties = commonProperties() + ("snapshot.mode" to "when_needed")
-        )
+        return ValidDebeziumWarmStartState(offset, schemaHistory);
     }
 
-    override fun deserialize(
+    override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
+            commonProperties() + ("snapshot.mode" to "when_needed")
+
+    override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
         stream: Stream,
     ): DeserializedRecord? {
-        log.info{"SGX deserializing debezium record $value for key $key"}
         val before: JsonNode = value.before
         val after: JsonNode = value.after
         val source: JsonNode = value.source
@@ -197,31 +182,30 @@ class MsSqlServerDebeziumOperations(
 
     override fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String? {
         val retVal = value.source["schema"]?.asText()
-        log.info {"SGX returning $retVal. key=$key, value=$value"}
         return retVal
     }
 
     override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? {
         val retVal = value.source["table"]?.asText()
-        log.info {"SGX returning $retVal. key=$key, value=$value"}
         return retVal
     }
 
-    override fun serialize(debeziumState: DebeziumState): OpaqueStateValue {
+    override fun serializeState( offset: DebeziumOffset,
+                                 schemaHistory: DebeziumSchemaHistory?): OpaqueStateValue {
         val stateNode: ObjectNode = Jsons.objectNode()
         // Serialize offset.
         val offsetNode: JsonNode =
             Jsons.objectNode().apply {
-                for ((k, v) in debeziumState.offset.wrapped) {
+                for ((k, v) in offset.wrapped) {
                     put(Jsons.writeValueAsString(k), Jsons.writeValueAsString(v))
                 }
             }
         stateNode.set<JsonNode>(MSSQL_CDC_OFFSET, offsetNode)
 
-        val schemaHistory: List<HistoryRecord>? = debeziumState.schemaHistory?.wrapped
-        if (schemaHistory != null) {
+        val realSchemaHistory: List<HistoryRecord>? = schemaHistory?.wrapped
+        if (realSchemaHistory != null) {
             val uncompressedString: String =
-                schemaHistory.joinToString(separator = "\n") {
+                realSchemaHistory.joinToString(separator = "\n") {
                     DocumentWriter.defaultWriter().write(it.document())
                 }
             if (uncompressedString.length <= MSSQL_MAX_UNCOMPRESSED_LENGTH) {
@@ -293,9 +277,6 @@ class MsSqlServerDebeziumOperations(
         const val MSSQL_CDC_OFFSET = "mssql_cdc_offset"
         const val MSSQL_DB_HISTORY = "mssql_db_history"
         const val MSSQL_IS_COMPRESSED = "is_compressed"
-        init {
-            File("/tmp/sgx_schema_history").mkdirs()
-        }
 
         val staticProperties: Map<String, String> =
                 DebeziumPropertiesBuilder()
@@ -314,7 +295,6 @@ class MsSqlServerDebeziumOperations(
                     // client
                     // makes a schema change then the sync might break
                     .with("snapshot.locking.mode", "none")
-                    //SGX: ??
                     .with("mssql_converter.type", MsSqlServerDebeziumConverter::class.java.getName())
                     .with("converters", "mssql_converter")
                     .with("snapshot.isolation.mode", "read_committed")
@@ -330,7 +310,6 @@ class MsSqlServerDebeziumOperations(
 
 class MsSqlServerDebeziumPosition : Comparable<MsSqlServerDebeziumPosition> {
     override fun compareTo(other: MsSqlServerDebeziumPosition): Int {
-        log.info{"SGX returning 0!!! other=$other, this=$this"}
         return 0
     }
 }

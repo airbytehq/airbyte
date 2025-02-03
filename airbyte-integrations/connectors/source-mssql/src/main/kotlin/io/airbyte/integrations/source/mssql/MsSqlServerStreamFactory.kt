@@ -16,7 +16,7 @@ import java.time.OffsetDateTime
 @Singleton
 @Primary
 class MsSqlServerStreamFactory : JdbcAirbyteStreamFactory {
-    override val globalCursor: MetaField? = null
+    override val globalCursor: MetaField = MsSqlServerCdcMetaFields.CDC_CURSOR
     override val globalMetaFields: Set<MetaField> =
         setOf(
             CommonMetaField.CDC_UPDATED_AT,
