@@ -143,6 +143,7 @@ definitions:
               parent_key: "AmazonOrderId"
               stream: "#/definitions/streams/orders"
               partition_field: "AmazonOrderId"
+              incremental_dependency: true
               extra_fields:
                 - ["LastUpdateDate"]
         record_selector:
@@ -2111,5 +2112,5 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
-  max_concurrency: 10
+  default_concurrency: 2
+  max_concurrency: 2

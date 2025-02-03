@@ -143,6 +143,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.4.2 | 2025-02-01 | [53083](https://github.com/airbytehq/airbyte/pull/53083) | Update dependencies |
 | 1.4.1 | 2025-01-25 | [52403](https://github.com/airbytehq/airbyte/pull/52403) | Update dependencies |
 | 1.4.0 | 2025-01-23 | [52110](https://github.com/airbytehq/airbyte/pull/52110) | Make incremental per-partition streams concurrent |
 | 1.3.7 | 2025-01-18 | [51999](https://github.com/airbytehq/airbyte/pull/51999) | Update dependencies |

@@ -13,8 +13,9 @@ from typing import Any, ClassVar, List, Mapping
 
 import requests
 import yaml
-from common_utils import GoogleApi, Logger
 
+from .google_api import GoogleApi
+from .logger import Logger
 from .models import DEFAULT_SECRET_FILE, RemoteSecret, Secret
 
 
