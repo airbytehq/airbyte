@@ -32,7 +32,7 @@
         "type": "string"
       }
     },
-    "required": ["client_id", "client_secret", "access_token"]
+    "required": ["access_token"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],
