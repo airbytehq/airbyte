@@ -59,8 +59,8 @@
 /airbyte-integrations/connectors/destination-redshift/ @airbytehq/move-destinations
 
 # Python critical connectors
-/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/extensibility
-/airbyte-integrations/connectors/source-hubspot/ @airbytehq/extensibility
-/airbyte-integrations/connectors/source-salesforce/ @airbytehq/extensibility
-/airbyte-integrations/connectors/source-shopify/ @airbytehq/extensibility
-/airbyte-integrations/connectors/source-stripe/ @airbytehq/extensibility
+/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-hubspot/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-salesforce/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-shopify/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-stripe/ @airbytehq/dev-extensibility
