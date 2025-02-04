@@ -68,7 +68,7 @@ class S3Client(
                 lastKey = obj.key
                 emit(S3Object(obj.key!!, bucketConfig))
             } // null contents => empty list, not error
-            if (client.listObjects(request).isTruncated == false) {
+            if (response.isTruncated == false) {
                 break
             }
             request = request.copy { marker = lastKey }
