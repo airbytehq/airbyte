@@ -140,7 +140,7 @@ abstract class BasicPerformanceTest(
     protected fun testInsertRecords(
         recordsToInsert: Long? = null,
         validation: ValidationFunction?,
-        ) {
+    ) {
         runSync(
             testScenario =
                 SingleStreamInsert(

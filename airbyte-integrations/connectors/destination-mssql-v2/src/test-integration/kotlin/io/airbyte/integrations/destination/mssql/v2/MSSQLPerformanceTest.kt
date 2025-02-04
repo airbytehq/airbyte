@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -56,11 +60,10 @@ class MSSQLPerformanceTest :
         configUpdater = MSSQLConfigUpdater(),
         dataValidator = MSSQLDataValidator(),
         defaultRecordsToInsert = 10000,
-    )
-{
+    ) {
     @Test
     override fun testInsertRecords() {
-        testInsertRecords(recordsToInsert = 100000) {  }
+        testInsertRecords(recordsToInsert = 100000) {}
     }
     @Test
     override fun testInsertRecordsWithDedup() {
