@@ -19,7 +19,6 @@
         "minimum": 0,
         "maximum": 65536,
         "examples": ["1433"],
-        "default": 3306,
         "order": 1
       },
       "database": {
