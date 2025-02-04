@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 
 import requests
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.models import SyncMode
 
@@ -38,7 +38,7 @@ stream_json_schema = {
 
 
 # pylint:disable=too-many-instance-attributes
-class KoboToolStream(HttpStream, IncrementalMixin, ABC):
+class KoboToolStream(HttpStream, CheckpointMixin, ABC):
     """Each Kobo form is a stream"""
 
     primary_key = "_id"
