@@ -95,6 +95,7 @@ The Railz connector should gracefully handle Railz API limitations under normal 
 
 | Version | Date       | Pull Request                                             | Subject           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------- |
+| 0.1.26 | 2025-02-01 | [52978](https://github.com/airbytehq/airbyte/pull/52978) | Update dependencies |
 | 0.1.25 | 2025-01-25 | [52519](https://github.com/airbytehq/airbyte/pull/52519) | Update dependencies |
 | 0.1.24 | 2025-01-18 | [51928](https://github.com/airbytehq/airbyte/pull/51928) | Update dependencies |
 | 0.1.23 | 2025-01-11 | [51318](https://github.com/airbytehq/airbyte/pull/51318) | Update dependencies |

@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: 25d7535d-91e0-466a-aa7f-af81578be277
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.11
   dockerRepository: airbyte/source-recreation
   documentationUrl: https://docs.airbyte.com/integrations/sources/recreation
   githubIssueLabel: source-recreation
