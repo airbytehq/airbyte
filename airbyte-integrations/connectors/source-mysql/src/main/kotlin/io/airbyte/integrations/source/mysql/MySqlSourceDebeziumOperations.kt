@@ -34,6 +34,7 @@ import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
+import io.debezium.connector.binlog.converters.TinyIntOneToBooleanConverter
 import io.debezium.connector.mysql.MySqlConnector
 import io.debezium.connector.mysql.gtid.MySqlGtidSet
 import io.debezium.document.DocumentReader
@@ -420,10 +421,9 @@ class MySqlSourceDebeziumOperations(
                 .withDatabase("include.list", databaseName)
                 .withOffset()
                 .withSchemaHistory()
-                .withConverters(
-                    MySqlSourceCdcBooleanConverter::class,
-                    MySqlSourceCdcTemporalConverter::class
-                )
+                .with("converters", "tinyint-one,temporal")
+                .with("tinyint-one.type", TinyIntOneToBooleanConverter::class.qualifiedName!!)
+                .with("temporal.type", MySqlSourceCdcTemporalConverter::class.qualifiedName!!)
 
         cdcIncrementalConfiguration.serverTimezone
             ?.takeUnless { it.isBlank() }
