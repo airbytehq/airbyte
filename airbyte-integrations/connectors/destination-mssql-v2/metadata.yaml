@@ -27,7 +27,7 @@ data:
     cloud:
       enabled: true
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   supportLevel: community
   supportsRefreshes: true
