@@ -94,6 +94,16 @@ mapped to `STRING` columns, and written as serialized JSON. This is the full map
 Note that for the time/timestamp with timezone types, the value is first adjusted to UTC, and then
 written into the Iceberg file.
 
+### Schema evolution
+
+This connector supports limited schema evolution. Outside of refreshes/clears, the connector will never
+rewrite existing data files. This means that we can only handle specific schema changes:
+* Adding/removing a column
+* Widening columns
+* Changing the primary key
+
+If your source goes through an unsupported schema change, you must manually edit the table schema.
+
 ## Changelog
 
 <details>
