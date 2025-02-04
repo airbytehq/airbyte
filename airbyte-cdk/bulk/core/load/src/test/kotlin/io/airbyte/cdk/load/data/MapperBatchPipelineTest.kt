@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.test.util.ValueTestBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class MapperPipelineTest {
+class MapperBatchPipelineTest {
     class TurnSchemalessObjectTypesIntoIntegers : AirbyteSchemaIdentityMapper {
         override fun mapObjectWithoutSchema(schema: ObjectTypeWithoutSchema): AirbyteType =
             IntegerType

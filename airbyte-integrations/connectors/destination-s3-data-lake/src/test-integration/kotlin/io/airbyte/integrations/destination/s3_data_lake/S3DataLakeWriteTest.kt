@@ -188,6 +188,11 @@ abstract class S3DataLakeWriteTest(
             BaseDeltaTaskWriter.NULL_PK_ERROR_MESSAGE,
         )
     }
+
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
 }
 
 class GlueWriteTest :
@@ -200,6 +205,21 @@ class GlueWriteTest :
             )
         )
     ) {
+        @Test
+        override fun testBasicWrite() {
+            super.testBasicWrite()
+        }
+
+    @Test
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
+    }
+
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+
     @Test
     fun testNameConflicts() {
         assumeTrue(verifyDataWriting)

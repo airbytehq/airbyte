@@ -9,12 +9,12 @@ import io.airbyte.cdk.load.write.BasicPerformanceTest
 import java.nio.file.Files
 import org.junit.jupiter.api.Disabled
 
-@Disabled("We don't want this to run in CI")
+//@Disabled("We don't want this to run in CI")
 class S3DataLakePerformanceTest :
     BasicPerformanceTest(
         configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
         configSpecClass = S3DataLakeSpecification::class.java,
-        defaultRecordsToInsert = 500_000,
+        defaultRecordsToInsert = 1_000_000,
         micronautProperties =
             S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
     )

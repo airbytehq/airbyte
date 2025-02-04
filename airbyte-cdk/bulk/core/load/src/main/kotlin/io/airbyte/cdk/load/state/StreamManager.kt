@@ -340,7 +340,7 @@ class DefaultStreamManager(
             persistedForCheckpoint.getOrPut(checkpointId) { AtomicLong(0L) }.addAndGet(count)
         val original =
             countsPerCheckpoint.elementAtOrNull(checkpointId.id.toInt())
-                ?: throw IllegalStateException("No checkpoint found for $checkpointId")
+                ?: return // don't check counts if no state yet
         if (result > original) {
             throw IllegalStateException(
                 "Persisted count $result for $checkpointId exceeds read count $original"
@@ -353,7 +353,7 @@ class DefaultStreamManager(
             completedForCheckpoint.getOrPut(checkpointId) { AtomicLong(0L) }.addAndGet(count)
         val original =
             countsPerCheckpoint.elementAtOrNull(checkpointId.id.toInt())
-                ?: throw IllegalStateException("No checkpoint found for $checkpointId")
+                ?: return // don't check counts if no state yet
         if (result > original) {
             throw IllegalStateException(
                 "Completed count $result for $checkpointId exceeds read count $original"

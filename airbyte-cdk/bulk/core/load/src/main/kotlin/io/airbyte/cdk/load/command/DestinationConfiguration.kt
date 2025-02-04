@@ -69,6 +69,7 @@ abstract class DestinationConfiguration : Configuration {
     open val maxMessageQueueMemoryUsageRatio: Double = 0.2 // 0 => No limit, 1.0 => 100% of JVM heap
     open val estimatedRecordMemoryOverheadRatio: Double =
         1.1 // 1.0 => No overhead, 2.0 => 100% overhead
+    open val maxRecordQueueDepth: Int = 1000 // 0 => No limit, 1 => 1 record
 
     /**
      * If we have not flushed state checkpoints in this amount of time, make a best-effort attempt

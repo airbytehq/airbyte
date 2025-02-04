@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
@@ -71,6 +72,18 @@ class S3DataLakeSpecification :
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
     override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
+
+    // Default 2
+    @get:JsonProperty(
+        "record_queue_depth",
+        defaultValue = "100"
+    )
+    val recordQueueDepth: Int? = null
+    @get:JsonProperty(
+        "num_workers",
+        defaultValue = "2"
+    )
+    val numWorkers: Int? = null
 }
 
 @Singleton

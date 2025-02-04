@@ -1,0 +1,42 @@
+package io.airbyte.cdk.load.pipeline
+
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineEvent
+import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.message.WithStream
+import io.airbyte.cdk.load.task.internal.LoadPipelineStepTask
+import io.airbyte.cdk.load.write.DirectLoader
+import io.airbyte.cdk.load.write.DirectLoaderFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Value
+import jakarta.inject.Named
+import jakarta.inject.Singleton
+
+@Singleton
+class DirectLoadPipelineStep<S: DirectLoader>(
+    val accumulator: DirectLoadRecordAccumulator<StreamKey, S>,
+    @Named("recordQueue")
+    val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>,
+    @Named("batchStateUpdateQueue") val batchQueue: QueueWriter<BatchUpdate>,
+    @Value("\${airbyte.destination.core.record-batch-size-override:null}") val batchSizeOverride: Long? = null,
+    val directLoaderFactory: DirectLoaderFactory<S>,
+): LoadPipelineStep {
+    private val log = KotlinLogging.logger {}
+
+    override val numWorkers: Int = directLoaderFactory.inputPartitions
+
+    override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
+        log.info { "Creating DirectLoad pipeline step task for partition $partition" }
+        return LoadPipelineStepTask(
+                    accumulator,
+                    inputQueue.consume(partition),
+                    batchUpdateQueue = batchQueue,
+                    outputPartitioner = NoopPartitioner(),
+                    null,
+                    batchSizeOverride?.let { RecordCountFlushStrategy(it) },
+                    partition
+                )
+    }
+}

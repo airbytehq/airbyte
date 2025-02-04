@@ -6,10 +6,12 @@ package io.airbyte.cdk.load.state
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.util.use
+import io.airbyte.cdk.load.write.LoadStrategy
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -290,11 +292,14 @@ class DefaultCheckpointManager(
     override val syncManager: SyncManager,
     override val outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit,
     override val timeProvider: TimeProvider,
-    @Value("\${airbyte.destination.core.checkpoint-by-id:false}")
-    override val checkpointById: Boolean = false
+    val loadStrategy: LoadStrategy? = null,
 ) : StreamsCheckpointManager<Reserved<CheckpointMessage>>() {
+    private val log = KotlinLogging.logger {}
+    override val checkpointById: Boolean = loadStrategy != null
+
     init {
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
+        log.info { "Checkpoint manager initialized with checkpointById: $checkpointById" }
     }
 }
 

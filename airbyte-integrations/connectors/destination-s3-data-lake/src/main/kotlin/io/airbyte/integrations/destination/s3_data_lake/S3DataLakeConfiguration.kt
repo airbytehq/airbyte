@@ -25,7 +25,7 @@ data class S3DataLakeConfiguration(
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
     override val numProcessRecordsWorkers: Int,
-    override val numProcessBatchWorkers: Int,
+    override val maxRecordQueueDepth: Int
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -50,8 +50,8 @@ class S3DataLakeConfigurationFactory :
             // so that we don't overwrite newer records with older records.
             // For the sake of simplicity, just set workers to 1 regardless of
             // sync mode.
-            numProcessRecordsWorkers = 1,
-            numProcessBatchWorkers = 1,
+            numProcessRecordsWorkers = pojo.numWorkers ?: 2,
+            maxRecordQueueDepth = pojo.recordQueueDepth ?: 100
         )
     }
 }

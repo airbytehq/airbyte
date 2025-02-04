@@ -94,5 +94,5 @@ class SyncBeanFactory {
 
     @Singleton
     @Named("openStreamQueue")
-    class OpenStreamQueue : ChannelMessageQueue<DestinationStream>()
+    class OpenStreamQueue : ChannelMessageQueue<DestinationStream>(Channel(Channel.UNLIMITED))
 }

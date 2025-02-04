@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
@@ -34,7 +35,8 @@ class S3DataLakeStreamLoader(
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val icebergUtil: IcebergUtil,
     private val stagingBranchName: String,
-    private val mainBranchName: String
+    private val mainBranchName: String,
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>,
 ) : StreamLoader {
     private lateinit var table: Table
     private lateinit var targetSchema: Schema
@@ -86,6 +88,12 @@ class S3DataLakeStreamLoader(
                 "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.descriptor}"
             }
         }
+
+        val state = S3DataLakeStreamState(
+            table = table,
+            schema = targetSchema,
+        )
+        streamStateStore.put(stream.descriptor, state)
     }
 
     override suspend fun processRecords(
@@ -101,7 +109,7 @@ class S3DataLakeStreamLoader(
                 schema = targetSchema,
             )
             .use { writer ->
-                logger.info { "Writing records to branch $stagingBranchName" }
+                logger.info { "Writing records to branch $DEFAULT_STAGING_BRANCH" }
                 records.forEach { record ->
                     val icebergRecord =
                         icebergUtil.toRecord(
@@ -114,16 +122,16 @@ class S3DataLakeStreamLoader(
                 }
                 val writeResult = writer.complete()
                 if (writeResult.deleteFiles().isNotEmpty()) {
-                    val delta = table.newRowDelta().toBranch(stagingBranchName)
+                    val delta = table.newRowDelta().toBranch(DEFAULT_STAGING_BRANCH)
                     writeResult.dataFiles().forEach { delta.addRows(it) }
                     writeResult.deleteFiles().forEach { delta.addDeletes(it) }
                     delta.commit()
                 } else {
-                    val append = table.newAppend().toBranch(stagingBranchName)
+                    val append = table.newAppend().toBranch(DEFAULT_STAGING_BRANCH)
                     writeResult.dataFiles().forEach { append.appendFile(it) }
                     append.commit()
                 }
-                logger.info { "Finished writing records to $stagingBranchName" }
+                logger.info { "Finished writing records to $DEFAULT_STAGING_BRANCH" }
             }
 
         return SimpleBatch(Batch.State.COMPLETE)
@@ -134,7 +142,7 @@ class S3DataLakeStreamLoader(
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
             logger.info {
-                "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
+                "No stream failure detected. Committing changes from staging branch '$DEFAULT_STAGING_BRANCH' to main branch '$mainBranchName."
             }
             // We've modified the table over the sync (i.e. adding new snapshots)
             // so we need to refresh here to get the latest table metadata.
@@ -142,7 +150,11 @@ class S3DataLakeStreamLoader(
             // stale table metadata without this.
             table.refresh()
             computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
-            table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+            val stagingBranchNameForPart = DEFAULT_STAGING_BRANCH
+            table.manageSnapshots()
+                .fastForwardBranch(mainBranchName, stagingBranchNameForPart)
+                .commit()
+
             if (stream.minimumGenerationId > 0) {
                 logger.info {
                     "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
@@ -154,7 +166,7 @@ class S3DataLakeStreamLoader(
                 val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
                 icebergTableCleaner.deleteGenerationId(
                     table,
-                    stagingBranchName,
+                    stagingBranchNameForPart,
                     generationIdsToDelete
                 )
                 //  Doing it again to push the deletes from the staging to main branch
@@ -164,7 +176,7 @@ class S3DataLakeStreamLoader(
                 }
                 table
                     .manageSnapshots()
-                    .fastForwardBranch(mainBranchName, stagingBranchName)
+                    .fastForwardBranch(mainBranchName, stagingBranchNameForPart)
                     .commit()
             }
         }
