@@ -2538,7 +2538,7 @@ schemas:
       id:
         description: Numerical identifier for the form.
         type:
-          - number
+          - integer
       name:
         description: Name of the Lead Form provided by the owner.
         type:
@@ -2593,7 +2593,7 @@ schemas:
                   description: Unique identifier of the LeadGenFormQuestion.
                   type:
                     - "null"
-                    - string
+                    - integer
                 name:
                   description: Name of the question, shown to the owner only.
                   type:
@@ -2603,7 +2603,7 @@ schemas:
                   description: The question prompt, shown to the viewer.
                   type:
                     - "null"
-                    - string
+                    - object
                 textPrompt:
                   description: The description or hint of the question, shown to the viewer. Empty in case No hint is provided.
                   type:
@@ -2662,12 +2662,12 @@ schemas:
         description: An epoch time corresponding to the creation of the form.
         type:
           - "null"
-          - number
+          - integer
       lastModified:
         description: An epoch time corresponding to the last modified of of the form.
         type:
           - "null"
-          - number
+          - integer
       creationLocale:
         description: |
           Locale of the entity.
@@ -2725,7 +2725,7 @@ schemas:
         description: Type of the lead representing the origination of the lead.
         type:
           - "null"
-          - object
+          - string
       form:
         description: URN identifying which form this FormResponse belongs to.
         type:
@@ -2740,6 +2740,11 @@ schemas:
         type:
           - "null"
           - object
+        properties:
+          sponsoredAccount:
+            type:
+              - "null"
+              - string
       ownerInfo:
         description: Record containing entity info that owns this Lead Form Response. It's a optional Union of sponsoredAccountInfo and organizationInfo.
         type:
@@ -2769,7 +2774,7 @@ schemas:
         description: An epoch timestamp that recording when the form response was submitted.
         type:
           - "null"
-          - number
+          - integer
       responseId:
         description: The unique identifier for the form response generated in the front-end when a submitter submits the response.
         type:
@@ -2785,6 +2790,18 @@ schemas:
         type:
           - "null"
           - boolean
+      submitter:
+        description: |
+          From version 202408 onwards, Guest Leads (when a user submits a form without being logged in) submitted to lead forms, submitter field is treated as a null field and omitted from the JSON response.
+          For non-guest leads, the submitter field will still be included in the response and will provide the person's URN. Ex: "submitter": "urn:li:person:MpGcnvaU_p".	Yes
+        type:
+          - "null"
+          - string
+      versionedLeadGenFormUrn:
+        description: URN identifying which form this FormResponse belongs to.
+        type:
+          - "null"
+          - string
 
   ad_campaign_analytics:
     $schema: "http://json-schema.org/draft-07/schema#"
