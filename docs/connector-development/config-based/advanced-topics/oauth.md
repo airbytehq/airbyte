@@ -751,23 +751,23 @@ code_value}}
 
 | Field | Description | Default Value |
 |-------|-------------|---------------|
-| `consent_url` | The URL where the user will be redirected to authorize the connector | NA |
-| `access_token_url` | The URL where the connector will exchange the authorization code for an access token | NA |
+| `consent_url` | The URL where the user will be redirected to authorize the connector |  |
+| `access_token_url` | The URL where the connector will exchange the authorization code for an access token |  |
 
 
 #### Optional Fields
 
 | Field | Description | Default Value |
 |-------|-------------|---------------|
-| `access_token_headers` | The optional headers to inject while exchanging the `auth_code` to `access_token` | NA |
-| `access_token_params` | The optional query parameters to inject while exchanging the `auth_code` to `access_token` | NA |
+| `access_token_headers` | The optional headers to inject while exchanging the `auth_code` to `access_token` |  |
+| `access_token_params` | The optional query parameters to inject while exchanging the `auth_code` to `access_token` |  |
 | `auth_code_key` | The optional override to provide the custom `code` key name to something like `auth_code` or `custom_auth_code`, if required by data-provider  | "code" |
 | `client_id_key` | The optional override to provide the custom `client_id` key name, if required by data-provider  | "client_id" |
 | `client_secret_key` | The optional override to provide the custom `client_secret` key name, if required by data-provider  | "client_secret" |
 | `redirect_uri_key` | The optional override to provide the custom `redirect_uri` key name to something like `callback_uri`, if required by data-provider  | "redirect_uri" |
-| `scope` | The optional string of the scopes needed to be grant for authenticated user, should be pre-defined as a `string` in a format that is expected by the data-provider  | NA |
+| `scope` | The optional string of the scopes needed to be grant for authenticated user, should be pre-defined as a `string` in a format that is expected by the data-provider  |  |
 | `scope_key` | The optional override to provide the custom `scope` key name, if required by data-provider  | "scope" |
-| `state` | The object to provide the criteria of how the `state` query param should be constructed, including length and complexity | NA |
+| `state` | The object to provide the criteria of how the `state` query param should be constructed, including length and complexity |  |
 | `state_key` | The optional override to provide the custom `state` key name, if required by data-provider  | "state" |
 | `token_expiry_key` | The optional override to provide the custom key name to something like `expires_at`, if required by data-provider  | "expires_in" |
 
@@ -781,7 +781,7 @@ code_value}}
 | `{{ client_secret_value }}` | The client secret value retrieved from the config location specified by client_secret_key | Value from config[client_secret_key] |
 | `{{ client_secret_param }}` | The parameter name and value pair used for the client secret in URLs | "client_secret=client secret value here" |
 | `{{ redirect_uri_key }}` | The key used to identify the redirect URI in request bodies | "redirect_uri" |
-| `{{ redirect_uri_value }}` | The redirect URI value used for OAuth callbacks | Value configured in Airbyte |
+| `{{ redirect_uri_value }}` | The redirect URI value used for OAuth callbacks | This value is set based on your deployment and handled by Airbyte |
 | `{{ redirect_uri_param }}` | The parameter name and value pair used for the redirect URI in URLs | "redirect_uri=redirect uri value here" |
 | `{{ scope_key }}` | The key used to identify the scope in request bodies | "scope" |
 | `{{ scope_value }}` | The scope value specifying the access permissions being requested | Value from config[scope_key] |
@@ -795,7 +795,7 @@ code_value}}
 
 ### Available Template Variables PIPE methods
 
-You can apply the
+You can apply the `in-vatiable` tranformations based on your use-case and use the following interpolation methods available:
 
 | Method | Description | Input Value | Output Value |
 |----------|-------------|------|------|
@@ -1067,7 +1067,7 @@ oauth_config_specification:
   </details>
 
 #### Case D: OAuth Flow returns the `access_token` and the `refresh_token` is a `one-time-usage` key
-In this example we expect the `refresh_token` key expires alongside with the `access_token` and should be exhanged alltogher, having the new pair of keys in response. The `token_expiry_date` is the property that holds the `date-time` value of when the `access_token` should be expired
+In this example we expect the `refresh_token` key expires alongside with the `access_token` and should be exhanged altogether, having the new pair of keys in response. The `token_expiry_date` is the property that holds the `date-time` value of when the `access_token` should be expired
 
   <details>
       <summary>Example Declarative OAuth Specification</summary>
