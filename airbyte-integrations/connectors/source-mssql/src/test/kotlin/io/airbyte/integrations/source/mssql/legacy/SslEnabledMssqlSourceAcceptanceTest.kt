@@ -4,10 +4,12 @@
 package io.airbyte.integrations.source.mssql.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
 import io.airbyte.integrations.source.mssql.MsSQLContainerFactory
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase
-import kotlin.test.Test
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.junit.jupiter.api.Test
 
 class SslEnabledMssqlSourceAcceptanceTest : MssqlSourceAcceptanceTest() {
     override val config: JsonNode
@@ -34,10 +36,5 @@ class SslEnabledMssqlSourceAcceptanceTest : MssqlSourceAcceptanceTest() {
             .with("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato'), (4, 'Argo');", SCHEMA_NAME, STREAM_NAME2)
             .with("CREATE TABLE %s.%s (id INTEGER PRIMARY KEY, name VARCHAR(200), userid INTEGER DEFAULT NULL);", SCHEMA_NAME, STREAM_NAME3)
             .with("INSERT INTO %s.%s (id, name) VALUES (4,'voyager');", SCHEMA_NAME, STREAM_NAME3)
-    }
-
-    @Test
-    override fun testIdenticalFullRefreshes() {
-        super.testIdenticalFullRefreshes()
     }
 }

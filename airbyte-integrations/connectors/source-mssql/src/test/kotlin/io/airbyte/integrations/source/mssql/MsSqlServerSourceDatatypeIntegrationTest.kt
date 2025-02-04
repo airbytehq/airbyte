@@ -154,7 +154,7 @@ class MsSqlServerSourceDatatypeIntegrationTest {
     }
 
     companion object {
-        lateinit var dbContainer: MsSqlServercontainer
+        lateinit var dbContainer: MsSqlServerContainer
 
         fun config(): MsSqlServerSourceConfigurationSpecification =
             dbContainer.config

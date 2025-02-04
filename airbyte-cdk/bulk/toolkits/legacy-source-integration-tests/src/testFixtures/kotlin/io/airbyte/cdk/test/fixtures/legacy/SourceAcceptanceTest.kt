@@ -74,7 +74,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     /** Verify that a spec operation issued to the connector returns a valid spec. */
     @Test
     @Throws(Exception::class)
-    fun testGetSpec() {
+    open fun testGetSpec() {
         Assertions.assertEquals(
             spec,
             runSpec(),

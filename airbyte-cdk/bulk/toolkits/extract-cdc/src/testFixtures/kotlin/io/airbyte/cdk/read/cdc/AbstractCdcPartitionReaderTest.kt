@@ -217,6 +217,13 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         )
     }
 
+    data class ReadInput(
+        val properties: Map<String, String>,
+        val offset: DebeziumOffset,
+        val schemaHistory: DebeziumSchemaHistory?,
+        val isSynthetic: Boolean,
+    )
+
     data class ReadResult(
         val records: List<Record>,
         val state: DebeziumWarmStartState,
@@ -239,7 +246,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     inner class CdcPartitionReaderDebeziumOperationsFromProdForTest<T: Comparable<T>>(
            val prodImpl: DebeziumOperations<T>
        ): DebeziumOperations<T> by prodImpl {
-           override fun deserialize(
+        override fun deserializeRecord(
                    key: DebeziumRecordKey,
                    value: DebeziumRecordValue,
                    stream: Stream,
@@ -264,7 +271,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     abstract inner class AbstractCdcPartitionReaderDebeziumOperationsForTest<T : Comparable<T>>(
         val stream: Stream
     ) : DebeziumOperations<T> {
-        override fun deserialize(
+        override fun deserializeRecord(
             key: DebeziumRecordKey,
             value: DebeziumRecordValue,
             stream: Stream
@@ -300,14 +307,14 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
             Jsons.valueToTree(
                 mapOf(
                     "offset" to
-                            debeziumState.offset.wrapped
+                            offset.wrapped
                                 .map {
                                     Jsons.writeValueAsString(it.key) to
                                             Jsons.writeValueAsString(it.value)
                                 }
                                 .toMap(),
                     "schemaHistory" to
-                            debeziumState.schemaHistory?.wrapped?.map {
+                            schemaHistory?.wrapped?.map {
                                 DocumentWriter.defaultWriter().write(it.document())
                             },
                 ),

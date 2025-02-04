@@ -10,10 +10,18 @@ import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.read.DatatypeTestCase
+import io.airbyte.cdk.read.DatatypeTestOperations
+import io.airbyte.cdk.read.DynamicDatatypeTestFactory
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mssql.*
+import io.airbyte.integrations.source.mssql.MsSqlServerDatatypeIntegrationTest.Companion.dbContainer
+import io.airbyte.integrations.source.mssql.config_spec.MsSqlServerCdcReplicationConfigurationSpecification
+import io.airbyte.integrations.source.mssql.config_spec.MsSqlServerCursorBasedReplicationConfigurationSpecification
+import io.airbyte.integrations.source.mssql.config_spec.MsSqlServerReplicationMethodConfigurationSpecification
 import io.airbyte.integrations.source.mssql.config_spec.MsSqlServerSourceConfigurationSpecification
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -34,332 +42,238 @@ import org.junit.jupiter.api.Timeout
 
 private val log = KotlinLogging.logger {}
 
-class MsSqlServerCdcDatatypeIntegrationTest {
+class MsSqlServerDatatypeIntegrationTest {
+
     @TestFactory
     @Timeout(300)
-    fun syncTests(): Iterable<DynamicNode> {
-        val read: DynamicNode =
-            DynamicTest.dynamicTest("read") {
-                Assertions.assertFalse(LazyValues.actualReads.isEmpty())
-            }
-        val cases: List<DynamicNode> =
-            allStreamNamesAndRecordData.keys.map { streamName: String ->
-                DynamicContainer.dynamicContainer(
-                    streamName,
-                    listOf(
-                        DynamicTest.dynamicTest("records") { records(streamName) },
-                    ),
-                )
-            }
-        return listOf(read) + cases
-    }
-
-    object LazyValues {
-        val actualStreams: Map<String, AirbyteStream> by lazy {
-            val output: BufferingOutputConsumer = CliRunner.source("discover", config()).run()
-            output.catalogs().firstOrNull()?.streams?.filterNotNull()?.associateBy { it.name }
-                ?: mapOf()
-        }
-
-        val configuredCatalog: ConfiguredAirbyteCatalog by lazy {
-            val configuredStreams: List<ConfiguredAirbyteStream> =
-                allStreamNamesAndRecordData.keys
-                    .mapNotNull { actualStreams[it] }
-                    .map {
-                        CatalogHelpers.toDefaultConfiguredStream(it)
-                            .withCursorField(
-                                listOf(MsSqlServerStreamFactory.MsSqlServerCdcMetaFields.CDC_CURSOR.id),
-                            )
-                    }
-
-            for (configuredStream in configuredStreams) {
-                if (configuredStream.stream.supportedSyncModes.contains(SyncMode.INCREMENTAL)) {
-                    configuredStream.syncMode = SyncMode.INCREMENTAL
-                }
-            }
-            ConfiguredAirbyteCatalog().withStreams(configuredStreams)
-        }
-
-        val allReadMessages: List<AirbyteMessage> by lazy {
-           /* // only get messsages from the 2nd run
-            val lastStateMessageFromFirstRun =
-                CliRunner.source("read", config(), configuredCatalog).run().states().last()*/
-
-            // insert
-            connectionFactory
-                .get()
-                .also { it.isReadOnly = false }
-                .use { connection: Connection ->
-                    for (case in testCases) {
-                        for (sql in case.sqlInsertStatements) {
-                            log.info { "test case ${case.id}: executing $sql" }
-                            connection.createStatement().use { stmt -> stmt.execute(sql) }
-                        }
-                    }
-                }
-
-            // Run it in dbz mode on 2nd time:
-            CliRunner.source(
-                "read",
-                config(),
-                configuredCatalog,
-                listOf()
-            )
-                .run()
-                .messages()
-        }
-
-        val actualReads: Map<String, BufferingOutputConsumer> by lazy {
-            val result: Map<String, BufferingOutputConsumer> =
-                allStreamNamesAndRecordData.keys.associateWith {
-                    BufferingOutputConsumer(ClockFactory().fixed())
-                }
-            for (msg in allReadMessages) {
-                result[streamName(msg) ?: continue]?.accept(msg)
-            }
-            result
-        }
-
-        fun streamName(msg: AirbyteMessage): String? =
-            when (msg.type) {
-                AirbyteMessage.Type.RECORD -> msg.record?.stream
-                else -> null
-            }
-    }
-
-    private fun records(streamName: String) {
-        val actualRead: BufferingOutputConsumer? = LazyValues.actualReads[streamName]
-        Assertions.assertNotNull(actualRead)
-
-        fun sortedRecordData(data: List<JsonNode>): JsonNode =
-            Jsons.createArrayNode().apply { addAll(data.sortedBy { it.toString() }) }
-
-        val actualRecords: List<AirbyteRecordMessage> = actualRead?.records() ?: listOf()
-
-        val records = actualRecords.mapNotNull { it.data }
-
-        records.forEach { jsonNode ->
-            if (jsonNode is ObjectNode) {
-                // Remove unwanted fields
-                jsonNode.remove("_ab_cdc_updated_at")
-                jsonNode.remove("_ab_cdc_deleted_at")
-                jsonNode.remove("_ab_cdc_cursor")
-                jsonNode.remove("_ab_cdc_log_file")
-                jsonNode.remove("_ab_cdc_log_pos")
-            }
-        }
-        val actual: JsonNode = sortedRecordData(records)
-
-        log.info { "test case $streamName: emitted records $actual" }
-        val expected: JsonNode = sortedRecordData(allStreamNamesAndRecordData[streamName]!!)
-
-        Assertions.assertEquals(expected, actual)
-    }
+    fun syncTests(): Iterable<DynamicNode> =
+        DynamicDatatypeTestFactory(MsSqlServerSourceDatatypeTestOperations).build(dbContainer)
 
     companion object {
-        lateinit var dbContainer: MsSqlServercontainer
 
-        fun config(): MsSqlServerSourceConfigurationSpecification = dbContainer.config
-
-        val connectionFactory: JdbcConnectionFactory by lazy {
-            JdbcConnectionFactory(MsSqlServerSourceConfigurationFactory().make(config()))
-        }
-
-        val bitValues =
-            mapOf(
-                "b'1'" to "true",
-                "b'0'" to "false",
-            )
-
-        val longBitValues =
-            mapOf(
-                "b'10101010'" to """"qg=="""",
-            )
-
-        val stringValues =
-            mapOf(
-                "'abcdef'" to """"abcdef"""",
-                "'ABCD'" to """"ABCD"""",
-                "'OXBEEF'" to """"OXBEEF"""",
-            )
-
-        val yearValues =
-            mapOf(
-                "1992" to """1992""",
-                "2002" to """2002""",
-                "70" to """1970""",
-            )
-
-        val precisionTwoDecimalValues =
-            mapOf(
-                "0.2" to """0.2""",
-            )
-
-        val floatValues =
-            mapOf(
-                "123.4567" to """123.4567""",
-            )
-
-        val zeroPrecisionDecimalValues =
-            mapOf(
-                "2" to """2.0""",
-            )
-
-        val tinyintValues =
-            mapOf(
-                "10" to "10",
-                "4" to "4",
-                "2" to "2",
-            )
-
-        val intValues =
-            mapOf(
-                "10" to "10",
-                "100000000" to "100000000",
-                "200000000" to "200000000",
-            )
-
-        val dateValues =
-            mapOf(
-                "'2022-01-01'" to """"2022-01-01"""",
-            )
-
-        val timeValues =
-            mapOf(
-                "'14:30:00'" to """"14:30:00.000000"""",
-            )
-
-        val dateTimeValues =
-            mapOf(
-                "'2024-09-13 14:30:00'" to """"2024-09-13T14:30:00.000000"""",
-                "'2024-09-13T14:40:00+00:00'" to """"2024-09-13T14:40:00.000000"""",
-            )
-
-        val timestampValues =
-            mapOf(
-                "'2024-09-12 14:30:00'" to """"2024-09-12T14:30:00.000000Z"""",
-                "CONVERT_TZ('2024-09-12 14:30:00', 'America/Los_Angeles', 'UTC')" to
-                        """"2024-09-12T21:30:00.000000Z"""",
-            )
-
-        val booleanValues =
-            mapOf(
-                "TRUE" to "true",
-                "FALSE" to "false",
-            )
-
-        val testCases: List<TestCase> =
-            listOf(
-                /*TestCase(
-                    "BOOLEAN",
-                    booleanValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN,
-                    cursor = false,
-                ),*/
-                TestCase(
-                    "VARCHAR(10)",
-                    stringValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.STRING,
-                ),
-                /*TestCase(
-                    "DECIMAL(10,2)",
-                    precisionTwoDecimalValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER,
-                ),
-                TestCase(
-                    "FLOAT",
-                    precisionTwoDecimalValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
-                ),
-                TestCase(
-                    "FLOAT(7)",
-                    floatValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER,
-                ),
-                TestCase(
-                    "FLOAT(53)",
-                    floatValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.NUMBER,
-                ),
-                TestCase(
-                    "TINYINT",
-                    tinyintValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER,
-                ),
-                TestCase(
-                    "SMALLINT",
-                    tinyintValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.INTEGER,
-                ),
-                TestCase("BIGINT", intValues, airbyteSchemaType = LeafAirbyteSchemaType.INTEGER),
-                TestCase("INT", intValues, airbyteSchemaType = LeafAirbyteSchemaType.INTEGER),
-                TestCase("DATE", dateValues, airbyteSchemaType = LeafAirbyteSchemaType.DATE),
-                TestCase(
-                    "TIMESTAMP",
-                    timestampValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
-                ),
-                TestCase(
-                    "DATETIME",
-                    dateTimeValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
-                ),
-                TestCase(
-                    "TIME",
-                    timeValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
-                ),
-                TestCase(
-                    "BIT",
-                    bitValues,
-                    airbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN,
-                    cursor = false,
-                ),*/
-            )
-
-        val allStreamNamesAndRecordData: Map<String, List<JsonNode>> =
-            testCases.flatMap { it.streamNamesToRecordData.toList() }.toMap()
+        lateinit var dbContainer: MsSqlServerContainer
 
         @JvmStatic
         @BeforeAll
         @Timeout(value = 300)
         fun startAndProvisionTestContainer() {
-            dbContainer =
-                MsSqlServerContainerFactory.exclusive(
-                    MsSqlServerImage.SQLSERVER_2022,
-                    MsSqlServerContainerFactory.WithNetwork,
-                )
+            dbContainer = MsSqlServerContainerFactory.exclusive(
+                MsSqlServerImage.SQLSERVER_2022,
+                MsSqlServerContainerFactory.WithNetwork,
+            )
+        }
+    }
+}
 
-            connectionFactory
-                .get()
-                .also { it.isReadOnly = false }
-                .use { connection: Connection ->
-                    var exception: Exception? = null
-                    for (case in testCases) {
-                        for (sql in case.sqlStatements) {
-                            log.info { "test case ${case.id}: executing $sql" }
-                            try {
-                                connection.createStatement().use { stmt -> stmt.execute(sql) }
-                            } catch (e: Exception) {
-                                exception = e
-                            }
-                        }
-                    }
-                    if (exception != null) {
-                        throw exception
-                    }
+object MsSqlServerSourceDatatypeTestOperations :
+    DatatypeTestOperations<
+            MsSqlServerContainer,
+            MsSqlServerSourceConfigurationSpecification,
+            MsSqlServerSourceConfiguration,
+            MsSqlServerSourceConfigurationFactory,
+            MsSqlServerSourceDatatypeTestOperations.MsSqlServerSourceDatatypeTestCase
+            > {
+
+    private val log = KotlinLogging.logger {}
+
+    override val withGlobal: Boolean = true
+    override val globalCursorMetaField: MetaField = MsSqlServerStreamFactory.MsSqlServerCdcMetaFields.CDC_CURSOR
+
+    override fun streamConfigSpec(
+        container: MsSqlServerContainer
+    ): MsSqlServerSourceConfigurationSpecification =
+        container.config.also { it.setReplicationMethodValue(MsSqlServerCursorBasedReplicationConfigurationSpecification()) }
+
+    override fun globalConfigSpec(
+        container: MsSqlServerContainer
+    ): MsSqlServerSourceConfigurationSpecification =
+        container.config.also { it.setReplicationMethodValue(MsSqlServerCursorBasedReplicationConfigurationSpecification()) }
+
+    // container.config.also { it.setReplicationMethodValue(MsSqlServerCdcReplicationConfigurationSpecification()) }
+
+    override val configFactory: MsSqlServerSourceConfigurationFactory = MsSqlServerSourceConfigurationFactory()
+
+    override fun createStreams(config: MsSqlServerSourceConfiguration) {
+        JdbcConnectionFactory(config).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            for ((_, case) in testCases) {
+                for (ddl in case.ddl) {
+                    log.info { "test case ${case.id}: executing $ddl" }
+                    connection.createStatement().use { stmt -> stmt.execute(ddl) }
                 }
+            }
         }
     }
 
-    data class TestCase(
+    override fun populateStreams(config: MsSqlServerSourceConfiguration) {
+        JdbcConnectionFactory(config).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            for ((_, case) in testCases) {
+                for (dml in case.dml) {
+                    log.info { "test case ${case.id}: executing $dml" }
+                    connection.createStatement().use { stmt -> stmt.execute(dml) }
+                }
+            }
+        }
+    }
+
+    val bitValues =
+        mapOf(
+            "1" to "true",
+            "0" to "false",
+        )
+
+    val longBitValues =
+        mapOf(
+            "b'10101010'" to """"qg=="""",
+        )
+
+    val stringValues =
+        mapOf(
+            "'abcdef'" to """"abcdef"""",
+            "'ABCD'" to """"ABCD"""",
+            "'OXBEEF'" to """"OXBEEF"""",
+        )
+
+    val yearValues =
+        mapOf(
+            "1992" to """1992""",
+            "2002" to """2002""",
+            "70" to """1970""",
+        )
+
+    val precisionTwoDecimalValues =
+        mapOf(
+            "0.2" to """0.2""",
+        )
+
+    val floatValues =
+        mapOf(
+            "123.4567" to """123.4567""",
+        )
+
+    val zeroPrecisionDecimalValues =
+        mapOf(
+            "2" to """2.0""",
+        )
+
+    val tinyintValues =
+        mapOf(
+            "10" to "10",
+            "4" to "4",
+            "2" to "2",
+        )
+
+    val intValues =
+        mapOf(
+            "10" to "10",
+            "100000000" to "100000000",
+            "200000000" to "200000000",
+        )
+
+    val dateValues =
+        mapOf(
+            "'2022-01-01'" to """"2022-01-01"""",
+        )
+
+    val timeValues =
+        mapOf(
+            "'14:30:00'" to """"14:30:00.000000"""",
+        )
+
+    val dateTimeValues =
+        mapOf(
+            "'2024-09-13 14:30:00'" to """"2024-09-13T14:30:00.000000"""",
+            "'2024-09-13T14:40:00'" to """"2024-09-13T14:40:00.000000"""",
+        )
+
+    val timestampValues =
+        mapOf(
+            "'2024-09-12 14:30:00'" to """"2024-09-12T14:30:00.000000Z"""",
+            "CONVERT_TZ('2024-09-12 14:30:00', 'America/Los_Angeles', 'UTC')" to
+                    """"2024-09-12T21:30:00.000000Z"""",
+        )
+
+    val booleanValues =
+        mapOf(
+            "TRUE" to "true",
+            "FALSE" to "false",
+        )
+
+    override val testCases: Map<String, MsSqlServerSourceDatatypeTestCase> =
+        listOf(
+            MsSqlServerSourceDatatypeTestCase(
+                "VARCHAR(10)",
+                stringValues,
+                expectedAirbyteSchemaType = LeafAirbyteSchemaType.STRING,
+            ),
+            MsSqlServerSourceDatatypeTestCase(
+                "DECIMAL(10,2)",
+                precisionTwoDecimalValues,
+                expectedAirbyteSchemaType = LeafAirbyteSchemaType.NUMBER,
+            ),
+            MsSqlServerSourceDatatypeTestCase(
+                "FLOAT",
+                precisionTwoDecimalValues,
+                expectedAirbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+            ),
+            MsSqlServerSourceDatatypeTestCase(
+                "FLOAT(7)",
+                floatValues,
+                expectedAirbyteSchemaType = LeafAirbyteSchemaType.NUMBER,
+            ),
+            MsSqlServerSourceDatatypeTestCase(
+                "FLOAT(53)",
+                floatValues,
+                expectedAirbyteSchemaType = LeafAirbyteSchemaType.NUMBER,
+            ),
+            MsSqlServerSourceDatatypeTestCase(
+                "TINYINT",
+                tinyintValues,
+                expectedAirbyteSchemaType = LeafAirbyteSchemaType.INTEGER,
+            ),
+            MsSqlServerSourceDatatypeTestCase(
+                "SMALLINT",
+                tinyintValues,
+                expectedAirbyteSchemaType = LeafAirbyteSchemaType.INTEGER,
+            ),
+            MsSqlServerSourceDatatypeTestCase("BIGINT", intValues, expectedAirbyteSchemaType = LeafAirbyteSchemaType.INTEGER),
+            MsSqlServerSourceDatatypeTestCase("INT", intValues, expectedAirbyteSchemaType = LeafAirbyteSchemaType.INTEGER),
+            MsSqlServerSourceDatatypeTestCase("DATE", dateValues, expectedAirbyteSchemaType = LeafAirbyteSchemaType.DATE),
+            /*TestCase(
+                    "TIMESTAMP",
+                    timestampValues,
+                    airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
+                ),*/
+            MsSqlServerSourceDatatypeTestCase(
+                "DATETIME",
+                dateTimeValues,
+                expectedAirbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
+            ),
+            MsSqlServerSourceDatatypeTestCase(
+                "TIME",
+                timeValues,
+                expectedAirbyteSchemaType = LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
+            ),
+            MsSqlServerSourceDatatypeTestCase(
+                "BIT",
+                bitValues,
+                expectedAirbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN,
+            ),
+        )
+            .associateBy { it.id }
+
+    data class MsSqlServerSourceDatatypeTestCase(
         val sqlType: String,
         val sqlToAirbyte: Map<String, String>,
-        val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.STRING,
-        val cursor: Boolean = true,
-        val customDDL: List<String>? = null,
-    ) {
-        val id: String
+        override val expectedAirbyteSchemaType: AirbyteSchemaType,
+        override val isGlobal: Boolean = true,
+    ) : DatatypeTestCase {
+
+        override val isStream: Boolean
+            get() = true
+
+        private val typeName: String
             get() =
                 sqlType
                     .replace("[^a-zA-Z0-9]".toRegex(), " ")
@@ -367,34 +281,30 @@ class MsSqlServerCdcDatatypeIntegrationTest {
                     .replace(" +".toRegex(), "_")
                     .lowercase()
 
-        val tableName: String
-            get() = "tbl_$id"
+        override val id: String
+            get() = "tbl_$typeName"
 
-        val columnName: String
-            get() = "col_$id"
+        override val fieldName: String
+            get() = "col_$typeName"
 
-        val sqlStatements: List<String>
-            get() {
-                return listOf(
-                    "CREATE TABLE ${dbContainer.databaseName}.${dbContainer.schemaName}.$tableName " + "($columnName $sqlType PRIMARY KEY)",
+        override val expectedData: List<String>
+            get() = sqlToAirbyte.values.map { """{"${fieldName}":$it}""" }
+
+        val ddl: List<String>
+            get() =
+                listOf(
+                    "CREATE TABLE ${dbContainer.databaseName}.${dbContainer.schemaName}.$id " + "($fieldName $sqlType PRIMARY KEY)"
+
                 )
-            }
 
-        val sqlInsertStatements: List<String>
-            get() {
-                val result =
-                    listOf("USE ${dbContainer.databaseName};") +
-                            sqlToAirbyte.keys.map {
-                                "INSERT INTO ${dbContainer.schemaName}.$tableName ($columnName) VALUES ($it)"
-                            }
-                return result
-            }
-
-        val streamNamesToRecordData: Map<String, List<JsonNode>>
-            get() {
-                val recordData: List<JsonNode> =
-                    sqlToAirbyte.values.map { Jsons.readTree("""{"${columnName}":$it}""") }
-                return mapOf(tableName to recordData)
-            }
+        val dml: List<String>
+            get() =
+                sqlToAirbyte.keys.map {
+                    if (it == "NULL") {
+                        "INSERT INTO ${dbContainer.databaseName}.${dbContainer.schemaName}.$id VALUES ()"
+                    } else {
+                        "INSERT INTO ${dbContainer.databaseName}.${dbContainer.schemaName}.$id ($fieldName) VALUES ($it)"
+                    }
+                }
     }
 }

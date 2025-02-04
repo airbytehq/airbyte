@@ -31,6 +31,7 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
+import io.airbyte.cdk.integrations.debezium.internals.*;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
@@ -117,38 +118,13 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   public MssqlSource(final FeatureFlags featureFlags) {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+    this.featureFlags = featureFlags;
+    this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
-  public MssqlSource(FeatureFlags featureFlag) {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
-    hasFeatuerFlagOverride = true;
-    featureFlagOverride = featureFlag;
-  }
-
-  private boolean hasFeatuerFlagOverride = false;
-  private FeatureFlags featureFlagOverride = null;
-
+  @Override
   public FeatureFlags getFeatureFlags() {
-    if (hasFeatuerFlagOverride) {
-      return featureFlagOverride;
-    }
-    return super.getFeatureFlags();
-  }
-
-  public MssqlSource(FeatureFlags featureFlag) {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
-    hasFeatuerFlagOverride = true;
-    featureFlagOverride = featureFlag;
-  }
-
-  private boolean hasFeatuerFlagOverride = false;
-  private FeatureFlags featureFlagOverride = null;
-
-  public FeatureFlags getFeatureFlags() {
-    if (hasFeatuerFlagOverride) {
-      return featureFlagOverride;
-    }
-    return super.getFeatureFlags();
+    return featureFlags;
   }
 
   @Override
@@ -296,8 +272,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final String resultColName = "nullValue";
     final String descQuery = String.format(DESCRIBE_TABLE_QUERY, tableName);
     final Optional<JsonNode> field = database.bufferedResultSetQuery(conn -> conn.createStatement()
-        .executeQuery(descQuery),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
+                .executeQuery(descQuery),
+            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
         .stream()
         .peek(x -> LOGGER.info("MsSQL Table Structure {}, {}, {}", x.toString(), schema, tableName))
         .filter(x -> x.get("TABLE_OWNER") != null)
@@ -658,7 +634,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (isCdc(sourceConfig)) {
       return getMssqlFullRefreshInitialLoadHandler(database, catalog, initialLoadStateManager, stateManager, airbyteStream, Instant.now(),
           getQuoteString())
-              .get();
+          .get();
     } else {
       return new MssqlInitialLoadHandler(sourceConfig, database, new MssqlSourceOperations(), getQuoteString(), initialLoadStateManager,
           Optional.empty(),

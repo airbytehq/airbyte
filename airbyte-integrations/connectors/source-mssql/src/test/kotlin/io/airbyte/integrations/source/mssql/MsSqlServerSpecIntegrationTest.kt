@@ -46,7 +46,7 @@ class MsSqlServerSpecIntegrationTest {
                                 .withName("id_name_and_born")
                                 .withJsonSchema(
                                     Jsons.readTree(
-                                        """{"type":"object","properties":{"born":{"type":"string","format":"date-time","airbyte_type":"timestamp_with_timezone"},"name":{"type":"string"},"id":{"type":"number"}}}"""
+                                        """{"type":"object","properties":{"born":{"type":"string","format":"date-time","airbyte_type":"timestamp_with_timezone"},"name":{"type":"string"},"id":{"type":"number","airbyte_type":"integer"}}}"""
                                     )
                                 )
                                 .withSupportedSyncModes(

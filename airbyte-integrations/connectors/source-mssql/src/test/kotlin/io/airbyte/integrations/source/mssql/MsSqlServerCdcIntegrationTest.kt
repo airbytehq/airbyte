@@ -90,7 +90,7 @@ class MsSqlServerCdcIntegrationTest {
 
        companion object {
            val log = KotlinLogging.logger {}
-           var dbContainer: MsSqlServercontainer = MsSqlServerContainerFactory.exclusive(
+           var dbContainer: MsSqlServerContainer = MsSqlServerContainerFactory.exclusive(
                MsSqlServerImage.SQLSERVER_2022,
                MsSqlServerContainerFactory.WithNetwork,
                MsSqlServerContainerFactory.WithCdcAgent

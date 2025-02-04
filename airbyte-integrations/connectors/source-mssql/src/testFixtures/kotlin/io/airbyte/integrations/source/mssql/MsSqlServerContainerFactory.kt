@@ -21,7 +21,7 @@ enum class MsSqlServerImage(val imageName: String) {
     SQLSERVER_2022("mcr.microsoft.com/mssql/server:2022-latest")
 }
 
-class MsSqlServercontainerWithCdc(realContainer: MSSQLServerContainer<*>): MsSqlServercontainer(realContainer) {
+class MsSqlServercontainerWithCdc(realContainer: MSSQLServerContainer<*>): MsSqlServerContainer(realContainer) {
     override val config: MsSqlServerSourceConfigurationSpecification by lazy {
         cdcConfig()
     }
@@ -119,7 +119,7 @@ class MsSqlServercontainerWithCdc(realContainer: MSSQLServerContainer<*>): MsSql
     }
 }
 
-open class MsSqlServercontainer(val realContainer: MSSQLServerContainer<*>): AutoCloseable {
+open class MsSqlServerContainer(val realContainer: MSSQLServerContainer<*>): AutoCloseable {
     val id = counter.incrementAndGet()
     val schemaName = "schema_" + RandomStringUtils.insecure().nextAlphabetic(16)
     val databaseName = "db_" + RandomStringUtils.insecure().nextAlphabetic(16)
@@ -229,23 +229,23 @@ object MsSqlServerContainerFactory {
     fun exclusive(
         image: MsSqlServerImage,
         vararg modifiers: MsSqlServerContainerModifier,
-    ): MsSqlServercontainer {
+    ): MsSqlServerContainer {
         val dockerImageName =
             DockerImageName.parse(image.imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
         val realContainer = TestContainerFactory.exclusive(dockerImageName, *modifiers)
         if (modifiers.contains(WithCdcAgent)) {
             return MsSqlServercontainerWithCdc(realContainer)
         } else {
-            return MsSqlServercontainer(realContainer)
+            return MsSqlServerContainer(realContainer)
         }
     }
 
     fun shared(
         image: MsSqlServerImage,
         vararg modifiers: MsSqlServerContainerModifier,
-    ): MsSqlServercontainer {
+    ): MsSqlServerContainer {
         val dockerImageName =
             DockerImageName.parse(image.imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
-        return MsSqlServercontainer(TestContainerFactory.shared(dockerImageName, *modifiers))
+        return MsSqlServerContainer(TestContainerFactory.shared(dockerImageName, *modifiers))
     }
 }

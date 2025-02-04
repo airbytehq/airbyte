@@ -106,7 +106,7 @@ class MsSqlServerCursorBasedIntegrationTest {
 
     companion object {
         val log = KotlinLogging.logger {}
-        val dbContainer: MsSqlServercontainer =
+        val dbContainer: MsSqlServerContainer =
             MsSqlServerContainerFactory.shared(MsSqlServerImage.SQLSERVER_2022)
 
         val config: MsSqlServerSourceConfigurationSpecification =
