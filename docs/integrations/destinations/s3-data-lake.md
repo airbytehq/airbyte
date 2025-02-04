@@ -10,6 +10,29 @@ for more information.
 
 :::
 
+## Iceberg schema generation
+
+The top-level fields of the stream will be mapped to Iceberg fields. Nested fields (objects, arrays, and unions) will be
+mapped to `STRING` columns, and written as serialized JSON. This is the full mapping between Airbyte types and Iceberg types:
+
+| Airbyte type               | Iceberg type                   |
+|----------------------------|--------------------------------|
+| Boolean                    | Boolean                        |
+| Date                       | Date                           |
+| Integer                    | Long                           |
+| Number                     | Double                         |
+| String                     | String                         |
+| Time with timezone         | Time                           |
+| Time without timezone      | Time                           |
+| Timestamp with timezone    | Timestamp with timezone        |
+| Timestamp without timezone | Timestamp without timezone     |
+| Object                     | String (JSON-serialized value) |
+| Array                      | String (JSON-serialized value) |
+| Union                      | String (JSON-serialized value) |
+
+Note that for the time/timestamp with timezone types, the value is first adjusted to UTC, and then
+written into the Iceberg file.
+
 ## Changelog
 
 <details>

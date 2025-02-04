@@ -1643,9 +1643,9 @@ abstract class BasicFunctionalityIntegrationTest(
                           "number": 42.1,
                           "integer": 42,
                           "boolean": true,
-                          "timestamp_with_timezone": "2023-01-23T12:34:56Z",
+                          "timestamp_with_timezone": "2023-01-23T11:34:56-01:00",
                           "timestamp_without_timezone": "2023-01-23T12:34:56",
-                          "time_with_timezone": "12:34:56Z",
+                          "time_with_timezone": "11:34:56-01:00",
                           "time_without_timezone": "12:34:56",
                           "date": "2023-01-23"
                         }
@@ -1817,10 +1817,10 @@ abstract class BasicFunctionalityIntegrationTest(
                             "integer" to 42,
                             "boolean" to true,
                             "timestamp_with_timezone" to
-                                OffsetDateTime.parse("2023-01-23T12:34:56Z"),
+                                OffsetDateTime.parse("2023-01-23T11:34:56-01:00"),
                             "timestamp_without_timezone" to
                                 LocalDateTime.parse("2023-01-23T12:34:56"),
-                            "time_with_timezone" to OffsetTime.parse("12:34:56Z"),
+                            "time_with_timezone" to OffsetTime.parse("11:34:56-01:00"),
                             "time_without_timezone" to LocalTime.parse("12:34:56"),
                             "date" to LocalDate.parse("2023-01-23"),
                         ),
