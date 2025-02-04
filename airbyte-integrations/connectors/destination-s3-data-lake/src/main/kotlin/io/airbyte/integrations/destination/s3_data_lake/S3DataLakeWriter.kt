@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import javax.inject.Singleton
@@ -22,6 +23,7 @@ class S3DataLakeWriter(
     private val s3DataLakeTableSynchronizer: S3DataLakeTableSynchronizer,
     private val catalog: DestinationCatalog,
     private val tableIdGenerator: TableIdGenerator,
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamLoader>
 ) : DestinationWriter {
     override suspend fun setup() {
         super.setup()
@@ -56,14 +58,19 @@ class S3DataLakeWriter(
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        return S3DataLakeStreamLoader(
-            icebergConfiguration,
-            stream,
-            s3DataLakeTableSynchronizer,
-            s3DataLakeTableWriterFactory,
-            s3DataLakeUtil,
-            stagingBranchName = DEFAULT_STAGING_BRANCH,
-            mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
-        )
+        val loader =
+            S3DataLakeStreamLoader(
+                icebergConfiguration,
+                stream,
+                s3DataLakeTableSynchronizer,
+                s3DataLakeTableWriterFactory,
+                s3DataLakeUtil,
+                stagingBranchName = DEFAULT_STAGING_BRANCH,
+                mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
+            )
+
+        streamStateStore.put(stream.descriptor, loader)
+
+        return loader
     }
 }

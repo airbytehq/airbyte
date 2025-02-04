@@ -1,0 +1,7 @@
+airbyte:
+  destination:
+    core:
+      load-pipeline:
+        strategy: direct
+        input-parts: 1
+      record-batch-size-override: 1

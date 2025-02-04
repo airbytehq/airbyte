@@ -236,7 +236,7 @@ class DefaultStreamManager(val stream: DestinationStream, private val checkpoint
         log.info {
             "Added ${batch.batch.state}->${batch.ranges} (groupId=${batch.batch.groupId}) to ${stream.descriptor.namespace}.${stream.descriptor.name}=>${rangesState[batch.batch.state]}"
         }
-        log.debug {
+        log.info {
             val groupLineMaybe =
                 if (fromCache != null) {
                     "\n                From group cache: ${fromCache.state}->${fromCache.ranges}"
@@ -245,7 +245,7 @@ class DefaultStreamManager(val stream: DestinationStream, private val checkpoint
                 }
             val stateRangesJoined =
                 stateRangesToAdd.joinToString(",") { "${it.first}->${it.second}" }
-            val readRange = TreeRangeSet.create(listOf(Range.closed(0, recordCount.get())))
+            val readRange = TreeRangeSet.create(listOf(Range.closed(0, recordCount.get() - 1)))
             """ Added $stateRangesJoined to ${stream.descriptor.namespace}.${stream.descriptor.name}$groupLineMaybe
                 READ:      $readRange (complete=${markedEndOfStream.get()})
                 PROCESSED: ${rangesState[Batch.State.PROCESSED]}

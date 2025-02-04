@@ -188,6 +188,11 @@ abstract class S3DataLakeWriteTest(
             BaseDeltaTaskWriter.NULL_PK_ERROR_MESSAGE,
         )
     }
+
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
 }
 
 class GlueWriteTest :

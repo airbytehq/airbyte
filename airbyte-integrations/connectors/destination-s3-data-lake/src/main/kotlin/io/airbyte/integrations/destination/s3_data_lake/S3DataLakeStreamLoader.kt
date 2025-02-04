@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableCleane
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.concurrent.atomic.AtomicReference
 import org.apache.iceberg.Table
 
 private val logger = KotlinLogging.logger {}
@@ -25,13 +26,13 @@ class S3DataLakeStreamLoader(
     private val icebergConfiguration: S3DataLakeConfiguration,
     override val stream: DestinationStream,
     private val s3DataLakeTableSynchronizer: S3DataLakeTableSynchronizer,
-    private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
-    private val s3DataLakeUtil: S3DataLakeUtil,
-    private val stagingBranchName: String,
+    val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
+    val s3DataLakeUtil: S3DataLakeUtil,
+    val stagingBranchName: String,
     private val mainBranchName: String
 ) : StreamLoader {
-    private lateinit var table: Table
-    private val pipeline = IcebergParquetPipelineFactory().create(stream)
+    val table: AtomicReference<Table> = AtomicReference(null)
+    val pipeline = IcebergParquetPipelineFactory().create(stream)
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
@@ -41,21 +42,22 @@ class S3DataLakeStreamLoader(
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = s3DataLakeUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
         val incomingSchema = s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
-        table =
+        table.set(
             s3DataLakeUtil.createTable(
                 streamDescriptor = stream.descriptor,
                 catalog = catalog,
                 schema = incomingSchema,
                 properties = properties
             )
+        )
 
-        s3DataLakeTableSynchronizer.applySchemaChanges(table, incomingSchema)
+        s3DataLakeTableSynchronizer.applySchemaChanges(table.get(), incomingSchema)
 
         try {
             logger.info {
                 "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.descriptor}"
             }
-            table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
+            table.get().manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
         } catch (e: IllegalArgumentException) {
             logger.info {
                 "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.descriptor}"
@@ -70,7 +72,7 @@ class S3DataLakeStreamLoader(
     ): Batch {
         s3DataLakeTableWriterFactory
             .create(
-                table = table,
+                table = table.get(),
                 generationId = s3DataLakeUtil.constructGenerationIdSuffix(stream),
                 importType = stream.importType
             )
@@ -81,19 +83,19 @@ class S3DataLakeStreamLoader(
                         s3DataLakeUtil.toRecord(
                             record = record,
                             stream = stream,
-                            tableSchema = table.schema(),
+                            tableSchema = table.get().schema(),
                             pipeline = pipeline,
                         )
                     writer.write(icebergRecord)
                 }
                 val writeResult = writer.complete()
                 if (writeResult.deleteFiles().isNotEmpty()) {
-                    val delta = table.newRowDelta().toBranch(stagingBranchName)
+                    val delta = table.get().newRowDelta().toBranch(stagingBranchName)
                     writeResult.dataFiles().forEach { delta.addRows(it) }
                     writeResult.deleteFiles().forEach { delta.addDeletes(it) }
                     delta.commit()
                 } else {
-                    val append = table.newAppend().toBranch(stagingBranchName)
+                    val append = table.get().newAppend().toBranch(stagingBranchName)
                     writeResult.dataFiles().forEach { append.appendFile(it) }
                     append.commit()
                 }
@@ -110,7 +112,11 @@ class S3DataLakeStreamLoader(
             logger.info {
                 "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
             }
-            table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+            table
+                .get()
+                .manageSnapshots()
+                .fastForwardBranch(mainBranchName, stagingBranchName)
+                .commit()
             if (stream.minimumGenerationId > 0) {
                 logger.info {
                     "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
@@ -121,7 +127,7 @@ class S3DataLakeStreamLoader(
                     )
                 val s3DataLakeTableCleaner = S3DataLakeTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
                 s3DataLakeTableCleaner.deleteGenerationId(
-                    table,
+                    table.get(),
                     stagingBranchName,
                     generationIdsToDelete
                 )
@@ -131,6 +137,7 @@ class S3DataLakeStreamLoader(
                         "Pushing these updates to the '$mainBranchName' branch."
                 }
                 table
+                    .get()
                     .manageSnapshots()
                     .fastForwardBranch(mainBranchName, stagingBranchName)
                     .commit()
