@@ -19,7 +19,7 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 
 ### Example for `airbyte/python-connector-base`:
 ```dockerfile
-FROM docker.io/python:3.11.8-slim-bookworm@sha256:44c3a7e8c2f9f3c5f7f5f5b7c5f5b7c5f5b7c5f5b7c5f5b7c5f5b7c5f5b7c5f5
+FROM docker.io/python:3.11.11-slim-bookworm@sha256:6ed5bff4d7d377e2a27d9285553b8c21cfccc4f00881de1b24c9bc8d90016e82
 RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN adduser --uid 1000 --system --group --no-create-home airbyte
 RUN mkdir --mode 755 /custom_cache
@@ -30,7 +30,7 @@ RUN pip install --upgrade pip==24.0 setuptools==70.0.0
 ENV POETRY_VIRTUALENVS_CREATE=false
 ENV POETRY_VIRTUALENVS_IN_PROJECT=false
 ENV POETRY_NO_INTERACTION=1
-RUN pip install poetry==1.6.1
+RUN pip install poetry==1.8.4
 RUN sh -c apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean
 RUN sh -c apt-get install -y socat=1.7.4.4-2
 RUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1
@@ -58,7 +58,7 @@ ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
 
 ### `airbyte/python-connector-base`
 
-| Version | Published | Docker Image Address | Changelog | 
+| Version | Published | Docker Image Address | Changelog |
 |---------|-----------|--------------|-----------|
 |  3.0.2 | ✅| docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75 |  |
 |  3.0.1-rc.1 | ✅| docker.io/airbyte/python-connector-base:3.0.1-rc.1@sha256:5b5cbe613691cc61d643a347ee4ba21d6358252f274ebb040ef820c7b9f4a5a7 |  |
@@ -77,7 +77,7 @@ ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
 
 ### `airbyte/java-connector-base`
 
-| Version | Published | Docker Image Address | Changelog | 
+| Version | Published | Docker Image Address | Changelog |
 |---------|-----------|--------------|-----------|
 |  2.0.1 | ✅| docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3 | Bump Amazon Coretto image version for compatibility with Apple M4 architecture. |
 |  2.0.0 | ✅| docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454 | ~Release non root base image~ |
