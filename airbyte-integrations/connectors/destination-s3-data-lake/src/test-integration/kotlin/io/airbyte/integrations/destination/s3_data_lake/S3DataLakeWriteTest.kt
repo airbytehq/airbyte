@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.data.FieldType
@@ -21,10 +22,12 @@ import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import java.nio.file.Files
 import java.util.Base64
+import kotlin.test.assertContains
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.junit.jupiter.api.Assumptions
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -158,9 +161,32 @@ class GlueWriteTest :
         )
     ) {
     @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
+    fun testNameConflicts() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(
+            name: String,
+            namespaceSuffix: String,
+        ) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace + namespaceSuffix, name),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
+        // So these two streams will collide.
+        val catalog =
+            DestinationCatalog(
+                listOf(
+                    makeStream("stream_with_spécial_character", "_foo"),
+                    makeStream("STREAM_WITH_SPÉCIAL_CHARACTER", "_FOO"),
+                )
+            )
+
+        val failure = expectFailure { runSync(configContents, catalog, messages = emptyList()) }
+        assertContains(failure.message, "Detected naming conflicts between streams")
     }
 
     @Test
@@ -180,12 +206,6 @@ class GlueAssumeRoleWriteTest :
             )
         ),
     ) {
-    @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
     override fun testNamespaces() {
