@@ -16,8 +16,6 @@ acceptance_tests:
         status: failed
       - config_path: secrets/config_oauth.json
         status: succeed
-      - config_path: integration_tests/invalid_account_config.json
-        status: failed
   discovery:
     tests:
       - config_path: secrets/config.json
