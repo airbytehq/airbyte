@@ -33,6 +33,10 @@ class S3DataLakeStreamLoader(
     private lateinit var table: Table
     private val pipeline = IcebergParquetPipelineFactory().create(stream)
 
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+        "something about the `table` lateinit var is confusing spotbugs"
+    )
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = s3DataLakeUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
