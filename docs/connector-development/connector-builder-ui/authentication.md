@@ -116,7 +116,7 @@ The configuration consists of three main components:
    - Parameter placement for client credentials and refresh token
    - Custom header and body configurations
 
-To learn more about the Declarative OAuth 2.0, Add see a variety of example implementations please refer to the [Declarative OAuth 2.0](/connector-development/config-based/advanced-topics/oauth) documentation.
+To learn more about the Declarative OAuth 2.0 add see a variety of example implementations please refer to the [Declarative OAuth 2.0](/connector-development/config-based/advanced-topics/oauth) documentation.
 
 
 #### Partial OAuth (legacy)
