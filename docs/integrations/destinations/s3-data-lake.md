@@ -104,6 +104,24 @@ rewrite existing data files. This means that we can only handle specific schema 
 
 If your source goes through an unsupported schema change, you must manually edit the table schema.
 
+## Deduplication
+
+This connector uses a merge-on-read strategy to support deduplication:
+* The stream's primary keys are translated to Iceberg's [identifier columns](https://iceberg.apache.org/spec/#identifier-field-ids).
+* An "upsert" is an [equality-based delete](https://iceberg.apache.org/spec/#equality-delete-files)
+  on that row's primary key, followed by an insertion of the new data.
+
+### Assumptions
+
+The S3 Data Lake connector assumes that one of two things is true:
+* The source will never emit the same primary key twice in a single sync attempt
+* If the source emits the same PK multiple times in a single attempt, it will always emit those records
+  in cursor order (oldest to newest)
+
+If these conditions are not met, you may see inaccurate data in the destination (i.e. older records
+taking precendence over newer records). If this happens, you should use the `append` or `overwrite`
+sync mode.
+
 ## Changelog
 
 <details>
