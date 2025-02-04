@@ -26,8 +26,8 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | accounting_transactions | id | DefaultPaginator | ✅ |  ❌  |
 | charges | id | DefaultPaginator | ✅ |  ❌  |
 | companies | id | DefaultPaginator | ✅ |  ✅  |
-| contact_companies | contactId.companyId | DefaultPaginator | ✅ |  ❌  |
 | contacts | id | DefaultPaginator | ✅ |  ✅  |
+| contacts_companies | contactId.companyId | DefaultPaginator | ✅ |  ❌  |
 | contacts_pii_redacted | id | DefaultPaginator | ✅ |  ✅  |
 | contracts | id | DefaultPaginator | ✅ |  ❌  |
 | crm_company_attachment | company_id.id | DefaultPaginator | ✅ |  ❌  |

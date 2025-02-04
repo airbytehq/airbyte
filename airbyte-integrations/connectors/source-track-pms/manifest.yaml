@@ -3053,82 +3053,6 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
-    contact_companies:
-      type: DeclarativeStream
-      name: contact_companies
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: crm/contacts/{{ stream_partition.contact_id }}/companies
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _embedded
-              - companies
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/contacts"
-              parent_key: id
-              partition_field: contact_id
-              incremental_dependency: true
-      primary_key:
-        - contactId
-        - companyId
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/contact_companies"
-      transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - contact
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - company
-        - type: RemoveFields
-          field_pointers:
-            - - _links
     owners_statements:
       type: DeclarativeStream
       name: owners_statements
@@ -3253,6 +3177,82 @@ definitions:
           field_pointers:
             - - _embedded
               - unit
+    contacts_companies:
+      type: DeclarativeStream
+      name: contacts_companies
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm/contacts/{{ stream_partition.contact_id }}/companies
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - companies
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/contacts"
+              parent_key: id
+              partition_field: contact_id
+              incremental_dependency: true
+      primary_key:
+        - contactId
+        - companyId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts_companies"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - contact
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
+              - company
+        - type: RemoveFields
+          field_pointers:
+            - - _links
     fractionals_owners:
       type: DeclarativeStream
       name: fractionals_owners
@@ -5606,8 +5606,8 @@ streams:
   - $ref: "#/definitions/streams/accounting_transactions"
   - $ref: "#/definitions/streams/charges"
   - $ref: "#/definitions/streams/companies"
-  - $ref: "#/definitions/streams/contact_companies"
   - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/contacts_companies"
   - $ref: "#/definitions/streams/contacts_pii_redacted"
   - $ref: "#/definitions/streams/contracts"
   - $ref: "#/definitions/streams/crm_company_attachment"
@@ -6005,13 +6005,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    contact_companies:
-      hasRecords: true
-      streamHash: ab21467f28fc918f91521a8b8f8bb38decdc334b
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     owners_statements:
       hasRecords: true
       streamHash: fa386c3f9f894c273888363fcf3e43872ce274d3
@@ -6022,6 +6015,13 @@ metadata:
     accounting_charges:
       hasRecords: true
       streamHash: a01c87e31a9a02ab9c92dafccf26ddd7fb6a0227
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contacts_companies:
+      hasRecords: true
+      streamHash: c8b203f03d1e49e9c990b26bcb48e68a85cddb61
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6297,9 +6297,9 @@ metadata:
     accounting_items: true
     groups_breakdown: true
     owners_contracts: true
-    contact_companies: true
     owners_statements: true
     accounting_charges: true
+    contacts_companies: true
     fractionals_owners: true
     reservations_types: true
     units_taxes_parent: true
@@ -17517,34 +17517,6 @@ schemas:
           - boolean
           - "null"
     additionalProperties: true
-  contact_companies:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - contactId
-      - companyId
-    properties:
-      _embedded:
-        type:
-          - object
-          - "null"
-      companyId:
-        type: number
-      contactId:
-        type: number
-      ownerType:
-        type:
-          - string
-          - "null"
-      ownerSplit:
-        type:
-          - string
-          - "null"
-      isPrimaryContact:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
   owners_statements:
     type: object
     $schema: http://json-schema.org/schema#
@@ -23815,6 +23787,34 @@ schemas:
             type:
               - number
               - "null"
+    additionalProperties: true
+  contacts_companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - contactId
+      - companyId
+    properties:
+      _embedded:
+        type:
+          - object
+          - "null"
+      companyId:
+        type: number
+      contactId:
+        type: number
+      ownerType:
+        type:
+          - string
+          - "null"
+      ownerSplit:
+        type:
+          - string
+          - "null"
+      isPrimaryContact:
+        type:
+          - boolean
+          - "null"
     additionalProperties: true
   fractionals_owners:
     type: object
