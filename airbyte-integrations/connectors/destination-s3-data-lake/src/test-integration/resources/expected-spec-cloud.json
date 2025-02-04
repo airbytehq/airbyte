@@ -90,7 +90,7 @@
             "namespace" : {
               "type" : "string",
               "description" : "The Nessie namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
-              "title" : "Namespace"
+              "title" : "Default namespace"
             }
           },
           "required" : [ "catalog_type", "server_uri", "namespace" ]
@@ -119,7 +119,7 @@
             "database_name" : {
               "type" : "string",
               "description" : "The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`",
-              "title" : "Database Name"
+              "title" : "Default database"
             }
           },
           "required" : [ "catalog_type", "glue_id", "database_name" ]
@@ -143,7 +143,7 @@
             "namespace" : {
               "type" : "string",
               "description" : "The namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
-              "title" : "Namespace"
+              "title" : "Default namespace"
             }
           },
           "required" : [ "catalog_type", "server_uri", "namespace" ]

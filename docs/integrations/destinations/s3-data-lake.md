@@ -1,14 +1,76 @@
 # S3 Data Lake
 
-:::danger
+:::caution
 
-This connector is in early access, and SHOULD NOT be used for production workloads.
-This connector is subject to breaking changes **without notice**.
+This connector is in early access, and should be used for production workloads.
 
 We're interested in hearing about your experience! See [Github](https://github.com/airbytehq/airbyte/discussions/50404)
-for more information.
+for more information on joining the beta.
 
 :::
+
+This page guides you through the process of setting up the S3 Data Lake destination connector.
+
+This connector writes the Iceberg table format to S3, or an S3-compatible storage backend.
+Currently it supports the REST, AWS Glue, and Nessie catalogs.
+
+## Setup Guide
+
+S3 Data Lake requires configuring two components: [S3 storage](#s3-setup), and your [Iceberg catalog](#iceberg-catalog-setup).
+
+### S3 Setup
+
+The connector needs certain permissions to be able to write Iceberg-format files to S3:
+* `s3:ListAllMyBuckets`
+* `s3:GetObject*`
+* `s3:PutObject`
+* `s3:PutObjectAcl`
+* `s3:DeleteObject`
+* `s3:ListBucket*`
+
+### Iceberg Catalog Setup
+
+Different catalogs have different setup requirements.
+
+#### AWS Glue
+
+In addition to the S3 permissions, you should also grant these Glue permissions:
+* `glue:TagResource`
+* `glue:UnTagResource`
+* `glue:BatchCreatePartition`
+* `glue:BatchDeletePartition`
+* `glue:BatchDeleteTable`
+* `glue:BatchGetPartition`
+* `glue:CreateDatabase`
+* `glue:CreateTable`
+* `glue:CreatePartition`
+* `glue:DeletePartition`
+* `glue:DeleteTable`
+* `glue:GetDatabase`
+* `glue:GetDatabases`
+* `glue:GetPartition`
+* `glue:GetPartitions`
+* `glue:GetTable`
+* `glue:GetTables`
+* `glue:UpdateDatabase`
+* `glue:UpdatePartition`
+* `glue:UpdateTable`
+
+Set the "warehouse location" option to `s3://<bucket name>/path/within/bucket`.
+
+The "Role ARN" option is only usable in cloud.
+
+#### REST catalog
+
+You will need the URI of your REST catalog.
+
+If using the Dremio catalog, set the "warehouse location" option to `<Dremio warehouse name>/path`.
+
+#### Nessie
+
+You will need the URI of your Nessie catalog, and an access token to authenticate to that catalog.
+
+Set the "warehouse location" option to `s3://<bucket name>/path/within/bucket`.
 
 ## Iceberg schema generation
 
