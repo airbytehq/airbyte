@@ -1186,7 +1186,7 @@ definitions:
     sponsored_brands_v3_report_stream:
       type: DeclarativeStream
       name: sponsored_brands_v3_report_stream
-      primary_key: ["profileId", "recordType", "reportDate", "recordId"]
+      primary_key: ["profileId", "reportDate", "purchasedAsin"]
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: reportDate
