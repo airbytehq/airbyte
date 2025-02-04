@@ -193,7 +193,7 @@ As auto-escaping disabling does not look not manageable via low-code, the workar
 ```
 submittedAtTimeRange=(start:1711407600000,end:1711494000000)
 ```  
-No workaround has been identified to manage this issue for now.
+No workaround has been identified to manage this issue as of 2025, February.
 
 ## Changelog
 
@@ -202,7 +202,12 @@ No workaround has been identified to manage this issue for now.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.0   | 2025-01-21  | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add `Lead forms` and `Lead form responses` new streams - See Limits & considerations                                                                                   |
+| 5.2.0   | 2025-02-04 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add `Lead forms` and `Lead form responses` new streams - See Limits & considerations                                                                                   |
+| 5.1.6   | 2025-02-03 | [49458](https://github.com/airbytehq/airbyte/pull/49458) | Update Linkedin Ads API version to 202410 for creatives stream                                                                                                         |
+| 5.1.5   | 2025-02-01 | [52791](https://github.com/airbytehq/airbyte/pull/52791) | Update dependencies                                                                                                                                                    |
+| 5.1.4   | 2025-01-30 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Fix state error                                                                                                                                                        |
+| 5.1.3   | 2025-01-22 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Update CDK to production ^6                                                                                                                                            |
+| 5.1.2   | 2025-01-25 | [52253](https://github.com/airbytehq/airbyte/pull/52253) | Update dependencies                                                                                                                                                    |
 | 5.1.1   | 2025-01-15 | [47092](https://github.com/airbytehq/airbyte/pull/47092) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 5.1.0   | 2025-01-14 | [48863](https://github.com/airbytehq/airbyte/pull/48863) | Custom streams moved to manifest implementation & URL Error Handling                                                                                                   |
 | 5.0.0   | 2024-11-26 | [48451](https://github.com/airbytehq/airbyte/pull/48451) | Update primary keys for streams ad_campaign_analytics, Custom Ad Analytics Reports and account_users                                                                   |
@@ -264,11 +269,11 @@ No workaround has been identified to manage this issue for now.
 | 0.1.8   | 2022-06-07 | [13495](https://github.com/airbytehq/airbyte/pull/13495) | Fixed `base-normalization` issue on `Destination Redshift` caused by wrong casting of `pivot` column                                                                   |
 | 0.1.7   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                                                                                        |
 | 0.1.6   | 2022-04-04 | [11690](https://github.com/airbytehq/airbyte/pull/11690) | Small documentation corrections                                                                                                                                        |
-| 0.1.5   | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984)   | Update connector fields title/description                                                                                                                              |
-| 0.1.4   | 2021-12-02 | [8382](https://github.com/airbytehq/airbyte/pull/8382)   | Modify log message in rate-limit cases                                                                                                                                 |
-| 0.1.3   | 2021-11-11 | [7839](https://github.com/airbytehq/airbyte/pull/7839)   | Added OAuth support                                                                                                                                                    |
-| 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                                                                                                        |
-| 0.1.1   | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610)   | Fix for `Campaigns/targetingCriteria` transformation, coerced `Creatives/variables/values` to string by default                                                        |
-| 0.1.0   | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285)   | Initial release of Native LinkedIn Ads connector for Airbyte                                                                                                           |
+| 0.1.5   | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984) | Update connector fields title/description                                                                                                                              |
+| 0.1.4   | 2021-12-02 | [8382](https://github.com/airbytehq/airbyte/pull/8382) | Modify log message in rate-limit cases                                                                                                                                 |
+| 0.1.3   | 2021-11-11 | [7839](https://github.com/airbytehq/airbyte/pull/7839) | Added OAuth support                                                                                                                                                    |
+| 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies                                                                                                                                        |
+| 0.1.1   | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610) | Fix for `Campaigns/targetingCriteria` transformation, coerced `Creatives/variables/values` to string by default                                                        |
+| 0.1.0   | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285) | Initial release of Native LinkedIn Ads connector for Airbyte                                                                                                           |
 
 </details>

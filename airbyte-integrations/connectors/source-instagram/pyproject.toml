@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.1.2"
+version = "3.1.4"
 name = "source-instagram"
 description = "Source implementation for Instagram."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_instagram"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-facebook-business = "==19.0.3"
+facebook-business = "==21.0.5"
 airbyte-cdk = "^2"
 cached-property = "==1.5.2"
 

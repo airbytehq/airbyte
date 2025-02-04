@@ -547,11 +547,19 @@ module.exports = {
     connectorCatalog,
     buildAConnector,
     "integrations/connector-support-levels",
+    {
+      type: "doc",
+      id: "using-airbyte/oauth",
+    },
     sectionHeader("Using Airbyte"),
     connectionConfigurations,
     {
       type: "doc",
       id: "using-airbyte/core-concepts/typing-deduping",
+    },
+    {
+      type: "doc",
+      id: "using-airbyte/mappings",
     },
     {
       type: "category",
@@ -644,7 +652,12 @@ module.exports = {
             type: "doc",
             id: "access-management/rbac",
           },
-          items: [{ type: "doc", id: "access-management/role-mapping" }],
+          items: [
+            { 
+              type: "doc", 
+              id: "access-management/role-mapping" 
+            },
+          ],
         },
       ],
     },

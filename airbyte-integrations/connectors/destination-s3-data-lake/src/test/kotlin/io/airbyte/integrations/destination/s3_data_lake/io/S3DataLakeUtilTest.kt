@@ -58,7 +58,7 @@ internal class S3DataLakeUtilTest {
 
     @BeforeEach
     fun setup() {
-        s3DataLakeUtil = S3DataLakeUtil(tableIdGenerator)
+        s3DataLakeUtil = S3DataLakeUtil(tableIdGenerator, assumeRoleCredentials = null)
     }
 
     @Test
@@ -334,6 +334,7 @@ internal class S3DataLakeUtilTest {
         val warehouseLocation = "s3://test/"
         val s3BucketName = "test"
         val s3Endpoint = "http://localhost:9000"
+        val databaseName = ""
         val awsAccessKeyConfiguration =
             AWSAccessKeyConfiguration(
                 accessKeyId = awsAccessKey,
@@ -349,13 +350,15 @@ internal class S3DataLakeUtilTest {
             IcebergCatalogConfiguration(
                 warehouseLocation,
                 "main",
-                NessieCatalogConfiguration(nessieServerUri, nessieAccessToken)
+                NessieCatalogConfiguration(nessieServerUri, nessieAccessToken, databaseName),
             )
         val configuration =
             S3DataLakeConfiguration(
                 awsAccessKeyConfiguration = awsAccessKeyConfiguration,
                 icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,
+                numProcessRecordsWorkers = 1,
+                numProcessBatchWorkers = 1,
             )
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config = configuration)
         assertEquals(ICEBERG_CATALOG_TYPE_NESSIE, catalogProperties[ICEBERG_CATALOG_TYPE])

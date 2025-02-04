@@ -57,7 +57,7 @@ class TwilioStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
-        next_page_uri = stream_data.get("next_page_uri")
+        next_page_uri = stream_data.get("meta", {}).get("next_page_url") or stream_data.get("next_page_uri")
         if next_page_uri:
             next_url = urlparse(next_page_uri)
             next_page_params = dict(parse_qsl(next_url.query))

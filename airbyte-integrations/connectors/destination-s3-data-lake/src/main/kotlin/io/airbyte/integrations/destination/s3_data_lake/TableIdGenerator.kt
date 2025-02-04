@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
 import org.apache.iceberg.catalog.Namespace
@@ -20,24 +22,45 @@ interface TableIdGenerator {
     fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier
 }
 
-class SimpleTableIdGenerator : TableIdGenerator {
-    override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier =
-        tableIdOf(stream.namespace!!, stream.name)
+class SimpleTableIdGenerator(private val configNamespace: String? = "") : TableIdGenerator {
+    override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
+        val namespace = stream.namespace ?: configNamespace
+        return tableIdOf(namespace!!, stream.name)
+    }
 }
 
 /** AWS Glue requires lowercase database+table names. */
-class GlueTableIdGenerator : TableIdGenerator {
-    override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier =
-        tableIdOf(stream.namespace!!.lowercase(), stream.name.lowercase())
+class GlueTableIdGenerator(private val databaseName: String?) : TableIdGenerator {
+    override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
+        val namespace = (stream.namespace ?: databaseName)?.lowercase()
+
+        return tableIdOf(namespace!!, stream.name.lowercase())
+    }
 }
 
 @Factory
-class TableIdGeneratorFactory(private val icebergConfiguration: S3DataLakeConfiguration) {
+class TableIdGeneratorFactory(private val s3DataLakeConfiguration: S3DataLakeConfiguration) {
     @Singleton
     fun create() =
-        when (icebergConfiguration.icebergCatalogConfiguration.catalogConfiguration) {
-            is GlueCatalogConfiguration -> GlueTableIdGenerator()
-            else -> SimpleTableIdGenerator()
+        when (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration) {
+            is GlueCatalogConfiguration ->
+                GlueTableIdGenerator(
+                    (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
+                            as GlueCatalogConfiguration)
+                        .databaseName
+                )
+            is NessieCatalogConfiguration ->
+                SimpleTableIdGenerator(
+                    (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
+                            as NessieCatalogConfiguration)
+                        .namespace
+                )
+            is RestCatalogConfiguration ->
+                SimpleTableIdGenerator(
+                    (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
+                            as RestCatalogConfiguration)
+                        .namespace
+                )
         }
 }
 
