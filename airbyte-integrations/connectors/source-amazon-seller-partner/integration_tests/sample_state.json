@@ -1,89 +1,321 @@
-{
-  "Orders": {
-    "LastUpdateDate": "2021-07-01T00:00:00Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "Orders"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL": {
-    "last-updated-date": "2021-07-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_MERCHANT_LISTINGS_ALL_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_MERCHANT_LISTINGS_ALL_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FLAT_FILE_OPEN_LISTINGS_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_OPEN_LISTINGS_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_VENDOR_INVENTORY_HEALTH_REPORT": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_VENDOR_INVENTORY_HEALTH_REPORT"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_SELLER_FEEDBACK_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_SELLER_FEEDBACK_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_XML_BROWSE_TREE_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_XML_BROWSE_TREE_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FBA_SNS_FORECAST_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FBA_SNS_FORECAST_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FBA_SNS_PERFORMANCE_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FBA_SNS_PERFORMANCE_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_MERCHANT_CANCELLED_LISTINGS_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_MERCHANT_LISTINGS_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_MERCHANT_LISTINGS_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_MERCHANTS_LISTINGS_FYP_REPORT": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_MERCHANTS_LISTINGS_FYP_REPORT"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_MERCHANT_LISTINGS_INACTIVE_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_MERCHANT_LISTINGS_INACTIVE_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_STRANDED_INVENTORY_UI_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_STRANDED_INVENTORY_UI_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_LEDGER_DETAIL_VIEW_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_LEDGER_DETAIL_VIEW_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_FBA_INVENTORY_PLANNING_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_FBA_INVENTORY_PLANNING_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   },
-  "GET_LEDGER_SUMMARY_VIEW_DATA": {
-    "createdTime": "2021-07-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_LEDGER_SUMMARY_VIEW_DATA"
+      },
+      "stream_state": {
+        "LastUpdateDate": "2021-07-01T00:00:00Z"
+      }
+    }
   }
-}
+]

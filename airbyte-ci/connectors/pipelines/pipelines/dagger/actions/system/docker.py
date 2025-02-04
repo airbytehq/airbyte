@@ -3,8 +3,10 @@
 #
 
 import json
+import logging
+import platform
 import uuid
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Union
 
 from dagger import Client, Container, File, Service
 from dagger import Secret as DaggerSecret
@@ -56,13 +58,17 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
             )
         )
         # Expose the docker host port.
+        .with_exec(["adduser", "-u", "1000", "-S", "-H", "airbyte"])
         .with_exposed_port(DOCKER_HOST_PORT)
         # We cache /tmp for file sharing between client and daemon.
-        .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
+        .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME), owner="airbyte")
+        .with_exec(["chmod", "777", "/tmp"])
     )
 
     # We cache /var/lib/docker to avoid downloading images and layers multiple times.
-    base_container = base_container.with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+    base_container = base_container.with_mounted_cache(
+        "/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME), owner="airbyte"
+    )
     return base_container
 
 
@@ -75,8 +81,10 @@ def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
     Returns:
         str: The json representation of the docker daemon config.
     """
+    storage_driver = "vfs" if platform.system() == "Darwin" else STORAGE_DRIVER
+    logging.info(f"Using storage driver: {storage_driver}")
     daemon_config: Dict[str, Union[List[str], str]] = {
-        "storage-driver": STORAGE_DRIVER,
+        "storage-driver": storage_driver,
     }
     if registry_mirror_url:
         daemon_config["registry-mirrors"] = ["http://" + registry_mirror_url]
@@ -152,7 +160,7 @@ def with_global_dockerd_service(
     ).as_service()
 
 
-def with_bound_docker_host(
+async def with_bound_docker_host(
     context: ConnectorContext,
     container: Container,
 ) -> Container:
@@ -165,21 +173,22 @@ def with_bound_docker_host(
         Container: The container bound to the docker host.
     """
     assert context.dockerd_service is not None
+    current_user = (await container.with_exec(["whoami"]).stdout()).strip()
     return (
         container.with_env_variable("DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}")
         .with_service_binding(DOCKER_HOST_NAME, context.dockerd_service)
-        .with_mounted_cache("/tmp", context.dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
+        .with_mounted_cache("/tmp", context.dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME), owner=current_user)
     )
 
 
-def bound_docker_host(context: ConnectorContext) -> Callable[[Container], Container]:
-    def bound_docker_host_inner(container: Container) -> Container:
-        return with_bound_docker_host(context, container)
+def bound_docker_host(context: ConnectorContext) -> Callable[[Container], Coroutine[Any, Any, Container]]:
+    async def bound_docker_host_inner(container: Container) -> Container:
+        return await with_bound_docker_host(context, container)
 
     return bound_docker_host_inner
 
 
-def with_docker_cli(context: ConnectorContext) -> Container:
+async def with_docker_cli(context: ConnectorContext) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
     Args:
@@ -189,7 +198,7 @@ def with_docker_cli(context: ConnectorContext) -> Container:
         Container: A docker cli container bound to a docker host.
     """
     docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
-    return with_bound_docker_host(context, docker_cli)
+    return await with_bound_docker_host(context, docker_cli)
 
 
 async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str) -> str:
@@ -202,7 +211,7 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     """
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
-    docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
+    docker_cli = (await with_docker_cli(context)).with_mounted_file(tar_name, tar_file)
 
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name], use_entrypoint=True).stdout()
     # Not tagged images only have a sha256 id the load output shares.

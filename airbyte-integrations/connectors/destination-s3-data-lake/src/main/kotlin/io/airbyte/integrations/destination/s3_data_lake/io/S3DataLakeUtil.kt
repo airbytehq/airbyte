@@ -4,13 +4,14 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.io
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
@@ -37,6 +38,7 @@ import org.apache.iceberg.CatalogProperties.URI
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_GLUE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE
+import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_REST
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
@@ -59,12 +61,7 @@ const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 const val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
 const val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
 const val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
-
-data class AWSSystemCredentials(
-    @get:JsonProperty("AWS_ACCESS_KEY_ID") val AWS_ACCESS_KEY_ID: String,
-    @get:JsonProperty("AWS_SECRET_ACCESS_KEY") val AWS_SECRET_ACCESS_KEY: String,
-    @get:JsonProperty("AWS_ASSUME_ROLE_EXTERNAL_ID") val AWS_ASSUME_ROLE_EXTERNAL_ID: String
-)
+private const val AWS_REGION = "aws.region"
 
 /**
  * Collection of Iceberg related utilities.
@@ -74,7 +71,7 @@ data class AWSSystemCredentials(
 @Singleton
 class S3DataLakeUtil(
     private val tableIdGenerator: TableIdGenerator,
-    val awsSystemCredentials: AWSSystemCredentials? = null
+    private val assumeRoleCredentials: AwsAssumeRoleCredentials?,
 ) {
 
     internal class InvalidFormatException(message: String) : Exception(message)
@@ -215,15 +212,43 @@ class S3DataLakeUtil(
         val s3Properties = buildS3Properties(config, icebergCatalogConfig)
 
         return when (catalogConfig) {
-            is NessieCatalogConfiguration ->
+            is NessieCatalogConfiguration -> {
+                // Set AWS region as system property
+                System.setProperty(AWS_REGION, region)
                 buildNessieProperties(config, catalogConfig, s3Properties)
+            }
             is GlueCatalogConfiguration ->
                 buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region)
+            is RestCatalogConfiguration -> buildRestProperties(config, catalogConfig, s3Properties)
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"
                 )
         }
+    }
+
+    private fun buildRestProperties(
+        config: S3DataLakeConfiguration,
+        catalogConfig: RestCatalogConfiguration,
+        s3Properties: Map<String, String>
+    ): Map<String, String> {
+        val awsAccessKeyId =
+            requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
+                "AWS Access Key ID is required for Rest configuration"
+            }
+        val awsSecretAccessKey =
+            requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
+                "AWS Secret Access Key is required for Rest configuration"
+            }
+
+        val restProperties = buildMap {
+            put(CatalogUtil.ICEBERG_CATALOG_TYPE, ICEBERG_CATALOG_TYPE_REST)
+            put(URI, catalogConfig.serverUri)
+            put(S3FileIOProperties.ACCESS_KEY_ID, awsAccessKeyId)
+            put(S3FileIOProperties.SECRET_ACCESS_KEY, awsSecretAccessKey)
+        }
+
+        return restProperties + s3Properties
     }
 
     private fun buildS3Properties(
@@ -309,17 +334,15 @@ class S3DataLakeUtil(
     ): Map<String, String> {
         val region = config.s3BucketConfiguration.s3BucketRegion.region
         val (accessKeyId, secretAccessKey, externalId) =
-            if (awsSystemCredentials != null) {
+            if (assumeRoleCredentials != null) {
                 Triple(
-                    awsSystemCredentials.AWS_ACCESS_KEY_ID,
-                    awsSystemCredentials.AWS_SECRET_ACCESS_KEY,
-                    awsSystemCredentials.AWS_ASSUME_ROLE_EXTERNAL_ID
+                    assumeRoleCredentials.accessKey,
+                    assumeRoleCredentials.secretKey,
+                    assumeRoleCredentials.externalId,
                 )
             } else {
-                Triple(
-                    System.getenv(AWS_ACCESS_KEY_ID),
-                    System.getenv(AWS_SECRET_ACCESS_KEY),
-                    System.getenv(EXTERNAL_ID)
+                throw IllegalStateException(
+                    "Cannot assume role without system-provided credentials"
                 )
             }
 

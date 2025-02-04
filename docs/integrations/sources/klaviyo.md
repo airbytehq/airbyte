@@ -95,6 +95,8 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.11 | 2025-01-27 | [52563](https://github.com/airbytehq/airbyte/pull/52563) | Fix `lists_detailed` incremental sync |
+| 2.11.10 | 2025-01-25 | [52285](https://github.com/airbytehq/airbyte/pull/52285) | Update dependencies |
 | 2.11.9 | 2025-01-11 | [51198](https://github.com/airbytehq/airbyte/pull/51198) | Update dependencies |
 | 2.11.8 | 2025-01-09 | [51010](https://github.com/airbytehq/airbyte/pull/51010) | Fix AirbyteMessage serialization with integers bigger than 64 bits |
 | 2.11.7 | 2025-01-04 | [50893](https://github.com/airbytehq/airbyte/pull/50893) | Update dependencies |
