@@ -31,6 +31,7 @@ def wrong_date_config() -> Mapping[str, str]:
         "start_date": "wrong_date_format",
     }
 
+
 @fixture
 def wrong_account_id_config() -> Mapping[str, str]:
     return {
@@ -70,6 +71,7 @@ def test_response(test_record) -> MagicMock:
     response = MagicMock()
     response.json.return_value = test_record
     return response
+
 
 @fixture
 def test_response_single_account() -> MagicMock:

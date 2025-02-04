@@ -16,9 +16,8 @@ from source_pinterest.streams import (
     PinterestAnalyticsStream,
     PinterestErrorHandler,
     PinterestStream,
-    PinterestSubStream
+    PinterestSubStream,
 )
-
 from source_pinterest.utils import get_analytics_columns
 
 from airbyte_cdk import AirbyteTracedException
@@ -218,18 +217,21 @@ def test_path(test_config, stream_name, stream_slice, expected_path):
     result = stream.retriever.requester.get_path(stream_slice=stream_slice, stream_state=None, next_page_token=None)
     assert result == expected_path
 
+
 def test_ad_account_request_params():
     config = {"authenticator": MagicMock(), "account_id": "123456"}
     stream = AdAccountValidationStream(config=config)
-    
-    path = stream.path() 
+
+    path = stream.path()
     assert "123456" in path
+
 
 def test_ad_account_request_no_id():
     config = {"authenticator": MagicMock()}
     stream = AdAccountValidationStream(config=config)
     params = stream.request_params(stream_slice={}, stream_state={})
     assert "account_id" not in params
+
 
 def test_extract_records_with_items(test_response):
     extractor = AdAccountRecordExtractor()

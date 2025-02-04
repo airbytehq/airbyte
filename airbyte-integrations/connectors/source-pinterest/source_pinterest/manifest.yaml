@@ -223,7 +223,6 @@ definitions:
     $parameters:
       path: "{{ 'ad_accounts/' + config['account_id'] if config.get('account_id') else 'ad_accounts' }}"
 
-
   board_sections_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/board_sections/list
     name: "board_sections"

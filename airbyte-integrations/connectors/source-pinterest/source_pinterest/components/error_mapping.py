@@ -3,12 +3,15 @@
 #
 
 from typing import Mapping, Type, Union
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 
+
 PINTEREST_AD_ACCOUNT_DOCS_URL = "https://developers.pinterest.com/docs/api/v5/ad_accounts-get"
 ERROR_MESSAGE = "Invalid Ad Account ID: {account_id}. Access denied. Check your permissions or visit {docs_url} for guidance."
+
 
 def get_pinterest_ad_account_error_mapping(account_id: str) -> Mapping[Union[int, str, Type[Exception]], ErrorResolution]:
     """
