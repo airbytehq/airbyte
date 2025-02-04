@@ -8,9 +8,9 @@ Use mappings to hash, encrypt, and rename fields, and filter rows. You set up ma
 
 ![Screenshot of mappings feature showing several streams with mappings applied](images/mappings.png)
 
-## More about mapping in Airbyte
+## More about mapping in Airbyte 
 
-It’s often the case that you want to move data from a source to a destination in a non-literal way, obscuring sensitive information and improving the consistency and usability of that data in its final destination. Mapping allows you to match a field from your source to your destination and sync data in a way that is still accurate, but also more meaningful and appropriate for your needs.
+It’s often the case that you want to move data from a source to a destination in a non-literal way, obscuring sensitive information and improving the consistency and usability of that data in its destination. Mapping allows you to match a field from your source to your destination and sync data in a way that is still accurate, but also more meaningful and appropriate for your needs.
 
 Several types of mapping are possible in Airbyte, and you can combine them together in meaningful ways.
 
@@ -23,8 +23,6 @@ Hashing is an **irreversible** process that protects sensitive data by obscuring
 There are many reasons you might want to hash data.
 
 - **Data security**: Source datasets can contain data like passwords or credit card information. It's more secure to store a hashed or encrypted version of this data.
-- **Data integrity**: You can compare hashed values to ensure nobody has tampered with the data.
-- **Efficient retrieval**: Hashing can enable faster lookups in databases.
 - **Anonymity and compliance**: Source datasets can contain personally identifiable information (PII). Anonymizing PII can help you meet data privacy regulations like GDPR and HIPAA.
 
 ### Encrypt
@@ -36,8 +34,6 @@ Encryption is a **reversible** process that protects sensitive data by obscuring
 There are many reasons you might want to encrypt data.
 
 - **Data security**: Source datasets can contain data like passwords or credit card information. It's more secure to store a hashed or encrypted version of this data.
-- **Data integrity**: You can compare hashed values to ensure nobody has tampered with the data.
-- **Efficient retrieval**: Hashing can enable faster lookups in databases.
 - **Anonymity and compliance**: Source datasets can contain personally identifiable information (PII). Anonymizing PII can help you meet data privacy regulations like GDPR and HIPAA.
 
 Airbyte expects RSA keys in hex-encoded DER format. PEM isn't currently supported.
@@ -66,7 +62,7 @@ There are many reasons you might want to rename fields.
 
 - **Schema alignment**: Sources and destinations can use different naming conventions, or your destination can have more stringent naming requirements.
 - **Readability and understanding**: Sources won't always have descriptive field names and the purpose of a field can be lost out of context. In an HRIS system, you might guess that `emp_num` is an employee number, but that might be less obvious years later in a data warehouse. Meaningful, descriptive names help teams understand and manage their data more efficiently.
-- **Avoid conflicts**: Prevent multiple fields from having unnecessarily similar or identical names, and avoid the use of reserved keywords as field names.
+- **Avoid naming conflicts**: Prevent multiple fields from having unnecessarily similar or identical names, and avoid the use of reserved keywords as field names.
 
 ### Filter rows
 
