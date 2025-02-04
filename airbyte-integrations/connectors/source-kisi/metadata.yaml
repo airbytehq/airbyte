@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-kisi
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: 7706728b-f644-456e-8dd4-ac92c4d8f31a
-  dockerImageTag: 0.0.13
+  dockerImageTag: 0.0.14
   dockerRepository: airbyte/source-kisi
   githubIssueLabel: source-kisi
   icon: icon.svg
