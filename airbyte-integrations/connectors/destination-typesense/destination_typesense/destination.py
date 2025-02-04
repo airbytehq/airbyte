@@ -7,11 +7,17 @@ import logging
 import time
 from typing import Any, Iterable, Mapping
 
-from typesense import Client
-
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
 from destination_typesense.writer import TypesenseWriter
+from typesense import Client
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
@@ -19,18 +25,31 @@ def get_client(config: Mapping[str, Any]) -> Client:
     path = config.get("path")
     nodes = []
     for host in hosts:
-        node = {"host": host, "port": config.get("port") or "8108", "protocol": config.get("protocol") or "https"}
+        node = {
+            "host": host,
+            "port": config.get("port") or "8108",
+            "protocol": config.get("protocol") or "https",
+        }
         if path:
             node["path"] = path
         nodes.append(node)
-    client = Client({"api_key": config.get("api_key"), "nodes": nodes, "connection_timeout_seconds": 3600})
+    client = Client(
+        {
+            "api_key": config.get("api_key"),
+            "nodes": nodes,
+            "connection_timeout_seconds": 3600,
+        }
+    )
 
     return client
 
 
 class DestinationTypesense(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         client = get_client(config=config)
 
@@ -41,7 +60,9 @@ class DestinationTypesense(Destination):
                     client.collections[steam_name].delete()
                 except Exception:
                     pass
-                client.collections.create({"name": steam_name, "fields": [{"name": ".*", "type": "auto"}]})
+                client.collections.create(
+                    {"name": steam_name, "fields": [{"name": ".*", "type": "auto"}]}
+                )
 
         writer = TypesenseWriter(client, config.get("batch_size"))
         for message in input_messages:
@@ -55,20 +76,35 @@ class DestinationTypesense(Destination):
                 continue
         writer.flush()
 
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(
+        self, logger: logging.Logger, config: Mapping[str, Any]
+    ) -> AirbyteConnectionStatus:
         logger.debug("TypeSense Destination Config Check")
         try:
             client = get_client(config=config)
-            client.collections.create({"name": "_airbyte", "fields": [{"name": "title", "type": "string"}]})
+            client.collections.create(
+                {"name": "_airbyte", "fields": [{"name": "title", "type": "string"}]}
+            )
 
-            writer = TypesenseWriter(client, config.get("batch_size"))
-            writer.queue_write_operation("_airbyte", {"id": "1", "title": "The Hunger Games"})
+            writer = TypesenseWriter(client, config.get("batch_size", 10000))
+            writer.queue_write_operation(
+                "_airbyte", {"id": "1", "title": "The Hunger Games"}
+            )
             writer.flush()
 
             time.sleep(3)
             client.collections["_airbyte"].documents["1"].retrieve()
-            client.collections["_airbyte"].delete()
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+            status = AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            client.collections["_airbyte"].delete()
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            status = AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"An exception occurred: {repr(e)}"
+            )
+        finally:
+            try:
+                client = get_client(config=config)
+                client.collections["_airbyte"].delete()
+            except Exception:
+                logger.warning("Failed to delete _airbyte collection")
+
+        return status

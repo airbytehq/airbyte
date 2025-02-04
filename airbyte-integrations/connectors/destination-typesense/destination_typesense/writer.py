@@ -9,14 +9,13 @@ from uuid import uuid4
 
 from typesense import Client
 
-
 logger = getLogger("airbyte")
 
 
 class TypesenseWriter:
     write_buffer: list[tuple[str, Mapping]] = []
 
-    def __init__(self, client: Client, batch_size: int = None):
+    def __init__(self, client: Client, batch_size: int = 10000):
         self.client = client
         self.batch_size = batch_size or 10000
 
