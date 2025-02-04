@@ -200,8 +200,8 @@ No workaround has been identified to manage this issue as of 2025, February.
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                         |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
 | 5.2.0 | 2025-02-04 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add `Lead forms` and `Lead form responses` new streams - See Limits & considerations |
 | 5.1.6 | 2025-01-29 | [49458](https://github.com/airbytehq/airbyte/pull/49458) | Update Linkedin Ads API version to 202410 for creatives stream            |
 | 5.1.5 | 2025-02-01 | [52791](https://github.com/airbytehq/airbyte/pull/52791) | Update dependencies |
@@ -275,4 +275,5 @@ No workaround has been identified to manage this issue as of 2025, February.
 | 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.1 | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610) | Fix for `Campaigns/targetingCriteria` transformation, coerced `Creatives/variables/values` to string by default |
 | 0.1.0 | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285) | Initial release of Native LinkedIn Ads connector for Airbyte |
+
 </details>
