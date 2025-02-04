@@ -131,8 +131,8 @@ open class JdbcSourceOperations :
         } catch (ex: IllegalArgumentException) {
             LOGGER.warn {
                 "Could not convert column: ${field[JdbcConstants.INTERNAL_COLUMN_NAME]} from table: " +
-                        "${field[JdbcConstants.INTERNAL_SCHEMA_NAME]}.${field[JdbcConstants.INTERNAL_TABLE_NAME]} " +
-                        "with type: ${field[JdbcConstants.INTERNAL_COLUMN_TYPE]}. Casting to VARCHAR."
+                    "${field[JdbcConstants.INTERNAL_SCHEMA_NAME]}.${field[JdbcConstants.INTERNAL_TABLE_NAME]} " +
+                    "with type: ${field[JdbcConstants.INTERNAL_COLUMN_TYPE]}. Casting to VARCHAR."
             }
             return JDBCType.VARCHAR
         }

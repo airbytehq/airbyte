@@ -8,14 +8,10 @@ import java.io.Serializable
 /**
  * ResourceRequirements
  *
- *
  * generic configuration for pod source requirements
- *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder(
-    "cpu_request", "cpu_limit", "memory_request", "memory_limit"
-)
+@JsonPropertyOrder("cpu_request", "cpu_limit", "memory_request", "memory_limit")
 class ResourceRequirements : Serializable {
     @get:JsonProperty("cpu_request")
     @set:JsonProperty("cpu_request")
@@ -59,13 +55,10 @@ class ResourceRequirements : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(ResourceRequirements::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(ResourceRequirements::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("cpuRequest")
         sb.append('=')
         sb.append((if ((this.cpuRequest == null)) "<null>" else this.cpuRequest))
@@ -92,7 +85,8 @@ class ResourceRequirements : Serializable {
 
     override fun hashCode(): Int {
         var result = 1
-        result = ((result * 31) + (if ((this.memoryRequest == null)) 0 else memoryRequest.hashCode()))
+        result =
+            ((result * 31) + (if ((this.memoryRequest == null)) 0 else memoryRequest.hashCode()))
         result = ((result * 31) + (if ((this.memoryLimit == null)) 0 else memoryLimit.hashCode()))
         result = ((result * 31) + (if ((this.cpuLimit == null)) 0 else cpuLimit.hashCode()))
         result = ((result * 31) + (if ((this.cpuRequest == null)) 0 else cpuRequest.hashCode()))
@@ -107,7 +101,14 @@ class ResourceRequirements : Serializable {
             return false
         }
         val rhs = other
-        return (((((this.memoryRequest === rhs.memoryRequest) || ((this.memoryRequest != null) && (this.memoryRequest == rhs.memoryRequest))) && ((this.memoryLimit === rhs.memoryLimit) || ((this.memoryLimit != null) && (this.memoryLimit == rhs.memoryLimit)))) && ((this.cpuLimit === rhs.cpuLimit) || ((this.cpuLimit != null) && (this.cpuLimit == rhs.cpuLimit)))) && ((this.cpuRequest === rhs.cpuRequest) || ((this.cpuRequest != null) && (this.cpuRequest == rhs.cpuRequest))))
+        return (((((this.memoryRequest === rhs.memoryRequest) ||
+            ((this.memoryRequest != null) && (this.memoryRequest == rhs.memoryRequest))) &&
+            ((this.memoryLimit === rhs.memoryLimit) ||
+                ((this.memoryLimit != null) && (this.memoryLimit == rhs.memoryLimit)))) &&
+            ((this.cpuLimit === rhs.cpuLimit) ||
+                ((this.cpuLimit != null) && (this.cpuLimit == rhs.cpuLimit)))) &&
+            ((this.cpuRequest === rhs.cpuRequest) ||
+                ((this.cpuRequest != null) && (this.cpuRequest == rhs.cpuRequest))))
     }
 
     companion object {

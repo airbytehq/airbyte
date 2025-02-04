@@ -4,7 +4,6 @@
 package io.airbyte.cdk.test.fixtures.legacy
 
 import com.fasterxml.jackson.annotation.JsonValue
-
 import io.airbyte.protocol.models.AirbyteTraceMessage
 import org.apache.commons.lang3.exception.ExceptionUtils
 
@@ -145,9 +144,9 @@ object FailureHelper {
                 val metadata: Any? = failureReason.metadata
                 if (metadata != null) {
                     return@comparing if (
-                        failureReason.metadata!!.additionalProperties.containsKey(
-                            TRACE_MESSAGE_METADATA_KEY
-                        )
+                        failureReason.metadata!!
+                            .additionalProperties
+                            .containsKey(TRACE_MESSAGE_METADATA_KEY)
                     )
                         0
                     else 1

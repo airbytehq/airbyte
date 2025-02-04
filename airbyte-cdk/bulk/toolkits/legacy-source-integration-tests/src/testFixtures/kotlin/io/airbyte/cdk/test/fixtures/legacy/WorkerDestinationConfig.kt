@@ -12,49 +12,36 @@ import java.util.*
 /**
  * WorkerDestinationConfig
  *
- *
  * WorkerDestinationConfig
- *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder(
-    "destinationId", "destinationConnectionConfiguration", "catalog", "connectionId", "state"
+    "destinationId",
+    "destinationConnectionConfiguration",
+    "catalog",
+    "connectionId",
+    "state"
 )
 class WorkerDestinationConfig : Serializable {
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("destinationId")
     @set:JsonProperty("destinationId")
     @JsonProperty("destinationId")
     var destinationId: UUID? = null
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
     @get:JsonProperty("destinationConnectionConfiguration")
     @set:JsonProperty("destinationConnectionConfiguration")
     @JsonProperty("destinationConnectionConfiguration")
@@ -63,17 +50,14 @@ class WorkerDestinationConfig : Serializable {
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("catalog")
     @set:JsonProperty("catalog")
@@ -82,17 +66,14 @@ class WorkerDestinationConfig : Serializable {
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("connectionId")
     @set:JsonProperty("connectionId")
@@ -101,23 +82,17 @@ class WorkerDestinationConfig : Serializable {
     /**
      * State
      *
-     *
      * information output by the connection.
-     *
      */
     /**
      * State
      *
-     *
      * information output by the connection.
-     *
      */
     /**
      * State
      *
-     *
      * information output by the connection.
-     *
      */
     @get:JsonProperty("state")
     @set:JsonProperty("state")
@@ -130,7 +105,9 @@ class WorkerDestinationConfig : Serializable {
         return this
     }
 
-    fun withDestinationConnectionConfiguration(destinationConnectionConfiguration: JsonNode?): WorkerDestinationConfig {
+    fun withDestinationConnectionConfiguration(
+        destinationConnectionConfiguration: JsonNode?
+    ): WorkerDestinationConfig {
         this.destinationConnectionConfiguration = destinationConnectionConfiguration
         return this
     }
@@ -152,20 +129,20 @@ class WorkerDestinationConfig : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(WorkerDestinationConfig::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(WorkerDestinationConfig::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("destinationId")
         sb.append('=')
         sb.append((if ((this.destinationId == null)) "<null>" else this.destinationId))
         sb.append(',')
         sb.append("destinationConnectionConfiguration")
         sb.append('=')
-        sb.append((if ((this.destinationConnectionConfiguration == null)) "<null>" else this.destinationConnectionConfiguration))
+        sb.append(
+            (if ((this.destinationConnectionConfiguration == null)) "<null>"
+            else this.destinationConnectionConfiguration)
+        )
         sb.append(',')
         sb.append("catalog")
         sb.append('=')
@@ -191,8 +168,12 @@ class WorkerDestinationConfig : Serializable {
         var result = 1
         result = ((result * 31) + (if ((this.connectionId == null)) 0 else connectionId.hashCode()))
         result = ((result * 31) + (if ((this.state == null)) 0 else state.hashCode()))
-        result = ((result * 31) + (if ((this.destinationId == null)) 0 else destinationId.hashCode()))
-        result = ((result * 31) + (if ((this.destinationConnectionConfiguration == null)) 0 else destinationConnectionConfiguration.hashCode()))
+        result =
+            ((result * 31) + (if ((this.destinationId == null)) 0 else destinationId.hashCode()))
+        result =
+            ((result * 31) +
+                (if ((this.destinationConnectionConfiguration == null)) 0
+                else destinationConnectionConfiguration.hashCode()))
         result = ((result * 31) + (if ((this.catalog == null)) 0 else catalog.hashCode()))
         return result
     }
@@ -205,9 +186,17 @@ class WorkerDestinationConfig : Serializable {
             return false
         }
         val rhs = other
-        return ((((((this.connectionId === rhs.connectionId) || ((this.connectionId != null) && (this.connectionId == rhs.connectionId))) && ((this.state === rhs.state) || ((this.state != null) && state!!.equals(
-            rhs.state
-        )))) && ((this.destinationId === rhs.destinationId) || ((this.destinationId != null) && (this.destinationId == rhs.destinationId)))) && ((this.destinationConnectionConfiguration === rhs.destinationConnectionConfiguration) || ((this.destinationConnectionConfiguration != null) && (this.destinationConnectionConfiguration == rhs.destinationConnectionConfiguration)))) && ((this.catalog === rhs.catalog) || ((this.catalog != null) && (this.catalog == rhs.catalog))))
+        return ((((((this.connectionId === rhs.connectionId) ||
+            ((this.connectionId != null) && (this.connectionId == rhs.connectionId))) &&
+            ((this.state === rhs.state) || ((this.state != null) && state!!.equals(rhs.state)))) &&
+            ((this.destinationId === rhs.destinationId) ||
+                ((this.destinationId != null) && (this.destinationId == rhs.destinationId)))) &&
+            ((this.destinationConnectionConfiguration === rhs.destinationConnectionConfiguration) ||
+                ((this.destinationConnectionConfiguration != null) &&
+                    (this.destinationConnectionConfiguration ==
+                        rhs.destinationConnectionConfiguration)))) &&
+            ((this.catalog === rhs.catalog) ||
+                ((this.catalog != null) && (this.catalog == rhs.catalog))))
     }
 
     companion object {

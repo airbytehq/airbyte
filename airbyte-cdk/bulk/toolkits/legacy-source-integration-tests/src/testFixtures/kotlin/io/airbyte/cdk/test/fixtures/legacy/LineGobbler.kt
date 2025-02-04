@@ -1,7 +1,6 @@
 package io.airbyte.cdk.test.fixtures.legacy
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.slf4j.MDC
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -10,6 +9,7 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.function.Consumer
+import org.slf4j.MDC
 
 private val LOGGER = KotlinLogging.logger {}
 

@@ -53,10 +53,10 @@ constructor(
                 TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
             if (
                 optionalConfigMsg.isPresent &&
-                TestHarnessUtils.getDidControlMessageChangeConfig(
-                    inputConfig,
-                    optionalConfigMsg.get()
-                )
+                    TestHarnessUtils.getDidControlMessageChangeConfig(
+                        inputConfig,
+                        optionalConfigMsg.get()
+                    )
             ) {
                 connectorConfigUpdater.updateSource(
                     UUID.fromString(discoverSchemaInput.sourceId),

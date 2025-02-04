@@ -3,6 +3,5 @@
  */
 package io.airbyte.cdk.test.fixtures.legacy
 
-
 interface CheckConnectionTestHarness :
     TestHarness<StandardCheckConnectionInput, ConnectorJobOutput>

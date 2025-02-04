@@ -6,9 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 /**
  * ActorType
  *
- *
  * enum that describes different types of actors
- *
  */
 enum class ActorType(private val value: String) {
     SOURCE("source"),

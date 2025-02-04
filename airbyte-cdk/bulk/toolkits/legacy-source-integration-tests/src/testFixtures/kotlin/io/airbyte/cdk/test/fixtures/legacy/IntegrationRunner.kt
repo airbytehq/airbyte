@@ -9,8 +9,6 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.apache.commons.lang3.ThreadUtils
-import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import java.io.InputStream
 import java.lang.reflect.Method
 import java.nio.charset.StandardCharsets
@@ -20,6 +18,8 @@ import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
+import org.apache.commons.lang3.ThreadUtils
+import org.apache.commons.lang3.concurrent.BasicThreadFactory
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -233,11 +233,11 @@ internal constructor(
 
         try {
             ConcurrentStreamConsumer(
-                { stream: AutoCloseableIterator<AirbyteMessage> ->
-                    this.consumeFromStream(stream)
-                },
-                streams!!.size
-            )
+                    { stream: AutoCloseableIterator<AirbyteMessage> ->
+                        this.consumeFromStream(stream)
+                    },
+                    streams!!.size
+                )
                 .use { streamConsumer ->
                     /*
                      * Break the streams into partitions equal to the number of concurrent streams supported by the
@@ -463,7 +463,8 @@ internal constructor(
 
                 val scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor(
-                        BasicThreadFactory.Builder() // this thread executor will create daemon threads, so it
+                        BasicThreadFactory
+                            .Builder() // this thread executor will create daemon threads, so it
                             // does not block exiting if all other active
                             // threads are already stopped.
                             .daemon(true)

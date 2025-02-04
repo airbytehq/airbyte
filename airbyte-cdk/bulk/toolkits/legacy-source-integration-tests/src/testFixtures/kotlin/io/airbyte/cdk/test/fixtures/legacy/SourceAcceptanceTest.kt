@@ -6,9 +6,9 @@ import com.google.common.collect.Iterables
 import com.google.common.collect.Sets
 import io.airbyte.protocol.models.v0.*
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.util.*
 
 private val LOGGER = KotlinLogging.logger {}
 

@@ -5,11 +5,11 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.networknt.schema.*
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
+import java.io.IOException
 import me.andrz.jackson.JsonContext
 import me.andrz.jackson.JsonReferenceException
 import me.andrz.jackson.JsonReferenceProcessor
-import java.io.File
-import java.io.IOException
 
 private val LOGGER = KotlinLogging.logger {}
 

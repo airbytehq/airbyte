@@ -6,14 +6,10 @@ import java.io.Serializable
 /**
  * OperatorNormalization
  *
- *
  * Settings for a normalization operator
- *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder(
-    "option"
-)
+@JsonPropertyOrder("option")
 class OperatorNormalization : Serializable {
     @get:JsonProperty("option")
     @set:JsonProperty("option")
@@ -27,13 +23,10 @@ class OperatorNormalization : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(OperatorNormalization::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(OperatorNormalization::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("option")
         sb.append('=')
         sb.append((if ((this.option == null)) "<null>" else this.option))
@@ -60,7 +53,8 @@ class OperatorNormalization : Serializable {
             return false
         }
         val rhs = other
-        return ((this.option == rhs.option) || ((this.option != null) && (this.option == rhs.option)))
+        return ((this.option == rhs.option) ||
+            ((this.option != null) && (this.option == rhs.option)))
     }
 
     enum class Option(private val value: String) {

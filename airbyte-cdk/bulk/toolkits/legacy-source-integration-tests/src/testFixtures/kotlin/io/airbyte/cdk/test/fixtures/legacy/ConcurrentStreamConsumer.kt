@@ -134,9 +134,9 @@ class ConcurrentStreamConsumer(
         }
         val parallelism =
             min(
-                defaultPoolSize.toDouble(),
-                (if (requestedParallelism > 0) requestedParallelism else 1).toDouble()
-            )
+                    defaultPoolSize.toDouble(),
+                    (if (requestedParallelism > 0) requestedParallelism else 1).toDouble()
+                )
                 .toInt()
         LOGGER.debug { "Computed concurrent stream consumer parallelism: $parallelism" }
         return parallelism

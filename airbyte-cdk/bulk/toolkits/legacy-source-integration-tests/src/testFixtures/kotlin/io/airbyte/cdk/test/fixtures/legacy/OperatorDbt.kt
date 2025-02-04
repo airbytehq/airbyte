@@ -8,29 +8,22 @@ import java.io.Serializable
 /**
  * OperatorDbt
  *
- *
  * Settings for a DBT operator
- *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder(
-    "gitRepoUrl", "gitRepoBranch", "dockerImage", "dbtArguments"
-)
+@JsonPropertyOrder("gitRepoUrl", "gitRepoBranch", "dockerImage", "dbtArguments")
 class OperatorDbt : Serializable {
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("gitRepoUrl")
     @set:JsonProperty("gitRepoUrl")
@@ -74,13 +67,10 @@ class OperatorDbt : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(OperatorDbt::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(OperatorDbt::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("gitRepoUrl")
         sb.append('=')
         sb.append((if ((this.gitRepoUrl == null)) "<null>" else this.gitRepoUrl))
@@ -107,7 +97,8 @@ class OperatorDbt : Serializable {
 
     override fun hashCode(): Int {
         var result = 1
-        result = ((result * 31) + (if ((this.gitRepoBranch == null)) 0 else gitRepoBranch.hashCode()))
+        result =
+            ((result * 31) + (if ((this.gitRepoBranch == null)) 0 else gitRepoBranch.hashCode()))
         result = ((result * 31) + (if ((this.dockerImage == null)) 0 else dockerImage.hashCode()))
         result = ((result * 31) + (if ((this.dbtArguments == null)) 0 else dbtArguments.hashCode()))
         result = ((result * 31) + (if ((this.gitRepoUrl == null)) 0 else gitRepoUrl.hashCode()))
@@ -122,7 +113,14 @@ class OperatorDbt : Serializable {
             return false
         }
         val rhs = other
-        return (((((this.gitRepoBranch === rhs.gitRepoBranch) || ((this.gitRepoBranch != null) && (this.gitRepoBranch == rhs.gitRepoBranch))) && ((this.dockerImage === rhs.dockerImage) || ((this.dockerImage != null) && (this.dockerImage == rhs.dockerImage)))) && ((this.dbtArguments === rhs.dbtArguments) || ((this.dbtArguments != null) && (this.dbtArguments == rhs.dbtArguments)))) && ((this.gitRepoUrl === rhs.gitRepoUrl) || ((this.gitRepoUrl != null) && (this.gitRepoUrl == rhs.gitRepoUrl))))
+        return (((((this.gitRepoBranch === rhs.gitRepoBranch) ||
+            ((this.gitRepoBranch != null) && (this.gitRepoBranch == rhs.gitRepoBranch))) &&
+            ((this.dockerImage === rhs.dockerImage) ||
+                ((this.dockerImage != null) && (this.dockerImage == rhs.dockerImage)))) &&
+            ((this.dbtArguments === rhs.dbtArguments) ||
+                ((this.dbtArguments != null) && (this.dbtArguments == rhs.dbtArguments)))) &&
+            ((this.gitRepoUrl === rhs.gitRepoUrl) ||
+                ((this.gitRepoUrl != null) && (this.gitRepoUrl == rhs.gitRepoUrl))))
     }
 
     companion object {

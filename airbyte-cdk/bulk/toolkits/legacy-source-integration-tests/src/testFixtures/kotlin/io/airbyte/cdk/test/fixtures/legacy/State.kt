@@ -10,30 +10,14 @@ import java.io.Serializable
 /**
  * State
  *
- *
  * information output by the connection.
- *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder(
-    "state"
-)
+@JsonPropertyOrder("state")
 class State : Serializable {
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
     @get:JsonProperty("state")
     @set:JsonProperty("state")
     @JsonProperty("state")
@@ -47,13 +31,10 @@ class State : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(State::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(State::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("state")
         sb.append('=')
         sb.append((if ((this.state == null)) "<null>" else this.state))

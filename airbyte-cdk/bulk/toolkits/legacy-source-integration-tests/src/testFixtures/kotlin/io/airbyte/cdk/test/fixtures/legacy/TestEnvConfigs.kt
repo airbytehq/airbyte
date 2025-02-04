@@ -76,7 +76,11 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
             return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap)
         }
 
-    fun <T> getEnvOrDefault(key: String, defaultValue: T, parser: java.util.function.Function<String, T>): T {
+    fun <T> getEnvOrDefault(
+        key: String,
+        defaultValue: T,
+        parser: java.util.function.Function<String, T>
+    ): T {
         return getEnvOrDefault(key, defaultValue, parser, false)
     }
 

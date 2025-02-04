@@ -32,7 +32,7 @@ private val LOGGER = KotlinLogging.logger {}
  * @param <B> the type of the object returned by [.configBuilder] </B></T></C>
  */
 abstract class TestDatabase<
-        C : JdbcDatabaseContainer<*>, T : TestDatabase<C, T, B>, B : TestDatabase.ConfigBuilder<T, B>>
+    C : JdbcDatabaseContainer<*>, T : TestDatabase<C, T, B>, B : TestDatabase.ConfigBuilder<T, B>>
 protected constructor(val container: C) : AutoCloseable {
     private val suffix: String = Strings.addRandomSuffix("", "_", 10)
     private val cleanupSQL: ArrayList<String> = ArrayList()
@@ -272,9 +272,9 @@ protected constructor(val container: C) : AutoCloseable {
 
         fun withResolvedHostAndPort(): B {
             return this.with(
-                JdbcUtils.HOST_KEY,
-                HostPortResolver.resolveHost(testDatabase.container)
-            )
+                    JdbcUtils.HOST_KEY,
+                    HostPortResolver.resolveHost(testDatabase.container)
+                )
                 .with(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(testDatabase.container))
         }
 

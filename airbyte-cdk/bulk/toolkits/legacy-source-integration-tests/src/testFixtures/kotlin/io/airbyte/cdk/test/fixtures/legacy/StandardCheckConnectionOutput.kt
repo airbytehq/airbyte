@@ -6,29 +6,22 @@ import java.io.Serializable
 /**
  * StandardCheckConnectionOutput
  *
- *
  * describes the result of a 'check connection' action.
- *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder(
-    "status", "message"
-)
+@JsonPropertyOrder("status", "message")
 class StandardCheckConnectionOutput : Serializable {
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("status")
     @set:JsonProperty("status")
@@ -52,13 +45,10 @@ class StandardCheckConnectionOutput : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(StandardCheckConnectionOutput::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(StandardCheckConnectionOutput::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("status")
         sb.append('=')
         sb.append((if ((this.status == null)) "<null>" else this.status))
@@ -90,7 +80,9 @@ class StandardCheckConnectionOutput : Serializable {
             return false
         }
         val rhs = other
-        return (((this.message === rhs.message) || ((this.message != null) && (this.message == rhs.message))) && ((this.status == rhs.status) || ((this.status != null) && (this.status == rhs.status))))
+        return (((this.message === rhs.message) ||
+            ((this.message != null) && (this.message == rhs.message))) &&
+            ((this.status == rhs.status) || ((this.status != null) && (this.status == rhs.status))))
     }
 
     enum class Status(private val value: String) {

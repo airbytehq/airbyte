@@ -11,8 +11,7 @@ class DestinationConfig private constructor() {
     var isV2Destination: Boolean = false
         private set
 
-    @VisibleForTesting
-    var root: JsonNode? = null
+    @VisibleForTesting var root: JsonNode? = null
 
     fun getNodeValue(key: String?): JsonNode? {
         val node = config!!.root!![key]

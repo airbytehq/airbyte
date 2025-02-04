@@ -3,10 +3,10 @@ package io.airbyte.cdk.test.fixtures.legacy
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.apache.commons.lang3.exception.ExceptionUtils
 import java.util.*
 import java.util.regex.Pattern
 import javax.validation.constraints.NotNull
+import org.apache.commons.lang3.exception.ExceptionUtils
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -109,8 +109,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
          * 1. Contain the original exception message as the external message, and a mangled message
          * as the internal message.
          */
-        @VisibleForTesting
-        val STRINGS_TO_DEINTERPOLATE: MutableSet<String> = HashSet()
+        @VisibleForTesting val STRINGS_TO_DEINTERPOLATE: MutableSet<String> = HashSet()
 
         init {
             addCommonStringsToDeinterpolate()

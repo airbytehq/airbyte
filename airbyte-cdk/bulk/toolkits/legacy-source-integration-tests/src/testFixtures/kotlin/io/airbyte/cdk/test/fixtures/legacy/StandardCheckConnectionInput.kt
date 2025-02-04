@@ -11,73 +11,42 @@ import java.util.*
 /**
  * StandardCheckConnectionInput
  *
- *
  * information required for connection.
- *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder(
-    "actorType", "actorId", "connectionConfiguration"
-)
+@JsonPropertyOrder("actorType", "actorId", "connectionConfiguration")
 class StandardCheckConnectionInput : Serializable {
     /**
      * ActorType
      *
-     *
      * enum that describes different types of actors
-     *
      */
     /**
      * ActorType
      *
-     *
      * enum that describes different types of actors
-     *
      */
     /**
      * ActorType
      *
-     *
      * enum that describes different types of actors
-     *
      */
     @get:JsonProperty("actorType")
     @set:JsonProperty("actorType")
     @JsonProperty("actorType")
     @JsonPropertyDescription("enum that describes different types of actors")
     var actorType: ActorType? = null
-    /**
-     * The ID of the actor being checked, so we can persist config updates
-     *
-     */
-    /**
-     * The ID of the actor being checked, so we can persist config updates
-     *
-     */
-    /**
-     * The ID of the actor being checked, so we can persist config updates
-     *
-     */
+    /** The ID of the actor being checked, so we can persist config updates */
+    /** The ID of the actor being checked, so we can persist config updates */
+    /** The ID of the actor being checked, so we can persist config updates */
     @get:JsonProperty("actorId")
     @set:JsonProperty("actorId")
     @JsonProperty("actorId")
     @JsonPropertyDescription("The ID of the actor being checked, so we can persist config updates")
     var actorId: UUID? = null
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
     @get:JsonProperty("connectionConfiguration")
     @set:JsonProperty("connectionConfiguration")
     @JsonProperty("connectionConfiguration")
@@ -94,20 +63,19 @@ class StandardCheckConnectionInput : Serializable {
         return this
     }
 
-    fun withConnectionConfiguration(connectionConfiguration: JsonNode?): StandardCheckConnectionInput {
+    fun withConnectionConfiguration(
+        connectionConfiguration: JsonNode?
+    ): StandardCheckConnectionInput {
         this.connectionConfiguration = connectionConfiguration
         return this
     }
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(StandardCheckConnectionInput::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(StandardCheckConnectionInput::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("actorType")
         sb.append('=')
         sb.append((if ((this.actorType == null)) "<null>" else this.actorType))
@@ -118,7 +86,9 @@ class StandardCheckConnectionInput : Serializable {
         sb.append(',')
         sb.append("connectionConfiguration")
         sb.append('=')
-        sb.append((if ((this.connectionConfiguration == null)) "<null>" else this.connectionConfiguration))
+        sb.append(
+            (if ((this.connectionConfiguration == null)) "<null>" else this.connectionConfiguration)
+        )
         sb.append(',')
         if (sb[sb.length - 1] == ',') {
             sb.setCharAt((sb.length - 1), ']')
@@ -132,7 +102,10 @@ class StandardCheckConnectionInput : Serializable {
         var result = 1
         result = ((result * 31) + (if ((this.actorType == null)) 0 else actorType.hashCode()))
         result = ((result * 31) + (if ((this.actorId == null)) 0 else actorId.hashCode()))
-        result = ((result * 31) + (if ((this.connectionConfiguration == null)) 0 else connectionConfiguration.hashCode()))
+        result =
+            ((result * 31) +
+                (if ((this.connectionConfiguration == null)) 0
+                else connectionConfiguration.hashCode()))
         return result
     }
 
@@ -144,7 +117,13 @@ class StandardCheckConnectionInput : Serializable {
             return false
         }
         val rhs = other
-        return ((((this.actorType == rhs.actorType) || ((this.actorType != null) && (this.actorType == rhs.actorType))) && ((this.actorId === rhs.actorId) || ((this.actorId != null) && (this.actorId == rhs.actorId)))) && ((this.connectionConfiguration === rhs.connectionConfiguration) || ((this.connectionConfiguration != null) && (this.connectionConfiguration == rhs.connectionConfiguration))))
+        return ((((this.actorType == rhs.actorType) ||
+            ((this.actorType != null) && (this.actorType == rhs.actorType))) &&
+            ((this.actorId === rhs.actorId) ||
+                ((this.actorId != null) && (this.actorId == rhs.actorId)))) &&
+            ((this.connectionConfiguration === rhs.connectionConfiguration) ||
+                ((this.connectionConfiguration != null) &&
+                    (this.connectionConfiguration == rhs.connectionConfiguration))))
     }
 
     companion object {

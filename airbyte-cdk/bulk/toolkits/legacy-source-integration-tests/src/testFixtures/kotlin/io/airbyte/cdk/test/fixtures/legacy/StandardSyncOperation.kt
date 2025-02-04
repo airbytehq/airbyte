@@ -7,29 +7,31 @@ import java.util.*
 /**
  * StandardSyncOperation
  *
- *
  * Configuration of an operation to apply during a sync
- *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder(
-    "operationId", "name", "operatorType", "operatorNormalization", "operatorDbt", "operatorWebhook", "tombstone", "workspaceId"
+    "operationId",
+    "name",
+    "operatorType",
+    "operatorNormalization",
+    "operatorDbt",
+    "operatorWebhook",
+    "tombstone",
+    "workspaceId"
 )
 class StandardSyncOperation : Serializable {
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("operationId")
     @set:JsonProperty("operationId")
@@ -38,17 +40,14 @@ class StandardSyncOperation : Serializable {
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("name")
     @set:JsonProperty("name")
@@ -57,26 +56,17 @@ class StandardSyncOperation : Serializable {
     /**
      * OperatorType
      *
-     *
-     * Type of Operator
-     * (Required)
-     *
+     * Type of Operator (Required)
      */
     /**
      * OperatorType
      *
-     *
-     * Type of Operator
-     * (Required)
-     *
+     * Type of Operator (Required)
      */
     /**
      * OperatorType
      *
-     *
-     * Type of Operator
-     * (Required)
-     *
+     * Type of Operator (Required)
      */
     @get:JsonProperty("operatorType")
     @set:JsonProperty("operatorType")
@@ -86,23 +76,17 @@ class StandardSyncOperation : Serializable {
     /**
      * OperatorNormalization
      *
-     *
      * Settings for a normalization operator
-     *
      */
     /**
      * OperatorNormalization
      *
-     *
      * Settings for a normalization operator
-     *
      */
     /**
      * OperatorNormalization
      *
-     *
      * Settings for a normalization operator
-     *
      */
     @get:JsonProperty("operatorNormalization")
     @set:JsonProperty("operatorNormalization")
@@ -112,23 +96,17 @@ class StandardSyncOperation : Serializable {
     /**
      * OperatorDbt
      *
-     *
      * Settings for a DBT operator
-     *
      */
     /**
      * OperatorDbt
      *
-     *
      * Settings for a DBT operator
-     *
      */
     /**
      * OperatorDbt
      *
-     *
      * Settings for a DBT operator
-     *
      */
     @get:JsonProperty("operatorDbt")
     @set:JsonProperty("operatorDbt")
@@ -138,23 +116,17 @@ class StandardSyncOperation : Serializable {
     /**
      * OperatorWebhook
      *
-     *
      * Settings for a webhook operation
-     *
      */
     /**
      * OperatorWebhook
      *
-     *
      * Settings for a webhook operation
-     *
      */
     /**
      * OperatorWebhook
      *
-     *
      * Settings for a webhook operation
-     *
      */
     @get:JsonProperty("operatorWebhook")
     @set:JsonProperty("operatorWebhook")
@@ -162,36 +134,35 @@ class StandardSyncOperation : Serializable {
     @JsonPropertyDescription("Settings for a webhook operation")
     var operatorWebhook: OperatorWebhook? = null
     /**
-     * if not set or false, the configuration is active. if true, then this configuration is permanently off.
-     *
+     * if not set or false, the configuration is active. if true, then this configuration is
+     * permanently off.
      */
     /**
-     * if not set or false, the configuration is active. if true, then this configuration is permanently off.
-     *
+     * if not set or false, the configuration is active. if true, then this configuration is
+     * permanently off.
      */
     /**
-     * if not set or false, the configuration is active. if true, then this configuration is permanently off.
-     *
+     * if not set or false, the configuration is active. if true, then this configuration is
+     * permanently off.
      */
     @get:JsonProperty("tombstone")
     @set:JsonProperty("tombstone")
     @JsonProperty("tombstone")
-    @JsonPropertyDescription("if not set or false, the configuration is active. if true, then this configuration is permanently off.")
+    @JsonPropertyDescription(
+        "if not set or false, the configuration is active. if true, then this configuration is permanently off."
+    )
     var tombstone: Boolean? = null
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("workspaceId")
     @set:JsonProperty("workspaceId")
@@ -213,7 +184,9 @@ class StandardSyncOperation : Serializable {
         return this
     }
 
-    fun withOperatorNormalization(operatorNormalization: OperatorNormalization?): StandardSyncOperation {
+    fun withOperatorNormalization(
+        operatorNormalization: OperatorNormalization?
+    ): StandardSyncOperation {
         this.operatorNormalization = operatorNormalization
         return this
     }
@@ -240,13 +213,10 @@ class StandardSyncOperation : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(StandardSyncOperation::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(StandardSyncOperation::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("operationId")
         sb.append('=')
         sb.append((if ((this.operationId == null)) "<null>" else this.operationId))
@@ -261,7 +231,9 @@ class StandardSyncOperation : Serializable {
         sb.append(',')
         sb.append("operatorNormalization")
         sb.append('=')
-        sb.append((if ((this.operatorNormalization == null)) "<null>" else this.operatorNormalization))
+        sb.append(
+            (if ((this.operatorNormalization == null)) "<null>" else this.operatorNormalization)
+        )
         sb.append(',')
         sb.append("operatorDbt")
         sb.append('=')
@@ -290,11 +262,15 @@ class StandardSyncOperation : Serializable {
     override fun hashCode(): Int {
         var result = 1
         result = ((result * 31) + (if ((this.operatorDbt == null)) 0 else operatorDbt.hashCode()))
-        result = ((result * 31) + (if ((this.operatorWebhook == null)) 0 else operatorWebhook.hashCode()))
+        result =
+            ((result * 31) +
+                (if ((this.operatorWebhook == null)) 0 else operatorWebhook.hashCode()))
         result = ((result * 31) + (if ((this.tombstone == null)) 0 else tombstone.hashCode()))
         result = ((result * 31) + (if ((this.name == null)) 0 else name.hashCode()))
         result = ((result * 31) + (if ((this.operationId == null)) 0 else operationId.hashCode()))
-        result = ((result * 31) + (if ((this.operatorNormalization == null)) 0 else operatorNormalization.hashCode()))
+        result =
+            ((result * 31) +
+                (if ((this.operatorNormalization == null)) 0 else operatorNormalization.hashCode()))
         result = ((result * 31) + (if ((this.operatorType == null)) 0 else operatorType.hashCode()))
         result = ((result * 31) + (if ((this.workspaceId == null)) 0 else workspaceId.hashCode()))
         return result
@@ -308,16 +284,29 @@ class StandardSyncOperation : Serializable {
             return false
         }
         val rhs = other
-        return (((((((((this.operatorDbt === rhs.operatorDbt) || ((this.operatorDbt != null) && (this.operatorDbt == rhs.operatorDbt))) && ((this.operatorWebhook === rhs.operatorWebhook) || ((this.operatorWebhook != null) && (this.operatorWebhook == rhs.operatorWebhook)))) && ((this.tombstone === rhs.tombstone) || ((this.tombstone != null) && (this.tombstone == rhs.tombstone)))) && ((this.name === rhs.name) || ((this.name != null) && (this.name == rhs.name)))) && ((this.operationId === rhs.operationId) || ((this.operationId != null) && (this.operationId == rhs.operationId)))) && ((this.operatorNormalization === rhs.operatorNormalization) || ((this.operatorNormalization != null) && (this.operatorNormalization == rhs.operatorNormalization)))) && ((this.operatorType == rhs.operatorType) || ((this.operatorType != null) && (this.operatorType == rhs.operatorType)))) && ((this.workspaceId === rhs.workspaceId) || ((this.workspaceId != null) && (this.workspaceId == rhs.workspaceId))))
+        return (((((((((this.operatorDbt === rhs.operatorDbt) ||
+            ((this.operatorDbt != null) && (this.operatorDbt == rhs.operatorDbt))) &&
+            ((this.operatorWebhook === rhs.operatorWebhook) ||
+                ((this.operatorWebhook != null) &&
+                    (this.operatorWebhook == rhs.operatorWebhook)))) &&
+            ((this.tombstone === rhs.tombstone) ||
+                ((this.tombstone != null) && (this.tombstone == rhs.tombstone)))) &&
+            ((this.name === rhs.name) || ((this.name != null) && (this.name == rhs.name)))) &&
+            ((this.operationId === rhs.operationId) ||
+                ((this.operationId != null) && (this.operationId == rhs.operationId)))) &&
+            ((this.operatorNormalization === rhs.operatorNormalization) ||
+                ((this.operatorNormalization != null) &&
+                    (this.operatorNormalization == rhs.operatorNormalization)))) &&
+            ((this.operatorType == rhs.operatorType) ||
+                ((this.operatorType != null) && (this.operatorType == rhs.operatorType)))) &&
+            ((this.workspaceId === rhs.workspaceId) ||
+                ((this.workspaceId != null) && (this.workspaceId == rhs.workspaceId))))
     }
-
 
     /**
      * OperatorType
      *
-     *
      * Type of Operator
-     *
      */
     enum class OperatorType(private val value: String) {
         NORMALIZATION("normalization"),

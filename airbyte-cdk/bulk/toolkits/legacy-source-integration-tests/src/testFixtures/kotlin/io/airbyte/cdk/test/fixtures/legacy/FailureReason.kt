@@ -3,151 +3,126 @@ package io.airbyte.cdk.test.fixtures.legacy
 import com.fasterxml.jackson.annotation.*
 import java.io.Serializable
 
-/**
- * FailureSummary
- *
- *
- *
- *
- */
+/** FailureSummary */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder(
-    "failureOrigin", "failureType", "internalMessage", "externalMessage", "metadata", "stacktrace", "retryable", "timestamp"
+    "failureOrigin",
+    "failureType",
+    "internalMessage",
+    "externalMessage",
+    "metadata",
+    "stacktrace",
+    "retryable",
+    "timestamp"
 )
 class FailureReason : Serializable {
-    /**
-     * Indicates where the error originated. If not set, the origin of error is not well known.
-     *
-     */
-    /**
-     * Indicates where the error originated. If not set, the origin of error is not well known.
-     *
-     */
-    /**
-     * Indicates where the error originated. If not set, the origin of error is not well known.
-     *
-     */
+    /** Indicates where the error originated. If not set, the origin of error is not well known. */
+    /** Indicates where the error originated. If not set, the origin of error is not well known. */
+    /** Indicates where the error originated. If not set, the origin of error is not well known. */
     @get:JsonProperty("failureOrigin")
     @set:JsonProperty("failureOrigin")
     @JsonProperty("failureOrigin")
-    @JsonPropertyDescription("Indicates where the error originated. If not set, the origin of error is not well known.")
+    @JsonPropertyDescription(
+        "Indicates where the error originated. If not set, the origin of error is not well known."
+    )
     var failureOrigin: FailureOrigin? = null
     /**
-     * Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
-     *
+     * Categorizes well known errors into types for programmatic handling. If not set, the type of
+     * error is not well known.
      */
     /**
-     * Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
-     *
+     * Categorizes well known errors into types for programmatic handling. If not set, the type of
+     * error is not well known.
      */
     /**
-     * Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
-     *
+     * Categorizes well known errors into types for programmatic handling. If not set, the type of
+     * error is not well known.
      */
     @get:JsonProperty("failureType")
     @set:JsonProperty("failureType")
     @JsonProperty("failureType")
-    @JsonPropertyDescription("Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.")
+    @JsonPropertyDescription(
+        "Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known."
+    )
     var failureType: FailureType? = null
     /**
-     * Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users.
-     *
+     * Human readable failure description for consumption by technical system operators, like
+     * Airbyte engineers or OSS users.
      */
     /**
-     * Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users.
-     *
+     * Human readable failure description for consumption by technical system operators, like
+     * Airbyte engineers or OSS users.
      */
     /**
-     * Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users.
-     *
+     * Human readable failure description for consumption by technical system operators, like
+     * Airbyte engineers or OSS users.
      */
     @get:JsonProperty("internalMessage")
     @set:JsonProperty("internalMessage")
     @JsonProperty("internalMessage")
-    @JsonPropertyDescription("Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users.")
+    @JsonPropertyDescription(
+        "Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users."
+    )
     var internalMessage: String? = null
-    /**
-     * Human readable failure description for presentation in the UI to non-technical users.
-     *
-     */
-    /**
-     * Human readable failure description for presentation in the UI to non-technical users.
-     *
-     */
-    /**
-     * Human readable failure description for presentation in the UI to non-technical users.
-     *
-     */
+    /** Human readable failure description for presentation in the UI to non-technical users. */
+    /** Human readable failure description for presentation in the UI to non-technical users. */
+    /** Human readable failure description for presentation in the UI to non-technical users. */
     @get:JsonProperty("externalMessage")
     @set:JsonProperty("externalMessage")
     @JsonProperty("externalMessage")
-    @JsonPropertyDescription("Human readable failure description for presentation in the UI to non-technical users.")
+    @JsonPropertyDescription(
+        "Human readable failure description for presentation in the UI to non-technical users."
+    )
     var externalMessage: String? = null
-    /**
-     * Key-value pairs of relevant data
-     *
-     */
-    /**
-     * Key-value pairs of relevant data
-     *
-     */
-    /**
-     * Key-value pairs of relevant data
-     *
-     */
+    /** Key-value pairs of relevant data */
+    /** Key-value pairs of relevant data */
+    /** Key-value pairs of relevant data */
     @get:JsonProperty("metadata")
     @set:JsonProperty("metadata")
     @JsonProperty("metadata")
     @JsonPropertyDescription("Key-value pairs of relevant data")
     var metadata: Metadata? = null
-    /**
-     * Raw stacktrace associated with the failure.
-     *
-     */
-    /**
-     * Raw stacktrace associated with the failure.
-     *
-     */
-    /**
-     * Raw stacktrace associated with the failure.
-     *
-     */
+    /** Raw stacktrace associated with the failure. */
+    /** Raw stacktrace associated with the failure. */
+    /** Raw stacktrace associated with the failure. */
     @get:JsonProperty("stacktrace")
     @set:JsonProperty("stacktrace")
     @JsonProperty("stacktrace")
     @JsonPropertyDescription("Raw stacktrace associated with the failure.")
     var stacktrace: String? = null
     /**
-     * True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.
-     *
+     * True if it is known that retrying may succeed, e.g. for a transient failure. False if it is
+     * known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable
+     * status is not well known.
      */
     /**
-     * True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.
-     *
+     * True if it is known that retrying may succeed, e.g. for a transient failure. False if it is
+     * known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable
+     * status is not well known.
      */
     /**
-     * True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.
-     *
+     * True if it is known that retrying may succeed, e.g. for a transient failure. False if it is
+     * known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable
+     * status is not well known.
      */
     @get:JsonProperty("retryable")
     @set:JsonProperty("retryable")
     @JsonProperty("retryable")
-    @JsonPropertyDescription("True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.")
+    @JsonPropertyDescription(
+        "True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known."
+    )
     var retryable: Boolean? = null
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("timestamp")
     @set:JsonProperty("timestamp")
@@ -196,13 +171,10 @@ class FailureReason : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(FailureReason::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(FailureReason::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("failureOrigin")
         sb.append('=')
         sb.append((if ((this.failureOrigin == null)) "<null>" else this.failureOrigin))
@@ -248,10 +220,15 @@ class FailureReason : Serializable {
         result = ((result * 31) + (if ((this.retryable == null)) 0 else retryable.hashCode()))
         result = ((result * 31) + (if ((this.metadata == null)) 0 else metadata.hashCode()))
         result = ((result * 31) + (if ((this.stacktrace == null)) 0 else stacktrace.hashCode()))
-        result = ((result * 31) + (if ((this.failureOrigin == null)) 0 else failureOrigin.hashCode()))
+        result =
+            ((result * 31) + (if ((this.failureOrigin == null)) 0 else failureOrigin.hashCode()))
         result = ((result * 31) + (if ((this.failureType == null)) 0 else failureType.hashCode()))
-        result = ((result * 31) + (if ((this.internalMessage == null)) 0 else internalMessage.hashCode()))
-        result = ((result * 31) + (if ((this.externalMessage == null)) 0 else externalMessage.hashCode()))
+        result =
+            ((result * 31) +
+                (if ((this.internalMessage == null)) 0 else internalMessage.hashCode()))
+        result =
+            ((result * 31) +
+                (if ((this.externalMessage == null)) 0 else externalMessage.hashCode()))
         result = ((result * 31) + (if ((this.timestamp == null)) 0 else timestamp.hashCode()))
         return result
     }
@@ -264,16 +241,27 @@ class FailureReason : Serializable {
             return false
         }
         val rhs = other
-        return (((((((((this.retryable === rhs.retryable) || ((this.retryable != null) && (this.retryable == rhs.retryable))) && ((this.metadata === rhs.metadata) || ((this.metadata != null) && metadata!!.equals(
-            rhs.metadata
-        )))) && ((this.stacktrace === rhs.stacktrace) || ((this.stacktrace != null) && (this.stacktrace == rhs.stacktrace)))) && ((this.failureOrigin == rhs.failureOrigin) || ((this.failureOrigin != null) && (this.failureOrigin == rhs.failureOrigin)))) && ((this.failureType == rhs.failureType) || ((this.failureType != null) && (this.failureType == rhs.failureType)))) && ((this.internalMessage === rhs.internalMessage) || ((this.internalMessage != null) && (this.internalMessage == rhs.internalMessage)))) && ((this.externalMessage === rhs.externalMessage) || ((this.externalMessage != null) && (this.externalMessage == rhs.externalMessage)))) && ((this.timestamp === rhs.timestamp) || ((this.timestamp != null) && (this.timestamp == rhs.timestamp))))
+        return (((((((((this.retryable === rhs.retryable) ||
+            ((this.retryable != null) && (this.retryable == rhs.retryable))) &&
+            ((this.metadata === rhs.metadata) ||
+                ((this.metadata != null) && metadata!!.equals(rhs.metadata)))) &&
+            ((this.stacktrace === rhs.stacktrace) ||
+                ((this.stacktrace != null) && (this.stacktrace == rhs.stacktrace)))) &&
+            ((this.failureOrigin == rhs.failureOrigin) ||
+                ((this.failureOrigin != null) && (this.failureOrigin == rhs.failureOrigin)))) &&
+            ((this.failureType == rhs.failureType) ||
+                ((this.failureType != null) && (this.failureType == rhs.failureType)))) &&
+            ((this.internalMessage === rhs.internalMessage) ||
+                ((this.internalMessage != null) &&
+                    (this.internalMessage == rhs.internalMessage)))) &&
+            ((this.externalMessage === rhs.externalMessage) ||
+                ((this.externalMessage != null) &&
+                    (this.externalMessage == rhs.externalMessage)))) &&
+            ((this.timestamp === rhs.timestamp) ||
+                ((this.timestamp != null) && (this.timestamp == rhs.timestamp))))
     }
 
-
-    /**
-     * Indicates where the error originated. If not set, the origin of error is not well known.
-     *
-     */
+    /** Indicates where the error originated. If not set, the origin of error is not well known. */
     enum class FailureOrigin(private val value: String) {
         SOURCE("source"),
         DESTINATION("destination"),
@@ -311,10 +299,9 @@ class FailureReason : Serializable {
         }
     }
 
-
     /**
-     * Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
-     *
+     * Categorizes well known errors into types for programmatic handling. If not set, the type of
+     * error is not well known.
      */
     enum class FailureType(private val value: String) {
         CONFIG_ERROR("config_error"),

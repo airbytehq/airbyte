@@ -3,10 +3,7 @@ package io.airbyte.cdk.test.fixtures.legacy
 import com.fasterxml.jackson.annotation.*
 import java.io.Serializable
 
-/**
- * Key-value pairs of relevant data
- *
- */
+/** Key-value pairs of relevant data */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder
 class Metadata : Serializable {
@@ -26,13 +23,10 @@ class Metadata : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(Metadata::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(Metadata::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("additionalProperties")
         sb.append('=')
         sb.append(this.additionalProperties)
@@ -59,7 +53,8 @@ class Metadata : Serializable {
             return false
         }
         val rhs = other
-        return ((this.additionalProperties === rhs.additionalProperties) || (this.additionalProperties == rhs.additionalProperties))
+        return ((this.additionalProperties === rhs.additionalProperties) ||
+            (this.additionalProperties == rhs.additionalProperties))
     }
 
     companion object {

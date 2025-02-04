@@ -84,23 +84,20 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
      * @Deprecated use shared(String, NamedContainerModifier) instead
      */
     fun shared(imageName: String, vararg methods: String): C {
-        return shared(
-            imageName,
-            methods.map { resolveModifierByName(it) to it }
-        )
+        return shared(imageName, methods.map { resolveModifierByName(it) to it })
     }
 
-    fun<N> shared(imageName: String, vararg namedContainerModifiers: N): C
-            where N: NamedContainerModifier<C>,
-                  N: Enum<N>{
-        return shared(imageName, listOf(*namedContainerModifiers).map{it.modifier to it.name})
+    fun <N> shared(imageName: String, vararg namedContainerModifiers: N): C where
+    N : NamedContainerModifier<C>,
+    N : Enum<N> {
+        return shared(imageName, listOf(*namedContainerModifiers).map { it.modifier to it.name })
     }
 
     @JvmOverloads
     fun shared(
         imageName: String,
         containerModifiersWithNames: List<Pair<Consumer<C>, String>> = ArrayList()
-    ): C{
+    ): C {
         val containerKey =
             ContainerKey<C>(
                 javaClass,
@@ -128,42 +125,41 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
      * @Deprecated use exclusive(String, NamedContainerModifier) instead
      */
     fun exclusive(imageName: String, vararg methods: String): C {
-        return exclusiveInternal(
-            imageName,
-            methods.map { resolveModifierByName(it) to it }
-        )
+        return exclusiveInternal(imageName, methods.map { resolveModifierByName(it) to it })
     }
 
-    fun<N> exclusive(imageName: String, vararg namedContainerModifiers: N): C
-            where N: NamedContainerModifier<C>,
-                  N: Enum<N>{
+    fun <N> exclusive(imageName: String, vararg namedContainerModifiers: N): C where
+    N : NamedContainerModifier<C>,
+    N : Enum<N> {
         return exclusive(imageName, listOf(*namedContainerModifiers))
     }
 
     @JvmOverloads
-    fun<N> exclusive(
-        imageName: String,
-        namedContainerModifiers: List<N> = ArrayList()
-    ): C
-            where N: NamedContainerModifier<C>,
-                  N:Enum<N>{
+    fun <N> exclusive(imageName: String, namedContainerModifiers: List<N> = ArrayList()): C where
+    N : NamedContainerModifier<C>,
+    N : Enum<N> {
         return exclusiveInternal(imageName, namedContainerModifiers.map { it.modifier to it.name })
     }
 
-    //Yeah, this is a bad name. We need something different because of type erasure :(
-    fun exclusiveInternal(imageName: String, containerModifiersWithNames: List<Pair<Consumer<C>, String>>): C {
-        return createAndStartContainer(DockerImageName.parse(imageName), containerModifiersWithNames)
+    // Yeah, this is a bad name. We need something different because of type erasure :(
+    fun exclusiveInternal(
+        imageName: String,
+        containerModifiersWithNames: List<Pair<Consumer<C>, String>>
+    ): C {
+        return createAndStartContainer(
+            DockerImageName.parse(imageName),
+            containerModifiersWithNames
+        )
     }
 
     interface NamedContainerModifier<C : GenericContainer<*>> {
-        val modifier:Consumer<C>
+        val modifier: Consumer<C>
     }
 
     class NamedContainerModifierImpl<C : GenericContainer<*>>(
-        val name:String,
+        val name: String,
         override val modifier: Consumer<C>
-    ) : NamedContainerModifier<C> {
-    }
+    ) : NamedContainerModifier<C> {}
 
     private fun resolveModifierByName(methodName: String): Consumer<C> {
         val self: ContainerFactory<C> = this
@@ -190,7 +186,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         LOGGER.info(
             "Creating new container based on {} with {}.",
             imageName,
-            containerModifiersWithNames.map{it.second}
+            containerModifiersWithNames.map { it.second }
         )
         val container = createNewContainer(imageName)
         @Suppress("unchecked_cast")
@@ -203,8 +199,8 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
                 }
             }
         getTestContainerLogMdcBuilder(imageName, containerModifiersWithNames).produceMappings {
-                key: String?,
-                value: String ->
+            key: String?,
+            value: String ->
             logConsumer.withMdc(key, value)
         }
         container.withLogConsumer(logConsumer)

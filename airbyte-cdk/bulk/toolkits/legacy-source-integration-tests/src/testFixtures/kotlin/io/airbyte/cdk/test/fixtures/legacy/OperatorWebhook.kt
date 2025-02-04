@@ -7,29 +7,22 @@ import java.util.*
 /**
  * OperatorWebhook
  *
- *
  * Settings for a webhook operation
- *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder(
-    "executionUrl", "executionBody", "webhookConfigId"
-)
+@JsonPropertyOrder("executionUrl", "executionBody", "webhookConfigId")
 class OperatorWebhook : Serializable {
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("executionUrl")
     @set:JsonProperty("executionUrl")
@@ -46,8 +39,7 @@ class OperatorWebhook : Serializable {
     @JsonProperty("webhookConfigId")
     var webhookConfigId: UUID? = null
 
-    @JsonIgnore
-    private val additionalProperties: MutableMap<String, Any>? = HashMap()
+    @JsonIgnore private val additionalProperties: MutableMap<String, Any>? = HashMap()
 
     fun withExecutionUrl(executionUrl: String?): OperatorWebhook {
         this.executionUrl = executionUrl
@@ -81,13 +73,10 @@ class OperatorWebhook : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(OperatorWebhook::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(OperatorWebhook::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("executionUrl")
         sb.append('=')
         sb.append((if ((this.executionUrl == null)) "<null>" else this.executionUrl))
@@ -102,7 +91,9 @@ class OperatorWebhook : Serializable {
         sb.append(',')
         sb.append("additionalProperties")
         sb.append('=')
-        sb.append((if ((this.additionalProperties == null)) "<null>" else this.additionalProperties))
+        sb.append(
+            (if ((this.additionalProperties == null)) "<null>" else this.additionalProperties)
+        )
         sb.append(',')
         if (sb[sb.length - 1] == ',') {
             sb.setCharAt((sb.length - 1), ']')
@@ -114,10 +105,15 @@ class OperatorWebhook : Serializable {
 
     override fun hashCode(): Int {
         var result = 1
-        result = ((result * 31) + (if ((this.webhookConfigId == null)) 0 else webhookConfigId.hashCode()))
-        result = ((result * 31) + (if ((this.additionalProperties == null)) 0 else additionalProperties.hashCode()))
+        result =
+            ((result * 31) +
+                (if ((this.webhookConfigId == null)) 0 else webhookConfigId.hashCode()))
+        result =
+            ((result * 31) +
+                (if ((this.additionalProperties == null)) 0 else additionalProperties.hashCode()))
         result = ((result * 31) + (if ((this.executionUrl == null)) 0 else executionUrl.hashCode()))
-        result = ((result * 31) + (if ((this.executionBody == null)) 0 else executionBody.hashCode()))
+        result =
+            ((result * 31) + (if ((this.executionBody == null)) 0 else executionBody.hashCode()))
         return result
     }
 
@@ -129,7 +125,15 @@ class OperatorWebhook : Serializable {
             return false
         }
         val rhs = other
-        return (((((this.webhookConfigId === rhs.webhookConfigId) || ((this.webhookConfigId != null) && (this.webhookConfigId == rhs.webhookConfigId))) && ((this.additionalProperties === rhs.additionalProperties) || ((this.additionalProperties != null) && (this.additionalProperties == rhs.additionalProperties)))) && ((this.executionUrl === rhs.executionUrl) || ((this.executionUrl != null) && (this.executionUrl == rhs.executionUrl)))) && ((this.executionBody === rhs.executionBody) || ((this.executionBody != null) && (this.executionBody == rhs.executionBody))))
+        return (((((this.webhookConfigId === rhs.webhookConfigId) ||
+            ((this.webhookConfigId != null) && (this.webhookConfigId == rhs.webhookConfigId))) &&
+            ((this.additionalProperties === rhs.additionalProperties) ||
+                ((this.additionalProperties != null) &&
+                    (this.additionalProperties == rhs.additionalProperties)))) &&
+            ((this.executionUrl === rhs.executionUrl) ||
+                ((this.executionUrl != null) && (this.executionUrl == rhs.executionUrl)))) &&
+            ((this.executionBody === rhs.executionBody) ||
+                ((this.executionBody != null) && (this.executionBody == rhs.executionBody))))
     }
 
     companion object {

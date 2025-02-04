@@ -87,7 +87,8 @@ internal constructor(
                     WorkerConstants
                         .INPUT_STATE_JSON_FILENAME, // TODO We should be passing a typed state here
                 // and use the protocolSerializer
-                if (sourceConfig.state == null) null else Jsons.serialize(sourceConfig.state!!.state)
+                if (sourceConfig.state == null) null
+                else Jsons.serialize(sourceConfig.state!!.state)
             )
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(

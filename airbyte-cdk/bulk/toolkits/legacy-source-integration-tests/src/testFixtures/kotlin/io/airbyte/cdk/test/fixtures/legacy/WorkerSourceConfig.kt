@@ -12,49 +12,30 @@ import java.util.*
 /**
  * WorkerSourceConfig
  *
- *
  * WorkerSourceConfig
- *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder(
-    "sourceId", "sourceConnectionConfiguration", "catalog", "state"
-)
+@JsonPropertyOrder("sourceId", "sourceConnectionConfiguration", "catalog", "state")
 class WorkerSourceConfig : Serializable {
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("sourceId")
     @set:JsonProperty("sourceId")
     @JsonProperty("sourceId")
     var sourceId: UUID? = null
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
-    /**
-     * Integration specific blob. Must be a valid JSON string.
-     * (Required)
-     *
-     */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
+    /** Integration specific blob. Must be a valid JSON string. (Required) */
     @get:JsonProperty("sourceConnectionConfiguration")
     @set:JsonProperty("sourceConnectionConfiguration")
     @JsonProperty("sourceConnectionConfiguration")
@@ -63,17 +44,14 @@ class WorkerSourceConfig : Serializable {
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     /**
      *
      * (Required)
-     *
      */
     @get:JsonProperty("catalog")
     @set:JsonProperty("catalog")
@@ -82,23 +60,17 @@ class WorkerSourceConfig : Serializable {
     /**
      * State
      *
-     *
      * information output by the connection.
-     *
      */
     /**
      * State
      *
-     *
      * information output by the connection.
-     *
      */
     /**
      * State
      *
-     *
      * information output by the connection.
-     *
      */
     @get:JsonProperty("state")
     @set:JsonProperty("state")
@@ -111,7 +83,9 @@ class WorkerSourceConfig : Serializable {
         return this
     }
 
-    fun withSourceConnectionConfiguration(sourceConnectionConfiguration: JsonNode?): WorkerSourceConfig {
+    fun withSourceConnectionConfiguration(
+        sourceConnectionConfiguration: JsonNode?
+    ): WorkerSourceConfig {
         this.sourceConnectionConfiguration = sourceConnectionConfiguration
         return this
     }
@@ -128,20 +102,20 @@ class WorkerSourceConfig : Serializable {
 
     override fun toString(): String {
         val sb = StringBuilder()
-        sb.append(WorkerSourceConfig::class.java.name).append('@').append(
-            Integer.toHexString(
-                System.identityHashCode(
-                    this
-                )
-            )
-        ).append('[')
+        sb.append(WorkerSourceConfig::class.java.name)
+            .append('@')
+            .append(Integer.toHexString(System.identityHashCode(this)))
+            .append('[')
         sb.append("sourceId")
         sb.append('=')
         sb.append((if ((this.sourceId == null)) "<null>" else this.sourceId))
         sb.append(',')
         sb.append("sourceConnectionConfiguration")
         sb.append('=')
-        sb.append((if ((this.sourceConnectionConfiguration == null)) "<null>" else this.sourceConnectionConfiguration))
+        sb.append(
+            (if ((this.sourceConnectionConfiguration == null)) "<null>"
+            else this.sourceConnectionConfiguration)
+        )
         sb.append(',')
         sb.append("catalog")
         sb.append('=')
@@ -163,7 +137,10 @@ class WorkerSourceConfig : Serializable {
         var result = 1
         result = ((result * 31) + (if ((this.sourceId == null)) 0 else sourceId.hashCode()))
         result = ((result * 31) + (if ((this.state == null)) 0 else state.hashCode()))
-        result = ((result * 31) + (if ((this.sourceConnectionConfiguration == null)) 0 else sourceConnectionConfiguration.hashCode()))
+        result =
+            ((result * 31) +
+                (if ((this.sourceConnectionConfiguration == null)) 0
+                else sourceConnectionConfiguration.hashCode()))
         result = ((result * 31) + (if ((this.catalog == null)) 0 else catalog.hashCode()))
         return result
     }
@@ -176,9 +153,14 @@ class WorkerSourceConfig : Serializable {
             return false
         }
         val rhs = other
-        return (((((this.sourceId === rhs.sourceId) || ((this.sourceId != null) && (this.sourceId == rhs.sourceId))) && ((this.state === rhs.state) || ((this.state != null) && state!!.equals(
-            rhs.state
-        )))) && ((this.sourceConnectionConfiguration === rhs.sourceConnectionConfiguration) || ((this.sourceConnectionConfiguration != null) && (this.sourceConnectionConfiguration == rhs.sourceConnectionConfiguration)))) && ((this.catalog === rhs.catalog) || ((this.catalog != null) && (this.catalog == rhs.catalog))))
+        return (((((this.sourceId === rhs.sourceId) ||
+            ((this.sourceId != null) && (this.sourceId == rhs.sourceId))) &&
+            ((this.state === rhs.state) || ((this.state != null) && state!!.equals(rhs.state)))) &&
+            ((this.sourceConnectionConfiguration === rhs.sourceConnectionConfiguration) ||
+                ((this.sourceConnectionConfiguration != null) &&
+                    (this.sourceConnectionConfiguration == rhs.sourceConnectionConfiguration)))) &&
+            ((this.catalog === rhs.catalog) ||
+                ((this.catalog != null) && (this.catalog == rhs.catalog))))
     }
 
     companion object {

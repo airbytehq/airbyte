@@ -209,14 +209,14 @@ constructor(
                 if (endPointKey != null) {
                     val tunnelEndPointURL =
                         URI(
-                            remoteServiceProtocol,
-                            null,
-                            SshdSocketAddress.LOCALHOST_ADDRESS.hostName,
-                            tunnelLocalPort,
-                            remoteServicePath,
-                            null,
-                            null
-                        )
+                                remoteServiceProtocol,
+                                null,
+                                SshdSocketAddress.LOCALHOST_ADDRESS.hostName,
+                                tunnelLocalPort,
+                                remoteServicePath,
+                                null,
+                                null
+                            )
                             .toURL()
                     Jsons.replaceNestedString(
                         clone,
@@ -352,9 +352,9 @@ constructor(
         } catch (e: IOException) {
             if (
                 e is SshException &&
-                e.message!!
-                    .lowercase()
-                    .contains("failed to get operation result within specified timeout")
+                    e.message!!
+                        .lowercase()
+                        .contains("failed to get operation result within specified timeout")
             ) {
                 throw ConfigErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e)
             } else {
@@ -367,28 +367,28 @@ constructor(
 
     override fun toString(): String {
         return "SshTunnel{" +
-                "hostKey=" +
-                hostKey +
-                ", portKey=" +
-                portKey +
-                ", tunnelMethod=" +
-                tunnelMethod +
-                ", tunnelHost='" +
-                tunnelHost +
-                '\'' +
-                ", tunnelPort=" +
-                tunnelPort +
-                ", tunnelUser='" +
-                tunnelUser +
-                '\'' +
-                ", remoteServiceHost='" +
-                remoteServiceHost +
-                '\'' +
-                ", remoteServicePort=" +
-                remoteServicePort +
-                ", tunnelLocalPort=" +
-                tunnelLocalPort +
-                '}'
+            "hostKey=" +
+            hostKey +
+            ", portKey=" +
+            portKey +
+            ", tunnelMethod=" +
+            tunnelMethod +
+            ", tunnelHost='" +
+            tunnelHost +
+            '\'' +
+            ", tunnelPort=" +
+            tunnelPort +
+            ", tunnelUser='" +
+            tunnelUser +
+            '\'' +
+            ", remoteServiceHost='" +
+            remoteServiceHost +
+            '\'' +
+            ", remoteServicePort=" +
+            remoteServicePort +
+            ", tunnelLocalPort=" +
+            tunnelLocalPort +
+            '}'
     }
 
     companion object {

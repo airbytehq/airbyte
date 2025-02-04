@@ -153,9 +153,9 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     protected fun internalLog(logMessage: AirbyteLogMessage) {
         val combinedMessage =
             logMessage.message +
-                    (if (logMessage.stackTrace != null)
-                        (System.lineSeparator() + "Stack Trace: " + logMessage.stackTrace)
-                    else "")
+                (if (logMessage.stackTrace != null)
+                    (System.lineSeparator() + "Stack Trace: " + logMessage.stackTrace)
+                else "")
 
         when (logMessage.level) {
             AirbyteLogMessage.Level.FATAL,

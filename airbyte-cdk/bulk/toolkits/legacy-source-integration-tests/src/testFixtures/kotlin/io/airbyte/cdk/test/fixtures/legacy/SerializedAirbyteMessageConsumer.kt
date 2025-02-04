@@ -3,7 +3,6 @@
  */
 package io.airbyte.cdk.test.fixtures.legacy
 
-
 /**
  * Interface for the destination's consumption of incoming messages as strings. This interface is
  * backwards compatible with [AirbyteMessageConsumer].

@@ -2,11 +2,11 @@ package io.airbyte.cdk.test.fixtures.legacy
 
 import com.google.common.base.Preconditions
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.nio.file.Path
+import java.util.*
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.OptionGroup
 import org.apache.commons.cli.Options
-import java.nio.file.Path
-import java.util.*
 
 private val LOGGER = KotlinLogging.logger {}
 /** Parses command line args to a type safe config object for each command type. */

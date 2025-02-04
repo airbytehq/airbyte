@@ -3,5 +3,4 @@
  */
 package io.airbyte.cdk.test.fixtures.legacy
 
-
 interface GetSpecTestHarness : TestHarness<JobGetSpecConfig, ConnectorJobOutput>
