@@ -9,6 +9,7 @@ from uuid import uuid4
 
 from typesense import Client
 
+
 logger = getLogger("airbyte")
 
 

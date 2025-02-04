@@ -7,6 +7,9 @@ import logging
 from typing import Any, Dict, Mapping
 
 import pytest
+from destination_typesense.destination import DestinationTypesense, get_client
+from typesense import Client
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -19,8 +22,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_typesense.destination import DestinationTypesense, get_client
-from typesense import Client
 
 
 @pytest.fixture(name="config")
@@ -62,9 +63,7 @@ def teardown(config: Mapping):
 @pytest.fixture(name="client")
 def client_fixture(config) -> Client:
     client = get_client(config=config)
-    client.collections.create(
-        {"name": "_airbyte", "fields": [{"name": ".*", "type": "auto"}]}
-    )
+    client.collections.create({"name": "_airbyte", "fields": [{"name": ".*", "type": "auto"}]})
     return client
 
 
@@ -102,21 +101,13 @@ def collection_size(client: Client, stream: str) -> int:
     return collection["num_documents"]
 
 
-def test_write(
-    config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client
-):
+def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
     configured_streams = list(map(lambda s: s.stream.name, configured_catalog.streams))
     first_state_message = _state({"state": "1"})
-    first_record_chunk = [
-        _record(stream, str(i), i) for i, stream in enumerate(configured_streams)
-    ]
+    first_record_chunk = [_record(stream, str(i), i) for i, stream in enumerate(configured_streams)]
 
     destination = DestinationTypesense()
-    list(
-        destination.write(
-            config, configured_catalog, [*first_record_chunk, first_state_message]
-        )
-    )
+    list(destination.write(config, configured_catalog, [*first_record_chunk, first_state_message]))
 
     for stream in configured_streams:
         assert collection_size(client, stream) == 1
