@@ -14,7 +14,7 @@ import java.time.OffsetDateTime
 interface MetaFieldDecorator {
 
     /** [MetaField] to use as a global cursor, if applicable. */
-    val globalCursor: FieldOrMetaField?
+    val globalCursor: MetaField?
 
     /**
      * All [MetaField]s to be found in [Global] stream records.

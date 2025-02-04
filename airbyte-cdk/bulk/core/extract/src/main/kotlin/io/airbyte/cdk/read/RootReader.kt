@@ -66,7 +66,7 @@ class RootReader(
         crossinline listener: suspend (Collection<Job>) -> Unit,
     ) {
         val feeds: List<T> = stateManager.feeds.filterIsInstance<T>()
-        log.info { "Reading feeds of type ${T::class}." }
+        log.info { "Reading feeds of type ${T::class}: $feeds." }
         val exceptions = ConcurrentHashMap<T, Throwable>()
         supervisorScope {
             // Launch one coroutine per feed of same type.

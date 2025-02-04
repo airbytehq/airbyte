@@ -77,7 +77,7 @@ class CdcPartitionReaderPostgresTest :
         PostgresTestDebeziumOperations()
 
     inner class PostgresTestDebeziumOperations :
-        AbstractDebeziumOperationsForTest<LogSequenceNumber>() {
+        AbstractCdcPartitionReaderDebeziumOperationsForTest<LogSequenceNumber>(stream) {
         override fun position(offset: DebeziumOffset): LogSequenceNumber {
             val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
             return LogSequenceNumber.valueOf(offsetValue["lsn"].asLong())

@@ -71,14 +71,14 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     val debeziumOperations by lazy { createDebeziumOperations() }
 
     @Test
-    /**
-     * The [integrationTest] method sets up (and tears down) a testcontainer for the data source
-     * using [createContainer] and provisions it using [createStream], [insert12345], [update135]
-     * and [delete24].
-     *
-     * While doing so, it creates several [CdcPartitionReader] instances using [currentPosition],
-     * [syntheticInput] and [debeziumProperties], and exercises all [PartitionReader] methods.
-     */
+            /**
+             * The [integrationTest] method sets up (and tears down) a testcontainer for the data source
+             * using [createContainer] and provisions it using [createStream], [insert12345], [update135]
+             * and [delete24].
+             *
+             * While doing so, it creates several [CdcPartitionReader] instances using [currentPosition],
+             * [syntheticInput] and [debeziumProperties], and exercises all [PartitionReader] methods.
+             */
     fun integrationTest() {
         container.createStream()
         val i0 =
@@ -153,21 +153,21 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer> =
             mapOf(
                 stream.id to
-                    object : StreamRecordConsumer {
-                        override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
+                        object : StreamRecordConsumer {
+                            override val stream: Stream = this@AbstractCdcPartitionReaderTest.stream
 
-                        override fun accept(
-                            recordData: ObjectNode,
-                            changes: Map<Field, FieldValueChange>?
-                        ) {
-                            outputConsumer.accept(
-                                AirbyteRecordMessage()
-                                    .withStream(stream.name)
-                                    .withNamespace(stream.namespace)
-                                    .withData(recordData)
-                            )
+                            override fun accept(
+                                recordData: ObjectNode,
+                                changes: Map<Field, FieldValueChange>?
+                            ) {
+                                outputConsumer.accept(
+                                    AirbyteRecordMessage()
+                                        .withStream(stream.name)
+                                        .withNamespace(stream.namespace)
+                                        .withData(recordData)
+                                )
+                            }
                         }
-                    }
             )
         val reader =
             CdcPartitionReader(
@@ -202,9 +202,9 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         Assertions.assertEquals(
             reader.numEvents.get(),
             reader.numEmittedRecords.get() +
-                reader.numDiscardedRecords.get() +
-                reader.numHeartbeats.get() +
-                reader.numTombstones.get()
+                    reader.numDiscardedRecords.get() +
+                    reader.numHeartbeats.get() +
+                    reader.numTombstones.get()
         )
         Assertions.assertEquals(0, reader.numDiscardedRecords.get())
         Assertions.assertEquals(0, reader.numEventsWithoutSourceRecord.get())
@@ -243,9 +243,34 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     data class Update(override val id: Int, val v: Int) : Record
     data class Delete(override val id: Int) : Record
 
-    abstract inner class AbstractDebeziumOperationsForTest<T : Comparable<T>> :
-        DebeziumOperations<T> {
+    inner class CdcPartitionReaderDebeziumOperationsFromProdForTest<T: Comparable<T>>(
+           val prodImpl: DebeziumOperations<T>
+       ): DebeziumOperations<T> by prodImpl {
+        override fun deserializeRecord(
+                   key: DebeziumRecordKey,
+                   value: DebeziumRecordValue,
+                   stream: Stream,
+               ): DeserializedRecord {
+                   val id: Int = key.element("id").asInt()
+                   val after: Int? = value.after["v"]?.asInt()
+                   val record: Record =
+                           if (after == null) {
+                                   Delete(id)
+                               } else if (value.before["v"] == null) {
+                                   Insert(id, after)
+                               } else {
+                                   Update(id, after)
+                               }
+                   return DeserializedRecord(
+                           data = Jsons.valueToTree(record) as ObjectNode,
+                           changes = emptyMap(),
+                       )
+               }
+       }
 
+    abstract inner class AbstractCdcPartitionReaderDebeziumOperationsForTest<T : Comparable<T>>(
+        val stream: Stream
+    ) : DebeziumOperations<T> {
         override fun deserializeRecord(
             key: DebeziumRecordKey,
             value: DebeziumRecordValue,
@@ -282,16 +307,16 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
             Jsons.valueToTree(
                 mapOf(
                     "offset" to
-                        offset.wrapped
-                            .map {
-                                Jsons.writeValueAsString(it.key) to
-                                    Jsons.writeValueAsString(it.value)
-                            }
-                            .toMap(),
+                            offset.wrapped
+                                .map {
+                                    Jsons.writeValueAsString(it.key) to
+                                            Jsons.writeValueAsString(it.value)
+                                }
+                                .toMap(),
                     "schemaHistory" to
-                        schemaHistory?.wrapped?.map {
-                            DocumentWriter.defaultWriter().write(it.document())
-                        },
+                            schemaHistory?.wrapped?.map {
+                                DocumentWriter.defaultWriter().write(it.document())
+                            },
                 ),
             )
 

@@ -1,0 +1,50 @@
+{
+  "streams": [
+    {
+      "fields": [
+        {
+          "name": "bin",
+          "type": "STRING"
+        },
+        {
+          "name": "id",
+          "type": "STRING"
+        },
+        {
+          "name": "pmid",
+          "type": "INTEGER"
+        }
+      ],
+      "stream": {
+        "name": "NewTable",
+        "namespace": "dbo",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "bin": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "pmid": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "is_resumable": true,
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["pmid"]]
+      },
+      "mappers": [],
+      "sync_mode": "incremental",
+      "primary_key": [["pmid"]],
+      "cursor_field": ["pmid"],
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}

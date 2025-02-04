@@ -21,6 +21,9 @@ import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
 
 /**
  * A [FeedReader] manages the publishing of RECORD, STATE and TRACE messages for a single [feed].
@@ -37,7 +40,11 @@ class FeedReader(
     /** Reads records from this [feed]. */
     suspend fun read() {
         var partitionsCreatorID = 1L
+        val timeSource = TimeSource.Monotonic
+        var runsWithNoRecords = 0
+
         while (true) {
+            val startTime = timeSource.markNow()
             // Create PartitionReader instances.
             val partitionReaders: List<PartitionReader> = createPartitions(partitionsCreatorID)
             if (partitionReaders.isEmpty()) {
@@ -67,7 +74,21 @@ class FeedReader(
                 scheduledPartitionReaders[partitionReaderID++] = readerJob
             }
             // Wait for all PartitionReader coroutines to complete.
-            awaitAllPartitionReaders(scheduledPartitionReaders)
+            val numRecordsRead = awaitAllPartitionReaders(scheduledPartitionReaders)
+            if (numRecordsRead == 0L) {
+                runsWithNoRecords++;
+                if (runsWithNoRecords > 100) {
+                    log.info { "Ran 100 rounds with no records. Stopping now." }
+                    return
+                }
+                val timeToWait = startTime + 5.seconds - timeSource.markNow()
+                if (timeToWait > Duration.ZERO) {
+                    log.info{"didn't get any records in ${partitionReaders.size} partitions. Waiting for $timeToWait"}
+                    Thread.sleep(timeToWait.inWholeMilliseconds)
+                }
+            } else {
+                runsWithNoRecords = 0
+            }
             partitionsCreatorID++
         }
     }
@@ -202,12 +223,12 @@ class FeedReader(
             if (partitionReader is UnlimitedTimePartitionReader) {
                 partitionReader.run()
             } else {
-                log.info {
+                log.debug {
                     "Running partition reader with ${root.timeout.toKotlinDuration()} timeout"
                 }
                 withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
             }
-            log.info {
+            log.debug {
                 "completed reading partition $partitionReaderID " +
                     "for '${feed.label}' in round $partitionsCreatorID"
             }
@@ -219,7 +240,7 @@ class FeedReader(
             }
             checkpoint = partitionReader.checkpoint()
         } finally {
-            log.info {
+            log.debug {
                 "releasing resources acquired to read partition $partitionReaderID " +
                     "for '${feed.label}' in round $partitionsCreatorID"
             }
@@ -235,7 +256,8 @@ class FeedReader(
 
     private suspend fun awaitAllPartitionReaders(
         scheduled: Map<Long, Deferred<Result<PartitionReadCheckpoint>>>,
-    ) {
+    ): Long {
+        var totalRecordsRead = 0L
         fun label(partitionReaderID: Long): String =
             "partition $partitionReaderID / ${scheduled.size} for '${feed.label}'"
         // This map stores known results for all  PartitionReader instances.
@@ -275,6 +297,9 @@ class FeedReader(
                     }
                 }
             }
+            result.onSuccess { value: PartitionReadCheckpoint ->
+                totalRecordsRead += value.numRecords
+            }
             // Store the result and try to make forward progress in the mimicked serial execution.
             results[completedPartitionReaderID] = result
             try {
@@ -284,7 +309,7 @@ class FeedReader(
                         results[pendingPartitionReaderID] ?: break
                     // Re-throw any exception that the PartitionReader may have thrown.
                     // Otherwise, update the StateManager with the forward progress.
-                    log.info {
+                    log.debug {
                         "processing result (success = ${pendingResult.isSuccess}) from reading " +
                             label(pendingPartitionReaderID)
                     }
@@ -302,6 +327,7 @@ class FeedReader(
                 maybeCheckpoint()
             }
         }
+        return totalRecordsRead
     }
 
     private suspend fun ctx(nameSuffix: String): CoroutineContext =

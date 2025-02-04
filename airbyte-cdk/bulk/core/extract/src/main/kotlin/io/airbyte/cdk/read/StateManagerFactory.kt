@@ -33,14 +33,18 @@ import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * A factory for instantiating [StateManager] based on the inputs of a READ. These inputs are
  * deliberately not injected here to make testing easier.
  */
+val LOGGER=KotlinLogging.logger {  }
 @Singleton
-class StateManagerFactory(
+open class StateManagerFactory(
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
     val metaFieldDecorator: MetaFieldDecorator,
     val outputConsumer: OutputConsumer,
@@ -86,7 +90,9 @@ class StateManagerFactory(
                 }
             }
         val globalStreams: List<Stream> =
-            decoratedStreams.filter { it.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL }
+            decoratedStreams.filter {
+                it.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
+            }
         val initialStreamStates: Map<Stream, OpaqueStateValue?> =
             decoratedStreams.associateWith { stream: Stream ->
                 when (stream.configuredSyncMode) {
@@ -104,11 +110,20 @@ class StateManagerFactory(
     private fun forStream(
         streams: List<Stream>,
         inputState: StreamInputState? = null,
-    ) =
-        StateManager(
+    ): StateManager {
+        return StateManager(
             initialStreamStates =
-                streams.associateWith { stream: Stream -> inputState?.streams?.get(stream.id) },
+            streams.associateWith { stream: Stream -> inputState?.streams?.get(stream.id) },
         )
+    }
+
+    protected open fun checkColumnTypes(streamId: StreamIdentifier, fieldName: String, expectedAirbyteSchemaType: AirbyteSchemaType, actualColumn: Field): Field? {
+        val actualAirbyteSchemaType: AirbyteSchemaType = actualColumn.type.airbyteSchemaType
+        if (expectedAirbyteSchemaType != actualAirbyteSchemaType) {
+            handler.accept(FieldTypeMismatch(streamId, fieldName, expectedAirbyteSchemaType, actualAirbyteSchemaType))
+        }
+        return null
+    }
 
     private fun toStream(
         metadataQuerier: MetadataQuerier,
@@ -163,23 +178,18 @@ class StateManagerFactory(
                 return null
             }
             val expectedAirbyteSchemaType: AirbyteSchemaType = expectedSchema[id] ?: return null
-            val actualAirbyteSchemaType: AirbyteSchemaType = actualColumn.type.airbyteSchemaType
-            if (expectedAirbyteSchemaType != actualAirbyteSchemaType) {
-                handler.accept(
-                    FieldTypeMismatch(
-                        streamID,
-                        id,
-                        expectedAirbyteSchemaType,
-                        actualAirbyteSchemaType,
-                    ),
-                )
-                return null
-            }
-            return actualColumn
+            return checkColumnTypes(
+                streamID,
+                id,
+                expectedAirbyteSchemaType,
+                actualColumn,
+            )
         }
         val streamFields: List<Field> =
             expectedSchema.keys.toList().filterNot(MetaField::isMetaFieldID).map {
-                dataColumnOrNull(it) ?: return@toStream null
+                dataColumnOrNull(it) ?: run {
+                    return@toStream null
+                }
             }
         if (streamFields.isEmpty()) {
             handler.accept(StreamHasNoFields(streamID))

@@ -1,0 +1,144 @@
+{
+  "streams": [
+    {
+      "fields": [
+        {
+          "name": "occupation",
+          "type": "STRING"
+        },
+        {
+          "name": "gender",
+          "type": "STRING"
+        },
+        {
+          "name": "academic_degree",
+          "type": "STRING"
+        },
+        {
+          "name": "weight",
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "type": "STRING"
+        },
+        {
+          "name": "language",
+          "type": "STRING"
+        },
+        {
+          "name": "telephone",
+          "type": "STRING"
+        },
+        {
+          "name": "title",
+          "type": "STRING"
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP_WITHOUT_TIMEZONE"
+        },
+        {
+          "name": "nationality",
+          "type": "STRING"
+        },
+        {
+          "name": "blood_type",
+          "type": "STRING"
+        },
+        {
+          "name": "name",
+          "type": "STRING"
+        },
+        {
+          "name": "id",
+          "type": "INTEGER"
+        },
+        {
+          "name": "age",
+          "type": "INTEGER"
+        },
+        {
+          "name": "email",
+          "type": "STRING"
+        },
+        {
+          "name": "height",
+          "type": "NUMBER"
+        }
+      ],
+      "stream": {
+        "name": "users",
+        "namespace": "dbo",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "age": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "gender": {
+              "type": "string"
+            },
+            "height": {
+              "type": "number"
+            },
+            "weight": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "language": {
+              "type": "string"
+            },
+            "telephone": {
+              "type": "string"
+            },
+            "blood_type": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string",
+              "contentEncoding": "base64"
+            },
+            "occupation": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "nationality": {
+              "type": "string"
+            },
+            "academic_degree": {
+              "type": "string"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": []
+      },
+      "mappers": [],
+      "sync_mode": "incremental",
+      "primary_key": [["id"]],
+      "cursor_field": ["academic_degree"],
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}
