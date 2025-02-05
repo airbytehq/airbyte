@@ -39,7 +39,7 @@ def test_slicer(record_data, expected):
     new_state = {"updated_at": 1662459011}
     slicer = IncrementalSingleSliceCursor(cursor_field="updated_at", config={}, parameters={})
     stream_slice = StreamSlice(partition={}, cursor_slice=date_time_dict)
-    record = Record(data=record_data, associated_slice=stream_slice)
+    record = Record(stream_name="", data=record_data, associated_slice=stream_slice)
     slicer.observe(StreamSlice(partition={}, cursor_slice=date_time_dict), record)
     slicer.close_slice(stream_slice)
     assert slicer.get_stream_state() == new_state

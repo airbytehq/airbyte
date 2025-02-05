@@ -1,7 +1,7 @@
 # Akeneo
 This directory contains the manifest-only connector for `source-akeneo`.
 
-The Akeneo Airbyte connector enables seamless data synchronization between Akeneo PIM (Product Information Management) and other platforms. It allows you to easily extract, transform, and load product information from Akeneo to a desired data destination, facilitating efficient management and integration of product catalogs across systems. This connector supports bidirectional data flows, helping businesses maintain accurate and up-to-date product information for various sales channels.
+The Akeneo Airbyte connector enables seamless data synchronization between Akeneo PIM (Product Information Management) and other platforms. It allows you to easily extract, transform, and load product information from Akeneo to a desired data destination, facilitating efficient management and integration of product catalogs across systems. 
 
 ## Usage
 There are multiple ways to use this connector:
