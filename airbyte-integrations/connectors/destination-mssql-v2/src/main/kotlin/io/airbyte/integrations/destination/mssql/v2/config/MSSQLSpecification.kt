@@ -51,7 +51,7 @@ class MSSQLSpecification : ConfigurationSpecification() {
     @get:JsonPropertyDescription("The username which is used to access the database.")
     @get:JsonProperty("user")
     @get:JsonSchemaInject(json = """{"order":4}""")
-    val user: String? = null
+    val user: String = "user"
 
     @get:JsonSchemaTitle("Password")
     @get:JsonPropertyDescription("The password associated with this username.")
