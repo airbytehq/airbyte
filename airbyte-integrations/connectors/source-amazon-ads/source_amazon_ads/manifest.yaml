@@ -1606,65 +1606,31 @@ definitions:
               groupBy: ["asin"]
               columns: # TODO: make configurable
                 [
-                  "addToCart",
-                  "addToCartClicks",
-                  "addToCartRate",
-                  "addToCartViews",
                   "adGroupId",
                   "adGroupName",
+                  "asinBrandHalo",
                   "addToList",
                   "addToListFromClicks",
+                  "qualifiedBorrowsFromClicks",
+                  "royaltyQualifiedBorrowsFromClicks",
                   "addToListFromViews",
                   "qualifiedBorrows",
-                  "qualifiedBorrowsFromClicks",
                   "qualifiedBorrowsFromViews",
                   "royaltyQualifiedBorrows",
-                  "royaltyQualifiedBorrowsFromClicks",
                   "royaltyQualifiedBorrowsFromViews",
-                  "brandedSearches",
-                  "brandedSearchesClicks",
-                  "brandedSearchesViews",
-                  "brandedSearchRate",
                   "campaignBudgetCurrencyCode",
                   "campaignId",
                   "campaignName",
-                  "clicks",
-                  "cost",
-                  "detailPageViews",
-                  "detailPageViewsClicks",
-                  "eCPAddToCart",
-                  "eCPBrandSearch",
+                  "conversionsBrandHalo",
+                  "conversionsBrandHaloClicks",
                   "endDate",
-                  "impressions",
-                  "impressionsViews",
-                  "leadFormOpens",
-                  "leads",
-                  "linkOuts",
-                  "newToBrandPurchases",
-                  "newToBrandPurchasesClicks",
-                  "newToBrandSales",
-                  "newToBrandSalesClicks",
-                  "newToBrandUnitsSold",
-                  "newToBrandUnitsSoldClicks",
-                  "purchases",
-                  "purchasesClicks",
-                  "purchasesPromotedClicks",
-                  "sales",
-                  "salesClicks",
-                  "salesPromotedClicks",
+                  "promotedAsin",
+                  "promotedSku",
+                  "salesBrandHalo",
+                  "salesBrandHaloClicks",
                   "startDate",
-                  "targetingExpression",
-                  "targetingId",
-                  "targetingText",
-                  "unitsSold",
-                  "unitsSoldClicks",
-                  "videoCompleteViews",
-                  "videoFirstQuartileViews",
-                  "videoMidpointViews",
-                  "videoThirdQuartileViews",
-                  "videoUnmutes",
-                  "viewabilityRate",
-                  "viewClickThroughRate",
+                  "unitsSoldBrandHalo",
+                  "unitsSoldBrandHaloClicks",
                 ]
               reportTypeId: sdPurchasedProduct
               filters: []
@@ -1998,7 +1964,7 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "productAds report {{ stream_slice.start_time }}"
+            name: "asins_keywords report {{ stream_slice.start_time }}"
             startDate: "{{ stream_slice.start_time }}"
             endDate: "{{ stream_slice.end_time }}"
             configuration:
@@ -2047,7 +2013,7 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "productAds report {{ stream_slice.start_time }}"
+            name: "asins_targets report {{ stream_slice.start_time }}"
             startDate: "{{ stream_slice.start_time }}"
             endDate: "{{ stream_slice.end_time }}"
             configuration:
