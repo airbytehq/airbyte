@@ -123,7 +123,20 @@ connectionSpecification:
               - DAILY
               - MONTHLY
               - YEARLY
+          
       default: []
+    num_workers:
+      type: integer
+      title: Number of Concurrent Workers
+      description: "The number of workers to use to fetch data from the LinkedIn Ads API. Increasing the number of workers can help speed up the data extraction process."
+      default: 10
+      minimum: 1
+      maximum: 40
+      examples:
+        - 1
+        - 2
+        - 3
+      order: 4
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:

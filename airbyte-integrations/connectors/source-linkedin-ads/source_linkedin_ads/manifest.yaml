@@ -7992,3 +7992,7 @@ schemas:
         type:
           - "null"
           - string
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 40
