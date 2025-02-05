@@ -19,17 +19,19 @@ import javax.sql.DataSource
 @Singleton
 class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
     DestinationChecker<MSSQLConfiguration> {
-    private val testStream = DestinationStream(
-        descriptor = DestinationStream.Descriptor(
-            namespace = null,
-            name = "check_test_${UUID.randomUUID()}",
-        ),
-        importType = Append,
-        schema = ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
-        generationId = 0L,
-        minimumGenerationId = 0L,
-        syncId = 0L,
-    )
+    private val testStream =
+        DestinationStream(
+            descriptor =
+                DestinationStream.Descriptor(
+                    namespace = null,
+                    name = "check_test_${UUID.randomUUID()}",
+                ),
+            importType = Append,
+            schema = ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
+            generationId = 0L,
+            minimumGenerationId = 0L,
+            syncId = 0L,
+        )
 
     override fun check(config: MSSQLConfiguration) {
         val dataSource: DataSource = dataSourceFactory.getDataSource(config)

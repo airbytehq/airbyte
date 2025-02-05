@@ -105,7 +105,8 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                         AirbyteConnectionStatus.Status.FAILED,
                         connectionStatus.status,
                         "$testName: expected check to fail but succeeded",
-                    ) },
+                    )
+                },
                 {
                     assertTrue(
                         failurePattern.matcher(connectionStatus.message).find(),

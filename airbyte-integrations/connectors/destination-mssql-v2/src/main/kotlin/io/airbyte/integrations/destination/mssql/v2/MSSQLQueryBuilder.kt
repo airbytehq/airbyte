@@ -115,8 +115,7 @@ const val CREATE_INDEX_QUERY = """
         CREATE ? INDEX ? ON [?].[?] (?)
     """
 
-const val DROP_TABLE_QUERY =
-    """
+const val DROP_TABLE_QUERY = """
         DROP TABLE [?].[?];
     """
 
