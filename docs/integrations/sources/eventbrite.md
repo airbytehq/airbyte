@@ -37,6 +37,10 @@ To get a Private Token:
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.10 | 2025-02-01 | [52869](https://github.com/airbytehq/airbyte/pull/52869) | Update dependencies |
+| 0.0.9 | 2025-01-25 | [52353](https://github.com/airbytehq/airbyte/pull/52353) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51707](https://github.com/airbytehq/airbyte/pull/51707) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51071](https://github.com/airbytehq/airbyte/pull/51071) | Update dependencies |
 | 0.0.6 | 2024-12-28 | [50513](https://github.com/airbytehq/airbyte/pull/50513) | Update dependencies |
 | 0.0.5 | 2024-12-21 | [49994](https://github.com/airbytehq/airbyte/pull/49994) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49494](https://github.com/airbytehq/airbyte/pull/49494) | Update dependencies |

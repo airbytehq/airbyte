@@ -562,7 +562,50 @@ Once this is complete, ensure that the value of the `webapp-url` field in your `
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
-#### (Optional) Configure a custom image registry
+### Step 3: Deploy Self-Managed Enterprise
+
+Install Airbyte Self-Managed Enterprise on helm using the following command:
+
+```sh
+helm install \
+--namespace airbyte \
+--values ./values.yaml \
+airbyte-enterprise \
+airbyte/airbyte
+```
+
+To uninstall Self-Managed Enterprise, run `helm uninstall airbyte-enterprise`.
+
+## Updating Self-Managed Enterprise
+
+Upgrade Airbyte Self-Managed Enterprise by:
+
+1. Running `helm repo update`. This pulls an up-to-date version of our helm charts, which is tied to a version of the Airbyte platform.
+2. Re-installing Airbyte Self-Managed Enterprise:
+
+```sh
+helm upgrade \
+--namespace airbyte \
+--values ./values.yaml \
+--install airbyte-enterprise \
+airbyte/airbyte
+```
+
+## Customizing your Deployment
+
+In order to customize your deployment, you need to create an additional `values.yaml` file in your `airbyte` directory, and populate it with configuration override values. A thorough `values.yaml` example including many configurations can be located in [charts/airbyte](https://github.com/airbytehq/airbyte-platform/blob/main/charts/airbyte/values.yaml) folder of the Airbyte repository.
+
+After specifying your own configuration, run the following command:
+
+```sh
+helm upgrade \
+--namespace airbyte \
+--values ./values.yaml \
+--install airbyte-enterprise \
+airbyte/airbyte
+```
+
+### Configure a custom image registry
 
 You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `webapp`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
 
@@ -571,6 +614,8 @@ Implementing Airbyte this way has several advantages.
 - **Security**: Private custom image registries keep images in your network, reducing the risk of external threats.
 - **Access control**: You have more control over who can access and modify images.
 - **Compliance**: By keeping images in a controlled environment, it's easier to prove compliance with regulatory requirements for data storage and handling.
+
+[Custom Docker connectors](../operator-guides/using-custom-connectors/) in your workspace that specify an image using a fully qualified domain name (for example, `example.com/airbyte/your-custom-source`) ignore your configured custom image registry and pull images from the domain specified by that connector.
 
 <details>
 <summary>Before you start</summary>
@@ -673,58 +718,27 @@ If your registry requires authentication, you can create a Kubernetes secret and
 <details>
 <summary>Step 2: Tag and push Airbyte images</summary>
 
-Tag and push Airbyte's images to your custom image registry. In this example, you tag all Airbyte images and push them all to GitHub.
+Tag and push Airbyte's images to your custom image registry. 
+
+In this example, you tag all platform images and push them all to GitHub.
 
 ```bash
 abctl images manifest | xargs -L1 -I{} docker tag {} ghcr.io/NAMESPACE/{} && docker push ghcr.io/NAMESPACE/{}
 ```
 
+You can also pull Airbyte's connector images from Docker, tag them, and push them to your custom image registry. You must do this prior to adding a source or destination.
+
+In this example, you pull a connector from Docker, tag it, and push it to GitHub.
+
+```bash
+docker pull airbyte/destination-google-sheets:latest
+docker tag airbyte/desination-google-sheets:latest ghcr.io/NAMESPACE/desination-google-sheets:latest
+docker push ghcr.io/NAMESPACE/destination-google-sheets:latest    
+```
+
 Now, when you install Airbyte, images will come from the custom image registry you configured.
 
 </details>
-
-### Step 3: Deploy Self-Managed Enterprise
-
-Install Airbyte Self-Managed Enterprise on helm using the following command:
-
-```sh
-helm install \
---namespace airbyte \
---values ./values.yaml \
-airbyte-enterprise \
-airbyte/airbyte
-```
-
-To uninstall Self-Managed Enterprise, run `helm uninstall airbyte-enterprise`.
-
-## Updating Self-Managed Enterprise
-
-Upgrade Airbyte Self-Managed Enterprise by:
-
-1. Running `helm repo update`. This pulls an up-to-date version of our helm charts, which is tied to a version of the Airbyte platform.
-2. Re-installing Airbyte Self-Managed Enterprise:
-
-```sh
-helm upgrade \
---namespace airbyte \
---values ./values.yaml \
---install airbyte-enterprise \
-airbyte/airbyte
-```
-
-## Customizing your Deployment
-
-In order to customize your deployment, you need to create an additional `values.yaml` file in your `airbyte` directory, and populate it with configuration override values. A thorough `values.yaml` example including many configurations can be located in [charts/airbyte](https://github.com/airbytehq/airbyte-platform/blob/main/charts/airbyte/values.yaml) folder of the Airbyte repository.
-
-After specifying your own configuration, run the following command:
-
-```sh
-helm upgrade \
---namespace airbyte \
---values ./values.yaml \
---install airbyte-enterprise \
-airbyte/airbyte
-```
 
 ### Customizing your Service Account
 
@@ -736,7 +750,6 @@ To do this, add the following to your `values.yaml`:
 serviceAccount:
   name:
 ```
-
 
 ## AWS Policies Appendix
 

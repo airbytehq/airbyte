@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
+import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.cdk.integrations.destination.async.model.AirbyteRecordMessageFile
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3BaseDestinationAcceptanceTest
@@ -79,12 +80,13 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         val filePath = "$dirPath/$fileName"
         val fileSize = 1_024 * 1_024
 
-        fileTransferMountSource!!.resolve(dirPath).createDirectories()
-        val absoluteFilePath =
-            fileTransferMountSource!!
-                .resolve(filePath)
-                .createFile()
-                .writeText(RandomStringUtils.insecure().nextAlphanumeric(fileSize))
+        val absoluteDirPath = fileTransferMountSource!!.resolve(dirPath).createDirectories()
+        val absoluteFilePath = fileTransferMountSource!!.resolve(filePath).createFile()
+
+        absoluteDirPath.grantAllPermissions()
+        absoluteFilePath.grantAllPermissions()
+        absoluteFilePath.writeText(RandomStringUtils.insecure().nextAlphanumeric(fileSize))
+
         return Path.of(filePath)
     }
 
@@ -197,7 +199,6 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
                 .getUserMetaDataOf(S3StorageOperations.GENERATION_ID_USER_META_KEY)
                 .toLong()
         assertEquals(generationId, 32L)
-        assertFalse(file.exists(), "file should have been deleted by the connector")
         assertEquals(fileLength, objectInStore.size)
         assertEquals("$testBucketPath/$streamName/${filePath.toString()}", objectInStore.key)
         assertContentEquals(
@@ -207,5 +208,6 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
                 .objectContent
                 .readBytes()
         )
+        assertFalse(file.exists(), "file should have been deleted by the connector")
     }
 }
