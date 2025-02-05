@@ -16,7 +16,6 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-
 from airbyte_cdk.sources.types import Record
 
 from .spec import SourceAmazonAdsSpec

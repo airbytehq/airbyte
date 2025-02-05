@@ -1,15 +1,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import json
+
 import uuid
 from unittest import TestCase
 
 import pendulum
 import requests_mock
-from source_amazon_ads.streams.report_streams import display_report, products_report
 
-from airbyte_cdk.models import AirbyteStateBlob, SyncMode
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequestMatcher
 
 from .ad_requests import (
@@ -37,29 +36,8 @@ from .ad_responses.records import (
     ReportInitResponseRecordBuilder,
 )
 from .config import ConfigBuilder
+from .metrics_map import BRANDS_METRICS_MAP_V3, DISPLAY_REPORT_METRICS_MAP, PRODUCTS_REPORT_METRICS_MAP
 from .utils import get_log_messages_by_log_level, read_stream
-
-
-BRANDS_METRICS_MAP_V3 = {
-    "purchasedAsin": [
-        "campaignBudgetCurrencyCode",
-        "campaignName",
-        "adGroupName",
-        "attributionType",
-        "purchasedAsin",
-        "productName",
-        "productCategory",
-        "sales14d",
-        "orders14d",
-        "unitsSold14d",
-        "newToBrandSales14d",
-        "newToBrandPurchases14d",
-        "newToBrandUnitsSold14d",
-        "newToBrandSalesPercentage14d",
-        "newToBrandPurchasesPercentage14d",
-        "newToBrandUnitsSoldPercentage14d",
-    ]
-}
 
 
 class TestDisplayReportStreams(TestCase):
@@ -97,7 +75,7 @@ class TestDisplayReportStreams(TestCase):
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
         start_date = pendulum.today(tz=profile_timezone).date()
 
-        for report_type, metrics in display_report.METRICS_MAP_V3.items():
+        for report_type, metrics in DISPLAY_REPORT_METRICS_MAP.items():
             report_id = str(uuid.uuid4())
             http_mocker.post(
                 SponsoredDisplayReportRequestBuilder._init_report_endpoint(
@@ -133,11 +111,11 @@ class TestDisplayReportStreams(TestCase):
 
         number_of_records = 0
         for stream_name in (
-                "sponsored_display_campaigns_report_stream",
-                "sponsored_display_adgroups_report_stream",
-                "sponsored_display_productads_report_stream",
-                "sponsored_display_targets_report_stream",
-                "sponsored_display_asins_report_stream"
+            "sponsored_display_campaigns_report_stream",
+            "sponsored_display_adgroups_report_stream",
+            "sponsored_display_productads_report_stream",
+            "sponsored_display_targets_report_stream",
+            "sponsored_display_asins_report_stream",
         ):
             output = read_stream(stream_name, SyncMode.full_refresh, self._config)
             number_of_records += len(output.records)
@@ -159,7 +137,7 @@ class TestDisplayReportStreams(TestCase):
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
         start_date = pendulum.today(tz=profile_timezone).date()
 
-        for report_type, metrics in products_report.METRICS_MAP.items():
+        for report_type, metrics in PRODUCTS_REPORT_METRICS_MAP.items():
             report_id = str(uuid.uuid4())
             http_mocker.post(
                 SponsoredProductsReportRequestBuilder._init_report_endpoint(
@@ -193,14 +171,15 @@ class TestDisplayReportStreams(TestCase):
                 response_list=[{"content": gzip_file_report_response.body, "status_code": gzip_file_report_response.status_code}],
             )
         number_of_records = 0
-        for stream_name in ("sponsored_products_campaigns_report_stream",
-                            "sponsored_products_adgroups_report_stream",
-                            "sponsored_products_keywords_report_stream",
-                            "sponsored_products_targets_report_stream",
-                            "sponsored_products_productads_report_stream",
-                            "sponsored_products_asins_keywords_report_stream",
-                            "sponsored_products_asins_targets_report_stream",
-                            ):
+        for stream_name in (
+            "sponsored_products_campaigns_report_stream",
+            "sponsored_products_adgroups_report_stream",
+            "sponsored_products_keywords_report_stream",
+            "sponsored_products_targets_report_stream",
+            "sponsored_products_productads_report_stream",
+            "sponsored_products_asins_keywords_report_stream",
+            "sponsored_products_asins_targets_report_stream",
+        ):
             output = read_stream(stream_name, SyncMode.full_refresh, self._config)
             number_of_records += len(output.records)
         assert number_of_records == 7
@@ -318,7 +297,7 @@ class TestDisplayReportStreams(TestCase):
         profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
         start_date = pendulum.today(tz=profile_timezone).date()
 
-        for report_type, metrics in display_report.METRICS_MAP_V3.items():
+        for report_type, metrics in DISPLAY_REPORT_METRICS_MAP.items():
             report_id = str(uuid.uuid4())
             http_mocker.post(
                 SponsoredDisplayReportRequestBuilder._init_report_endpoint(
@@ -354,11 +333,11 @@ class TestDisplayReportStreams(TestCase):
 
         number_of_records = 0
         for stream_name in (
-                "sponsored_display_campaigns_report_stream",
-                "sponsored_display_adgroups_report_stream",
-                "sponsored_display_productads_report_stream",
-                "sponsored_display_targets_report_stream",
-                "sponsored_display_asins_report_stream"
+            "sponsored_display_campaigns_report_stream",
+            "sponsored_display_adgroups_report_stream",
+            "sponsored_display_productads_report_stream",
+            "sponsored_display_targets_report_stream",
+            "sponsored_display_asins_report_stream",
         ):
             output = read_stream(stream_name, SyncMode.full_refresh, self._config)
             number_of_records += len(output.records)
