@@ -30,10 +30,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -72,8 +73,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -105,10 +106,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -172,10 +174,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -214,8 +217,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -244,10 +247,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -286,8 +290,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -319,10 +323,11 @@ definitions:
                     action: IGNORE
                     error_message: Entity unavailable. Customer may have been deleted.
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -392,10 +397,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -434,8 +440,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -465,10 +471,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -507,8 +514,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -535,10 +542,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -603,10 +611,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -645,8 +654,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -677,10 +686,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -719,8 +729,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -751,10 +761,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -793,8 +804,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -825,10 +836,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -867,8 +879,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -899,10 +911,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -941,8 +954,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -973,10 +986,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1015,8 +1029,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -1047,10 +1061,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1089,8 +1104,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -1120,10 +1135,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1162,8 +1178,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -1194,10 +1210,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1236,8 +1253,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -1251,7 +1268,7 @@ definitions:
       type: DeclarativeStream
       name: subscription_with_scheduled_changes
       primary_key:
-        - id
+        - subscription_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -1305,6 +1322,11 @@ definitions:
       transformations:
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.CustomFieldTransformation
+        - type: AddFields
+          fields:
+            - path: ["subscription_id"]
+              value_type: string
+              value: "{{ stream_slice.subscription_id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1330,10 +1352,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1372,8 +1395,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -1400,10 +1423,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1468,10 +1492,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1510,8 +1535,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -1542,10 +1567,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1584,8 +1610,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -1678,10 +1704,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1745,10 +1772,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1787,8 +1815,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -1819,10 +1847,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1861,8 +1890,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -1893,10 +1922,11 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    error_message_contains: This API operation is not enabled for this site
+                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
                     action: IGNORE
                     error_message: Stream is available only for Product Catalog 1.0
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: WaitTimeFromHeader
                     header: Retry-After
@@ -1935,8 +1965,8 @@ definitions:
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%s') }}"
-          datetime_format: "%s"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1M
         cursor_granularity: PT1S
       transformations:
@@ -2033,6 +2063,18 @@ spec:
           - "2.0"
         default: "2.0"
         order: 3
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 50
+        default: 3
+        examples: [1, 2, 3]
+        description: >-
+          The number of worker threads to use for the sync.
+          The performance upper boundary is based on the limit of your Chargebee plan.
+          More info about the rate limit plan tiers can be found on Chargebee's API <a href="https://support.chargebee.com/support/solutions/articles/243576-what-are-the-chargebee-api-limits-">docs</a>.
+        order: 4
     additionalProperties: true
 
 metadata:
@@ -9060,7 +9102,7 @@ schemas:
           - boolean
           - "null"
         description: Indicates if there are scheduled changes for the subscription.
-      id:
+      subscription_id:
         type:
           - string
           - "null"
@@ -11323,3 +11365,16 @@ schemas:
           - integer
           - "null"
         description: The timestamp when the differential price data was last updated.
+
+
+# Chargebee offers three tiers of rate limits:
+# - Starter: 150 req/min (2.5 req/sec)
+# - Performance: 1000 req/min (16 req/sec)
+# - Enterprise: 3500 req/min (58 req/sec)
+#
+# We use defer to a level of 3 because we assume by default that customers are on the Starter tier, but
+# customers can specify a higher concurrency level as needed up to the theoretical max rate limit.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 50
