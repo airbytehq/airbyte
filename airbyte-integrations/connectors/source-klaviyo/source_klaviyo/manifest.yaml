@@ -257,6 +257,9 @@ definitions:
             - "true"
             - "false"
           cursor_field: archived
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_klaviyo.components.campaigns_state_migration.CampaignsStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/campaigns_schema"
