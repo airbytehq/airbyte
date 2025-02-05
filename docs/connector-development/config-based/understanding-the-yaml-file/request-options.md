@@ -61,9 +61,9 @@ requester:
       key: value
 ```
 
-### Request Options
+### Request Option Component
 
-Some components can add request options to the requests sent to the API endpoint.
+Some components can inject additional request options to the requests sent to the API endpoint.
 
 Schema:
 
@@ -73,20 +73,46 @@ RequestOption:
   type: object
   required:
     - type
-    - field_name
     - inject_into
   properties:
     type:
       type: string
       enum: [RequestOption]
-    field_name:
-      type: string
     inject_into:
       enum:
         - request_parameter
         - header
         - body_data
         - body_json
+  oneOf:
+    - properties:
+      field_name:
+        type: string
+        description: The key where the value will be injected. Used for non-nested injection
+      field_path:
+        type: array
+          items: 
+            type: string
+          description: For body_json injection, specifies the nested path to the inject values. Particularly useful for GraphQL queries where values need to be injected into the variables object.
+```
+
+#### GraphQL request injection
+
+The `field_path` property is used to provide a list of strings representing a path to a nested key to inject. This is particularly useful when working with GraphQL APIs. GraphQL queries typically accept variables as a separate object in the request body, allowing values to be parametrized without string manipulation of the query iteslf. For example, to inject a value into a GraphQL query's variables, you might use:
+
+```yaml
+request_option:
+  type: RequestOption
+  inject_into: body_json
+  field_path:
+    - variables
+    - limit
+```
+
+This would inject a value as:
+
+```json
+{ "variables": { "limit": value }}
 ```
 
 ### Request Path
