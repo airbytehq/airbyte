@@ -10,10 +10,12 @@ from typing import Callable, List, Tuple, Type
 import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
+
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import Config as AcceptanceTestConfig
 from connector_acceptance_test.config import GenericTestConfig
 from connector_acceptance_test.utils import diff_dicts, load_config
+
 
 HERE = Path(__file__).parent.absolute()
 

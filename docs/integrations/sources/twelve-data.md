@@ -44,6 +44,11 @@ Docs : https://twelvedata.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-02-01 | [52439](https://github.com/airbytehq/airbyte/pull/52439) | Update dependencies |
+| 0.0.9 | 2025-01-18 | [52010](https://github.com/airbytehq/airbyte/pull/52010) | Update dependencies |
+| 0.0.8 | 2025-01-11 | [51444](https://github.com/airbytehq/airbyte/pull/51444) | Update dependencies |
+| 0.0.7 | 2024-12-28 | [50808](https://github.com/airbytehq/airbyte/pull/50808) | Update dependencies |
+| 0.0.6 | 2024-12-21 | [50328](https://github.com/airbytehq/airbyte/pull/50328) | Update dependencies |
 | 0.0.5 | 2024-12-14 | [49744](https://github.com/airbytehq/airbyte/pull/49744) | Update dependencies |
 | 0.0.4 | 2024-12-12 | [49395](https://github.com/airbytehq/airbyte/pull/49395) | Update dependencies |
 | 0.0.3 | 2024-12-11 | [49112](https://github.com/airbytehq/airbyte/pull/49112) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

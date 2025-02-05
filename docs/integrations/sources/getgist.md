@@ -27,6 +27,12 @@ An Airbyte connector for [Gist](https://getgist.com/) would enable data syncing 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-02-01 | [52830](https://github.com/airbytehq/airbyte/pull/52830) | Update dependencies |
+| 0.0.9 | 2025-01-25 | [52331](https://github.com/airbytehq/airbyte/pull/52331) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51653](https://github.com/airbytehq/airbyte/pull/51653) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51085](https://github.com/airbytehq/airbyte/pull/51085) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50512](https://github.com/airbytehq/airbyte/pull/50512) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50018](https://github.com/airbytehq/airbyte/pull/50018) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49532](https://github.com/airbytehq/airbyte/pull/49532) | Update dependencies |
 | 0.0.3 | 2024-12-12 | [49192](https://github.com/airbytehq/airbyte/pull/49192) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [48908](https://github.com/airbytehq/airbyte/pull/48908) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

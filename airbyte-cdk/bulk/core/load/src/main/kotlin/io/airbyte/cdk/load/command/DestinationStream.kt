@@ -78,6 +78,11 @@ data class DestinationStream(
                     }
                 }
             }
+
+    fun shouldBeTruncatedAtEndOfSync(): Boolean {
+        return importType is Overwrite ||
+            (minimumGenerationId == generationId && minimumGenerationId > 0)
+    }
 }
 
 @Singleton

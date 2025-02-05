@@ -8,13 +8,15 @@ import string
 from typing import Any, Dict, Iterable, Mapping
 
 import pandas as pd
+from botocore.exceptions import ClientError, InvalidRegionError
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, AirbyteStateType, ConfiguredAirbyteCatalog, Status, Type
-from botocore.exceptions import ClientError, InvalidRegionError
 
 from .aws import AwsHandler
 from .config_reader import ConnectorConfig
 from .stream_writer import StreamWriter
+
 
 logger = logging.getLogger("airbyte")
 
@@ -34,7 +36,6 @@ class DestinationAwsDatalake(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
 

@@ -6,6 +6,7 @@ import re
 from typing import Optional
 
 import dagger
+
 from base_images import errors
 
 
@@ -142,7 +143,7 @@ async def check_user_can_read_dir(container: dagger.Container, user: str, dir_pa
     try:
         await container.with_exec(["touch", f"{dir_path}/foo.txt"]).with_user(user).with_exec(["cat", f"{dir_path}/foo.txt"])
     except dagger.ExecError:
-        raise errors.SanityCheckError(f"{dir_path} is not readable by the {user}.")
+        raise errors.SanityCheckError(f"{dir_path} is not readable by {user}.")
 
 
 async def check_user_cant_write_dir(container: dagger.Container, user: str, dir_path: str):
@@ -160,7 +161,7 @@ async def check_user_cant_write_dir(container: dagger.Container, user: str, dir_
         await container.with_user(user).with_exec(["touch", f"{dir_path}/foo.txt"])
     except dagger.ExecError:
         return
-    raise errors.SanityCheckError(f"{dir_path} is writable by the {user}.")
+    raise errors.SanityCheckError(f"{dir_path} is writable by {user}.")
 
 
 async def check_user_can_write_dir(container: dagger.Container, user: str, dir_path: str):
@@ -178,3 +179,42 @@ async def check_user_can_write_dir(container: dagger.Container, user: str, dir_p
         await container.with_user(user).with_exec(["touch", f"{dir_path}/foo.txt"])
     except dagger.ExecError:
         raise errors.SanityCheckError(f"{dir_path} is not writable by the {user}.")
+
+
+async def check_file_exists(container: dagger.Container, file_path: str):
+    """Check that a file exists in the container.
+
+    Args:
+        container (dagger.Container): The container on which the sanity checks should run.
+        file_path (str): The file path to check.
+
+    Raises:
+        errors.SanityCheckError: Raised if the file does not exist.
+    """
+    try:
+        await container.with_exec(["test", "-f", file_path])
+    except dagger.ExecError:
+        raise errors.SanityCheckError(f"{file_path} does not exist.")
+
+
+async def check_user_uid_guid(container: dagger.Container, user: str, expected_uid: int, expected_gid: int):
+    """Check that the given user has the expected user id and group id.
+
+    Args:
+        container (dagger.Container): The container on which the sanity checks should run.
+        user (str): The user to impersonate.
+        expected_uid (int): The expected user id.
+        expected_gid (int): The expected group id.
+
+    Raises:
+        errors.SanityCheckError: Raised if the user does not have the expected user id or group id.
+    """
+    try:
+        user_id = (await container.with_user(user).with_exec(["id", "-u"]).stdout()).strip()
+        if int(user_id) != expected_uid:
+            raise errors.SanityCheckError(f"Unexpected user id: {user_id}")
+        group_id = (await container.with_user(user).with_exec(["id", "-g"]).stdout()).strip()
+        if int(group_id) != expected_gid:
+            raise errors.SanityCheckError(f"Unexpected group id: {group_id}")
+    except dagger.ExecError as e:
+        raise errors.SanityCheckError(e)

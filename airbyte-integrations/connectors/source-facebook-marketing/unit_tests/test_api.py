@@ -8,6 +8,7 @@ import source_facebook_marketing
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.adobjects.adaccount import AdAccount
 
+
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 

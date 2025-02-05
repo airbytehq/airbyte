@@ -3,14 +3,15 @@
 import json
 from unittest import TestCase
 
+from config_builder import ConfigBuilder
+from source_sentry.source import SourceSentry
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
-from config_builder import ConfigBuilder
-from source_sentry.source import SourceSentry
 
 
 class TestEvents(TestCase):
@@ -31,10 +32,9 @@ class TestEvents(TestCase):
         http_mocker.get(
             HttpRequest(
                 url="https://sentry.io/api/0/projects/test%20organization/test%20project/issues/",
-                query_params={"query": "lastSeen:>1900-01-01T00:00:00.000000Z"}
+                query_params={"query": "lastSeen:>1900-01-01T00:00:00.000000Z"},
             ),
-            HttpResponse(body=json.dumps(find_template(self.fr_read_file, __file__)), status_code=200)
-
+            HttpResponse(body=json.dumps(find_template(self.fr_read_file, __file__)), status_code=200),
         )
         # https://sentry.io/api/1/projects/airbyte-09/airbyte-09/issues/?query=lastSeen%3A%3E2022-01-01T00%3A00%3A00.0Z
         config = self.config()
@@ -50,10 +50,9 @@ class TestEvents(TestCase):
         http_mocker.get(
             HttpRequest(
                 url="https://sentry.io/api/0/projects/test%20organization/test%20project/issues/",
-                query_params={"query": "lastSeen:>2023-01-01T00:00:00.000000Z"}
+                query_params={"query": "lastSeen:>2023-01-01T00:00:00.000000Z"},
             ),
-            HttpResponse(body=json.dumps(find_template(self.inc_read_file, __file__)), status_code=200)
-
+            HttpResponse(body=json.dumps(find_template(self.inc_read_file, __file__)), status_code=200),
         )
         config = self.config()
         catalog = self.catalog()

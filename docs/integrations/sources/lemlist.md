@@ -40,6 +40,12 @@ The Lemlist connector should not run into Lemlist API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                  |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------- |
+| 0.3.11 | 2025-02-01 | [52744](https://github.com/airbytehq/airbyte/pull/52744) | Update dependencies |
+| 0.3.10 | 2025-01-25 | [52228](https://github.com/airbytehq/airbyte/pull/52228) | Update dependencies |
+| 0.3.9 | 2025-01-18 | [51844](https://github.com/airbytehq/airbyte/pull/51844) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51194](https://github.com/airbytehq/airbyte/pull/51194) | Update dependencies |
+| 0.3.7 | 2024-12-28 | [50649](https://github.com/airbytehq/airbyte/pull/50649) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [50116](https://github.com/airbytehq/airbyte/pull/50116) | Update dependencies |
 | 0.3.5 | 2024-12-14 | [49645](https://github.com/airbytehq/airbyte/pull/49645) | Update dependencies |
 | 0.3.4 | 2024-12-12 | [49236](https://github.com/airbytehq/airbyte/pull/49236) | Update dependencies |
 | 0.3.3 | 2024-12-11 | [48144](https://github.com/airbytehq/airbyte/pull/48144) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

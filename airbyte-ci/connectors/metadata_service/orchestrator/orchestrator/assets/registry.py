@@ -20,6 +20,7 @@ from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLif
 from orchestrator.utils.object_helpers import default_none_to_dict
 from pydash.objects import set_with
 
+
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 
 GROUP_NAME = "registry"

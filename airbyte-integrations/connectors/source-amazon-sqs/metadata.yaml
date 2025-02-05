@@ -2,16 +2,34 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  allowedHosts:
+    hosts:
+      - "sqs.*.amazonaws.com"
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
   connectorSubtype: api
   connectorType: source
   definitionId: 983fd355-6bf3-4709-91b5-37afa391eeb6
-  dockerImageTag: 0.1.1
+  dockerImageTag: 1.0.3
   dockerRepository: airbyte/source-amazon-sqs
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-sqs
   githubIssueLabel: source-amazon-sqs
-  icon: awssqs.svg
+  icon: amazon-sqs.svg
   license: MIT
   name: Amazon SQS
+  releaseDate: 2021-10-27
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2025-01-30"
+        message: "The verison migrates the Amazon SQS connector to the low-code
+          framework for greater maintainability. !! Important: The management_events
+          stream changed it's EventTime field from integer to float. The `start_date`
+          parameter is now optional and the connector now takes current date as default
+          start date "
   remoteRegistries:
     pypi:
       enabled: true
@@ -25,7 +43,7 @@ data:
   supportLevel: community
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
