@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import patch
 from datetime import datetime, timedelta
+from unittest.mock import patch
+
 
 def test_get_tokens(components_module, requests_mock):
     url = "https://auth.railz.ai/getAccess"
