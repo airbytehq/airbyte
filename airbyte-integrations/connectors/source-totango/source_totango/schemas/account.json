@@ -668,14 +668,6 @@
       "source_attribute": "number_attribute",
       "attribute": "Active Days (7d)"
     },
-    "contract_value": {
-      "type": [
-        "null",
-        "string"
-      ],
-      "source_attribute": "string_attribute",
-      "attribute": "contract_value"
-    },
     "customer_portal_account_name": {
       "type": [
         "null",
@@ -715,14 +707,6 @@
       ],
       "source_attribute": "string_attribute",
       "attribute": "health"
-    },
-    "licenses": {
-      "type": [
-        "null",
-        "number"
-      ],
-      "source_attribute": "number_attribute",
-      "attribute": "licenses"
     },
     "License utilization (1d)": {
       "type": [
