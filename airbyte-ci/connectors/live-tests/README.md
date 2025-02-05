@@ -5,7 +5,7 @@ This project contains utilities for running connector tests against live data.
 ## Requirements
 
 - `docker`
-- `Python ^3.10`
+- `Python ^3.11`
 - `pipx`
 - `poetry`
 
@@ -180,6 +180,9 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+
+### 0.21.1
+Update Python version requirement from 3.10 to 3.11.
 
 ### 0.21.0
 Add `disable_proxy` flag

@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
+import io.airbyte.cdk.load.data.Transformations
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
 import org.apache.iceberg.catalog.Namespace
@@ -32,9 +33,12 @@ class SimpleTableIdGenerator(private val configNamespace: String? = "") : TableI
 /** AWS Glue requires lowercase database+table names. */
 class GlueTableIdGenerator(private val databaseName: String?) : TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
-        val namespace = (stream.namespace ?: databaseName)?.lowercase()
-
-        return tableIdOf(namespace!!, stream.name.lowercase())
+        val namespace =
+            Transformations.toAlphanumericAndUnderscore(
+                (stream.namespace ?: databaseName)!!.lowercase()
+            )
+        val name = Transformations.toAlphanumericAndUnderscore(stream.name.lowercase())
+        return tableIdOf(namespace, name)
     }
 }
 

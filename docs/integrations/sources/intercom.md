@@ -96,6 +96,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.0     | 2025-02-03 | [52687](https://github.com/airbytehq/airbyte/pull/52687) | New stream Tickets                                                                                                               |
 | 0.11.0     | 2025-02-03 | [51619](https://github.com/airbytehq/airbyte/pull/51619) | Upgrade API version to 2.11, add ai_agent_participated and ai_agent fields conversations stream schema                           |
 | 0.10.1     | 2025-02-01 | [49212](https://github.com/airbytehq/airbyte/pull/49212) | Update dependencies                                                                                                              |
 | 0.10.0     | 2025-01-24 | [52132](https://github.com/airbytehq/airbyte/pull/52132) | Fix incremental sync                                                                                                             |
