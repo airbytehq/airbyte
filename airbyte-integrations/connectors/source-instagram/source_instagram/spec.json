@@ -23,14 +23,12 @@
         "title": "Client Id",
         "description": "The Client ID for your Oauth application",
         "airbyte_secret": true,
-        "airbyte_hidden": true,
         "type": "string"
       },
       "client_secret": {
         "title": "Client Secret",
         "description": "The Client Secret for your Oauth application",
         "airbyte_secret": true,
-        "airbyte_hidden": true,
         "type": "string"
       }
     },
