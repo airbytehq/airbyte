@@ -62,17 +62,19 @@ class StreamManagerTest {
         val manager = DefaultStreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
 
-        launch { channel.send(manager.awaitStreamResult() is StreamSucceeded) }
+        launch { channel.send(manager.awaitStreamResult() is StreamProcessingSucceeded) }
 
         delay(500)
         Assertions.assertTrue(channel.tryReceive().isFailure)
-        Assertions.assertThrows(IllegalStateException::class.java) { manager.markSucceeded() }
-        manager.markEndOfStream()
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            manager.markProcessingSucceeded()
+        }
+        manager.markEndOfStream(true)
 
-        manager.markSucceeded()
+        manager.markProcessingSucceeded()
         Assertions.assertTrue(channel.receive())
 
-        Assertions.assertEquals(StreamSucceeded, manager.awaitStreamResult())
+        Assertions.assertEquals(StreamProcessingSucceeded, manager.awaitStreamResult())
     }
 
     @Test
@@ -80,29 +82,14 @@ class StreamManagerTest {
         val manager = DefaultStreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
 
-        launch { channel.send(manager.awaitStreamResult() is StreamSucceeded) }
+        launch { channel.send(manager.awaitStreamResult() is StreamProcessingSucceeded) }
 
         delay(500)
         Assertions.assertTrue(channel.tryReceive().isFailure)
-        manager.markFailed(Exception("test"))
+        manager.markProcessingFailed(Exception("test"))
         Assertions.assertFalse(channel.receive())
 
-        Assertions.assertTrue(manager.awaitStreamResult() is StreamFailed)
-    }
-
-    @Test
-    fun testMarkKilled() = runTest {
-        val manager = DefaultStreamManager(stream1)
-        val channel = Channel<Boolean>(Channel.UNLIMITED)
-
-        launch { channel.send(manager.awaitStreamResult() is StreamSucceeded) }
-
-        delay(500)
-        Assertions.assertTrue(channel.tryReceive().isFailure)
-        manager.markKilled(Exception("test"))
-        Assertions.assertFalse(channel.receive())
-
-        Assertions.assertTrue(manager.awaitStreamResult() is StreamKilled)
+        Assertions.assertTrue(manager.awaitStreamResult() is StreamProcessingFailed)
     }
 
     class TestUpdateBatchStateProvider : ArgumentsProvider {
@@ -155,6 +142,34 @@ class StreamManagerTest {
                         )
                     ),
                     TestCase(
+                        "Single stream, multiple batches, complete also persists",
+                        listOf(
+                            Pair(stream1, SetRecordCount(10)),
+                            Pair(stream1, AddComplete(0, 4)),
+                            Pair(stream1, ExpectPersistedUntil(5, true)),
+                            Pair(stream1, ExpectComplete(false)),
+                            Pair(stream1, SetEndOfStream),
+                            Pair(stream1, AddComplete(5, 9)),
+                            Pair(stream1, ExpectComplete(true)),
+                        )
+                    ),
+                    TestCase(
+                        "Single stream, multiple batches, persist/complete out of order",
+                        listOf(
+                            Pair(stream1, SetRecordCount(10)),
+                            Pair(
+                                stream1,
+                                AddComplete(5, 9)
+                            ), // complete a rangeset before the preceding rangeset is persisted
+                            Pair(stream1, AddPersisted(0, 4)),
+                            Pair(stream1, ExpectPersistedUntil(10, true)),
+                            Pair(stream1, ExpectComplete(false)),
+                            Pair(stream1, AddComplete(0, 4)),
+                            Pair(stream1, SetEndOfStream),
+                            Pair(stream1, ExpectComplete(true)),
+                        )
+                    ),
+                    TestCase(
                         "multiple streams",
                         listOf(
                             Pair(stream1, SetRecordCount(10)),
@@ -177,7 +192,43 @@ class StreamManagerTest {
                             Pair(stream2, ExpectPersistedUntil(20, true)),
                             Pair(stream2, ExpectComplete(true)),
                         )
-                    )
+                    ),
+                    TestCase(
+                        "mingle streams, multiple batches, complete also persists",
+                        listOf(
+                            Pair(stream1, SetRecordCount(10)),
+                            Pair(stream1, AddComplete(0, 4)),
+                            Pair(stream1, ExpectPersistedUntil(5, true)),
+                            Pair(stream2, AddComplete(0, 4)),
+                            Pair(stream2, ExpectPersistedUntil(5, true)),
+                            Pair(stream1, ExpectComplete(false)),
+                            Pair(stream2, ExpectComplete(false)),
+                            Pair(stream1, SetEndOfStream),
+                            Pair(stream1, AddComplete(5, 9)),
+                            Pair(stream2, AddComplete(5, 9)),
+                            Pair(stream2, SetEndOfStream),
+                            Pair(stream1, ExpectComplete(true)),
+                            Pair(stream2, ExpectComplete(true)),
+                        )
+                    ),
+                    TestCase(
+                        "mingle streams, multiple batches, persist/complete out of order",
+                        listOf(
+                            Pair(stream1, SetRecordCount(10)),
+                            Pair(stream1, AddComplete(5, 9)),
+                            Pair(stream1, ExpectPersistedUntil(10, false)),
+                            Pair(stream2, AddComplete(5, 9)),
+                            Pair(stream2, ExpectPersistedUntil(10, false)),
+                            Pair(stream1, ExpectComplete(false)),
+                            Pair(stream2, ExpectComplete(false)),
+                            Pair(stream1, SetEndOfStream),
+                            Pair(stream1, AddComplete(0, 4)),
+                            Pair(stream2, AddComplete(0, 4)),
+                            Pair(stream2, SetEndOfStream),
+                            Pair(stream1, ExpectComplete(true)),
+                            Pair(stream2, ExpectComplete(true)),
+                        )
+                    ),
                 )
                 .map { Arguments.of(it) }
                 .stream()
@@ -210,19 +261,21 @@ class StreamManagerTest {
             val manager = managers[stream.descriptor]!!
             when (event) {
                 is SetRecordCount -> repeat(event.count.toInt()) { manager.countRecordIn() }
-                is SetEndOfStream -> manager.markEndOfStream()
+                is SetEndOfStream -> manager.markEndOfStream(true)
                 is AddPersisted ->
                     manager.updateBatchState(
                         BatchEnvelope(
                             SimpleBatch(Batch.State.PERSISTED),
-                            Range.closed(event.firstIndex, event.lastIndex)
+                            Range.closed(event.firstIndex, event.lastIndex),
+                            stream.descriptor
                         )
                     )
                 is AddComplete ->
                     manager.updateBatchState(
                         BatchEnvelope(
                             SimpleBatch(Batch.State.COMPLETE),
-                            Range.closed(event.firstIndex, event.lastIndex)
+                            Range.closed(event.firstIndex, event.lastIndex),
+                            stream.descriptor
                         )
                     )
                 is ExpectPersistedUntil ->
@@ -246,16 +299,162 @@ class StreamManagerTest {
         val manager = DefaultStreamManager(stream1)
 
         // Can't mark success before end-of-stream
-        Assertions.assertThrows(IllegalStateException::class.java) { manager.markSucceeded() }
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            manager.markProcessingSucceeded()
+        }
 
         manager.countRecordIn()
-        manager.markEndOfStream()
+        manager.markEndOfStream(true)
 
         // Can't update after end-of-stream
         Assertions.assertThrows(IllegalStateException::class.java) { manager.countRecordIn() }
-        Assertions.assertThrows(IllegalStateException::class.java) { manager.markEndOfStream() }
+        Assertions.assertThrows(IllegalStateException::class.java) { manager.markEndOfStream(true) }
 
         // Can close now
-        Assertions.assertDoesNotThrow(manager::markSucceeded)
+        Assertions.assertDoesNotThrow(manager::markProcessingSucceeded)
+    }
+
+    @Test
+    fun testEmptyCompletedStreamYieldsBatchProcessingComplete() {
+        val manager = DefaultStreamManager(stream1)
+        manager.markEndOfStream(true)
+        Assertions.assertTrue(manager.isBatchProcessingComplete())
+    }
+
+    @Test
+    fun `ranges with the same id conflate to latest state`() {
+        val manager = DefaultStreamManager(stream1)
+        val range1 = Range.closed(0L, 9L)
+        val batch1 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.STAGED, groupId = "foo"),
+                range1,
+                stream1.descriptor
+            )
+
+        val range2 = Range.closed(10, 19L)
+        val batch2 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.PERSISTED, groupId = "foo"),
+                range2,
+                stream1.descriptor
+            )
+
+        manager.updateBatchState(batch1)
+        Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
+        manager.updateBatchState(batch2)
+        Assertions.assertTrue(manager.areRecordsPersistedUntil(10L), "later state propagates back")
+    }
+
+    @Test
+    fun `ranges with a different id conflate to latest state`() {
+        val manager = DefaultStreamManager(stream1)
+        val range1 = Range.closed(0L, 9L)
+        val batch1 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.STAGED, groupId = "foo"),
+                range1,
+                stream1.descriptor
+            )
+
+        val range2 = Range.closed(10, 19L)
+        val batch2 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.PERSISTED, groupId = "bar"),
+                range2,
+                stream1.descriptor
+            )
+
+        manager.updateBatchState(batch1)
+        Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
+        manager.updateBatchState(batch2)
+        Assertions.assertFalse(
+            manager.areRecordsPersistedUntil(10L),
+            "state does not propagate to other ids"
+        )
+    }
+
+    @Test
+    fun `state does not conflate between id and no id`() {
+        val manager = DefaultStreamManager(stream1)
+        val range1 = Range.closed(0L, 9L)
+        val batch1 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.STAGED, groupId = null),
+                range1,
+                stream1.descriptor
+            )
+
+        val range2 = Range.closed(10, 19L)
+        val batch2 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.PERSISTED, groupId = "bar"),
+                range2,
+                stream1.descriptor
+            )
+
+        manager.updateBatchState(batch1)
+        Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
+        manager.updateBatchState(batch2)
+        Assertions.assertFalse(
+            manager.areRecordsPersistedUntil(10L),
+            "state does not propagate to null ids"
+        )
+    }
+
+    @Test
+    fun `max of newer and older state is always used`() {
+        val manager = DefaultStreamManager(stream1)
+        val range1 = Range.closed(0L, 9L)
+        val batch1 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.PERSISTED, groupId = "foo"),
+                range1,
+                stream1.descriptor
+            )
+
+        val range2 = Range.closed(10, 19L)
+        val batch2 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.STAGED, groupId = "foo"),
+                range2,
+                stream1.descriptor
+            )
+
+        manager.updateBatchState(batch1)
+        Assertions.assertFalse(manager.areRecordsPersistedUntil(20L), "local < persisted")
+        manager.updateBatchState(batch2)
+        Assertions.assertTrue(
+            manager.areRecordsPersistedUntil(20L),
+            "max of newer and older state is used"
+        )
+    }
+
+    @Test
+    fun `max of older and newer state is always used`() {
+        val manager = DefaultStreamManager(stream1)
+        val range1 = Range.closed(0L, 9L)
+        val batch1 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.COMPLETE, groupId = "foo"),
+                range1,
+                stream1.descriptor
+            )
+
+        val range2 = Range.closed(10, 19L)
+        val batch2 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.PERSISTED, groupId = "foo"),
+                range2,
+                stream1.descriptor
+            )
+        manager.markEndOfStream(true)
+
+        manager.updateBatchState(batch2)
+        manager.updateBatchState(batch1)
+        Assertions.assertTrue(
+            manager.isBatchProcessingComplete(),
+            "max of older and newer state is used"
+        )
     }
 }

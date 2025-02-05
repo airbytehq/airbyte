@@ -10,8 +10,11 @@ import aws.sdk.kotlin.services.s3.model.CompletedPart
 import aws.sdk.kotlin.services.s3.model.CreateMultipartUploadResponse
 import aws.sdk.kotlin.services.s3.model.UploadPartRequest
 import aws.smithy.kotlin.runtime.content.ByteStream
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
+import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.file.StreamProcessor
+import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
@@ -21,6 +24,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.apache.mina.util.ConcurrentHashSet
 
 /**
  * An S3MultipartUpload that provides an [OutputStream] abstraction for writing data. This should
@@ -41,24 +45,23 @@ class S3MultipartUpload<T : OutputStream>(
     uploadConfig: ObjectStorageUploadConfiguration?,
 ) {
     private val log = KotlinLogging.logger {}
-
-    private val uploadedParts = mutableListOf<CompletedPart>()
     private val partSize =
-        uploadConfig?.streamingUploadPartSize
+        uploadConfig?.uploadPartSizeBytes
             ?: throw IllegalStateException("Streaming upload part size is not configured")
     private val wrappingBuffer = streamProcessor.wrapper(underlyingBuffer)
-    private val workQueue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
-    private val closeOnce = AtomicBoolean(false)
+    private val partQueue = Channel<ByteArray>(Channel.UNLIMITED)
+    private val isClosed = AtomicBoolean(false)
 
     /**
      * Run the upload using the provided block. This should only be used by the
-     * [S3Client.streamingUpload] method. Work items are processed asynchronously in the [launch]
-     * block. The for loop will suspend until [workQueue] is closed, after which the call to
-     * [complete] will finish the upload.
+     * [S3Client.streamingUpload] method. Completed partss are processed asynchronously in the
+     * [launch] block. The for loop will suspend until [partQueue] is closed, after which the call
+     * to [complete] will finish the upload.
      *
      * Moreover, [runUsing] will not return until the launch block exits. This ensures
-     * - work items are processed in order
-     * - minimal work is done in [runBlocking] (just enough to enqueue the work items)
+     * - parts are processed in order
+     * - minimal work is done in [runBlocking] (just enough to enqueue the parts, and only once per
+     * part)
      * - the upload will not complete until the [OutputStream.close] is called (either by the user
      * in [block] or when the [use] block terminates).
      * - the upload will not complete until all the work is done
@@ -68,10 +71,17 @@ class S3MultipartUpload<T : OutputStream>(
             "Starting multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
         }
         launch {
-            for (item in workQueue) {
-                item()
+            val uploadedParts = mutableListOf<CompletedPart>()
+            for (bytes in partQueue) {
+                val part = uploadPart(bytes, uploadedParts)
+                uploadedParts.add(part)
             }
-            complete()
+            streamProcessor.partFinisher.invoke(wrappingBuffer)
+            if (underlyingBuffer.size() > 0) {
+                val part = uploadPart(underlyingBuffer.toByteArray(), uploadedParts)
+                uploadedParts.add(part)
+            }
+            complete(uploadedParts)
         }
         UploadStream().use { block(it) }
         log.info {
@@ -80,57 +90,56 @@ class S3MultipartUpload<T : OutputStream>(
     }
 
     inner class UploadStream : OutputStream() {
-        override fun close() = runBlocking {
-            if (closeOnce.setOnce()) {
-                workQueue.send { workQueue.close() }
+        override fun close() {
+            if (isClosed.setOnce()) {
+                partQueue.close()
             }
         }
 
-        override fun flush() = runBlocking { workQueue.send { wrappingBuffer.flush() } }
+        override fun flush() = wrappingBuffer.flush()
 
-        override fun write(b: Int) = runBlocking {
-            workQueue.send {
-                wrappingBuffer.write(b)
-                if (underlyingBuffer.size() >= partSize) {
-                    uploadPart()
-                }
+        override fun write(b: Int) {
+            wrappingBuffer.write(b)
+            if (underlyingBuffer.size() >= partSize) {
+                enqueuePart()
             }
         }
 
-        override fun write(b: ByteArray) = runBlocking {
-            workQueue.send {
-                wrappingBuffer.write(b)
-                if (underlyingBuffer.size() >= partSize) {
-                    uploadPart()
-                }
+        override fun write(b: ByteArray) {
+            wrappingBuffer.write(b)
+            if (underlyingBuffer.size() >= partSize) {
+                enqueuePart()
             }
         }
     }
 
-    private suspend fun uploadPart() {
-        streamProcessor.partFinisher.invoke(wrappingBuffer)
+    private fun enqueuePart() {
+        wrappingBuffer.flush()
+        val bytes = underlyingBuffer.toByteArray()
+        underlyingBuffer.reset()
+        runBlocking { partQueue.send(bytes) }
+    }
+
+    private suspend fun uploadPart(
+        bytes: ByteArray,
+        uploadedParts: List<CompletedPart>
+    ): CompletedPart {
         val partNumber = uploadedParts.size + 1
         val request = UploadPartRequest {
             uploadId = response.uploadId
             bucket = response.bucket
             key = response.key
-            body = ByteStream.fromBytes(underlyingBuffer.toByteArray())
+            body = ByteStream.fromBytes(bytes)
             this.partNumber = partNumber
         }
         val uploadResponse = client.uploadPart(request)
-        uploadedParts.add(
-            CompletedPart {
-                this.partNumber = partNumber
-                this.eTag = uploadResponse.eTag
-            }
-        )
-        underlyingBuffer.reset()
+        return CompletedPart {
+            this.partNumber = partNumber
+            this.eTag = uploadResponse.eTag
+        }
     }
 
-    private suspend fun complete() {
-        if (underlyingBuffer.size() > 0) {
-            uploadPart()
-        }
+    private suspend fun complete(uploadedParts: List<CompletedPart>) {
         val request = CompleteMultipartUploadRequest {
             uploadId = response.uploadId
             bucket = response.bucket
@@ -138,5 +147,79 @@ class S3MultipartUpload<T : OutputStream>(
             this.multipartUpload = CompletedMultipartUpload { parts = uploadedParts }
         }
         client.completeMultipartUpload(request)
+    }
+}
+
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
+class S3StreamingUpload(
+    private val client: aws.sdk.kotlin.services.s3.S3Client,
+    private val bucketConfig: S3BucketConfiguration,
+    private val response: CreateMultipartUploadResponse,
+) : StreamingUpload<S3Object> {
+    private val log = KotlinLogging.logger {}
+    private val uploadedParts = ConcurrentHashSet<CompletedPart>()
+    private val isComplete = AtomicBoolean(false)
+
+    override suspend fun uploadPart(part: ByteArray, index: Int) {
+        log.info { "Uploading part $index to ${response.key} (uploadId=${response.uploadId}" }
+
+        try {
+            val request = UploadPartRequest {
+                uploadId = response.uploadId
+                bucket = response.bucket
+                key = response.key
+                body = ByteStream.fromBytes(part)
+                this.partNumber = index
+            }
+            val uploadResponse = client.uploadPart(request)
+            uploadedParts.add(
+                CompletedPart {
+                    this.partNumber = index
+                    this.eTag = uploadResponse.eTag
+                }
+            )
+        } catch (e: Exception) {
+            log.error(e) {
+                "Failed to upload part $index to ${response.key} (uploadId=${response.uploadId}"
+            }
+            throw e
+        }
+    }
+
+    override suspend fun complete(): S3Object {
+        try {
+            if (isComplete.setOnce()) {
+                log.info {
+                    "Completing multipart upload to ${response.key} (uploadId=${response.uploadId}"
+                }
+                val partsSorted = uploadedParts.toList().sortedBy { it.partNumber }
+                if (partsSorted.isEmpty()) {
+                    log.warn {
+                        "Skipping empty upload to ${response.key} (uploadId=${response.uploadId}"
+                    }
+                    return S3Object(response.key!!, bucketConfig)
+                }
+
+                val request = CompleteMultipartUploadRequest {
+                    uploadId = response.uploadId
+                    bucket = response.bucket
+                    key = response.key
+                    this.multipartUpload = CompletedMultipartUpload { parts = partsSorted }
+                }
+                // S3 will handle enforcing no gaps in the part numbers
+                client.completeMultipartUpload(request)
+            } else {
+                log.warn {
+                    "Complete called multiple times for ${response.key} (uploadId=${response.uploadId}"
+                }
+            }
+        } catch (e: Exception) {
+            log.error(e) {
+                "Failed to complete upload to ${response.key} (uploadId=${response.uploadId}; parts=${uploadedParts.map {it.partNumber}.sortedBy { it }}"
+            }
+            throw e
+        }
+
+        return S3Object(response.key!!, bucketConfig)
     }
 }

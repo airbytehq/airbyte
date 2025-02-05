@@ -101,6 +101,16 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------|
+| 1.3.27 | 2025-01-25 | [52428](https://github.com/airbytehq/airbyte/pull/52428) | Update dependencies |
+| 1.3.26 | 2025-01-18 | [52009](https://github.com/airbytehq/airbyte/pull/52009) | Update dependencies |
+| 1.3.25 | 2025-01-11 | [51403](https://github.com/airbytehq/airbyte/pull/51403) | Update dependencies |
+| 1.3.24 | 2025-01-04 | [50937](https://github.com/airbytehq/airbyte/pull/50937) | Update dependencies |
+| 1.3.23 | 2024-12-28 | [50797](https://github.com/airbytehq/airbyte/pull/50797) | Update dependencies |
+| 1.3.22 | 2024-12-21 | [50376](https://github.com/airbytehq/airbyte/pull/50376) | Update dependencies |
+| 1.3.21 | 2024-12-14 | [49799](https://github.com/airbytehq/airbyte/pull/49799) | Update dependencies |
+| 1.3.20 | 2024-12-12 | [49373](https://github.com/airbytehq/airbyte/pull/49373) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.3.19 | 2024-11-04 | [48301](https://github.com/airbytehq/airbyte/pull/48301) | Update dependencies |
+| 1.3.18 | 2024-10-29 | [46853](https://github.com/airbytehq/airbyte/pull/46853) | Update dependencies |
 | 1.3.17 | 2024-10-05 | [46479](https://github.com/airbytehq/airbyte/pull/46479) | Update dependencies |
 | 1.3.16 | 2024-09-28 | [46170](https://github.com/airbytehq/airbyte/pull/46170) | Update dependencies |
 | 1.3.15 | 2024-09-21 | [45495](https://github.com/airbytehq/airbyte/pull/45495) | Update dependencies |

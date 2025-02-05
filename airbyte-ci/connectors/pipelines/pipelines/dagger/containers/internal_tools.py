@@ -3,6 +3,7 @@
 #
 
 from dagger import Container, Secret
+
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.consts import INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package

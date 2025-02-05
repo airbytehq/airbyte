@@ -11,6 +11,7 @@ import pytest
 import requests
 from source_zoho_crm.streams import IncrementalZohoCrmStream, ZohoStreamFactory
 
+
 HERE = Path(__file__).parent
 
 

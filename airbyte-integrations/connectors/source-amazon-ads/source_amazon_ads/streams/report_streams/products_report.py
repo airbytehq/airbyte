@@ -6,12 +6,12 @@
 from http import HTTPStatus
 from typing import Any, List, Mapping
 
-import backoff
 import requests
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from source_amazon_ads.schemas import Profile
 
-from .report_streams import ReportInfo, ReportStream, TooManyRequests
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+
+from .report_streams import ReportInfo, ReportStream
+
 
 METRICS_MAP = {
     "campaigns": [
@@ -271,7 +271,7 @@ class SponsoredProductsReportStream(ReportStream):
     metrics_map = METRICS_MAP
     metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP
 
-    def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
+    def __init__(self, config: Mapping[str, Any], profiles: List[dict[str, Any]], authenticator: Oauth2Authenticator):
         super().__init__(config, profiles, authenticator)
         # using session without auth as API returns 400 bad request if Authorization header presents in request
         # X-Amz-Algorithm and X-Amz-Signature query params already present in the url, that is enough to make proper request

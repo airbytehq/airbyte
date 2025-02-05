@@ -6,40 +6,44 @@ package io.airbyte.cdk.load.task.internal
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
-import io.airbyte.cdk.load.message.Deserializer
-import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.DestinationFile
+import io.airbyte.cdk.load.message.DestinationFileStreamComplete
+import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
-import io.airbyte.cdk.load.message.DestinationStreamComplete
-import io.airbyte.cdk.load.message.DestinationStreamIncomplete
+import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
+import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
-import io.airbyte.cdk.load.message.StreamCompleteWrapped
-import io.airbyte.cdk.load.message.StreamRecordWrapped
+import io.airbyte.cdk.load.message.StreamEndEvent
+import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.message.Undefined
-import io.airbyte.cdk.load.state.MemoryManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.InternalScope
-import io.airbyte.cdk.load.task.SyncLevel
+import io.airbyte.cdk.load.task.DestinationTaskLauncher
+import io.airbyte.cdk.load.task.OnSyncFailureOnly
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
+import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Named
 import jakarta.inject.Singleton
-import java.io.InputStream
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
 
-interface InputConsumerTask : SyncLevel, InternalScope
+interface InputConsumerTask : Task
 
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
@@ -55,13 +59,18 @@ interface InputConsumerTask : SyncLevel, InternalScope
 @Secondary
 class DefaultInputConsumerTask(
     private val catalog: DestinationCatalog,
-    private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+    private val inputFlow: ReservingDeserializingInputFlow,
     private val recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
+    private val destinationTaskLauncher: DestinationTaskLauncher,
+    @Named("fileMessageQueue")
+    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 ) : InputConsumerTask {
     private val log = KotlinLogging.logger {}
+
+    override val terminalCondition: TerminalCondition = OnSyncFailureOnly
 
     private suspend fun handleRecord(
         reserved: Reserved<DestinationStreamAffinedMessage>,
@@ -69,25 +78,48 @@ class DefaultInputConsumerTask(
     ) {
         val stream = reserved.value.stream
         val manager = syncManager.getStreamManager(stream)
-        val queue = recordQueueSupplier.get(stream)
+        val recordQueue = recordQueueSupplier.get(stream)
         when (val message = reserved.value) {
             is DestinationRecord -> {
                 val wrapped =
-                    StreamRecordWrapped(
+                    StreamRecordEvent(
                         index = manager.countRecordIn(),
                         sizeBytes = sizeBytes,
-                        record = message
+                        payload = message.asRecordSerialized()
                     )
-                queue.publish(reserved.replace(wrapped))
+                recordQueue.publish(reserved.replace(wrapped))
             }
-            is DestinationStreamComplete -> {
+            is DestinationRecordStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
-                val wrapped = StreamCompleteWrapped(index = manager.markEndOfStream())
-                queue.publish(reserved.replace(wrapped))
-                queue.close()
+                val wrapped = StreamEndEvent(index = manager.markEndOfStream(true))
+                log.info { "Read COMPLETE for stream $stream" }
+                recordQueue.publish(reserved.replace(wrapped))
+                recordQueue.close()
             }
-            is DestinationStreamIncomplete ->
-                throw IllegalStateException("Stream $stream failed upstream, cannot continue.")
+            is DestinationRecordStreamIncomplete -> {
+                reserved.release() // safe because multiple calls conflate
+                val wrapped = StreamEndEvent(index = manager.markEndOfStream(false))
+                log.info { "Read INCOMPLETE for stream $stream" }
+                recordQueue.publish(reserved.replace(wrapped))
+                recordQueue.close()
+            }
+            is DestinationFile -> {
+                val index = manager.countRecordIn()
+                // destinationTaskLauncher.handleFile(stream, message, index)
+                fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
+            }
+            is DestinationFileStreamComplete -> {
+                reserved.release() // safe because multiple calls conflate
+                manager.markEndOfStream(true)
+                val envelope =
+                    BatchEnvelope(
+                        SimpleBatch(Batch.State.COMPLETE),
+                        streamDescriptor = message.stream,
+                    )
+                destinationTaskLauncher.handleNewBatch(stream, envelope)
+            }
+            is DestinationFileStreamIncomplete ->
+                throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
         }
     }
 
@@ -163,52 +195,44 @@ class DefaultInputConsumerTask(
         } finally {
             log.info { "Closing record queues" }
             catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
+            fileTransferQueue.close()
         }
     }
 }
 
-interface SizedInputFlow<T> : Flow<Pair<Long, T>>
-
-abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserved<T>> {
-    val log = KotlinLogging.logger {}
-
-    abstract val config: DestinationConfiguration
-    abstract val deserializer: Deserializer<T>
-    abstract val memoryManager: MemoryManager
-    abstract val inputStream: InputStream
-
-    override suspend fun collect(collector: FlowCollector<Pair<Long, Reserved<T>>>) {
-        val reservation = memoryManager.reserveRatio(config.maxMessageQueueMemoryUsageRatio, this)
-        val reservationManager = reservation.getReservationManager()
-
-        log.info { "Reserved ${reservation.bytesReserved/1024}mb memory for input processing" }
-
-        reservation.use { _ ->
-            inputStream.bufferedReader().lineSequence().forEachIndexed { index, line ->
-                if (line.isEmpty()) {
-                    return@forEachIndexed
-                }
-
-                val lineSize = line.length.toLong()
-                val estimatedSize = lineSize * config.estimatedRecordMemoryOverheadRatio
-                val reserved = reservationManager.reserveBlocking(estimatedSize.toLong(), line)
-                val message = deserializer.deserialize(line)
-                collector.emit(Pair(lineSize, reserved.replace(message)))
-
-                if (index % 10_000 == 0) {
-                    log.info { "Processed $index lines" }
-                }
-            }
-        }
-
-        log.info { "Finished processing input" }
-    }
+interface InputConsumerTaskFactory {
+    fun make(
+        catalog: DestinationCatalog,
+        inputFlow: ReservingDeserializingInputFlow,
+        recordQueueSupplier:
+            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
+        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
+        destinationTaskLauncher: DestinationTaskLauncher,
+        fileTransferQueue: MessageQueue<FileTransferQueueMessage>
+    ): InputConsumerTask
 }
 
 @Singleton
-class DefaultInputFlow(
-    override val config: DestinationConfiguration,
-    override val deserializer: Deserializer<DestinationMessage>,
-    override val memoryManager: MemoryManager,
-    override val inputStream: InputStream
-) : ReservingDeserializingInputFlow<DestinationMessage>()
+@Secondary
+class DefaultInputConsumerTaskFactory(private val syncManager: SyncManager) :
+    InputConsumerTaskFactory {
+    override fun make(
+        catalog: DestinationCatalog,
+        inputFlow: ReservingDeserializingInputFlow,
+        recordQueueSupplier:
+            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
+        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
+        destinationTaskLauncher: DestinationTaskLauncher,
+        fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
+    ): InputConsumerTask {
+        return DefaultInputConsumerTask(
+            catalog,
+            inputFlow,
+            recordQueueSupplier,
+            checkpointQueue,
+            syncManager,
+            destinationTaskLauncher,
+            fileTransferQueue,
+        )
+    }
+}

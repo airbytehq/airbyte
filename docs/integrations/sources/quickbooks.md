@@ -107,7 +107,9 @@ This Source is capable of syncing the following [Streams](https://developer.intu
   <summary>Expand to review</summary>
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
-| :---------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+|:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
+| 4.0.0       | 2025-01-18 | [51615](https://github.com/airbytehq/airbyte/pull/51615) | Remove nested credentials object from config to enable overwriting of new refresh token in config |
+| 3.0.26      | 2024-11-01 | [48089](https://github.com/airbytehq/airbyte/pull/48089) | Promoting release candidate 3.0.26-rc.1 to a main version. |
 | 3.0.26-rc.1 | 2024-09-10 | [44560](https://github.com/airbytehq/airbyte/pull/44560) | Replace Custom Components with Airbyte CDK features                |
 | 3.0.25      | 2024-10-05 | [46424](https://github.com/airbytehq/airbyte/pull/46424) | Update dependencies                                                |
 | 3.0.24      | 2024-09-28 | [46142](https://github.com/airbytehq/airbyte/pull/46142) | Update dependencies                                                |

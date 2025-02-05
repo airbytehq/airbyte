@@ -9,19 +9,16 @@ class MergeUnions : AirbyteSchemaIdentityMapper {
         // Map the options first so they're in their final form
         val mappedOptions = schema.options.map { map(it) }
         val mergedOptions = mergeOptions(mappedOptions)
-        if (mergedOptions.size == 1) {
-            return mergedOptions.first()
-        }
-        return UnionType(mergedOptions.toList())
+        return UnionType.of(mergedOptions)
     }
 
-    private fun mergeOptions(options: List<AirbyteType>): Set<AirbyteType> {
+    private fun mergeOptions(options: Iterable<AirbyteType>): Set<AirbyteType> {
         val mergedOptions = mutableSetOf<AirbyteType>()
         mergeOptions(mergedOptions, options)
         return mergedOptions
     }
 
-    private fun mergeOptions(into: MutableSet<AirbyteType>, from: List<AirbyteType>) {
+    private fun mergeOptions(into: MutableSet<AirbyteType>, from: Iterable<AirbyteType>) {
         for (option in from) {
             if (option is UnionType) {
                 // If this is a union of a union, recursively merge the other union's options in
@@ -44,11 +41,10 @@ class MergeUnions : AirbyteSchemaIdentityMapper {
                         continue
                     }
 
-                    if (existingField != field) {
-                        throw IllegalArgumentException(
-                            "Cannot merge unions of objects with different types for the same field"
-                        )
-                    }
+                    // Combine the fields, recursively merging unions, object fields, etc
+                    val mergedFields = map(UnionType.of(existingField.type, field.type))
+                    newProperties[name] =
+                        FieldType(mergedFields, existingField.nullable || field.nullable)
 
                     // If the fields are identical, we can just keep the existing field
                 }

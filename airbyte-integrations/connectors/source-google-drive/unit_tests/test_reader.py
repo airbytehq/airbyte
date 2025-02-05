@@ -4,14 +4,19 @@
 
 
 import datetime
-from unittest.mock import MagicMock, call, patch
+from typing import Dict
+from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
+from source_google_drive.spec import ServiceAccountCredentials, SourceGoogleDriveSpec
+from source_google_drive.stream_reader import GoogleDriveRemoteFile, SourceGoogleDriveStreamReader
+
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
-from source_google_drive.spec import ServiceAccountCredentials, SourceGoogleDriveSpec
-from source_google_drive.stream_reader import GoogleDriveRemoteFile, SourceGoogleDriveStreamReader
+
+
+TEST_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 
 
 def create_reader(
@@ -19,7 +24,7 @@ def create_reader(
         folder_url="https://drive.google.com/drive/folders/1Z2Q3",
         streams=[FileBasedStreamConfig(name="test", format=JsonlFormat())],
         credentials=ServiceAccountCredentials(auth_type="Service", service_account_info='{"test": "abc"}'),
-    )
+    ),
 ):
     reader = SourceGoogleDriveStreamReader()
     reader.config = config
@@ -637,6 +642,183 @@ def test_open_file(
             create_reader().open_file(file, mode, None, MagicMock()).read()
     else:
         assert expected_read == create_reader().open_file(file, mode, None, MagicMock()).read()
+        assert mock_downloader.next_chunk.call_count == 2
+        if expect_export:
+            files_service.export_media.assert_has_calls([call(fileId=file.id, mimeType=expected_mime_type)])
+        else:
+            files_service.get_media.assert_has_calls([call(fileId=file.id)])
+
+
+@pytest.mark.parametrize(
+    "file, file_content, expect_export, expected_mime_type, expected_paths, expect_raise",
+    [
+        pytest.param(
+            GoogleDriveRemoteFile(
+                uri="test.jsonl",
+                last_modified=datetime.datetime(2023, 10, 16, 6, 16, 6),
+                mime_type="application/octet-stream",
+                id="1",
+                original_mime_type="application/octet-stream",
+            ),
+            b"test",
+            False,
+            None,
+            {"file_url": f"{TEST_LOCAL_DIRECTORY}/test.jsonl", "bytes": ANY, "file_relative_path": "test.jsonl"},
+            False,
+            id="Get jsonl",
+        ),
+        pytest.param(
+            GoogleDriveRemoteFile(
+                uri="subfolder/test2.jsonl",
+                last_modified=datetime.datetime(2023, 10, 19, 1, 43, 56),
+                mime_type="application/octet-stream",
+                id="test2",
+                original_mime_type="application/octet-stream",
+            ),
+            b"test",
+            False,
+            None,
+            {"file_url": f"{TEST_LOCAL_DIRECTORY}/subfolder/test2.jsonl", "bytes": ANY, "file_relative_path": "subfolder/test2.jsonl"},
+            False,
+            id="Get json2l",
+        ),
+        pytest.param(
+            GoogleDriveRemoteFile(
+                uri="testdoc_docx.docx",
+                last_modified=datetime.datetime(2023, 10, 27, 0, 45, 54),
+                mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                id="testdoc_docx",
+                original_mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ),
+            b"test",
+            False,
+            None,
+            {"file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_docx.docx", "bytes": ANY, "file_relative_path": "testdoc_docx.docx"},
+            False,
+            id="Get testdoc_docx",
+        ),
+        pytest.param(
+            GoogleDriveRemoteFile(
+                uri="testdoc_pdf.pdf",
+                last_modified=datetime.datetime(2023, 10, 27, 0, 45, 58),
+                mime_type="application/pdf",
+                id="testdoc_pdf",
+                original_mime_type="application/pdf",
+            ),
+            b"test",
+            False,
+            None,
+            {"file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_pdf.pdf", "bytes": ANY, "file_relative_path": "testdoc_pdf.pdf"},
+            False,
+            id="Read testdoc_pdf",
+        ),
+        pytest.param(
+            GoogleDriveRemoteFile(
+                uri="testdoc_ocr_pdf.pdf",
+                last_modified=datetime.datetime(2023, 10, 27, 0, 46, 4),
+                mime_type="application/pdf",
+                id="testdoc_ocr_pdf",
+                original_mime_type="application/pdf",
+            ),
+            b"test",
+            False,
+            None,
+            {"file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_ocr_pdf.pdf", "bytes": ANY, "file_relative_path": "testdoc_ocr_pdf.pdf"},
+            False,
+            id="Read testdoc_ocr_pdf",
+        ),
+        pytest.param(
+            GoogleDriveRemoteFile(
+                uri="testdoc_google",
+                last_modified=datetime.datetime(2023, 11, 10, 13, 46, 18, 551000),
+                mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                id="testdoc_google",
+                original_mime_type="application/vnd.google-apps.document",
+            ),
+            b"test",
+            True,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            {"file_url": f"{TEST_LOCAL_DIRECTORY}/testdoc_google.docx", "bytes": ANY, "file_relative_path": "testdoc_google.docx"},
+            False,
+            id="Read testdoc_google",
+        ),
+        pytest.param(
+            GoogleDriveRemoteFile(
+                uri="testdoc_presentation",
+                last_modified=datetime.datetime(2023, 11, 10, 13, 49, 6, 640000),
+                mime_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                id="testdoc_presentation",
+                original_mime_type="application/vnd.google-apps.presentation",
+            ),
+            b"test",
+            True,
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            {
+                "file_url": "/tmp/airbyte-file-transfer/testdoc_presentation.pptx",
+                "bytes": ANY,
+                "file_relative_path": "testdoc_presentation.pptx",
+            },
+            False,
+            id="Read testdoc_presentation",
+        ),
+    ],
+)
+@patch("source_google_drive.stream_reader.MediaIoBaseDownload")
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_download_file(
+    mock_build_service,
+    mock_service_account,
+    mock_basedownload,
+    file: GoogleDriveRemoteFile,
+    file_content,
+    expect_export,
+    expected_mime_type,
+    expected_paths: Dict[str, any],
+    expect_raise,
+):
+    mock_request = MagicMock()
+    mock_downloader = MagicMock()
+
+    def mock_next_chunk(num_retries):
+        handle = mock_basedownload.call_args[0][0]
+        total_size = len(file_content)
+        mock_progress = MagicMock()
+        mock_progress.total_size = total_size
+        mock_progress.resumable_progress = handle.tell()
+
+        if handle.tell() > 0:
+            return (mock_progress, True)
+        else:
+            handle.write(file_content)
+            return (mock_progress, False)
+
+    mock_downloader.next_chunk.side_effect = mock_next_chunk
+
+    mock_basedownload.return_value = mock_downloader
+
+    files_service = MagicMock()
+    mock_get = MagicMock()
+    mock_get.execute.return_value = {"size": 1024}
+    files_service.get.return_value = mock_get
+
+    if expect_export:
+        files_service.export_media.return_value = mock_request
+    else:
+        files_service.get_media.return_value = mock_request
+
+    drive_service = MagicMock()
+    drive_service.files.return_value = files_service
+    mock_build_service.return_value = drive_service
+
+    if expect_raise:
+        with pytest.raises(ValueError):
+            create_reader().get_file(file, local_directory="tmp/airbyte-transfer", logger=MagicMock())
+    else:
+        file_paths = create_reader().get_file(file, local_directory=TEST_LOCAL_DIRECTORY, logger=MagicMock())
+        assert expected_paths["file_url"] in file_paths["file_url"]
+        assert expected_paths["file_relative_path"] == file_paths["file_relative_path"]
+
         assert mock_downloader.next_chunk.call_count == 2
         if expect_export:
             files_service.export_media.assert_has_calls([call(fileId=file.id, mimeType=expected_mime_type)])

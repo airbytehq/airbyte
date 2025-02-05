@@ -147,6 +147,10 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
     }
 
     private suspend fun flushGlobalCheckpoints() {
+        if (globalCheckpoints.isEmpty()) {
+            log.info { "No global checkpoints to flush" }
+            return
+        }
         while (!globalCheckpoints.isEmpty()) {
             val head = globalCheckpoints.peek()
             val allStreamsPersisted =
@@ -158,27 +162,42 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
                 validateAndSendMessage(head.checkpointMessage, head.streamIndexes)
                 globalCheckpoints.poll() // don't remove until after we've successfully sent
             } else {
+                log.info {
+                    "Not flushing global checkpoint with stream indexes: ${head.streamIndexes}"
+                }
                 break
             }
         }
     }
 
     private suspend fun flushStreamCheckpoints() {
+        val noCheckpointStreams = mutableSetOf<DestinationStream.Descriptor>()
         for (stream in catalog.streams) {
+
             val manager = syncManager.getStreamManager(stream.descriptor)
-            val streamCheckpoints = streamCheckpoints[stream.descriptor] ?: return
+            val streamCheckpoints = streamCheckpoints[stream.descriptor]
+            if (streamCheckpoints == null) {
+                noCheckpointStreams.add(stream.descriptor)
+
+                continue
+            }
             while (true) {
                 val (nextIndex, nextMessage) = streamCheckpoints.peek() ?: break
                 if (manager.areRecordsPersistedUntil(nextIndex)) {
+
                     log.info {
                         "Flushing checkpoint for stream: ${stream.descriptor} at index: $nextIndex"
                     }
                     validateAndSendMessage(nextMessage, listOf(stream.descriptor to nextIndex))
                     streamCheckpoints.poll() // don't remove until after we've successfully sent
                 } else {
+                    log.info { "Not flushing next checkpoint for index $nextIndex" }
                     break
                 }
             }
+        }
+        if (noCheckpointStreams.isNotEmpty()) {
+            log.info { "No checkpoints for streams: $noCheckpointStreams" }
         }
     }
 

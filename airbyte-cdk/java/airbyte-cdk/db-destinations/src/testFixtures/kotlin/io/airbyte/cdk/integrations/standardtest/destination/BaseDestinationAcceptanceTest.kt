@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.standardtest.destination
 
 import com.fasterxml.jackson.databind.JsonNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.extensions.grantAllPermissions
 import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.features.FeatureFlagsWrapper
@@ -14,6 +15,7 @@ import io.airbyte.configoss.WorkerDestinationConfig
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.helper.ConnectorConfigUpdater
 import io.airbyte.workers.internal.AirbyteDestination
 import io.airbyte.workers.internal.DefaultAirbyteDestination
@@ -173,9 +175,10 @@ abstract class BaseDestinationAcceptanceTest(
         catalog: ConfiguredAirbyteCatalog,
         runNormalization: Boolean,
         imageName: String,
+        additionalEnvs: Map<String, String> = mapOf()
     ): List<AirbyteMessage> {
         val destinationConfig = getDestinationConfig(config, catalog)
-        return runSync(messages, runNormalization, imageName, destinationConfig)
+        return runSync(messages, runNormalization, imageName, destinationConfig, additionalEnvs)
     }
 
     @Throws(Exception::class)
@@ -184,13 +187,14 @@ abstract class BaseDestinationAcceptanceTest(
         runNormalization: Boolean,
         imageName: String,
         destinationConfig: WorkerDestinationConfig,
+        additionalEnvs: Map<String, String> = mapOf()
     ): List<AirbyteMessage> {
         val destination = getDestination(imageName)
 
         destination.start(
             destinationConfig,
             jobRoot,
-            inDestinationNormalizationFlags(runNormalization)
+            additionalEnvs + inDestinationNormalizationFlags(runNormalization)
         )
         messages.forEach(
             Consumer { message: AirbyteMessage ->
@@ -215,7 +219,11 @@ abstract class BaseDestinationAcceptanceTest(
             }
         }
 
-        destination.close()
+        try {
+            destination.close()
+        } catch (e: TestHarnessException) {
+            throw TestHarnessException(e.message, e, destinationOutput)
+        }
 
         return destinationOutput
     }
@@ -240,10 +248,12 @@ abstract class BaseDestinationAcceptanceTest(
     @Throws(Exception::class)
     open fun setUpInternal() {
         val testDir = Path.of("/tmp/airbyte_tests/")
-        Files.createDirectories(testDir)
-        val workspaceRoot = Files.createTempDirectory(testDir, "test")
-        jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"))
-        localRoot = Files.createTempDirectory(testDir, "output")
+        // Allow ourselves and our connector access to our test dir
+        Files.createDirectories(testDir).grantAllPermissions()
+        val workspaceRoot = Files.createTempDirectory(testDir, "test").grantAllPermissions()
+        jobRoot =
+            Files.createDirectories(Path.of(workspaceRoot.toString(), "job")).grantAllPermissions()
+        localRoot = Files.createTempDirectory(testDir, "output").grantAllPermissions()
         LOGGER.info { "${"jobRoot: {}"} $jobRoot" }
         LOGGER.info { "${"localRoot: {}"} $localRoot" }
         testEnv = DestinationAcceptanceTest.TestDestinationEnv(localRoot)
@@ -251,13 +261,16 @@ abstract class BaseDestinationAcceptanceTest(
         testSchemas = HashSet()
         setup(testEnv, testSchemas)
         fileTransferMountSource =
-            if (supportsFileTransfer) Files.createTempDirectory(testDir, "file_transfer") else null
+            if (supportsFileTransfer)
+                Files.createTempDirectory(testDir, "file_transfer").grantAllPermissions()
+            else null
 
         processFactory =
             DockerProcessFactory(
                 workspaceRoot,
                 workspaceRoot.toString(),
                 localRoot.toString(),
+                fileTransferMountSource,
                 "host",
                 getConnectorEnv()
             )

@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.10
   dockerRepository: airbyte/destination-firestore
   githubIssueLabel: destination-firestore
   icon: firestore.svg
@@ -32,5 +32,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
 metadataSpecVersion: "1.0"

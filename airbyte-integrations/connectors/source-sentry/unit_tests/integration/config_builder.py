@@ -10,7 +10,7 @@ class ConfigBuilder:
             "auth_token": "test token",
             "organization": "test organization",
             "project": "test project",
-            "hostname": "sentry.io"
+            "hostname": "sentry.io",
         }
 
     def build(self) -> Dict[str, Any]:

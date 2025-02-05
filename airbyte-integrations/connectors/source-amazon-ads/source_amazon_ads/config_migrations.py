@@ -6,10 +6,11 @@
 import logging
 from typing import Any, List, Mapping
 
-from airbyte_cdk.config_observation import create_connector_config_control_message
+from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
+
 
 logger = logging.getLogger("airbyte_logger")
 
@@ -73,18 +74,6 @@ class MigrateStartDate:
         return migrated_config
 
     @classmethod
-    def emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
-        """
-        Emits the control messages related to configuration migration.
-
-        Args:
-        - migrated_config (Mapping[str, Any]): The migrated configuration.
-        """
-        cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
-        for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
-
-    @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
         """
         Orchestrates the configuration migration process.
@@ -101,4 +90,4 @@ class MigrateStartDate:
         if config_path:
             config = source.read_config(config_path)
             if cls.should_migrate(config):
-                cls.emit_control_message(cls.modify_and_save(config_path, source, config))
+                emit_configuration_as_airbyte_control_message(cls.modify_and_save(config_path, source, config))

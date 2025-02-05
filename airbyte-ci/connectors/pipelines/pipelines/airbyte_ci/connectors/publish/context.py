@@ -9,6 +9,7 @@ from typing import List, Optional
 
 import asyncclick as click
 from github import PullRequest
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import PUBLISH_FAILURE_SLACK_CHANNEL, PUBLISH_UPDATES_SLACK_CHANNEL, ContextState
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
@@ -54,6 +55,7 @@ class PublishConnectorContext(ConnectorContext):
         s3_build_cache_access_key_id: Optional[Secret] = None,
         s3_build_cache_secret_key: Optional[Secret] = None,
         use_local_cdk: bool = False,
+        use_cdk_ref: Optional[str] = None,
         python_registry_token: Optional[Secret] = None,
         ci_github_access_token: Optional[Secret] = None,
     ) -> None:
@@ -70,8 +72,8 @@ class PublishConnectorContext(ConnectorContext):
         pipeline_name = f"{rollout_mode.value} {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
 
-        if use_local_cdk and not self.pre_release:
-            raise click.UsageError("Publishing with the local CDK is only supported for pre-release publishing.")
+        if (use_local_cdk or use_cdk_ref) and not self.pre_release:
+            raise click.UsageError("Publishing with CDK overrides is only supported for pre-release publishing.")
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -91,6 +93,7 @@ class PublishConnectorContext(ConnectorContext):
             ci_gcp_credentials=ci_gcp_credentials,
             should_save_report=True,
             use_local_cdk=use_local_cdk,
+            use_cdk_ref=use_cdk_ref,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
             s3_build_cache_access_key_id=s3_build_cache_access_key_id,
@@ -134,7 +137,6 @@ class PublishConnectorContext(ConnectorContext):
             return [PUBLISH_UPDATES_SLACK_CHANNEL]
 
     def create_slack_message(self) -> str:
-
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
         message = f"*{self.rollout_mode.value} <{docker_hub_url}|{self.docker_image}>*\n"
         if self.is_ci:
@@ -158,5 +160,5 @@ class PublishConnectorContext(ConnectorContext):
             assert self.report is not None, "Report should be set when state is successful"
             message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
-            message += "\ncc. <!subteam^S077R8636CV>"
+            message += "\ncc. <!subteam^S077U1TH43D>"
         return message
