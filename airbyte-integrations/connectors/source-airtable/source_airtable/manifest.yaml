@@ -336,7 +336,7 @@ definitions:
                 field_type: array
                 items: string
               current_type: multipleLookupValues
-              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] }}"
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] or not raw_schema['options']['result']  }}"
             - type: TypesMap
               target_type:
                 field_type: array

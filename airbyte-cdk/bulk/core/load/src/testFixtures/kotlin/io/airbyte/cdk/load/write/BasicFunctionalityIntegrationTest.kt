@@ -36,11 +36,14 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputFile
+import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
+import io.airbyte.cdk.load.test.util.DefaultDefaultNamespaceProvider
+import io.airbyte.cdk.load.test.util.DefaultNamespaceProvider
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
@@ -150,6 +153,7 @@ abstract class BasicFunctionalityIntegrationTest(
     nameMapper: NameMapper = NoopNameMapper,
     additionalMicronautEnvs: List<String> = emptyList(),
     micronautProperties: Map<Property, String> = emptyMap(),
+    val defaultNamespaceProvider: DefaultNamespaceProvider = DefaultDefaultNamespaceProvider(),
     /**
      * Whether to actually verify that the connector wrote data to the destination. This should only
      * ever be disabled for test destinations (dev-null, etc.).
@@ -196,8 +200,10 @@ abstract class BasicFunctionalityIntegrationTest(
         configUpdater = configUpdater,
         micronautProperties = micronautProperties,
     ) {
-    val parsedConfig =
-        ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))
+
+    // Update config with any replacements.  This may be necessary when using testcontainers.
+    val updatedConfig = configUpdater.update(configContents)
+    val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
 
     @Test
     open fun testBasicWrite() {
@@ -212,7 +218,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val messages =
             runSync(
-                configContents,
+                updatedConfig,
                 stream,
                 listOf(
                     InputRecord(
@@ -263,7 +269,7 @@ abstract class BasicFunctionalityIntegrationTest(
             {
                 if (verifyDataWriting) {
                     dumpAndDiffRecords(
-                        ValidatedJsonUtils.parseOne(configSpecClass, configContents),
+                        ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig),
                         listOf(
                             OutputRecord(
                                 extractedAt = 1234,
@@ -324,7 +330,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val messages =
             runSync(
-                configContents,
+                updatedConfig,
                 stream,
                 listOf(
                     InputFile(
@@ -362,7 +368,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         })
 
-        val config = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
+        val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
         val fileContent = dataDumper.dumpFile(config, stream)
 
         assertEquals(listOf("123"), fileContent)
@@ -383,7 +389,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             val stateMessage =
                 runSyncUntilStateAck(
-                    configContents,
+                    this@BasicFunctionalityIntegrationTest.updatedConfig,
                     stream,
                     listOf(
                         InputRecord(
@@ -401,7 +407,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     ),
                     allowGracefulShutdown = false,
                 )
-            runSync(configContents, stream, emptyList())
+            runSync(this@BasicFunctionalityIntegrationTest.updatedConfig, stream, emptyList())
 
             val streamName = stateMessage.stream.streamDescriptor.name
             val streamNamespace = stateMessage.stream.streamDescriptor.namespace
@@ -452,9 +458,9 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testNamespaces() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(namespace: String) =
+        fun makeStream(namespace: String?, name: String = "test_stream") =
             DestinationStream(
-                DestinationStream.Descriptor(namespace, "test_stream"),
+                DestinationStream.Descriptor(namespace, name),
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
@@ -463,12 +469,14 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
+        val streamWithDefaultNamespace = makeStream(null, randomizedNamespace + "_stream")
         runSync(
-            configContents,
+            updatedConfig,
             DestinationCatalog(
                 listOf(
                     stream1,
                     stream2,
+                    streamWithDefaultNamespace,
                 )
             ),
             listOf(
@@ -482,6 +490,12 @@ abstract class BasicFunctionalityIntegrationTest(
                     namespace = stream2.descriptor.namespace,
                     name = stream2.descriptor.name,
                     data = """{"id": 5678}""",
+                    emittedAtMs = 1234,
+                ),
+                InputRecord(
+                    namespace = streamWithDefaultNamespace.descriptor.namespace,
+                    name = streamWithDefaultNamespace.descriptor.name,
+                    data = """{"id": 91011}""",
                     emittedAtMs = 1234,
                 ),
             )
@@ -518,6 +532,27 @@ abstract class BasicFunctionalityIntegrationTest(
                     listOf(listOf("id")),
                     cursor = null
                 )
+            },
+            {
+                dumpAndDiffRecords(
+                    parsedConfig,
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1234,
+                            generationId = 0,
+                            data = mapOf("id" to 91011),
+                            airbyteMeta = OutputRecord.Meta(syncId = 42)
+                        )
+                    ),
+                    streamWithDefaultNamespace.copy(
+                        descriptor =
+                            streamWithDefaultNamespace.descriptor.copy(
+                                namespace = defaultNamespaceProvider.get(randomizedNamespace)
+                            )
+                    ),
+                    listOf(listOf("id")),
+                    cursor = null
+                )
             }
         )
     }
@@ -528,9 +563,10 @@ abstract class BasicFunctionalityIntegrationTest(
         fun makeStream(
             name: String,
             schema: LinkedHashMap<String, FieldType> = linkedMapOf("id" to intType),
+            namespaceSuffix: String = "",
         ) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, name),
+                DestinationStream.Descriptor(randomizedNamespace + namespaceSuffix, name),
                 Append,
                 ObjectType(schema),
                 generationId = 0,
@@ -572,6 +608,11 @@ abstract class BasicFunctionalityIntegrationTest(
                         "groups",
                         linkedMapOf("id" to intType, "authorization" to stringType)
                     ),
+                    makeStream(
+                        "streamWithSpecialCharactersInNamespace",
+                        namespaceSuffix = "_spøcial"
+                    ),
+                    makeStream("streamWithOperatorInNamespace", namespaceSuffix = "_operator-1"),
                 )
             )
         // For each stream, generate a record containing every field in the schema.
@@ -593,7 +634,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     serialized = "",
                 )
             }
-        runSync(configContents, catalog, messages)
+        runSync(updatedConfig, catalog, messages)
         assertAll(
             catalog.streams.map { stream ->
                 {
@@ -633,7 +674,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
             listOf(
                 InputRecord(
@@ -646,7 +687,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         val finalStream = makeStream(generationId = 13, minimumGenerationId = 13, syncId = 43)
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -728,7 +769,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 41,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream1,
             listOf(
                 makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
@@ -767,7 +808,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         // Run a sync, but emit a status incomplete. This should not delete any existing data.
         runSyncUntilStateAck(
-            configContents,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -816,7 +857,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a third sync, this time with a successful status.
         // This should delete the first sync's data, and retain the second+third syncs' data.
         runSync(
-            configContents,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -897,7 +938,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         // Run a sync, but emit a stream status incomplete.
         runSyncUntilStateAck(
-            configContents,
+            updatedConfig,
             stream,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -932,7 +973,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a second sync, this time with a successful status.
         // This should retain the first syncs' data.
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -1018,7 +1059,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 41,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream1,
             listOf(
                 makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
@@ -1058,7 +1099,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a sync, but emit a stream status incomplete. This should not delete any existing
         // data.
         runSyncUntilStateAck(
-            configContents,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -1113,7 +1154,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 43,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream3,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -1173,7 +1214,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(syncId = 42),
             listOf(
                 InputRecord(
@@ -1186,7 +1227,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         val finalStream = makeStream(syncId = 43)
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -1239,7 +1280,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(
                 syncId = 42,
                 linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType)
@@ -1259,7 +1300,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType)
             )
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -1333,7 +1374,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val sync1Stream = makeStream(syncId = 42)
         runSync(
-            configContents,
+            updatedConfig,
             sync1Stream,
             listOf(
                 // emitted_at:1000 is equal to 1970-01-01 00:00:01Z.
@@ -1394,7 +1435,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val sync2Stream = makeStream(syncId = 43)
         runSync(
-            configContents,
+            updatedConfig,
             sync2Stream,
             listOf(
                 // Update both Alice and Bob
@@ -1478,9 +1519,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 // instead of being able to fallback onto extractedAt.
                 emittedAtMs = 100,
             )
-        runSync(configContents, makeStream("cursor1"), listOf(makeRecord("cursor1")))
+        runSync(updatedConfig, makeStream("cursor1"), listOf(makeRecord("cursor1")))
         val stream2 = makeStream("cursor2")
-        runSync(configContents, stream2, listOf(makeRecord("cursor2")))
+        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2")))
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
@@ -1537,7 +1578,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             }
         // Just verify that we don't crash.
-        assertDoesNotThrow { runSync(configContents, DestinationCatalog(streams), messages) }
+        assertDoesNotThrow { runSync(updatedConfig, DestinationCatalog(streams), messages) }
     }
 
     /**
@@ -1590,7 +1631,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 emittedAtMs = 100,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 // A record with valid values for all fields
@@ -1874,7 +1915,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2053,7 +2094,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2224,7 +2265,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2417,7 +2458,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2461,7 +2502,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        assertDoesNotThrow { runSync(configContents, stream, messages = emptyList()) }
+        assertDoesNotThrow { runSync(updatedConfig, stream, messages = emptyList()) }
         dumpAndDiffRecords(
             parsedConfig,
             canonicalExpectedRecords = emptyList(),
@@ -2469,6 +2510,22 @@ abstract class BasicFunctionalityIntegrationTest(
             primaryKey = listOf(listOf("id")),
             cursor = null,
         )
+    }
+
+    @Test
+    open fun testClear() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 42,
+            )
+        assertDoesNotThrow {
+            runSync(updatedConfig, stream, messages = listOf(InputGlobalCheckpoint(null)))
+        }
     }
 
     private fun schematizedObject(
@@ -2489,9 +2546,9 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     companion object {
-        private val intType = FieldType(IntegerType, nullable = true)
+        val intType = FieldType(IntegerType, nullable = true)
         private val numberType = FieldType(NumberType, nullable = true)
-        private val stringType = FieldType(StringType, nullable = true)
+        val stringType = FieldType(StringType, nullable = true)
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
 }

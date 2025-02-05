@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.5.0-rc.2"
+version = "4.5.0-rc.3"
 name = "source-airtable"
 description = "Source implementation for Airtable."
 authors = [ "Airbyte <anhtuan.nguyen@me.com>",]
