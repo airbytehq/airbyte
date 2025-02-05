@@ -1188,85 +1188,14 @@ definitions:
       name: sponsored_brands_v3_report_stream
       primary_key: ["profileId", "reportDate", "purchasedAsin"]
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: reportDate
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
-        lookback_window: P{{ config.get('look_back_window', 3) }}D
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
-          datetime_format: "%Y-%m-%d"
-        end_datetime:
-          datetime: "{{ today_utc().strftime('%Y-%m-%d') }}"
-          datetime_format: "%Y-%m-%d"
-        cursor_granularity: "P1D"
-        step: "P{{ config.get('events_time_step', 30) }}D"
-        start_time_option:
-          field_name: startDate
-          inject_into: body_json
-        end_time_option:
-          field_name: endDate
-          inject_into: body_json
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
       transformations:
-        - type: AddFields
-          fields:
-            - path: ["reportDate"]
-              value: "{{ stream_slice.end_time }}"
-        - type: AddFields
-          fields:
-            - path: ["profileId"]
-              value: "{{ stream_slice['profileId'] }}"
+        $ref: "#/definitions/transformation_report_add_fields"
 
       retriever:
-        type: AsyncRetriever
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: "profileId"
-              stream: "#/definitions/streams/profiles_filtered"
-              partition_field: "profileId"
-        status_mapping:
-          failed:
-            - FAILED
-          running:
-            - PENDING
-            - PROCESSING
-          timeout:
-            - timeout
-          completed:
-            - COMPLETED
-        urls_extractor:
-          type: DpathExtractor
-          field_path:
-            - url
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-
-        status_extractor:
-          type: DpathExtractor
-          field_path:
-            - status
+        $ref: "#/definitions/basic_async_retriever"
         creation_requester:
-          type: HttpRequester
-          path: /reporting/reports
-          url_base: >-
-            {%- set URL_MAPPING = {
-                "NA": "https://advertising-api.amazon.com/",
-                "EU": "https://advertising-api-eu.amazon.com/",
-                "FE": "https://advertising-api-fe.amazon.com/"
-            } -%}
-            {{ URL_MAPPING[config["region"]] }}
-          authenticator: "#/definitions/oauth_authenticator"
-          http_method: POST
-          request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
-            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "purchasedAsin report {{ stream_slice.start_time }}"
             startDate: "{{ stream_slice.start_time }}"
@@ -1297,43 +1226,995 @@ definitions:
               filters: []
               timeUnit: SUMMARY
               format: GZIP_JSON
-          error_handler:
-            $ref: "#/definitions/report_creation_error_handler"
-        polling_requester:
-          type: HttpRequester
-          path: /reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
-          url_base: >-
-            {%- set URL_MAPPING = {
-                "NA": "https://advertising-api.amazon.com/",
-                "EU": "https://advertising-api-eu.amazon.com/",
-                "FE": "https://advertising-api-fe.amazon.com/"
-            } -%}
-            {{ URL_MAPPING[config["region"]] }}
-          authenticator: "#/definitions/oauth_authenticator"
-          http_method: GET
-          request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
-            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
 
-        download_requester:
-          type: HttpRequester
-          path: "{{stream_slice.extra_fields['url']}}"
-          url_base: ""
-          http_method: GET
-          authenticator: "#/definitions/oauth_authenticator"
-          request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
-            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
-        download_decoder:
-          type: CompositeRawDecoder
-          parser:
-            type: GzipParser
-            inner_parser:
-              type: JsonParser
-              encoding: utf
-        download_extractor:
-          type: DpathExtractor
-          field_path: []
+    sponsored_display_campaigns_report_stream:
+      type: DeclarativeStream
+      name: sponsored_display_campaigns_report_stream
+      primary_key: ["profileId", "reportDate", "campaignId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "campaigns report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_DISPLAY
+              groupBy: ["campaign"]
+              columns: # TODO: make configurable
+                [
+                  "addToCart",
+                  "addToCartClicks",
+                  "addToCartRate",
+                  "addToCartViews",
+                  "addToList",
+                  "addToListFromClicks",
+                  "addToListFromViews",
+                  "qualifiedBorrows",
+                  "qualifiedBorrowsFromClicks",
+                  "qualifiedBorrowsFromViews",
+                  "royaltyQualifiedBorrows",
+                  "royaltyQualifiedBorrowsFromClicks",
+                  "royaltyQualifiedBorrowsFromViews",
+                  "brandedSearches",
+                  "brandedSearchesClicks",
+                  "brandedSearchesViews",
+                  "brandedSearchRate",
+                  "campaignBudgetCurrencyCode",
+                  "campaignId",
+                  "campaignName",
+                  "clicks",
+                  "cost",
+                  "detailPageViews",
+                  "detailPageViewsClicks",
+                  "eCPAddToCart",
+                  "eCPBrandSearch",
+                  "endDate",
+                  "impressions",
+                  "impressionsViews",
+                  "leadFormOpens",
+                  "leads",
+                  "linkOuts",
+                  "newToBrandPurchases",
+                  "newToBrandPurchasesClicks",
+                  "newToBrandSalesClicks",
+                  "newToBrandUnitsSold",
+                  "newToBrandUnitsSoldClicks",
+                  "purchases",
+                  "purchasesClicks",
+                  "purchasesPromotedClicks",
+                  "sales",
+                  "salesClicks",
+                  "salesPromotedClicks",
+                  "startDate",
+                  "unitsSold",
+                  "unitsSoldClicks",
+                  "videoCompleteViews",
+                  "videoFirstQuartileViews",
+                  "videoMidpointViews",
+                  "videoThirdQuartileViews",
+                  "videoUnmutes",
+                  "viewabilityRate",
+                  "viewClickThroughRate",
+                  "campaignBudgetAmount",
+                  "campaignStatus",
+                  "costType",
+                  "cumulativeReach",
+                  "impressionsFrequencyAverage",
+                  "newToBrandDetailPageViewClicks",
+                  "newToBrandDetailPageViewRate",
+                  "newToBrandDetailPageViews",
+                  "newToBrandDetailPageViewViews",
+                  "newToBrandECPDetailPageView",
+                  "newToBrandSales",
+                ]
+              reportTypeId: sdCampaigns
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_display_adgroups_report_stream:
+      type: DeclarativeStream
+      name: sponsored_display_adgroups_report_stream
+      primary_key: ["profileId", "reportDate", "adGroupId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "adGroups report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_DISPLAY
+              groupBy: ["adGroup"]
+              columns: # TODO: make configurable
+                [
+                  "addToCart",
+                  "addToCartClicks",
+                  "addToCartRate",
+                  "addToCartViews",
+                  "adGroupId",
+                  "adGroupName",
+                  "addToList",
+                  "addToListFromClicks",
+                  "addToListFromViews",
+                  "qualifiedBorrows",
+                  "qualifiedBorrowsFromClicks",
+                  "qualifiedBorrowsFromViews",
+                  "royaltyQualifiedBorrows",
+                  "royaltyQualifiedBorrowsFromClicks",
+                  "royaltyQualifiedBorrowsFromViews",
+                  "bidOptimization",
+                  "brandedSearches",
+                  "brandedSearchesClicks",
+                  "brandedSearchesViews",
+                  "brandedSearchRate",
+                  "campaignBudgetCurrencyCode",
+                  "campaignId",
+                  "campaignName",
+                  "clicks",
+                  "cost",
+                  "detailPageViews",
+                  "detailPageViewsClicks",
+                  "eCPAddToCart",
+                  "eCPBrandSearch",
+                  "endDate",
+                  "impressions",
+                  "impressionsViews",
+                  "leadFormOpens",
+                  "leads",
+                  "linkOuts",
+                  "newToBrandPurchases",
+                  "newToBrandPurchasesClicks",
+                  "newToBrandSales",
+                  "newToBrandSalesClicks",
+                  "newToBrandUnitsSold",
+                  "newToBrandUnitsSoldClicks",
+                  "purchases",
+                  "purchasesClicks",
+                  "purchasesPromotedClicks",
+                  "sales",
+                  "salesClicks",
+                  "salesPromotedClicks",
+                  "startDate",
+                  "unitsSold",
+                  "unitsSoldClicks",
+                  "videoCompleteViews",
+                  "videoFirstQuartileViews",
+                  "videoMidpointViews",
+                  "videoThirdQuartileViews",
+                  "videoUnmutes",
+                  "viewabilityRate",
+                  "viewClickThroughRate",
+                  "cumulativeReach",
+                  "impressionsFrequencyAverage",
+                  "newToBrandDetailPageViewClicks",
+                  "newToBrandDetailPageViewRate",
+                  "newToBrandDetailPageViews",
+                  "newToBrandDetailPageViewViews",
+                  "newToBrandECPDetailPageView",
+                ]
+              reportTypeId: sdAdGroup
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_display_productads_report_stream:
+      type: DeclarativeStream
+      name: sponsored_display_productads_report_stream
+      primary_key: ["profileId", "reportDate", "adId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "productAds report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_DISPLAY
+              groupBy: ["advertiser"]
+              columns: # TODO: make configurable
+                [
+                  "addToCart",
+                  "addToCartRate",
+                  "addToCartViews",
+                  "addToCartClicks",
+                  "adGroupId",
+                  "adGroupName",
+                  "adId",
+                  "addToList",
+                  "addToListFromClicks",
+                  "qualifiedBorrows",
+                  "royaltyQualifiedBorrows",
+                  "addToListFromViews",
+                  "qualifiedBorrowsFromClicks",
+                  "qualifiedBorrowsFromViews",
+                  "royaltyQualifiedBorrowsFromClicks",
+                  "royaltyQualifiedBorrowsFromViews",
+                  "bidOptimization",
+                  "brandedSearches",
+                  "brandedSearchesClicks",
+                  "brandedSearchesViews",
+                  "brandedSearchRate",
+                  "campaignBudgetCurrencyCode",
+                  "campaignId",
+                  "campaignName",
+                  "clicks",
+                  "cost",
+                  "cumulativeReach",
+                  "detailPageViews",
+                  "detailPageViewsClicks",
+                  "eCPAddToCart",
+                  "eCPBrandSearch",
+                  "endDate",
+                  "impressions",
+                  "impressionsFrequencyAverage",
+                  "impressionsViews",
+                  "leadFormOpens",
+                  "leads",
+                  "linkOuts",
+                  "newToBrandDetailPageViewClicks",
+                  "newToBrandDetailPageViewRate",
+                  "newToBrandDetailPageViews",
+                  "newToBrandDetailPageViewViews",
+                  "newToBrandECPDetailPageView",
+                  "newToBrandPurchases",
+                  "newToBrandPurchasesClicks",
+                  "newToBrandSales",
+                  "newToBrandSalesClicks",
+                  "newToBrandUnitsSold",
+                  "newToBrandUnitsSoldClicks",
+                  "promotedAsin",
+                  "promotedSku",
+                  "purchases",
+                  "purchasesClicks",
+                  "purchasesPromotedClicks",
+                  "sales",
+                  "salesClicks",
+                  "salesPromotedClicks",
+                  "startDate",
+                  "unitsSold",
+                  "unitsSoldClicks",
+                  "videoCompleteViews",
+                  "videoFirstQuartileViews",
+                  "videoMidpointViews",
+                  "videoThirdQuartileViews",
+                  "videoUnmutes",
+                  "viewabilityRate",
+                  "viewClickThroughRate",
+                ]
+              reportTypeId: sdAdvertisedProduct
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_display_targets_report_stream:
+      type: DeclarativeStream
+      name: sponsored_display_targets_report_stream
+      primary_key: ["profileId", "reportDate", "targetingId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "targets report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_DISPLAY
+              groupBy: ["targeting"]
+              columns: # TODO: make configurable
+                [
+                  "addToCart",
+                  "addToCartClicks",
+                  "addToCartRate",
+                  "addToCartViews",
+                  "adGroupId",
+                  "adGroupName",
+                  "addToList",
+                  "addToListFromClicks",
+                  "addToListFromViews",
+                  "qualifiedBorrows",
+                  "qualifiedBorrowsFromClicks",
+                  "qualifiedBorrowsFromViews",
+                  "royaltyQualifiedBorrows",
+                  "royaltyQualifiedBorrowsFromClicks",
+                  "royaltyQualifiedBorrowsFromViews",
+                  "brandedSearches",
+                  "brandedSearchesClicks",
+                  "brandedSearchesViews",
+                  "brandedSearchRate",
+                  "campaignBudgetCurrencyCode",
+                  "campaignId",
+                  "campaignName",
+                  "clicks",
+                  "cost",
+                  "detailPageViews",
+                  "detailPageViewsClicks",
+                  "eCPAddToCart",
+                  "eCPBrandSearch",
+                  "endDate",
+                  "impressions",
+                  "impressionsViews",
+                  "leadFormOpens",
+                  "leads",
+                  "linkOuts",
+                  "newToBrandPurchases",
+                  "newToBrandPurchasesClicks",
+                  "newToBrandSales",
+                  "newToBrandSalesClicks",
+                  "newToBrandUnitsSold",
+                  "newToBrandUnitsSoldClicks",
+                  "purchases",
+                  "purchasesClicks",
+                  "purchasesPromotedClicks",
+                  "sales",
+                  "salesClicks",
+                  "salesPromotedClicks",
+                  "startDate",
+                  "targetingExpression",
+                  "targetingId",
+                  "targetingText",
+                  "unitsSold",
+                  "unitsSoldClicks",
+                  "videoCompleteViews",
+                  "videoFirstQuartileViews",
+                  "videoMidpointViews",
+                  "videoThirdQuartileViews",
+                  "videoUnmutes",
+                  "viewabilityRate",
+                  "viewClickThroughRate",
+                ]
+              reportTypeId: sdTargeting
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_display_asins_report_stream:
+      type: DeclarativeStream
+      name: sponsored_display_asins_report_stream
+      primary_key: ["profileId", "reportDate", "promotedAsin"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "asins report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_DISPLAY
+              groupBy: ["asin"]
+              columns: # TODO: make configurable
+                [
+                  "addToCart",
+                  "addToCartClicks",
+                  "addToCartRate",
+                  "addToCartViews",
+                  "adGroupId",
+                  "adGroupName",
+                  "addToList",
+                  "addToListFromClicks",
+                  "addToListFromViews",
+                  "qualifiedBorrows",
+                  "qualifiedBorrowsFromClicks",
+                  "qualifiedBorrowsFromViews",
+                  "royaltyQualifiedBorrows",
+                  "royaltyQualifiedBorrowsFromClicks",
+                  "royaltyQualifiedBorrowsFromViews",
+                  "brandedSearches",
+                  "brandedSearchesClicks",
+                  "brandedSearchesViews",
+                  "brandedSearchRate",
+                  "campaignBudgetCurrencyCode",
+                  "campaignId",
+                  "campaignName",
+                  "clicks",
+                  "cost",
+                  "detailPageViews",
+                  "detailPageViewsClicks",
+                  "eCPAddToCart",
+                  "eCPBrandSearch",
+                  "endDate",
+                  "impressions",
+                  "impressionsViews",
+                  "leadFormOpens",
+                  "leads",
+                  "linkOuts",
+                  "newToBrandPurchases",
+                  "newToBrandPurchasesClicks",
+                  "newToBrandSales",
+                  "newToBrandSalesClicks",
+                  "newToBrandUnitsSold",
+                  "newToBrandUnitsSoldClicks",
+                  "purchases",
+                  "purchasesClicks",
+                  "purchasesPromotedClicks",
+                  "sales",
+                  "salesClicks",
+                  "salesPromotedClicks",
+                  "startDate",
+                  "targetingExpression",
+                  "targetingId",
+                  "targetingText",
+                  "unitsSold",
+                  "unitsSoldClicks",
+                  "videoCompleteViews",
+                  "videoFirstQuartileViews",
+                  "videoMidpointViews",
+                  "videoThirdQuartileViews",
+                  "videoUnmutes",
+                  "viewabilityRate",
+                  "viewClickThroughRate",
+                ]
+              reportTypeId: sdPurchasedProduct
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+
+    sponsored_products_campaigns_report_stream:
+      type: DeclarativeStream
+      name: sponsored_products_campaigns_report_stream
+      primary_key: ["profileId", "reportDate", "campaignId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "campaigns report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["campaign"]
+              columns: # TODO: make configurable
+                [
+                  "campaignName",
+                  "campaignId",
+                  "campaignStatus",
+                  "campaignBudgetAmount",
+                  "campaignRuleBasedBudgetAmount",
+                  "campaignApplicableBudgetRuleId",
+                  "campaignApplicableBudgetRuleName",
+                  "impressions",
+                  "clicks",
+                  "cost",
+                  "purchases1d",
+                  "purchases7d",
+                  "purchases14d",
+                  "purchases30d",
+                  "purchasesSameSku1d",
+                  "purchasesSameSku7d",
+                  "purchasesSameSku14d",
+                  "purchasesSameSku30d",
+                  "unitsSoldClicks1d",
+                  "unitsSoldClicks7d",
+                  "unitsSoldClicks14d",
+                  "unitsSoldClicks30d",
+                  "sales1d",
+                  "sales7d",
+                  "sales14d",
+                  "sales30d",
+                  "attributedSalesSameSku1d",
+                  "attributedSalesSameSku7d",
+                  "attributedSalesSameSku14d",
+                  "attributedSalesSameSku30d",
+                  "unitsSoldSameSku1d",
+                  "unitsSoldSameSku7d",
+                  "unitsSoldSameSku14d",
+                  "unitsSoldSameSku30d",
+                ]
+              reportTypeId: spCampaigns
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_products_adgroups_report_stream:
+      type: DeclarativeStream
+      name: sponsored_products_adgroups_report_stream
+      primary_key: ["profileId", "reportDate", "adGroupId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "adGroups report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["campaign", "adGroup"]
+              columns: # TODO: make configurable
+                [
+                  "campaignName",
+                  "campaignId",
+                  "adGroupName",
+                  "adGroupId",
+                  "impressions",
+                  "clicks",
+                  "cost",
+                  "purchases1d",
+                  "purchases7d",
+                  "purchases14d",
+                  "purchases30d",
+                  "purchasesSameSku1d",
+                  "purchasesSameSku7d",
+                  "purchasesSameSku14d",
+                  "purchasesSameSku30d",
+                  "unitsSoldClicks1d",
+                  "unitsSoldClicks7d",
+                  "unitsSoldClicks14d",
+                  "unitsSoldClicks30d",
+                  "sales1d",
+                  "sales7d",
+                  "sales14d",
+                  "sales30d",
+                  "attributedSalesSameSku1d",
+                  "attributedSalesSameSku7d",
+                  "attributedSalesSameSku14d",
+                  "attributedSalesSameSku30d",
+                  "unitsSoldSameSku1d",
+                  "unitsSoldSameSku7d",
+                  "unitsSoldSameSku14d",
+                  "unitsSoldSameSku30d",
+                ]
+              reportTypeId: spCampaigns
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_products_keywords_report_stream:
+      type: DeclarativeStream
+      name: sponsored_products_keywords_report_stream
+      primary_key: ["profileId", "reportDate", "keywordId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "keywords report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["targeting"]
+              columns: # TODO: make configurable
+                [
+                  "campaignName",
+                  "campaignId",
+                  "adGroupName",
+                  "adGroupId",
+                  "keywordId",
+                  "keyword",
+                  "matchType",
+                  "impressions",
+                  "clicks",
+                  "cost",
+                  "purchases1d",
+                  "purchases7d",
+                  "purchases14d",
+                  "purchases30d",
+                  "purchasesSameSku1d",
+                  "purchasesSameSku7d",
+                  "purchasesSameSku14d",
+                  "purchasesSameSku30d",
+                  "unitsSoldClicks1d",
+                  "unitsSoldClicks7d",
+                  "unitsSoldClicks14d",
+                  "unitsSoldClicks30d",
+                  "sales1d",
+                  "sales7d",
+                  "sales14d",
+                  "sales30d",
+                  "attributedSalesSameSku1d",
+                  "attributedSalesSameSku7d",
+                  "attributedSalesSameSku14d",
+                  "attributedSalesSameSku30d",
+                  "unitsSoldSameSku1d",
+                  "unitsSoldSameSku7d",
+                  "unitsSoldSameSku14d",
+                  "unitsSoldSameSku30d",
+                ]
+              reportTypeId: spTargeting
+              filters:
+                [
+                  {
+                    "field": "keywordType",
+                    "values": ["BROAD", "PHRASE", "EXACT"],
+                  },
+                ]
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_products_targets_report_stream:
+      type: DeclarativeStream
+      name: sponsored_products_targets_report_stream
+      primary_key: ["profileId", "reportDate", "keywordId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "targets report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["targeting"]
+              columns: # TODO: make configurable
+                [
+                  "campaignName",
+                  "campaignId",
+                  "adGroupName",
+                  "adGroupId",
+                  "keywordId",
+                  "keyword",
+                  "targeting",
+                  "keywordType",
+                  "impressions",
+                  "clicks",
+                  "cost",
+                  "purchases1d",
+                  "purchases7d",
+                  "purchases14d",
+                  "purchases30d",
+                  "purchasesSameSku1d",
+                  "purchasesSameSku7d",
+                  "purchasesSameSku14d",
+                  "purchasesSameSku30d",
+                  "unitsSoldClicks1d",
+                  "unitsSoldClicks7d",
+                  "unitsSoldClicks14d",
+                  "unitsSoldClicks30d",
+                  "sales1d",
+                  "sales7d",
+                  "sales14d",
+                  "sales30d",
+                  "attributedSalesSameSku1d",
+                  "attributedSalesSameSku7d",
+                  "attributedSalesSameSku14d",
+                  "attributedSalesSameSku30d",
+                  "unitsSoldSameSku1d",
+                  "unitsSoldSameSku7d",
+                  "unitsSoldSameSku14d",
+                  "unitsSoldSameSku30d",
+                ]
+              reportTypeId: spTargeting
+              filters:
+                [
+                  {
+                    "field": "keywordType",
+                    "values":
+                      [
+                        "TARGETING_EXPRESSION",
+                        "TARGETING_EXPRESSION_PREDEFINED",
+                      ],
+                  },
+                ]
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_products_productads_report_stream:
+      type: DeclarativeStream
+      name: sponsored_products_productads_report_stream
+      primary_key: ["profileId", "reportDate", "adId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "productAds report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["advertiser"]
+              columns: # TODO: make configurable
+                [
+                  "campaignName",
+                  "campaignId",
+                  "adGroupName",
+                  "adGroupId",
+                  "adId",
+                  "impressions",
+                  "clicks",
+                  "cost",
+                  "campaignBudgetCurrencyCode",
+                  "advertisedAsin",
+                  "purchases1d",
+                  "purchases7d",
+                  "purchases14d",
+                  "purchases30d",
+                  "purchasesSameSku1d",
+                  "purchasesSameSku7d",
+                  "purchasesSameSku14d",
+                  "purchasesSameSku30d",
+                  "unitsSoldClicks1d",
+                  "unitsSoldClicks7d",
+                  "unitsSoldClicks14d",
+                  "unitsSoldClicks30d",
+                  "sales1d",
+                  "sales7d",
+                  "sales14d",
+                  "sales30d",
+                  "attributedSalesSameSku1d",
+                  "attributedSalesSameSku7d",
+                  "attributedSalesSameSku14d",
+                  "attributedSalesSameSku30d",
+                  "unitsSoldSameSku1d",
+                  "unitsSoldSameSku7d",
+                  "unitsSoldSameSku14d",
+                  "unitsSoldSameSku30d",
+                ]
+              reportTypeId: spAdvertisedProduct
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_products_asins_keywords_report_stream:
+      type: DeclarativeStream
+      name: sponsored_products_asins_keywords_report_stream
+      primary_key: ["profileId", "reportDate", "advertisedAsin"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "productAds report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["asin"]
+              columns: # TODO: make configurable
+                [
+                  "campaignName",
+                  "campaignId",
+                  "adGroupName",
+                  "adGroupId",
+                  "keywordId",
+                  "keyword",
+                  "advertisedAsin",
+                  "purchasedAsin",
+                  "advertisedSku",
+                  "campaignBudgetCurrencyCode",
+                  "matchType",
+                  "unitsSoldClicks1d",
+                  "unitsSoldClicks7d",
+                  "unitsSoldClicks14d",
+                  "unitsSoldClicks30d",
+                  "unitsSoldOtherSku1d",
+                  "unitsSoldOtherSku7d",
+                  "unitsSoldOtherSku14d",
+                  "unitsSoldOtherSku30d",
+                  "salesOtherSku1d",
+                  "salesOtherSku7d",
+                  "salesOtherSku14d",
+                  "salesOtherSku30d",
+                ]
+              reportTypeId: spPurchasedProduct
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+    sponsored_products_asins_targets_report_stream:
+      type: DeclarativeStream
+      name: sponsored_products_asins_targets_report_stream
+      primary_key: ["profileId", "reportDate", "advertisedAsin"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "productAds report {{ stream_slice.start_time }}"
+            startDate: "{{ stream_slice.start_time }}"
+            endDate: "{{ stream_slice.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["asin"]
+              columns: # TODO: make configurable
+                [
+                  "campaignName",
+                  "campaignId",
+                  "adGroupName",
+                  "adGroupId",
+                  "advertisedAsin",
+                  "purchasedAsin",
+                  "advertisedSku",
+                  "campaignBudgetCurrencyCode",
+                  "matchType",
+                  "unitsSoldClicks1d",
+                  "unitsSoldClicks7d",
+                  "unitsSoldClicks14d",
+                  "unitsSoldClicks30d",
+                  "unitsSoldOtherSku1d",
+                  "unitsSoldOtherSku7d",
+                  "unitsSoldOtherSku14d",
+                  "unitsSoldOtherSku30d",
+                  "salesOtherSku1d",
+                  "salesOtherSku7d",
+                  "salesOtherSku14d",
+                  "salesOtherSku30d",
+                  "keywordId",
+                  "targeting",
+                  "keywordType",
+                ]
+              reportTypeId: spPurchasedProduct
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+
+  incremental_sync_report_datetime_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: reportDate
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d"
+    lookback_window: P{{ config.get('look_back_window', 3) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ today_utc().strftime('%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
+    cursor_granularity: "P1D"
+    step: "P{{ config.get('events_time_step', 30) }}D"
+    start_time_option:
+      field_name: startDate
+      inject_into: body_json
+    end_time_option:
+      field_name: endDate
+      inject_into: body_json
+
+  transformation_report_add_fields:
+    - type: AddFields
+      fields:
+        - path: ["reportDate"]
+          value: "{{ stream_slice.end_time }}"
+    - type: AddFields
+      fields:
+        - path: ["profileId"]
+          value: "{{ stream_slice['profileId'] }}"
+
+  basic_async_retriever:
+    type: AsyncRetriever
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "profileId"
+          stream: "#/definitions/streams/profiles_filtered"
+          partition_field: "profileId"
+    status_mapping:
+      failed:
+        - FAILED
+      running:
+        - PENDING
+        - PROCESSING
+      timeout:
+        - timeout
+      completed:
+        - COMPLETED
+    urls_extractor:
+      type: DpathExtractor
+      field_path:
+        - url
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+
+    status_extractor:
+      type: DpathExtractor
+      field_path:
+        - status
+    creation_requester:
+      type: HttpRequester
+      path: /reporting/reports
+      url_base: >-
+        {%- set URL_MAPPING = {
+            "NA": "https://advertising-api.amazon.com/",
+            "EU": "https://advertising-api-eu.amazon.com/",
+            "FE": "https://advertising-api-fe.amazon.com/"
+        } -%}
+        {{ URL_MAPPING[config["region"]] }}
+      authenticator: "#/definitions/oauth_authenticator"
+      http_method: POST
+      request_headers:
+        Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+        Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+      request_body_json:
+        name: "purchasedAsin report {{ stream_slice.start_time }}"
+        startDate: "{{ stream_slice.start_time }}"
+        endDate: "{{ stream_slice.end_time }}"
+        configuration:
+          adProduct: OVERRIDDEN_REPORT_TYPE # Placeholder value. Each report stream overrides the adProduct value to the respective report name
+          groupBy: ["LIST_OF_GROUP_BY_METRICS"]
+          columns: ["LIST_OF_METRICS"]
+          reportTypeId: OVERRIDDEN_REPORT_TYPE # Placeholder value. Each report stream overrides the reportTypeId value to the respective report name
+          filters: []
+          timeUnit: SUMMARY
+          format: GZIP_JSON
+      error_handler:
+        $ref: "#/definitions/report_creation_error_handler"
+    polling_requester:
+      type: HttpRequester
+      path: /reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+      url_base: >-
+        {%- set URL_MAPPING = {
+            "NA": "https://advertising-api.amazon.com/",
+            "EU": "https://advertising-api-eu.amazon.com/",
+            "FE": "https://advertising-api-fe.amazon.com/"
+        } -%}
+        {{ URL_MAPPING[config["region"]] }}
+      authenticator: "#/definitions/oauth_authenticator"
+      http_method: GET
+      request_headers:
+        Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+        Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+
+    download_requester:
+      type: HttpRequester
+      path: "{{stream_slice.extra_fields['url']}}"
+      url_base: ""
+      http_method: GET
+      authenticator: "#/definitions/oauth_authenticator"
+      request_headers:
+        Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+        Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+    download_decoder:
+      type: CompositeRawDecoder
+      parser:
+        type: GzipParser
+        inner_parser:
+          type: JsonParser
+          encoding: utf
+    download_extractor:
+      type: DpathExtractor
+      field_path: []
 
 streams:
   - $ref: "#/definitions/streams/profiles"
@@ -1367,6 +2248,20 @@ streams:
   - $ref: "#/definitions/streams/attribution_report_performance_creative"
 
   - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream"
+
+  - $ref: "#/definitions/streams/sponsored_display_campaigns_report_stream"
+  - $ref: "#/definitions/streams/sponsored_display_adgroups_report_stream"
+  - $ref: "#/definitions/streams/sponsored_display_productads_report_stream"
+  - $ref: "#/definitions/streams/sponsored_display_targets_report_stream"
+  - $ref: "#/definitions/streams/sponsored_display_asins_report_stream"
+
+  - $ref: "#/definitions/streams/sponsored_products_campaigns_report_stream"
+  - $ref: "#/definitions/streams/sponsored_products_adgroups_report_stream"
+  - $ref: "#/definitions/streams/sponsored_products_keywords_report_stream"
+  - $ref: "#/definitions/streams/sponsored_products_targets_report_stream"
+  - $ref: "#/definitions/streams/sponsored_products_productads_report_stream"
+  - $ref: "#/definitions/streams/sponsored_products_asins_keywords_report_stream"
+  - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
