@@ -115,6 +115,11 @@ const val CREATE_INDEX_QUERY = """
         CREATE ? INDEX ? ON [?].[?] (?)
     """
 
+const val DROP_TABLE_QUERY =
+    """
+        DROP TABLE [?].[?];
+    """
+
 const val INSERT_INTO_QUERY =
     """
         SET NOCOUNT ON;
@@ -307,6 +312,10 @@ class MSSQLQueryBuilder(
         }
 
         createTableIfNotExistsQuery(finalTableSchema).executeUpdate(connection)
+    }
+
+    fun dropTable(connection: Connection) {
+        DROP_TABLE_QUERY.toQuery(outputSchema, tableName).executeUpdate(connection)
     }
 
     fun getFinalTableInsertColumnHeader(): String =
