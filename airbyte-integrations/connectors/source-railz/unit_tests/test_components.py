@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from freezegun import freeze_time
-
+from unittest.mock import patch
+from datetime import datetime, timedelta
 
 def test_get_tokens(components_module, requests_mock):
     url = "https://auth.railz.ai/getAccess"
@@ -24,9 +24,13 @@ def test_get_tokens(components_module, requests_mock):
         parameters={},
     )
 
-    with freeze_time("2023-01-01 12:00:00"):
+    start_time = datetime(2023, 1, 1, 12, 0, 0)
+
+    with patch("components_module.ShortLivedTokenAuthenticator._current_time", return_value=start_time):
         assert authenticator.token == "Bearer access_token1"
-    with freeze_time("2023-01-01 12:30:00"):
+
+    with patch("components_module.ShortLivedTokenAuthenticator._current_time", return_value=start_time + timedelta(minutes=30)):
         assert authenticator.token == "Bearer access_token1"
-    with freeze_time("2023-01-01 13:00:00"):
+
+    with patch("components_module.ShortLivedTokenAuthenticator._current_time", return_value=start_time + timedelta(hours=1)):
         assert authenticator.token == "Bearer access_token2"
