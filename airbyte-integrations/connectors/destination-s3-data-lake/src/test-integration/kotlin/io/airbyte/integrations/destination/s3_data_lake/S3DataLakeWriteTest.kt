@@ -185,7 +185,7 @@ class GlueWriteTest :
                 )
             )
 
-        val failure = expectFailure { runSync(configContents, catalog, messages = emptyList()) }
+        val failure = expectFailure { runSync(updatedConfig, catalog, messages = emptyList()) }
         assertContains(failure.message, "Detected naming conflicts between streams")
     }
 
