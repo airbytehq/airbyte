@@ -56,7 +56,7 @@ class ZendeskChatTimestampCursor(DatetimeBasedCursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         params = {}
-        if self._use_microseconds:
+        if self._use_microseconds.eval(self.config):
             params = self.add_microseconds(params, stream_slice)
         else:
             params[self.start_time_option.field_name.eval(config=self.config)] = stream_slice.get(
@@ -105,7 +105,7 @@ class ZendeskChatTimeOffsetIncrementPaginationStrategy(OffsetIncrement):
         Returns:
             The offset value as the `next_page_token`
         """
-        self._offset = decoded_response[self._time_field_name]
+        self._offset = list(decoded_response)[0][self._time_field_name]
         return self._offset
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:

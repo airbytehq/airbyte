@@ -12,6 +12,8 @@ authors = ["Airbyte <contact@airbyte.io>"]
 python = "^3.10,<3.13"
 airbyte-cdk = "^6.10.0"
 pytest = "^8"
+pendulum = "==2.1.2"
+requests-mock = "*"
 
 [tool.pytest.ini_options]
 filterwarnings = [

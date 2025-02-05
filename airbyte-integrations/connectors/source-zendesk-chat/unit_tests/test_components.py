@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 def config() -> Mapping[str, Any]:
     return {
         "start_date": "2020-10-01T00:00:00Z",
-        "subdomain": "",
+        "subdomain": "myzendeskchat",
         "credentials": {"credentials": "access_token", "access_token": "__access_token__"},
     }
 
@@ -44,7 +44,7 @@ def bans_stream_record_extractor_expected_output() -> List[Mapping[str, Any]]:
         },
     ]
 
-def _get_cursor(components_module, config):
+def _get_id_cursor(components_module, config):
     ZendeskChatIdIncrementalCursor = components_module.ZendeskChatIdIncrementalCursor
     return ZendeskChatIdIncrementalCursor(
         config=config,
@@ -61,12 +61,13 @@ def _get_cursor(components_module, config):
     ids=["SET Initial State and GET State"],
 )
 def test_id_incremental_cursor_set_initial_state_and_get_stream_state(
+    components_module,
     config,
     stream_state,
     expected_cursor_value,
     expected_state_value,
 ) -> None:
-    cursor = _get_cursor(config)
+    cursor = _get_id_cursor(components_module, config)
     cursor.set_initial_state(stream_state)
     assert cursor._cursor == expected_cursor_value
     assert cursor._state == expected_cursor_value
@@ -80,8 +81,8 @@ def test_id_incremental_cursor_set_initial_state_and_get_stream_state(
     ],
     ids=["first", "second"],
 )
-def test_id_incremental_cursor_close_slice(config, test_record, expected) -> None:
-    cursor = _get_cursor(config)
+def test_id_incremental_cursor_close_slice(components_module, config, test_record, expected) -> None:
+    cursor = _get_id_cursor(components_module, config)
     cursor.observe(stream_slice={}, record=test_record)
     cursor.close_slice(stream_slice={})
     assert cursor._cursor == expected
@@ -94,8 +95,8 @@ def test_id_incremental_cursor_close_slice(config, test_record, expected) -> Non
     ],
     ids=["No State", "With State"],
 )
-def test_id_incremental_cursor_get_request_params(config, stream_state, input_slice, expected) -> None:
-    cursor = _get_cursor(config)
+def test_id_incremental_cursor_get_request_params(components_module, config, stream_state, input_slice, expected) -> None:
+    cursor = _get_id_cursor(components_module, config)
     if stream_state:
         cursor.set_initial_state(stream_state)
     assert cursor.get_request_params(stream_slice=input_slice) == expected
@@ -113,8 +114,8 @@ def test_id_incremental_cursor_get_request_params(config, stream_state, input_sl
         "With State < Record value",
     ],
 )
-def test_id_incremental_cursor_should_be_synced(config, stream_state, record, expected) -> None:
-    cursor = _get_cursor(config)
+def test_id_incremental_cursor_should_be_synced(components_module, config, stream_state, record, expected) -> None:
+    cursor = _get_id_cursor(components_module, config)
     if stream_state:
         cursor.set_initial_state(stream_state)
     assert cursor.should_be_synced(record=record) == expected
@@ -134,8 +135,8 @@ def test_id_incremental_cursor_should_be_synced(config, stream_state, record, ex
         "Has no First and has no Second - should not be synced",
     ],
 )
-def test_id_incremental_cursor_is_greater_than_or_equal(config, first_record, second_record, expected) -> None:
-    cursor = _get_cursor(config)
+def test_id_incremental_cursor_is_greater_than_or_equal(components_module, config, first_record, second_record, expected) -> None:
+    cursor = _get_id_cursor(components_module, config)
     assert cursor.is_greater_than_or_equal(first=first_record, second=second_record) == expected
 
 def test_bans_stream_record_extractor(
@@ -151,7 +152,7 @@ def test_bans_stream_record_extractor(
     test_response = requests.get(test_url)
     assert ZendeskChatBansRecordExtractor().extract_records(test_response) == bans_stream_record_extractor_expected_output
 
-def _get_paginator(components_module, config, id_field):
+def _get_id_paginator(components_module, config, id_field):
     ZendeskChatIdOffsetIncrementPaginationStrategy = components_module.ZendeskChatIdOffsetIncrementPaginationStrategy
     return ZendeskChatIdOffsetIncrementPaginationStrategy(
         config=config,
@@ -164,15 +165,15 @@ def _get_paginator(components_module, config, id_field):
     "id_field, last_records, expected",
     [("id", [{"id": 1}], 2), ("id", [], None)],
 )
-def test_id_offset_increment_pagination_next_page_token(requests_mock, config, id_field, last_records, expected) -> None:
-    paginator = _get_paginator(config, id_field)
+def test_id_offset_increment_pagination_next_page_token(components_module, requests_mock, config, id_field, last_records, expected) -> None:
+    paginator = _get_id_paginator(components_module, config, id_field)
     test_url = f"https://{config['subdomain']}.zendesk.com/api/v2/chat/agents"
     requests_mock.get(test_url, json=last_records)
     test_response = requests.get(test_url)
     assert paginator.next_page_token(test_response, last_records) == expected
 
 
-def _get_paginator(components_module, config, time_field_name):
+def _get_time_paginator(components_module, config, time_field_name):
     ZendeskChatTimeOffsetIncrementPaginationStrategy = components_module.ZendeskChatTimeOffsetIncrementPaginationStrategy
     return ZendeskChatTimeOffsetIncrementPaginationStrategy(
         config=config,
@@ -189,15 +190,15 @@ def _get_paginator(components_module, config, time_field_name):
         ("end_time", {"chats": [], "end_time": 3}, [], None),
     ],
 )
-def test_time_offset_increment_pagination_next_page_token(requests_mock, config, time_field_name, response, last_records, expected) -> None:
-    paginator = _get_paginator(config, time_field_name)
+def test_time_offset_increment_pagination_next_page_token(components_module, requests_mock, config, time_field_name, response, last_records, expected) -> None:
+    paginator = _get_time_paginator(components_module, config, time_field_name)
     test_url = f"https://{config['subdomain']}.zendesk.com/api/v2/chat/chats"
     requests_mock.get(test_url, json=response)
     test_response = requests.get(test_url)
     assert paginator.next_page_token(test_response, last_records) == expected
 
 
-def _get_cursor(components_module, config, cursor_field, use_microseconds):
+def _get_timestamp_cursor(components_module, config, cursor_field, use_microseconds):
     ZendeskChatTimestampCursor = components_module.ZendeskChatTimestampCursor
     cursor = ZendeskChatTimestampCursor(
         start_datetime="2020-10-01T00:00:00Z",
@@ -222,8 +223,8 @@ def _get_cursor(components_module, config, cursor_field, use_microseconds):
         (True, {"start_time": 1}, {"start_time": 1000000}),
     ],
 )
-def test_timestamp_based_cursor_add_microseconds(config, use_microseconds, input_slice, expected) -> None:
-    cursor = _get_cursor(config, "start_time", use_microseconds)
+def test_timestamp_based_cursor_add_microseconds(components_module, config, use_microseconds, input_slice, expected) -> None:
+    cursor = _get_timestamp_cursor(components_module, config, "start_time", use_microseconds)
     test_result = cursor.add_microseconds({}, input_slice)
     assert test_result == expected
 
@@ -239,6 +240,6 @@ def test_timestamp_based_cursor_add_microseconds(config, use_microseconds, input
         "WITHOUT `use_microseconds`",
     ],
 )
-def test_timestamp_based_cursor_get_request_params(config, use_microseconds, input_slice, expected) -> None:
-    cursor = _get_cursor(config, "start_time", use_microseconds)
+def test_timestamp_based_cursor_get_request_params(components_module, config, use_microseconds, input_slice, expected) -> None:
+    cursor = _get_timestamp_cursor(components_module, config, "start_time", use_microseconds)
     assert cursor.get_request_params(stream_slice=input_slice) == expected
