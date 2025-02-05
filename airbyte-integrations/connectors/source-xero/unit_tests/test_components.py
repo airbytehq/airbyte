@@ -17,4 +17,3 @@ def test_parse_date(components_module):
     assert ParseDates.parse_date("/Date(1656792775000)/") == datetime.datetime(2022, 7, 2, 20, 12, 55, tzinfo=datetime.timezone.utc)
     # Not a date
     assert ParseDates.parse_date("not a date") is None
-
