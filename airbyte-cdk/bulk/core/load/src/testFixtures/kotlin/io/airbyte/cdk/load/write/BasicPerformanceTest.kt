@@ -134,16 +134,19 @@ abstract class BasicPerformanceTest(
 
     @Test
     open fun testInsertRecords() {
-        testInsertRecords(null)
+        testInsertRecords(validation = null)
     }
 
-    protected fun testInsertRecords(validation: ValidationFunction?) {
+    protected fun testInsertRecords(
+        recordsToInsert: Long? = null,
+        validation: ValidationFunction?,
+    ) {
         runSync(
             testScenario =
                 SingleStreamInsert(
                     idColumn = idColumn,
                     columns = twoStringColumns,
-                    recordsToInsert = defaultRecordsToInsert,
+                    recordsToInsert = recordsToInsert ?: defaultRecordsToInsert,
                     randomizedNamespace = randomizedNamespace,
                     streamName = testInfo.testMethod.get().name,
                 ),

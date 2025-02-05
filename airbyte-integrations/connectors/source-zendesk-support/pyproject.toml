@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.4.2"
+version = "4.4.3"
 name = "source-zendesk-support"
 description = "Source implementation for Zendesk Support."
 authors = [ "Airbyte <contact@airbyte.io>",]
