@@ -305,6 +305,54 @@ class Tasks(HttpSubStream, TotangoStream):
         return None
 
 
+class ActivityTypes(TotangoStream):
+
+    @property   
+    def name(self):
+        return "activity_types"
+    
+    def __init__(self, authenticator: TotangoAuthenticator):
+        super().__init__(authenticator=authenticator)
+    
+    @property
+    def http_method(self) -> str:
+        return "GET"
+    
+    @property
+    def primary_key(self):
+        return "activity_type_id"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+    
+    def path(self, stream_state=None, stream_slice=None, next_page_token=None) -> str:
+        return "/api/v3/activity-types/"
+
+    def get_json_schema(self):
+        return {
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "properties": {
+                "activity_type_id": {"type": "string"},
+                "display_name": {"type": "string"},
+                "num_of_activities_assign_to_me": {"type": "number"},
+                "icon_class": {"type": "string"},
+                "system_type": {"type": "boolean"},
+                "default_type": {"type": "boolean"},
+                "disabled": {"type": "boolean"},
+            }
+        }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        Parses the API response to yield individual records.
+        """
+        response_json = response.json()
+
+        for item in response_json:
+            yield item
+
+
 class SourceTotango(AbstractSource):
     logger = logging.getLogger("SourceTotango")
 
@@ -340,5 +388,6 @@ class SourceTotango(AbstractSource):
             Tasks(parent=Account(
                 authenticator=authenticator, config=config),
                 authenticator=authenticator
-            )
+            ),
+            ActivityTypes(authenticator=authenticator)
         ]
