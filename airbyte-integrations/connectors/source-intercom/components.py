@@ -8,6 +8,7 @@ from time import sleep
 from typing import Mapping, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
 
 
