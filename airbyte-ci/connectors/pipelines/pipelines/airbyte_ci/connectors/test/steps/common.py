@@ -20,6 +20,11 @@ import requests  # type: ignore
 import semver
 import yaml  # type: ignore
 from dagger import Container, Directory
+
+# This slugify lib has to be consistent with the slugify lib used in live_tests
+# live_test can't resolve the passed connector container otherwise.
+from slugify import slugify  # type: ignore
+
 from pipelines import hacks, main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -32,10 +37,6 @@ from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
-
-# This slugify lib has to be consistent with the slugify lib used in live_tests
-# live_test can't resolve the passed connector container otherwise.
-from slugify import slugify  # type: ignore
 
 GITHUB_URL_PREFIX_FOR_CONNECTORS = f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/master/airbyte-integrations/connectors"
 
@@ -564,6 +565,8 @@ class LiveTests(Step):
             command_options += ["--run-id", self.run_id]
         if self.should_read_with_state:
             command_options += ["--should-read-with-state=1"]
+        if self.disable_proxy:
+            command_options += ["--disable-proxy=1"]
         if self.test_evaluation_mode:
             command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
         if self.selected_streams:
@@ -618,6 +621,7 @@ class LiveTests(Step):
         self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", None)
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
         self.should_read_with_state = "should-read-with-state" in options
+        self.disable_proxy = "disable-proxy" in options
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
         self.test_evaluation_mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
         self.connection_subset = self.context.run_step_options.get_item_or_default(options, "connection-subset", "sandboxes")
@@ -827,7 +831,5 @@ class LiveTests(Step):
                 )
             )
 
-        container = container.with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True).with_exec(
-            ["poetry", "install"], use_entrypoint=True
-        )
+        container = container.with_exec(["poetry", "lock"], use_entrypoint=True).with_exec(["poetry", "install"], use_entrypoint=True)
         return container

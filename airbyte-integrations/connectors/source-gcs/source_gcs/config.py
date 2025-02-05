@@ -5,9 +5,10 @@
 
 from typing import Literal, Union
 
+from pydantic.v1 import AnyUrl, BaseModel, Field
+
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
-from pydantic.v1 import AnyUrl, BaseModel, Field
 
 
 class OAuthCredentials(BaseModel):

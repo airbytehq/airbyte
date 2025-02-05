@@ -5,9 +5,10 @@
 from datetime import datetime, timedelta
 from typing import Any, Mapping
 
+from source_adjust.source import SourceAdjust
+
 from airbyte_cdk.sources.streams import Stream
 from airbyte_protocol.models import SyncMode
-from source_adjust.source import SourceAdjust
 
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:

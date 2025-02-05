@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.23"
+version = "0.2.32"
 name = "source-google-directory"
 description = "Source implementation for Google Directory."
 authors = [ "Airbyte <contact@airbyte.io>",]

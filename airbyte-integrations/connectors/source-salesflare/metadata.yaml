@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-salesflare
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.3.0@sha256:1be2b089428f8ba99729000186e7ce62434d912a7e6f9dcf54d60c5939b08666
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: a312f5ec-ba92-4c5b-a03c-197fbd961b91
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-salesflare
   githubIssueLabel: source-salesflare
   icon: icon.svg

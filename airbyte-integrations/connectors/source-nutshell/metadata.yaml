@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-nutshell
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.5.1@sha256:96643937a51b611b94c9084ec7ebf969fd5383a4549161ce4b8ce919cf8e2345
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: 8ac02323-03a3-4026-96f0-68573237c49a
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-nutshell
   githubIssueLabel: source-nutshell
   icon: icon.svg

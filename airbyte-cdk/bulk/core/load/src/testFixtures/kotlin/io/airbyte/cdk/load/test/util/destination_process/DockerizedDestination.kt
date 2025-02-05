@@ -5,6 +5,8 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.extensions.grantAllPermissions
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.util.serializeToString
@@ -14,12 +16,14 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedWriter
+import java.io.File
 import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
+import kotlin.io.path.writeText
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -27,6 +31,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.apache.commons.lang3.RandomStringUtils
+import org.junit.jupiter.api.Assertions.assertFalse
 
 private val logger = KotlinLogging.logger {}
 
@@ -37,6 +42,8 @@ class DockerizedDestination(
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     private val testName: String,
+    useFileTransfer: Boolean,
+    envVars: Map<String, String>,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
@@ -53,6 +60,8 @@ class DockerizedDestination(
 
     private val stdoutDrained = CompletableDeferred<Unit>()
     private val stderrDrained = CompletableDeferred<Unit>()
+    // Mainly, used for file transfer but there are other consumers, name the AWS CRT HTTP client.
+    private val tmpDir = Files.createTempDirectory("tmp").grantAllPermissions()
 
     init {
         // This is largely copied from the old cdk's DockerProcessFactory /
@@ -62,17 +71,25 @@ class DockerizedDestination(
         // the actual platform, and we don't need it here.
         val testDir = Path.of("/tmp/airbyte_tests/")
         Files.createDirectories(testDir)
+        // Allow ourselves and our connector access to our test dir
+        testDir.grantAllPermissions()
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
-        // This directory gets mounted to the docker container,
-        // presumably so that we can extract some files out of it?
-        // It's unclear to me that we actually need to do this...
-        // Certainly nothing in the bulk CDK's test suites is reading back
-        // anything in this directory.
-        val localRoot = Files.createTempDirectory(testDir, "output")
+        workspaceRoot.grantAllPermissions()
+
         // This directory will contain the actual inputs to the connector (config+catalog),
         // and is also mounted as a volume.
-        val jobRoot = Files.createDirectories(workspaceRoot.resolve("job"))
+        val jobDir = "job"
+        val jobRoot = Files.createDirectories(workspaceRoot.resolve(jobDir))
+        jobRoot.grantAllPermissions()
 
+        val containerDataRoot = "/data"
+        val containerJobRoot = "$containerDataRoot/$jobDir"
+
+        // This directory is being used for the file transfer feature.
+        if (useFileTransfer) {
+            val file = Files.createFile(tmpDir.resolve("test_file"))
+            file.writeText("123")
+        }
         // Extract the string "destination-foo" from "gcr.io/airbyte/destination-foo:1.2.3".
         // The old code had a ton of extra logic here, along with a max string
         // length (docker container names must be <128 chars) - none of that
@@ -83,7 +100,14 @@ class DockerizedDestination(
         val shortImageName = imageTag.substringAfterLast("/").substringBefore(":")
         val containerName = "$shortImageName-$command-$randomSuffix"
         logger.info { "Creating docker container $containerName" }
+        logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
+        val additionalEnvEntries =
+            envVars.flatMap { (key, value) ->
+                logger.info { "Env vars: $key loaded" }
+                listOf("-e", "$key=$value")
+            }
 
+        // DANGER: env vars can contain secrets, so you MUST NOT log this command.
         val cmd: MutableList<String> =
             (listOf(
                     "docker",
@@ -92,7 +116,8 @@ class DockerizedDestination(
                     "--init",
                     "-i",
                     "-w",
-                    "/data/job",
+                    // In real syncs, platform changes the workdir to /dest for destinations.
+                    testDir.toString(),
                     "--log-driver",
                     "none",
                     "--name",
@@ -100,13 +125,13 @@ class DockerizedDestination(
                     "--network",
                     "host",
                     "-v",
-                    String.format("%s:%s", workspaceRoot, "/data"),
+                    String.format("%s:%s", workspaceRoot, containerDataRoot),
                     "-v",
-                    String.format("%s:%s", localRoot, "/local"),
+                    "$tmpDir:/tmp",
                 ) +
+                    additionalEnvEntries +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
-
                         // Yes, we hardcode the job ID to 0.
                         // Also yes, this is available in the configured catalog
                         // via the syncId property.
@@ -119,17 +144,19 @@ class DockerizedDestination(
                 .toMutableList()
 
         fun addInput(paramName: String, fileContents: ByteArray) {
+            val path = jobRoot.resolve("destination_$paramName.json")
             Files.write(
-                jobRoot.resolve("destination_$paramName.json"),
+                path,
                 fileContents,
             )
+            path.grantAllPermissions()
+
             cmd.add("--$paramName")
-            cmd.add("destination_$paramName.json")
+            cmd.add("$containerJobRoot/destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
         catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
 
-        logger.info { "Executing command: ${cmd.joinToString(" ")}" }
         process = ProcessBuilder(cmd).start()
         // Annoyingly, the process's stdin is called "outputStream"
         destinationStdin = BufferedWriter(OutputStreamWriter(process.outputStream, Charsets.UTF_8))
@@ -211,6 +238,11 @@ class DockerizedDestination(
         destinationStdin.newLine()
     }
 
+    override fun sendMessage(string: String) {
+        destinationStdin.write(string)
+        destinationStdin.newLine()
+    }
+
     override fun readMessages(): List<AirbyteMessage> {
         return destinationOutput.newMessages()
     }
@@ -239,6 +271,11 @@ class DockerizedDestination(
     override fun kill() {
         process.destroyForcibly()
     }
+
+    override fun verifyFileDeleted() {
+        val file = File(tmpDir.resolve("test_file").toUri())
+        assertFalse(file.exists())
+    }
 }
 
 class DockerizedDestinationFactory(
@@ -249,6 +286,8 @@ class DockerizedDestinationFactory(
         command: String,
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
+        useFileTransfer: Boolean,
+        micronautProperties: Map<Property, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
@@ -257,6 +296,8 @@ class DockerizedDestinationFactory(
             configContents,
             catalog,
             testName,
+            useFileTransfer,
+            micronautProperties.mapKeys { (k, _) -> k.environmentVariable },
             *featureFlags,
         )
     }

@@ -167,7 +167,7 @@ class MondayGraphqlRequester(HttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         headers = super().get_request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        headers["API-Version"] = "2024-01"
+        headers["API-Version"] = "2024-10"
         return headers
 
     def get_request_params(

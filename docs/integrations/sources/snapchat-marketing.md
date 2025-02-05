@@ -143,6 +143,14 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.4.2 | 2025-02-01 | [53083](https://github.com/airbytehq/airbyte/pull/53083) | Update dependencies |
+| 1.4.1 | 2025-01-25 | [52403](https://github.com/airbytehq/airbyte/pull/52403) | Update dependencies |
+| 1.4.0 | 2025-01-23 | [52110](https://github.com/airbytehq/airbyte/pull/52110) | Make incremental per-partition streams concurrent |
+| 1.3.7 | 2025-01-18 | [51999](https://github.com/airbytehq/airbyte/pull/51999) | Update dependencies |
+| 1.3.6 | 2025-01-11 | [51431](https://github.com/airbytehq/airbyte/pull/51431) | Update dependencies |
+| 1.3.5 | 2024-12-28 | [50796](https://github.com/airbytehq/airbyte/pull/50796) | Update dependencies |
+| 1.3.4 | 2024-12-21 | [50308](https://github.com/airbytehq/airbyte/pull/50308) | Update dependencies |
+| 1.3.3 | 2024-12-14 | [49414](https://github.com/airbytehq/airbyte/pull/49414) | Update dependencies |
 | 1.3.2 | 2024-11-05 | [48375](https://github.com/airbytehq/airbyte/pull/48375) | Re-implement advanced_auth in connector spec |
 | 1.3.1 | 2024-10-29 | [47837](https://github.com/airbytehq/airbyte/pull/47837) | Update dependencies |
 | 1.3.0 | 2024-10-15 | [46927](https://github.com/airbytehq/airbyte/pull/46927) | Promoting release candidate 1.3.0-rc.1 to a main version. |

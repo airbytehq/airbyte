@@ -16,7 +16,6 @@ class DefaultJdbcSharedState(
     override val selectQuerier: SelectQuerier,
     val constants: DefaultJdbcConstants,
     internal val concurrencyResource: ConcurrencyResource,
-    private val globalLockResource: GlobalLockResource,
 ) : JdbcSharedState {
 
     // First hit to the readStartTime initializes the value.
@@ -51,32 +50,14 @@ class DefaultJdbcSharedState(
         )
 
     override fun tryAcquireResourcesForCreator(): JdbcPartitionsCreator.AcquiredResources? {
-        val acquiredLock: GlobalLockResource.AcquiredGlobalLock =
-            globalLockResource.tryAcquire() ?: return null
         val acquiredThread: ConcurrencyResource.AcquiredThread =
-            concurrencyResource.tryAcquire()
-                ?: run {
-                    acquiredLock.close()
-                    return null
-                }
-        return JdbcPartitionsCreator.AcquiredResources {
-            acquiredThread.close()
-            acquiredLock.close()
-        }
+            concurrencyResource.tryAcquire() ?: return null
+        return JdbcPartitionsCreator.AcquiredResources { acquiredThread.close() }
     }
 
     override fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? {
-        val acquiredLock: GlobalLockResource.AcquiredGlobalLock =
-            globalLockResource.tryAcquire() ?: return null
         val acquiredThread: ConcurrencyResource.AcquiredThread =
-            concurrencyResource.tryAcquire()
-                ?: run {
-                    acquiredLock.close()
-                    return null
-                }
-        return JdbcPartitionReader.AcquiredResources {
-            acquiredThread.close()
-            acquiredLock.close()
-        }
+            concurrencyResource.tryAcquire() ?: return null
+        return JdbcPartitionReader.AcquiredResources { acquiredThread.close() }
     }
 }

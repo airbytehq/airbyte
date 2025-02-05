@@ -8,9 +8,10 @@ from abc import ABC, abstractmethod
 from typing import List, Sequence, Tuple
 
 import dpath.util
+from dagger import Container, File
+
 import pipelines.dagger.actions.python.common
 import pipelines.dagger.actions.system.docker
-from dagger import Container, File
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
@@ -20,10 +21,11 @@ from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
+from pipelines.helpers.utils import raise_if_not_user
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
 # Pin the PyAirbyte version to avoid updates from breaking CI
-PYAIRBYTE_VERSION = "0.18.1"
+PYAIRBYTE_VERSION = "0.20.2"
 
 
 class PytestStep(Step, ABC):
@@ -77,10 +79,11 @@ class PytestStep(Step, ABC):
         test_environment = await self.install_testing_environment(
             connector_under_test, test_config_file_name, test_config_file, self.extra_dependencies_names
         )
+
         pytest_command = self.get_pytest_command(test_config_file_name)
 
         if self.bind_to_docker_host:
-            test_environment = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, test_environment)
+            test_environment = await pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, test_environment)
 
         test_execution = test_environment.with_exec(pytest_command)
 
@@ -149,27 +152,40 @@ class PytestStep(Step, ABC):
         Returns:
             Container: The container with the test environment installed.
         """
-        secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets", self.secrets)
+        user = await BuildConnectorImages.get_image_user(built_connector_container)
+        secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets", self.secrets, owner=user)
 
         container_with_test_deps = (
             # Install the connector python package in /test_environment with the extra dependencies
             await pipelines.dagger.actions.python.common.with_python_connector_installed(
                 self.context,
-                # Reset the entrypoint to run non airbyte commands and set the user to root to install the dependencies and access secrets
-                built_connector_container.with_entrypoint([]).with_user("root"),
+                # Reset the entrypoint to run non airbyte commands
+                built_connector_container.with_entrypoint([]),
                 str(self.context.connector.code_directory),
+                user,
                 additional_dependency_groups=extra_dependencies_names,
             )
         )
         if self.common_test_dependencies:
-            container_with_test_deps = container_with_test_deps.with_exec(["pip", "install", f'{" ".join(self.common_test_dependencies)}'])
-        return (
+            container_with_test_deps = container_with_test_deps.with_user("root").with_exec(
+                ["pip", "install", f'{" ".join(self.common_test_dependencies)}']
+            )
+
+        container_with_test_deps = (
             container_with_test_deps
             # Mount the test config file
-            .with_mounted_file(test_config_file_name, test_config_file)
+            .with_mounted_file(test_config_file_name, test_config_file, owner=user)
             # Mount the secrets
-            .with_(secret_mounting_function).with_env_variable("PYTHONPATH", ".")
+            .with_(secret_mounting_function)
+            .with_env_variable("PYTHONPATH", ".")
+            # Make sure all files that were created or mounted under /airbyte are owned by the user
+            .with_user("root")
+            .with_exec(["chown", "-R", f"{user}:{user}", "/airbyte"])
+            .with_user(user)
         )
+
+        await raise_if_not_user(container_with_test_deps, user)
+        return container_with_test_deps
 
 
 class UnitTests(PytestStep):
@@ -195,9 +211,16 @@ class UnitTests(PytestStep):
 
 
 class PyAirbyteValidation(Step):
-    """A step to validate the connector will work with PyAirbyte, using the PyAirbyte validation helper."""
+    """Validate the connector can be installed and invoked via Python, using PyAirbyte.
 
-    title = "PyAirbyte validation tests"
+    When this fails, it generally signals that the connector is not installable or not
+    runnable in a Python environment. The most common reasons for this are:
+    1. Conflicting dependencies.
+    2. Missing dependency declarations.
+    3. Incorrect or invalid CLI entrypoints.
+    """
+
+    title = "Python CLI smoke test using PyAirbyte"
 
     context: ConnectorTestContext
 
@@ -209,7 +232,7 @@ class PyAirbyteValidation(Step):
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
         if dpath.util.get(self.context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
-            return self.skip("Connector is not published on pypi, skipping PyAirbyte validation.")
+            return self.skip("Connector is not flagged for PyPI publish, skipping Python CLI validation.")
 
         test_environment = await self.install_testing_environment(with_poetry(self.context))
         test_execution = test_environment.with_(
@@ -270,7 +293,7 @@ def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LIB_VALIDATION,
+                id=CONNECTOR_TEST_STEP_ID.PYTHON_CLI_VALIDATION,
                 step=PyAirbyteValidation(context),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
