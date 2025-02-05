@@ -133,11 +133,7 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 JDBCType.BIT -> BooleanFieldType
                 JDBCType.TINYINT -> ShortFieldType
                 JDBCType.SMALLINT -> ShortFieldType
-                // TODO: This really should be an IntFieldType
-                // But this breaks on discover integrationt tests,
-                JDBCType.INTEGER -> {
-                    IntFieldType
-                }
+                JDBCType.INTEGER -> IntFieldType
                 JDBCType.BIGINT -> BigIntegerFieldType
                 JDBCType.FLOAT -> FloatFieldType
                 JDBCType.REAL ->

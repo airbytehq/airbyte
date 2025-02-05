@@ -307,9 +307,3 @@ class MsSqlServerDebeziumOperations(
 
     }
 }
-
-class MsSqlServerDebeziumPosition : Comparable<MsSqlServerDebeziumPosition> {
-    override fun compareTo(other: MsSqlServerDebeziumPosition): Int {
-        return 0
-    }
-}

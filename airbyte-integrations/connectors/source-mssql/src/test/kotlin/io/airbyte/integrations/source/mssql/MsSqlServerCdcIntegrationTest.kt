@@ -34,7 +34,6 @@ class MsSqlServerCdcIntegrationTest {
            )
        }
     @Test
-    @Disabled("This should failed because CDC is disabled on the container. The missing code is equivalent to MySqlSourceMetadataQuerier.extraChecks")
     fun testCheckCdcOnNonCdcDb() {
            val nonCdcDbContainer = MsSqlServerContainerFactory.shared(
                    MsSqlServerImage.SQLSERVER_2022
