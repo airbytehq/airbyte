@@ -43,7 +43,6 @@ abstract class S3V2WriteTest(
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
     nullUnknownTypes: Boolean = false,
-    envVars: Map<String, String> = emptyMap(),
     private val mergesUnions: Boolean = false
 ) :
     BasicFunctionalityIntegrationTest(

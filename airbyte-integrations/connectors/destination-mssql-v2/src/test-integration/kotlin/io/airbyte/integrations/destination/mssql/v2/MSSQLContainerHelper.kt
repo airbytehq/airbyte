@@ -63,4 +63,7 @@ class MSSQLConfigUpdater : ConfigurationUpdater {
         logger.debug { "Using updated MSSQL configuration: $updatedConfig" }
         return updatedConfig
     }
+
+    // TODO implement this
+    override fun setDefaultNamespace(config: String, defaultNamespace: String): String = config
 }

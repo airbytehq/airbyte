@@ -42,8 +42,6 @@ import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
-import io.airbyte.cdk.load.test.util.DefaultDefaultNamespaceProvider
-import io.airbyte.cdk.load.test.util.DefaultNamespaceProvider
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
@@ -153,7 +151,6 @@ abstract class BasicFunctionalityIntegrationTest(
     nameMapper: NameMapper = NoopNameMapper,
     additionalMicronautEnvs: List<String> = emptyList(),
     micronautProperties: Map<Property, String> = emptyMap(),
-    val defaultNamespaceProvider: DefaultNamespaceProvider = DefaultDefaultNamespaceProvider(),
     /**
      * Whether to actually verify that the connector wrote data to the destination. This should only
      * ever be disabled for test destinations (dev-null, etc.).
@@ -470,8 +467,19 @@ abstract class BasicFunctionalityIntegrationTest(
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
         val streamWithDefaultNamespace = makeStream(null)
+        val configWithRandomizedDefaultNamespace =
+            configUpdater.setDefaultNamespace(updatedConfig, randomizedNamespace + "_default")
+        val actualDefaultNamespace =
+        // If the config stayed the same when we set the default namespace,
+        // then the connector is fine with using `namespace = null` directly.
+        if (configWithRandomizedDefaultNamespace == updatedConfig) {
+                null
+            } else {
+                // otherwise, use the default namespace.
+                randomizedNamespace + "_default"
+            }
         runSync(
-            updatedConfig,
+            configWithRandomizedDefaultNamespace,
             DestinationCatalog(
                 listOf(
                     stream1,
@@ -547,7 +555,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     streamWithDefaultNamespace.copy(
                         descriptor =
                             streamWithDefaultNamespace.descriptor.copy(
-                                namespace = defaultNamespaceProvider.get(randomizedNamespace)
+                                namespace = actualDefaultNamespace
                             )
                     ),
                     listOf(listOf("id")),
