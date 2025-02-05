@@ -10,6 +10,29 @@ for more information.
 
 :::
 
+## Iceberg schema generation
+
+The top-level fields of the stream will be mapped to Iceberg fields. Nested fields (objects, arrays, and unions) will be
+mapped to `STRING` columns, and written as serialized JSON. This is the full mapping between Airbyte types and Iceberg types:
+
+| Airbyte type               | Iceberg type                   |
+|----------------------------|--------------------------------|
+| Boolean                    | Boolean                        |
+| Date                       | Date                           |
+| Integer                    | Long                           |
+| Number                     | Double                         |
+| String                     | String                         |
+| Time with timezone         | Time                           |
+| Time without timezone      | Time                           |
+| Timestamp with timezone    | Timestamp with timezone        |
+| Timestamp without timezone | Timestamp without timezone     |
+| Object                     | String (JSON-serialized value) |
+| Array                      | String (JSON-serialized value) |
+| Union                      | String (JSON-serialized value) |
+
+Note that for the time/timestamp with timezone types, the value is first adjusted to UTC, and then
+written into the Iceberg file.
+
 ## Changelog
 
 <details>
@@ -17,6 +40,7 @@ for more information.
 
 | Version | Date       | Pull Request                                               | Subject                                                                      |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.3.3   | 2025-02-05 | [\#53176](https://github.com/airbytehq/airbyte/pull/53176) | Fix time_with_timezone handling (values are now adjusted to UTC)             |
 | 0.3.2   | 2025-02-04 | [\#52690](https://github.com/airbytehq/airbyte/pull/52690) | Handle special characters in stream name/namespace when using AWS Glue       |
 | 0.3.1   | 2025-02-03 | [\#52633](https://github.com/airbytehq/airbyte/pull/52633) | Fix dedup                                                                    |
 | 0.3.0   | 2025-01-31 | [\#52639](https://github.com/airbytehq/airbyte/pull/52639) | Make the database/namespace a required field                                 |
