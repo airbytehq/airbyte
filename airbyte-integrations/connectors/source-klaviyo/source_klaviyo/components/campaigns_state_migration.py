@@ -10,8 +10,15 @@ from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigr
 from airbyte_cdk.sources.types import Config
 
 
+ARCHIVED_SMS = {"archived": "true", "campaign_type": "sms"}
+NOT_ARCHIVED_SMS = {"archived": "false", "campaign_type": "sms"}
+ARCHIVED_EMAIL = {"archived": "true", "campaign_type": "email"}
+NOT_ARCHIVED_EMAIL = {"archived": "false", "campaign_type": "email"}
+
+
 class CampaignsStateMigration(StateMigration):
     """
+    Moves old state for per partition format. Cursor value from archived object to partition with archived=true.
 
     Example input state:
     {
@@ -42,11 +49,22 @@ class CampaignsStateMigration(StateMigration):
         self._cursor_field = InterpolatedString.create(self._cursor.cursor_field, parameters=self._parameters).eval(self._config)
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        print("should_migrate")
-        return "partition" not in stream_state
+        return "states" not in stream_state
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not self.should_migrate(stream_state):
             return stream_state
 
-        print("migration logic")
+        is_archived_updated_at = stream_state["archived"][self._cursor.cursor_field]
+        is_not_archived_updated_at = stream_state[self._cursor.cursor_field]
+
+        migrated_stream_state = {
+            "states": [
+                {"partition": ARCHIVED_SMS, "cursor": {self._cursor.cursor_field: is_archived_updated_at}},
+                {"partition": NOT_ARCHIVED_SMS, "cursor": {self._cursor.cursor_field: is_not_archived_updated_at}},
+                {"partition": ARCHIVED_EMAIL, "cursor": {self._cursor.cursor_field: is_archived_updated_at}},
+                {"partition": NOT_ARCHIVED_EMAIL, "cursor": {self._cursor.cursor_field: is_not_archived_updated_at}},
+            ]
+        }
+
+        return migrated_stream_state
