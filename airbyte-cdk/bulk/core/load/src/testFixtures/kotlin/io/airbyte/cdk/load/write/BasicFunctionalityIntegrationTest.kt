@@ -458,9 +458,9 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testNamespaces() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(namespace: String?, name: String = "test_stream") =
+        fun makeStream(namespace: String?) =
             DestinationStream(
-                DestinationStream.Descriptor(namespace, name),
+                DestinationStream.Descriptor(namespace, "test_stream"),
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
@@ -469,7 +469,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
-        val streamWithDefaultNamespace = makeStream(null, randomizedNamespace + "_stream")
+        val streamWithDefaultNamespace = makeStream(null)
         runSync(
             updatedConfig,
             DestinationCatalog(
