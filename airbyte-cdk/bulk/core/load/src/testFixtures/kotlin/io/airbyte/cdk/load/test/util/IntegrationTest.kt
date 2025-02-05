@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestination
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
@@ -126,6 +127,24 @@ abstract class IntegrationTest(
                 }
                 fail(message)
             }
+    }
+
+    /**
+     * Convenience wrapper for syncs that are expected to fail. Example usage:
+     * ```
+     * val failure = expectFailure {
+     *   runSync(...)
+     * }
+     * assertContains(failure.message, "Invalid widget")
+     * ```
+     */
+    fun expectFailure(
+        failureType: AirbyteErrorTraceMessage.FailureType =
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+        f: () -> Unit,
+    ): AirbyteErrorTraceMessage {
+        val e = assertThrows<DestinationUncleanExitException> { f() }
+        return e.traceMessages.first { it.failureType == failureType }
     }
 
     /** Convenience wrapper for [runSync] using a single stream. */
