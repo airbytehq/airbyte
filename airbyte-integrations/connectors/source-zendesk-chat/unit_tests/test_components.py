@@ -1,9 +1,11 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+from typing import Any, List, Mapping
 
 import pytest
 import requests
-from typing import Any, List, Mapping
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 
 
 @pytest.fixture
@@ -13,6 +15,7 @@ def config() -> Mapping[str, Any]:
         "subdomain": "myzendeskchat",
         "credentials": {"credentials": "access_token", "access_token": "__access_token__"},
     }
+
 
 @pytest.fixture
 def bans_stream_record() -> Mapping[str, Any]:
@@ -30,6 +33,7 @@ def bans_stream_record() -> Mapping[str, Any]:
         ],
     }
 
+
 @pytest.fixture
 def bans_stream_record_extractor_expected_output() -> List[Mapping[str, Any]]:
     return [
@@ -44,6 +48,7 @@ def bans_stream_record_extractor_expected_output() -> List[Mapping[str, Any]]:
         },
     ]
 
+
 def _get_id_cursor(components_module, config):
     ZendeskChatIdIncrementalCursor = components_module.ZendeskChatIdIncrementalCursor
     return ZendeskChatIdIncrementalCursor(
@@ -52,6 +57,7 @@ def _get_id_cursor(components_module, config):
         field_name="since_id",
         parameters={},
     )
+
 
 @pytest.mark.parametrize(
     "stream_state, expected_cursor_value, expected_state_value",
@@ -73,6 +79,7 @@ def test_id_incremental_cursor_set_initial_state_and_get_stream_state(
     assert cursor._state == expected_cursor_value
     assert cursor.get_stream_state() == expected_state_value
 
+
 @pytest.mark.parametrize(
     "test_record, expected",
     [
@@ -87,6 +94,7 @@ def test_id_incremental_cursor_close_slice(components_module, config, test_recor
     cursor.close_slice(stream_slice={})
     assert cursor._cursor == expected
 
+
 @pytest.mark.parametrize(
     "stream_state, input_slice, expected",
     [
@@ -100,6 +108,7 @@ def test_id_incremental_cursor_get_request_params(components_module, config, str
     if stream_state:
         cursor.set_initial_state(stream_state)
     assert cursor.get_request_params(stream_slice=input_slice) == expected
+
 
 @pytest.mark.parametrize(
     "stream_state, record, expected",
@@ -120,6 +129,7 @@ def test_id_incremental_cursor_should_be_synced(components_module, config, strea
         cursor.set_initial_state(stream_state)
     assert cursor.should_be_synced(record=record) == expected
 
+
 @pytest.mark.parametrize(
     "first_record, second_record, expected",
     [
@@ -139,6 +149,7 @@ def test_id_incremental_cursor_is_greater_than_or_equal(components_module, confi
     cursor = _get_id_cursor(components_module, config)
     assert cursor.is_greater_than_or_equal(first=first_record, second=second_record) == expected
 
+
 def test_bans_stream_record_extractor(
     components_module,
     config,
@@ -152,6 +163,7 @@ def test_bans_stream_record_extractor(
     test_response = requests.get(test_url)
     assert ZendeskChatBansRecordExtractor().extract_records(test_response) == bans_stream_record_extractor_expected_output
 
+
 def _get_id_paginator(components_module, config, id_field):
     ZendeskChatIdOffsetIncrementPaginationStrategy = components_module.ZendeskChatIdOffsetIncrementPaginationStrategy
     return ZendeskChatIdOffsetIncrementPaginationStrategy(
@@ -160,6 +172,7 @@ def _get_id_paginator(components_module, config, id_field):
         id_field=id_field,
         parameters={},
     )
+
 
 @pytest.mark.parametrize(
     "id_field, last_records, expected",
@@ -190,7 +203,9 @@ def _get_time_paginator(components_module, config, time_field_name):
         ("end_time", {"chats": [], "end_time": 3}, [], None),
     ],
 )
-def test_time_offset_increment_pagination_next_page_token(components_module, requests_mock, config, time_field_name, response, last_records, expected) -> None:
+def test_time_offset_increment_pagination_next_page_token(
+    components_module, requests_mock, config, time_field_name, response, last_records, expected
+) -> None:
     paginator = _get_time_paginator(components_module, config, time_field_name)
     test_url = f"https://{config['subdomain']}.zendesk.com/api/v2/chat/chats"
     requests_mock.get(test_url, json=response)

@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
