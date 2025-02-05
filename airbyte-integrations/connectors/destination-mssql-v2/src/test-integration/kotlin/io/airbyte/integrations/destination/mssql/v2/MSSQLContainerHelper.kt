@@ -64,6 +64,6 @@ class MSSQLConfigUpdater : ConfigurationUpdater {
         return updatedConfig
     }
 
-    // TODO implement this
-    override fun setDefaultNamespace(config: String, defaultNamespace: String): String = config
+    override fun setDefaultNamespace(config: String, defaultNamespace: String): String =
+        config.replace("mssql_default_schema_placeholder", defaultNamespace)
 }
