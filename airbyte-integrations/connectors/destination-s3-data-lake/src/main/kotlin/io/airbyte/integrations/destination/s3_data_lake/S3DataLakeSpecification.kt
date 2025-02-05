@@ -52,7 +52,7 @@ class S3DataLakeSpecification :
     @get:JsonSchemaInject(json = """{"order":4}""") override val s3Endpoint: String? = null
 
     @get:JsonSchemaDescription(
-        """The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. For AWS Glue and Nessie, Must include the storage protocol (such as "s3://" for Amazon S3)."""
+        """The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. For AWS Glue and Nessie, must include the storage protocol (such as "s3://" for Amazon S3)."""
     )
     @get:JsonSchemaInject(
         json =

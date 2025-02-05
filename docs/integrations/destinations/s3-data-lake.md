@@ -2,7 +2,7 @@
 
 :::caution
 
-This connector is in early access, and should be used for production workloads.
+This connector is in early access, and should not be used for production workloads.
 
 We're interested in hearing about your experience! See [Github](https://github.com/airbytehq/airbyte/discussions/50404)
 for more information on joining the beta.
