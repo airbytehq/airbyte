@@ -63,16 +63,12 @@ PUBLIC_PERMISSION_IDS = [
     "domainWithLink",
 ]
 
-PERMISSIONS_API_SCOPES = [
-    "https://www.googleapis.com/auth/drive",
-    "https://www.googleapis.com/auth/drive.readonly",
-    "https://www.googleapis.com/auth/drive.metadata.readonly",
-    "https://www.googleapis.com/auth/drive.file",
+
+DRIVE_SERVICE_SCOPES = [
     "https://www.googleapis.com/auth/admin.directory.group.readonly",
     "https://www.googleapis.com/auth/admin.directory.group.member.readonly",
-    "https://www.googleapis.com/auth/admin.directory.user.readonly",
+    "https://www.googleapis.com/auth/admin.directory.user.readonly"
 ]
-
 
 def datetime_now() -> datetime:
     return datetime.now(pytz.UTC)
@@ -91,6 +87,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
         super().__init__()
         self._drive_service = None
+        self._directory_service = None
 
     @property
     def config(self) -> SourceGoogleDriveSpec:
@@ -110,31 +107,40 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceGoogleDriveSpec)
         self._config = value
 
-    @property
-    def google_drive_service(self):
+    def _build_google_service(self, service_name: str, version: str, scopes: List[str]=None):
         if self.config is None:
             # We shouldn't hit this; config should always get set before attempting to
             # list or read files.
-            raise ValueError("Source config is missing; cannot create the Google Drive client.")
+            raise ValueError(f"Source config is missing; cannot create the Google {service_name} client.")
         try:
-            if self._drive_service is None:
-                if self.config.credentials.auth_type == "Client":
-                    creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
-                else:
-                    scopes = PERMISSIONS_API_SCOPES if self.include_identities_stream() else None
-                    creds = service_account.Credentials.from_service_account_info(
-                        json.loads(self.config.credentials.service_account_info), scopes=scopes
-                    )
-                self._drive_service = build("drive", "v3", credentials=creds)
+            if self.config.credentials.auth_type == "Client":
+                creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
+            else:
+                creds = service_account.Credentials.from_service_account_info(
+                    json.loads(self.config.credentials.service_account_info), scopes=scopes
+                )
+            google_service = build(service_name, version, credentials=creds)
         except Exception as e:
             raise AirbyteTracedException(
                 internal_message=str(e),
-                message="Could not authenticate with Google Drive. Please check your credentials.",
+                message=f"Could not authenticate with Google {service_name}. Please check your credentials.",
                 failure_type=FailureType.config_error,
                 exception=e,
             )
 
+        return google_service
+
+    @property
+    def google_drive_service(self):
+        if self._drive_service is None:
+            self._drive_service = self._build_google_service( "drive", "v3")
         return self._drive_service
+
+    @property
+    def google_directory_service(self):
+        if self._directory_service is None:
+            self._directory_service = self._build_google_service( "admin", "directory_v1", DRIVE_SERVICE_SCOPES)
+        return self._directory_service
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
@@ -340,7 +346,6 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 if identity is not None:
                     remote_identities.append(identity)
 
-            logger.info(f"File {file_name} has {len(remote_identities)} valid permissions")
             return remote_identities, is_public
         except Exception as e:
             raise ErrorFetchingMetadata(f"An error occurred while retrieving file permissions: {str(e)}")
@@ -399,16 +404,16 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
     def load_identity_groups(self, logger: logging.Logger) -> Dict[str, Any]:
         domain = self.config.delivery_method.domain
         if not domain:
-            raise Exception("No domain was provided")
-        if self.google_drive_service is None or self.google_drive_service._http.credentials is None:
-            raise Exception("No auth found")
+            logger.info("No domain provided. Trying to fetch identities from the user workspace.")
+            api_args = {"customer": "my_customer"}
+        else:
+            api_args = {"domain": domain}
 
-        directory_service = build("admin", "directory_v1", credentials=self.google_drive_service._http.credentials)
-        users_api = directory_service.users()
-        groups_api = directory_service.groups()
-        members_api = directory_service.members()
+        users_api = self.google_directory_service.users()
+        groups_api = self.google_directory_service.groups()
+        members_api = self.google_directory_service.members()
 
-        for user in self._get_looping_google_api_list_response(users_api, "users", {"domain": domain}, logger):
+        for user in self._get_looping_google_api_list_response(users_api, "users", args=api_args, logger=logger):
             rfp = RemoteIdentity(
                 id=uuid.uuid4(),
                 remote_id=user["primaryEmail"],
@@ -420,7 +425,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             )
             yield rfp.dict()
 
-        for group in self._get_looping_google_api_list_response(groups_api, "groups", {"domain": domain}, logger):
+        for group in self._get_looping_google_api_list_response(groups_api, "groups", args=api_args, logger=logger):
             rfp = RemoteIdentity(
                 id=uuid.uuid4(),
                 remote_id=group["email"],
