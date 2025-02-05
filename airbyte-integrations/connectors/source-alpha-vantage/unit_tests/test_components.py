@@ -6,7 +6,6 @@ import json
 from typing import Any
 
 from requests import Response
-from source_alpha_vantage.object_dpath_extractor import ObjectDpathExtractor
 
 
 def _create_response_with_body(body: Any) -> Response:
@@ -47,7 +46,8 @@ def _create_response_with_list_of_records() -> Response:
     return _create_response_with_body(response_body)
 
 
-def test_no_key_injection():
+def test_no_key_injection(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
     extractor = ObjectDpathExtractor(
         field_path=["data"],
         config={},
@@ -69,7 +69,8 @@ def test_no_key_injection():
     ]
 
 
-def test_key_injection():
+def test_key_injection(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
     extractor = ObjectDpathExtractor(
         field_path=["data"],
         inject_key_as_field="date",
@@ -94,7 +95,8 @@ def test_key_injection():
     ]
 
 
-def test_key_injection_with_interpolation():
+def test_key_injection_with_interpolation(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
     extractor = ObjectDpathExtractor(
         field_path=["data"],
         inject_key_as_field="{{ config['key_field'] }}",
@@ -119,7 +121,8 @@ def test_key_injection_with_interpolation():
     ]
 
 
-def test_list_of_records():
+def test_list_of_records(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
     extractor = ObjectDpathExtractor(
         field_path=["data"],
         config={},
@@ -141,7 +144,8 @@ def test_list_of_records():
     ]
 
 
-def test_no_records():
+def test_no_records(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
     extractor = ObjectDpathExtractor(
         field_path=["data"],
         config={},
@@ -159,7 +163,8 @@ def test_no_records():
     assert list_records == []
 
 
-def test_single_record():
+def test_single_record(components_module):
+    ObjectDpathExtractor = components_module.ObjectDpathExtractor
     extractor = ObjectDpathExtractor(
         field_path=["data"],
         config={},
