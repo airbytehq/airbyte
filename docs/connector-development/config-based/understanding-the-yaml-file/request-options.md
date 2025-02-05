@@ -63,7 +63,7 @@ requester:
 
 ### Request Option Component
 
-Some components can inject additional request options to the requests sent to the API endpoint.
+Some components can be configured to inject additional request options to the requests sent to the API endpoint.
 
 Schema:
 
@@ -96,9 +96,9 @@ RequestOption:
           description: For body_json injection, specifies the nested path to the inject values. Particularly useful for GraphQL queries where values need to be injected into the variables object.
 ```
 
-#### GraphQL request injection
+### GraphQL request injection
 
-The `field_path` property is used to provide a list of strings representing a path to a nested key to inject. This is particularly useful when working with GraphQL APIs. GraphQL queries typically accept variables as a separate object in the request body, allowing values to be parametrized without string manipulation of the query iteslf. For example, to inject a value into a GraphQL query's variables, you might use:
+For `body_json` injections, the `field_path` property is used to provide a list of strings representing a path to a nested key to inject. This is particularly useful when working with GraphQL APIs. GraphQL queries typically accept variables as a separate object in the request body, allowing values to be parameterized without string manipulation of the query itself. For example, to inject a value into a GraphQL query's variables, you might use:
 
 ```yaml
 request_option:
@@ -109,11 +109,15 @@ request_option:
     - limit
 ```
 
-This would inject a value as:
+This would inject the following value in the request body:
 
 ```json
 { "variables": { "limit": value }}
 ```
+
+:::note
+Nested key injection is ONLY available for `body_json` injection. All other injection types use the top-level `field_name` instead.
+:::
 
 ### Request Path
 
