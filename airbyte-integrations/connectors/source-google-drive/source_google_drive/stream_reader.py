@@ -67,8 +67,9 @@ PUBLIC_PERMISSION_IDS = [
 DRIVE_SERVICE_SCOPES = [
     "https://www.googleapis.com/auth/admin.directory.group.readonly",
     "https://www.googleapis.com/auth/admin.directory.group.member.readonly",
-    "https://www.googleapis.com/auth/admin.directory.user.readonly"
+    "https://www.googleapis.com/auth/admin.directory.user.readonly",
 ]
+
 
 def datetime_now() -> datetime:
     return datetime.now(pytz.UTC)
@@ -107,7 +108,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceGoogleDriveSpec)
         self._config = value
 
-    def _build_google_service(self, service_name: str, version: str, scopes: List[str]=None):
+    def _build_google_service(self, service_name: str, version: str, scopes: List[str] = None):
         if self.config is None:
             # We shouldn't hit this; config should always get set before attempting to
             # list or read files.
@@ -133,13 +134,13 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
     @property
     def google_drive_service(self):
         if self._drive_service is None:
-            self._drive_service = self._build_google_service( "drive", "v3")
+            self._drive_service = self._build_google_service("drive", "v3")
         return self._drive_service
 
     @property
     def google_directory_service(self):
         if self._directory_service is None:
-            self._directory_service = self._build_google_service( "admin", "directory_v1", DRIVE_SERVICE_SCOPES)
+            self._directory_service = self._build_google_service("admin", "directory_v1", DRIVE_SERVICE_SCOPES)
         return self._directory_service
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
