@@ -24,13 +24,15 @@ class SourceKyve(AbstractSource):
 
         for pool_id in pools:
             try:
-                # check if endpoint is available and returns valid data
                 response = requests.get(f"{config['url_base']}/kyve/query/v1beta1/pool/{pool_id}")
                 if not response.ok:
-                    # todo improve error handling for cases like pool not found
+                    if response.status_code == 404:
+                        return False, f"Pool {pool_id} not found"
                     return False, response.json()
+            except requests.exceptions.RequestException as e:
+                return False, f"Request failed: {e}"
             except Exception as e:
-                return False, e
+                return False, f"Unexpected error: {e}"
 
         return True, None
 
