@@ -10,7 +10,6 @@ from typing import Dict, List, Optional, Set, Tuple
 import rich
 from connection_retriever import ConnectionObject, retrieve_objects  # type: ignore
 from connection_retriever.retrieval import TestingCandidate, retrieve_testing_candidates
-from pydantic import ValidationError
 
 from live_tests.commons import hacks
 from live_tests.commons.models import ConnectionSubset
