@@ -16,7 +16,7 @@ data:
   resourceRequirements:
     jobSpecific:
       - jobType: check_connection
-      - jobType: discover
+      - jobType: discover_schema
         resourceRequirements:
           cpu_limit: 1000m
           cpu_request: 4000m
