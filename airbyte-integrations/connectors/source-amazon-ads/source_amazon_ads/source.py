@@ -21,10 +21,6 @@ from airbyte_cdk.sources.types import Record
 from .spec import SourceAmazonAdsSpec
 
 
-# Oauth 2.0 authentication URL for amazon
-TOKEN_URL = "https://api.amazon.com/auth/o2/token"
-
-
 class SourceAmazonAds(YamlDeclarativeSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
@@ -55,6 +51,7 @@ class SourceAmazonAds(YamlDeclarativeSource):
         # in response body.
         # It doesn't support pagination so there is no sense of reading single
         # record, it would fetch all the data anyway.
+        # TODO: how to get declarative stream profiles_filtered ??
         profile_stream = [x for x in self.streams(config) if x.name == "profiles"][0]
         profiles_list = [x.data for x in profile_stream.read_records(SyncMode.full_refresh) if isinstance(x, Record)]
 
