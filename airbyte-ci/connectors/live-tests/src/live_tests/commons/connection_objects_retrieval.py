@@ -282,7 +282,7 @@ def _get_connection_objects_from_retrieved_objects(
         retrieved_source_config = parse_config(retrieved_objects.source_config)
         retrieved_destination_config = parse_config(retrieved_objects.destination_config)
         retrieved_catalog = parse_catalog(retrieved_objects.catalog)
-        retrieved_configured_catalog = parse_configured_catalog(retrieved_objects.configured_catalog, streams_to_test)
+        retrieved_configured_catalog = parse_configured_catalog(retrieved_objects.configured_catalog, selected_streams)
         retrieved_state = parse_state(retrieved_objects.state)
 
         retrieved_source_docker_image = retrieved_objects.source_docker_image
