@@ -15,7 +15,7 @@ repository = "https://github.com/airbytehq/airbyte"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "6.10.0"
+airbyte-cdk = "6.31.1"
 pytest = "^8"
 freezegun = "^1.5.1"
 
