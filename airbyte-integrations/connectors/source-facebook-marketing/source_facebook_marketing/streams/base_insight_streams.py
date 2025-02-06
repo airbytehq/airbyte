@@ -6,18 +6,20 @@ import logging
 from functools import cache, cached_property
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
-import airbyte_cdk.sources.utils.casing as casing
 import pendulum
+from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
+
+import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
-from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 from source_facebook_marketing.streams.common import traced_exception
 
 from .base_streams import FBMarketingIncrementalStream
+
 
 logger = logging.getLogger("airbyte")
 

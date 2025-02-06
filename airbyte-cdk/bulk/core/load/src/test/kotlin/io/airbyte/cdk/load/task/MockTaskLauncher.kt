@@ -6,8 +6,6 @@ package io.airbyte.cdk.load.task
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -16,22 +14,10 @@ import jakarta.inject.Singleton
 @Primary
 @Requires(env = ["MockTaskLauncher"])
 class MockTaskLauncher : DestinationTaskLauncher {
-    val spilledFiles = mutableListOf<SpilledRawMessagesLocalFile>()
     val batchEnvelopes = mutableListOf<BatchEnvelope<*>>()
 
     override suspend fun handleSetupComplete() {
         throw NotImplementedError()
-    }
-
-    override suspend fun handleStreamStarted(stream: DestinationStream.Descriptor) {
-        throw NotImplementedError()
-    }
-
-    override suspend fun handleNewSpilledFile(
-        stream: DestinationStream.Descriptor,
-        file: SpilledRawMessagesLocalFile
-    ) {
-        spilledFiles.add(file)
     }
 
     override suspend fun handleNewBatch(
@@ -45,12 +31,19 @@ class MockTaskLauncher : DestinationTaskLauncher {
         throw NotImplementedError()
     }
 
-    override suspend fun handleTeardownComplete() {
+    override suspend fun handleTeardownComplete(success: Boolean) {
         throw NotImplementedError()
     }
 
-    override suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile) {
-        throw NotImplementedError()
+    override suspend fun handleException(e: Exception) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun handleFailStreamComplete(
+        stream: DestinationStream.Descriptor,
+        e: Exception
+    ) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun run() {

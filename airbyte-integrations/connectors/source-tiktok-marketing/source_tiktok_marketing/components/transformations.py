@@ -18,7 +18,6 @@ class TransformEmptyMetrics(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Mapping[str, Any]:
-
         for metric_key, metric_value in record.get("metrics", {}).items():
             if metric_value == self.empty_value:
                 record["metrics"][metric_key] = None

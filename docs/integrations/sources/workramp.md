@@ -40,6 +40,14 @@ The Workramp connector should not run into Workramp API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                       |
 |:--------|:-----------| :------------------------------------------------------- | :---------------------------- |
+| 0.2.10 | 2025-02-01 | [53099](https://github.com/airbytehq/airbyte/pull/53099) | Update dependencies |
+| 0.2.9 | 2025-01-25 | [52392](https://github.com/airbytehq/airbyte/pull/52392) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [52024](https://github.com/airbytehq/airbyte/pull/52024) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51388](https://github.com/airbytehq/airbyte/pull/51388) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50762](https://github.com/airbytehq/airbyte/pull/50762) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50379](https://github.com/airbytehq/airbyte/pull/50379) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49785](https://github.com/airbytehq/airbyte/pull/49785) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [49416](https://github.com/airbytehq/airbyte/pull/49416) | Update dependencies |
 | 0.2.2 | 2024-11-04 | [48287](https://github.com/airbytehq/airbyte/pull/48287) | Update dependencies |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-09 | [43451](https://github.com/airbytehq/airbyte/pull/43451) | Refactor connector to manifest-only format |

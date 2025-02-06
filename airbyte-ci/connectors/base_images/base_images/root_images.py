@@ -4,6 +4,7 @@
 
 from .published_image import PublishedImage
 
+
 PYTHON_3_9_18 = PublishedImage(
     registry="docker.io",
     repository="python",
@@ -22,5 +23,12 @@ PYTHON_3_10_14 = PublishedImage(
     registry="docker.io",
     repository="python",
     tag="3.10.14-slim-bookworm",
-    sha="3b37199fbc5a730a551909b3efa7b29105c859668b7502451c163f2a4a7ae1ed",
+    sha="2407c61b1a18067393fecd8a22cf6fceede893b6aaca817bf9fbfe65e33614a3",
+)
+
+AMAZON_CORRETTO_21_AL_2023 = PublishedImage(
+    registry="docker.io",
+    repository="amazoncorretto",
+    tag="21-al2023",
+    sha="c90f38f8a5c4494cb773a984dc9fa9a727b3e6c2f2ee2cba27c834a6e101af0d",
 )

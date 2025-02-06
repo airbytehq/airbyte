@@ -14,8 +14,8 @@ import kotlinx.coroutines.sync.withLock
 
 /** Releasable reservation of memory. */
 class Reserved<T>(
-    private val parentManager: ReservationManager,
-    val bytesReserved: Long,
+    private val parentManager: ReservationManager? = null,
+    val bytesReserved: Long = 0,
     val value: T,
 ) : CloseableCoroutine {
     private var released = AtomicBoolean(false)
@@ -24,7 +24,7 @@ class Reserved<T>(
         if (!released.compareAndSet(false, true)) {
             return
         }
-        parentManager.release(bytesReserved)
+        parentManager?.release(bytesReserved)
     }
 
     fun <U> replace(value: U): Reserved<U> = Reserved(parentManager, bytesReserved, value)
@@ -49,6 +49,8 @@ class ReservationManager(val totalCapacityBytes: Long) {
 
     val remainingCapacityBytes: Long
         get() = totalCapacityBytes - usedBytes.get()
+    val totalBytesReserved: Long
+        get() = usedBytes.get()
 
     /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
     suspend fun <T> reserve(bytes: Long, reservedFor: T): Reserved<T> {

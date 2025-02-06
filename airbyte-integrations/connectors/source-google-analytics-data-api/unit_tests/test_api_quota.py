@@ -4,8 +4,10 @@
 
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from source_google_analytics_data_api.api_quota import GoogleAnalyticsApiQuota
+
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+
 
 TEST_QUOTA_INSTANCE: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
@@ -35,7 +37,7 @@ def test_check_initial_quota_is_empty():
                     "potentiallyThresholdedRequestsPerHour": {"consumed": 1, "remaining": 26},
                 }
             },
-            False, # partial_quota
+            False,  # partial_quota
             ResponseAction.RETRY,
             None,  # backoff_time_exp
             False,  # stop_iter_exp

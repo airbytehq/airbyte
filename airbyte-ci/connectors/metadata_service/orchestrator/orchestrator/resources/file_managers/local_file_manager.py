@@ -13,6 +13,7 @@ from dagster._core.storage.file_manager import LocalFileHandle, LocalFileManager
 from dagster._utils import mkdir_p
 from typing_extensions import TypeAlias
 
+
 IOStream: TypeAlias = Union[TextIO, BinaryIO]
 
 

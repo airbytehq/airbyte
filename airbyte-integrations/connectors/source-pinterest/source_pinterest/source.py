@@ -8,6 +8,7 @@ from base64 import standard_b64encode
 from typing import Any, List, Mapping
 
 import pendulum
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
@@ -31,6 +32,7 @@ from .reports.reports import (
     ProductItemReport,
 )
 from .streams import PinterestStream
+
 
 logger = logging.getLogger("airbyte")
 

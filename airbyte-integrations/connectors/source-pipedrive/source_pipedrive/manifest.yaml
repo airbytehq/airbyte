@@ -411,3 +411,46 @@ spec:
         examples:
           - "2017-01-25 00:00:00Z"
         type: string
+      num_workers:
+        title: Number of concurrent workers
+        description: Number of concurrent workers to be used in the sync. This number should be set according to your Pipedrive subscription plan and its rate limits, which coule be found <a href="https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting">here</a> on Pipedrive Rate limiting page. Please note that Pipedrive API rate limits are reset daily. If you experience rate limiting issues, please lower the number of workers according to your plan.
+        type: integer
+        default: 10
+        minimum: 1
+        maximum: 40
+
+# rate limiting https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting
+
+# Tokens Daily Budget:
+# Each company account is allocated a daily API token budget, which is shared among all users within that account.
+# This budget is exclusively for API traffic authenticated by API tokens or OAuth tokens,
+# and it does not impact actions performed directly within the Pipedrive user interface.
+# 30,000 base tokens × subscription plan multiplier × number of seats
+
+#| Plan	        | Plan multiplier |
+#|:-------------|-----------------|
+#| Essential    | 1               |
+#| Advanced     | 2               |
+#| Professional | 3               |
+#| Power        | 5               |
+#| Enterprise   | 7               |
+
+# API Requests:
+
+# Each API request consumes a specific number of tokens, with each API endpoint assigned cost in tokens based on the complexity and resource demand of the endpoint.
+#  When a request is made, the corresponding token cost is deducted from the company’s daily API budget.
+#  Lightweight endpoints consume fewer tokens, while more complex or data-intensive endpoints require a higher token cost.
+
+# | API Endpoint type          | Cost in tokens |
+# |---------------------------------------------|
+# | Get list of entities       | 20             |
+
+# We assume that airbyte users mostly on Essential plan, so they have 30k(Tokens Daily Budget) * 20(Cost in tokens) requests per day, which should be enough with 10 workers.
+#  If it's not, users can increase/decrease the number of workers.
+
+#  Max value of workers: 40, Min value of workers: 1, Default: 10.
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10)}}"
+  max_concurrency: 40

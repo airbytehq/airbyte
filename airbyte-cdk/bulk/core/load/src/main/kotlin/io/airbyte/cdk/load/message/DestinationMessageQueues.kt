@@ -17,61 +17,62 @@ interface Sized {
 }
 
 /**
- * Wrapper for record messages published to the message queue, containing metadata like index and
- * size.
+ * Wrapper message for stream events published to the stream specific queues, containing metadata
+ * like index and size.
  *
  * In a future where we deserialize only the info necessary for routing, this could include a dumb
  * container for the serialized, and deserialization could be deferred until the spooled records
  * were recovered from disk.
  */
-sealed class DestinationRecordWrapped : Sized
+sealed class DestinationStreamEvent : Sized
 
-sealed class DestinationFileWrapped : Sized
-
-data class StreamRecordWrapped(
+/** Contains a record to be aggregated and processed. */
+data class StreamRecordEvent(
     val index: Long,
     override val sizeBytes: Long,
-    val record: DestinationRecord
-) : DestinationRecordWrapped()
-
-data class StreamFileWrapped(
-    val index: Long,
-    override val sizeBytes: Long,
-    val file: DestinationFile
-) : DestinationFileWrapped()
-
-data class StreamRecordCompleteWrapped(
-    val index: Long,
-) : DestinationRecordWrapped() {
-    override val sizeBytes: Long = 0L
-}
-
-data class StreamFileCompleteWrapped(
-    val index: Long,
-) : DestinationFileWrapped() {
-    override val sizeBytes: Long = 0L
-}
-
-class DestinationRecordQueue : ChannelMessageQueue<Reserved<DestinationRecordWrapped>>()
+    val payload: DestinationRecordSerialized
+) : DestinationStreamEvent()
 
 /**
- * A supplier of message queues to which ([ReservationManager.reserve]'d) @
- * [DestinationRecordWrapped] messages can be published on a @ [DestinationStream] key. The queues
- * themselves do not manage memory.
+ * Indicates the stream is in a terminal (complete or incomplete) state as signalled by upstream.
+ */
+data class StreamEndEvent(
+    val index: Long,
+) : DestinationStreamEvent() {
+    override val sizeBytes: Long = 0L
+}
+
+/**
+ * Emitted to trigger evaluation of the conditional flush logic of a stream. The consumer may or may
+ * not decide to flush.
+ */
+data class StreamFlushEvent(
+    val tickedAtMs: Long,
+) : DestinationStreamEvent() {
+    override val sizeBytes: Long = 0L
+}
+
+class DestinationStreamEventQueue : ChannelMessageQueue<Reserved<DestinationStreamEvent>>()
+
+/**
+ * A supplier of message queues to which ([ReservationManager.reserve]'d) @ [DestinationStreamEvent]
+ * messages can be published on a @ [DestinationStream] key. The queues themselves do not manage
+ * memory.
  */
 @Singleton
 @Secondary
-class DestinationRecordQueueSupplier(catalog: DestinationCatalog) :
-    MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>> {
-    private val queues = ConcurrentHashMap<DestinationStream.Descriptor, DestinationRecordQueue>()
+class DestinationStreamQueueSupplier(catalog: DestinationCatalog) :
+    MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>> {
+    private val queues =
+        ConcurrentHashMap<DestinationStream.Descriptor, DestinationStreamEventQueue>()
 
     init {
-        catalog.streams.forEach { queues[it.descriptor] = DestinationRecordQueue() }
+        catalog.streams.forEach { queues[it.descriptor] = DestinationStreamEventQueue() }
     }
 
-    override fun get(key: DestinationStream.Descriptor): DestinationRecordQueue {
+    override fun get(key: DestinationStream.Descriptor): DestinationStreamEventQueue {
         return queues[key]
-            ?: throw IllegalArgumentException("Reading from non-existent record stream: $key")
+            ?: throw IllegalArgumentException("Reading from non-existent stream: $key")
     }
 }
 

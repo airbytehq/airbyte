@@ -48,6 +48,14 @@ If you have `free` subscription plan \(you may check it [here](https://openexcha
 
 | Version | Date       | Pull Request                                               | Subject                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.11 | 2025-02-01 | [52968](https://github.com/airbytehq/airbyte/pull/52968) | Update dependencies |
+| 0.3.10 | 2025-01-25 | [52530](https://github.com/airbytehq/airbyte/pull/52530) | Update dependencies |
+| 0.3.9 | 2025-01-18 | [51866](https://github.com/airbytehq/airbyte/pull/51866) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51364](https://github.com/airbytehq/airbyte/pull/51364) | Update dependencies |
+| 0.3.7 | 2024-12-28 | [50673](https://github.com/airbytehq/airbyte/pull/50673) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [50301](https://github.com/airbytehq/airbyte/pull/50301) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49678](https://github.com/airbytehq/airbyte/pull/49678) | Update dependencies |
+| 0.3.4 | 2024-12-12 | [48251](https://github.com/airbytehq/airbyte/pull/48251) | Update dependencies |
 | 0.3.3 | 2024-10-29 | [47805](https://github.com/airbytehq/airbyte/pull/47805) | Update dependencies |
 | 0.3.2 | 2024-10-28 | [47452](https://github.com/airbytehq/airbyte/pull/47452) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |

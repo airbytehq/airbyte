@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 63cea06f-1c75-458d-88fe-ad48c7cb27fd
-  dockerImageTag: 0.3.21
+  dockerImageTag: 0.3.28
   dockerRepository: airbyte/source-braintree
   documentationUrl: https://docs.airbyte.com/integrations/sources/braintree
   githubIssueLabel: source-braintree
@@ -25,7 +25,7 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
   releaseStage: alpha
   supportLevel: community
   tags:

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-fulcrum
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: 1028d4dc-005b-484b-9164-5a81e0dbac19
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.11
   dockerRepository: airbyte/source-fulcrum
   githubIssueLabel: source-fulcrum
   icon: icon.svg

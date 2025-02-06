@@ -153,4 +153,4 @@ For examples of production-ready config-based connectors, refer to:
 
 ## Reference
 
-The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).
+The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte-python-cdk/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).
