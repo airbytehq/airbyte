@@ -17,16 +17,12 @@ data:
     jobSpecific:
       - jobType: check_connection
         resourceRequirements:
-          cpu_limit: 1000m
-          cpu_request: 4000m
           memory_limit: 4096mi
-          memory_request: 2048mi
+          memory_request: 4096mi
       - jobType: discover_schema
         resourceRequirements:
-          cpu_limit: 1000m
-          cpu_request: 4000m
           memory_limit: 4096mi
-          memory_request: 2048mi
+          memory_request: 4096mi
           
   githubIssueLabel: source-s3
   icon: s3.svg
