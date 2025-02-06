@@ -286,7 +286,20 @@ const buildAConnector = {
             "connector-development/config-based/understanding-the-yaml-file/reference",
           ],
         },
-        "connector-development/config-based/advanced-topics",
+        {
+          type: "category",
+          label: "Advanced Topics",
+          items: [
+            "connector-development/config-based/advanced-topics/component-schema-reference",
+            "connector-development/config-based/advanced-topics/custom-components",
+            "connector-development/config-based/advanced-topics/oauth",
+            "connector-development/config-based/advanced-topics/how-framework-works",
+            "connector-development/config-based/advanced-topics/object-instantiation",
+            "connector-development/config-based/advanced-topics/parameters",
+            "connector-development/config-based/advanced-topics/references",
+            "connector-development/config-based/advanced-topics/string-interpolation",
+          ]
+        },
       ],
     },
 
@@ -653,9 +666,9 @@ module.exports = {
             id: "access-management/rbac",
           },
           items: [
-            { 
-              type: "doc", 
-              id: "access-management/role-mapping" 
+            {
+              type: "doc",
+              id: "access-management/role-mapping"
             },
           ],
         },

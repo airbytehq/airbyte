@@ -56,6 +56,7 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.0 | 2025-02-05 | [47294](https://github.com/airbytehq/airbyte/pull/47294) | Migrate to manifest only format |
 | 1.0.30 | 2025-02-01 | [52540](https://github.com/airbytehq/airbyte/pull/52540) | Update dependencies |
 | 1.0.29 | 2025-01-18 | [51871](https://github.com/airbytehq/airbyte/pull/51871) | Update dependencies |
 | 1.0.28 | 2025-01-11 | [51354](https://github.com/airbytehq/airbyte/pull/51354) | Update dependencies |
