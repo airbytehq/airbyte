@@ -22,7 +22,7 @@ Hashing is an **irreversible** process that protects sensitive data by obscuring
 
 There are many reasons you might want to hash data.
 
-- **Data security**: Source datasets can contain data like passwords or credit card information. It's more secure to store a hashed or encrypted version of this data.
+- **Data security**: Source datasets can contain data like passwords or credit card information. It's more secure to store a hashed version of this data.
 - **Anonymity and compliance**: Source datasets can contain personally identifiable information (PII). Anonymizing PII can help you meet data privacy regulations like GDPR and HIPAA.
 
 ### Encrypt
@@ -33,7 +33,7 @@ Encryption is a **reversible** process that protects sensitive data by obscuring
 
 There are many reasons you might want to encrypt data.
 
-- **Data security**: Source datasets can contain data like passwords or credit card information. It's more secure to store a hashed or encrypted version of this data.
+- **Data security**: Source datasets can contain data like passwords or credit card information. It's more secure to store an encrypted version of this data.
 - **Anonymity and compliance**: Source datasets can contain personally identifiable information (PII). Anonymizing PII can help you meet data privacy regulations like GDPR and HIPAA.
 
 Airbyte expects RSA keys in hex-encoded DER format. PEM isn't currently supported.
