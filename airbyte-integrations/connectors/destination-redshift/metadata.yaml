@@ -86,10 +86,6 @@ data:
         resourceRequirements:
           memory_limit: 4Gi
           memory_request: 4Gi
-      - jobType: discover_schema
-        resourceRequirements:
-          memory_limit: 4Gi
-          memory_request: 4Gi
   supportLevel: certified
   supportsDbt: true
   supportsRefreshes: true
