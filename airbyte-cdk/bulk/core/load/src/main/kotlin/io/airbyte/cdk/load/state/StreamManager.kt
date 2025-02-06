@@ -188,7 +188,7 @@ class DefaultStreamManager(
         log.info {
             "Added ${batch.batch.state}->${batch.ranges} (groupId=${batch.batch.groupId}) to ${stream.descriptor.namespace}.${stream.descriptor.name}=>${rangesState[batch.batch.state]}"
         }
-        log.debug {
+        log.info {
             val groupLineMaybe =
                 if (fromCache != null) {
                     "\n                From group cache: ${fromCache.state}->${fromCache.ranges}"
@@ -260,11 +260,13 @@ class DefaultStreamManager(
     override fun isBatchProcessingComplete(): Boolean {
         /* If the stream hasn't been fully read, it can't be done. */
         if (!markedEndOfStream.get()) {
+            log.info { "Not complete by not marked end of stream" }
             return false
         }
 
         /* A closed empty stream is always complete. */
         if (recordCount.get() == 0L) {
+            log.info { "Complete because closed and no records"}
             return true
         }
 

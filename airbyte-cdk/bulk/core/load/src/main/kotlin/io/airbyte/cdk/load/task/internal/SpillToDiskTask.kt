@@ -71,7 +71,9 @@ class DefaultSpillToDiskTask(
             inputQueue.consume().fold(initialAccumulator) { acc, reserved ->
                 reserved.use {
                     when (val event = it.value) {
-                        is StreamRecordEvent -> accRecordEvent(acc, event)
+                        is StreamRecordEvent -> {
+                            accRecordEvent(acc, event)
+                        }
                         is StreamEndEvent -> accStreamEndEvent(acc, event)
                         is StreamFlushEvent -> accFlushEvent(acc)
                     }
@@ -200,7 +202,7 @@ class DefaultSpillToDiskTask(
     }
 
     private suspend fun publishFile(file: SpilledRawMessagesLocalFile) {
-        log.info { "Publishing file aggregate: $file for processing..." }
+        log.info { "Publishing file aggregate: $file for processing... total disk reserved ${diskManager.totalBytesReserved}" }
         outputQueue.publish(FileAggregateMessage(streamDescriptor, file))
     }
 }
