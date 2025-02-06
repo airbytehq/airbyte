@@ -2,3 +2,4 @@
 omit =
     source_amazon_ads/run.py
     source_amazon_ads/spec.py
+    source_amazon_ads/source.py
