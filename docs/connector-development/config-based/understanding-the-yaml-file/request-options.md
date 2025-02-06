@@ -129,6 +129,7 @@ Here's an example of what your final request might look like:
 
 :::note
 Nested key injection is ONLY available for `body_json` injection. All other injection types use the top-level `field_name` instead.
+The `field_name` field is slated to be deprecated in favor of `field_path` in the future.
 :::
 
 ### Request Path
