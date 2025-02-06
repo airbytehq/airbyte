@@ -19,7 +19,8 @@ from live_tests.commons.utils import build_connection_url
 from .models import AirbyteCatalog, Command, ConfiguredAirbyteCatalog, ConnectionObjects, SecretDict
 
 console = rich.get_console()
-
+import logging
+LOGGER = logging.getLogger("live-tests")
 
 class InvalidConnectionError(Exception):
     pass
@@ -52,7 +53,9 @@ def parse_configured_catalog(
         configured_catalog = json.loads(configured_catalog)
     patched_catalog = hacks.patch_configured_catalog(configured_catalog)
     catalog = ConfiguredAirbyteCatalog.parse_obj(patched_catalog)
+    LOGGER.info("Selected streams got received in parse_configured_catalog", selected_streams)
     if selected_streams:
+        LOGGER.info("Catalog with filtered streams: ", ConfiguredAirbyteCatalog(streams=[stream for stream in catalog.streams if stream.stream.name in selected_streams]))
         return ConfiguredAirbyteCatalog(streams=[stream for stream in catalog.streams if stream.stream.name in selected_streams])
     return catalog
 
