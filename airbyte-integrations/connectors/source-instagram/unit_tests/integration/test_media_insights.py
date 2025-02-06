@@ -43,6 +43,7 @@ PARENT_FIELDS = [
     "timestamp",
     "username",
     "children",
+    "boost_eligibility_info",
 ]
 _PARENT_STREAM_NAME = "media"
 _STREAM_NAME = "media_insights"
@@ -88,8 +89,10 @@ _METRICS = {
         "shares",
         "ig_reels_aggregated_all_plays_count",
         "clips_replays_count",
+        "views",
+        "total_interactions",
     ],
-    MEDIA_ID_VIDEO_FEED: ["impressions", "reach", "saved"],
+    MEDIA_ID_VIDEO_FEED: ["impressions", "reach", "saved", "views","total_interactions"],
     MEDIA_ID_VIDEO: ["impressions", "reach", "saved", "likes", "comments", "shares", "follows", "profile_visits"],
     MEDIA_ID_CAROUSEL_ALBUM: ["impressions", "reach", "saved", "shares", "follows", "profile_visits"],
     MEDIA_ID_GENERAL_MEDIA: METRICS_GENERAL_MEDIA,

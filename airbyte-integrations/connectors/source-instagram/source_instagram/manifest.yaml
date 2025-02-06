@@ -22,7 +22,7 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              caption,comments_count,id,ig_id,is_comment_enabled,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username,children
+              caption,comments_count,id,ig_id,is_comment_enabled,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username,children,boost_eligibility_info
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -119,11 +119,11 @@ definitions:
             metric: >-
               {% if stream_partition.media_insights_info.media_product_type ==
               "REELS" %}{{
-              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,plays,reach,saved,shares,ig_reels_aggregated_all_plays_count,clips_replays_count'
+              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,plays,reach,saved,shares,ig_reels_aggregated_all_plays_count,clips_replays_count,views,total_interactions'
               }}{% elif stream_partition.media_insights_info.media_type ==
               "VIDEO" and
               stream_partition.media_insights_info.media_product_type == "FEED"
-              %}{{  'impressions,reach,saved'}}{% elif
+              %}{{  'impressions,reach,saved,views,total_interactions'}}{% elif
               stream_partition.media_insights_info.media_type == "VIDEO" %}{{
               'impressions,reach,saved,likes,comments,shares,follows,profile_visits'
               }}{%elif stream_partition.media_insights_info.media_type ==
@@ -683,6 +683,17 @@ schemas:
             type:
               - "null"
               - string
+      boost_eligibility_info:
+        description: The field provides information about boosting eligibility of a Instagram instagram media as an ad and additional details if not eligible.
+        type:
+          - "null"
+          - object
+        properties:
+          eligible_to_boost:
+            description: A boolean value which indicates eligibility boost.
+            type:
+              - "null"
+              - boolean        
       permalink:
         description: The permanent link to the media item on Instagram.
         type:
@@ -814,11 +825,16 @@ schemas:
         type:
           - "null"
           - integer
+      views:
+        description: Total number of times the video IG Media has been seen..
+        type:
+          - "null"
+          - integer    
       reach:
         description: The number of unique users who have seen the media.
         type:
           - "null"
-          - integer
+          - integer 
       saved:
         description: The number of times users have saved the media.
         type:

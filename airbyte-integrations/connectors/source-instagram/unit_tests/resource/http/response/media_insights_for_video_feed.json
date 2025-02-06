@@ -47,6 +47,30 @@
       "title": "Video Views",
       "description": "The number of times your video was viewed.",
       "id": "90014330517797123/insights/video_views/lifetime"
+    },
+    {
+      "name": "views",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 10
+        }
+      ],
+      "title": "views title",
+      "description": "Total number of times the video IG Media has been seen.",
+      "id": "84386203808767123/insights/views/lifetime"
+    },
+    {
+      "name": "total_interactions",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 10
+        }
+      ],
+      "title": "total interactions",
+      "description": "Number of likes, saves, comments, and shares on the reel, minus the number of unlikes, unsaves, and deleted comments. Metric in development.",
+      "id": "84386203808767123/insights/total_interactions/lifetime"
     }
   ]
 }

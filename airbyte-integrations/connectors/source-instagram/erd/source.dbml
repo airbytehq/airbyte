@@ -17,6 +17,7 @@ Table "media" {
     "timestamp" string
     "username" string
     "children" array
+    "boost_eligibility_info" object
 }
 
 Table "media_insights" {
@@ -38,6 +39,7 @@ Table "media_insights" {
     "clips_replays_count" integer
     "follows" integer
     "profile_visits" integer
+    "views" integer
 }
 
 Table "users" {

@@ -17,7 +17,10 @@
       "shortcode": "HGagdsy38",
       "thumbnail_url": "https://fakecontent.cdninstagram.com/v/somepath/",
       "timestamp": "2023-06-12T19:20:02+0000",
-      "username": "username"
+      "username": "username",
+      "boost_eligibility_info":{
+        "eligible_to_boost":true
+      }
     },
     {
       "caption": "a caption",
@@ -36,7 +39,10 @@
       "shortcode": "HGagdsy38",
       "thumbnail_url": "https://fakecontent.cdninstagram.com/v/somepath/",
       "timestamp": "2022-09-15T11:33:25+0000",
-      "username": "username"
+      "username": "username",
+      "boost_eligibility_info":{
+        "eligible_to_boost":true
+      }
     },
     {
       "caption": "a caption",
@@ -55,7 +61,10 @@
       "shortcode": "HGagdsy38",
       "thumbnail_url": "https://fakecontent.cdninstagram.com/v/somepath/",
       "timestamp": "2023-04-28T20:32:08+0000",
-      "username": "username"
+      "username": "username",
+      "boost_eligibility_info":{
+        "eligible_to_boost":true
+      }
     },
     {
       "caption": "a caption",
@@ -107,7 +116,10 @@
       "permalink": "https://instagram.com/permalink/123",
       "shortcode": "HGagdsy38",
       "timestamp": "2019-05-02T11:42:01+0000",
-      "username": "username"
+      "username": "username",
+      "boost_eligibility_info":{
+        "eligible_to_boost":true
+      }
     }
   ],
   "paging": {

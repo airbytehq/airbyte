@@ -68,6 +68,10 @@
     "profile_visits": {
       "description": "The number of times the profile has been visited.",
       "type": ["null", "integer"]
+    },
+    "views": {
+      "description": "Total number of times the video IG Media has been seen.",
+      "type": ["null", "integer"]
     }
   }
 }
