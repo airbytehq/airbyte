@@ -375,7 +375,7 @@ definitions:
     record_filter:
       type: CustomRecordFilter
       class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
-      condition: "{{ record['dimensions']['stat_time_day'] >= stream_state.get('stat_time_day', config.get('start_date', '')) }}"
+      condition: "{{ record['dimensions']['stat_time_day'] >= stream_interval.get('start_time', config.get('start_date', '')) }}"
       $parameters:
         partition_field: advertiser_id
 
@@ -384,7 +384,7 @@ definitions:
     record_filter:
       type: CustomRecordFilter
       class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
-      condition: "{{ record['dimensions']['stat_time_hour'] >= stream_state.get('stat_time_hour', config.get('start_date', '')) }}"
+      condition: "{{ record['dimensions']['stat_time_hour'] >= stream_interval.get('start_time', config.get('start_date', '')) }}"
       $parameters:
         partition_field: advertiser_id
 
