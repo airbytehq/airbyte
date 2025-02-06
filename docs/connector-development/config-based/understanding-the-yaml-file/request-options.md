@@ -98,21 +98,33 @@ RequestOption:
 
 ### GraphQL request injection
 
-For `body_json` injections, the `field_path` property is used to provide a list of strings representing a path to a nested key to inject. This is particularly useful when working with GraphQL APIs. GraphQL queries typically accept variables as a separate object in the request body, allowing values to be parameterized without string manipulation of the query itself. For example, to inject a value into a GraphQL query's variables, you might use:
+For `body_json` injections, the `field_path` property is used to provide a list of strings representing a path to a nested key to inject. This is particularly useful when working with GraphQL APIs. GraphQL queries typically accept variables as a separate object in the request body, allowing values to be parameterized without string manipulation of the query itself. As an example, to inject a page size option into a GraphQL query, you might need to provide a `limit` key in the request's `variables` as:
 
 ```yaml
-request_option:
-  type: RequestOption
-  inject_into: body_json
-  field_path:
-    - variables
-    - limit
+page_size_option:
+  request_option:
+    type: RequestOption
+    inject_into: body_json
+    field_path:
+      - variables
+      - limit
 ```
 
 This would inject the following value in the request body:
 
 ```json
 { "variables": { "limit": value }}
+```
+
+Here's an example of what your final request might look like:
+
+```json
+{
+  "query": "query($limit: Int) { users(limit: $limit) { id name } }",
+  "variables": {
+    "limit": 10
+  }
+}
 ```
 
 :::note
