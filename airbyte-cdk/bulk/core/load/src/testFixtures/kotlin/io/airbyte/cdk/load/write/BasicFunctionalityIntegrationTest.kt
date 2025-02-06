@@ -471,17 +471,8 @@ abstract class BasicFunctionalityIntegrationTest(
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
         val streamWithDefaultNamespace = makeStream(null)
-        val configWithRandomizedDefaultNamespace =
+        val (configWithRandomizedDefaultNamespace, actualDefaultNamespace) =
             configUpdater.setDefaultNamespace(updatedConfig, randomizedNamespace + "_default")
-        val actualDefaultNamespace =
-        // If the config stayed the same when we set the default namespace,
-        // then the connector is fine with using `namespace = null` directly.
-        if (configWithRandomizedDefaultNamespace == updatedConfig) {
-                null
-            } else {
-                // otherwise, use the default namespace.
-                randomizedNamespace + "_default"
-            }
         runSync(
             configWithRandomizedDefaultNamespace,
             DestinationCatalog(

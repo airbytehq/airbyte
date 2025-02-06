@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
+import io.airbyte.cdk.load.test.util.DefaultNamespaceResult
 import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getIpAddress
 import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getPort
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -64,6 +65,12 @@ class MSSQLConfigUpdater : ConfigurationUpdater {
         return updatedConfig
     }
 
-    override fun setDefaultNamespace(config: String, defaultNamespace: String): String =
-        config.replace("mssql_default_schema_placeholder", defaultNamespace)
+    override fun setDefaultNamespace(
+        config: String,
+        defaultNamespace: String
+    ): DefaultNamespaceResult =
+        DefaultNamespaceResult(
+            config.replace("mssql_default_schema_placeholder", defaultNamespace),
+            defaultNamespace
+        )
 }
