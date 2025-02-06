@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test
 
 class PostgresV2MetadataQuerierTest {
 
-    val postgres_db = PostgresContainerFactory.shared("postgres:16")
+    val db = PostgresContainerFactory.shared("postgres:16")
 
     init {
-        postgres_db.exec("CREATE TABLE table1 (id INT PRIMARY KEY, name VARCHAR(200));")
+        db.exec("CREATE TABLE table1 (id INT PRIMARY KEY, name VARCHAR(200));")
     }
 
     val pg_querier_factory = PostgresV2MetadataQuerier.Factory(
@@ -25,8 +25,8 @@ class PostgresV2MetadataQuerierTest {
     @Test
     fun test() {
         val configPojo = PostgresV2SourceConfigurationSpecification().apply {
-            port = PostgresContainerFactory.config(postgres_db).port
-            host = postgres_db.host
+            port = PostgresContainerFactory.config(db).port
+            host = db.host
             database = "test"
             username = "test"
             password = "test"
