@@ -1,192 +1,731 @@
-version: "0.44.0"
+version: 6.4.0
 
-streams:
-  - $ref: "#/definitions/base_stream"
-    name: "accounts"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/accounts_schema"
-    $parameters:
-      path: "/accounts"
+type: DeclarativeSource
 
-  - $ref: "#/definitions/base_stream"
-    name: "calls"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/calls_schema"
-    $parameters:
-      path: "/calls"
-
-  - $ref: "#/definitions/base_stream"
-    name: "call_dispositions"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/call_dispositions_schema"
-    $parameters:
-      path: "/callDispositions"
-
-  - $ref: "#/definitions/base_stream"
-    name: "call_purposes"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/call_purposes_schema"
-    $parameters:
-      path: "/callPurposes"
-
-  - $ref: "#/definitions/base_stream"
-    name: "mailings"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/mailings_schema"
-    $parameters:
-      path: "/mailings"
-
-  - $ref: "#/definitions/base_stream"
-    name: "mailboxes"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/mailboxes_schema"
-    $parameters:
-      path: "/mailboxes"
-
-  - $ref: "#/definitions/base_stream"
-    name: "opportunities"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/opportunities_schema"
-    $parameters:
-      path: "/opportunities"
-
-  - $ref: "#/definitions/base_stream"
-    name: "personas"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/personas_schema"
-    $parameters:
-      path: "/personas"
-
-  - $ref: "#/definitions/base_stream"
-    name: "prospects"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/prospects_schema"
-    $parameters:
-      path: "/prospects"
-
-  - $ref: "#/definitions/base_stream"
-    name: "sequences"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/sequences_schema"
-    $parameters:
-      path: "/sequences"
-
-  - $ref: "#/definitions/base_stream"
-    name: "sequence_states"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/sequence_states_schema"
-    $parameters:
-      path: "/sequenceStates"
-
-  - $ref: "#/definitions/base_stream"
-    name: "sequence_steps"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/sequence_steps_schema"
-    $parameters:
-      path: "/sequenceSteps"
-
-  - $ref: "#/definitions/base_stream"
-    name: "snippets"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/snippets_schema"
-    $parameters:
-      path: "/snippets"
-
-  - $ref: "#/definitions/base_stream"
-    name: "stages"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/stages_schema"
-    $parameters:
-      path: "/stages"
-
-  - $ref: "#/definitions/base_stream"
-    name: "tasks"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/tasks_schema"
-    $parameters:
-      path: "/tasks"
-
-  - $ref: "#/definitions/base_stream"
-    name: "templates"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/templates_schema"
-    $parameters:
-      path: "/templates"
-
-  - $ref: "#/definitions/base_stream"
-    name: "users"
-    primary_key: "id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/users_schema"
-    $parameters:
-      path: "/users"
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
 
 definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: CustomRecordExtractor
-      class_name: source_outreach.components.CustomExtractor
-
-  requester:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    calls:
+      type: DeclarativeStream
+      name: calls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calls
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calls"
+    call_dispositions:
+      type: DeclarativeStream
+      name: call_dispositions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /callDispositions
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_dispositions"
+    call_purposes:
+      type: DeclarativeStream
+      name: call_purposes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /callPurposes
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_purposes"
+    mailings:
+      type: DeclarativeStream
+      name: mailings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /mailings
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/mailings"
+    mailboxes:
+      type: DeclarativeStream
+      name: mailboxes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /mailboxes
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/mailboxes"
+    opportunities:
+      type: DeclarativeStream
+      name: opportunities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /opportunities
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/opportunities"
+    personas:
+      type: DeclarativeStream
+      name: personas
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /personas
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/personas"
+    prospects:
+      type: DeclarativeStream
+      name: prospects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /prospects
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/prospects"
+    sequences:
+      type: DeclarativeStream
+      name: sequences
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sequences
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sequences"
+    sequence_states:
+      type: DeclarativeStream
+      name: sequence_states
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sequenceStates
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sequence_states"
+    sequence_steps:
+      type: DeclarativeStream
+      name: sequence_steps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sequenceSteps
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sequence_steps"
+    snippets:
+      type: DeclarativeStream
+      name: snippets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /snippets
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/snippets"
+    stages:
+      type: DeclarativeStream
+      name: stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stages
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stages"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /templates
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.CustomIncrementalSync
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+  base_requester:
     type: HttpRequester
     url_base: https://api.outreach.io/api/v2/
-    http_method: GET
-    request_parameters:
-      count: "false"
-      sort: updatedAt
-      page[size]: "1000"
-    request_headers: {}
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config['client_id'] }}"
@@ -195,55 +734,174 @@ definitions:
       token_refresh_endpoint: https://api.outreach.io/oauth/token
       grant_type: refresh_token
 
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: DefaultPaginator
-      page_token_option:
-        type: RequestPath
-      pagination_strategy:
-        type: CursorPagination
-        cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
-        stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
-    requester:
-      $ref: "#/definitions/requester"
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/calls"
+  - $ref: "#/definitions/streams/call_dispositions"
+  - $ref: "#/definitions/streams/call_purposes"
+  - $ref: "#/definitions/streams/mailings"
+  - $ref: "#/definitions/streams/mailboxes"
+  - $ref: "#/definitions/streams/opportunities"
+  - $ref: "#/definitions/streams/personas"
+  - $ref: "#/definitions/streams/prospects"
+  - $ref: "#/definitions/streams/sequences"
+  - $ref: "#/definitions/streams/sequence_states"
+  - $ref: "#/definitions/streams/sequence_steps"
+  - $ref: "#/definitions/streams/snippets"
+  - $ref: "#/definitions/streams/stages"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/users"
 
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/retriever"
-    incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_outreach.components.CustomIncrementalSync
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      cursor_field: updatedAt
-      is_data_feed: true
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
-  accounts_schema:
-    $schema: http://json-schema.org/draft-07/schema#
+spec:
+  type: Spec
+  connection_specification:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - refresh_token
+      - redirect_uri
+      - start_date
+    properties:
+      client_id:
+        type: string
+        description: The Client ID of your Outreach developer application.
+        title: Client ID
+        order: 0
+      client_secret:
+        type: string
+        description: The Client Secret of your Outreach developer application.
+        title: Client Secret
+        airbyte_secret: true
+        order: 1
+      refresh_token:
+        type: string
+        description: The token for obtaining the new access token.
+        title: Refresh Token
+        airbyte_secret: true
+        order: 2
+      redirect_uri:
+        type: string
+        description: >-
+          A Redirect URI is the location where the authorization server sends
+          the user once the app has been successfully authorized and granted an
+          authorization code or access token.
+        title: Redirect URI
+        order: 3
+      start_date:
+        type: string
+        description: >-
+          The date from which you'd like to replicate data for Outreach API, in
+          the format YYYY-MM-DDT00:00:00Z. All data generated after this date
+          will be replicated.
+        title: Start Date
+        examples:
+          - "2020-11-16T00:00:00Z"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    accounts: false
+    calls: false
+    call_dispositions: false
+    call_purposes: false
+    mailings: false
+    mailboxes: false
+    opportunities: false
+    personas: false
+    prospects: false
+    sequences: false
+    sequence_states: false
+    sequence_steps: false
+    snippets: false
+    stages: false
+    tasks: false
+    templates: false
+    users: false
+  yamlComponents:
+    streams:
+      accounts:
+        - incrementalSync
+        - recordSelector
+      calls:
+        - incrementalSync
+        - recordSelector
+      call_dispositions:
+        - incrementalSync
+        - recordSelector
+      call_purposes:
+        - incrementalSync
+        - recordSelector
+      mailings:
+        - incrementalSync
+        - recordSelector
+      mailboxes:
+        - incrementalSync
+        - recordSelector
+      opportunities:
+        - incrementalSync
+        - recordSelector
+      personas:
+        - incrementalSync
+        - recordSelector
+      prospects:
+        - incrementalSync
+        - recordSelector
+      sequences:
+        - incrementalSync
+        - recordSelector
+      sequence_states:
+        - incrementalSync
+        - recordSelector
+      sequence_steps:
+        - incrementalSync
+        - recordSelector
+      snippets:
+        - incrementalSync
+        - recordSelector
+      stages:
+        - incrementalSync
+        - recordSelector
+      tasks:
+        - incrementalSync
+        - recordSelector
+      templates:
+        - incrementalSync
+        - recordSelector
+      users:
+        - incrementalSync
+        - recordSelector
+    global:
+      - authenticator
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type: integer
+      description:
+        type:
+          - "null"
+          - string
       assignedTeams:
         type:
           - "null"
           - array
       assignedUsers:
+        type:
+          - "null"
+          - array
         items:
           type:
             - "null"
             - integer
-        type:
-          - "null"
-          - array
       batches:
         type:
           - "null"
@@ -261,6 +919,14 @@ definitions:
           - "null"
           - string
         format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       custom1:
         type:
           - "null"
@@ -869,10 +1535,6 @@ definitions:
         type:
           - "null"
           - array
-      description:
-        type:
-          - "null"
-          - string
       domain:
         type:
           - "null"
@@ -894,6 +1556,8 @@ definitions:
           - "null"
           - string
         format: date-time
+      id:
+        type: integer
       industry:
         type:
           - "null"
@@ -926,45 +1590,6 @@ definitions:
         type:
           - "null"
           - integer
-      sharingTeamId:
-        type:
-          - "null"
-          - string
-      tags:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - string
-      touchedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      trashedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      websiteUrl:
-        type:
-          - "null"
-          - string
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
       owner:
         type:
           - "null"
@@ -981,225 +1606,10 @@ definitions:
           type:
             - "null"
             - integer
-      tasks:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      updater:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-
-  call_dispositions_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    additionalProperties: true
-    properties:
-      id:
-        type: integer
-      name:
+      sharingTeamId:
         type:
           - "null"
           - string
-      defaultForOutboundVoicemail:
-        type:
-          - "null"
-          - boolean
-      outcome:
-        type:
-          - "null"
-          - string
-      order:
-        type:
-          - "null"
-          - integer
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      calls:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-
-  call_purposes_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    additionalProperties: true
-    properties:
-      id:
-        type: integer
-      name:
-        type:
-          - "null"
-          - string
-      order:
-        type:
-          - "null"
-          - integer
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      calls:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-
-  calls_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    additionalProperties: true
-    properties:
-      id:
-        type: integer
-      batches:
-        type:
-          - "null"
-          - array
-      externalVendor:
-        type:
-          - "null"
-          - string
-      direction:
-        type:
-          - "null"
-          - string
-      from:
-        type:
-          - "null"
-          - string
-      note:
-        type:
-          - "null"
-          - string
-      outboundVoicemail:
-        type:
-          - "null"
-          - array
-      outcome:
-        type:
-          - "null"
-          - string
-      phone:
-        type:
-          - "null"
-          - array
-      recordingUrl:
-        type:
-          - "null"
-          - string
-      sequenceAction:
-        type:
-          - "null"
-          - string
-      state:
-        type:
-          - "null"
-          - string
-      shouldRecordCall:
-        type:
-          - "null"
-          - boolean
-      to:
-        type:
-          - "null"
-          - string
-      uid:
-        type:
-          - "null"
-          - string
-      userCallType:
-        type:
-          - "null"
-          - string
-      vendorCallId:
-        type:
-          - "null"
-          - string
-      voicemailRecordingUrl:
-        type:
-          - "null"
-          - string
-      answeredAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      completedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      dialedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      returnedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      stateChangedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
       tags:
         type:
           - "null"
@@ -1208,6 +1618,55 @@ definitions:
           type:
             - "null"
             - string
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      touchedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      trashedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      websiteUrl:
+        type:
+          - "null"
+          - string
+  calls:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      answeredAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      batches:
+        type:
+          - "null"
+          - array
       callDisposition:
         type:
           - "null"
@@ -1224,6 +1683,39 @@ definitions:
           type:
             - "null"
             - integer
+      completedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      dialedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      direction:
+        type:
+          - "null"
+          - string
+      externalVendor:
+        type:
+          - "null"
+          - string
+      from:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      note:
+        type:
+          - "null"
+          - string
       opportunity:
         type:
           - "null"
@@ -1232,6 +1724,18 @@ definitions:
           type:
             - "null"
             - integer
+      outboundVoicemail:
+        type:
+          - "null"
+          - array
+      outcome:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - array
       phoneNumber:
         type:
           - "null"
@@ -1252,6 +1756,428 @@ definitions:
         type:
           - "null"
           - string
+      recordingUrl:
+        type:
+          - "null"
+          - string
+      returnedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      sequence:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceAction:
+        type:
+          - "null"
+          - string
+      sequenceState:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceStep:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      shouldRecordCall:
+        type:
+          - "null"
+          - boolean
+      state:
+        type:
+          - "null"
+          - string
+      stateChangedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      task:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      to:
+        type:
+          - "null"
+          - string
+      uid:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      userCallType:
+        type:
+          - "null"
+          - string
+      vendorCallId:
+        type:
+          - "null"
+          - string
+      voicemailRecordingUrl:
+        type:
+          - "null"
+          - string
+  call_dispositions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      defaultForOutboundVoicemail:
+        type:
+          - "null"
+          - boolean
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      order:
+        type:
+          - "null"
+          - integer
+      outcome:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  call_purposes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      order:
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  mailings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      attachments:
+        type:
+          - "null"
+          - array
+      attributableSequenceId:
+        type:
+          - "null"
+          - integer
+      attributableSequenceName:
+        type:
+          - "null"
+          - string
+      bodyHtml:
+        type:
+          - "null"
+          - string
+      bodyText:
+        type:
+          - "null"
+          - string
+      bouncedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      calendar:
+        type:
+          - "null"
+          - array
+      clickCount:
+        type:
+          - "null"
+          - integer
+      clickedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deliveredAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      desiredAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      errorBacktrace:
+        type:
+          - "null"
+          - string
+      errorReason:
+        type:
+          - "null"
+          - string
+      followUpSequence:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      followUpSequenceId:
+        type:
+          - "null"
+          - integer
+      followUpSequenceName:
+        type:
+          - "null"
+          - string
+      followUpSequenceStartingDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      followUpTaskScheduledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      followUpTaskType:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      mailbox:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailboxAddress:
+        type:
+          - "null"
+          - string
+      mailingType:
+        type:
+          - "null"
+          - string
+      markedAsSpamAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      meetingDescription:
+        type:
+          - "null"
+          - string
+      meetingDuration:
+        type:
+          - "null"
+          - integer
+      meetingLocation:
+        type:
+          - "null"
+          - string
+      meetingTitle:
+        type:
+          - "null"
+          - string
+      messageId:
+        type:
+          - "null"
+          - string
+      notifyThreadCondition:
+        type:
+          - "null"
+          - string
+      notifyThreadScheduledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      notifyThreadStatus:
+        type:
+          - "null"
+          - string
+      openCount:
+        type:
+          - "null"
+          - integer
+      openedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      opportunity:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      optimizedScheduledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      overrideSafetySettings:
+        type:
+          - "null"
+          - boolean
+      prospect:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      recipients:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      references:
+        type:
+          - "null"
+          - array
+      repliedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      replySentiment:
+        type:
+          - "null"
+          - string
+      retryAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      retryCount:
+        type:
+          - "null"
+          - integer
+      retryInterval:
+        type:
+          - "null"
+          - integer
+      schedule:
+        type:
+          - "null"
+          - array
+      scheduleId:
+        type:
+          - "null"
+          - integer
+      scheduledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       sequence:
         type:
           - "null"
@@ -1276,6 +2202,19 @@ definitions:
           type:
             - "null"
             - integer
+      state:
+        type:
+          - "null"
+          - string
+      stateChangedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      subject:
+        type:
+          - "null"
+          - string
       task:
         type:
           - "null"
@@ -1284,6 +2223,40 @@ definitions:
           type:
             - "null"
             - integer
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      template:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      trackLinks:
+        type:
+          - "null"
+          - boolean
+      trackOpens:
+        type:
+          - "null"
+          - boolean
+      unsubscribedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       user:
         type:
           - "null"
@@ -1292,14 +2265,11 @@ definitions:
           type:
             - "null"
             - integer
-
-  mailboxes_schema:
-    $schema: http://json-schema.org/draft-07/schema#
+  mailboxes:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type: integer
       authId:
         type:
           - "null"
@@ -1309,6 +2279,14 @@ definitions:
           - "null"
           - string
         format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       editable:
         type:
           - "null"
@@ -1353,6 +2331,8 @@ definitions:
         type:
           - "null"
           - string
+      id:
+        type: integer
       imapHost:
         type:
           - "null"
@@ -1365,6 +2345,22 @@ definitions:
         type:
           - "null"
           - boolean
+      mailAliases:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       maxEmailsPerDay:
         type:
           - "null"
@@ -1505,38 +2501,6 @@ definitions:
           - "null"
           - string
         format: date-time
-      userId:
-        type:
-          - "null"
-          - integer
-      username:
-        type:
-          - "null"
-          - string
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      mailAliases:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      mailings:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
       updater:
         type:
           - "null"
@@ -1553,351 +2517,47 @@ definitions:
           type:
             - "null"
             - integer
-
-  mailings_schema:
-    $schema: http://json-schema.org/draft-07/schema#
+      userId:
+        type:
+          - "null"
+          - integer
+      username:
+        type:
+          - "null"
+          - string
+  opportunities:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type: integer
-      attachments:
+      description:
+        type:
+          - "null"
+          - string
+      account:
         type:
           - "null"
           - array
-      attributableSequenceId:
+        items:
+          type:
+            - "null"
+            - integer
+      amount:
         type:
           - "null"
           - integer
-      attributableSequenceName:
-        type:
-          - "null"
-          - string
-      bodyHtml:
-        type:
-          - "null"
-          - string
-      bodyText:
-        type:
-          - "null"
-          - string
-      bouncedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      clickCount:
-        type:
-          - "null"
-          - integer
-      calendar:
-        type:
-          - "null"
-          - array
-      clickedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      deliveredAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      desiredAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      errorBacktrace:
-        type:
-          - "null"
-          - string
-      errorReason:
-        type:
-          - "null"
-          - string
-      followUpTaskScheduledAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      followUpTaskType:
-        type:
-          - "null"
-          - string
-      mailboxAddress:
-        type:
-          - "null"
-          - string
-      mailingType:
-        type:
-          - "null"
-          - string
-      markedAsSpamAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      meetingDescription:
-        type:
-          - "null"
-          - string
-      meetingDuration:
-        type:
-          - "null"
-          - integer
-      meetingLocation:
-        type:
-          - "null"
-          - string
-      meetingTitle:
-        type:
-          - "null"
-          - string
-      messageId:
-        type:
-          - "null"
-          - string
-      notifyThreadCondition:
-        type:
-          - "null"
-          - string
-      notifyThreadScheduledAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      notifyThreadStatus:
-        type:
-          - "null"
-          - string
-      openCount:
-        type:
-          - "null"
-          - integer
-      openedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      optimizedScheduledAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      overrideSafetySettings:
-        type:
-          - "null"
-          - boolean
-      references:
-        type:
-          - "null"
-          - array
-      repliedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      replySentiment:
-        type:
-          - "null"
-          - string
-      retryAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      retryCount:
-        type:
-          - "null"
-          - integer
-      retryInterval:
-        type:
-          - "null"
-          - integer
-      schedule:
-        type:
-          - "null"
-          - array
-      scheduleId:
-        type:
-          - "null"
-          - integer
-      scheduledAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      state:
-        type:
-          - "null"
-          - string
-      stateChangedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      subject:
-        type:
-          - "null"
-          - string
-      trackLinks:
-        type:
-          - "null"
-          - boolean
-      trackOpens:
-        type:
-          - "null"
-          - boolean
-      unsubscribedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      followUpSequence:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      followUpSequenceId:
-        type:
-          - "null"
-          - integer
-      followUpSequenceName:
-        type:
-          - "null"
-          - string
-      followUpSequenceStartingDate:
-        type:
-          - "null"
-          - string
-        format: date-time
-      mailbox:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      opportunity:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      prospect:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      recipients:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      sequence:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      sequenceState:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      sequenceStep:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      task:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      tasks:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      template:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      user:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-
-  opportunities_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    additionalProperties: true
-    properties:
-      id:
-        type: integer
       assignedTeams:
         type:
           - "null"
           - array
       assignedUsers:
+        type:
+          - "null"
+          - array
         items:
           type:
             - "null"
             - integer
-        type:
-          - "null"
-          - array
-      amount:
-        type:
-          - "null"
-          - integer
       closeDate:
         type:
           - "null"
@@ -1908,6 +2568,14 @@ definitions:
           - "null"
           - string
         format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       currencyType:
         type:
           - "null"
@@ -2516,19 +3184,15 @@ definitions:
         type:
           - "null"
           - array
-      description:
-        type:
-          - "null"
-          - string
-      externalCreator:
-        type:
-          - "null"
-          - array
       externalCreatedAt:
         type:
           - "null"
           - string
         format: date-time
+      externalCreator:
+        type:
+          - "null"
+          - array
       favorites:
         type:
           - "null"
@@ -2541,6 +3205,8 @@ definitions:
         type:
           - "null"
           - integer
+      id:
+        type: integer
       mapLink:
         type:
           - "null"
@@ -2566,17 +3232,33 @@ definitions:
           - "null"
           - string
       opportunityHealthFactors:
+        type:
+          - "null"
+          - array
         items:
           type:
             - "null"
             - integer
+      opportunityStage:
         type:
           - "null"
           - array
+        items:
+          type:
+            - "null"
+            - integer
       opportunityType:
         type:
           - "null"
           - string
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       primaryProspect:
         type:
           - "null"
@@ -2589,10 +3271,26 @@ definitions:
         type:
           - "null"
           - string
+      prospects:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       sharingTeamId:
         type:
           - "null"
           - string
+      stage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       tags:
         type:
           - "null"
@@ -2611,54 +3309,6 @@ definitions:
           - "null"
           - string
         format: date-time
-      account:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      opportunityStage:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      owner:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      prospects:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      stage:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
       updater:
         type:
           - "null"
@@ -2667,18 +3317,11 @@ definitions:
           type:
             - "null"
             - integer
-
-  personas_schema:
-    $schema: http://json-schema.org/draft-07/schema#
+  personas:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type: integer
-      name:
-        type:
-          - "null"
-          - string
       description:
         type:
           - "null"
@@ -2688,11 +3331,12 @@ definitions:
           - "null"
           - string
         format: date-time
-      updatedAt:
+      id:
+        type: integer
+      name:
         type:
           - "null"
           - string
-        format: date-time
       prospects:
         type:
           - "null"
@@ -2701,23 +3345,29 @@ definitions:
           type:
             - "null"
             - integer
-
-  prospects_schema:
-    $schema: http://json-schema.org/draft-07/schema#
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  prospects:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type: integer
+      account:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       accountName:
         type:
           - "null"
           - string
-      assignedTeams:
-        type:
-          - "null"
-          - array
-      assignedUsers:
+      activeSequenceStates:
         type:
           - "null"
           - array
@@ -2758,6 +3408,18 @@ definitions:
         type:
           - "null"
           - string
+      assignedTeams:
+        type:
+          - "null"
+          - array
+      assignedUsers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       availableAt:
         type:
           - "null"
@@ -2771,6 +3433,14 @@ definitions:
         type:
           - "null"
           - boolean
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       callsOptStatus:
         type:
           - "null"
@@ -2845,6 +3515,14 @@ definitions:
           - "null"
           - string
         format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       custom1:
         type:
           - "null"
@@ -3458,18 +4136,22 @@ definitions:
         type:
           - "null"
           - string
-      emailOptedOut:
-        type:
-          - "null"
-          - boolean
-      emails:
+      emailAddresses:
         type:
           - "null"
           - array
         items:
-          type: string
+          type:
+            - "null"
+            - integer
       emailContacts:
+        type:
+          - "null"
+          - array
         items:
+          type:
+            - "null"
+            - object
           additionalProperties: true
           properties:
             bounced_at:
@@ -3524,12 +4206,16 @@ definitions:
               type:
                 - "null"
                 - string
-          type:
-            - "null"
-            - object
+      emailOptedOut:
+        type:
+          - "null"
+          - boolean
+      emails:
         type:
           - "null"
           - array
+        items:
+          type: string
       emailsOptStatus:
         type:
           - "null"
@@ -3568,6 +4254,14 @@ definitions:
         type:
           - "null"
           - string
+      favorites:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       firstName:
         type:
           - "null"
@@ -3599,6 +4293,8 @@ definitions:
           - array
         items:
           type: string
+      id:
+        type: integer
       jobStartDate:
         type:
           - "null"
@@ -3624,6 +4320,14 @@ definitions:
         type:
           - "null"
           - string
+      mailings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       middleName:
         type:
           - "null"
@@ -3650,6 +4354,22 @@ definitions:
         type:
           - "null"
           - integer
+      opportunities:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      opportunityProspectRoles:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       optedOut:
         type:
           - "null"
@@ -3665,6 +4385,22 @@ definitions:
           - array
         items:
           type: string
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      persona:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       personaName:
         type: "null"
       personalNote1:
@@ -3675,6 +4411,14 @@ definitions:
         type:
           - "null"
           - string
+      phoneNumbers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       preferredContact:
         type:
           - "null"
@@ -3699,6 +4443,14 @@ definitions:
         type:
           - "null"
           - number
+      sequenceStates:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       sharingTeamId:
         type:
           - "null"
@@ -3731,6 +4483,14 @@ definitions:
         type:
           - "null"
           - string
+      stage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       stageName:
         type:
           - "null"
@@ -3743,6 +4503,14 @@ definitions:
           type:
             - "null"
             - string
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       timeZone:
         type:
           - "null"
@@ -3786,6 +4554,14 @@ definitions:
           - "null"
           - string
         format: date-time
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       updaterId:
         type:
           - "null"
@@ -3818,475 +4594,15 @@ definitions:
           - array
         items:
           type: string
-      account:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      activeSequenceStates:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      calls:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      emailAddresses:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      favorites:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      mailings:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      opportunities:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      opportunityProspectRoles:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      owner:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      persona:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      phoneNumbers:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      sequenceStates:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      stage:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      tasks:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      updater:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-
-  sequence_states_schema:
-    $schema: http://json-schema.org/draft-07/schema#
+  sequences:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type: integer
-      activeAt:
+      description:
         type:
           - "null"
           - string
-        format: date-time
-      bounceCount:
-        type:
-          - "null"
-          - integer
-      callCompletedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      clickCount:
-        type:
-          - "null"
-          - integer
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      deliverCount:
-        type:
-          - "null"
-          - integer
-      errorReason:
-        type:
-          - "null"
-          - string
-      failureCount:
-        type:
-          - "null"
-          - integer
-      negativeReplyCount:
-        type:
-          - "null"
-          - integer
-      neutralReplyCount:
-        type:
-          - "null"
-          - integer
-      openCount:
-        type:
-          - "null"
-          - integer
-      optOutCount:
-        type:
-          - "null"
-          - integer
-      pauseReason:
-        type:
-          - "null"
-          - string
-      positiveReplyCount:
-        type:
-          - "null"
-          - integer
-      repliedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      replyCount:
-        type:
-          - "null"
-          - integer
-      scheduleCount:
-        type:
-          - "null"
-          - integer
-      state:
-        type:
-          - "null"
-          - string
-      stateChangedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      account:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      activeStepMailings:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      activeStepTasks:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      calls:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      mailbox:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      mailings:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      opportunity:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      prospect:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      sequence:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      sequenceStep:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      tasks:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-
-  sequence_steps_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    additionalProperties: true
-    properties:
-      id:
-        type: integer
-      bounceCount:
-        type:
-          - "null"
-          - integer
-      clickCount:
-        type:
-          - "null"
-          - integer
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      date:
-        type:
-          - "null"
-          - string
-        format: date
-      deliverCount:
-        type:
-          - "null"
-          - integer
-      displayName:
-        type:
-          - "null"
-          - string
-      failureCount:
-        type:
-          - "null"
-          - integer
-      interval:
-        type:
-          - "null"
-          - integer
-      negativeReplyCount:
-        type:
-          - "null"
-          - integer
-      neutralReplyCount:
-        type:
-          - "null"
-          - integer
-      openCount:
-        type:
-          - "null"
-          - integer
-      optOutCount:
-        type:
-          - "null"
-          - integer
-      order:
-        type:
-          - "null"
-          - integer
-      positiveReplyCount:
-        type:
-          - "null"
-          - integer
-      replyCount:
-        type:
-          - "null"
-          - integer
-      scheduleCount:
-        type:
-          - "null"
-          - integer
-      stepType:
-        type:
-          - "null"
-          - string
-      taskAutoDisplay:
-        type:
-          - "null"
-          - string
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      callPurpose:
-        type:
-          - "null"
-          - array
-        items:
-          type: integer
-      calls:
-        type:
-          - "null"
-          - array
-        items:
-          type: integer
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      mailings:
-        type:
-          - "null"
-          - array
-        items:
-          type: integer
-      sequence:
-        type:
-          - "null"
-          - array
-        items:
-          type: integer
-      sequenceTemplates:
-        type:
-          - "null"
-          - array
-        items:
-          type: integer
-      taskPriority:
-        type:
-          - "null"
-          - array
-        items:
-          type: integer
-      tasks:
-        type:
-          - "null"
-          - array
-        items:
-          type: integer
-      updater:
-        type:
-          - "null"
-          - array
-        items:
-          type: integer
-
-  sequences_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    additionalProperties: true
-    properties:
-      id:
-        type: integer
       automationPercentage:
         type:
           - "null"
@@ -4295,23 +4611,43 @@ definitions:
         type:
           - "null"
           - integer
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       clickCount:
         type:
           - "null"
           - integer
+      contentCategoryMemberships:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       createdAt:
         type:
           - "null"
           - string
         format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       deliverCount:
         type:
           - "null"
           - integer
-      description:
-        type:
-          - "null"
-          - string
       durationInDays:
         type:
           - "null"
@@ -4333,6 +4669,8 @@ definitions:
         type:
           - "null"
           - boolean
+      id:
+        type: integer
       lastUsedAt:
         type:
           - "null"
@@ -4347,6 +4685,14 @@ definitions:
           - "null"
           - string
         format: date-time
+      mailings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       maxActivations:
         type:
           - "null"
@@ -4379,6 +4725,14 @@ definitions:
         type:
           - "null"
           - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       positiveReplyCount:
         type:
           - "null"
@@ -4395,14 +4749,22 @@ definitions:
         type:
           - "null"
           - integer
-      schedule:
+      ruleset:
+        type:
+          - "null"
+          - array
         items:
           type:
             - "null"
             - integer
+      schedule:
         type:
           - "null"
           - array
+        items:
+          type:
+            - "null"
+            - integer
       scheduleCount:
         type:
           - "null"
@@ -4419,10 +4781,26 @@ definitions:
         type:
           - "null"
           - integer
+      sequenceStates:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       sequenceStepCount:
         type:
           - "null"
           - integer
+      sequenceSteps:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       sequenceType:
         type:
           - "null"
@@ -4439,6 +4817,14 @@ definitions:
           type:
             - "null"
             - string
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       throttleCapacity:
         type:
           - "null"
@@ -4465,6 +4851,57 @@ definitions:
           - "null"
           - string
         format: date-time
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  sequence_states:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      activeAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      activeStepMailings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      activeStepTasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      bounceCount:
+        type:
+          - "null"
+          - integer
+      callCompletedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       calls:
         type:
           - "null"
@@ -4473,7 +4910,16 @@ definitions:
           type:
             - "null"
             - integer
-      contentCategoryMemberships:
+      clickCount:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
         type:
           - "null"
           - array
@@ -4481,7 +4927,21 @@ definitions:
           type:
             - "null"
             - integer
-      creator:
+      deliverCount:
+        type:
+          - "null"
+          - integer
+      errorReason:
+        type:
+          - "null"
+          - string
+      failureCount:
+        type:
+          - "null"
+          - integer
+      id:
+        type: integer
+      mailbox:
         type:
           - "null"
           - array
@@ -4497,7 +4957,19 @@ definitions:
           type:
             - "null"
             - integer
-      owner:
+      negativeReplyCount:
+        type:
+          - "null"
+          - integer
+      neutralReplyCount:
+        type:
+          - "null"
+          - integer
+      openCount:
+        type:
+          - "null"
+          - integer
+      opportunity:
         type:
           - "null"
           - array
@@ -4505,7 +4977,19 @@ definitions:
           type:
             - "null"
             - integer
-      ruleset:
+      optOutCount:
+        type:
+          - "null"
+          - integer
+      pauseReason:
+        type:
+          - "null"
+          - string
+      positiveReplyCount:
+        type:
+          - "null"
+          - integer
+      prospect:
         type:
           - "null"
           - array
@@ -4513,7 +4997,20 @@ definitions:
           type:
             - "null"
             - integer
-      sequenceStates:
+      repliedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      replyCount:
+        type:
+          - "null"
+          - integer
+      scheduleCount:
+        type:
+          - "null"
+          - integer
+      sequence:
         type:
           - "null"
           - array
@@ -4521,7 +5018,7 @@ definitions:
           type:
             - "null"
             - integer
-      sequenceSteps:
+      sequenceStep:
         type:
           - "null"
           - array
@@ -4529,6 +5026,15 @@ definitions:
           type:
             - "null"
             - integer
+      state:
+        type:
+          - "null"
+          - string
+      stateChangedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       tasks:
         type:
           - "null"
@@ -4537,7 +5043,42 @@ definitions:
           type:
             - "null"
             - integer
-      updater:
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  sequence_steps:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      bounceCount:
+        type:
+          - "null"
+          - integer
+      callPurpose:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      calls:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      clickCount:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
         type:
           - "null"
           - array
@@ -4545,14 +5086,115 @@ definitions:
           type:
             - "null"
             - integer
-
-  snippets_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    additionalProperties: true
-    properties:
+      date:
+        type:
+          - "null"
+          - string
+        format: date
+      deliverCount:
+        type:
+          - "null"
+          - integer
+      displayName:
+        type:
+          - "null"
+          - string
+      failureCount:
+        type:
+          - "null"
+          - integer
       id:
         type: integer
+      interval:
+        type:
+          - "null"
+          - integer
+      mailings:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      negativeReplyCount:
+        type:
+          - "null"
+          - integer
+      neutralReplyCount:
+        type:
+          - "null"
+          - integer
+      openCount:
+        type:
+          - "null"
+          - integer
+      optOutCount:
+        type:
+          - "null"
+          - integer
+      order:
+        type:
+          - "null"
+          - integer
+      positiveReplyCount:
+        type:
+          - "null"
+          - integer
+      replyCount:
+        type:
+          - "null"
+          - integer
+      scheduleCount:
+        type:
+          - "null"
+          - integer
+      sequence:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      sequenceTemplates:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      stepType:
+        type:
+          - "null"
+          - string
+      taskAutoDisplay:
+        type:
+          - "null"
+          - string
+      taskPriority:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type: integer
+  snippets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
       bodyHtml:
         type:
           - "null"
@@ -4561,15 +5203,41 @@ definitions:
         type:
           - "null"
           - string
+      contentCategoryMemberships:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       createdAt:
         type:
           - "null"
           - string
         format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      id:
+        type: integer
       name:
         type:
           - "null"
           - string
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       shareType:
         type:
           - "null"
@@ -4583,30 +5251,6 @@ definitions:
           - "null"
           - string
         format: date-time
-      contentCategoryMemberships:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      owner:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
       updater:
         type:
           - "null"
@@ -4615,12 +5259,28 @@ definitions:
           type:
             - "null"
             - integer
-
-  stages_schema:
-    $schema: http://json-schema.org/draft-07/schema#
+  stages:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      color:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       id:
         type: integer
       name:
@@ -4631,28 +5291,6 @@ definitions:
         type:
           - "null"
           - integer
-      color:
-        type:
-          - "null"
-          - string
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
       prospects:
         type:
           - "null"
@@ -4661,6 +5299,11 @@ definitions:
           type:
             - "null"
             - integer
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       updater:
         type:
           - "null"
@@ -4669,14 +5312,19 @@ definitions:
           type:
             - "null"
             - integer
-
-  tasks_schema:
-    $schema: http://json-schema.org/draft-07/schema#
+  tasks:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type: integer
+      account:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       action:
         type:
           - "null"
@@ -4686,72 +5334,6 @@ definitions:
           - "null"
           - string
         format: date-time
-      compiledSequenceTemplateHtml:
-        type:
-          - "null"
-          - string
-      completed:
-        type:
-          - "null"
-          - boolean
-      completedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      defaultPluginMapping:
-        type:
-          - "null"
-          - array
-      dueAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      note:
-        type:
-          - "null"
-          - string
-      opportunityAssociation:
-        type:
-          - "null"
-          - string
-      scheduledAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      state:
-        type:
-          - "null"
-          - string
-      stateChangedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      taskType:
-        type:
-          - "null"
-          - string
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      account:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
       call:
         type:
           - "null"
@@ -4768,6 +5350,19 @@ definitions:
           type:
             - "null"
             - integer
+      compiledSequenceTemplateHtml:
+        type:
+          - "null"
+          - string
+      completed:
+        type:
+          - "null"
+          - boolean
+      completedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       completer:
         type:
           - "null"
@@ -4776,6 +5371,11 @@ definitions:
           type:
             - "null"
             - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       creator:
         type:
           - "null"
@@ -4784,6 +5384,17 @@ definitions:
           type:
             - "null"
             - integer
+      defaultPluginMapping:
+        type:
+          - "null"
+          - array
+      dueAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type: integer
       mailing:
         type:
           - "null"
@@ -4800,6 +5411,10 @@ definitions:
           type:
             - "null"
             - integer
+      note:
+        type:
+          - "null"
+          - string
       opportunity:
         type:
           - "null"
@@ -4808,6 +5423,10 @@ definitions:
           type:
             - "null"
             - integer
+      opportunityAssociation:
+        type:
+          - "null"
+          - string
       owner:
         type:
           - "null"
@@ -4825,41 +5444,46 @@ definitions:
             - "null"
             - integer
       prospectAccount:
+        type:
+          - "null"
+          - array
         items:
           type:
             - "null"
             - integer
-        type:
-          - "null"
-          - array
       prospectContacts:
+        type:
+          - "null"
+          - array
         items:
           type:
             - "null"
             - integer
-        type:
-          - "null"
-          - array
       prospectOwner:
+        type:
+          - "null"
+          - array
         items:
           type:
             - "null"
             - integer
-        type:
-          - "null"
-          - array
       prospectPhoneNumbers:
         type:
           - "null"
           - array
       prospectStage:
+        type:
+          - "null"
+          - array
         items:
           type:
             - "null"
             - integer
+      scheduledAt:
         type:
           - "null"
-          - array
+          - string
+        format: date-time
       sequence:
         type:
           - "null"
@@ -4896,10 +5520,6 @@ definitions:
         type:
           - "null"
           - array
-      sequenceStepOverrideTemplates:
-        type:
-          - "null"
-          - array
       sequenceStep:
         type:
           - "null"
@@ -4908,6 +5528,10 @@ definitions:
           type:
             - "null"
             - integer
+      sequenceStepOverrideTemplates:
+        type:
+          - "null"
+          - array
       sequenceTemplate:
         type:
           - "null"
@@ -4920,6 +5544,15 @@ definitions:
         type:
           - "null"
           - array
+      state:
+        type:
+          - "null"
+          - string
+      stateChangedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       subject:
         type:
           - "null"
@@ -4937,13 +5570,17 @@ definitions:
             - "null"
             - integer
       taskTheme:
+        type:
+          - "null"
+          - array
         items:
           type:
             - "null"
             - integer
+      taskType:
         type:
           - "null"
-          - array
+          - string
       template:
         type:
           - "null"
@@ -4952,14 +5589,16 @@ definitions:
           type:
             - "null"
             - integer
-
-  templates_schema:
-    $schema: http://json-schema.org/draft-07/schema#
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  templates:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type: integer
       archived:
         type:
           - "null"
@@ -4993,11 +5632,27 @@ definitions:
         type:
           - "null"
           - integer
+      contentCategoryMemberships:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       createdAt:
         type:
           - "null"
           - string
         format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       deliverCount:
         type:
           - "null"
@@ -5006,6 +5661,8 @@ definitions:
         type:
           - "null"
           - integer
+      id:
+        type: integer
       lastUsedAt:
         type:
           - "null"
@@ -5031,10 +5688,26 @@ definitions:
         type:
           - "null"
           - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       positiveReplyCount:
         type:
           - "null"
           - integer
+      recipients:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       replyCount:
         type:
           - "null"
@@ -5043,6 +5716,14 @@ definitions:
         type:
           - "null"
           - integer
+      sequenceTemplates:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       shareType:
         type:
           - "null"
@@ -5072,46 +5753,6 @@ definitions:
           - "null"
           - string
         format: date-time
-      contentCategoryMemberships:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      owner:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      recipients:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      sequenceTemplates:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
       updater:
         type:
           - "null"
@@ -5120,15 +5761,16 @@ definitions:
           type:
             - "null"
             - integer
-
-  users_schema:
-    $schema: http://json-schema.org/draft-07/schema#
+  users:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type: integer
       accountsViewId:
+        type:
+          - "null"
+          - integer
+      activeProspectsCount:
         type:
           - "null"
           - integer
@@ -5136,10 +5778,6 @@ definitions:
         type:
           - "null"
           - boolean
-      activeProspectsCount:
-        type:
-          - "null"
-          - integer
       batches:
         type:
           - "null"
@@ -5176,6 +5814,14 @@ definitions:
         type:
           - "null"
           - integer
+      contentCategories:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       contentCategoryOwnerships:
         type:
           - "null"
@@ -5189,6 +5835,14 @@ definitions:
           - "null"
           - string
         format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       currentSignInAt:
         type:
           - "null"
@@ -5218,16 +5872,20 @@ definitions:
         type:
           - "null"
           - boolean
-      defaultScheduleId:
-        type:
-          - "null"
-          - integer
       defaultRulesetId:
         type:
           - "null"
           - integer
+      defaultScheduleId:
+        type:
+          - "null"
+          - integer
       duties:
+        type:
+          - "null"
+          - array
         items:
+          type: object
           properties:
             duty_type:
               type:
@@ -5241,10 +5899,6 @@ definitions:
               type:
                 - "null"
                 - string
-          type: object
-        type:
-          - "null"
-          - array
       dutiesSetAt:
         type:
           - "null"
@@ -5273,6 +5927,8 @@ definitions:
         type:
           - "null"
           - string
+      id:
+        type: integer
       importsViewId:
         type: "null"
       inboundBridgePhone:
@@ -5323,6 +5979,11 @@ definitions:
         type:
           - "null"
           - string
+      lastSignInAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       linkToSequenceStateInTaskFlow:
         type:
           - "null"
@@ -5331,19 +5992,30 @@ definitions:
         type:
           - "null"
           - integer
-      lastSignInAt:
-        type:
-          - "null"
-          - string
-        format: date-time
       locked:
         type:
           - "null"
           - boolean
+      mailbox:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       mailboxErrorEmailEnabled:
         type:
           - "null"
           - boolean
+      mailboxes:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       mailingsDeliveredCount:
         type:
           - "null"
@@ -5446,10 +6118,6 @@ definitions:
         type:
           - "null"
           - integer
-      prospectDetailDefault:
-        type:
-          - "null"
-          - string
       pluginAlertNotificationEnabled:
         type:
           - "null"
@@ -5466,10 +6134,30 @@ definitions:
         type:
           - "null"
           - string
+      profile:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospectDetailDefault:
+        type:
+          - "null"
+          - string
       prospectsViewId:
         type:
           - "null"
           - integer
+      recipients:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       reportsSequencePerformanceViewId:
         type:
           - "null"
@@ -5490,6 +6178,14 @@ definitions:
         type:
           - "null"
           - integer
+      role:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       scimExternalId:
         type:
           - "null"
@@ -5534,6 +6230,14 @@ definitions:
         type:
           - "null"
           - integer
+      teams:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       teamsViewId:
         type:
           - "null"
@@ -5563,6 +6267,18 @@ definitions:
           - "null"
           - string
         format: date-time
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      useSalesNavigatorForLinkedInTasks:
+        type:
+          - "null"
+          - boolean
       userGuid:
         type:
           - "null"
@@ -5575,143 +6291,15 @@ definitions:
         type:
           - "null"
           - integer
-      voicemailPrompts:
-        type:
-          - "null"
-          - array
       voicemailNotificationEnabled:
         type:
           - "null"
           - boolean
+      voicemailPrompts:
+        type:
+          - "null"
+          - array
       weeklyDigestEmailEnabled:
         type:
           - "null"
           - boolean
-      contentCategories:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      creator:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      mailbox:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      mailboxes:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      profile:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      recipients:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      role:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      teams:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-      useSalesNavigatorForLinkedInTasks:
-        type:
-          - "null"
-          - boolean
-      updater:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - integer
-
-check:
-  type: CheckStream
-  stream_names:
-    - "accounts"
-
-spec:
-  type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/outreach
-  connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
-    title: Source Outreach Spec
-    type: object
-    required:
-      - client_id
-      - client_secret
-      - refresh_token
-      - redirect_uri
-      - start_date
-    additionalProperties: true
-    properties:
-      client_id:
-        type: string
-        title: Client ID
-        description: The Client ID of your Outreach developer application.
-      client_secret:
-        type: string
-        title: Client Secret
-        description: The Client Secret of your Outreach developer application.
-        airbyte_secret: true
-      refresh_token:
-        type: string
-        title: Refresh Token
-        description: The token for obtaining the new access token.
-        airbyte_secret: true
-      redirect_uri:
-        type: string
-        title: Redirect URI
-        description:
-          A Redirect URI is the location where the authorization server sends
-          the user once the app has been successfully authorized and granted an authorization
-          code or access token.
-      start_date:
-        type: string
-        title: Start Date
-        description:
-          The date from which you'd like to replicate data for Outreach API,
-          in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will
-          be replicated.
-        examples:
-          - "2020-11-16T00:00:00Z"
-        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
