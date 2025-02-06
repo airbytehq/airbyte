@@ -32,8 +32,12 @@ data:
     jobSpecific:
       - jobType: sync
         resourceRequirements:
-          memory_limit: 2Gi
-          memory_request: 2Gi
+          memory_limit: 4Gi
+          memory_request: 4Gi
+      - jobType: discover_schema
+        resourceRequirements:
+          memory_limit: 4Gi
+          memory_request: 4Gi
   supportLevel: certified
   supportsDbt: true
   supportsRefreshes: true
