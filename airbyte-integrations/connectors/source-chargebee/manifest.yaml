@@ -2249,7 +2249,23 @@ schemas:
           - string
           - "null"
         description: Currency code for the addon pricing.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       enabled_in_portal:
         type:
           - boolean
@@ -2459,7 +2475,23 @@ schemas:
           - integer
           - "null"
         description: Timestamp when the attached item was created.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       id:
         type:
           - string
@@ -2820,7 +2852,23 @@ schemas:
           - string
           - "null"
         description: IP address from which the customer was created.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_type:
         type:
           - string
@@ -3211,7 +3259,23 @@ schemas:
           - string
           - "null"
         description: The currency code for the coupon (e.g. USD, EUR).
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       discount_amount:
         type:
           - integer
@@ -3367,7 +3431,23 @@ schemas:
     additionalProperties: true
     name: Customer
     properties:
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -3590,7 +3670,23 @@ schemas:
           - string
           - "null"
         description: The currency code for the credit note.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -4254,7 +4350,23 @@ schemas:
           - object
           - "null"
         description: The specific content or information associated with the event.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       event_type:
         type:
           - string
@@ -4328,7 +4440,23 @@ schemas:
           - integer
           - "null"
         description: The date when the gift claim expires.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       gift_receiver:
         type:
           - object
@@ -4594,7 +4722,23 @@ schemas:
           - string
           - "null"
         description: Currency code used for the order.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -5219,7 +5363,23 @@ schemas:
           - integer
           - "null"
         description: Timestamp indicating when the hosted page was created.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       embed:
         type:
           - boolean
@@ -5482,7 +5642,23 @@ schemas:
           - string
           - "null"
         description: Currency code of the invoice
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -6483,7 +6659,23 @@ schemas:
           - string
           - "null"
         description: Channel the item belongs to
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       enabled_for_checkout:
         type:
           - boolean
@@ -6657,7 +6849,23 @@ schemas:
           - string
           - "null"
         description: The currency code used for pricing the item.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       external_name:
         type:
           - string
@@ -6988,7 +7196,23 @@ schemas:
           - string
           - "null"
         description: The currency code used for pricing
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       enabled_in_hosted_pages:
         type:
           - boolean
@@ -7419,7 +7643,23 @@ schemas:
           - integer
           - "null"
         description: Timestamp indicating when the payment source was created
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -7576,7 +7816,23 @@ schemas:
           - string
           - "null"
         description: The currency code of the promotional credit.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -7924,7 +8180,23 @@ schemas:
           - integer
           - "null"
         description: The start date of the current term for the subscription.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -8907,7 +9179,23 @@ schemas:
           - integer
           - "null"
         description: The start date of the current term for the subscription.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -9639,7 +9927,23 @@ schemas:
           - string
           - "null"
         description: The currency code of the transaction.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -9961,7 +10265,23 @@ schemas:
           - string
           - "null"
         description: Currency code of the amount
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -10124,7 +10444,23 @@ schemas:
           - integer
           - "null"
         description: The date and time when the virtual bank account was created
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -10306,7 +10642,23 @@ schemas:
           - string
           - "null"
         description: The currency code used for all monetary values in the quote.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       customer_id:
         type:
           - string
@@ -10823,7 +11175,23 @@ schemas:
           - integer
           - "null"
         description: The amount of credits applied to the quote line group.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       discounts:
         type:
           - array
@@ -11121,7 +11489,23 @@ schemas:
     additionalProperties: true
     name: Site Migration Detail
     properties:
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       entity_id:
         type:
           - string
@@ -11178,7 +11562,23 @@ schemas:
           - integer
           - "null"
         description: The timestamp indicating when the comment was created.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       entity_id:
         type:
           - string
@@ -11222,7 +11622,23 @@ schemas:
           - string
           - "null"
         description: The channel associated with the item family.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       id:
         type:
           - string
@@ -11269,7 +11685,23 @@ schemas:
           - string
           - "null"
         description: The currency code associated with the differential price data.
-      custom_fields: _definitions.json#/definitions/custom_fields
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            name:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - string
       id:
         type:
           - string
