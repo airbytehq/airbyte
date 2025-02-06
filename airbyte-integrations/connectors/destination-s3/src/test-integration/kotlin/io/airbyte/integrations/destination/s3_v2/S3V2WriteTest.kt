@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.avro.AvroExpectedRecordMapper
 import io.airbyte.cdk.load.message.InputRecord
-import io.airbyte.cdk.load.test.util.DefaultNamespaceProvider
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -53,10 +52,6 @@ abstract class S3V2WriteTest(
         expectedRecordMapper,
         additionalMicronautEnvs = S3V2Destination.additionalMicronautEnvs,
         micronautProperties = S3V2TestUtils.assumeRoleCredentials.asMicronautProperties(),
-        defaultNamespaceProvider =
-            object : DefaultNamespaceProvider {
-                override fun get(randomNamespace: String): String? = null
-            },
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
         stringifySchemalessObjects = stringifySchemalessObjects,
@@ -132,7 +127,7 @@ abstract class S3V2WriteTest(
                     )
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                     """{"id": 1, "union_of_objects": {"field1": "a", "field2": 1, "field3": 3.14, "field4": "boo", "field5": "extra"}}""",
@@ -224,7 +219,7 @@ abstract class S3V2WriteTest(
 
         assertThrows<DestinationUncleanExitException> {
             runSync(
-                configContents,
+                updatedConfig,
                 stream,
                 listOf(
                         """{"id": 1, "union_of_objects": {"field1": "a"}}""",
@@ -303,7 +298,7 @@ abstract class S3V2WriteTest(
             }
 
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             expectedRecords.map { InputRecord(randomizedNamespace, "stream", it, 1L) }
         )

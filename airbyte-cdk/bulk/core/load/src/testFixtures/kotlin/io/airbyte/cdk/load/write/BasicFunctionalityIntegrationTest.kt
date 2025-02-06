@@ -457,7 +457,11 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         fun makeStream(namespace: String?) =
             DestinationStream(
-                DestinationStream.Descriptor(namespace, "test_stream"),
+                // We need to randomize the stream name for destinations which support
+                // namespace=null natively.
+                // Otherwise, multiple test runs would write to `<null>.test_stream`.
+                // Now, they instead write to `<null>.test_stream_test20250123abcd`.
+                DestinationStream.Descriptor(namespace, "test_stream_$randomizedNamespace"),
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
