@@ -35,6 +35,8 @@ Before completing this tutorial, make sure you have the following.
 
     - For Self-Managed: your user name, password, and server URL.
 
+    - Your workspace ID. To get your workspace ID, open your workspace in Airbyte, then copy the ID from the URL. It looks like: `039da657-f061-493e-a836-9bce86bc5e35`.
+
 ## Step 1: Download and set up the provider
 
 To begin, download the Terraform provider and configure it to run with your Airbyte instance.
@@ -132,6 +134,11 @@ To begin, download the Terraform provider and configure it to run with your Airb
             type = string
             default = "YOUR_CLIENT_SECRET"
         }
+
+        variable "workspace_id" {
+            type = string
+            default = "YOUR_AIRBYTE_WORKSPACE_ID"
+        }
         ```
     </TabItem>
     <TabItem value="Self-Managed" label="Self-Managed">
@@ -144,6 +151,13 @@ To begin, download the Terraform provider and configure it to run with your Airb
         variable "password" {
             type = string
             default = "YOUR_PASSWORD"
+        }
+
+        # To get your workspace ID, open your workspace in Airbyte, then copy the ID from the URL. It looks like: 039da657-f061-493e-a836-9bce86bc5e35
+
+        variable "workspace_id" {
+            type = string
+            default = "YOUR_AIRBYTE_WORKSPACE_ID"
         }
         ```
     </TabItem>
@@ -161,7 +175,7 @@ Currently, the Airbyte provider offers two types of resources. There are benefit
 
 ### Strongly typed configurations
 
-Resources with strongly typed configurations have strict rules about how configurations are written. If they're written incorrectly, these resources prevent `terraform apply` from running.
+Resources with strongly typed configuration objects have strict rules about how configurations are written. If they're written incorrectly, these resources prevent `terraform apply` from running.
 
 These resources depend on the underlying Airbyte connectors. Connectors are continually updated as third-party APIs change or we add new features. This creates two primary points of failure for Terraform.
 
@@ -173,50 +187,121 @@ Essentially, using this option creates an ongoing risk that upgrading the Terraf
 
 ### Weakly typed (JSON) configurations
 
-Resources with weakly typed configurations use a JSON string to define how those configurations are written. These configurations are more robust when connectors change. Mismatches between a Terraform provider and a connector do not prevent `terraform apply` from running and may not cause any issues at all since the absence of a newly added configuration option might have no impact at all on your data and your use of that connector.
+Resources with weakly typed configurations use a JSON string to define how those configurations are written. These configurations are more robust when connectors change. Mismatches between a Terraform provider and a connector do not prevent `terraform apply` from running. The absence of a newly added configuration option might have no impact at all on your data and your use of that connector.
 
 The main issue with this method is that JSON strings can technically contain anything, and you could make a mistake that Terraform doesn't warn you about. Currently, the best way to verify the correctness of your JSON string is to review the documentation for the strongly-typed resource for the source or destination you are creating.
 
 :::note
-We realize this process is undesirable, and are exploring ways to surface the right JSON string in a more obvious way.
+We realize this method for getting the JSON string is undesirable, and are exploring ways to surface the right JSON string in a more obvious way.
 :::
 
 ### How to choose
 
-You can choose which type of resource you prefer. Airbyte generally recommends using a JSON configuration. Based on the feedback we receive, JSON causes less Terraform drift and makes upgrades less problematic.
+- For Airbyte and Marketplace connectors, you can choose which type of resource you prefer. Airbyte generally recommends using a JSON configuration. Based on the feedback we receive, JSON causes less Terraform drift and makes upgrades less problematic in the long run.
+
+- For custom connectors, only weakly typed JSON configurations are possible.
 
 ## Step 2: Create a source
 
-Now that Terraform is running, add a source from which you want to pull data.
+Add a source from which you want to pull data. In this example, you add Stripe as a source. If you want to use a different source, you can find the code sample for the corresponding resource in the [Terraform provider reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
 
-You can choose between a strongly typed or weakly typed (JSON) configuration. See [Strongly versus weakly typed configurations](#typing) to learn which is better for you.
+1. Add your source to `main.tf`. You can choose between a strongly typed or weakly typed (JSON) configuration. See [Strongly versus weakly typed configurations](#typing) to learn which to use.
 
-<Tabs>
-    <TabItem value="Strongly typed" label="Strongly typed" default>
-        ```hcl
-        resource "airbyte_source_stripe" "my_source_stripe" {
-            configuration = {
-                sourceType = "stripe"
-                account_id = "acct_123"
-                client_secret = "sklive_abc"
-                start_date = "2023-07-01T00:00:00Z"
-                lookback_window_days = 0
-                slice_range = 365
+    <Tabs>
+        <TabItem value="Strongly typed" label="Strongly typed" default>
+            ```hcl title="main.tf"
+            resource "airbyte_source_stripe" "my_source_stripe" {
+                configuration = {
+                    sourceType = "stripe"
+                    account_id = "YOUR_STRIPE_ACCOUNT_ID"
+                    client_secret = "YOUR_STRIPE_CLIENT_SECRET"
+                    start_date = "2023-07-01T00:00:00Z"
+                    lookback_window_days = 0
+                    slice_range = 365
+                }
+                name = "Stripe"
+                workspace_id = var.workspace_id
             }
-            name = "Stripe"
-            workspace_id = var.workspace_id
-        }
-        ```
-    </TabItem>
+            ```
+        </TabItem>
 
-    <TabItem value="JSON" label="JSON">
-        asd
-    </TabItem>
-</Tabs>
+        <TabItem value="JSON" label="JSON">
+        
+            If this is an Airbyte or Marketplace connector, it's easiest to define the source type in the JSON string.
+            
+            ```hcl title="main.tf"
+            resource "airbyte_source_custom" "my_source_stripe" {
+                configuration = jsonencode({
+                    sourceType = "stripe"
+                    "account_id" = "YOUR_STRIPE_ACCOUNT_ID",
+                    "client_secret" = "YOUR_STRIPE_CLIENT_SECRET",
+                    "start_date" = "2023-07-01T00:00:00Z",
+                    "lookback_window_days" = 0,
+                    "slice_range" = 365
+                    })
+                name = "Stripe custom"
+                workspace_id = var.workspace_id
+            }
+            ```
+
+            If this is a custom connector, use `definition_id` to define the source type. To get this value, open your custom connector in Airbyte and copy it from the URL of that connector.
+
+            ```hcl title="main.tf"
+            resource "airbyte_source_custom" "my_source_stripe" {
+                configuration = jsonencode({
+                    "account_id" = "YOUR_STRIPE_ACCOUNT_ID",
+                    "client_secret" = "YOUR_STRIPE_CLIENT_SECRET",
+                    "start_date" = "2023-07-01T00:00:00Z",
+                    "lookback_window_days" = 0,
+                    "slice_range" = 365
+                    })
+                name = "Stripe"
+                workspace_id = var.workspace_id
+                // highlight-next-line
+                definition_id = "e094cb9a-26de-4645-8761-65c0c425d1de"
+            }
+            ```
+
+        </TabItem>
+    </Tabs>
+
+2. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
+
+Terraform adds the source to Airbyte. To see your new source, open your Airbyte workspace and and click **Sources**.
 
 ## Step 3: Create a destination
 
-Create a destination to which you want to sync your data.
+Add a destination to which you want to push data. In this example, you add BigQuery as a destination. If you want to use a different destination, you can find the code sample for the corresponding resource in the [Terraform provider reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
+
+1. Add your destination to `main.tf`. You can choose between a strongly typed or weakly typed (JSON) configuration. See [Strongly versus weakly typed configurations](#typing) to learn which to use.
+
+    <Tabs>
+        <TabItem value="Strongly typed" label="Strongly typed" default>
+            ```hcl title="main.tf"
+            
+            ```
+        </TabItem>
+
+        <TabItem value="JSON" label="JSON">
+        
+            If this is an Airbyte or Marketplace connector, it's easiest to define the source type in the JSON string.
+            
+            ```hcl title="main.tf"
+            
+            ```
+
+            If this is a custom connector, use `definition_id` to define the source type. To get this value, open your custom connector in Airbyte and copy it from the URL of that connector.
+
+            ```hcl title="main.tf"
+            
+            ```
+
+        </TabItem>
+    </Tabs>
+
+2. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
+
+Terraform adds the destination to Airbyte. To see your new destination, open your Airbyte workspace and and click **Destinations**.
 
 ## Step 4: Create a connection
 
