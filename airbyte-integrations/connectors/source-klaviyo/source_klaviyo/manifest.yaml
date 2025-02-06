@@ -266,6 +266,12 @@ definitions:
     $parameters:
       path: "campaigns"
       cursor_field: "updated_at"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["updated_at"]
+            value: "{{ record.get('attributes', {}).get('updated_at') }}"
 
   # Semi-Incremental streams
   metrics_stream:

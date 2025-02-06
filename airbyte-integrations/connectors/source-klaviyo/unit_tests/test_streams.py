@@ -14,6 +14,7 @@ import pendulum
 import pytest
 import requests
 from dateutil.relativedelta import relativedelta
+from freezegun import freeze_time
 from integration.config import KlaviyoConfigBuilder
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
@@ -453,78 +454,63 @@ class TestGlobalExclusionsStream:
 
 
 class TestCampaignsStream:
+    @freeze_time(pendulum.datetime(2020, 11, 10).isoformat())
     def test_read_records(self, requests_mock):
-        input_records = [
-            {"attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"}},
-            {"attributes": {"name": "Some name 2", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"}},
-        ]
-        input_records_archived = [
-            {"attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"}},
-        ]
+        input_records = {
+            "sms": {
+                "true": {"attributes": {"name": "Some name 1", "archived": True, "updated_at": "2020-10-21T00:00:00+0000"}},
+                "false": {"attributes": {"name": "Some name 1", "archived": False, "updated_at": "2020-10-20T00:00:00+0000"}},
+            },
+            "email": {
+                "true": {"attributes": {"name": "Some name 1", "archived": True, "updated_at": "2020-10-18T00:00:00+0000"}},
+                "false": {"attributes": {"name": "Some name 1", "archived": False, "updated_at": "2020-10-23T00:00:00+0000"}},
+            },
+        }
 
-        stream = Campaigns(api_key=API_KEY)
-        requests_mock.register_uri(
-            "GET",
-            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=equals(messages.channel,'email')",
-            status_code=200,
-            json={"data": input_records},
-            complete_qs=True,
-        )
-        requests_mock.register_uri(
-            "GET",
-            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=equals(messages.channel,'sms')",
-            status_code=200,
-            json={"data": input_records},
-            complete_qs=True,
-        )
-        requests_mock.register_uri(
-            "GET",
-            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=and(equals(archived,true),equals(messages.channel,'email'))",
-            status_code=200,
-            json={"data": input_records_archived},
-            complete_qs=True,
-        )
-        requests_mock.register_uri(
-            "GET",
-            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=and(equals(archived,true),equals(messages.channel,'sms'))",
-            status_code=200,
-            json={"data": input_records_archived},
-            complete_qs=True,
-        )
-
+        stream = get_stream_by_name("campaigns", CONFIG)
         expected_records = [
             {
-                "attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
-                "updated_at": "2021-05-12T20:45:47+00:00",
+                "attributes": {"archived": True, "name": "Some name 1", "updated_at": "2020-10-21T00:00:00+0000"},
+                "updated_at": "2020-10-21T00:00:00+0000",
             },
             {
-                "attributes": {"name": "Some name 2", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
-                "updated_at": "2021-05-12T20:45:47+00:00",
+                "attributes": {"archived": False, "name": "Some name 1", "updated_at": "2020-10-20T00:00:00+0000"},
+                "updated_at": "2020-10-20T00:00:00+0000",
             },
             {
-                "attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
-                "updated_at": "2021-05-12T20:45:47+00:00",
+                "attributes": {"archived": True, "name": "Some name 1", "updated_at": "2020-10-18T00:00:00+0000"},
+                "updated_at": "2020-10-18T00:00:00+0000",
             },
             {
-                "attributes": {"name": "Some name 2", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
-                "updated_at": "2021-05-12T20:45:47+00:00",
-            },
-            {
-                "attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"},
-                "updated_at": "2021-05-12T20:45:47+00:00",
-            },
-            {
-                "attributes": {"name": "Archived", "archived": True, "updated_at": "2021-05-12T20:45:47+00:00"},
-                "updated_at": "2021-05-12T20:45:47+00:00",
+                "attributes": {"archived": False, "name": "Some name 1", "updated_at": "2020-10-23T00:00:00+0000"},
+                "updated_at": "2020-10-23T00:00:00+0000",
             },
         ]
 
         records = []
+        base_url = "https://a.klaviyo.com/api/campaigns"
+
         for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            query_params = {
+                "filter": f"and(greater-or-equal(updated_at,{stream_slice['start_time']}),less-or-equal(updated_at,{stream_slice['end_time']}),equals(messages.channel,'{stream_slice['campaign_type']}'),equals(archived,{stream_slice['archived']}))",
+                "sort": "updated_at",
+            }
+            encoded_query = urllib.parse.urlencode(query_params)
+            encoded_url = f"{base_url}?{encoded_query}"
+            requests_mock.register_uri(
+                "GET",
+                encoded_url,
+                status_code=200,
+                json={"data": input_records[stream_slice["campaign_type"]][stream_slice["archived"]]},
+                complete_qs=True,
+            )
+
             for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 records.append(record)
 
-        assert records == expected_records
+        assert len(records) == len(expected_records)
+        for expected_record, record in zip(expected_records, records):
+            assert expected_record == dict(record)
 
     @pytest.mark.parametrize(
         ("latest_record", "current_stream_state", "expected_state"),

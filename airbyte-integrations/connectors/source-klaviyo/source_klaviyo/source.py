@@ -27,7 +27,6 @@ class SourceKlaviyo(YamlDeclarativeSource):
         streams = super().streams(config)
         streams.extend(
             [
-                Campaigns(api_key=api_key, start_date=start_date),
                 CampaignsDetailed(api_key=api_key, start_date=start_date),
                 Flows(api_key=api_key, start_date=start_date),
             ]
