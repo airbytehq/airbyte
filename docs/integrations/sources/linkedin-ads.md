@@ -202,8 +202,8 @@ No workaround has been identified to manage this issue as of 2025, February.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 5.2.0 | 2025-02-04 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add `Lead forms` and `Lead form responses` new streams - See Limits & considerations |
-| 5.1.6 | 2025-01-29 | [49458](https://github.com/airbytehq/airbyte/pull/49458) | Update Linkedin Ads API version to 202410 for creatives stream            |
+| 5.2.0 | 2025-02-04 | [52047](https://github.com/airbytehq/airbyte/pull/52047) | Add `Lead forms` and `Lead form responses` new streams - See Limits & considerations |
+| 5.1.6 | 2025-02-02 | [49458](https://github.com/airbytehq/airbyte/pull/49458) | Update Linkedin Ads API version to 202410 for creatives stream            |
 | 5.1.5 | 2025-02-01 | [52791](https://github.com/airbytehq/airbyte/pull/52791) | Update dependencies |
 | 5.1.4 | 2025-01-30 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Fix state error |
 | 5.1.3 | 2025-01-22 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Update CDK to production ^6 |
