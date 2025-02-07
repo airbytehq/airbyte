@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d6754ed7-dd8a-4a0a-a07e-e768fbac420c
-  dockerImageTag: 0.0.9
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-akeneo
   githubIssueLabel: source-akeneo
   icon: icon.svg
