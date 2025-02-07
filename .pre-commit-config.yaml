@@ -6,8 +6,6 @@ exclude: |
     ^.*?/node_modules/.*$|
 
     ^.*?/charts/.*$|
-    ^airbyte-integrations/bases/base-normalization/.*$|
-    ^.*?/normalization_test_output/.*$|
 
     ^.*?/pnpm-lock\.yaml$|
     ^.*?/source-amplitude/unit_tests/api_data/zipped\.json$|
