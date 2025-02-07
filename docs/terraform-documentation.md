@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Terraform Provider
 
-[Terraform](https://www.terraform.io/), developed by HashiCorp, is an Infrastructure as Code (IaC) tool that empowers you to define and provision infrastructure using a declarative configuration language. If you already use Terraform to manage your infrastructure, you can use Airbyte's Terraform provider to automate and version control your Airbyte configuration as code. Airbyte's Terraform provider is built off [our API](https://reference.airbyte.com).
+[Terraform](https://www.terraform.io/), developed by HashiCorp, is an Infrastructure as Code (IaC) tool that empowers you to define and provision infrastructure using a declarative configuration language. If you already use Terraform to manage your infrastructure or want to start doing this, you can use Airbyte's Terraform provider to automate and version control your Airbyte configuration as code. Airbyte's Terraform provider is built off [our API](https://reference.airbyte.com).
 
 Follow this tutorial to learn to use Airbyte's Terraform Provider. If you don't need a tutorial, see the [Terraform provider reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
 
@@ -227,12 +227,12 @@ Add a source from which you want to pull data. In this example, you add Stripe a
 
         <TabItem value="JSON" label="JSON">
         
-            If this is an Airbyte or Marketplace connector, it's easiest to define the source type in the JSON string.
+            For this and any other Airbyte or Marketplace connector, you can define the source type in the JSON string.
             
             ```hcl title="main.tf"
             resource "airbyte_source_custom" "my_source_stripe" {
                 configuration = jsonencode({
-                    sourceType = "stripe"
+                    sourceType = "stripe",
                     "account_id" = "YOUR_STRIPE_ACCOUNT_ID",
                     "client_secret" = "YOUR_STRIPE_CLIENT_SECRET",
                     "start_date" = "2023-07-01T00:00:00Z",
@@ -244,7 +244,7 @@ Add a source from which you want to pull data. In this example, you add Stripe a
             }
             ```
 
-            If this is a custom connector, use `definition_id` to define the source type. To get this value, open your custom connector in Airbyte and copy it from the URL of that connector.
+            If this is your own custom connector, use `definition_id` to define the source type. To get this value, open your custom connector in Airbyte and copy it from the URL of that connector.
 
             ```hcl title="main.tf"
             resource "airbyte_source_custom" "my_source_stripe" {
@@ -278,26 +278,57 @@ Add a destination to which you want to push data. In this example, you add BigQu
     <Tabs>
         <TabItem value="Strongly typed" label="Strongly typed" default>
             ```hcl title="main.tf"
-            
+            resource "airbyte_destination_bigquery" "my_destination_bigquery" {
+                configuration = {
+                    destination_type                = "BigQuery"
+                    big_query_client_buffer_size_mb = 15
+                    credentials_json                = "YOUR_CREDENTIALS_JSON"
+                    dataset_id                      = "YOUR_DATASET_ID"
+                    dataset_location                = "us-central1"
+                    loading_method = {
+                        batched_standard_inserts = {}
+                    }
+                    project_id                      = "YOUR_PROJECT_ID"
+                    raw_data_dataset                = "YOUR_RAW_DATA_DATASET"
+                    transformation_priority         = "batch"
+                }
+                name         = "BigQuery"
+                workspace_id = var.workspace_id
+            }
             ```
         </TabItem>
 
         <TabItem value="JSON" label="JSON">
-        
-            If this is an Airbyte or Marketplace connector, it's easiest to define the source type in the JSON string.
+            For this and any other Airbyte or Marketplace connector, it's easiest to define the source type in the JSON string.
             
             ```hcl title="main.tf"
-            
+            # to follow
             ```
 
             If this is a custom connector, use `definition_id` to define the source type. To get this value, open your custom connector in Airbyte and copy it from the URL of that connector.
 
             ```hcl title="main.tf"
-            
+            # to follow
             ```
-
         </TabItem>
     </Tabs>
+
+    :::note
+    
+    BigQuery requires credentials in JSON form and you must include the correct escapes. For example:
+
+    ```
+    credentials_json = "{ \"type\": \"service_account\", \"project_id\": \"example\", \"private_key_id\": \"id\", \"private_key\": \"YOUR_KEY\", \"client_email\": \"you@example.com\", \"client_id\": \"111\", \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\", \"token_uri\": \"https://oauth2.googleapis.com/token\", \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\", \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/you@example.com\", \"universe_domain\": \"googleapis.com\" }"
+    ```
+
+    If you have trouble generating the credentials in the right format, Airbyte's API docs can do this for you.
+
+    1. Go to the [Create destination](https://reference.airbyte.com/reference/createdestination) endpoint in Airbyte's API docs.
+    2. Go to the **configuration** parameter and find **Destination-BigQuery**.
+    3. Paste your credentials JSON into BigQuery's **credentials_json** parameter. The request example automatically updates to include the credentials in the right form.
+    4. Copy the credentials JSON from the request example, then paste the string back into your code.
+
+    :::
 
 2. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
 
