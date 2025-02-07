@@ -49,20 +49,16 @@ fix-and-check = [ # Fix everything fixable, then see if checks pass
 #  poe use-cdk-branch 'aj/my-branch-name'   # Pin to a specific branch
 #  poe use-cdk-active-branch                # Pin to the branch of the local CDK repo
 
+[tool.poe.tasks.use-cdk-latest]
+cmd = 'poetry add airbyte-cdk@latest'
+help = "Pin to the latest version of the CDK."
+
 [tool.poe.tasks.use-cdk-version]
 cmd = 'poetry add "airbyte-cdk@${VERSION}"'
 args = [
   { name = "VERSION", positional = true, default = "latest" },
 ]
-
-[tool.poe.tasks.use-cdk-latest]
-cmd = 'poetry add airbyte-cdk@latest'
-
-[tool.poe.tasks.use-cdk-branch]
-cmd = 'poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${BRANCH}"'
-args = [
-  { name = "BRANCH", positional = true, default = "main" },
-]
+help = "Pin to a specific version of the CDK."
 
 [tool.poe.tasks.use-active-cdk-branch]
 shell = '''
@@ -71,3 +67,11 @@ shell = '''
     echo "Attempting to pin CDK to branch '$ACTIVE_CDK_BRANCH' from the local repo."
     poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${ACTIVE_CDK_BRANCH}"
 '''
+help = "Pin to the branch of the CDK that is currently checked out locally."
+
+[tool.poe.tasks.use-cdk-branch]
+cmd = 'poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${BRANCH}"'
+args = [
+  { name = "BRANCH", positional = true, default = "main" },
+]
+help = "Pin to a specific branch of the CDK."
