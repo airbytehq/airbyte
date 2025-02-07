@@ -33,5 +33,5 @@ freezegun = "^1.4.0"
 
 [tool.poe]
 include = [
-    "../../../poe-tasks/poetry-connector-tasks.toml",
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
 ]

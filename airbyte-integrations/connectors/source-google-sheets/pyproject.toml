@@ -17,7 +17,7 @@ include = "source_google_sheets"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-airbyte-cdk = "^6"
+airbyte-cdk = {git = "https://github.com/airbytehq/airbyte-python-cdk.git", rev = "aj/feat/mini-cat-test-suites"}
 
 [tool.poetry.scripts]
 source-google-sheets = "source_google_sheets.run:run"
@@ -26,3 +26,10 @@ source-google-sheets = "source_google_sheets.run:run"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 pytest = "^6.1"
+ruff = "^0.9.5"
+mypy = "^1.15.0"
+
+[tool.poe]
+include = [
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
