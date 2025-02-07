@@ -326,14 +326,7 @@ schemas:
           - object
           - "null"
         additionalProperties:
-          anyOf:
-            - type: string
-            - type: number
-            - type: boolean
-            - type: array
-              items:
-                type: string
-            - type: "null"
+         true
       email:
         type:
           - string
