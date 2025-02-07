@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql.initialsync;
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcResyncMessage;
 import static io.airbyte.cdk.db.DbAnalyticsUtils.wassOccurrenceMessage;
+import static io.airbyte.cdk.db.jdbc.JdbcUtils.getFullyQualifiedTableName;
 import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.FAIL_SYNC_OPTION;
 import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.RESYNC_DATA_OPTION;
@@ -421,15 +422,23 @@ public class MssqlInitialReadUtil {
     // LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}",
     // stream.getStream().getNamespace(), stream.getStream().getName());
     // } // TODO: validate the seleted column rather than primary key
-    final String clusterdIndexField = discoverClusteredIndexForStream(database, stream.getStream());
+    final Map<String, List<String>> clusterdIndexField = discoverClusteredIndexForStream(database, stream.getStream());
+    final String streamName = getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
+    final List<List<String>> primaryKey = stream.getStream().getSourceDefinedPrimaryKey();
     final String ocFieldName;
-    if (clusterdIndexField != null) {
-      ocFieldName = clusterdIndexField;
+
+    final List<String> clusterColumns = Optional.ofNullable(clusterdIndexField)
+        .map(map -> map.get(streamName))
+        .orElse(null);
+
+    // Use the clustered key only if it isn't composite, otherwise use the primary key.
+    if (clusterColumns != null && clusterColumns.size() == 1) {
+      ocFieldName = clusterColumns.getFirst();
+      LOGGER.info("Composite cluster key was found. Defaulting to primary key if exist.");
+    } else if (!primaryKey.isEmpty()) {
+      ocFieldName = primaryKey.getFirst().getFirst();
     } else {
-      if (stream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
-        return Optional.empty();
-      }
-      ocFieldName = stream.getStream().getSourceDefinedPrimaryKey().getFirst().getFirst();
+      return Optional.empty();
     }
 
     LOGGER.info("selected ordered column field name: " + ocFieldName);
