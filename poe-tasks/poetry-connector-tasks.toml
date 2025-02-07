@@ -1,28 +1,55 @@
 [tool.poe.tasks]
+# CDK Pinning
+# Usage examples:
+#  poe use-cdk-latest
+#  poe use-cdk-version 4.5.6
+#  poe use-cdk-branch 'aj/my-branch-name'
+#  poe use-cdk-active-branch
 
-[tool.poe.tasks.install]
-shell = "poetry install --all-extras"
+use-cdk-latest = 'poetry add airbyte-cdk@latest'
+use-cdk-branch = 'poetry add { git = "git+https://github.com/airbytehq/airbyte.git" branch = "{args[0]}" }'
+use-cdk-active-branch = { script = '''
+    REPO_ROOT=$(git rev-parse --show-toplevel)
+    ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
+    echo "Attempting to pin CDK to branch '$ACTIVE_CDK_BRANCH' from the local repo."
+    poetry add airbyte-cdk --git https://github.com/airbytehq/airbyte --branch $ACTIVE_CDK_BRANCH
+''' }
+use-cdk-version = 'poetry add airbyte-cdk@{args[0]}'
 
-[tool.poe.tasks.lock]
-shell = "poetry lock"
+# Installation and package updates
+lock = "poetry lock"
+install = "poetry install --all-extras"
 
-[tool.poe.tasks.pytest]
-shell = "pytest"
+# Pytest
+pytest = "poetry run pytest"
+pytest-fast = "pytest --ff -m 'not slow and not requires_creds'"
 
-[tool.poe.tasks.pytest-fast]
-shell = "pytest --ff -m 'not slow and not requires_creds'"
+# Coverage checks
+coverage = "pytest --cov=. --cov-report=term-missing"
+coverage-html = "pytest --cov=. --cov-report=html"
 
-[tool.poe.tasks.coverage]
-shell = "pytest --cov=. --cov-report=term-missing"
+# Check commands
+check-ruff-lint = "ruff check ."
+check-ruff-format = "ruff format ."
+check-mypy = "mypy ."
 
-[tool.poe.tasks.coverage-html]
-shell = "pytest --cov=. --cov-report=html"
+check-all = [
+    "check-ruff",
+    "check-mypy",
+]
 
-[tool.poe.tasks.check]
-shell = "ruff check . && mypy ."
-
-[tool.poe.tasks.fix]
-shell = "ruff format . && ruff check --fix -s || ruff format ."
-
-[tool.poe.tasks.fix-and-check]
-shell = "poe fix && poe check"
+# Fix commands
+fix-ruff-format = ["ruff format --fix ."]
+fix-ruff-lint = ["ruff check --fix ."]
+fix-ruff = [
+    "fix-ruff-format",
+    "fix-ruff-lint",
+]
+fix-all = [
+    "fix-ruff",
+    # TODO: Consider adding prettier, etc.
+]
+fix-and-check = [ # Fix everything fixable, then see if checks pass
+    "fix-all",
+    "check-all",
+]
