@@ -2059,6 +2059,31 @@ definitions:
           - path: ["dataEndTime"]
             value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
+api_budget:
+  type: HTTPAPIBudget
+  # Each policy here uses a MovingWindowCallRatePolicy with two rates:
+  # one for burst (per-second) and one for steady (per-minute).
+  policies:
+    # Profiles (and global_exclusions share the same endpoint)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 0.0167          # burst: 0.0167 calls per second
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "orders/v0/orders(\?.*)?$"  # matches '/orders' (exact or with trailing slash/extra)
+    # Lists Detailed (uses a different URL path – note the extra segment)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 0.5          # burst: 0.5 call per second
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\?.*)?$"   # matches /orderItems
+  # Other API budget settings:
+  status_codes_for_ratelimit_hit: [429]
+  maximum_attempts_to_acquire: 100000
+
 streams:
   # REST Streams
   - $ref: "#/definitions/streams/orders"
