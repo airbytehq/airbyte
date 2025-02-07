@@ -6,11 +6,11 @@ data:
     hosts:
       - api.na1.insightly.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: 38f84314-fe6a-4257-97be-a8dcd942d693
-  dockerImageTag: 0.3.10
+  dockerImageTag: 0.3.11
   dockerRepository: airbyte/source-insightly
   documentationUrl: https://docs.airbyte.com/integrations/sources/insightly
   githubIssueLabel: source-insightly
