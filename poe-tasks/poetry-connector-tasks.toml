@@ -1,3 +1,19 @@
+# A shared set of tasks for Airbyte connectors using Poetry and Ruff.
+#
+# This file should be included in connectors' `poetry.toml` as follows:
+#
+# ```toml
+# [tool.poe]
+# include = [
+#     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+# ]
+#
+# Within any connector directory, you can then run `poe` or `poe --help` to see the full set of
+# available tasks.
+#
+# Third party tools (ruff, mypy, etc.) will be used from the poetry environment when available, or
+# from the local system `PATH` otherwise.
+
 [tool.poe.tasks]
 
 # Installation and package updates
