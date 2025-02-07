@@ -252,6 +252,9 @@ class NessieMinioWriteTest :
     }
 }
 
+// the basic REST catalog behaves poorly with multithreading,
+// even across multiple streams.
+// so run singlethreaded.
 @Execution(ExecutionMode.SAME_THREAD)
 class RestWriteTest : S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner) {
     @Test
