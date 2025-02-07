@@ -39,8 +39,8 @@ check-all = [
 ]
 
 # Fix commands
-fix-ruff-format = ["ruff format --fix ."]
-fix-ruff-lint = ["ruff check --fix ."]
+fix-ruff-format = "ruff format --fix ."
+fix-ruff-lint = "ruff check --fix ."
 fix-ruff = [
     "fix-ruff-format",
     "fix-ruff-lint",

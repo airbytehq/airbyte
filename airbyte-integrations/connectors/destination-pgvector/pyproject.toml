@@ -75,5 +75,3 @@ exclude_also = [
 include = [
     "../../../../poe-tasks/poetry-connector-tasks.toml",
 ]
-
-[tool.poe.tasks]
