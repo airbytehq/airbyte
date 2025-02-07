@@ -9,6 +9,7 @@ import io.airbyte.cdk.read.*
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.sql.Types
 import java.time.OffsetDateTime
 
 @Singleton
@@ -16,14 +17,28 @@ import java.time.OffsetDateTime
 class SapHanaSourceOperations :
     JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
 
-    override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
-        when (val type = c.type) {
-            is SystemType -> leafType(type)
+    override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType {
+        if (c.type.typeCode == Types.ARRAY) {
+            return SapHanaArrayFieldType(leafType(parseArrayElementType(c.type.typeName)))
+        }
+        return when (val type = c.type) {
+            is SystemType -> leafType(type.typeName)
             else -> PokemonFieldType
         }
+    }
 
-    private fun leafType(type: SystemType): JdbcFieldType<*> {
-        return when (type.typeName) {
+    private fun parseArrayElementType(typeName: String?): String? {
+        return when {
+            // SAP HANA returns the array type as "ARRAY" appended to the base type name e.g.
+            // "INTEGER ARRAY"
+            typeName != null && " ARRAY" in typeName -> typeName.substringBefore(" ARRAY")
+            else ->
+                throw RuntimeException("Cannot parse array element type from type name: $typeName")
+        }
+    }
+
+    private fun leafType(typeName: String?): JdbcFieldType<*> {
+        return when (typeName) {
             "BOOLEAN" -> BooleanFieldType
             "TINYINT",
             "SMALLINT", -> ShortFieldType
@@ -33,8 +48,8 @@ class SapHanaSourceOperations :
             "SMALLDECIMAL",
             "DECIMAL",
             "DEC", -> BigDecimalFieldType
-            "INTEGER",
-            "BIGINT", -> BigIntegerFieldType
+            "INTEGER" -> IntFieldType
+            "BIGINT" -> BigIntegerFieldType
             "CHAR",
             "VARCHAR",
             "ALPHANUM", -> StringFieldType
@@ -45,9 +60,9 @@ class SapHanaSourceOperations :
             "VARBINARY",
             "REAL_VECTOR", -> BinaryStreamFieldType
             "TIME" -> LocalTimeFieldType
-            "DATE" -> LocalDateTimeFieldType
+            "DATE" -> LocalDateFieldType
             "SECONDDATE",
-            "TIMESTAMP", -> OffsetDateTimeFieldType
+            "TIMESTAMP", -> LocalDateTimeFieldType
             "BLOB" -> BinaryStreamFieldType
             "CLOB" -> ClobFieldType
             "NCLOB",
