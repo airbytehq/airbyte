@@ -25,11 +25,11 @@ Before completing this tutorial, make sure you have the following.
 
 - Basic familiarity with Terraform is helpful, but not required
 
-- A code editor, like Visual Studio Code, with any of your preferred Terraform extensions installed
+- A code editor, like Visual Studio Code, optionally with a Terraform extension installed
 
 - [Terraform](https://developer.hashicorp.com/terraform/install) installed on your machine
 
-- Access credentials:
+- Airbyte credentials:
 
     - For Cloud: [An API application](using-airbyte/configuring-api-access.md) in Airbyte, and your client ID and client secret.
 
@@ -37,7 +37,9 @@ Before completing this tutorial, make sure you have the following.
 
     - Your workspace ID. To get your workspace ID, open your workspace in Airbyte, then copy the ID from the URL. It looks like: `039da657-f061-493e-a836-9bce86bc5e35`.
 
-## Step 1: Download and set up the provider
+- Source and destination credentials. This tutorial uses [Stripe](integrations/sources/stripe) and [BigQuery](integrations/destinations/bigquery), but you can substitute any other connector. Consult the documentation for those connectors to ensure you are ready to connect.
+
+## Step 1: Set up the Terraform provider
 
 To begin, download the Terraform provider and configure it to run with your Airbyte instance.
 
@@ -124,6 +126,7 @@ To begin, download the Terraform provider and configure it to run with your Airb
 
     <Tabs>
     <TabItem value="Cloud" label="Cloud" default>
+
         ```hcl title="variables.tf"
         variable "client_id" {
             type = string
@@ -140,8 +143,10 @@ To begin, download the Terraform provider and configure it to run with your Airb
             default = "YOUR_AIRBYTE_WORKSPACE_ID"
         }
         ```
+
     </TabItem>
     <TabItem value="Self-Managed" label="Self-Managed">
+
         ```hcl title="variables.tf"
         variable "username" {
             type = string
@@ -153,13 +158,12 @@ To begin, download the Terraform provider and configure it to run with your Airb
             default = "YOUR_PASSWORD"
         }
 
-        # To get your workspace ID, open your workspace in Airbyte, then copy the ID from the URL. It looks like: 039da657-f061-493e-a836-9bce86bc5e35
-
         variable "workspace_id" {
             type = string
             default = "YOUR_AIRBYTE_WORKSPACE_ID"
         }
         ```
+
     </TabItem>
     </Tabs>
 
@@ -205,141 +209,174 @@ We realize this method for getting the JSON string is undesirable, and are explo
 
 Add a source from which you want to pull data. In this example, you add Stripe as a source. If you want to use a different source, you can find the code sample for the corresponding resource in the [Terraform provider reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
 
-1. Add your source to `main.tf`. You can choose between a strongly typed or weakly typed (JSON) configuration. See [Strongly versus weakly typed configurations](#typing) to learn which to use.
+1. Add your source to `main.tf`.
 
     <Tabs>
-        <TabItem value="Strongly typed" label="Strongly typed" default>
-            ```hcl title="main.tf"
-            resource "airbyte_source_stripe" "my_source_stripe" {
-                configuration = {
-                    sourceType = "stripe"
-                    account_id = "YOUR_STRIPE_ACCOUNT_ID"
-                    client_secret = "YOUR_STRIPE_CLIENT_SECRET"
-                    start_date = "2023-07-01T00:00:00Z"
-                    lookback_window_days = 0
-                    slice_range = 365
-                }
-                name = "Stripe"
-                workspace_id = var.workspace_id
+    <TabItem value="Strongly typed" label="Strongly typed" default>
+        ```hcl title="main.tf"
+        resource "airbyte_source_stripe" "my_source_stripe" {
+            configuration = {
+                sourceType = "stripe"
+                account_id = "YOUR_STRIPE_ACCOUNT_ID"
+                client_secret = "YOUR_STRIPE_CLIENT_SECRET"
+                start_date = "2023-07-01T00:00:00Z"
+                lookback_window_days = 0
+                slice_range = 365
             }
-            ```
-        </TabItem>
+            name = "Stripe"
+            workspace_id = var.workspace_id
+        }
+        ```
+    </TabItem>
 
-        <TabItem value="JSON" label="JSON">
+    <TabItem value="JSON" label="JSON">
         
-            For this and any other Airbyte or Marketplace connector, you can define the source type in the JSON string.
-            
-            ```hcl title="main.tf"
-            resource "airbyte_source_custom" "my_source_stripe" {
-                configuration = jsonencode({
-                    sourceType = "stripe",
-                    "account_id" = "YOUR_STRIPE_ACCOUNT_ID",
-                    "client_secret" = "YOUR_STRIPE_CLIENT_SECRET",
-                    "start_date" = "2023-07-01T00:00:00Z",
-                    "lookback_window_days" = 0,
-                    "slice_range" = 365
-                    })
-                name = "Stripe custom"
-                workspace_id = var.workspace_id
-            }
-            ```
+        For this and any other Airbyte or Marketplace connector, you can define the source type in the JSON string.
+        
+        ```hcl title="main.tf"
+        resource "airbyte_source_custom" "my_source_stripe" {
+            configuration = jsonencode({
+                sourceType = "stripe",
+                "account_id" = "YOUR_STRIPE_ACCOUNT_ID",
+                "client_secret" = "YOUR_STRIPE_CLIENT_SECRET",
+                "start_date" = "2023-07-01T00:00:00Z",
+                "lookback_window_days" = 0,
+                "slice_range" = 365
+                })
+            name = "Stripe"
+            workspace_id = var.workspace_id
+        }
+        ```
 
-            If this is your own custom connector, use `definition_id` to define the source type. To get this value, open your custom connector in Airbyte and copy it from the URL of that connector.
+        If this is your own custom connector, use `definition_id` to define the source type. To get this value, open your custom connector in Airbyte and copy it from the URL of that connector.
 
-            ```hcl title="main.tf"
-            resource "airbyte_source_custom" "my_source_stripe" {
-                configuration = jsonencode({
-                    "account_id" = "YOUR_STRIPE_ACCOUNT_ID",
-                    "client_secret" = "YOUR_STRIPE_CLIENT_SECRET",
-                    "start_date" = "2023-07-01T00:00:00Z",
-                    "lookback_window_days" = 0,
-                    "slice_range" = 365
-                    })
-                name = "Stripe"
-                workspace_id = var.workspace_id
-                // highlight-next-line
-                definition_id = "e094cb9a-26de-4645-8761-65c0c425d1de"
-            }
-            ```
+        ```hcl title="main.tf"
+        resource "airbyte_source_custom" "my_source_stripe" {
+            configuration = jsonencode({
+                "account_id" = "YOUR_STRIPE_ACCOUNT_ID",
+                "client_secret" = "YOUR_STRIPE_CLIENT_SECRET",
+                "start_date" = "2023-07-01T00:00:00Z",
+                "lookback_window_days" = 0,
+                "slice_range" = 365
+                })
+            name = "Stripe"
+            workspace_id = var.workspace_id
+            // highlight-next-line
+            definition_id = "e094cb9a-26de-4645-8761-65c0c425d1de"
+        }
+        ```
 
-        </TabItem>
+    </TabItem>
     </Tabs>
 
 2. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
 
-Terraform adds the source to Airbyte. To see your new source, open your Airbyte workspace and and click **Sources**.
+Terraform adds the source to Airbyte. To see your new source, open your Airbyte workspace and and click **Sources**. Or, use the [List sources](https://reference.airbyte.com/reference/listsources) API endpoint.
 
 ## Step 3: Create a destination
 
 Add a destination to which you want to push data. In this example, you add BigQuery as a destination. If you want to use a different destination, you can find the code sample for the corresponding resource in the [Terraform provider reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
 
-1. Add your destination to `main.tf`. You can choose between a strongly typed or weakly typed (JSON) configuration. See [Strongly versus weakly typed configurations](#typing) to learn which to use.
+1. Add your destination to `main.tf`.
+
+    :::important
+    For BigQuery, you must use a service account with credentials provided as a JSON string (required for Cloud, but technically optional for self-managed). It's extremely helpful to wrap your credentials JSON in [jsonencode](https://developer.hashicorp.com/terraform/language/functions/jsonencode), like these examples do. This prevents you from having to manually escape slashes and newlines in your credentials and leaves your Terraform code more human-readable.
+    :::
 
     <Tabs>
-        <TabItem value="Strongly typed" label="Strongly typed" default>
-            ```hcl title="main.tf"
-            resource "airbyte_destination_bigquery" "my_destination_bigquery" {
-                configuration = {
-                    destination_type                = "BigQuery"
-                    big_query_client_buffer_size_mb = 15
-                    credentials_json                = "YOUR_CREDENTIALS_JSON"
-                    dataset_id                      = "YOUR_DATASET_ID"
-                    dataset_location                = "us-central1"
-                    loading_method = {
-                        batched_standard_inserts = {}
-                    }
-                    project_id                      = "YOUR_PROJECT_ID"
-                    raw_data_dataset                = "YOUR_RAW_DATA_DATASET"
-                    transformation_priority         = "batch"
-                }
-                name         = "BigQuery"
-                workspace_id = var.workspace_id
+    <TabItem value="Strongly typed" label="Strongly typed" default>
+
+        ```hcl title="main.tf"
+        resource "airbyte_destination_bigquery" "my_destination_bigquery" {
+            configuration = {
+                destination_type       = "BigQuery"
+                credentials_json       = jsonencode({
+                    "type"                        = "service_account",
+                    "project_id"                  = "YOUR_PROJECT_ID",
+                    "private_key_id"              = "YOUR_PRIVATE_KEY_ID",
+                    "private_key"                 = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+                    "client_email"                = "you@example.iam.gserviceaccount.com",
+                    "client_id"                   = "YOUR_CLIENT_ID",
+                    "auth_uri"                    = "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri"                   = "https://oauth2.googleapis.com/token",
+                    "auth_provider_x509_cert_url" = "https://www.googleapis.com/oauth2/v1/certs",
+                    "client_x509_cert_url"        = "https://www.googleapis.com/robot/v1/metadata/x509/you@example.iam.gserviceaccount.com"
+                })
+                dataset_id              = "YOUR_DATASET_ID"
+                dataset_location        = "us-central1"
+                project_id              = "YOUR_PROJECT_ID"
+                transformation_priority = "batch"
             }
-            ```
-        </TabItem>
+            name         = "BigQuery"
+            workspace_id = var.workspace_id
+        }
+        ```
 
-        <TabItem value="JSON" label="JSON">
-            For this and any other Airbyte or Marketplace connector, it's easiest to define the source type in the JSON string.
+    </TabItem>
+
+    <TabItem value="JSON" label="JSON">
             
-            ```hcl title="main.tf"
-            # to follow
-            ```
+        ```hcl title="main.tf"
+        resource "airbyte_destination_custom" "my_destination_bigquery_custom" {
+            configuration = jsonencode({ 
+                "destination_type"                = "BigQuery"
+                "credentials_json" = jsonencode({
+                    "type"                        = "service_account",
+                    "project_id"                  = "YOUR_PROJECT_ID",
+                    "private_key_id"              = "YOUR_PRIVATE_KEY_ID",
+                    "private_key"                 = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+                    "client_email"                = "you@example.iam.gserviceaccount.com",
+                    "client_id"                   = "YOUR_CLIENT_ID",
+                    "auth_uri"                    = "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri"                   = "https://oauth2.googleapis.com/token",
+                    "auth_provider_x509_cert_url" = "https://www.googleapis.com/oauth2/v1/certs",
+                    "client_x509_cert_url"        = "https://www.googleapis.com/robot/v1/metadata/x509/your-service-account-email%40your-project.iam.gserviceaccount.com"
+                }),
+                "dataset_id"                      = "YOUR_DATASET_ID",
+                "dataset_location"                = "us-central1",
+                "project_id"                      = "YOUR_PROJECT_ID",
+                "transformation_priority"         = "batch"
+            })
+            name                  = "BigQuery"
+            workspace_id          = var.workspace_id
+        }
+        ```
 
-            If this is a custom connector, use `definition_id` to define the source type. To get this value, open your custom connector in Airbyte and copy it from the URL of that connector.
-
-            ```hcl title="main.tf"
-            # to follow
-            ```
-        </TabItem>
+    </TabItem>
     </Tabs>
 
     :::note
-    
-    BigQuery requires credentials in JSON form and you must include the correct escapes. For example:
-
-    ```
-    credentials_json = "{ \"type\": \"service_account\", \"project_id\": \"example\", \"private_key_id\": \"id\", \"private_key\": \"YOUR_KEY\", \"client_email\": \"you@example.com\", \"client_id\": \"111\", \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\", \"token_uri\": \"https://oauth2.googleapis.com/token\", \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\", \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/you@example.com\", \"universe_domain\": \"googleapis.com\" }"
-    ```
-
-    If you have trouble generating the credentials in the right format, Airbyte's API docs can do this for you.
-
-    1. Go to the [Create destination](https://reference.airbyte.com/reference/createdestination) endpoint in Airbyte's API docs.
-    2. Go to the **configuration** parameter and find **Destination-BigQuery**.
-    3. Paste your credentials JSON into BigQuery's **credentials_json** parameter. The request example automatically updates to include the credentials in the right form.
-    4. Copy the credentials JSON from the request example, then paste the string back into your code.
-
+    Destinations have many more optional attributes. For simplicity, this tutorial uses defaults. See the [reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/destination_bigquery) for additional attributes.
     :::
 
 2. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
 
-Terraform adds the destination to Airbyte. To see your new destination, open your Airbyte workspace and and click **Destinations**.
+Terraform adds the destination to Airbyte. To see your new destination, open your Airbyte workspace and and click **Destinations**. Or, use the [List destinations](https://reference.airbyte.com/reference/listdestinations) API endpoint.
 
 ## Step 4: Create a connection
 
 Create a connection from your source to your destination.
 
+1. Add your connection to `main.tf` using the [Airbyte connection](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/connection) resource.
 
+    ```hcl title="main.tf"
+    resource "airbyte_connection" "stripe_to_bigquery" {
+        name           = "Stripe to BigQuery"
+        source_id      = airbyte_source_stripe.my_source_stripe.source_id
+        destination_id = airbyte_destination_bigquery.my_destination_bigquery.destination_id
+    }
+    ```
+
+    This example connection will not sync automatically. The [reference docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/connection) describe a number of attributes you can use to schedule how and when your connections sync.
+
+2. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
+
+Terraform adds the connection to Airbyte. To see your new connection, open your Airbyte workspace and click **Connections**. Or, use the [List connections](https://reference.airbyte.com/reference/listconnections) API endpoint.
 
 ## What's next?
 
-When you're ready for Terraform to take control, our [Quickstarts repository](https://github.com/airbytehq/quickstarts) provides templates and shortcuts to help you build your data stack tailored to different domains like Marketing, Product, Finance, Operations, and more.
+Congratulations! You created your first source, your first destination, and a connection between the two.
+
+- Continue building your sources, destinations, and connections for all your data using our [Terraform docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
+
+- Check out the [Quickstarts repository](https://github.com/airbytehq/quickstarts). It's full of templates and shortcuts to help you build common data stacks using Terraform and Python.
