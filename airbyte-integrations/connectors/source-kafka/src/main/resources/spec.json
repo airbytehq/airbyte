@@ -197,6 +197,12 @@
                 "type": "string",
                 "default": "",
                 "airbyte_secret": true
+              },
+              "oauthbearer_token_endpoint_url": {
+                "title": "OAUTHBEARER token endpoint URL",
+                "type": "string",
+                "description": "Endpoint for requesting tokens if setting SASL Mechanism to OAUTHBEARER",
+                "default": ""
               }
             }
           }
