@@ -283,7 +283,7 @@ class RestWriteTest : S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner) {
                 "catalog_type": {
                   "catalog_type": "REST",
                   "server_uri": "http://$restEndpoint:8181",
-                  "namespace": "test"
+                  "namespace": "<DEFAULT_NAMESPACE_PLACEHOLDER>"
                 },
                 "s3_bucket_name": "warehouse",
                 "s3_bucket_region": "us-east-1",
