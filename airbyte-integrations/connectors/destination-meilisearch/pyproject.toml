@@ -27,6 +27,7 @@ pytest = "^ 8.0"
 [tool.poetry.scripts]
 destination-qdrant = "destination_meilisearch.run:run"
 
+
 [tool.poe]
 include = [
     # Shared tasks definition file(s) can be imported here.

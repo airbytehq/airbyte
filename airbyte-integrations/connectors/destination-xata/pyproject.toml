@@ -26,6 +26,7 @@ destination-xata = "destination_xata.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
 
+
 [tool.poe]
 include = [
     # Shared tasks definition file(s) can be imported here.

@@ -48,6 +48,7 @@ pytest = "==6.2.5"
 requests-mock = "^1.9.3"
 pytest-docker = "==2.0.1"
 
+
 [tool.poe]
 include = [
     # Shared tasks definition file(s) can be imported here.

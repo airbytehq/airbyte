@@ -33,6 +33,7 @@ pytest-mock = "^3.6.1"
 requests-mock = "^1.11.0"
 pytest = "^6.1"
 
+
 [tool.poe]
 include = [
     # Shared tasks definition file(s) can be imported here.

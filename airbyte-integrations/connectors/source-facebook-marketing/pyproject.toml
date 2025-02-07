@@ -30,6 +30,7 @@ freezegun = "^1.4.0"
 pytest = "^7"
 requests-mock = "^1.9.3"
 
+
 [tool.poe]
 include = [
     # Shared tasks definition file(s) can be imported here.

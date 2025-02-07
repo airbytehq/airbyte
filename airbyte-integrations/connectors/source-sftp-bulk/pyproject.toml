@@ -30,6 +30,7 @@ pytest-mock = "^3.6.1"
 pytest = "^7"
 pytest-memray = "^1.6.0"
 
+
 [tool.poe]
 include = [
     # Shared tasks definition file(s) can be imported here.
