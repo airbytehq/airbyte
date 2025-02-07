@@ -1,9 +1,8 @@
 {
   "host": "localhost",
   "port": 1433,
-  "database": "master",
-  "schema": "dbo",
-  "raw_data_schema": "iamnotthere",
+  "database": "iamnotthere",
+  "schema": "mssql_default_schema_placeholder",
   "ssl_method": { "name": "unencrypted" },
   "user": "sa",
   "password": "replace_me"

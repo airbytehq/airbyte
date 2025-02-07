@@ -7,10 +7,12 @@ package io.airbyte.integrations.destination.s3_data_lake
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.DestinationCleaner
@@ -20,6 +22,7 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.integrations.destination.s3_data_lake.io.BaseDeltaTaskWriter
 import java.nio.file.Files
 import java.util.Base64
 import kotlin.test.assertContains
@@ -52,8 +55,8 @@ abstract class S3DataLakeWriteTest(
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
         preserveUndeclaredFields = false,
-        commitDataIncrementally = false,
         supportFileTransfer = false,
+        commitDataIncrementally = false,
         allTypesBehavior =
             StronglyTyped(
                 integerCanBeLarge = false,
@@ -62,6 +65,7 @@ abstract class S3DataLakeWriteTest(
             ),
         nullUnknownTypes = true,
         nullEqualsUnset = true,
+        configUpdater = S3DataLakeConfigUpdater,
     ) {
     /**
      * This test differs from the base test in two critical aspects:
@@ -148,6 +152,40 @@ abstract class S3DataLakeWriteTest(
     override fun testDedupChangeCursor() {
         super.testDedupChangeCursor()
     }
+
+    /**
+     * Iceberg disallows null values in identifier columns. In dedup mode, we set the PK columns to
+     * be Iceberg identifier columns. Therefore, we should detect null values in PK columns, and
+     * throw them as a ConfigError.
+     */
+    @Test
+    fun testDedupNullPk() {
+        val failure = expectFailure {
+            runSync(
+                updatedConfig,
+                DestinationStream(
+                    DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+                    ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
+                    generationId = 42,
+                    minimumGenerationId = 0,
+                    syncId = 12,
+                ),
+                listOf(
+                    InputRecord(
+                        randomizedNamespace,
+                        "test_stream",
+                        """{"id": null}""",
+                        emittedAtMs = 1234L,
+                    )
+                )
+            )
+        }
+        assertContains(
+            failure.message,
+            BaseDeltaTaskWriter.NULL_PK_ERROR_MESSAGE,
+        )
+    }
 }
 
 class GlueWriteTest :
@@ -185,14 +223,8 @@ class GlueWriteTest :
                 )
             )
 
-        val failure = expectFailure { runSync(configContents, catalog, messages = emptyList()) }
+        val failure = expectFailure { runSync(updatedConfig, catalog, messages = emptyList()) }
         assertContains(failure.message, "Detected naming conflicts between streams")
-    }
-
-    @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
-    override fun testNamespaces() {
-        super.testNamespaces()
     }
 }
 
@@ -205,13 +237,7 @@ class GlueAssumeRoleWriteTest :
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
             )
         ),
-    ) {
-    @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
-    override fun testNamespaces() {
-        super.testNamespaces()
-    }
-}
+    )
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
