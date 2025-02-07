@@ -1,0 +1,9 @@
+{
+  "host": "localhost",
+  "port": 1433,
+  "database": "iamnotthere",
+  "schema": "dbo",
+  "ssl_method": { "name": "unencrypted" },
+  "user": "sa",
+  "password": "replace_me"
+}
