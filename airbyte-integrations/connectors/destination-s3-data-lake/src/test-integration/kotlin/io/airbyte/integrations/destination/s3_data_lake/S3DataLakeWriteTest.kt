@@ -162,7 +162,7 @@ abstract class S3DataLakeWriteTest(
     fun testDedupNullPk() {
         val failure = expectFailure {
             runSync(
-                configContents,
+                updatedConfig,
                 DestinationStream(
                     DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
                     Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
