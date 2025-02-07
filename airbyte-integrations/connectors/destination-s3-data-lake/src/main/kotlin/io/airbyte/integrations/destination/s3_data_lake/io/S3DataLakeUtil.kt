@@ -40,7 +40,6 @@ import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_GLUE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_REST
 import org.apache.iceberg.FileFormat
-import org.apache.iceberg.rest.RESTCatalog
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
@@ -221,7 +220,7 @@ class S3DataLakeUtil(
             is GlueCatalogConfiguration ->
                 buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region)
             is RestCatalogConfiguration -> {
-//                System.setProperty(AWS_REGION, region)
+                //                System.setProperty(AWS_REGION, region)
                 buildRestProperties(config, catalogConfig, s3Properties, region)
             }
             else ->
