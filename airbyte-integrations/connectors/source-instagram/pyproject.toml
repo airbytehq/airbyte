@@ -28,3 +28,8 @@ source-instagram = "source_instagram.run:run"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6"
 pytest = "^6.1"
+
+[tool.poe]
+include = [
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
