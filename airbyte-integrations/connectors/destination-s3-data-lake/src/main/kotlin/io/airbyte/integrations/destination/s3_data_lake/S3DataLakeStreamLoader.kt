@@ -49,7 +49,18 @@ class S3DataLakeStreamLoader(
                 properties = properties
             )
 
-        s3DataLakeTableSynchronizer.applySchemaChanges(table, incomingSchema)
+        // If we're executing a truncate, then force the schema change.
+        val columnTypeChangeBehavior =
+            if (stream.isSingleGenerationTruncate()) {
+                ColumnTypeChangeBehavior.OVERWRITE
+            } else {
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            }
+        s3DataLakeTableSynchronizer.applySchemaChanges(
+            table,
+            incomingSchema,
+            columnTypeChangeBehavior
+        )
 
         try {
             logger.info {
