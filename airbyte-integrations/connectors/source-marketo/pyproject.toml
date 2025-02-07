@@ -1,8 +1,6 @@
-
 [build-system]
 requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
-
 
 [tool.poetry]
 version = "1.4.14"
@@ -14,15 +12,21 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/marketo"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_marketo"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "2.3.0"  # Newer CDK versions cause breaking changes. This is the latest version that we are sure can pass tests.
 
-
 [tool.poetry.scripts]
 source-marketo = "source_marketo.run:run"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.1"
+requests-mock = "^1.11.0"
+pytest-faker = "==2.0.0"
+pytest-mock = "^3.6.1"
 
 [tool.poe]
 include = [
