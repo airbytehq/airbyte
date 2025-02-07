@@ -9,38 +9,6 @@ check:
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
-    sink_template:
-      type: DeclarativeSink
-      name: ""
-      $parameters:
-        i: 123
-      primary_key: []
-      data_replacer:
-        type: SimpleSinkReplacer
-        $parameters:
-          sheet_id: ""
-          schema: {}
-        http_method: POST
-        path: https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}:batchUpdate
-        error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: ExponentialBackoffStrategy
-          response_filters:
-            $ref: "#/definitions/response_filters/response_error_filters"
-      data_appender:
-        type: SimpleSinkAppender
-        $parameters:
-          sheet_id: ""
-          schema: {}
-        http_method: POST
-        path: https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}:append
-        error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: ExponentialBackoffStrategy
-          response_filters:
-            $ref: "#/definitions/response_filters/response_error_filters"
     stream_template:
       type: DeclarativeStream
       name: ""
