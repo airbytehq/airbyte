@@ -143,7 +143,7 @@ def _prepare_mock(m, stream):
 
 
 def _bulk_stream_path() -> str:
-    return f"/services/data/{API_VERSION}jobs/query"
+    return f"/services/data/{API_VERSION}/jobs/query"
 
 
 def _get_result_id(stream):
