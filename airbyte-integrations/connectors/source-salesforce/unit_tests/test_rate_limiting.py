@@ -7,11 +7,11 @@ import pytest
 import requests
 import requests_mock
 from requests.exceptions import ChunkedEncodingError
+from source_salesforce.api import API_VERSION
 from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
-from source_salesforce.api import API_VERSION
 
 
 _ANY = "any"

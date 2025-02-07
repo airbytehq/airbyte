@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional
 from config_builder import ConfigBuilder
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from source_salesforce import SourceSalesforce
+from source_salesforce.api import API_VERSION
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.source import TState
@@ -15,8 +16,6 @@ from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
-from source_salesforce.api import API_VERSION
-
 
 
 def _catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:

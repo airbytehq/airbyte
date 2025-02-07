@@ -224,7 +224,7 @@ UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
 #    1. airbyte-integrations/connectors/source-salesforce/unit_tests/resource/http/response/job_response.json:
 #      {'apiVersion': 'v62.0'}
 #                      ^^^^^
-#   
+#
 #    2. airbyte-integrations/connectors/source-salesforce/integration_tests/expected_records.jsonl
 #      Streams:
 #          Account: {'data.attributes.url': '/services/data/v62.0/sobjects/Account/0014W000027f6V3QAI'}
@@ -233,6 +233,7 @@ UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
 #          Asset: {'data.attributes.url': '/services/data/v62.0/sobjects/Asset/02i4W00000EkJsrQAF'}
 #                                                        ^^^^^
 API_VERSION = "v62.0"
+
 
 class Salesforce:
     logger = logging.getLogger("airbyte")

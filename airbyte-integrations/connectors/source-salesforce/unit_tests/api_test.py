@@ -16,7 +16,7 @@ import requests_mock
 from config_builder import ConfigBuilder
 from conftest import generate_stream
 from salesforce_job_response_builder import JobInfoResponseBuilder
-from source_salesforce.api import Salesforce
+from source_salesforce.api import API_VERSION, Salesforce
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -42,7 +42,6 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
-from source_salesforce.api import API_VERSION
 
 
 _A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
