@@ -43,8 +43,38 @@ Airbyte’s incubating SAP HANA enterprise source connector currently offers Ful
 
 SAP HANA data types are mapped to the following Airbyte data types when synchronizing data.
 
-| SAP HANA Type                    | Airbyte Type            | Notes                       | CDC |
-| :------------------------------- |:------------------------|:----------------------------|-----|
-|                  |                |  |     |
+| SAP HANA Type  | Airbyte Type               | Notes |
+| -------------- | -------------------------- | ----- |
+| `BOOLEAN`      | BOOLEAN                    |       |
+| `DOUBLE`       | NUMBER                     |       |
+| `FLOAT`        | NUMBER                     |       |
+| `REAL`         | NUMBER                     |       |
+| `SMALLDECIMAL` | NUMBER                     |       |
+| `DECIMAL`      | NUMBER                     |       |
+| `DEC`          | NUMBER                     |       |
+| `INTEGER`      | INTEGER                    |       |
+| `TINYINT`      | INTEGER                    |       |
+| `SMALLINT`     | INTEGER                    |       |
+| `BIGINT`       | INTEGER                    |       |
+| `CHAR`         | STRING                     |       |
+| `VARCHAR`      | STRING                     |       |
+| `ALPHANUM`     | STRING                     |       |
+| `NCHAR`        | STRING                     |       |
+| `NVARCHAR`     | STRING                     |       |
+| `SHORTTEXT`    | STRING                     |       |
+| `TIME`         | TIME_WITHOUT_TIMEZONE      |       |
+| `DATE`         | DATE                       |       |
+| `SECONDDATE`   | TIMESTAMP_WITHOUT_TIMEZONE |       |
+| `TIMESTAMP`    | TIMESTAMP_WITHOUT_TIMEZONE |       |
+| `BINARY`       | BINARY                     |       |
+| `VARBINARY`    | BINARY                     |       |
+| `REAL_VECTOR`  | BINARY                     |       |
+| `BLOB`         | BINARY                     |       |
+| `CLOB`         | STRING                     |       |
+| `NCLOB`        | STRING                     |       |
+| `TEXT`         | STRING                     |       |
+| `BINTEXT`      | STRING                     |       |
+| `ST_POINT`     | BINARY                     |       |
+| `ST_GEOMETRY`  | BINARY                     |
 
 
