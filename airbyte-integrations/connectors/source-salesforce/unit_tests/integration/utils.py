@@ -17,7 +17,7 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
-_API_VERSION = "v57.0"
+_API_VERSION = "v62.0"
 
 
 def _catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:

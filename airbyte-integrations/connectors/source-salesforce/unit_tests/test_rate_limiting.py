@@ -15,7 +15,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 _ANY = "any"
 _ANY_BASE_URL = "https://any-base-url.com"
-_SF_API_VERSION = "v57.0"
+_SF_API_VERSION = "v62.0"
 
 
 class SalesforceErrorHandlerTest(TestCase):
