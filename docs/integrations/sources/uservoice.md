@@ -53,6 +53,13 @@ Airbyte connector for UserVoice.com allows users to efficiently extract data fro
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-02-01 | [53060](https://github.com/airbytehq/airbyte/pull/53060) | Update dependencies |
+| 0.0.9 | 2025-01-25 | [52448](https://github.com/airbytehq/airbyte/pull/52448) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [52021](https://github.com/airbytehq/airbyte/pull/52021) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51434](https://github.com/airbytehq/airbyte/pull/51434) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50773](https://github.com/airbytehq/airbyte/pull/50773) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50318](https://github.com/airbytehq/airbyte/pull/50318) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49397](https://github.com/airbytehq/airbyte/pull/49397) | Update dependencies |
 | 0.0.3 | 2024-11-04 | [48290](https://github.com/airbytehq/airbyte/pull/48290) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47500](https://github.com/airbytehq/airbyte/pull/47500) | Update dependencies |
 | 0.0.1 | 2024-10-16 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |

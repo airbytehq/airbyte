@@ -8,12 +8,13 @@ from unittest.mock import patch
 import pendulum
 import pytest
 import responses
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 from freezegun import freeze_time
 from source_github import SourceGithub
 from source_github.streams import Organizations
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter, read_full_refresh
+
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 
 @responses.activate

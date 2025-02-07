@@ -403,7 +403,7 @@ constructor(
             .columns(buildFinalTableFields(columns, metaFields))
     }
 
-    private fun insertAndDeleteTransaction(
+    protected open fun insertAndDeleteTransaction(
         streamConfig: StreamConfig,
         finalSuffix: String?,
         minRawTimestamp: Optional<Instant>,
@@ -507,7 +507,7 @@ constructor(
         return createSchemaSql.sql
     }
 
-    protected fun createTableSql(
+    protected open fun createTableSql(
         namespace: String,
         tableName: String,
         columns: LinkedHashMap<ColumnId, AirbyteType>

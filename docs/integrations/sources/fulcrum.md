@@ -36,6 +36,14 @@ Airbyte connector for Fulcrum would enable seamless data extraction from the Ful
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.11 | 2025-02-01 | [52839](https://github.com/airbytehq/airbyte/pull/52839) | Update dependencies |
+| 0.0.10 | 2025-01-25 | [52324](https://github.com/airbytehq/airbyte/pull/52324) | Update dependencies |
+| 0.0.9 | 2025-01-18 | [51627](https://github.com/airbytehq/airbyte/pull/51627) | Update dependencies |
+| 0.0.8 | 2025-01-11 | [51138](https://github.com/airbytehq/airbyte/pull/51138) | Update dependencies |
+| 0.0.7 | 2024-12-28 | [50560](https://github.com/airbytehq/airbyte/pull/50560) | Update dependencies |
+| 0.0.6 | 2024-12-21 | [50038](https://github.com/airbytehq/airbyte/pull/50038) | Update dependencies |
+| 0.0.5 | 2024-12-14 | [49512](https://github.com/airbytehq/airbyte/pull/49512) | Update dependencies |
+| 0.0.4 | 2024-12-12 | [49200](https://github.com/airbytehq/airbyte/pull/49200) | Update dependencies |
 | 0.0.3 | 2024-11-05 | [48358](https://github.com/airbytehq/airbyte/pull/48358) | Revert to source-declarative-manifest v5.17.0 |
 | 0.0.2 | 2024-11-05 | [48333](https://github.com/airbytehq/airbyte/pull/48333) | Update dependencies |
 | 0.0.1 | 2024-10-21 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |

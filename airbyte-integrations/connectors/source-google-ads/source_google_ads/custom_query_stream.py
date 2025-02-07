@@ -9,6 +9,7 @@ from typing import Any, Dict, Mapping
 from .streams import GoogleAdsStream, IncrementalGoogleAdsStream
 from .utils import GAQL
 
+
 DATE_TYPES = ("segments.date", "segments.month", "segments.quarter", "segments.week")
 
 

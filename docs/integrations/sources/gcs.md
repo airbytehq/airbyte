@@ -236,6 +236,8 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.8.4 | 2025-02-01 | [52379](https://github.com/airbytehq/airbyte/pull/52379) | Update dependencies |
+| 0.8.3 | 2025-01-18 | [49174](https://github.com/airbytehq/airbyte/pull/49174) | Update dependencies |
 | 0.8.2 | 2024-11-25 | [48647](https://github.com/airbytehq/airbyte/pull/48647) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.8.1 | 2024-10-28 | [45923](https://github.com/airbytehq/airbyte/pull/45923) | Update logging |
 | 0.8.0 | 2024-10-28 | [45414](https://github.com/airbytehq/airbyte/pull/45414) | Add support for OAuth authentication |

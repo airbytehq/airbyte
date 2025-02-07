@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.4.19"
+version = "0.4.25"
 name = "source-freshcaller"
 description = "Source implementation for Freshcaller"
 authors = ["Airbyte <contact@airbyte.io>"]

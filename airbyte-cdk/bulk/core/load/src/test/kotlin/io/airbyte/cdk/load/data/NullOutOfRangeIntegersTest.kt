@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.Root
 import io.airbyte.cdk.load.test.util.ValueTestBuilder
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
@@ -31,7 +31,7 @@ class NullOutOfRangeIntegersTest {
         Assertions.assertEquals(expectedValue, actualValue)
         Assertions.assertEquals(1, changes.size)
         Assertions.assertEquals(
-            DestinationRecord.Change(
+            Meta.Change(
                 "big_integer",
                 Change.NULLED,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION,
@@ -67,12 +67,12 @@ class NullOutOfRangeIntegersTest {
         Assertions.assertEquals(expectedValue, actualValue)
         Assertions.assertEquals(
             setOf(
-                DestinationRecord.Change(
+                Meta.Change(
                     "too_small",
                     Change.NULLED,
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 ),
-                DestinationRecord.Change(
+                Meta.Change(
                     "too_big",
                     Change.NULLED,
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION,

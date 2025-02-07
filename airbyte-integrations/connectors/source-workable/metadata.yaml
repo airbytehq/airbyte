@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef3c99c6-9e90-43c8-9517-926cfd978517
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-workable
   githubIssueLabel: source-workable
   icon: workable.svg
@@ -40,5 +40,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
 metadataSpecVersion: "1.0"

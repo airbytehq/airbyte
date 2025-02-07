@@ -15,3 +15,4 @@ class AirbyteInternal(BaseModel):
 
     sl: Optional[Literal[0, 100, 200, 300]] = None
     ql: Optional[Literal[0, 100, 200, 300, 400, 500, 600]] = None
+    isEnterprise: Optional[bool] = False

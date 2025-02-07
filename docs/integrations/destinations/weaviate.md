@@ -90,6 +90,14 @@ When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/m
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                      |
 |:--------| :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.52 | 2025-02-01 | [52944](https://github.com/airbytehq/airbyte/pull/52944) | Update dependencies |
+| 0.2.51 | 2025-01-25 | [52211](https://github.com/airbytehq/airbyte/pull/52211) | Update dependencies |
+| 0.2.50 | 2025-01-18 | [51759](https://github.com/airbytehq/airbyte/pull/51759) | Update dependencies |
+| 0.2.49 | 2025-01-11 | [51259](https://github.com/airbytehq/airbyte/pull/51259) | Update dependencies |
+| 0.2.48 | 2025-01-04 | [50908](https://github.com/airbytehq/airbyte/pull/50908) | Update dependencies |
+| 0.2.47 | 2024-12-28 | [50444](https://github.com/airbytehq/airbyte/pull/50444) | Update dependencies |
+| 0.2.46 | 2024-12-21 | [50182](https://github.com/airbytehq/airbyte/pull/50182) | Update dependencies |
+| 0.2.45 | 2024-12-14 | [49317](https://github.com/airbytehq/airbyte/pull/49317) | Update dependencies |
 | 0.2.44 | 2024-11-25 | [48640](https://github.com/airbytehq/airbyte/pull/48640) | Update dependencies |
 | 0.2.43 | 2024-11-04 | [48244](https://github.com/airbytehq/airbyte/pull/48244) | Update dependencies |
 | 0.2.42 | 2024-10-29 | [47063](https://github.com/airbytehq/airbyte/pull/47063) | Update dependencies |

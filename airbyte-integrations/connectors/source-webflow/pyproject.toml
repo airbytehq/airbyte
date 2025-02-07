@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.27"
+version = "0.1.35"
 name = "source-webflow"
 description = "Source implementation for Webflow."
 authors = [ "Airbyte <contact@airbyte.io>",]

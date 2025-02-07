@@ -41,6 +41,12 @@ Rate limiting is mentioned in the API [documentation](https://developer.twitter.
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.2.7 | 2025-02-01 | [53037](https://github.com/airbytehq/airbyte/pull/53037) | Update dependencies |
+| 0.2.6 | 2025-01-25 | [52432](https://github.com/airbytehq/airbyte/pull/52432) | Update dependencies |
+| 0.2.5 | 2025-01-18 | [51975](https://github.com/airbytehq/airbyte/pull/51975) | Update dependencies |
+| 0.2.4 | 2025-01-11 | [51426](https://github.com/airbytehq/airbyte/pull/51426) | Update dependencies |
+| 0.2.3 | 2025-01-04 | [50378](https://github.com/airbytehq/airbyte/pull/50378) | Update dependencies |
+| 0.2.2 | 2024-12-14 | [48192](https://github.com/airbytehq/airbyte/pull/48192) | Update dependencies |
 | 0.2.1 | 2024-10-29 | [44710](https://github.com/airbytehq/airbyte/pull/44710) | Update dependencies |
 | 0.2.0 | 2024-08-26 | [44777](https://github.com/airbytehq/airbyte/pull/44777) | Refactor connector to manifest-only format |
 | 0.1.15 | 2024-08-17 | [44289](https://github.com/airbytehq/airbyte/pull/44289) | Update dependencies |
