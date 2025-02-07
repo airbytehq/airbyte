@@ -11,11 +11,11 @@ from source_salesforce.rate_limiting import BulkNotSupportedException, Salesforc
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from source_salesforce.api import API_VERSION
 
 
 _ANY = "any"
 _ANY_BASE_URL = "https://any-base-url.com"
-_SF_API_VERSION = "v62.0"
 
 
 class SalesforceErrorHandlerTest(TestCase):
@@ -96,4 +96,4 @@ class SalesforceErrorHandlerTest(TestCase):
             return requests.request(http_method, url)
 
     def _url_for_job_creation(self) -> str:
-        return f"{_ANY_BASE_URL}/services/data/{_SF_API_VERSION}/jobs/query"
+        return f"{_ANY_BASE_URL}/services/data/{API_VERSION}/jobs/query"

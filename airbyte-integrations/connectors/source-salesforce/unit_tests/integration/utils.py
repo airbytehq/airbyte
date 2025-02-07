@@ -15,9 +15,8 @@ from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
+from source_salesforce.api import API_VERSION
 
-
-_API_VERSION = "v62.0"
 
 
 def _catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
@@ -29,7 +28,7 @@ def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Op
 
 
 def create_base_url(instance_url: str) -> str:
-    return f"{instance_url}/services/data/{_API_VERSION}"
+    return f"{instance_url}/services/data/{API_VERSION}"
 
 
 def read(
