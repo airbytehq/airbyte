@@ -76,7 +76,7 @@ args = [
 ]
 help = "Pin to a specific version of the CDK."
 
-[tool.poe.tasks.use-active-cdk-branch]
+[tool.poe.tasks.use-cdk-branch-active]
 shell = '''
     REPO_ROOT=$(git rev-parse --show-toplevel)
     ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
