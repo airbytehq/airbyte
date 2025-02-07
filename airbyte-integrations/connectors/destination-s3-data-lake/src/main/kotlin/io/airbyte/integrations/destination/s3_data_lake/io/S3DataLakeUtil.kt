@@ -40,6 +40,7 @@ import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_GLUE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_REST
 import org.apache.iceberg.FileFormat
+import org.apache.iceberg.rest.RESTCatalog
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
@@ -219,7 +220,10 @@ class S3DataLakeUtil(
             }
             is GlueCatalogConfiguration ->
                 buildGlueProperties(config, catalogConfig, icebergCatalogConfig, region)
-            is RestCatalogConfiguration -> buildRestProperties(config, catalogConfig, s3Properties)
+            is RestCatalogConfiguration -> {
+//                System.setProperty(AWS_REGION, region)
+                buildRestProperties(config, catalogConfig, s3Properties, region)
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"
@@ -230,8 +234,10 @@ class S3DataLakeUtil(
     private fun buildRestProperties(
         config: S3DataLakeConfiguration,
         catalogConfig: RestCatalogConfiguration,
-        s3Properties: Map<String, String>
+        s3Properties: Map<String, String>,
+        region: String
     ): Map<String, String> {
+        println(region)
         val awsAccessKeyId =
             requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
                 "AWS Access Key ID is required for Rest configuration"
@@ -243,6 +249,7 @@ class S3DataLakeUtil(
 
         val restProperties = buildMap {
             put(CatalogUtil.ICEBERG_CATALOG_TYPE, ICEBERG_CATALOG_TYPE_REST)
+            put(AwsClientProperties.CLIENT_REGION, region)
             put(URI, catalogConfig.serverUri)
             put(S3FileIOProperties.ACCESS_KEY_ID, awsAccessKeyId)
             put(S3FileIOProperties.SECRET_ACCESS_KEY, awsSecretAccessKey)
