@@ -55,8 +55,8 @@ abstract class S3DataLakeWriteTest(
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
         preserveUndeclaredFields = false,
-        commitDataIncrementally = false,
         supportFileTransfer = false,
+        commitDataIncrementally = false,
         allTypesBehavior =
             StronglyTyped(
                 integerCanBeLarge = false,
@@ -65,6 +65,7 @@ abstract class S3DataLakeWriteTest(
             ),
         nullUnknownTypes = true,
         nullEqualsUnset = true,
+        configUpdater = S3DataLakeConfigUpdater,
     ) {
     /**
      * This test differs from the base test in two critical aspects:
@@ -222,14 +223,8 @@ class GlueWriteTest :
                 )
             )
 
-        val failure = expectFailure { runSync(configContents, catalog, messages = emptyList()) }
+        val failure = expectFailure { runSync(updatedConfig, catalog, messages = emptyList()) }
         assertContains(failure.message, "Detected naming conflicts between streams")
-    }
-
-    @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
-    override fun testNamespaces() {
-        super.testNamespaces()
     }
 }
 
@@ -242,13 +237,7 @@ class GlueAssumeRoleWriteTest :
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
             )
         ),
-    ) {
-    @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
-    override fun testNamespaces() {
-        super.testNamespaces()
-    }
-}
+    )
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
