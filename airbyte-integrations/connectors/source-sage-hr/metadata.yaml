@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-sage-hr
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.31.1@sha256:7317b63149b57a89aaab067f65791ddc2756cb640e350c099c33657fa5605fed
   connectorSubtype: api
   connectorType: source
   definitionId: d8384215-9de6-4268-bbea-40c636ee14c7
-  dockerImageTag: 0.0.12
+  dockerImageTag: 0.0.13
   dockerRepository: airbyte/source-sage-hr
   githubIssueLabel: source-sage-hr
   icon: icon.svg

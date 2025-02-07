@@ -22,6 +22,7 @@ An Airbyte connector for Oveit enables seamless data synchronization by extracti
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.10 | 2025-02-01 | [52991](https://github.com/airbytehq/airbyte/pull/52991) | Update dependencies |
 | 0.0.9 | 2025-01-25 | [52499](https://github.com/airbytehq/airbyte/pull/52499) | Update dependencies |
 | 0.0.8 | 2025-01-18 | [51861](https://github.com/airbytehq/airbyte/pull/51861) | Update dependencies |
 | 0.0.7 | 2025-01-11 | [51309](https://github.com/airbytehq/airbyte/pull/51309) | Update dependencies |

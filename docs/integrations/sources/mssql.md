@@ -235,6 +235,27 @@ For further detail, see the
   EXEC sys.sp_cdc_start_job @job_type = 'cleanup';
 ```
 
+- If you were are using Transaction Replication then the retention has to be changed using below scripts :
+```text
+
+EXEC sp_changedistributiondb
+  @database = 'distribution',
+  @property = 'max_distretention',
+  @value = 14400 -- 14400 minutes (10 days)
+
+EXEC sp_changedistributiondb
+  @database = 'distribution',
+  @property = 'history_retention',
+  @value = 14400 -- 14400 minutes (10 days)
+
+USE [msdb]
+GO
+EXEC msdb.dbo.sp_update_jobstep @job_name=N'Distribution clean up: distribution', @step_id=1 ,
+		@command=N'EXEC dbo.sp_MSdistribution_cleanup @min_distretention = 0, @max_distretention = 14400'
+GO
+
+```
+
 #### 5. Ensure the SQL Server Agent is running
 
 - MSSQL uses the SQL Server Agent
@@ -424,6 +445,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------| :---------------------------------------------------------------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.20  | 2025-01-26 | [52556](https://github.com/airbytehq/airbyte/pull/52556)                                                              | Improve tables discovery during read.                                                                                                           |
 | 4.1.19  | 2025-01-16 | [51596](https://github.com/airbytehq/airbyte/pull/51596)                                                              | Bump driver versions to latest (jdbc, debezium, cdk)                                                                                            |
 | 4.1.18  | 2025-01-06 | [50943](https://github.com/airbytehq/airbyte/pull/50943)                                                              | Use airbyte/java-connector-base:2.0.0. This makes the image rootless. The connector will be incompatible with Airbyte < 0.64.                   |
 | 4.1.17  | 2024-12-17 | [49840](https://github.com/airbytehq/airbyte/pull/49840)                                                          | Use a base image: airbyte/java-connector-base:1.0.0                                                                                             |
