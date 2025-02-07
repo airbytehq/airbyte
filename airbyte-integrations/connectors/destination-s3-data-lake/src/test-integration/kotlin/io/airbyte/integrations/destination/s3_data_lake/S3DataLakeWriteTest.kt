@@ -289,7 +289,8 @@ class NessieMinioWriteTest :
                 "catalog_type": {
                   "catalog_type": "NESSIE",
                   "server_uri": "http://$nessieEndpoint:19120/api/v1",
-                  "access_token": "$authToken"
+                  "access_token": "$authToken",
+                  "namespace": "<DEFAULT_NAMESPACE_PLACEHOLDER>"
                 },
                 "s3_bucket_name": "demobucket",
                 "s3_bucket_region": "us-east-1",
