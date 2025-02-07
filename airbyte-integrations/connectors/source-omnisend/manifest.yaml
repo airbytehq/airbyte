@@ -3,8 +3,7 @@ version: 6.33.0
 type: DeclarativeSource
 
 description: >-
-  Updated schemas for all streams as some results returned by the Omnisend API
-  were failing schema validation.
+  Omnisend is a marketing automation platform for ecommerce businesses, focusing on email and SMS marketing.
 
 check:
   type: CheckStream
@@ -326,181 +325,15 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          klaviyo_$consent:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          klaviyo_$consent_form_id:
-            type:
-              - string
-              - "null"
-          klaviyo_$consent_form_version:
-            type:
-              - string
-              - "null"
-          klaviyo_$consent_method:
-            type:
-              - string
-              - "null"
-          klaviyo_$consent_timestamp:
-            type:
-              - string
-              - "null"
-          klaviyo_$current_month_rfm_group:
-            type:
-              - string
-              - "null"
-          klaviyo_$phone_number_region:
-            type:
-              - string
-              - "null"
-          klaviyo_$previous_month_rfm_group:
-            type:
-              - string
-              - "null"
-          klaviyo_$sms_consent_method:
-            type:
-              - string
-              - "null"
-          klaviyo_$source:
-            type:
-              - string
-              - "null"
-          klaviyo_CurrentRFMgroup:
-            type:
-              - string
-              - "null"
-          klaviyo_Expected Date Of Next Order:
-            type:
-              - string
-              - "null"
-          klaviyo_ExpectedDateOfNextOrder:
-            type:
-              - string
-              - "null"
-          klaviyo_First Purchase Date:
-            type:
-              - string
-              - "null"
-          klaviyo_FirstPurchaseDate:
-            type:
-              - string
-              - "null"
-          klaviyo_MailChimp Rating:
-            type:
-              - string
-              - "null"
-          klaviyo_MailChimpRating:
-            type:
-              - string
-              - "null"
-          klaviyo_PreviousRFMgroup:
-            type:
-              - string
-              - "null"
-          klaviyo_RFMgrouplastchanged:
-            type:
-              - string
-              - "null"
-          klaviyo_VIP:
-            type:
-              - boolean
-              - "null"
-          klaviyo__kx:
-            type:
-              - string
-              - "null"
-          klaviyo_consent:
-            anyOf:
-              - type: string
-              - type: array
-                items:
-                  type: string
-          klaviyo_consent_form_id:
-            type:
-              - string
-              - "null"
-          klaviyo_consent_form_version:
-            type:
-              - string
-              - "null"
-          klaviyo_consent_method:
-            type:
-              - string
-              - "null"
-          klaviyo_consent_text:
-            type:
-              - string
-              - "null"
-          klaviyo_consent_timestamp:
-            type:
-              - string
-              - "null"
-          klaviyo_country:
-            type:
-              - string
-              - "null"
-          klaviyo_country__transformed:
-            type:
-              - string
-              - "null"
-          klaviyo_first_name__transformed:
-            type:
-              - string
-              - "null"
-          klaviyo_interest category:
-            type:
-              - string
-              - "null"
-          klaviyo_interestcategory:
-            type:
-              - string
-              - "null"
-          klaviyo_last_active_date:
-            type:
-              - string
-              - "null"
-          klaviyo_oir_csync:
-            type:
-              - string
-              - "null"
-          klaviyo_phone:
-            type:
-              - string
-              - "null"
-          klaviyo_phone_number_region:
-            type:
-              - string
-              - "null"
-          klaviyo_region__transformed:
-            type:
-              - string
-              - "null"
-          klaviyo_sms_consent_method:
-            type:
-              - string
-              - "null"
-          klaviyo_source:
-            type:
-              - string
-              - "null"
-          klaviyo_wcsubproduct2236:
-            type:
-              - string
-              - "null"
-          klaviyo_wcsubproduct615063:
-            type:
-              - string
-              - "null"
-          zapier_SOURCEURL:
-            type:
-              - string
-              - "null"
+        additionalProperties:
+          anyOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: array
+              items:
+                type: string
+            - type: "null"
       email:
         type:
           - string
