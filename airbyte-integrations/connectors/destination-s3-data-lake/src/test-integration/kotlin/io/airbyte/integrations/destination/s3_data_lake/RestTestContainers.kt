@@ -19,6 +19,9 @@ object RestTestContainers {
         ComposeContainer(composeFile)
             .withExposedService("minio", 9000)
             .withExposedService("rest", 8181)
+            // we don't directly interact with spark,
+            // but this container depends on minio+rest,
+            // so it's an easy proxy for everything being started.
             .withExposedService("spark-iceberg", 8080)
     private val startRestContainerRunOnce = AtomicBoolean(false)
 
