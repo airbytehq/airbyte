@@ -10,6 +10,7 @@ import org.apache.iceberg.FileFormat
 import org.apache.iceberg.PartitionKey
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
+import org.apache.iceberg.Table
 import org.apache.iceberg.data.InternalRecordWrapper
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.io.FileAppenderFactory
@@ -23,6 +24,7 @@ import org.apache.iceberg.util.Tasks
  * partitioned Iceberg [org.apache.iceberg.Table].
  */
 class PartitionedDeltaWriter(
+    table: Table,
     spec: PartitionSpec,
     format: FileFormat,
     appenderFactory: FileAppenderFactory<Record>,
@@ -33,6 +35,7 @@ class PartitionedDeltaWriter(
     identifierFieldIds: Set<Int>,
 ) :
     BaseDeltaTaskWriter(
+        table,
         spec,
         format,
         appenderFactory,
