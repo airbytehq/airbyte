@@ -2067,16 +2067,16 @@ api_budget:
     # Profiles (and global_exclusions share the same endpoint)
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 0.0167 # burst: 0.0167 calls per second
-          interval: PT1S
+        - limit: 10 # burst: 0.0167 calls per second
+          interval: PT1M
       matchers:
         - method: GET
           url_path_pattern: "orders/v0/orders(\\?.*)?$" # matches '/orders' (exact or with trailing slash/extra)
     # Lists Detailed (uses a different URL path – note the extra segment)
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 0.5 # burst: 0.5 call per second
-          interval: PT1S
+        - limit: 1 # burst: 0.5 call per second
+          interval: PT2S
       matchers:
         - method: GET
           url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
