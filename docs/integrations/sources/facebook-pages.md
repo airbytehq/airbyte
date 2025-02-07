@@ -88,6 +88,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.0  | 2024-10-23 | [47325](https://github.com/airbytehq/airbyte/pull/47325) | Migrate to Manifest-only |
 | 1.0.32 | 2025-02-01 | [52793](https://github.com/airbytehq/airbyte/pull/52793) | Update dependencies |
 | 1.0.31  | 2025-01-27 | [52122](https://github.com/airbytehq/airbyte/pull/52122/files) | Upgrade Facebook API to v21.0                                                                                                                                          |
 | 1.0.30  | 2025-01-25 | [52373](https://github.com/airbytehq/airbyte/pull/52373) | Update dependencies |
