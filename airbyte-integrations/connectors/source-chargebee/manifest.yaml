@@ -580,9 +580,16 @@ definitions:
             cursor_value: "{{ response.get('next_offset')|tojson() }}"
             stop_condition: "{{ not response.next_offset }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ format_datetime(config[''start_date''], ''%s'') }}'
+          datetime_format: '%s'
+        datetime_format: '%s'
+        cursor_datetime_formats:
+          - '%s'
+        is_client_side_incremental: true
       transformations:
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.CustomFieldTransformation
@@ -1461,9 +1468,16 @@ definitions:
             cursor_value: "{{ response.get('next_offset')|tojson() }}"
             stop_condition: "{{ not response.next_offset }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ format_datetime(config[''start_date''], ''%s'') }}'
+          datetime_format: '%s'
+        datetime_format: '%s'
+        cursor_datetime_formats:
+          - '%s'
+        is_client_side_incremental: true
       transformations:
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.CustomFieldTransformation
@@ -1742,9 +1756,16 @@ definitions:
             cursor_value: "{{ response.get('next_offset')|tojson() }}"
             stop_condition: "{{ not response.next_offset }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+        type: DatetimeBasedCursor
         cursor_field: migrated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ format_datetime(config[''start_date''], ''%s'') }}'
+          datetime_format: '%s'
+        datetime_format: '%s'
+        cursor_datetime_formats:
+          - '%s'
+        is_client_side_incremental: true
       transformations:
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.CustomFieldTransformation
