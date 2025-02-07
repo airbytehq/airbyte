@@ -313,8 +313,11 @@ abstract class IntegrationTest(
         fun isNamespaceOld(namespace: String, retentionDays: Long = 30): Boolean {
             val cleanupCutoffDate = LocalDate.now().minusDays(retentionDays)
             val matchResult = randomizedNamespaceRegex.find(namespace)
+            if (matchResult == null || matchResult.groups.isEmpty()) {
+                return false
+            }
             val namespaceCreationDate =
-                LocalDate.parse(matchResult!!.groupValues[1], randomizedNamespaceDateFormatter)
+                LocalDate.parse(matchResult.groupValues[1], randomizedNamespaceDateFormatter)
             return namespaceCreationDate.isBefore(cleanupCutoffDate)
         }
 
