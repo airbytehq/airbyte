@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.Overwrite
 import jakarta.inject.Singleton
 import java.util.UUID
 import org.apache.iceberg.FileFormat
+import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT
@@ -38,7 +39,12 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
      * @param importType The [ImportType] of the sync job.
      * @return The [BaseTaskWriter] that writes records to the target [Table].
      */
-    fun create(table: Table, generationId: String, importType: ImportType): BaseTaskWriter<Record> {
+    fun create(
+        table: Table,
+        generationId: String,
+        importType: ImportType,
+        schema: Schema
+    ): BaseTaskWriter<Record> {
         s3DataLakeUtil.assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
             FileFormat.valueOf(
@@ -49,7 +55,11 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
             )
         val identifierFieldIds = table.schema().identifierFieldIds()
         val appenderFactory =
-            createAppenderFactory(table = table, identifierFieldIds = identifierFieldIds)
+            createAppenderFactory(
+                table = table,
+                schema = schema,
+                identifierFieldIds = identifierFieldIds
+            )
         val outputFileFactory =
             createOutputFileFactory(table = table, format = format, generationId = generationId)
         val targetFileSize =
@@ -82,10 +92,11 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
 
     private fun createAppenderFactory(
         table: Table,
+        schema: Schema,
         identifierFieldIds: Set<Int>?
     ): GenericAppenderFactory {
         return GenericAppenderFactory(
-                table.schema(),
+                schema,
                 table.spec(),
                 identifierFieldIds?.toIntArray(),
                 if (identifierFieldIds != null)

@@ -31,6 +31,7 @@ class S3DataLakeStreamLoader(
     private val mainBranchName: String
 ) : StreamLoader {
     private lateinit var table: Table
+    private lateinit var schemaUpdateResult: SchemaUpdateResult
     private val pipeline = IcebergParquetPipelineFactory().create(stream)
 
     @SuppressFBWarnings(
@@ -56,11 +57,12 @@ class S3DataLakeStreamLoader(
             } else {
                 ColumnTypeChangeBehavior.SAFE_SUPERTYPE
             }
-        s3DataLakeTableSynchronizer.applySchemaChanges(
-            table,
-            incomingSchema,
-            columnTypeChangeBehavior
-        )
+        schemaUpdateResult =
+            s3DataLakeTableSynchronizer.applySchemaChanges(
+                table,
+                incomingSchema,
+                columnTypeChangeBehavior
+            )
 
         try {
             logger.info {
@@ -83,7 +85,8 @@ class S3DataLakeStreamLoader(
             .create(
                 table = table,
                 generationId = s3DataLakeUtil.constructGenerationIdSuffix(stream),
-                importType = stream.importType
+                importType = stream.importType,
+                schema = schemaUpdateResult.schema,
             )
             .use { writer ->
                 logger.info { "Writing records to branch $stagingBranchName" }
@@ -121,6 +124,8 @@ class S3DataLakeStreamLoader(
             logger.info {
                 "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
             }
+            schemaUpdateResult.pendingUpdate?.commit()
+            table.refresh()
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
             if (stream.minimumGenerationId > 0) {
                 logger.info {

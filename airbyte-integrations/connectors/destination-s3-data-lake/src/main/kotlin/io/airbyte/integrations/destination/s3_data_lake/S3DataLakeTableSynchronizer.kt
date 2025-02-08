@@ -58,13 +58,13 @@ class S3DataLakeTableSynchronizer(
         table: Table,
         incomingSchema: Schema,
         columnTypeChangeBehavior: ColumnTypeChangeBehavior,
-    ): Schema {
+    ): SchemaUpdateResult {
         val existingSchema = table.schema()
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
         if (!diff.hasChanges()) {
             // If no differences, return the existing schema as-is.
-            return existingSchema
+            return SchemaUpdateResult(existingSchema, pendingUpdate = null)
         }
 
         val update: UpdateSchema = table.updateSchema().allowIncompatibleChanges()
@@ -161,9 +161,12 @@ class S3DataLakeTableSynchronizer(
         }
 
         // Commit all changes and refresh the table schema
-        update.commit()
-        table.refresh()
-
-        return table.schema()
+        val newSchema: Schema = update.apply()
+        return SchemaUpdateResult(newSchema, update)
+        //        table.refresh()
+        //
+        //        return table.schema()
     }
 }
+
+data class SchemaUpdateResult(val schema: Schema, val pendingUpdate: UpdateSchema?)
