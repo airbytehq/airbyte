@@ -1,0 +1,1228 @@
+version: 6.13.0
+
+type: DeclarativeSource
+
+description: Added holidays and scheduling streams to fetching
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workspaces/{{ config['workspace_id'] }}/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page-size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workspaces/{{ config['workspace_id'] }}/projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page-size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    clients:
+      type: DeclarativeStream
+      name: clients
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workspaces/{{ config['workspace_id'] }}/clients
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page-size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clients"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workspaces/{{ config['workspace_id'] }}/tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page-size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    user_groups:
+      type: DeclarativeStream
+      name: user_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workspaces/{{ config['workspace_id'] }}/user-groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page-size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_groups"
+    time_entries:
+      type: DeclarativeStream
+      name: time_entries
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            workspaces/{{ config['workspace_id'] }}/user/{{
+            stream_partition.user_id}}/time-entries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page-size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: user_id
+              stream:
+                $ref: "#/definitions/streams/users"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_entries"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            workspaces/{{ config['workspace_id'] }}/projects/{{
+            stream_partition.project_id}}/tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page-size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    scheduling:
+      type: DeclarativeStream
+      name: scheduling
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workspaces/{{ config['workspace_id'] }}/scheduling/assignments/all
+          http_method: GET
+          request_parameters:
+            end: "{{ config['end'] }}"
+            start: "{{ config['start'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page-size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scheduling"
+    holidays:
+      type: DeclarativeStream
+      name: holidays
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workspaces/{{ config['workspace_id'] }}/holidays/in-period
+          http_method: GET
+          request_parameters:
+            end: "{{ config['end'] }}"
+            start: "{{ config['start'] }}"
+            assigned-to: 632f3e3cac734c5cfa77b8e1
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/holidays"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.clockify.me/api/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      path: workspaces/{{ config['workspace_id'] }}/users
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Api-Key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/clients"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/user_groups"
+  - $ref: "#/definitions/streams/time_entries"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/scheduling"
+  - $ref: "#/definitions/streams/holidays"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - workspace_id
+      - start
+      - end
+    properties:
+      api_key:
+        type: string
+        description: >-
+          You can get your api access_key <a
+          href="https://app.clockify.me/user/settings">here</a> This API is Case
+          Sensitive.
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      api_url:
+        type: string
+        description: >-
+          The URL for the Clockify API. This should only need to be modified if
+          connecting to an enterprise version of Clockify.
+        order: 1
+        title: API Url
+        default: https://api.clockify.me
+      workspace_id:
+        type: string
+        description: WorkSpace Id
+        order: 2
+        title: Workspace Id
+      start:
+        type: string
+        description: Represents start date in yyyy-MM-ddThh:mm:ssZ format.
+        order: 3
+        title: "Start Date "
+        format: date-time
+        default: "2024-01-01T00:00:00Z"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      end:
+        type: string
+        description: Represents start date in yyyy-MM-ddThh:mm:ssZ format.
+        order: 4
+        title: End Date
+        format: date-time
+        default: "2024-12-31T00:00:00Z"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: false
+    projects: false
+    clients: false
+    tags: false
+    user_groups: false
+    time_entries: false
+    tasks: false
+    scheduling: false
+    holidays: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    users:
+      streamHash: 18bc63fa0102d543de4a58e0188f2afb43a47004
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    projects:
+      streamHash: 1bf751b1e7f2689a886fc34b01ff81e5df3d559a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    clients:
+      hasRecords: true
+      streamHash: 07c6f8ae3bb1c2aa2f6a11fbc41f0567d3afc26f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tags:
+      hasRecords: true
+      streamHash: 861769bbc718cd6969d41fd5120ada5e963db191
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user_groups:
+      hasRecords: true
+      streamHash: f2baf23b5de00740f50239a592477b63b6fd7fc6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    time_entries:
+      streamHash: c85848bd45241a8f49dbf9d5897fc53ac34248dd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      streamHash: 618cab8e3159a66490d989c10368dc38ad081b56
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    scheduling:
+      streamHash: 0fc20530b356de14c8af12f81fd55e6476082c10
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    holidays:
+      hasRecords: true
+      streamHash: 4724eb9f898e85394fc59f6c9c8be71532e57cf5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      activeWorkspace:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - array
+          - "null"
+      defaultWorkspace:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      memberships:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      profilePicture:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          alerts:
+            type:
+              - boolean
+              - "null"
+          approval:
+            type:
+              - boolean
+              - "null"
+          collapseAllProjectLists:
+            type:
+              - boolean
+              - "null"
+          dashboardPinToTop:
+            type:
+              - boolean
+              - "null"
+          dashboardSelection:
+            type:
+              - string
+              - "null"
+          dashboardViewType:
+            type:
+              - string
+              - "null"
+          dateFormat:
+            type:
+              - string
+              - "null"
+          groupSimilarEntriesDisabled:
+            type:
+              - boolean
+              - "null"
+          isCompactViewOn:
+            type:
+              - boolean
+              - "null"
+          lang:
+            type:
+              - string
+              - "null"
+          longRunning:
+            type:
+              - boolean
+              - "null"
+          multiFactorEnabled:
+            type:
+              - boolean
+              - "null"
+          myStartOfDay:
+            type:
+              - string
+              - "null"
+          onboarding:
+            type:
+              - boolean
+              - "null"
+          projectListCollapse:
+            type:
+              - number
+              - "null"
+          projectPickerTaskFilter:
+            type:
+              - boolean
+              - "null"
+          pto:
+            type:
+              - boolean
+              - "null"
+          reminders:
+            type:
+              - boolean
+              - "null"
+          scheduledReports:
+            type:
+              - boolean
+              - "null"
+          scheduling:
+            type:
+              - boolean
+              - "null"
+          sendNewsletter:
+            type:
+              - boolean
+              - "null"
+          showOnlyWorkingDays:
+            type:
+              - boolean
+              - "null"
+          summaryReportSettings:
+            type:
+              - object
+              - "null"
+            properties:
+              group:
+                type:
+                  - string
+                  - "null"
+              subgroup:
+                type:
+                  - string
+                  - "null"
+          theme:
+            type:
+              - string
+              - "null"
+          timeFormat:
+            type:
+              - string
+              - "null"
+          timeTrackingManual:
+            type:
+              - boolean
+              - "null"
+          timeZone:
+            type:
+              - string
+              - "null"
+          weekStart:
+            type:
+              - string
+              - "null"
+          weeklyUpdates:
+            type:
+              - boolean
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+    additionalProperties: true
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      archived:
+        type:
+          - boolean
+          - "null"
+      billable:
+        type:
+          - boolean
+          - "null"
+      budgetEstimate:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          estimate:
+            type:
+              - number
+              - "null"
+          includeExpenses:
+            type:
+              - boolean
+              - "null"
+          resetOption:
+            type:
+              - string
+              - "null"
+      clientId:
+        type:
+          - string
+          - "null"
+      clientName:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      costRate:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      estimate:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          estimate:
+            type:
+              - string
+              - "null"
+      estimateReset:
+        type:
+          - object
+          - "null"
+        properties:
+          dayOfMonth:
+            type:
+              - number
+              - "null"
+          dayOfWeek:
+            type:
+              - string
+              - "null"
+          hour:
+            type:
+              - number
+              - "null"
+          interval:
+            type:
+              - string
+              - "null"
+          month:
+            type:
+              - string
+              - "null"
+      hourlyRate:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      memberships:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            costRate:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - number
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            hourlyRate:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - number
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            membershipStatus:
+              type:
+                - string
+                - "null"
+            membershipType:
+              type:
+                - string
+                - "null"
+            targetId:
+              type:
+                - string
+                - "null"
+            userId:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      public:
+        type:
+          - boolean
+          - "null"
+      template:
+        type:
+          - boolean
+          - "null"
+      timeEstimate:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          estimate:
+            type:
+              - string
+              - "null"
+          includeNonBillable:
+            type:
+              - boolean
+              - "null"
+          resetOption:
+            type:
+              - string
+              - "null"
+      workspaceId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  clients:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - "null"
+          - string
+        description: Client's physical address.
+      archived:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the client is archived (true) or active (false).
+      email:
+        type:
+          - "null"
+          - string
+        description: Client's contact email address.
+      id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the client.
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the client.
+      note:
+        type:
+          - "null"
+          - string
+        description: Additional notes related to the client.
+      workspaceId:
+        type:
+          - "null"
+          - string
+        description: Identifier for the workspace to which the client belongs.
+  tags:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      archived:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the tag is archived or active.
+      id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the tag.
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the tag.
+      workspaceId:
+        type:
+          - "null"
+          - string
+        description: Identifier of the workspace to which the tag belongs.
+  user_groups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the user group.
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the user group.
+      userIds:
+        type:
+          - "null"
+          - array
+        description: List of user IDs belonging to the user group.
+        items:
+          type:
+            - "null"
+            - string
+          description: User ID of a member in the group.
+      workspaceId:
+        type:
+          - "null"
+          - string
+        description: Identifier for the workspace to which the user group belongs.
+  time_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      billable:
+        type:
+          - boolean
+          - "null"
+      costRate:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      customFieldValues:
+        type:
+          - array
+          - "null"
+      hourlyRate:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isLocked:
+        type:
+          - boolean
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      tagIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      taskId:
+        type:
+          - string
+          - "null"
+      timeInterval:
+        type:
+          - object
+          - "null"
+        properties:
+          duration:
+            type:
+              - string
+              - "null"
+          end:
+            type:
+              - string
+              - "null"
+          start:
+            type:
+              - string
+              - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      workspaceId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      assigneeIds:
+        type:
+          - array
+          - "null"
+      billable:
+        type:
+          - boolean
+          - "null"
+      budgetEstimate:
+        type:
+          - number
+          - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      estimate:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      userGroupIds:
+        type:
+          - array
+          - "null"
+    additionalProperties: true
+  scheduling:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      billable:
+        type:
+          - boolean
+          - "null"
+      clientId:
+        type:
+          - string
+          - "null"
+      clientName:
+        type:
+          - string
+          - "null"
+      hoursPerDay:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      period:
+        type:
+          - object
+          - "null"
+        properties:
+          end:
+            type:
+              - string
+              - "null"
+          start:
+            type:
+              - string
+              - "null"
+      projectArchived:
+        type:
+          - boolean
+          - "null"
+      projectBillable:
+        type:
+          - boolean
+          - "null"
+      projectColor:
+        type:
+          - string
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      projectName:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      userName:
+        type:
+          - string
+          - "null"
+      workspaceId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  holidays:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      automaticTimeEntryCreation:
+        type:
+          - boolean
+          - "null"
+      datePeriod:
+        type:
+          - object
+          - "null"
+        properties:
+          endDate:
+            type:
+              - string
+              - "null"
+          startDate:
+            type:
+              - string
+              - "null"
+      everyoneIncludingNew:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      occursAnnually:
+        type:
+          - boolean
+          - "null"
+      userGroupIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      userIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      workspaceId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
