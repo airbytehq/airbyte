@@ -421,7 +421,7 @@ public class MssqlInitialReadUtil {
     // if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) {
     // LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}",
     // stream.getStream().getNamespace(), stream.getStream().getName());
-    // } // TODO: validate the seleted column rather than primary key
+    // }
     final Map<String, List<String>> clusterdIndexField = discoverClusteredIndexForStream(database, stream.getStream());
     final String streamName = getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
     final List<List<String>> primaryKey = stream.getStream().getSourceDefinedPrimaryKey();
@@ -429,13 +429,13 @@ public class MssqlInitialReadUtil {
 
     final List<String> clusterColumns = Optional.ofNullable(clusterdIndexField)
         .map(map -> map.get(streamName))
-        .orElse(null);
+        .orElse(new ArrayList<>());
 
-    // Use the clustered key only if it isn't composite, otherwise use the primary key.
-    if (clusterColumns != null && clusterColumns.size() == 1) {
+    // Use the clustered index unless it is composite. Otherwise, default to the primary key.
+    if (clusterColumns.size() == 1) {
       ocFieldName = clusterColumns.getFirst();
-      LOGGER.info("Composite cluster key was found. Defaulting to primary key if exist.");
     } else if (!primaryKey.isEmpty()) {
+      LOGGER.info("Clustered index is empty or composite. Defaulting to primary key.");
       ocFieldName = primaryKey.getFirst().getFirst();
     } else {
       return Optional.empty();

@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.cdk.db.jdbc.JdbcUtils.getFullyQualifiedTableName;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -154,7 +153,7 @@ class MssqlSourceTest {
   }
 
   @Test
-  void testDiscoverWithClusteredCompositeKey() throws SQLException {
+  void testDiscoverWithClusteredCompositeIndex() throws SQLException {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);")
@@ -176,7 +175,35 @@ class MssqlSourceTest {
   }
 
   @Test
-  void testPkNonClustered() throws SQLException {
+  void testUsingPkWhenClusteredCompositeIndex() throws SQLException {
+    testdb
+        .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
+        .with("CREATE INDEX i1 ON id_and_name (id);")
+        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (id, name)");
+    final AirbyteCatalog actual = source().discover(getConfig());
+    assertEquals(CATALOG, actual);
+    final var db = source().createDatabase(getConfig());
+
+    AirbyteStream stream = new AirbyteStream().withName(
+        actual.getStreams().getFirst().getName()).withNamespace(actual.getStreams().getFirst().getNamespace())
+        .withSourceDefinedPrimaryKey(actual.getStreams().getFirst().getSourceDefinedPrimaryKey());
+
+    ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withSyncMode(
+        SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(stream);
+
+    final List<List<String>> primaryKey = configuredAirbyteStream.getStream().getSourceDefinedPrimaryKey();
+    Optional<String> oc = MssqlSource.getOCInfo(db, configuredAirbyteStream);
+
+    assertEquals(primaryKey.getFirst().getFirst(), oc.orElse("No oc"));
+
+  }
+
+  @Test
+  void testNonClusteredIndex() throws SQLException {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);");
@@ -185,87 +212,46 @@ class MssqlSourceTest {
     final var db = source().createDatabase(getConfig());
 
     AirbyteStream stream = new AirbyteStream().withName(
-        actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace())
-        .withSourceDefinedPrimaryKey(actual.getStreams().get(0).getSourceDefinedPrimaryKey());
+        actual.getStreams().getFirst().getName()).withNamespace(actual.getStreams().getFirst().getNamespace())
+        .withSourceDefinedPrimaryKey(actual.getStreams().getFirst().getSourceDefinedPrimaryKey());
 
-    final List<List<String>> primaryKey = stream.getSourceDefinedPrimaryKey();
+    ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withSyncMode(
+        SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(stream);
 
-    assertEquals("id", primaryKey.getFirst().getFirst());
+    Optional<String> oc = MssqlSource.getOCInfo(db, configuredAirbyteStream);
+    final List<List<String>> primaryKey = configuredAirbyteStream.getStream().getSourceDefinedPrimaryKey();
 
-  }
-
-  @Test
-  void testUsingPkWhenClusteredCompositeKey() throws SQLException {
-    testdb
-        .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
-        .with("CREATE INDEX i1 ON id_and_name (id);")
-        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (id, name)");
-    final AirbyteCatalog actual = source().discover(getConfig());
-    assertEquals(CATALOG, actual);
-    final var db = source().createDatabase(getConfig());
-
-    // Testing the getOrderedColumnInfo functionality
-    AirbyteStream stream = new AirbyteStream().withName(
-        actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace())
-        .withSourceDefinedPrimaryKey(actual.getStreams().get(0).getSourceDefinedPrimaryKey());
-
-    Map<String, List<String>> clusterdIndexField = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db, stream);
-
-    final String streamName = getFullyQualifiedTableName(stream.getNamespace(), stream.getName());
-    final List<List<String>> primaryKey = stream.getSourceDefinedPrimaryKey();
-    final String ocFieldName;
-
-    final List<String> clusterColumns = Optional.ofNullable(clusterdIndexField)
-        .map(map -> map.get(streamName))
-        .orElse(null);
-
-    // Use the clustered key only if it isn't composite, otherwise use the primary key.
-    if (clusterColumns != null && clusterColumns.size() == 1) {
-      ocFieldName = clusterColumns.getFirst();
-    } else if (!primaryKey.isEmpty()) {
-      ocFieldName = primaryKey.getFirst().getFirst();
-    } else {
-      ocFieldName = null;
-    }
-
-    assertEquals(primaryKey.getFirst().getFirst(), ocFieldName);
+    assertEquals(primaryKey.getFirst().getFirst(), oc.orElse("No oc"));
 
   }
 
   @Test
-  void testCompositeClusterKeyWithNoPK() throws SQLException {
+  void testNonClusteredIndexNoPK() throws SQLException {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);")
-        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (id, name)");
+        .with("CREATE NONCLUSTERED INDEX n1 ON id_and_name (name)");
     final AirbyteCatalog actual = source().discover(getConfig());
     assertEquals(CATALOG, actual);
     final var db = source().createDatabase(getConfig());
 
-    // Not sending a PK, should default to null
     AirbyteStream stream = new AirbyteStream().withName(
-        actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace());
+        actual.getStreams().getFirst().getName()).withNamespace(actual.getStreams().getFirst().getNamespace());
 
-    Map<String, List<String>> clusterdIndexField = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db, stream);
+    ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withSyncMode(
+        SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(stream);
 
-    final String streamName = getFullyQualifiedTableName(stream.getNamespace(), stream.getName());
-    final List<List<String>> primaryKey = stream.getSourceDefinedPrimaryKey();
-    final String ocFieldName;
+    Optional<String> oc = MssqlSource.getOCInfo(db, configuredAirbyteStream);
 
-    final List<String> clusterColumns = Optional.ofNullable(clusterdIndexField)
-        .map(map -> map.get(streamName))
-        .orElse(null);
-
-    // Use the clustered key only if it isn't composite, otherwise use the primary key.
-    if (clusterColumns != null && clusterColumns.size() == 1) {
-      ocFieldName = clusterColumns.getFirst();
-    } else if (!primaryKey.isEmpty()) {
-      ocFieldName = primaryKey.getFirst().getFirst();
-    } else {
-      ocFieldName = null;
-    }
-
-    assertNull(ocFieldName);
+    assert (oc.isEmpty());
 
   }
 
