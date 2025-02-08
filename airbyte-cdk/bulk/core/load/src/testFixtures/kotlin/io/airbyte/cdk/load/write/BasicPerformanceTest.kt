@@ -109,6 +109,7 @@ abstract class BasicPerformanceTest(
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val dataValidator: DataValidator? = null,
     val micronautProperties: Map<Property, String> = emptyMap(),
+    namespaceOverride: String? = null,
 ) {
 
     protected val destinationProcessFactory = DestinationProcessFactory.get(emptyList())
@@ -117,6 +118,9 @@ abstract class BasicPerformanceTest(
     private lateinit var testPrettyName: String
 
     val randomizedNamespace = run {
+        if (namespaceOverride != null) {
+            return@run namespaceOverride
+        }
         val randomSuffix = RandomStringUtils.secure().nextAlphabetic(4)
         val randomizedNamespaceDateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
         val timestampString =
