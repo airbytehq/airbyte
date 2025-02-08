@@ -693,7 +693,7 @@ schemas:
             description: A boolean value which indicates eligibility boost.
             type:
               - "null"
-              - boolean        
+              - boolean
       permalink:
         description: The permanent link to the media item on Instagram.
         type:
@@ -829,12 +829,12 @@ schemas:
         description: Total number of times the video IG Media has been seen..
         type:
           - "null"
-          - integer    
+          - integer
       reach:
         description: The number of unique users who have seen the media.
         type:
           - "null"
-          - integer 
+          - integer
       saved:
         description: The number of times users have saved the media.
         type:

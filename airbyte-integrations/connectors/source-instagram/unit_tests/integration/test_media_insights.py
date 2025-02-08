@@ -92,7 +92,7 @@ _METRICS = {
         "views",
         "total_interactions",
     ],
-    MEDIA_ID_VIDEO_FEED: ["impressions", "reach", "saved", "views","total_interactions"],
+    MEDIA_ID_VIDEO_FEED: ["impressions", "reach", "saved", "views", "total_interactions"],
     MEDIA_ID_VIDEO: ["impressions", "reach", "saved", "likes", "comments", "shares", "follows", "profile_visits"],
     MEDIA_ID_CAROUSEL_ALBUM: ["impressions", "reach", "saved", "shares", "follows", "profile_visits"],
     MEDIA_ID_GENERAL_MEDIA: METRICS_GENERAL_MEDIA,
