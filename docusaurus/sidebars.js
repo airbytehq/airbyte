@@ -236,7 +236,72 @@ const buildAConnector = {
         },
       ],
     },
-
+    {
+      type: "category",
+      label: "Low-Code CDK",
+      items: [
+        {
+          label: "Low-Code CDK Intro",
+          type: "doc",
+          id: "connector-development/config-based/low-code-cdk-overview",
+        },
+        {
+          type: "category",
+          label: "Tutorial",
+          items: [
+            "connector-development/config-based/tutorial/getting-started",
+            "connector-development/config-based/tutorial/create-source",
+            "connector-development/config-based/tutorial/install-dependencies",
+            "connector-development/config-based/tutorial/connecting-to-the-API-source",
+            "connector-development/config-based/tutorial/reading-data",
+            "connector-development/config-based/tutorial/incremental-reads",
+            "connector-development/config-based/tutorial/testing",
+          ],
+        },
+        {
+          type: "category",
+          label: "Understanding the YAML file",
+          link: {
+            type: "doc",
+            id: "connector-development/config-based/understanding-the-yaml-file/yaml-overview",
+          },
+          items: [
+            {
+              type: `category`,
+              label: `Requester`,
+              link: {
+                type: "doc",
+                id: "connector-development/config-based/understanding-the-yaml-file/requester",
+              },
+              items: [
+                "connector-development/config-based/understanding-the-yaml-file/request-options",
+                "connector-development/config-based/understanding-the-yaml-file/authentication",
+                "connector-development/config-based/understanding-the-yaml-file/error-handling",
+              ],
+            },
+            "connector-development/config-based/understanding-the-yaml-file/incremental-syncs",
+            "connector-development/config-based/understanding-the-yaml-file/pagination",
+            "connector-development/config-based/understanding-the-yaml-file/partition-router",
+            "connector-development/config-based/understanding-the-yaml-file/record-selector",
+            "connector-development/config-based/understanding-the-yaml-file/reference",
+          ],
+        },
+        {
+          type: "category",
+          label: "Advanced Topics",
+          items: [
+            "connector-development/config-based/advanced-topics/component-schema-reference",
+            "connector-development/config-based/advanced-topics/custom-components",
+            "connector-development/config-based/advanced-topics/oauth",
+            "connector-development/config-based/advanced-topics/how-framework-works",
+            "connector-development/config-based/advanced-topics/object-instantiation",
+            "connector-development/config-based/advanced-topics/parameters",
+            "connector-development/config-based/advanced-topics/references",
+            "connector-development/config-based/advanced-topics/string-interpolation",
+          ]
+        },
+      ],
+    },
 
     {
       type: "category",
