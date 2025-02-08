@@ -55,13 +55,11 @@ class MSSQLDataValidator : DataValidator {
 
 class MSSQLPerformanceTest :
     BasicPerformanceTest(
-//        configContents = Files.readString(MSSQLTestConfigUtil.getConfigPath("check/valid.json")),
-        configContents = Files.readString(MSSQLTestConfigUtil.getConfigPath("check/remote-test.json")),
+        configContents = Files.readString(MSSQLTestConfigUtil.getConfigPath("check/valid.json")),
         configSpecClass = MSSQLSpecification::class.java,
-//        configUpdater = MSSQLConfigUpdater(),
-//        dataValidator = MSSQLDataValidator(),
+        configUpdater = MSSQLConfigUpdater(),
+        dataValidator = MSSQLDataValidator(),
         defaultRecordsToInsert = 10000,
-        namespaceOverride = "manualtest",
     ) {
 
     @Test
