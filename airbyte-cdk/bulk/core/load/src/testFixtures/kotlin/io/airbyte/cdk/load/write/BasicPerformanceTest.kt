@@ -159,6 +159,44 @@ abstract class BasicPerformanceTest(
     }
 
     @Test
+    open fun testRefreshingRecords() {
+        testRefreshingRecords(validation = null)
+    }
+
+    protected fun testRefreshingRecords(
+        recordsToInsert: Long? = null,
+        validation: ValidationFunction?,
+    ) {
+        runSync(
+            testScenario =
+            SingleStreamInsert(
+                idColumn = idColumn,
+                columns = twoStringColumns,
+                recordsToInsert = recordsToInsert ?: defaultRecordsToInsert,
+                randomizedNamespace = randomizedNamespace,
+                streamName = testInfo.testMethod.get().name,
+                generationId = 0,
+                minGenerationId = 0,
+            ),
+            validation = validation,
+        )
+        runSync(
+            testScenario =
+            SingleStreamInsert(
+                idColumn = idColumn,
+                columns = twoStringColumns,
+                recordsToInsert = recordsToInsert ?: defaultRecordsToInsert,
+                randomizedNamespace = randomizedNamespace,
+                streamName = testInfo.testMethod.get().name,
+                generationId = 1,
+                minGenerationId = 1,
+            ),
+            validation = validation,
+        )
+    }
+
+
+    @Test
     open fun testInsertRecordsComplexTypes() {
         testInsertRecordsComplexTypes(null)
     }
