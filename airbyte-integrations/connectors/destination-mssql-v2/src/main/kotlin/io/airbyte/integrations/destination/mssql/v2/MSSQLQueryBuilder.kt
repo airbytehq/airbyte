@@ -162,7 +162,8 @@ const val DELETE_WHERE_COL_IS_NOT_NULL =
         WHERE [?] is not NULL
     """
 
-const val DELETE_WHERE_COL_LESS_THAN = """
+const val DELETE_WHERE_COL_LESS_THAN =
+    """
         SET NOCOUNT ON;
         DELETE FROM [?].[?] WITH (ROWLOCK)
         WHERE [?] < ?
