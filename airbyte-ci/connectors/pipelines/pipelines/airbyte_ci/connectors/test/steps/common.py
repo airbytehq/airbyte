@@ -122,7 +122,7 @@ class VersionIncrementCheck(VersionCheck):
         # Skip if connector opts out of version checks
         if self.context.metadata and self.context.metadata.get("ab_internal", {}).get("requireVersionIncrementsInPullRequests") is False:
             return False
-            
+
         for filename in self.context.modified_files:
             relative_path = str(filename).replace(str(self.context.connector.code_directory) + "/", "")
             if not any([relative_path.startswith(to_bypass) for to_bypass in self.BYPASS_CHECK_FOR]):
