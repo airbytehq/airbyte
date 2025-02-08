@@ -14,7 +14,3 @@ area/documentation:
 CDK:
   - airbyte-cdk/*
   - airbyte-cdk/**/*
-
-normalization:
-  - airbyte-integrations/bases/base-normalization/*
-  - airbyte-integrations/bases/base-normalization/**/*

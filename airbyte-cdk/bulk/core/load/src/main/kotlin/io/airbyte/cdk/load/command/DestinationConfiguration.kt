@@ -86,6 +86,7 @@ abstract class DestinationConfiguration : Configuration {
      */
     open val gracefulCancellationTimeoutMs: Long = 10 * 60 * 1000L // 10 minutes
 
+    open val numOpenStreamWorkers: Int = 1
     open val numProcessRecordsWorkers: Int = 2
     open val numProcessBatchWorkers: Int = 5
     open val numProcessBatchWorkersForFileTransfer: Int = 3

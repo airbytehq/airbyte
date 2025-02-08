@@ -5,7 +5,8 @@
 package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.util.CloseableCoroutine
-import kotlinx.coroutines.DelicateCoroutinesApi
+import io.airbyte.cdk.load.util.setOnce
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -24,15 +25,17 @@ interface MessageQueue<T> : QueueReader<T>, QueueWriter<T>
 
 abstract class ChannelMessageQueue<T> : MessageQueue<T> {
     open val channel = Channel<T>(Channel.UNLIMITED)
+    private val isClosed = AtomicBoolean(false)
 
     override suspend fun publish(message: T) = channel.send(message)
     override suspend fun consume(): Flow<T> = channel.receiveAsFlow()
     override suspend fun poll(): T? = channel.tryReceive().getOrNull()
     override suspend fun close() {
-        channel.close()
+        if (isClosed.setOnce()) {
+            channel.close()
+        }
     }
-    @OptIn(DelicateCoroutinesApi::class)
-    override fun isClosedForPublish(): Boolean = channel.isClosedForSend
+    override fun isClosedForPublish(): Boolean = isClosed.get()
 }
 
 interface MessageQueueSupplier<K, T> {

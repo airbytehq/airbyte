@@ -31,7 +31,6 @@ import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
-import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -48,7 +47,6 @@ import kotlinx.coroutines.sync.withLock
 
 interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleSetupComplete()
-    suspend fun handleStreamStarted(stream: DestinationStream.Descriptor)
     suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream.Descriptor)
     suspend fun handleTeardownComplete(success: Boolean = true)
@@ -114,7 +112,6 @@ class DefaultDestinationTaskLauncher(
 
     // Checkpoint Tasks
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
-    private val timedCheckpointFlushTask: TimedForcedCheckpointFlushTask,
     private val updateCheckpointsTask: UpdateCheckpointsTask,
 
     // Exception handling
@@ -122,14 +119,17 @@ class DefaultDestinationTaskLauncher(
     private val failSyncTaskFactory: FailSyncTaskFactory,
 
     // File transfer
-    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.destination.core.file-transfer.enabled}")
+    private val fileTransferEnabled: Boolean,
 
     // Input Consumer requirements
     private val inputFlow: ReservingDeserializingInputFlow,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-    @Named("fileMessageQueue") private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>
+    @Named("fileMessageQueue")
+    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
+    @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
@@ -140,6 +140,10 @@ class DefaultDestinationTaskLauncher(
     private val failSyncIsEnqueued = AtomicBoolean(false)
 
     private val closeStreamHasRun = ConcurrentHashMap<DestinationStream.Descriptor, AtomicBoolean>()
+
+    companion object {
+        val hasThrown = AtomicBoolean(false)
+    }
 
     inner class WrappedTask(
         private val innerTask: Task,
@@ -154,7 +158,11 @@ class DefaultDestinationTaskLauncher(
                 throw e
             } catch (e: Exception) {
                 log.error(e) { "Caught exception in task $innerTask" }
-                handleException(e)
+                if (hasThrown.setOnce()) {
+                    handleException(e)
+                } else {
+                    log.info { "Skipping exception handling, because it has already run." }
+                }
             }
         }
 
@@ -186,6 +194,11 @@ class DefaultDestinationTaskLauncher(
         log.info { "Starting startup task" }
         val setupTask = setupTaskFactory.make(this)
         launch(setupTask)
+
+        repeat(config.numOpenStreamWorkers) {
+            log.info { "Launching open stream task $it" }
+            launch(openStreamTaskFactory.make())
+        }
 
         // TODO: pluggable file transfer
         if (!fileTransferEnabled) {
@@ -224,10 +237,6 @@ class DefaultDestinationTaskLauncher(
         log.info { "Starting timed file aggregate flush task " }
         launch(flushTickTask)
 
-        // Start the checkpoint management tasks
-        log.info { "Starting timed checkpoint flush task" }
-        launch(timedCheckpointFlushTask)
-
         log.info { "Starting checkpoint update task" }
         launch(updateCheckpointsTask)
 
@@ -239,19 +248,10 @@ class DefaultDestinationTaskLauncher(
         }
     }
 
-    /** Called when the initial destination setup completes. */
     override suspend fun handleSetupComplete() {
-        catalog.streams.forEach {
-            log.info { "Starting open stream task for $it" }
-            val task = openStreamTaskFactory.make(this, it)
-            launch(task)
-        }
-    }
-
-    /** Called when a stream is ready for loading. */
-    override suspend fun handleStreamStarted(stream: DestinationStream.Descriptor) {
-        // Nothing to do because the SpillToDiskTask will trigger the next calls
-        log.info { "Stream $stream successfully opened for writing." }
+        log.info { "Setup task complete, opening streams" }
+        catalog.streams.forEach { openStreamQueue.publish(it) }
+        openStreamQueue.close()
     }
 
     /**
@@ -297,6 +297,7 @@ class DefaultDestinationTaskLauncher(
     }
 
     override suspend fun handleException(e: Exception) {
+        openStreamQueue.close()
         catalog.streams
             .map { failStreamTaskFactory.make(this, e, it.descriptor) }
             .forEach { launch(it, withExceptionHandling = false) }

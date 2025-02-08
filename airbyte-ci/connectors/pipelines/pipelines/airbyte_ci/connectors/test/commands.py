@@ -166,6 +166,7 @@ async def test(
             run_step_options=run_step_options,
             targeted_platforms=[LOCAL_BUILD_PLATFORM],
             secret_stores=ctx.obj["secret_stores"],
+            enable_report_auto_open=ctx.obj.get("enable_report_auto_open", True),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]

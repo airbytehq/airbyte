@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
@@ -30,6 +31,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
@@ -113,7 +115,7 @@ internal class S3DataLakeWriterTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -122,6 +124,7 @@ internal class S3DataLakeWriterTest {
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
+        every { table.manageSnapshots().createBranch(any()).commit() } just runs
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
@@ -132,6 +135,8 @@ internal class S3DataLakeWriterTest {
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
+        val destinationCatalog: DestinationCatalog = mockk()
+        val tableIdGenerator: TableIdGenerator = mockk()
         val s3DataLakeWriter =
             S3DataLakeWriter(
                 s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
@@ -141,14 +146,16 @@ internal class S3DataLakeWriterTest {
                     S3DataLakeTableSynchronizer(
                         S3DataLakeTypesComparator(),
                         S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
-                    )
+                    ),
+                catalog = destinationCatalog,
+                tableIdGenerator = tableIdGenerator,
             )
         val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
         assertNotNull(streamLoader)
     }
 
     @Test
-    fun testCreateStreamLoaderWithMismatchedSchemas() {
+    fun testCreateStreamLoaderWithMismatchedSchemasAndAlreadyExistingStagingBranch() {
         val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val stream =
             DestinationStream(
@@ -183,7 +190,7 @@ internal class S3DataLakeWriterTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -210,6 +217,8 @@ internal class S3DataLakeWriterTest {
         every { updateSchema.setIdentifierFields(any<Collection<String>>()) } returns updateSchema
         every { updateSchema.commit() } just runs
         every { table.refresh() } just runs
+        every { table.manageSnapshots().createBranch(any()).commit() } throws
+            IllegalArgumentException("branch already exists")
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
@@ -220,6 +229,8 @@ internal class S3DataLakeWriterTest {
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
+        val destinationCatalog: DestinationCatalog = mockk()
+        val tableIdGenerator: TableIdGenerator = mockk()
         val s3DataLakeWriter =
             S3DataLakeWriter(
                 s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
@@ -230,8 +241,11 @@ internal class S3DataLakeWriterTest {
                         S3DataLakeTypesComparator(),
                         S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                     ),
+                catalog = destinationCatalog,
+                tableIdGenerator = tableIdGenerator,
             )
-        s3DataLakeWriter.createStreamLoader(stream = stream)
+        val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
+        runBlocking { streamLoader.start() }
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }
@@ -320,7 +334,7 @@ internal class S3DataLakeWriterTest {
             every { mainBranchName } returns "main"
             every { warehouseLocation } returns "s3://bucket/"
             every { catalogConfiguration } returns
-                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token")
+                NessieCatalogConfiguration("http://localhost:8080/api/v1", "access-token", "")
         }
         val icebergConfiguration: S3DataLakeConfiguration = mockk {
             every { awsAccessKeyConfiguration } returns awsConfiguration
@@ -348,6 +362,7 @@ internal class S3DataLakeWriterTest {
         every { updateSchema.setIdentifierFields(primaryKeys) } returns updateSchema
         every { updateSchema.commit() } just runs
         every { table.refresh() } just runs
+        every { table.manageSnapshots().createBranch(any()).commit() } just runs
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
@@ -358,6 +373,8 @@ internal class S3DataLakeWriterTest {
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
         }
+        val destinationCatalog: DestinationCatalog = mockk()
+        val tableIdGenerator: TableIdGenerator = mockk()
         val s3DataLakeWriter =
             S3DataLakeWriter(
                 s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
@@ -368,9 +385,12 @@ internal class S3DataLakeWriterTest {
                         S3DataLakeTypesComparator(),
                         S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                     ),
+                catalog = destinationCatalog,
+                tableIdGenerator = tableIdGenerator,
             )
 
-        s3DataLakeWriter.createStreamLoader(stream = stream)
+        val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
+        runBlocking { streamLoader.start() }
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }

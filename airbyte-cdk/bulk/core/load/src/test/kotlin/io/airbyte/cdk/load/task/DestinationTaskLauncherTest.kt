@@ -47,7 +47,6 @@ import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
-import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Replaces
@@ -83,13 +82,11 @@ class DestinationTaskLauncherTest {
     @Inject lateinit var mockInputConsumerTask: MockInputConsumerTaskFactory
     @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
     @Inject lateinit var mockSpillToDiskTaskFactory: MockSpillToDiskTaskFactory
-    @Inject lateinit var mockOpenStreamTaskFactory: MockOpenStreamTaskFactory
     @Inject lateinit var processRecordsTaskFactory: ProcessRecordsTaskFactory
     @Inject lateinit var processBatchTaskFactory: ProcessBatchTaskFactory
     @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
     @Inject lateinit var teardownTaskFactory: MockTeardownTaskFactory
     @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
-    @Inject lateinit var mockForceFlushTask: MockForceFlushTask
     @Inject lateinit var updateCheckpointsTask: MockUpdateCheckpointsTask
     @Inject lateinit var inputFlow: ReservingDeserializingInputFlow
     @Inject lateinit var queueWriter: MockQueueWriter
@@ -172,9 +169,7 @@ class DestinationTaskLauncherTest {
     class MockSetupTaskFactory : SetupTaskFactory {
         val hasRun: Channel<Unit> = Channel(Channel.UNLIMITED)
 
-        override fun make(
-            taskLauncher: DestinationTaskLauncher,
-        ): SetupTask {
+        override fun make(taskLauncher: DestinationTaskLauncher): SetupTask {
             return object : SetupTask {
                 override val terminalCondition: TerminalCondition = SelfTerminating
 
@@ -216,22 +211,13 @@ class DestinationTaskLauncherTest {
     @Singleton
     @Replaces(DefaultOpenStreamTaskFactory::class)
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockOpenStreamTaskFactory(catalog: DestinationCatalog) : OpenStreamTaskFactory {
-        val streamHasRun = mutableMapOf<DestinationStream, Channel<Unit>>()
-
-        init {
-            catalog.streams.forEach { streamHasRun[it] = Channel(Channel.UNLIMITED) }
-        }
-
-        override fun make(
-            taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream
-        ): OpenStreamTask {
+    class MockOpenStreamTaskFactory : OpenStreamTaskFactory {
+        override fun make(): OpenStreamTask {
             return object : OpenStreamTask {
                 override val terminalCondition: TerminalCondition = SelfTerminating
 
                 override suspend fun execute() {
-                    streamHasRun[stream]?.send(Unit)
+                    // Do nothing
                 }
             }
         }
@@ -288,19 +274,6 @@ class DestinationTaskLauncherTest {
                     hasRun.send(true)
                 }
             }
-        }
-    }
-
-    @Singleton
-    @Primary
-    @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockForceFlushTask : TimedForcedCheckpointFlushTask {
-        override val terminalCondition: TerminalCondition = SelfTerminating
-
-        val didRun = Channel<Boolean>(Channel.UNLIMITED)
-
-        override suspend fun execute() {
-            didRun.send(true)
         }
     }
 
@@ -378,22 +351,12 @@ class DestinationTaskLauncherTest {
 
         coVerify(exactly = config.numProcessBatchWorkers) { processBatchTaskFactory.make(any()) }
 
-        // Verify that we kicked off the timed force flush w/o a specific delay
-        Assertions.assertTrue(mockForceFlushTask.didRun.receive())
-
         Assertions.assertTrue(
             updateCheckpointsTask.didRun.receive(),
             "update checkpoints task was started"
         )
 
         job.cancel()
-    }
-
-    @Test
-    fun testHandleSetupComplete() = runTest {
-        // Verify that open stream ran for each stream
-        taskLauncher.handleSetupComplete()
-        mockOpenStreamTaskFactory.streamHasRun.values.forEach { it.receive() }
     }
 
     @Test
