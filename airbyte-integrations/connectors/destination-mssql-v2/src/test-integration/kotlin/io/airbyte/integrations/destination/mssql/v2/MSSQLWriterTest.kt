@@ -42,16 +42,16 @@ abstract class MSSQLWriterTest(
         isStreamSchemaRetroactive = true,
         supportsDedup = true,
         stringifySchemalessObjects = true,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
+        unionBehavior = UnionBehavior.STRINGIFY,
         preserveUndeclaredFields = false,
+        supportFileTransfer = false,
         commitDataIncrementally = true,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
-        nullEqualsUnset = true,
-        supportFileTransfer = false,
-        configUpdater = MSSQLConfigUpdater(),
-        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
-        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
-        unionBehavior = UnionBehavior.STRINGIFY,
         nullUnknownTypes = false,
+        nullEqualsUnset = true,
+        configUpdater = MSSQLConfigUpdater(),
     )
 
 class MSSQLDataDumper : DestinationDataDumper {

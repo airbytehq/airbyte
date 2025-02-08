@@ -26,6 +26,11 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config_oauth.json"
+        empty_streams:
+          - name: lead_forms
+            bypass_reason: "Airbyte sandbox account does not have data for this stream"
+          - name: lead_form_responses
+            bypass_reason: "Airbyte sandbox account does not have data for this stream"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         fail_on_extra_columns: true
