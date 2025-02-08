@@ -6,7 +6,7 @@ from collections.abc import Callable, Iterable
 
 import pytest
 from _pytest.fixtures import SubRequest
-from airbyte_protocol.models import AirbyteCatalog, AirbyteStream, Type  # type: ignore
+from airbyte_protocol.models import AirbyteStream  # type: ignore
 
 from live_tests.commons.models import ExecutionResult
 from live_tests.utils import fail_test_on_failing_execution_results, get_and_write_diff, get_catalog

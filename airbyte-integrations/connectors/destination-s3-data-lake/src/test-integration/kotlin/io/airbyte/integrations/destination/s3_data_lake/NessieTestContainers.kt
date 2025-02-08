@@ -18,14 +18,14 @@ object NessieTestContainers {
             .withExposedService("nessie", 19120)
             .withExposedService("minio", 9000)
             .withExposedService("keycloak", 8080)
-    private val startRunOnce = AtomicBoolean(false)
+    private val startNessieContainerRunOnce = AtomicBoolean(false)
 
     /**
      * Start the test containers, or if another thread already called this method, wait for them to
      * finish starting
      */
     fun start() {
-        if (startRunOnce.setOnce()) {
+        if (startNessieContainerRunOnce.setOnce()) {
             testcontainers.start()
         } else {
             // afaict there's no method to wait for the containers to start
