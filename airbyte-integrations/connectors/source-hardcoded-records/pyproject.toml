@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_hardcoded_records"
 
 [tool.poetry.dependencies]
-python = "^3.10,<4.0"
-airbyte-cdk = "*"
+python = ">=3.10,<4.0"
+airbyte-cdk = "6.6.1"
 
 [tool.poetry.scripts]
 source-hardcoded-records = "source_hardcoded_records.run:run"
