@@ -146,6 +146,7 @@ for more information.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 3.1.6 | 2025-02-08 | [53291](https://github.com/airbytehq/airbyte/pull/53291) | Update dependencies |
 | 3.1.5 | 2025-02-06 | [53171](https://github.com/airbytehq/airbyte/pull/53171) | Fix missing OAuth fields |
 | 3.1.4 | 2025-02-01 | [52260](https://github.com/airbytehq/airbyte/pull/52260) | Update dependencies |
 | 3.1.3 | 2025-01-20 | [52035](https://github.com/airbytehq/airbyte/pull/52035) | Upgrade to API v21.0 |
