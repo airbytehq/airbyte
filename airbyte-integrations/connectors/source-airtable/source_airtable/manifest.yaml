@@ -153,6 +153,9 @@ definitions:
               target_type: string
               current_type: multipleAttachments
             - type: TypesMap
+              target_type: string
+              current_type: manualSort
+            - type: TypesMap
               target_type: number
               current_type: autoNumber
             - type: TypesMap
@@ -297,6 +300,12 @@ definitions:
               target_type:
                 field_type: array
                 items: string
+              current_type: lookup
+              condition: "{{ not raw_schema['options']['result'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: string
               current_type: rollup
               condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] }}"
             - type: TypesMap
@@ -335,8 +344,14 @@ definitions:
               target_type:
                 field_type: array
                 items: string
+              current_type: rollup
+              condition: "{{ not raw_schema['options']['result'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: string
               current_type: multipleLookupValues
-              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] or not raw_schema['options']['result']  }}"
+              condition: "{{ raw_schema['options']['result']['type'] in ['multipleAttachments', 'barcode', 'button', 'singleCollaborator', 'createdBy', 'email', 'lastModifiedBy', 'multilineText', 'phoneNumber', 'richText', 'singleLineText', 'singleSelect', 'externalSyncSource', 'url', 'simpleText'] }}"
             - type: TypesMap
               target_type:
                 field_type: array
@@ -369,6 +384,12 @@ definitions:
                 items: boolean
               current_type: multipleLookupValues
               condition: "{{ raw_schema['options']['result']['type'] in ['checkbox'] }}"
+            - type: TypesMap
+              target_type:
+                field_type: array
+                items: string
+              current_type: multipleLookupValues
+              condition: "{{ not raw_schema['options']['result'] }}"
             - type: TypesMap
               target_type: number
               current_type: formula
