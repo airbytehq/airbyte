@@ -37,7 +37,25 @@ def before_send(event: Dict[str, Any], hint: Dict[str, Any]) -> Optional[Dict[st
 
 
 def with_step_context(func: Callable) -> Callable:
+    """Decorator to add Sentry context for pipeline step execution.
+   
+   Adds step-specific information like step name, retries, duration etc.
+   to Sentry context for better error tracking and debugging. Also includes
+   connector details if the step is associated with a connector.
+   
+   Args:
+       func (Callable): The step function to be decorated
+       
+   Returns:
+       Callable: The wrapped function with added step context
+       
+   Example:
+       @with_step_context
+       def process_data(self):
+           # Step processing logic
+   """
     def wrapper(self: Step, *args: Any, **kwargs: Any) -> Step:
+        # Using get_current_scope() instead of configure_scope() as per Sentry 2.x guidelines
         scope = sentry_sdk.get_current_scope()
         step_name = self.__class__.__name__
         scope.set_tag("pipeline_step", step_name)
@@ -72,7 +90,27 @@ def with_step_context(func: Callable) -> Callable:
 
 
 def with_command_context(func: Callable) -> Callable:
+    """Decorator to set Sentry context for pipeline commands.
+    
+    This decorator enriches Sentry error tracking by adding command-specific context:
+    - Sets the pipeline command name as a tag
+    - Adds command details (name and parameters) as context
+    - Adds Click context information
+    - Sets git branch and revision tags
+    
+    Args:
+        func (Callable): The command function to be decorated
+        
+    Returns:
+        Callable: The wrapped function with added Sentry context
+        
+    Example:
+        @with_command_context
+        def my_pipeline_command(self, ctx, *args, **kwargs):
+            # Command implementation
+    """
     def wrapper(self: Command, ctx: Context, *args: Any, **kwargs: Any) -> Command:
+        # Using get_current_scope() instead of configure_scope() as per Sentry 2.x guidelines
         scope = sentry_sdk.get_current_scope()
         scope.set_tag("pipeline_command", self.name)
         scope.set_context(
