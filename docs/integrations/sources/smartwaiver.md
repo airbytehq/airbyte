@@ -30,6 +30,7 @@ Due to some limitation of SmartWaiver API it can have situations where you won't
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.12 | 2025-02-08 | [53538](https://github.com/airbytehq/airbyte/pull/53538) | Update dependencies |
 | 0.0.11 | 2025-02-01 | [53105](https://github.com/airbytehq/airbyte/pull/53105) | Update dependencies |
 | 0.0.10 | 2025-01-25 | [52390](https://github.com/airbytehq/airbyte/pull/52390) | Update dependencies |
 | 0.0.9 | 2025-01-18 | [51989](https://github.com/airbytehq/airbyte/pull/51989) | Update dependencies |
