@@ -504,13 +504,13 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "firebolt-sdk"
-version = "1.9.0"
+version = "1.9.1"
 description = "Python SDK for Firebolt"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "firebolt_sdk-1.9.0-py3-none-any.whl", hash = "sha256:0530a95863eb7d10c714ada1447f0ed68267f34e9fde9b1387358cc0347f54bd"},
-    {file = "firebolt_sdk-1.9.0.tar.gz", hash = "sha256:bfc508c195fbd8f63d45b875ed755da8fcfa18b4c6c8b89d76c5c8fbcacd60b9"},
+    {file = "firebolt_sdk-1.9.1-py3-none-any.whl", hash = "sha256:54ed24b7b73f09af8885fa8dc4dc5784a632bd29068581fa68c1d6dff4eb0641"},
+    {file = "firebolt_sdk-1.9.1.tar.gz", hash = "sha256:df482c9f9fa5a5f9d416d4ab691f79a5c27b1a182c1e352c31e363ee6c8c4796"},
 ]
 
 [package.dependencies]
@@ -563,6 +563,7 @@ optional = false
 python-versions = ">=3.9"
 files = [
     {file = "h2-4.2.0-py3-none-any.whl", hash = "sha256:479a53ad425bb29af087f3458a61d30780bc818e4ebcf01f0b536ba916462ed0"},
+    {file = "h2-4.2.0.tar.gz", hash = "sha256:c8a52129695e88b1a0578d8d2cc6842bbd79128ac685463b887ee278126ad01f"},
 ]
 
 [package.dependencies]
