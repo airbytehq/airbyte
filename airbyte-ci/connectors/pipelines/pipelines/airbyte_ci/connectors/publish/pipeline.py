@@ -468,32 +468,17 @@ class CheckConnectorVersionIncrement(Step):
     async def _run(self) -> StepResult:
         # Skip if running from manual GitHub workflow
         if os.getenv("GITHUB_WORKFLOW_MANUAL") == "true":
-            return StepResult(
-                step=self,
-                status=StepStatus.SKIPPED,
-                stdout="Skipping version increment check for manual workflow run."
-            )
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Skipping version increment check for manual workflow run.")
 
         # Skip if connector opts out of version checks
         if self.context.metadata and self.context.metadata.get("ab_internal", {}).get("requireVersionIncrementsInPullRequests") is False:
-            return StepResult(
-                step=self,
-                status=StepStatus.SKIPPED,
-                stdout="Connector opted out of version increment checks via metadata flag."
-            )
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Connector opted out of version increment checks via metadata flag.")
 
         # Check if version was incremented
         if not self.context.connector.has_metadata_change:
-            return StepResult(
-                step=self,
-                status=StepStatus.FAILURE,
-                stderr="No version increment found in metadata.yaml. Version must be incremented to publish connector."
-            )
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr="No version increment found in metadata.yaml. Version must be incremented to publish connector.")
 
-        return StepResult(
-            step=self,
-            status=StepStatus.SUCCESS
-        )
+        return StepResult(step=self, status=StepStatus.SUCCESS)
 
 
 class DisableProgressiveRollout(StepModifyingFiles):
