@@ -31,6 +31,7 @@ from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
+from pipelines.helpers.github import GITHUB_URL_PREFIX_FOR_CONNECTORS
 from pipelines.helpers.pip import is_package_published
 from pipelines.models.steps import Step, StepModifyingFiles, StepResult, StepStatus
 
@@ -483,13 +484,48 @@ class CheckConnectorVersionIncrement(Step):
                 stdout="Manual publish requested - overriding version increment check.",
             )
 
+        # Check if version was incremented using the same logic as VersionIncrementCheck
+        master_metadata_response = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
+        if not master_metadata_response.ok:
+            return StepResult(
+                step=self,
+                status=StepStatus.SUCCESS,
+                stdout="No metadata file found on master, assuming this is a new connector.",
+            )
+        
+        master_metadata = yaml.safe_load(master_metadata_response.text)
+        master_version = semver.Version.parse(master_metadata["data"]["dockerImageTag"])
+        current_version = semver.Version.parse(self.context.connector.version)
+
         # Check if version was incremented
-        if not self.context.connector.has_metadata_change:
+        if master_version >= current_version:
             return StepResult(
                 step=self,
                 status=StepStatus.FAILURE,
-                stderr="No version increment found in metadata.yaml. Version must be incremented to publish connector.",
+                stderr=(
+                    f"The dockerImageTag in metadata.yaml was not incremented. "
+                    f"Master version is {master_version}, current version is {current_version}"
+                ),
             )
+
+        # Check if both versions are release candidates
+        if (master_version.prerelease and current_version.prerelease and
+            "rc" in master_version.prerelease and "rc" in current_version.prerelease):
+            # Release candidates should only differ in prerelease part
+            if (master_version.major == current_version.major and
+                master_version.minor == current_version.minor and
+                master_version.patch == current_version.patch):
+                return StepResult(step=self, status=StepStatus.SUCCESS)
+            else:
+                return StepResult(
+                    step=self,
+                    status=StepStatus.FAILURE,
+                    stderr=(
+                        f"Master and current version are release candidates but they have different major, minor or patch versions. "
+                        f"Release candidates should only differ in the prerelease part. Master version is {master_version}, "
+                        f"current version is {current_version}"
+                    ),
+                )
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
