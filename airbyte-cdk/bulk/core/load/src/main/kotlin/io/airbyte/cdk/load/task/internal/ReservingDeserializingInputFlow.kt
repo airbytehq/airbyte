@@ -45,7 +45,7 @@ class ReservingDeserializingInputFlow(
             collector.emit(Pair(lineSize, reserved.replace(message)))
 
             if (++index % 10_000L == 0L) {
-                log.info { "Processed $index lines" }
+                log.info { "Processed $index lines: memory used ${memoryManager.totalBytesReserved}" }
             }
         }
 

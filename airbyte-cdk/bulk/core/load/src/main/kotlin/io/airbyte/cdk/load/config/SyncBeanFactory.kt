@@ -18,6 +18,7 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.min
 import kotlinx.coroutines.channels.Channel
 
@@ -95,4 +96,10 @@ class SyncBeanFactory {
     @Singleton
     @Named("openStreamQueue")
     class OpenStreamQueue : ChannelMessageQueue<DestinationStream>()
+
+    @Singleton
+    @Named("stateSizeCounter")
+    fun stateSizeCounter(): AtomicLong {
+        return AtomicLong(0L)
+    }
 }

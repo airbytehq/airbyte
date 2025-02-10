@@ -14,7 +14,7 @@ import kotlinx.coroutines.sync.withLock
 
 /** Releasable reservation of memory. */
 class Reserved<T>(
-    private val parentManager: ReservationManager? = null,
+    val parentManager: ReservationManager? = null,
     val bytesReserved: Long = 0,
     val value: T,
 ) : CloseableCoroutine {

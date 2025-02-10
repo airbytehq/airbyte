@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.util.use
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -58,6 +59,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
     abstract val syncManager: SyncManager
     abstract val outputConsumer: suspend (T) -> Unit
     abstract val timeProvider: TimeProvider
+    abstract val stateSizeCounter: AtomicLong
 
     data class GlobalCheckpoint<T>(
         val streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
@@ -77,6 +79,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
         index: Long,
         checkpointMessage: T
     ) {
+        addSize(checkpointMessage)
         flushLock.withLock {
             if (checkpointsAreGlobal.updateAndGet { it == true } != false) {
                 throw IllegalStateException(
@@ -106,6 +109,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
         keyIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
         checkpointMessage: T
     ) {
+        addSize(checkpointMessage)
         flushLock.withLock {
             if (checkpointsAreGlobal.updateAndGet { it != false } != true) {
                 throw IllegalStateException(
@@ -260,6 +264,8 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
             flushReadyCheckpointMessages()
         }
     }
+
+    abstract fun addSize(value: T)
 }
 
 @Singleton
@@ -268,10 +274,19 @@ class DefaultCheckpointManager(
     override val catalog: DestinationCatalog,
     override val syncManager: SyncManager,
     override val outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit,
-    override val timeProvider: TimeProvider
+    override val timeProvider: TimeProvider,
+    @Named("stateSizeCounter") override val stateSizeCounter: AtomicLong
 ) : StreamsCheckpointManager<Reserved<CheckpointMessage>>() {
+    private val log = KotlinLogging.logger {}
+
     init {
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
+    }
+
+    override fun addSize(value: Reserved<CheckpointMessage>) {
+        log.info {
+            "Adding state of size ${value.bytesReserved} => ${stateSizeCounter.addAndGet(value.bytesReserved)}"
+        }
     }
 }
 
@@ -281,9 +296,15 @@ class DefaultCheckpointManager(
 )
 @Singleton
 @Secondary
-class FreeingCheckpointConsumer(private val consumer: Consumer<AirbyteMessage>) :
+class FreeingCheckpointConsumer(
+    private val consumer: Consumer<AirbyteMessage>,
+    @Named("stateSizeCounter") private val stateSizeCounter: AtomicLong
+) :
     suspend (Reserved<CheckpointMessage>) -> Unit {
-    override suspend fun invoke(message: Reserved<CheckpointMessage>) {
+    private val log = KotlinLogging.logger {}
+
+        override suspend fun invoke(message: Reserved<CheckpointMessage>) {
+        log.info { "Freeing state: new size: ${stateSizeCounter.addAndGet(-message.bytesReserved)}" }
         message.use {
             val outMessage = it.value.asProtocolMessage()
             consumer.accept(outMessage)
