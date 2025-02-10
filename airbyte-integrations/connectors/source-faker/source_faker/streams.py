@@ -8,6 +8,7 @@ from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
@@ -157,6 +158,15 @@ class Purchases(Stream, IncrementalMixin):
         This is a multi-process implementation of read_records.
         We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
         """
+
+        # Check if Users stream is present in the configured streams
+        configured_streams = kwargs.get("configured_streams", [])
+        if not any(s.stream.name == "users" for s in configured_streams):
+            raise AirbyteTracedException(
+                message="Cannot sync purchases without users stream",
+                internal_message="The purchases stream requires the users stream to be configured",
+                failure_type=FailureType.config_error
+            )
 
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
