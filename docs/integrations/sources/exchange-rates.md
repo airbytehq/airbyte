@@ -90,6 +90,7 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| 1.4.10 | 2025-02-08 | [53379](https://github.com/airbytehq/airbyte/pull/53379) | Update dependencies |
 | 1.4.9 | 2025-02-01 | [52798](https://github.com/airbytehq/airbyte/pull/52798) | Update dependencies |
 | 1.4.8 | 2025-01-25 | [51697](https://github.com/airbytehq/airbyte/pull/51697) | Update dependencies |
 | 1.4.7 | 2025-01-11 | [51108](https://github.com/airbytehq/airbyte/pull/51108) | Update dependencies |
