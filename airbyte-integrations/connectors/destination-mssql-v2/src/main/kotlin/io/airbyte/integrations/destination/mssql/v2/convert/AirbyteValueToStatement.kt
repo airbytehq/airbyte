@@ -25,8 +25,6 @@ import io.airbyte.integrations.destination.mssql.v2.MSSQLQueryBuilder
 import io.airbyte.protocol.models.Jsons
 import java.sql.Date
 import java.sql.PreparedStatement
-import java.sql.Time
-import java.sql.Timestamp
 import java.sql.Types
 
 class AirbyteValueToStatement {
@@ -144,22 +142,22 @@ class AirbyteValueToStatement {
         }
 
         private fun PreparedStatement.setAsTime(idx: Int, value: TimeWithTimezoneValue) {
-            setTime(idx, Time.valueOf(value.value.toLocalTime()))
+            setObject(idx, value.value)
         }
 
         private fun PreparedStatement.setAsTime(idx: Int, value: TimeWithoutTimezoneValue) {
-            setTime(idx, Time.valueOf(value.value))
+            setObject(idx, value.value)
         }
 
         private fun PreparedStatement.setAsTimestamp(idx: Int, value: TimestampWithTimezoneValue) {
-            setTimestamp(idx, Timestamp.valueOf(value.value.toLocalDateTime()))
+            setObject(idx, value.value)
         }
 
         private fun PreparedStatement.setAsTimestamp(
             idx: Int,
             value: TimestampWithoutTimezoneValue
         ) {
-            setTimestamp(idx, Timestamp.valueOf(value.value))
+            setObject(idx, value.value)
         }
     }
 }
