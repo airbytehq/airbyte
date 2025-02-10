@@ -164,7 +164,7 @@ class DefaultInputConsumerTask(
                 val record = message.asRecordMarshaledToAirbyteValue()
                 val pipelineMessage =
                     PipelineMessage(
-                        TreeRangeSet.create(listOf(Range.singleton(manager.countRecordIn()))),
+                        manager.countRecordIn(),
                         StreamKey(stream),
                         record
                     )

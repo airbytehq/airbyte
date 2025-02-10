@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 /** Used internally by the CDK to pass messages between steps in the loader pipeline. */
 sealed interface PipelineEvent<K : WithStream, T>
 
-class PipelineMessage<K : WithStream, T>(val indexRange: RangeSet<Long>, val key: K, val value: T) :
+class PipelineMessage<K : WithStream, T>(val index: Long, val key: K, val value: T) :
     PipelineEvent<K, T>
 
 /**

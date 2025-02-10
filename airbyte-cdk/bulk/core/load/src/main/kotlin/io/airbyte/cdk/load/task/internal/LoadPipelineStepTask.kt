@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.load.task.internal
 
+import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
+import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -20,6 +22,7 @@ import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
+import io.airbyte.cdk.load.util.withNextAdjacentValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 
@@ -36,7 +39,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 
     inner class RangeState(
         val state: S,
-        val indexRange: RangeSet<Long>? = null,
+        val indexRange: Range<Long>? = null,
     )
 
     override suspend fun execute() {
@@ -56,7 +59,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 input.value,
                                 state.state,
                             )
-                        val nextRange = state.indexRange.with(input.indexRange)
+                        val nextRange = state.indexRange.withNextAdjacentValue(input.index)
 
                         if (output != null) {
                             // Publish the emitted output and evict the state.
@@ -94,12 +97,13 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         }
     }
 
-    private suspend fun handleOutput(inputKey: K1, nextRange: RangeSet<Long>, output: U) {
+    private suspend fun handleOutput(inputKey: K1, nextRange: Range<Long>, output: U) {
 
         // Only publish the output if there's a next step.
         outputQueue?.let {
             val outputKey = outputPartitioner.getOutputKey(inputKey, output)
-            val message = PipelineMessage(nextRange, outputKey, output)
+            // TODO: Fix this, temporary for perf testing
+            val message = PipelineMessage(nextRange.upperEndpoint(), outputKey, output)
             val outputPart = outputPartitioner.getPart(outputKey, it.partitions)
             it.publish(message, outputPart)
         }
@@ -109,19 +113,10 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
             val update =
                 BatchStateUpdate(
                     stream = inputKey.stream,
-                    indexRange = nextRange,
+                    indexRange = TreeRangeSet.create(listOf(nextRange)),
                     state = output.state
                 )
             batchUpdateQueue.publish(update)
-        }
-    }
-
-    private fun RangeSet<Long>?.with(other: RangeSet<Long>): RangeSet<Long> {
-        return if (this == null) {
-            other
-        } else {
-            this.addAll(other)
-            this
         }
     }
 }

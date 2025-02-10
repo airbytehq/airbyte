@@ -205,8 +205,7 @@ class DefaultStreamManager(val stream: DestinationStream, private val checkpoint
 
         // If the batch is part of a group, update all ranges associated with its groupId
         // to the most advanced state. Otherwise, just use the ranges provided.
-        val fromCache =
-            batch.batch.groupId?.let { groupId ->
+        batch.batch.groupId?.let { groupId ->
                 val cachedRangesMaybe = cachedRangesById[groupId]
                 val cachedSet = cachedRangesMaybe?.ranges?.asRanges() ?: emptySet()
                 val newRanges = TreeRangeSet.create(cachedSet + batch.ranges.asRanges()).merged()
@@ -235,24 +234,6 @@ class DefaultStreamManager(val stream: DestinationStream, private val checkpoint
 
         log.info {
             "Added ${batch.batch.state}->${batch.ranges} (groupId=${batch.batch.groupId}) to ${stream.descriptor.namespace}.${stream.descriptor.name}=>${rangesState[batch.batch.state]}"
-        }
-        log.info {
-            val groupLineMaybe =
-                if (fromCache != null) {
-                    "\n                From group cache: ${fromCache.state}->${fromCache.ranges}"
-                } else {
-                    ""
-                }
-            val stateRangesJoined =
-                stateRangesToAdd.joinToString(",") { "${it.first}->${it.second}" }
-            val readRange = TreeRangeSet.create(listOf(Range.closed(0, recordCount.get() - 1)))
-            """ Added $stateRangesJoined to ${stream.descriptor.namespace}.${stream.descriptor.name}$groupLineMaybe
-                READ:      $readRange (complete=${markedEndOfStream.get()})
-                PROCESSED: ${rangesState[Batch.State.PROCESSED]}
-                STAGED:    ${rangesState[Batch.State.STAGED]}
-                PERSISTED: ${rangesState[Batch.State.PERSISTED]}
-                COMPLETE:  ${rangesState[Batch.State.COMPLETE]}
-            """.trimIndent()
         }
     }
 

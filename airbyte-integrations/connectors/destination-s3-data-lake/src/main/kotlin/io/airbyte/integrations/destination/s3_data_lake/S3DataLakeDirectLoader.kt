@@ -50,14 +50,14 @@ class S3DataLakeDirectLoader(
             generationId = loader.s3DataLakeUtil.constructGenerationIdSuffix(stream),
             importType = stream.importType
         )
+    private val table = loader.table.get()
 
     override fun accept(record: DestinationRecordAirbyteValue): DirectLoader.DirectLoadResult {
-        log.info { "Writing records to branch $stagingBranchName" }
         val icebergRecord =
             loader.s3DataLakeUtil.toRecord(
                 record = record,
                 stream = stream,
-                tableSchema = loader.table.get().schema(),
+                tableSchema = table.schema(),
                 pipeline = loader.pipeline,
             )
         writer.write(icebergRecord)
@@ -73,12 +73,12 @@ class S3DataLakeDirectLoader(
     override fun finish(): DirectLoader.Complete {
         val writeResult = writer.complete()
         if (writeResult.deleteFiles().isNotEmpty()) {
-            val delta = loader.table.get().newRowDelta().toBranch(stagingBranchName)
+            val delta = table.newRowDelta().toBranch(stagingBranchName)
             writeResult.dataFiles().forEach { delta.addRows(it) }
             writeResult.deleteFiles().forEach { delta.addDeletes(it) }
             delta.commit()
         } else {
-            val append = loader.table.get().newAppend().toBranch(stagingBranchName)
+            val append = table.newAppend().toBranch(stagingBranchName)
             writeResult.dataFiles().forEach { append.appendFile(it) }
             append.commit()
         }
