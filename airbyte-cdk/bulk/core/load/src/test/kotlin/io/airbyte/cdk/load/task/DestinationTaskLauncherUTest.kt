@@ -7,19 +7,24 @@ package io.airbyte.cdk.load.task
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationStreamEvent
+import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.StreamManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
+import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
-import io.airbyte.cdk.load.task.implementor.ProcessFileTask
 import io.airbyte.cdk.load.task.implementor.ProcessFileTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
@@ -30,7 +35,6 @@ import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
-import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.mockk.Called
 import io.mockk.coEvery
@@ -43,8 +47,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class DestinationTaskLauncherUTest {
-    private val taskScopeProvider: TaskScopeProvider<WrappedTask<ScopedTask>> =
-        mockk(relaxed = true)
+    private val taskScopeProvider: TaskScopeProvider = mockk(relaxed = true)
     private val catalog: DestinationCatalog = mockk(relaxed = true)
     private val syncManager: SyncManager = mockk(relaxed = true)
 
@@ -64,7 +67,6 @@ class DestinationTaskLauncherUTest {
 
     // Checkpoint Tasks
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory = mockk(relaxed = true)
-    private val timedFlushTask: TimedForcedCheckpointFlushTask = mockk(relaxed = true)
     private val updateCheckpointsTask: UpdateCheckpointsTask = mockk(relaxed = true)
     private val config: DestinationConfiguration = mockk(relaxed = true)
 
@@ -79,6 +81,9 @@ class DestinationTaskLauncherUTest {
         mockk(relaxed = true)
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>> =
         mockk(relaxed = true)
+    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage> = mockk(relaxed = true)
+    private val openStreamQueue: MessageQueue<DestinationStream> = mockk(relaxed = true)
+
     private fun getDefaultDestinationTaskLauncher(
         useFileTranfer: Boolean
     ): DefaultDestinationTaskLauncher {
@@ -98,7 +103,6 @@ class DestinationTaskLauncherUTest {
             closeStreamTaskFactory,
             teardownTaskFactory,
             flushCheckpointsTaskFactory,
-            timedFlushTask,
             updateCheckpointsTask,
             failStreamTaskFactory,
             failSyncTaskFactory,
@@ -106,6 +110,8 @@ class DestinationTaskLauncherUTest {
             inputFlow,
             recordQueueSupplier,
             checkpointQueue,
+            fileTransferQueue,
+            openStreamQueue,
         )
     }
 
@@ -143,21 +149,6 @@ class DestinationTaskLauncherUTest {
         coVerify { spillToDiskTaskFactory.make(any(), any()) }
     }
 
-    class MockedTaskWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
-        override suspend fun execute() {}
-    }
-
-    @Test
-    fun `test handle file`() = runTest {
-        val processFileTask = mockk<ProcessFileTask>(relaxed = true)
-        every { processFileTaskFactory.make(any(), any(), any(), any()) } returns processFileTask
-
-        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
-        destinationTaskLauncher.handleFile(mockk(), mockk(), 1L)
-
-        coVerify { taskScopeProvider.launch(match { it.innerTask is ProcessFileTask }) }
-    }
-
     @Test
     fun `test handle exception`() = runTest {
         val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
@@ -167,6 +158,99 @@ class DestinationTaskLauncherUTest {
         destinationTaskLauncher.handleTeardownComplete()
 
         coVerify { failStreamTaskFactory.make(any(), e, any()) }
-        coVerify { taskScopeProvider.launch(match { it.innerTask is FailStreamTask }) }
+        coVerify { taskScopeProvider.launch(match { it is FailStreamTask }) }
+    }
+
+    @Test
+    fun `test run close stream no more than once per stream`() = runTest {
+        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
+        val streamManager = mockk<StreamManager>(relaxed = true)
+        coEvery { syncManager.getStreamManager(any()) } returns streamManager
+        coEvery { streamManager.isBatchProcessingComplete() } returns true
+        val descriptor = DestinationStream.Descriptor("namespace", "name")
+        destinationTaskLauncher.handleNewBatch(
+            descriptor,
+            BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
+        )
+        destinationTaskLauncher.handleNewBatch(
+            descriptor,
+            BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
+        )
+        coVerify(exactly = 1) { closeStreamTaskFactory.make(any(), any()) }
+    }
+
+    @Test
+    fun `task successful completion triggers scope close`() = runTest {
+        // This should close the scope provider.
+        val taskLauncher = getDefaultDestinationTaskLauncher(false)
+        launch {
+            taskLauncher.run()
+            coVerify { taskScopeProvider.close() }
+        }
+        taskLauncher.handleTeardownComplete()
+    }
+
+    @Test
+    fun `test completion with failure triggers scope kill`() = runTest {
+        val taskLauncher = getDefaultDestinationTaskLauncher(false)
+        launch {
+            taskLauncher.run()
+            coVerify { taskScopeProvider.kill() }
+        }
+        taskLauncher.handleTeardownComplete(success = false)
+    }
+
+    @Test
+    fun `test exceptions in tasks throw`() = runTest {
+        coEvery { spillToDiskTaskFactory.make(any(), any()) } answers
+            {
+                val task = mockk<SpillToDiskTask>(relaxed = true)
+                coEvery { task.execute() } throws Exception("spill to disk task failed")
+                task
+            }
+        coEvery { taskScopeProvider.launch(any()) } coAnswers
+            {
+                val task = firstArg<Task>()
+                task.execute()
+            }
+
+        val taskLauncher = getDefaultDestinationTaskLauncher(false)
+        val job = launch { taskLauncher.run() }
+        taskLauncher.handleTeardownComplete()
+        job.join()
+        coVerify {
+            failStreamTaskFactory.make(
+                any(),
+                any(),
+                match { it.namespace == "namespace" && it.name == "name" }
+            )
+        }
+    }
+
+    @Test
+    fun `test numOpenStreamWorkers open stream tasks are launched`() = runTest {
+        val numOpenStreamWorkers = 3
+        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(false)
+
+        coEvery { config.numOpenStreamWorkers } returns numOpenStreamWorkers
+
+        val job = launch { destinationTaskLauncher.run() }
+        destinationTaskLauncher.handleTeardownComplete()
+        job.join()
+
+        coVerify(exactly = numOpenStreamWorkers) { openStreamTaskFactory.make() }
+
+        coVerify(exactly = 0) { openStreamQueue.publish(any()) }
+    }
+
+    @Test
+    fun `test streams opened when setup completes`() = runTest {
+        val launcher = getDefaultDestinationTaskLauncher(false)
+
+        coEvery { openStreamQueue.publish(any()) } returns Unit
+
+        launcher.handleSetupComplete()
+
+        coVerify(exactly = catalog.streams.size) { openStreamQueue.publish(any()) }
     }
 }

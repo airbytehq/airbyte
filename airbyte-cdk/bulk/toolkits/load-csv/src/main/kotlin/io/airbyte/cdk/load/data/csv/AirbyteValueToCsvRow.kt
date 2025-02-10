@@ -13,8 +13,10 @@ import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimeValue
-import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.util.serializeToString
@@ -29,10 +31,12 @@ fun ObjectValue.toCsvRecord(schema: ObjectType): List<Any> {
                 is IntegerValue -> it.value
                 is NumberValue -> it.value
                 is NullValue -> ""
-                is TimestampValue -> it.value
+                is TimestampWithTimezoneValue -> it.value
+                is TimestampWithoutTimezoneValue -> it.value
                 is BooleanValue -> it.value
                 is DateValue -> it.value
-                is TimeValue -> it.value
+                is TimeWithTimezoneValue -> it.value
+                is TimeWithoutTimezoneValue -> it.value
                 is UnknownValue -> ""
             }
         }

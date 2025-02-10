@@ -34,6 +34,7 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.OutputStream
+import java.util.concurrent.atomic.AtomicLong
 import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
@@ -51,6 +52,8 @@ class ObjectStorageFormattingWriterFactory(
         outputStream: OutputStream
     ): ObjectStorageFormattingWriter {
         val flatten = formatConfigProvider.objectStorageFormatConfiguration.rootLevelFlattening
+        // TODO: FileWriter
+
         return when (formatConfigProvider.objectStorageFormatConfiguration) {
             is JsonFormatConfiguration -> JsonFormattingWriter(stream, outputStream, flatten)
             is AvroFormatConfiguration ->
@@ -207,16 +210,25 @@ class BufferedFormattingWriter<T : OutputStream>(
     private val streamProcessor: StreamProcessor<T>,
     private val wrappingBuffer: T
 ) : ObjectStorageFormattingWriter {
+    // An empty buffer is not a guarantee of a non-empty
+    // file, some writers (parquet) start with a
+    // header. Avoid writing empty files by requiring
+    // both 0 bytes AND 0 rows.
+    private val rowsAdded = AtomicLong(0)
     val bufferSize: Int
-        get() = buffer.size()
+        get() =
+            if (rowsAdded.get() == 0L) {
+                0
+            } else buffer.size()
 
     override fun accept(record: DestinationRecordAirbyteValue) {
         writer.accept(record)
+        rowsAdded.incrementAndGet()
     }
 
     fun takeBytes(): ByteArray? {
         wrappingBuffer.flush()
-        if (buffer.size() == 0) {
+        if (bufferSize == 0) {
             return null
         }
 
@@ -229,7 +241,7 @@ class BufferedFormattingWriter<T : OutputStream>(
         writer.flush()
         writer.close()
         streamProcessor.partFinisher.invoke(wrappingBuffer)
-        return if (buffer.size() > 0) {
+        return if (bufferSize > 0) {
             buffer.toByteArray()
         } else {
             null

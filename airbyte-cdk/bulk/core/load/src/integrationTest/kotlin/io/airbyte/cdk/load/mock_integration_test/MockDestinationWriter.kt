@@ -79,10 +79,6 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         return LocalBatch(records.asSequence().toList())
     }
 
-    override suspend fun processFile(file: DestinationFile): Batch {
-        return LocalFileBatch(file)
-    }
-
     override suspend fun processBatch(batch: Batch): Batch {
         return when (batch) {
             is LocalBatch -> {

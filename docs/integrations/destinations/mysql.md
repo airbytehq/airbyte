@@ -111,6 +111,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.0.4 | 2025-01-10 | [51498](https://github.com/airbytehq/airbyte/pull/51498) | Use a non root base image |
 | 1.0.3 | 2024-12-18 | [49865](https://github.com/airbytehq/airbyte/pull/49865) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 1.0.3 | 2024-06-26 | [40566](https://github.com/airbytehq/airbyte/pull/40566) | Remove strict-encrypt variant |
 | 1.0.2 | 2024-06-26 | [40553](https://github.com/airbytehq/airbyte/pull/40553) | Convert prod code to kotlin |

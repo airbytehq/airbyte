@@ -9,11 +9,11 @@ import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.time.Instant
-import java.util.*
-import kotlin.collections.LinkedHashMap
+import java.util.UUID
 
 class AirbyteValueWithMetaToOutputRecord {
     fun convert(value: ObjectValue): OutputRecord {
@@ -23,7 +23,13 @@ class AirbyteValueWithMetaToOutputRecord {
                 UUID.fromString((value.values[Meta.COLUMN_NAME_AB_RAW_ID] as StringValue).value),
             extractedAt =
                 Instant.ofEpochMilli(
-                    (value.values[Meta.COLUMN_NAME_AB_EXTRACTED_AT] as IntegerValue).value.toLong()
+                    value.values[Meta.COLUMN_NAME_AB_EXTRACTED_AT].let { v ->
+                        when (v) {
+                            is IntegerValue -> v.value.toLong()
+                            is TimestampWithTimezoneValue -> v.value.toEpochSecond()
+                            else -> throw IllegalArgumentException("Invalid extractedAt value: $v")
+                        }
+                    }
                 ),
             loadedAt = null,
             data = value.values[Meta.COLUMN_NAME_DATA] as ObjectValue,

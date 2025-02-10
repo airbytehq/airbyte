@@ -30,6 +30,7 @@ class RecordToPartAccumulator<U : OutputStream>(
     private val fileSizeBytes: Long,
     private val stream: DestinationStream,
     private val fileNumber: AtomicLong,
+    private val fileNameMapper: suspend (String) -> String
 ) : BatchAccumulator {
     private val log = KotlinLogging.logger {}
 
@@ -45,15 +46,17 @@ class RecordToPartAccumulator<U : OutputStream>(
         // Start a new object if there is not one in progress.
         val partialUpload =
             currentObject.getOrPut(key) {
-                val fileNo = fileNumber.getAndIncrement()
+                val fileNo = fileNumber.incrementAndGet()
                 ObjectInProgress(
                     partFactory =
                         PartFactory(
                             key =
-                                pathFactory.getPathToFile(
-                                    stream,
-                                    fileNo,
-                                    isStaging = pathFactory.supportsStaging
+                                fileNameMapper(
+                                    pathFactory.getPathToFile(
+                                        stream,
+                                        fileNo,
+                                        isStaging = pathFactory.supportsStaging
+                                    )
                                 ),
                             fileNumber = fileNo
                         ),

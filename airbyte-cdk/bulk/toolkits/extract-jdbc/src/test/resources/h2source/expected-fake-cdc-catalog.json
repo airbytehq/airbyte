@@ -25,14 +25,10 @@
             "type": "string"
           },
           "_ab_cdc_updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "airbyte_type": "timestamp_with_timezone"
+            "type": "string"
           },
           "_ab_cdc_deleted_at": {
-            "type": "string",
-            "format": "date-time",
-            "airbyte_type": "timestamp_with_timezone"
+            "type": "string"
           }
         }
       },
@@ -63,14 +59,10 @@
             "type": "string"
           },
           "_ab_cdc_updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "airbyte_type": "timestamp_with_timezone"
+            "type": "string"
           },
           "_ab_cdc_deleted_at": {
-            "type": "string",
-            "format": "date-time",
-            "airbyte_type": "timestamp_with_timezone"
+            "type": "string"
           }
         }
       },
