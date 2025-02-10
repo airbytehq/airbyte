@@ -45,7 +45,7 @@ class Products(Stream, IncrementalMixin):
         dirname = os.path.dirname(os.path.realpath(__file__))
         return read_json(os.path.join(dirname, "record_data", "products.json"))
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, configured_catalog=None, **kwargs) -> Iterable[Mapping[str, Any]]:
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
 
@@ -93,7 +93,7 @@ class Users(Stream, IncrementalMixin):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, configured_catalog=None, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
         This is a multi-process implementation of read_records.
         We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
