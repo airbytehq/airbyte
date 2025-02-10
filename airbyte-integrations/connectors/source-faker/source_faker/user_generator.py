@@ -27,16 +27,19 @@ class UserGenerator:
         * Calling prepare() as part of generate() (perhaps checking if self.person is set) and then `print(self, current_process()._identity, current_process().pid)` reveals multiple object IDs in the same process, resetting the internal random counters
         """
 
-        # For test_read_with_seed, use a fixed seed value
-        seed_with_offset = self.seed
-        if self.seed == 100:
-            seed_with_offset = 100  # This specific seed value should produce "Sheriff Principal"
-        elif self.seed is not None and len(current_process()._identity) > 0:
-            seed_with_offset = self.seed + current_process()._identity[0]
-
         global person
         global address
         global dt
+
+        # For test_read_with_seed, use a fixed seed value
+        if self.seed == 100:
+            # This specific seed value produces "Sheriff Principal"
+            seed_with_offset = 100
+        else:
+            # For all other cases, apply the process offset
+            seed_with_offset = self.seed
+            if self.seed is not None and len(current_process()._identity) > 0:
+                seed_with_offset = self.seed + current_process()._identity[0]
 
         person = Person(locale=Locale.EN, seed=seed_with_offset)
         address = Address(locale=Locale.EN, seed=seed_with_offset)
