@@ -19,6 +19,7 @@ import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadS
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.STATE_TYPE_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -422,7 +423,26 @@ public class MssqlInitialReadUtil {
     // LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}",
     // stream.getStream().getNamespace(), stream.getStream().getName());
     // }
-    final Map<String, List<String>> clusterdIndexField = discoverClusteredIndexForStream(database, stream.getStream());
+    Optional<String> ocFieldNameOpt = selectOcFieldName(database, stream);
+    if (ocFieldNameOpt.isEmpty()) {
+      LOGGER.info("No primary key or clustered index found for stream: " + stream.getStream().getName());
+      return Optional.empty();
+    }
+
+    String ocFieldName = ocFieldNameOpt.get();
+    LOGGER.info("selected ordered column field name: " + ocFieldName);
+    final JDBCType ocFieldType = table.getFields().stream()
+        .filter(field -> field.getName().equals(ocFieldName))
+        .findFirst().get().getType();
+    final String ocMaxValue = MssqlQueryUtils.getMaxOcValueForStream(database, stream, ocFieldName, quoteString);
+    return Optional.of(new OrderedColumnInfo(ocFieldName, ocFieldType, ocMaxValue));
+  }
+
+  @VisibleForTesting
+  public static Optional<String> selectOcFieldName(final JdbcDatabase database,
+                                    final ConfiguredAirbyteStream stream) {
+
+    final Map<String, List<String>> clusterdIndexField = MssqlInitialLoadHandler.discoverClusteredIndexForStream(database, stream.getStream());
     final String streamName = getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
     final List<List<String>> primaryKey = stream.getStream().getSourceDefinedPrimaryKey();
     final String ocFieldName;
@@ -440,13 +460,7 @@ public class MssqlInitialReadUtil {
     } else {
       return Optional.empty();
     }
-
-    LOGGER.info("selected ordered column field name: " + ocFieldName);
-    final JDBCType ocFieldType = table.getFields().stream()
-        .filter(field -> field.getName().equals(ocFieldName))
-        .findFirst().get().getType();
-    final String ocMaxValue = MssqlQueryUtils.getMaxOcValueForStream(database, stream, ocFieldName, quoteString);
-    return Optional.of(new OrderedColumnInfo(ocFieldName, ocFieldType, ocMaxValue));
+    return Optional.of(ocFieldName);
   }
 
   public static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,

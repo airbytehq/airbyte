@@ -669,29 +669,4 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
     return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamItrator, completeStatus);
   }
-
-  @VisibleForTesting
-  // Test for getOrderedColumnInfo
-  static Optional<String> getOCInfo(final JdbcDatabase database,
-                                    final ConfiguredAirbyteStream stream) {
-    final Map<String, List<String>> clusterdIndexField = MssqlInitialLoadHandler.discoverClusteredIndexForStream(database, stream.getStream());
-    final String streamName = getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
-    final List<List<String>> primaryKey = stream.getStream().getSourceDefinedPrimaryKey();
-    final String ocFieldName;
-
-    final List<String> clusterColumns = Optional.ofNullable(clusterdIndexField)
-        .map(map -> map.get(streamName))
-        .orElse(new ArrayList<>());
-
-    // Use the clustered index unless it is composite. Otherwise, default to the primary key.
-    if (clusterColumns.size() == 1) {
-      ocFieldName = clusterColumns.getFirst();
-    } else if (!primaryKey.isEmpty()) {
-      ocFieldName = primaryKey.getFirst().getFirst();
-    } else {
-      return Optional.empty();
-    }
-    return Optional.of(ocFieldName);
-  }
-
 }

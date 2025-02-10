@@ -15,6 +15,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.*;
@@ -196,7 +197,7 @@ class MssqlSourceTest {
         .withStream(stream);
 
     final List<List<String>> primaryKey = configuredAirbyteStream.getStream().getSourceDefinedPrimaryKey();
-    Optional<String> oc = MssqlSource.getOCInfo(db, configuredAirbyteStream);
+    Optional<String> oc = MssqlInitialReadUtil.selectOcFieldName(db, configuredAirbyteStream);
 
     assertEquals(primaryKey.getFirst().getFirst(), oc.orElse("No oc"));
 
@@ -222,7 +223,7 @@ class MssqlSourceTest {
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(stream);
 
-    Optional<String> oc = MssqlSource.getOCInfo(db, configuredAirbyteStream);
+    Optional<String> oc = MssqlInitialReadUtil.selectOcFieldName(db, configuredAirbyteStream);
     final List<List<String>> primaryKey = configuredAirbyteStream.getStream().getSourceDefinedPrimaryKey();
 
     assertEquals(primaryKey.getFirst().getFirst(), oc.orElse("No oc"));
@@ -249,7 +250,7 @@ class MssqlSourceTest {
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(stream);
 
-    Optional<String> oc = MssqlSource.getOCInfo(db, configuredAirbyteStream);
+    Optional<String> oc = MssqlInitialReadUtil.selectOcFieldName(db, configuredAirbyteStream);
 
     assert (oc.isEmpty());
 
