@@ -153,14 +153,13 @@ class Purchases(Stream, IncrementalMixin):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, configured_catalog=None, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
         This is a multi-process implementation of read_records.
         We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
         """
 
         # Check if Users stream is present in the configured streams
-        configured_catalog = kwargs.get("configured_catalog", None)
         if not configured_catalog or not any(s.stream.name == "users" for s in configured_catalog.streams):
             raise AirbyteTracedException(
                 message="Cannot sync purchases without users stream",

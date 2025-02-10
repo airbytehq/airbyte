@@ -350,8 +350,9 @@ def test_ensure_no_purchases_without_users():
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)
-    record_count = 0
-    for row in iterator:
-        if row.type is Type.RECORD:
-            record_count += 1
-    assert record_count == 0  # No records should be emitted without users
+    try:
+        for row in iterator:
+            if row.type is Type.RECORD:
+                assert False, "Should not emit any records without users stream"
+    except AirbyteTracedException as e:
+        assert "Cannot sync purchases without users stream" in str(e.message)
