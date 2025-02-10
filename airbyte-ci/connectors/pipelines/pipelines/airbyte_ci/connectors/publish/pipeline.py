@@ -193,7 +193,11 @@ class PushConnectorImageToRegistry(Step):
                 self.context.logger.warn(f"Failed to publish {self.context.docker_image}. Retrying. {attempts} attempts left.")
                 await anyio.sleep(5)
                 return await self._run(built_containers_per_platform, attempts - 1)
-            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stderr=str(e),
+            )
 
 
 class PushVersionImageAsLatest(Step):
@@ -226,7 +230,11 @@ class PushVersionImageAsLatest(Step):
                 self.context.logger.warn(f"Failed to publish {self.context.docker_image}. Retrying. {attempts} attempts left.")
                 await anyio.sleep(5)
                 return await self._run(attempts - 1)
-            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stderr=str(e),
+            )
 
 
 class PullConnectorImageFromRegistry(Step):
@@ -274,7 +282,11 @@ class PullConnectorImageFromRegistry(Step):
                     await anyio.sleep(10)
                     return await self._run(attempt - 1)
                 else:
-                    return StepResult(step=self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image}")
+                    return StepResult(
+                        step=self,
+                        status=StepStatus.FAILURE,
+                        stderr=f"Failed to pull {self.context.docker_image}",
+                    )
             if not await self.check_if_image_only_has_gzip_layers():
                 return StepResult(
                     step=self,
@@ -291,7 +303,11 @@ class PullConnectorImageFromRegistry(Step):
             if attempt > 0:
                 await anyio.sleep(10)
                 return await self._run(attempt - 1)
-            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stderr=str(e),
+            )
 
 
 class UploadSpecToCache(Step):
@@ -355,7 +371,11 @@ class UploadSpecToCache(Step):
             oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
             cloud_spec: str = await self._get_connector_spec(built_connector, "CLOUD")
         except InvalidSpecOutputError as e:
-            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stderr=str(e),
+            )
 
         specs_to_uploads: List[Tuple[str, File]] = [(self.oss_spec_key, await self._get_spec_as_file(oss_spec))]
 
@@ -460,7 +480,7 @@ class SetPromotedVersion(SetConnectorVersion):
 
 class CheckConnectorVersionIncrement(Step):
     context: PublishConnectorContext
-    
+
     @property
     def title(self) -> str:
         return "Check if connector version was incremented"
@@ -468,11 +488,19 @@ class CheckConnectorVersionIncrement(Step):
     async def _run(self) -> StepResult:
         # Check if running from manual GitHub workflow
         if os.getenv("GITHUB_EVENT_NAME") == "workflow_dispatch":
-            return StepResult(step=self, status=StepStatus.SUCCESS, stdout="Manual publish requested - overriding version increment check.")
+            return StepResult(
+                step=self,
+                status=StepStatus.SUCCESS,
+                stdout="Manual publish requested - overriding version increment check.",
+            )
 
         # Check if version was incremented
         if not self.context.connector.has_metadata_change:
-            return StepResult(step=self, status=StepStatus.FAILURE, stderr="No version increment found in metadata.yaml. Version must be incremented to publish connector.")
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stderr="No version increment found in metadata.yaml. Version must be incremented to publish connector.",
+            )
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
