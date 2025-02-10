@@ -8,6 +8,7 @@ from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.utils import AirbyteTracedException
 
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
@@ -56,10 +57,17 @@ class Products(Stream, IncrementalMixin):
         yield generate_estimate(self.name, rows_to_emit, median_record_byte_size)
 
         for product in products:
-            if product["id"] <= self.count:
+            if product["id"] < self.count:
                 updated_at = format_airbyte_time(datetime.datetime.now())
                 product["updated_at"] = updated_at
                 yield product
+                if product["id"] == self.count:
+                    return AirbyteTracedException(
+                        message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+                        internal_message=str("????????????????????"),
+                        failure_type="!!!!!!!!!!??????????????",
+                        exception="!!!!!!!!???????@@@@@@@@@",
+                    )
 
         self.state = {"seed": self.seed, "updated_at": updated_at}
 
