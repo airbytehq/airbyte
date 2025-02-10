@@ -3,6 +3,7 @@
 #
 
 """This module groups util function used in pipelines."""
+
 from __future__ import annotations
 
 import contextlib
@@ -18,10 +19,10 @@ from io import TextIOWrapper
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import anyio
 import asyncclick as click
 import asyncer
 from dagger import Client, Config, Container, Directory, ExecError, File, ImageLayerCompression, Platform, Secret
+from exceptiongroup import ExceptionGroup
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -114,7 +115,7 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
 def catch_exec_error_group() -> Generator:
     try:
         yield
-    except anyio.ExceptionGroup as eg:
+    except ExceptionGroup as eg:
         for e in eg.exceptions:
             if isinstance(e, ExecError):
                 raise e

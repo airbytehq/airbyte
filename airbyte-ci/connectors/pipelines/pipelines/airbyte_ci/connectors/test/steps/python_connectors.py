@@ -8,9 +8,10 @@ from abc import ABC, abstractmethod
 from typing import List, Sequence, Tuple
 
 import dpath.util
+from dagger import Container, File
+
 import pipelines.dagger.actions.python.common
 import pipelines.dagger.actions.system.docker
-from dagger import Container, File
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
@@ -82,7 +83,7 @@ class PytestStep(Step, ABC):
         pytest_command = self.get_pytest_command(test_config_file_name)
 
         if self.bind_to_docker_host:
-            test_environment = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, test_environment)
+            test_environment = await pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, test_environment)
 
         test_execution = test_environment.with_exec(pytest_command)
 

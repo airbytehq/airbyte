@@ -1,12 +1,13 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_zoho_crm.streams import IncrementalZohoCrmStream as BaseIncrementalZohoCrmStream
+
+from airbyte_cdk.models import SyncMode
 
 
 @pytest.fixture

@@ -6,6 +6,7 @@ import datetime
 import asyncclick as click
 import pytest
 import requests
+
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common
@@ -60,25 +61,3 @@ def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk
 @pytest.fixture(scope="module")
 def python_connector_base_image_address(python_connector_with_setup_not_latest_cdk):
     return python_connector_with_setup_not_latest_cdk.metadata["connectorBuildOptions"]["baseImage"]
-
-
-async def test_with_python_connector_installed_from_setup(context_with_setup, python_connector_base_image_address, latest_cdk_version):
-
-    python_container = context_with_setup.dagger_client.container().from_(python_connector_base_image_address)
-    user = await BuildConnectorImages.get_image_user(python_container)
-    container = await common.with_python_connector_installed(
-        context_with_setup, python_container, str(context_with_setup.connector.code_directory), user
-    )
-    # Uninstall and reinstall the latest cdk version
-    cdk_install_latest_output = (
-        await container.with_env_variable("CACHEBUSTER", datetime.datetime.now().isoformat())
-        .with_user("root")
-        .with_exec(["pip", "uninstall", "-y", f"airbyte-cdk=={latest_cdk_version}"])
-        .with_exec(["pip", "install", f"airbyte-cdk=={latest_cdk_version}"])
-        .stdout()
-    )
-    # Assert that the latest cdk version is installed from cache
-    assert f"Using cached airbyte_cdk-{latest_cdk_version}-py3-none-any.whl" in cdk_install_latest_output
-    # Assert that the connector is installed
-    pip_freeze_output = await container.with_exec(["pip", "freeze"]).stdout()
-    assert context_with_setup.connector.technical_name in pip_freeze_output

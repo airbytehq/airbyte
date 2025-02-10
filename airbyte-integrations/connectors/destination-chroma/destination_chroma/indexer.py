@@ -6,12 +6,13 @@ import json
 import uuid
 
 import chromadb
+from chromadb.config import Settings
+
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from chromadb.config import Settings
 from destination_chroma.config import ChromaIndexingConfigModel
 from destination_chroma.utils import is_valid_collection_name
 

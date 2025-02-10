@@ -95,6 +95,38 @@ In this case the injection mechanism is `header` and the field name is `X-CoinAP
 
 ### OAuth
 
+#### Declarative OAuth 2.0
+Declarative OAuth 2.0 provides a flexible way to configure any OAuth 2.0 flow by describing the exact structure and behavior of the authentication endpoints. This allows integration with OAuth 2.0 implementations that may deviate from the standard specification or have custom requirements.
+
+The configuration consists of three main components:
+
+1. **Consent URL Configuration** - Defines how to construct the URL where users grant consent:
+   - URL template with placeholders for client ID, redirect URI, and other parameters
+   - Specification of where parameters should be injected (query params, headers, etc.)
+   - Support for custom scopes and additional parameters
+
+2. **Access Token URL Configuration** - Specifies how to exchange the authorization code for an access token:
+   - Token endpoint URL
+   - Where to place client ID, client secret, and authorization code
+   - Response parsing configuration for access token and expiration
+   - Support for custom parameters and headers
+
+3. **Optional Refresh Token URL Configuration** - Defines how to refresh expired access tokens:
+   - Refresh token endpoint URL (if different from access token URL)
+   - Parameter placement for client credentials and refresh token
+   - Custom header and body configurations
+
+To learn more about the Declarative OAuth 2.0 add see a variety of example implementations please refer to the [Declarative OAuth 2.0](/connector-development/config-based/advanced-topics/oauth) documentation.
+
+
+#### Partial OAuth (legacy)
+
+The partial OAuth flow is a simpler flow that allows you to use an existing access (or refresh) token to authenticate with the API.
+
+
+The catch is that the user needs to implement the start of the OAuth flow manually to obtain the `access_token` and the `refresh_token` and pass them to the connector as a part of the `config` object.
+
+
 The OAuth authentication method implements authentication using an OAuth2.0 flow with a [refresh token grant type](https://oauth.net/2/grant-types/refresh-token/) and [client credentials grant type](https://oauth.net/2/grant-types/client-credentials/).
 
 In this scheme, the OAuth endpoint of an API is called with client id and client secret and/or a long-lived refresh token that's provided by the end user when configuring this connector as a Source. These credentials are used to obtain a short-lived access token that's used to make requests actually extracting records. If the access token expires, the connection will automatically request a new one.

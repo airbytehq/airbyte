@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
-  dockerImageTag: 1.0.16
+  dockerImageTag: 1.0.22
   dockerRepository: airbyte/source-looker
   githubIssueLabel: source-looker
   icon: looker.svg
@@ -41,5 +41,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
 metadataSpecVersion: "1.0"
