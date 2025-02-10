@@ -95,6 +95,13 @@ The Railz connector should gracefully handle Railz API limitations under normal 
 
 | Version | Date       | Pull Request                                             | Subject           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------- |
+| 0.1.26 | 2025-02-01 | [52978](https://github.com/airbytehq/airbyte/pull/52978) | Update dependencies |
+| 0.1.25 | 2025-01-25 | [52519](https://github.com/airbytehq/airbyte/pull/52519) | Update dependencies |
+| 0.1.24 | 2025-01-18 | [51928](https://github.com/airbytehq/airbyte/pull/51928) | Update dependencies |
+| 0.1.23 | 2025-01-11 | [51318](https://github.com/airbytehq/airbyte/pull/51318) | Update dependencies |
+| 0.1.22 | 2025-01-04 | [50926](https://github.com/airbytehq/airbyte/pull/50926) | Update dependencies |
+| 0.1.21 | 2024-12-28 | [50699](https://github.com/airbytehq/airbyte/pull/50699) | Update dependencies |
+| 0.1.20 | 2024-12-21 | [50266](https://github.com/airbytehq/airbyte/pull/50266) | Update dependencies |
 | 0.1.19 | 2024-12-14 | [49067](https://github.com/airbytehq/airbyte/pull/49067) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.1.18 | 2024-10-28 | [47114](https://github.com/airbytehq/airbyte/pull/47114) | Update dependencies |
 | 0.1.17 | 2024-10-12 | [46786](https://github.com/airbytehq/airbyte/pull/46786) | Update dependencies |

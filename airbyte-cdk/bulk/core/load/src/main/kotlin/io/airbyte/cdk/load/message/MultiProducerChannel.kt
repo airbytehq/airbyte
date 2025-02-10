@@ -15,6 +15,7 @@ import kotlinx.coroutines.channels.Channel
 class MultiProducerChannel<T>(
     producerCount: Long,
     override val channel: Channel<T>,
+    private val name: String,
 ) : ChannelMessageQueue<T>() {
     private val log = KotlinLogging.logger {}
     private val initializedProducerCount = producerCount
@@ -23,7 +24,7 @@ class MultiProducerChannel<T>(
     override suspend fun close() {
         val count = producerCount.decrementAndGet()
         log.info {
-            "Closing producer (active count=$count, initialized count: $initializedProducerCount)"
+            "Closing producer $name (active count=$count, initialized count: $initializedProducerCount)"
         }
         if (count == 0L) {
             log.info { "Closing underlying queue" }

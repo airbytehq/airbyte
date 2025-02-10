@@ -6,7 +6,7 @@ on:
 jobs:
   shared-issues:
     name: "Add Labels to Issues.  Safe to Merge on fail"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Run Issue Command from workflow-actions
         uses: nick-fields/private-action-loader@v3

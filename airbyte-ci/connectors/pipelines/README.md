@@ -721,39 +721,7 @@ Steps
 
 ### <a id="format-subgroup"></a>`format` command subgroup
 
-Available commands:
-
-- `airbyte-ci format check all`
-- `airbyte-ci format fix all`
-
-### Options
-
-| Option              | Required | Default | Mapped environment variable | Description                                                                                 |
-| ------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
-| `--quiet/-q`        | False    | False   |                             | Hide formatter execution details in reporting.                                              |
-| `--ci-requirements` | False    |         |                             | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
-
-### Examples
-
-- Check for formatting errors in the repository: `airbyte-ci format check all`
-- Fix formatting for only python files: `airbyte-ci format fix python`
-
-### <a id="format-check-command"></a>`format check all` command
-
-This command runs formatting checks, but does not format the code in place. It will exit 1 as soon
-as a failure is encountered. To fix errors, use `airbyte-ci format fix all`.
-
-Running `airbyte-ci format check` will run checks on all different types of code. Run
-`airbyte-ci format check --help` for subcommands to check formatting for only certain types of
-files.
-
-### <a id="format-fix-command"></a>`format fix all` command
-
-This command runs formatting checks and reformats any code that would be reformatted, so it's
-recommended to stage changes you might have before running this command.
-
-Running `airbyte-ci format fix all` will format all of the different types of code. Run
-`airbyte-ci format fix --help` for subcommands to format only certain types of files.
+`airbyte-ci format` is no longer available. To format code in this repository, we're using `pre-commit`. Assuming `pre-commit` is installed, `pre-commit run` will run the formatters for you.
 
 ### <a id="poetry-subgroup"></a>`poetry` command subgroup
 
@@ -852,9 +820,29 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 ## Changelog
 
-| Version | PR                                                         | Description                                                                                                                  |
-|---------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| 4.46.4  | [#49462](https://github.com/airbytehq/airbyte/pull/49462)  | Support Kotlin Gradle build scripts in connectors.                                                                            |
+| Version | PR                                                          | Description                                                                                                                  |
+| 5.1.0   | [#53238](https://github.com/airbytehq/airbyte/pull/53238)  | Add ability to opt out of version increment checks via metadata flag                                                         |
+| 5.0.1   | [#52664](https://github.com/airbytehq/airbyte/pull/52664)  | Update Python version requirement from 3.10 to 3.11.                                                                         |
+| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.49.4  | [#52104](https://github.com/airbytehq/airbyte/pull/52104)  | Stream Gradle task output to the step logger                                                                 |
+| 5.0.0  | [#52647](https://github.com/airbytehq/airbyte/pull/52647)  | Removed migration and formatting commands.                                                                 |
+| 4.49.3  | [#52102](https://github.com/airbytehq/airbyte/pull/52102)  | Load docker image to local docker host for java connectors                                                                 |
+| 4.49.2  | [#52090](https://github.com/airbytehq/airbyte/pull/52090)  | Re-add custom task parameters in GradleTask                                                                                  |
+| 4.49.1  | [#52087](https://github.com/airbytehq/airbyte/pull/52087)  | Wire the `--enable-report-auto-open` correctly for connector tests                                                           |
+| 4.49.0  | [#52033](https://github.com/airbytehq/airbyte/pull/52033)  | Run gradle as a subprocess and not via Dagger                                                                                |
+| 4.48.9  | [#51609](https://github.com/airbytehq/airbyte/pull/51609)  | Fix ownership of shared cache volume for non root connectors                                                                 |
+| 4.48.8  | [#51582](https://github.com/airbytehq/airbyte/pull/51582)  | Fix typo in `migrate-to-inline-schemas` command                                                                              |
+| 4.48.7  | [#51579](https://github.com/airbytehq/airbyte/pull/51579)  | Give back the ownership of /tmp to the original user on finalize build                                                       |
+| 4.48.6  | [#51577](https://github.com/airbytehq/airbyte/pull/51577)  | Run finalize build scripts as root                                                                                           |
+| 4.48.5  | [#49827](https://github.com/airbytehq/airbyte/pull/49827)  | Bypasses CI checks for promoted release candidate PRs.                                                                       |
+| 4.48.4  | [#51003](https://github.com/airbytehq/airbyte/pull/51003)  | Install git in the build / test connector container when `--use-cdk-ref` is passed.                                          |
+| 4.48.3  | [#50988](https://github.com/airbytehq/airbyte/pull/50988)  | Remove deprecated `--no-update` flag from poetry commands                                                                    |
+| 4.48.2  | [#50871](https://github.com/airbytehq/airbyte/pull/50871)  | Speed up connector modification detection.                                                                                   |
+| 4.48.1  | [#50410](https://github.com/airbytehq/airbyte/pull/50410)  | Java connector build: give ownership of built artifacts to the current image user.                                           |
+| 4.48.0  | [#49960](https://github.com/airbytehq/airbyte/pull/49960)  | Deprecate airbyte-ci format command                                                                                          |
+| 4.47.0  | [#49832](https://github.com/airbytehq/airbyte/pull/49462)  | Build java connectors from the base image declared in `metadata.yaml`.                                                       |
+| 4.46.5  | [#49835](https://github.com/airbytehq/airbyte/pull/49835)  | Fix connector language discovery for projects with Kotlin Gradle build scripts.                                              |
+| 4.46.4  | [#49462](https://github.com/airbytehq/airbyte/pull/49462)  | Support Kotlin Gradle build scripts in connectors.                                                                           |
 | 4.46.3  | [#49465](https://github.com/airbytehq/airbyte/pull/49465)  | Fix `--use-local-cdk` on rootless connectors.                                                                                |
 | 4.46.2  | [#49136](https://github.com/airbytehq/airbyte/pull/49136)  | Fix failed install of python components due to non-root permissions.                                                         |
 | 4.46.1  | [#49146](https://github.com/airbytehq/airbyte/pull/49146)  | Update `crane` image address as the one we were using has been deleted by the maintainer.                                    |
@@ -875,7 +863,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 | 4.41.8  | [#47447](https://github.com/airbytehq/airbyte/pull/47447)  | Use `cache_ttl` for base image registry listing in `up-to-date`.                                                             |
 | 4.41.7  | [#47444](https://github.com/airbytehq/airbyte/pull/47444)  | Remove redundant `--ignore-connector` error from up-to-date. `--metadata-query` can be used instead.                         |
 | 4.41.6  | [#47308](https://github.com/airbytehq/airbyte/pull/47308)  | Connector testing: skip incremental acceptance test when the connector is not released.                                      |
-| 4.41.5  | [#47255](https://github.com/airbytehq/airbyte/pull/47255)  | Fix `DisableProgressiveRollout`  following Dagger API change.                                                                |
+| 4.41.5  | [#47255](https://github.com/airbytehq/airbyte/pull/47255)  | Fix `DisableProgressiveRollout` following Dagger API change.                                                                 |
 | 4.41.4  | [#47203](https://github.com/airbytehq/airbyte/pull/47203)  | Fix some `with_exec` and entrypoint usage following Dagger upgrade                                                           |
 | 4.41.3  | [#47189](https://github.com/airbytehq/airbyte/pull/47189)  | Fix up-to-date which did not export doc to the right path                                                                    |
 | 4.41.2  | [#47185](https://github.com/airbytehq/airbyte/pull/47185)  | Fix the bump version command which did not update the changelog.                                                             |

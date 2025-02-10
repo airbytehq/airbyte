@@ -9,6 +9,7 @@ import uuid
 from typing import List, Tuple
 
 import dagger
+
 from base_images import console, published_image
 
 
@@ -31,7 +32,6 @@ def get_credentials() -> Tuple[str, str]:
 
 
 class CraneClient:
-
     CRANE_IMAGE_ADDRESS = "gcr.io/go-containerregistry/crane/debug:c195f151efe3369874c72662cd69ad43ee485128@sha256:94f61956845714bea3b788445454ae4827f49a90dcd9dac28255c4cccb6220ad"
 
     def __init__(self, dagger_client: dagger.Client, docker_credentials: Tuple[str, str], cache_ttl_seconds: int = 0):
