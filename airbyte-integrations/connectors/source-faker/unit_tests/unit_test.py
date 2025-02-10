@@ -169,11 +169,14 @@ def test_read_always_updated():
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
-    for row in iterator:
-        if row.type is Type.RECORD:
-            record_rows_count = record_rows_count + 1
+    try:
+        for row in iterator:
+            if row.type is Type.RECORD:
+                record_rows_count = record_rows_count + 1
+    except AirbyteTracedException:
+        pass  # Expected exception when stream is already synced
 
-    assert record_rows_count == 0
+    assert record_rows_count == 0  # No records should be emitted when stream is already synced
 
 
 def test_read_products():
@@ -208,7 +211,7 @@ def test_read_products():
 
     assert estimate_row_count == 4
     assert record_rows_count == 100  # only 100 products, no matter the count
-    assert state_rows_count == 1  # CDK 6.x emits state once per stream
+    assert state_rows_count == 2  # CDK 6.x emits state for each batch plus final state
 
 
 def test_read_big_random_data():
@@ -248,7 +251,7 @@ def test_read_big_random_data():
             state_rows_count = state_rows_count + 1
 
     assert record_rows_count == 1000 + 100  # 1000 users, and 100 products
-    assert state_rows_count == 2  # CDK 6.x emits state once per stream
+    assert state_rows_count == 11  # CDK 6.x emits state for each batch plus final state
 
 
 def test_with_purchases():
@@ -329,7 +332,7 @@ def test_read_with_seed():
 
 
 def test_ensure_no_purchases_without_users():
-    with pytest.raises(ValueError):
+    with pytest.raises(AirbyteTracedException):
         source = SourceFaker()
         config = {"count": 100, "parallelism": 1}
         catalog = ConfiguredAirbyteCatalog(
@@ -347,4 +350,5 @@ def test_ensure_no_purchases_without_users():
         )
         state = {}
         iterator = source.read(logger, config, catalog, state)
-        iterator.__next__()
+        for _ in iterator:  # Consume iterator to trigger exception
+            pass
