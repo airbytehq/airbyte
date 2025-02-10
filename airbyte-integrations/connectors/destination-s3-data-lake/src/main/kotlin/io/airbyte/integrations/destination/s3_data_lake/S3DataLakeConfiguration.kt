@@ -31,12 +31,6 @@ data class S3DataLakeConfiguration(
     S3BucketConfigurationProvider {
     override val recordBatchSizeBytes: Long
         get() = 1500 * 1024 * 1024
-
-    override val numOpenStreamWorkers: Int
-        get() = 2
-
-    override val maxMessageQueueMemoryUsageRatio: Double
-        get() = 0.9
 }
 
 @Singleton
