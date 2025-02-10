@@ -160,13 +160,15 @@ class Purchases(Stream, IncrementalMixin):
         """
 
         # Check if Users stream is present in the configured streams
-        configured_streams = kwargs.get("configured_streams", [])
-        if not any(s.stream.name == "users" for s in configured_streams):
-            raise AirbyteTracedException(
-                message="Cannot sync purchases without users stream",
-                internal_message="The purchases stream requires the users stream to be configured",
-                failure_type=FailureType.config_error
-            )
+        configured_catalog = kwargs.get("configured_catalog", None)
+        if configured_catalog:
+            has_users = any(s.stream.name == "users" for s in configured_catalog.streams)
+            if not has_users:
+                raise AirbyteTracedException(
+                    message="Cannot sync purchases without users stream",
+                    internal_message="The purchases stream requires the users stream to be configured",
+                    failure_type=FailureType.config_error
+                )
 
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
