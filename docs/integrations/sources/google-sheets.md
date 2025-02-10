@@ -187,6 +187,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.1 | 2025-02-08 | [51696](https://github.com/airbytehq/airbyte/pull/51696) | Update dependencies |
 | 0.9.0 | 2025-02-04 | [53154](https://github.com/airbytehq/airbyte/pull/53154) | Promoting release candidate 0.9.0-rc.3 to a main version. |
 | 0.9.0-rc.3 | 2025-01-31 | [52682](https://github.com/airbytehq/airbyte/pull/52682) | Fix stream name typing                                                                                                                                                 |
 | 0.9.0-rc.2 | 2025-01-31 | [52671](https://github.com/airbytehq/airbyte/pull/52671) | Fix sheet id encoding                                                                                                                                                  |
