@@ -36,6 +36,7 @@ The connector has a rate limit of 400 requests per 1 minute.
 
 | Version | Date       | Pull Request                                             | Subject        |
 |:--------|:-----------| :------------------------------------------------------- | :------------- |
+| 0.3.0 | 2025-02-07 | [53208](https://github.com/airbytehq/airbyte/pull/53208) | update schemas and make dynamic |
 | 0.2.10 | 2025-02-03 | [52699](https://github.com/airbytehq/airbyte/pull/52699) | Fix pagination |
 | 0.2.9 | 2025-02-01 | [52987](https://github.com/airbytehq/airbyte/pull/52987) | Update dependencies |
 | 0.2.8 | 2025-01-25 | [52478](https://github.com/airbytehq/airbyte/pull/52478) | Update dependencies |
@@ -60,7 +61,6 @@ The connector has a rate limit of 400 requests per 1 minute.
 | 0.1.3 | 2024-06-25 | [40440](https://github.com/airbytehq/airbyte/pull/40440) | Update dependencies |
 | 0.1.2 | 2024-06-22 | [40167](https://github.com/airbytehq/airbyte/pull/40167) | Update dependencies |
 | 0.1.1 | 2024-05-30 | [38533](https://github.com/airbytehq/airbyte/pull/38533) | [autopull] base image + poetry + up_to_date |
-| 0.1.0 | 2025-02-07 | [53208](https://github.com/airbytehq/airbyte/pull/53208) | update schemas and make dynamic |
 | 0.1.0 | 2022-10-25 | [18577](https://github.com/airbytehq/airbyte/pull/18577) | Initial commit |
 
 </details>
