@@ -1126,7 +1126,8 @@ api_budget:
       matchers:
         - method: GET
           url_path_pattern: "^/api/lists/"   # matches any path beginning with '/lists/' (e.g. '/lists/123')
-  # Other API budget settings:
+          params:
+            "additional-fields[list]": "profile_count"  # Other API budget settings:
   status_codes_for_ratelimit_hit: [429]
   maximum_attempts_to_acquire: 100000
 
@@ -1154,5 +1155,5 @@ api_budget:
 # Based on the above, the only threads that allow for slicing and hence might perform more concurrent HTTP requests are `events` and `events_detailed`. There are no slicing for the others and hence the concurrency is limited by the number of streams querying the same endpoint. Given that the event endpoint is XL, we will set a default concurrency to 10.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 50) }}"
+  default_concurrency: "{{ config.get('num_workers', 25) }}"
   max_concurrency: 50
