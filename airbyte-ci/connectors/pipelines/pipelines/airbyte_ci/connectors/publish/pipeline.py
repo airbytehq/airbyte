@@ -42,9 +42,7 @@ class InvalidSpecOutputError(Exception):
 class CheckConnectorImageDoesNotExist(Step):
     context: PublishConnectorContext
     
-    @property
-    def title(self) -> str:
-        return "Check if the connector docker image does not exist on the registry."
+    title = "Check if the connector docker image does not exist on the registry."
 
     async def _run(self) -> StepResult:
         docker_repository, docker_tag = self.context.docker_image.split(":")
@@ -73,9 +71,7 @@ class CheckConnectorImageDoesNotExist(Step):
 class CheckPythonRegistryPackageDoesNotExist(Step):
     context: PythonRegistryPublishContext
     
-    @property
-    def title(self) -> str:
-        return "Check if the connector is published on python registry"
+    title = "Check if the connector is published on python registry"
 
     async def _run(self) -> StepResult:
         is_published = is_package_published(
@@ -108,9 +104,7 @@ class UploadDependenciesToMetadataService(Step):
     context: PublishConnectorContext
     key_prefix = "connector_dependencies"
     
-    @property
-    def title(self) -> str:
-        return "Upload connector dependencies list to GCS."
+    title = "Upload connector dependencies list to GCS."
 
     async def _run(self, built_containers_per_platform: Dict[Platform, Container]) -> StepResult:
         assert self.context.connector.language in [
@@ -153,9 +147,7 @@ class UploadDependenciesToMetadataService(Step):
 class PushConnectorImageToRegistry(Step):
     context: PublishConnectorContext
     
-    @property
-    def title(self) -> str:
-        return "Push connector image to registry"
+    title = "Push connector image to registry"
 
     @property
     def latest_docker_image_name(self) -> str:
@@ -203,9 +195,7 @@ class PushConnectorImageToRegistry(Step):
 class PushVersionImageAsLatest(Step):
     context: PublishConnectorContext
     
-    @property
-    def title(self) -> str:
-        return "Push existing version image as latest"
+    title = "Push existing version image as latest"
 
     @property
     def latest_docker_image_name(self) -> str:
@@ -240,9 +230,7 @@ class PushVersionImageAsLatest(Step):
 class PullConnectorImageFromRegistry(Step):
     context: PublishConnectorContext
     
-    @property
-    def title(self) -> str:
-        return "Pull connector image from registry"
+    title = "Pull connector image from registry"
 
     async def check_if_image_only_has_gzip_layers(self) -> bool:
         """Check if the image only has gzip layers.
@@ -315,9 +303,7 @@ class UploadSpecToCache(Step):
     default_spec_file_name = "spec.json"
     cloud_spec_file_name = "spec.cloud.json"
     
-    @property
-    def title(self) -> str:
-        return "Upload connector spec to spec cache bucket"
+    title = "Upload connector spec to spec cache bucket"
 
     @property
     def spec_key_prefix(self) -> str:
@@ -404,9 +390,7 @@ class UploadSbom(Step):
     IN_CONTAINER_SBOM_PATH = "sbom.json"
     SBOM_EXTENSION = "spdx.json"
     
-    @property
-    def title(self) -> str:
-        return "Upload SBOM to metadata service bucket"
+    title = "Upload SBOM to metadata service bucket"
 
     def get_syft_container(self) -> Container:
         home_dir = os.path.expanduser("~")
@@ -448,9 +432,7 @@ class UploadSbom(Step):
 class SetPromotedVersion(SetConnectorVersion):
     context: PublishConnectorContext
     
-    @property
-    def title(self) -> str:
-        return "Promote release candidate"
+    title = "Promote release candidate"
 
     @property
     def current_semver_version(self) -> semver.Version:
@@ -481,9 +463,7 @@ class SetPromotedVersion(SetConnectorVersion):
 class CheckConnectorVersionIncrement(Step):
     context: PublishConnectorContext
 
-    @property
-    def title(self) -> str:
-        return "Check if connector version was incremented"
+    title = "Check if connector version was incremented"
 
     async def _run(self) -> StepResult:
         # Check if version increment check should be overridden (manual workflow)
@@ -508,9 +488,7 @@ class CheckConnectorVersionIncrement(Step):
 class DisableProgressiveRollout(StepModifyingFiles):
     context: PublishConnectorContext
     
-    @property
-    def title(self) -> str:
-        return "Disable progressive rollout in metadata file"
+    title = "Disable progressive rollout in metadata file"
 
     async def _run(self) -> StepResult:
         raw_metadata = await dagger_read_file(await self.context.get_connector_dir(include=[METADATA_FILE_NAME]), METADATA_FILE_NAME)

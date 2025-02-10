@@ -100,9 +100,7 @@ class VersionCheck(Step, ABC):
 class VersionIncrementCheck(VersionCheck):
     context: ConnectorContext
 
-    @property
-    def title(self) -> str:
-        return "Connector version increment check"
+    title = "Connector version increment check"
 
     BYPASS_CHECK_FOR = [
         METADATA_FILE_NAME,
@@ -223,9 +221,7 @@ class AcceptanceTests(Step):
 
     context: ConnectorContext
 
-    @property
-    def title(self) -> str:
-        return "Acceptance tests"
+    title = "Acceptance tests"
 
     CONTAINER_TEST_INPUT_DIRECTORY = "/test_input"
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
@@ -408,9 +404,7 @@ class IncrementalAcceptanceTests(Step):
     It fails if there are new failing tests in the current acceptance tests report log.
     """
 
-    @property
-    def title(self) -> str:
-        return "Incremental Acceptance Tests"
+    title = "Incremental Acceptance Tests"
 
     context: ConnectorContext
 
@@ -543,9 +537,7 @@ class LiveTests(Step):
             "--durations": ["3"],  # Show the 3 slowest tests in the report
         }
 
-    @property
-    def title(self) -> str:
-        return f"Connector {self.test_suite.title()} Tests"
+    title =f"Connector {self.test_suite.title()} Tests"
 
     def _test_command(self) -> List[str]:
         """
