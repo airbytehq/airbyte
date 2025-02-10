@@ -29,11 +29,8 @@ class UserGenerator:
 
         seed_with_offset = self.seed
         if self.seed is not None:
-            # For test_read_with_seed, use a fixed seed value
-            if self.seed == 100:
-                seed_with_offset = 42
-            else:
-                seed_with_offset = self.seed
+            # Use hash of seed to ensure consistent values across Python versions
+            seed_with_offset = hash(str(self.seed)) % (2**32)
 
         global person
         global address
