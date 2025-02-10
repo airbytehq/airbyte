@@ -27,6 +27,8 @@ jobs:
       - name: Publish modified connectors [On merge to master]
         id: publish-modified-connectors
         if: github.event_name == 'push'
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "master"
@@ -50,6 +52,8 @@ jobs:
       - name: Publish connectors [manual]
         id: publish-connectors
         if: github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"

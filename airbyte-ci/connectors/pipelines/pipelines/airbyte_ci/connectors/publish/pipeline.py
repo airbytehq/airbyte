@@ -466,13 +466,9 @@ class CheckConnectorVersionIncrement(Step):
         return "Check if connector version was incremented"
 
     async def _run(self) -> StepResult:
-        # Skip if running from manual GitHub workflow
-        if os.getenv("GITHUB_WORKFLOW_MANUAL") == "true":
-            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Skipping version increment check for manual workflow run.")
-
-        # Skip if connector opts out of version checks
-        if self.context.metadata and self.context.metadata.get("ab_internal", {}).get("requireVersionIncrementsInPullRequests") is False:
-            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Connector opted out of version increment checks via metadata flag.")
+        # Check if running from manual GitHub workflow
+        if os.getenv("GITHUB_EVENT_NAME") == "workflow_dispatch":
+            return StepResult(step=self, status=StepStatus.SUCCESS, stdout="Manual publish requested - overriding version increment check.")
 
         # Check if version was incremented
         if not self.context.connector.has_metadata_change:
