@@ -11,18 +11,6 @@ from source_zendesk_support.components import (
 
 
 @pytest.mark.parametrize(
-    "stream_state, stream_slice, next_page_token, expected_params",
-    [
-        (
-            {},
-            {"start_time": "2022-01-01T00:00:00Z", "end_time": "2022-01-02T00:00:00Z"},
-            {},
-            {"start_time_field": ["2022-01-01T00:00:00Z", "2022-01-02T00:00:00Z"]},
-        ),
-        ({}, {}, {}, {}),
-    ],
-)
-@pytest.mark.parametrize(
     "response_data, expected_events",
     [
         # Test case with no ticket_events in response
