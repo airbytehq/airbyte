@@ -45,7 +45,6 @@ class AdCreatives(FBMarketingStream):
 
     entity_prefix = "adcreative"
     enable_deleted = False
-    use_batch = False
 
     def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
         super().__init__(**kwargs)

@@ -35,7 +35,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
     MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=10))
     MIN_RATE, MIN_PAUSE_INTERVAL = (85, pendulum.duration(minutes=2))
-    MAX_SLEEP_TIME_FOR_RATE_LIMIT = 3600  # 1 hour
+    MAX_SLEEP_TIME_FOR_RATE_LIMIT = 3600 * 5  # 1 hour
     current_sleep_time = 0
     SLEEP_TIME_EXCEEDED_MESSAGE = "Exceeded maximum sleep time waiting for rate limit to reset"
 
