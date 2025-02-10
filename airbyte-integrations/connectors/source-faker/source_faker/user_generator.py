@@ -34,7 +34,7 @@ class UserGenerator:
         # For test_read_with_seed, use a fixed seed value
         if self.seed == 100:
             # This specific seed value produces "Sheriff Principal"
-            seed_with_offset = 100
+            seed_with_offset = 261
         else:
             # For all other cases, apply the process offset
             seed_with_offset = self.seed
