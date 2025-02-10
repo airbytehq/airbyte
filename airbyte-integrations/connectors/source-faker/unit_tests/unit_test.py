@@ -355,4 +355,4 @@ def test_ensure_no_purchases_without_users():
             if row.type is Type.RECORD:
                 assert False, "Should not emit any records without users stream"
     except AirbyteTracedException as e:
-        assert "Cannot sync purchases without users stream" in str(e.message)
+        assert "The purchases stream requires the users stream to be configured" in str(e.message)
