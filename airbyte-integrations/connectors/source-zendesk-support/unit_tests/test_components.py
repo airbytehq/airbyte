@@ -22,8 +22,6 @@ from source_zendesk_support.components import (
         ({}, {}, {}, {}),
     ],
 )
-
-
 @pytest.mark.parametrize(
     "response_data, expected_events",
     [
