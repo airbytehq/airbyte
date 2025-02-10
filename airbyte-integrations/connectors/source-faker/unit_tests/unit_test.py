@@ -6,7 +6,15 @@ import jsonschema
 import pytest
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    AirbyteStream,
+    SyncMode,
+    DestinationSyncMode,
+    Type
+)
 
 
 class MockLogger:
@@ -83,11 +91,15 @@ def test_read_small_random_data():
     config = {"count": 10, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="users",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.incremental]
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            )
         ]
     )
     state = {}
@@ -114,11 +126,15 @@ def test_read_always_updated():
     config = {"count": 10, "parallelism": 1, "always_updated": False}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="users",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.incremental]
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            )
         ]
     )
     state = {}
@@ -147,11 +163,15 @@ def test_read_products():
     config = {"count": 999, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="products",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.full_refresh]
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            )
         ]
     )
     state = {}
@@ -178,16 +198,24 @@ def test_read_big_random_data():
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-            {
-                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="users",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.incremental]
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="products",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.full_refresh]
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            ),
         ]
     )
     state = {}
@@ -210,21 +238,33 @@ def test_with_purchases():
     config = {"count": 1000, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-            {
-                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-            {
-                "stream": {"name": "purchases", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="users",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.incremental]
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="products",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.full_refresh]
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="purchases",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.incremental]
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            ),
         ]
     )
     state = {}
@@ -251,11 +291,15 @@ def test_read_with_seed():
     config = {"count": 1, "seed": 100, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="users",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.incremental]
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            )
         ]
     )
     state = {}
@@ -272,7 +316,15 @@ def test_ensure_no_purchases_without_users():
         config = {"count": 100, "parallelism": 1}
         catalog = ConfiguredAirbyteCatalog(
             streams=[
-                {"stream": {"name": "purchases", "json_schema": {}}, "sync_mode": "incremental", "destination_sync_mode": "overwrite"},
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(
+                        name="purchases",
+                        json_schema={},
+                        supported_sync_modes=[SyncMode.incremental]
+                    ),
+                    sync_mode=SyncMode.incremental,
+                    destination_sync_mode=DestinationSyncMode.overwrite
+                ),
             ]
         )
         state = {}
