@@ -29,8 +29,8 @@ class SourceFaker(AbstractSource):
         parallelism: int = config.get("parallelism", 4)
 
         # Create streams in order of dependency
-        users = Users(count, seed, parallelism, records_per_slice, always_updated)
         products = Products(count, seed, parallelism, records_per_slice, always_updated)
+        users = Users(count, seed, parallelism, records_per_slice, always_updated)
         purchases = Purchases(count, seed, parallelism, records_per_slice, always_updated)
 
-        return [users, products, purchases]
+        return [products, users, purchases]
