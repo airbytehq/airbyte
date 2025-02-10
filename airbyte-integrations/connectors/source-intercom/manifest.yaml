@@ -2957,7 +2957,7 @@ schemas:
       conversation_id:
         type:
           - "null"
-          - interger
+          - integer
         description: The unique identifier of the conversation.
       conversation_total_parts:
         type:
