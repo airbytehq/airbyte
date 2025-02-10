@@ -333,23 +333,25 @@ def test_read_with_seed():
 
 
 def test_ensure_no_purchases_without_users():
-    with pytest.raises(AirbyteTracedException):
-        source = SourceFaker()
-        config = {"count": 100, "parallelism": 1}
-        catalog = ConfiguredAirbyteCatalog(
-            streams=[
-                ConfiguredAirbyteStream(
-                    stream=AirbyteStream(
-                        name="purchases",
-                        json_schema={},
-                        supported_sync_modes=[SyncMode.incremental]
-                    ),
-                    sync_mode=SyncMode.incremental,
-                    destination_sync_mode=DestinationSyncMode.overwrite
+    source = SourceFaker()
+    config = {"count": 100, "parallelism": 1}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="purchases",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.incremental]
                 ),
-            ]
-        )
-        state = {}
-        iterator = source.read(logger, config, catalog, state)
-        for _ in iterator:  # Consume iterator to trigger exception
-            pass
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            ),
+        ]
+    )
+    state = {}
+    iterator = source.read(logger, config, catalog, state)
+    record_count = 0
+    for row in iterator:
+        if row.type is Type.RECORD:
+            record_count += 1
+    assert record_count == 0  # No records should be emitted without users
