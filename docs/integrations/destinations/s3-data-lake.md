@@ -64,7 +64,7 @@ The "Role ARN" option is only usable in cloud.
 
 You will need the URI of your REST catalog.
 
-If using the Dremio catalog, set the "warehouse location" option to `<Dremio warehouse name>/path`.
+If using the Dremio catalog, set the "warehouse location" option to `s3://<Dremio warehouse name>/path`.
 
 #### Nessie
 
