@@ -14,7 +14,6 @@ import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.RESYNC_DAT
 import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.getDebeziumProperties;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.cdc.MssqlCdcStateConstants.MSSQL_CDC_OFFSET;
-import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler.discoverClusteredIndexForStream;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.ORDERED_COL_STATE_TYPE;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.STATE_TYPE_KEY;
 
@@ -440,7 +439,7 @@ public class MssqlInitialReadUtil {
 
   @VisibleForTesting
   public static Optional<String> selectOcFieldName(final JdbcDatabase database,
-                                    final ConfiguredAirbyteStream stream) {
+                                                   final ConfiguredAirbyteStream stream) {
 
     final Map<String, List<String>> clusterdIndexField = MssqlInitialLoadHandler.discoverClusteredIndexForStream(database, stream.getStream());
     final String streamName = getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());

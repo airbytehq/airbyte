@@ -669,4 +669,5 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
     return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamItrator, completeStatus);
   }
+
 }
