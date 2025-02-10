@@ -486,7 +486,18 @@ class TestSourceZendeskSupportStream:
 class TestSourceZendeskSupportFullRefreshStream:
     @pytest.mark.parametrize(
         "stream_cls",
-        [(Tags), (SlaPolicies), (Brands), (CustomRoles), (Schedules), (UserSettingsStream), (AccountAttributes), (AttributeDefinitions), (Categories), (Sections)],
+        [
+            (Tags),
+            (SlaPolicies),
+            (Brands),
+            (CustomRoles),
+            (Schedules),
+            (UserSettingsStream),
+            (AccountAttributes),
+            (AttributeDefinitions),
+            (Categories),
+            (Sections),
+        ],
         ids=[
             "Tags",
             "SlaPolicies",
