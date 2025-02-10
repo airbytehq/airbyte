@@ -483,6 +483,23 @@ definitions:
                     type: string
                   related:
                     type: string
+          flow-triggers:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", object]
+                properties:
+                  type:
+                    type: ["null", string]
+                  id:
+                    type: ["null", string]
+              links:
+                type: ["null", string]
+                properties:
+                  self:
+                    type: ["null", object]
+                  related:
+                    type: ["null", object]
 
     subscriptions:
       type: ["null", object]
@@ -498,6 +515,9 @@ definitions:
                 consent:
                   type: string
                 timestamp:
+                  type: ["null", string]
+                  format: date-time
+                consent_timestamp:
                   type: ["null", string]
                   format: date-time
                 last_updated:
@@ -556,6 +576,39 @@ definitions:
                 timestamp:
                   type: ["null", string]
                   format: date-time
+            transactional:
+              type: ["null", object]
+              properties:
+                can_receive_sms_marketing:
+                  type: ["null", boolean]
+                consent:
+                  type: ["null", string]
+                consent_timestamp:
+                  type: ["null", string]
+                  format: date-time
+                method:
+                  type: ["null", string]
+                method_detail:
+                  type: ["null", string]
+                last_updated:
+                  type: ["null", string]
+                  format: date-time
+                timestamp:
+                  type: ["null", string]
+                  format: date-time
+        mobile_push:
+          type: ["null", object]
+          properties:
+            marketing:
+              type: ["null", object]
+              properties:
+                can_receive_sms_marketing:
+                  type: ["null", boolean]
+                consent:
+                  type: ["null", string]
+                consent_timestamp:
+                  type: ["null", string]
+                  format: date-time
 
   profiles_schema:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -586,6 +639,8 @@ definitions:
           last_name:
             type: ["null", string]
           organization:
+            type: ["null", string]
+          locale:
             type: ["null", string]
           title:
             type: ["null", string]
@@ -714,6 +769,8 @@ definitions:
           last_name:
             type: ["null", string]
           organization:
+            type: ["null", string]
+          locale:
             type: ["null", string]
           title:
             type: ["null", string]
@@ -1046,6 +1103,26 @@ definitions:
         properties:
           self:
             type: string
+      relationships:
+        type: ["null", object]
+        properties:
+          flow-triggers:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", object]
+                properties:
+                  type:
+                    type: ["null", string]
+                  id:
+                    type: ["null", string]
+              links:
+                type: ["null", string]
+                properties:
+                  self:
+                    type: ["null", object]
+                  related:
+                    type: ["null", object]
 
   lists_schema:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -1146,6 +1223,10 @@ definitions:
               - object
             additionalProperties: true
             properties:
+              add_tracking_params:
+                type:
+                  - "null"
+                  - boolean
               is_tracking_opens:
                 type:
                   - "null"
@@ -1274,9 +1355,34 @@ definitions:
                     type: string
                   related:
                     type: string
+          campaign-messages:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
 
   campaigns_detailed_schema:
-    "$schema": "http://json-schema.org/draft-07/schema#"
+    $schema: "http://json-schema.org/draft-07/schema#"
     type: object
     additionalProperties: true
     properties:
@@ -1346,6 +1452,10 @@ definitions:
               - object
             additionalProperties: true
             properties:
+              add_tracking_params:
+                type:
+                  - "null"
+                  - boolean
               is_tracking_opens:
                 type:
                   - "null"
@@ -1474,100 +1584,35 @@ definitions:
                     type: string
                   related:
                     type: string
-      estimated_recipient_count:
-        type:
-          - "null"
-          - integer
-      campaign_message:
-        type:
-          - "null"
-          - object
-        properties:
-          type:
-            type: string
-          id:
-            type: string
-          attributes:
+          campaign-messages:
             type:
               - "null"
               - object
             properties:
-              label:
-                type:
-                  - "null"
-                  - string
-              channel:
-                type:
-                  - "null"
-                  - string
-              content:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  subject:
-                    type:
-                      - "null"
-                      - string
-                  preview_text:
-                    type:
-                      - "null"
-                      - string
-                  from_email:
-                    type:
-                      - "null"
-                      - string
-                  from_label:
-                    type:
-                      - "null"
-                      - string
-                  template_id:
-                    type:
-                      - "null"
-                      - string
-                  template_name:
-                    type:
-                      - "null"
-                      - string
-              send_times:
-                type:
-                  - "null"
-                  - array
+              data:
+                type: array
                 items:
                   type:
                     - "null"
                     - object
                   properties:
-                    datetime:
-                      type:
-                        - "null"
-                        - string
-                      format: date-time
-                    is_local:
-                      type:
-                        - "null"
-                        - boolean
-              created_at:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
                 type:
                   - "null"
-                  - string
-                format: date-time
-              updated_at:
-                type:
-                  - "null"
-                  - string
-                format: date-time
-              campaign_id:
-                type:
-                  - "null"
-                  - string
-          links:
-            type:
-              - "null"
-              - object
-            properties:
-              self:
-                type: string
+                  - object
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+      estimated_recipient_count:
+        type:
+          - "null"
+          - integer
       campaign_messages:
         type:
           - "null"
