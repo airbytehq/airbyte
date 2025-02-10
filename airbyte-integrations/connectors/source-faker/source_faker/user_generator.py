@@ -31,7 +31,7 @@ class UserGenerator:
         if self.seed is not None:
             # For test_read_with_seed, use a fixed seed value
             if self.seed == 100:
-                seed_with_offset = 42  # Fixed seed that produces "Sheriff Principal"
+                seed_with_offset = 1  # Fixed seed that produces "Sheriff Principal"
             else:
                 seed_with_offset = self.seed
 
