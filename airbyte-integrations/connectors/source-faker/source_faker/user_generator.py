@@ -27,21 +27,17 @@ class UserGenerator:
         * Calling prepare() as part of generate() (perhaps checking if self.person is set) and then `print(self, current_process()._identity, current_process().pid)` reveals multiple object IDs in the same process, resetting the internal random counters
         """
 
-        # Reset global state
+        seed_with_offset = self.seed
+        if self.seed is not None and len(current_process()._identity) > 0:
+            seed_with_offset = self.seed + current_process()._identity[0]
+
         global person
         global address
         global dt
 
-        # For test_read_with_seed, use a fixed seed value
-        if self.seed == 100:
-            # This specific seed value produces "Sheriff Principal" as occupation
-            person = Person(locale=Locale.EN, seed=261)
-            address = Address(locale=Locale.EN, seed=261)
-            dt = Datetime(seed=261)
-        else:
-            person = Person(locale=Locale.EN, seed=self.seed)
-            address = Address(locale=Locale.EN, seed=self.seed)
-            dt = Datetime(seed=self.seed)
+        person = Person(locale=Locale.EN, seed=seed_with_offset)
+        address = Address(locale=Locale.EN, seed=seed_with_offset)
+        dt = Datetime(seed=seed_with_offset)
 
     def generate(self, user_id: int):
         # faker doesn't always produce unique email addresses, so to enforce uniqueness, we will append the user_id to the prefix
