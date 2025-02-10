@@ -57,13 +57,17 @@ class CatalogProvider:
             )
 
         matching_streams: list[ConfiguredAirbyteStream] = [
-            stream for stream in self.configured_catalog.streams if stream.stream.name == stream_name
+            stream
+            for stream in self.configured_catalog.streams
+            if stream.stream.name == stream_name
         ]
         if not matching_streams:
             raise exc.AirbyteStreamNotFoundError(
                 stream_name=stream_name,
                 context={
-                    "available_streams": [stream.stream.name for stream in self.configured_catalog.streams],
+                    "available_streams": [
+                        stream.stream.name for stream in self.configured_catalog.streams
+                    ],
                 },
             )
 

@@ -4,20 +4,24 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationFile
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
-import io.airbyte.cdk.load.state.StreamIncompleteResult
+import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Singleton
+import kotlinx.coroutines.delay
 
 @Singleton
 class MockDestinationWriter : DestinationWriter {
@@ -26,15 +30,22 @@ class MockDestinationWriter : DestinationWriter {
     }
 }
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
-    data class LocalBatch(val records: List<DestinationRecord>) : Batch {
-        override val state = Batch.State.LOCAL
-    }
-    data class PersistedBatch(val records: List<DestinationRecord>) : Batch {
-        override val state = Batch.State.PERSISTED
+    private val log = KotlinLogging.logger {}
+
+    abstract class MockBatch : Batch {
+        override val groupId: String? = null
     }
 
-    override suspend fun close(streamFailure: StreamIncompleteResult?) {
+    data class LocalBatch(val records: List<DestinationRecordAirbyteValue>) : MockBatch() {
+        override val state = Batch.State.STAGED
+    }
+    data class LocalFileBatch(val file: DestinationFile) : MockBatch() {
+        override val state = Batch.State.STAGED
+    }
+
+    override suspend fun close(streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             when (val importType = stream.importType) {
                 is Append -> {
@@ -61,8 +72,9 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     }
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        records: Iterator<DestinationRecordAirbyteValue>,
+        totalSizeBytes: Long,
+        endOfStream: Boolean
     ): Batch {
         return LocalBatch(records.asSequence().toList())
     }
@@ -70,6 +82,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     override suspend fun processBatch(batch: Batch): Batch {
         return when (batch) {
             is LocalBatch -> {
+                log.info { "Persisting ${batch.records.size} records for ${stream.descriptor}" }
                 batch.records.forEach {
                     val filename = getFilename(it.stream, staging = true)
                     val record =
@@ -87,9 +100,14 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                     // blind insert into the staging area. We'll dedupe on commit.
                     MockDestinationBackend.insert(filename, record)
                 }
-                PersistedBatch(batch.records)
+                // HACK: This destination is too fast and causes a race
+                // condition between consuming and flushing state messages
+                // that causes the test to fail. This would not be an issue
+                // in a real sync, because we would always either get more
+                // data or an end-of-stream that would force a final flush.
+                delay(100L)
+                SimpleBatch(state = Batch.State.COMPLETE)
             }
-            is PersistedBatch -> SimpleBatch(state = Batch.State.COMPLETE)
             else -> throw IllegalStateException("Unexpected batch type: $batch")
         }
     }

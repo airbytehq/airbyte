@@ -1535,7 +1535,6 @@ abstract class BaseTypingDedupingTest {
                 .withConnectionId(UUID.randomUUID())
                 .withCatalog(convertProtocolObject(catalog, ConfiguredAirbyteCatalog::class.java))
                 .withDestinationConnectionConfiguration(transformedConfig)
-
         val destination: AirbyteDestination =
             DefaultAirbyteDestination(
                 integrationLauncher =

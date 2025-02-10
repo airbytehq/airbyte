@@ -1,5 +1,13 @@
 # Shopify Migration Guide
 
+## Upgrading to 2.6.0
+This version completely deprecates the following streams, because Shopify no longer supports them after Shopify API version `2024-04`:
+- `Products Graph QL`
+- `Customer Saved Search`
+
+Please use `Products` to replace the old `Products Graph QL` stream.
+
+
 ## Upgrading to 2.2.0
 This version updates the schema for countries as our testing caught that `provinces.tax_percentage` is a number and not an integer.
 
