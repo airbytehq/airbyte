@@ -241,9 +241,7 @@ class GlueAssumeRoleWriteTest :
         ),
     )
 
-@Disabled(
-    "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
-)
+
 class NessieMinioWriteTest :
     S3DataLakeWriteTest(
         getConfig(),
