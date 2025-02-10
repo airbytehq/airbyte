@@ -241,7 +241,6 @@ class GlueAssumeRoleWriteTest :
         ),
     )
 
-
 class NessieMinioWriteTest :
     S3DataLakeWriteTest(
         getConfig(),
