@@ -33,11 +33,18 @@ import java.util.function.Consumer
 
 /** Emits the [AirbyteMessage] instances produced by the connector. */
 @DefaultImplementation(StdoutOutputConsumer::class)
-interface OutputConsumer : Consumer<AirbyteMessage>, AutoCloseable {
-    val emittedAt: Instant
+abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessage>, AutoCloseable {
+    /**
+     * The constant emittedAt timestamp we use for record timestamps.
+     *
+     * TODO: use the correct emittedAt time for each record. Ryan: not changing this now as it could
+     * have performance implications for sources given the delicate serialization logic in place
+     * here.
+     */
+    val recordEmittedAt: Instant = Instant.ofEpochMilli(clock.millis())
 
-    fun accept(record: AirbyteRecordMessage) {
-        record.emittedAt = emittedAt.toEpochMilli()
+    open fun accept(record: AirbyteRecordMessage) {
+        record.emittedAt = recordEmittedAt.toEpochMilli()
         accept(AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(record))
     }
 
@@ -66,7 +73,9 @@ interface OutputConsumer : Consumer<AirbyteMessage>, AutoCloseable {
     }
 
     fun accept(trace: AirbyteTraceMessage) {
-        trace.emittedAt = emittedAt.toEpochMilli().toDouble()
+        // Use the correct emittedAt timestamp for trace messages. This allows platform and other
+        // downstream consumers to take emission time into account for error classification.
+        trace.emittedAt = clock.millis().toDouble()
         accept(AirbyteMessage().withType(AirbyteMessage.Type.TRACE).withTrace(trace))
     }
 
@@ -107,7 +116,7 @@ const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 @Secondary
 private class StdoutOutputConsumer(
     val stdout: PrintStream,
-    clock: Clock,
+    private val clock: Clock,
     /**
      * [bufferByteSizeThresholdForFlush] triggers flushing the record buffer to stdout once the
      * buffer's size (in bytes) grows past this value.
@@ -132,9 +141,7 @@ private class StdoutOutputConsumer(
      */
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
     val bufferByteSizeThresholdForFlush: Int,
-) : OutputConsumer {
-    override val emittedAt: Instant = Instant.now(clock)
-
+) : OutputConsumer(clock) {
     private val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
     private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
@@ -233,7 +240,7 @@ private class StdoutOutputConsumer(
                 namespacedTemplates.getOrPut(namespace) { StreamToTemplateMap() }
             }
         return streamToTemplateMap.getOrPut(stream) {
-            RecordTemplate.create(stream, namespace, emittedAt)
+            RecordTemplate.create(stream, namespace, recordEmittedAt)
         }
     }
 

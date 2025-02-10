@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicReference
 /** [PartitionsCreatorFactory] implementation for CDC with Debezium. */
 class CdcPartitionsCreatorFactory<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
-    val globalLockResource: CdcGlobalLockResource,
     val debeziumOps: DebeziumOperations<T>,
 ) : PartitionsCreatorFactory {
 
@@ -35,6 +34,9 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
      */
     private val upperBoundReference = AtomicReference<T>()
 
+    /** [AtomicReference] used to trigger resetting a sync when not null. */
+    private val resetReason = AtomicReference<String?>(null)
+
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
         if (feedBootstrap !is GlobalFeedBootstrap) {
             // Fall through on non-Global streams.
@@ -42,12 +44,12 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
         }
         return CdcPartitionsCreator(
             concurrencyResource,
-            globalLockResource,
             feedBootstrap,
             debeziumOps,
             debeziumOps,
             lowerBoundReference,
             upperBoundReference,
+            resetReason,
         )
     }
 }
