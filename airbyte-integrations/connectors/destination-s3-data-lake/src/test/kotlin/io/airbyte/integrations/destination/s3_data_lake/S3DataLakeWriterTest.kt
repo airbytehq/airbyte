@@ -31,6 +31,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
@@ -243,7 +244,8 @@ internal class S3DataLakeWriterTest {
                 catalog = destinationCatalog,
                 tableIdGenerator = tableIdGenerator,
             )
-        s3DataLakeWriter.createStreamLoader(stream = stream)
+        val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
+        runBlocking { streamLoader.start() }
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }
@@ -387,7 +389,8 @@ internal class S3DataLakeWriterTest {
                 tableIdGenerator = tableIdGenerator,
             )
 
-        s3DataLakeWriter.createStreamLoader(stream = stream)
+        val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
+        runBlocking { streamLoader.start() }
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }

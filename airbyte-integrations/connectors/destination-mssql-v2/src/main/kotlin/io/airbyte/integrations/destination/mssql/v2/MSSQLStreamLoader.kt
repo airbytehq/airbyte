@@ -20,7 +20,7 @@ class MSSQLStreamLoader(
     override val stream: DestinationStream,
     private val sqlBuilder: MSSQLQueryBuilder,
 ) : StreamLoader {
-    private val recordCommitBatchSize = 1000
+    private val recordCommitBatchSize = 5000
 
     override suspend fun start() {
         ensureTableExists(dataSource)
