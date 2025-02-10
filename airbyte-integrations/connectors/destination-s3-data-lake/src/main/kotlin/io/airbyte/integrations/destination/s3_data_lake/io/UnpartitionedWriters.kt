@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_data_lake.io
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
+import org.apache.iceberg.Table
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.io.FileAppenderFactory
 import org.apache.iceberg.io.FileIO
@@ -18,6 +19,7 @@ import org.apache.iceberg.io.UnpartitionedWriter
  * un-partitioned Iceberg [org.apache.iceberg.Table].
  */
 class UnpartitionedDeltaWriter(
+    table: Table,
     spec: PartitionSpec,
     format: FileFormat,
     appenderFactory: FileAppenderFactory<Record>,
@@ -28,6 +30,7 @@ class UnpartitionedDeltaWriter(
     identifierFieldIds: Set<Int>,
 ) :
     BaseDeltaTaskWriter(
+        table,
         spec,
         format,
         appenderFactory,

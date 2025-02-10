@@ -31,7 +31,6 @@ import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
-import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -113,7 +112,6 @@ class DefaultDestinationTaskLauncher(
 
     // Checkpoint Tasks
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
-    private val timedCheckpointFlushTask: TimedForcedCheckpointFlushTask,
     private val updateCheckpointsTask: UpdateCheckpointsTask,
 
     // Exception handling
@@ -143,6 +141,10 @@ class DefaultDestinationTaskLauncher(
 
     private val closeStreamHasRun = ConcurrentHashMap<DestinationStream.Descriptor, AtomicBoolean>()
 
+    companion object {
+        val hasThrown = AtomicBoolean(false)
+    }
+
     inner class WrappedTask(
         private val innerTask: Task,
     ) : Task {
@@ -156,7 +158,11 @@ class DefaultDestinationTaskLauncher(
                 throw e
             } catch (e: Exception) {
                 log.error(e) { "Caught exception in task $innerTask" }
-                handleException(e)
+                if (hasThrown.setOnce()) {
+                    handleException(e)
+                } else {
+                    log.info { "Skipping exception handling, because it has already run." }
+                }
             }
         }
 
@@ -231,10 +237,6 @@ class DefaultDestinationTaskLauncher(
         log.info { "Starting timed file aggregate flush task " }
         launch(flushTickTask)
 
-        // Start the checkpoint management tasks
-        log.info { "Starting timed checkpoint flush task" }
-        launch(timedCheckpointFlushTask)
-
         log.info { "Starting checkpoint update task" }
         launch(updateCheckpointsTask)
 
@@ -295,6 +297,7 @@ class DefaultDestinationTaskLauncher(
     }
 
     override suspend fun handleException(e: Exception) {
+        openStreamQueue.close()
         catalog.streams
             .map { failStreamTaskFactory.make(this, e, it.descriptor) }
             .forEach { launch(it, withExceptionHandling = false) }
