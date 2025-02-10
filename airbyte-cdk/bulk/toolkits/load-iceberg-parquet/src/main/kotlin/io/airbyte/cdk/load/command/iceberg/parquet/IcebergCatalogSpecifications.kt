@@ -181,7 +181,7 @@ class NessieCatalogSpecification(
      * `Destination Namespace` setting for the connection is set to `Destination-defined` or
      * `Source-defined`
      */
-    @get:JsonSchemaTitle("Namespace")
+    @get:JsonSchemaTitle("Default namespace")
     @get:JsonPropertyDescription(
         """The Nessie namespace to be used in the Table identifier. 
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
@@ -226,7 +226,7 @@ class GlueCatalogSpecification(
      * `Destination Namespace` setting for the connection is set to `Destination-defined` or
      * `Source-defined`
      */
-    @get:JsonSchemaTitle("Database Name")
+    @get:JsonSchemaTitle("Default database")
     @get:JsonPropertyDescription(
         """The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`"""
     )
@@ -260,7 +260,7 @@ class RestCatalogSpecification(
     @get:JsonProperty("server_uri")
     @JsonSchemaInject(json = """{"order":1}""")
     val serverUri: String,
-    @get:JsonSchemaTitle("Namespace")
+    @get:JsonSchemaTitle("Default namespace")
     @get:JsonPropertyDescription(
         """The namespace to be used in the Table identifier. 
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
