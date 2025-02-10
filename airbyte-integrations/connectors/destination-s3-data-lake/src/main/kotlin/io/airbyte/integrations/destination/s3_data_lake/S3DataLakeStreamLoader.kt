@@ -16,7 +16,9 @@ import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableCleane
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
+import org.apache.iceberg.UpdateSchema
 
 private val logger = KotlinLogging.logger {}
 
@@ -31,8 +33,18 @@ class S3DataLakeStreamLoader(
     private val mainBranchName: String
 ) : StreamLoader {
     private lateinit var table: Table
-    private lateinit var schemaUpdateResult: SchemaUpdateResult
+    private lateinit var targetSchema: Schema
     private val pipeline = IcebergParquetPipelineFactory().create(stream)
+
+    // If we're executing a truncate, then force the schema change.
+    private val columnTypeChangeBehavior: ColumnTypeChangeBehavior =
+        if (stream.isSingleGenerationTruncate()) {
+            ColumnTypeChangeBehavior.OVERWRITE
+        } else {
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+        }
+    private val incomingSchema =
+        s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
@@ -41,7 +53,6 @@ class S3DataLakeStreamLoader(
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = s3DataLakeUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
-        val incomingSchema = s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
         table =
             s3DataLakeUtil.createTable(
                 streamDescriptor = stream.descriptor,
@@ -49,21 +60,7 @@ class S3DataLakeStreamLoader(
                 schema = incomingSchema,
                 properties = properties
             )
-
-        // If we're executing a truncate, then force the schema change.
-        val columnTypeChangeBehavior =
-            if (stream.isSingleGenerationTruncate()) {
-                ColumnTypeChangeBehavior.OVERWRITE
-            } else {
-                ColumnTypeChangeBehavior.SAFE_SUPERTYPE
-            }
-        schemaUpdateResult =
-            s3DataLakeTableSynchronizer.applySchemaChanges(
-                table,
-                incomingSchema,
-                columnTypeChangeBehavior
-            )
-
+        targetSchema = computeSchemaUpdate().schema
         try {
             logger.info {
                 "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.descriptor}"
@@ -86,7 +83,7 @@ class S3DataLakeStreamLoader(
                 table = table,
                 generationId = s3DataLakeUtil.constructGenerationIdSuffix(stream),
                 importType = stream.importType,
-                schema = schemaUpdateResult.schema,
+                schema = targetSchema,
             )
             .use { writer ->
                 logger.info { "Writing records to branch $stagingBranchName" }
@@ -95,7 +92,7 @@ class S3DataLakeStreamLoader(
                         s3DataLakeUtil.toRecord(
                             record = record,
                             stream = stream,
-                            tableSchema = table.schema(),
+                            tableSchema = targetSchema,
                             pipeline = pipeline,
                         )
                     writer.write(icebergRecord)
@@ -124,8 +121,8 @@ class S3DataLakeStreamLoader(
             logger.info {
                 "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
             }
-            schemaUpdateResult.pendingUpdate?.commit()
             table.refresh()
+            computeSchemaUpdate().pendingUpdate?.commit()
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
             if (stream.minimumGenerationId > 0) {
                 logger.info {
@@ -153,4 +150,17 @@ class S3DataLakeStreamLoader(
             }
         }
     }
+
+    /**
+     * We can't just cache the SchemaUpdateResult from [start], because when we try to `commit()` it
+     * in [close], Iceberg throws a stale table metadata exception. So instead we have to calculate
+     * it twice - once at the start of the sync, to get the updated table schema, and once again at
+     * the end of the sync, to get a fresh [UpdateSchema] instance.
+     */
+    private fun computeSchemaUpdate() =
+        s3DataLakeTableSynchronizer.applySchemaChanges(
+            table,
+            incomingSchema,
+            columnTypeChangeBehavior,
+        )
 }
