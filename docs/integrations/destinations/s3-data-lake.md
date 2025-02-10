@@ -103,6 +103,7 @@ written into the Iceberg file.
 
 | Version | Date       | Pull Request                                               | Subject                                                                      |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.3.8   | 2025-02-10 | [\#53165](https://github.com/airbytehq/airbyte/pull/53165) | Very basic usability improvements and documentation                          |
 | 0.3.7   | 2025-02-07 | [\#53141](https://github.com/airbytehq/airbyte/pull/53141) | Adding integration tests around the Rest catalog                             |
 | 0.3.6   | 2025-02-06 | [\#53172](https://github.com/airbytehq/airbyte/pull/53172) | Internal refactor                                                            |
 | 0.3.5   | 2025-02-06 | [\#53164](https://github.com/airbytehq/airbyte/pull/53164) | Improve error message on null primary key in dedup mode                      |
