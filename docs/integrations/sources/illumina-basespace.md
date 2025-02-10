@@ -28,6 +28,7 @@ Connector for the Basespace v1 API. This can be used to extract data on projects
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.12 | 2025-02-08 | [53301](https://github.com/airbytehq/airbyte/pull/53301) | Update dependencies |
 | 0.0.11 | 2025-02-01 | [52777](https://github.com/airbytehq/airbyte/pull/52777) | Update dependencies |
 | 0.0.10 | 2025-01-25 | [52251](https://github.com/airbytehq/airbyte/pull/52251) | Update dependencies |
 | 0.0.9 | 2025-01-18 | [51797](https://github.com/airbytehq/airbyte/pull/51797) | Update dependencies |
