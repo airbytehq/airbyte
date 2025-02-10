@@ -461,6 +461,15 @@ class SetPromotedVersion(SetConnectorVersion):
 
 
 class CheckConnectorVersionIncrement(Step):
+    """Gates the publishing execution based on version increment status.
+    
+    This check prevents overwriting existing connector container images by ensuring
+    that the connector version has been incremented before publishing. This avoids
+    failures and prevents rewriting an existing container under the same version tag.
+    
+    The check can be overridden by setting the OVERRIDE_VERSION_INCREMENT environment
+    variable to 'true', which is automatically set for manual workflow runs.
+    """
     context: PublishConnectorContext
 
     title = "Check if connector version was incremented"
