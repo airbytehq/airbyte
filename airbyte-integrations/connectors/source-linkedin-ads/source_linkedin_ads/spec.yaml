@@ -136,7 +136,6 @@ connectionSpecification:
         - 1
         - 2
         - 3
-      order: 4
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
