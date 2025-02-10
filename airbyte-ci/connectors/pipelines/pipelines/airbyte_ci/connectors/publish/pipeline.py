@@ -486,8 +486,8 @@ class CheckConnectorVersionIncrement(Step):
         return "Check if connector version was incremented"
 
     async def _run(self) -> StepResult:
-        # Check if running from manual GitHub workflow
-        if os.getenv("GITHUB_EVENT_NAME") == "workflow_dispatch":
+        # Check if version increment check should be overridden (manual workflow)
+        if os.getenv("OVERRIDE_VERSION_INCREMENT") == "true":
             return StepResult(
                 step=self,
                 status=StepStatus.SUCCESS,
