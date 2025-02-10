@@ -4226,6 +4226,11 @@ definitions:
             - path:
                 - cellPhone
               value: "{{ record['cellPhone'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - secondaryEmail
+              value: "{{ record['secondaryEmail'] | hash('md5') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -6112,7 +6117,7 @@ metadata:
       responsesAreSuccessful: true
     contacts_pii_redacted:
       hasRecords: true
-      streamHash: 2368af77fb284d191ca8e2825cc71671d8a231f0
+      streamHash: 3a24453fe732de5e4624a389f2f9e687a04d8658
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
